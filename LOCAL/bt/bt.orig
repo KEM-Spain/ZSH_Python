@@ -1,0 +1,481 @@
+#!/usr/bin/zsh
+BOLD="\033[1m"
+RESET="\033[m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+WHITE_FG="\033[37m"
+
+#constants
+BT_COMMAND=/usr/local/bin/bt-command-run
+SOUND_FILE=/usr/share/sounds/freedesktop/stereo/message-new-instant.oga
+VOLUME=1
+DEBUG=true
+DEVICE=?
+
+#arrays
+typeset -A DEVICES #assoc detected bt device names and macs
+typeset -A SINKS #assoc detected sinks
+typeset -A SELECTED #assoc chosen device name and max
+typeset -a LOOKUP #reg device names list
+typeset -a MATCHING_DEVICES #reg matching device names <- cmd line arg
+
+#vars
+typeset -g DEFAULT_SINK
+
+bt-up () {
+	rfkill unblock all
+	sudo hciconfig hciX up
+}
+
+bt-down () {
+	sudo hciconfig hciX down
+}
+
+#strip-ansi () {
+#	echo $@ | sed -E 's/\x1B.*25h//g' | sed -E 's/\x1B\[?([0-9]{1,2}(;[0-9]{1,2})?)?[0-9]?[a-z|A-Z|?]//g'
+#}
+
+clean-devlist () {
+	LIST=("${(f)$(bt-command devices 2>/dev/null)}")
+	for L in ${LIST};do
+		DEV=$(echo ${L} | cut -d' ' -f2)
+		MAC_CHECK=$(echo ${DEV} | tr -cd ':' | wc -c)
+		[[ ${MAC_CHECK} -eq 5 ]] && bt-command remove ${DEV} 2>/dev/null
+	done
+}
+
+get-action () {
+	local RESPONSE
+
+	echo -n "[${WHITE_FG}D${RESET}]isconnect or [${WHITE_FG}T${RESET}]oggle:"
+	read  -sk1 RESPONSE
+	case ${RESPONSE} in
+		D|d) return 1;;
+		T|t) return 2;;
+		*) return 0;;
+	esac
+}
+
+get-yes-no () {
+	local RESPONSE
+
+	echo -n "Enter [${WHITE_FG}Y${RESET}]es or [${WHITE_FG}N${RESET}]o"
+	read -sq RESPONSE
+	echo
+	[[ ${RESPONSE} == "y" ]] && return 0 || return 1
+}
+
+is_number () {
+  if [[ -n ${1} && ${1} == ${1%%[!0-9]*} ]];then
+    return 0
+  else
+    echo "Key entered is not numeric..."
+    return 1
+  fi
+}
+
+is_within_range () {
+    if [[ ${1} != 0 && ${2} -ge ${1} && ${1} -le ${2} ]];then
+        return 0
+    else
+        echo "Number is out of range..."
+        return 1
+    fi
+}
+
+bt-command () {
+	CMDOUT=$(${BT_COMMAND} $@)
+	echo ${CMDOUT} | tr -d '[\r,\]' #garbage from expect
+}
+
+set-vol () {
+	local LEVEL
+
+	[[ $# -eq 1 ]] && LEVEL=${1} || LEVEL=0 #mute if no param present
+	amixer -D pulse sset Master unmute > /dev/null 2>&1
+	amixer -D pulse sset Master ${LEVEL}% | grep '%'
+}
+
+sound-test () {
+	sleep 1
+	sndtest
+}
+
+create-sink-list () {
+	local -i INDEX
+	local -L DEVICE
+	local -i DEFAULT_INDEX
+
+	SINKS=()
+	DEFAULT_INDEX=0
+	while read line;do
+		case ${line} in
+				\**) INDEX=$(echo ${line} | cut -d: -f2); DEFAULT_INDEX=${INDEX};;
+		  	  index*) INDEX=$(echo ${line} | cut -d: -f2);;
+	    	device*) DEVICE=$(echo ${line} | cut -d= -f2 | sed 's/\"//g');;
+		esac
+		if [[ -n ${INDEX} && -n ${DEVICE} ]];then
+			SINKS[${INDEX}]=${DEVICE}
+			unset INDEX
+			unset DEVICE
+		fi
+	done < <(pacmd list-sinks | egrep 'index:|device.description' | sed -e 's/^[ \t]*//' -e 's/: /:/g' -e 's/ = /=/g' -e 's/\* /\*/')
+	DEFAULT_SINK=${DEFAULT_INDEX}
+}
+
+set-valid-sink () {
+	local SINK_DEVICE=$@
+	local DEVICE_KEY
+
+	#SINK_DEVICE=$(echo ${SINK_DEVICE} | tr -d '[\r,\]') #garbage from expect
+
+	echo "Examining sinks for ${WHITE_FG}${SINK_DEVICE}${RESET}"
+	create-sink-list
+	DEFAULT_SINK=${DEFAULT_SINK}
+
+	#find the corresponding device sink
+	DEVICE_KEY=?
+	for s in ${(k)SINKS};do
+		if [[ ${SINKS[${s}]} == "${SINK_DEVICE}" ]];then
+			DEVICE_KEY=${s}
+		fi
+	done
+
+	#valid device key?
+	if [[ ${DEVICE_KEY} == "?" ]];then
+		echo "No valid sink detected for ${WHITE_FG}${SINK_DEVICE}${RESET}."
+		return 1
+	fi
+
+	#make it the default?
+	echo "Current default device is:${WHITE_FG}${SINKS[${DEFAULT_SINK}]}${RESET}"
+	if [[ ${DEFAULT_SINK} -ne ${DEVICE_KEY} ]];then
+		echo "Setting default sink to ${WHITE_FG}${SINK_DEVICE}${RESET}:[${WHITE_FG}${DEVICE_KEY}${RESET}]"
+		pacmd set-default-sink ${DEVICE_KEY}
+		echo "New default device is:${WHITE_FG}${SINKS[${DEVICE_KEY}]}${RESET}"
+	fi
+	return 0
+}
+
+clean_cmd () {
+	local CMD=(${@})
+	echo ${CMD} | sed 's/\xc2\x91\|\xc2\x92\|\xc2\xa0\|\xe2\x80\x8e//g'
+}
+
+create-device-list () {
+	local -a DEVLIST
+	local DEVNAMES
+	local INDEX
+	local -a CMD_OUTPUT
+	local C D
+
+	[[ ${DEBUG} == "true" ]] && echo "${RED_FG}calling bt-command scan on${RESET}" >&2
+	CMD_OUTPUT=("${(f)$(bt-command scan on 2>&1)}")
+	for C in ${CMD_OUTPUT};do
+		clean_cmd "${C}"
+	done
+	#[[ ${DEBUG} == "true" ]] && echo "${RED_FG}bt-command scan on: returned${RESET}:\n$(echo ${CMD_OUTPUT})\n" >&2
+	exit
+
+	[[ ${DEBUG} == "true" ]] && echo "${RED_FG}calling bt-command devices${RESET}" >&2
+	DEVLIST+=$(bt-command devices | sed -e 's/2004//g' -e 's/;94m//g')
+	[[ ${DEBUG} == "true" ]] && echo "${WHITE_FG}devices: ${RED_FG}device list${RESET}:${DEVLIST}${RESET}" >&2
+	[[ ${DEBUG} == "true" ]] && echo "${RED_FG}bt-command returned${RESET}:\n${DEVLIST})\n" >&2
+	exit
+
+	[[ ${DEBUG} == "true" ]] && echo "${RED_FG}cleaning device list${RESET}" >&2
+	DEVLIST+=$(echo ${DEVLIST} | egrep -i '^device')
+	[[ ${DEBUG} == "true" ]] && echo "${WHITE_FG}egrep -i device:${RED_FG}device list${RESET}:${DEVLIST}${RESET}" >&2
+	DEVLIST+=("${(@f)$(for X in ${DEVLIST};do echo ${X};done)}")
+	[[ ${DEBUG} == "true" ]] && echo "${WHITE_FG}for X:${RED_FG}device list${RESET}:${DEVLIST}${RESET}" >&2
+
+	[[ ${DEBUG} == "true" ]] && echo "${RED_FG}parsing device list into DEV->MAC${RESET}" >&2
+	for D in ${DEVLIST};do
+		DEVMACS=$(echo ${D} | cut -d\  -f2)
+		DEVNAMES=$(echo ${D} | cut -d\  -f3-)
+		DEVICES[${DEVMACS}]="${DEVNAMES}"
+		[[ ${DEBUG} == "true" ]] && echo "${RED_FG}DEVICES[${DEVMACS}]=\"${DEVNAMES}\"${RESET}" >&2
+	done
+}
+
+connect-device () {
+	local EATOUTPUT=$(bt-command connect ${1})
+	[[ ${DEBUG} == "true" ]] && echo "${RED_FG}bt-command connect${RESET}:$(strip-ansi ${EATOUTPUT})" >&2
+	connect-msgs
+	return $?
+}
+
+disconnect-device () {
+	local EATOUTPUT=$(bt-command disconnect ${1})
+	[[ ${DEBUG} == "true" ]] && echo "${RED_FG}bt-command disconnect${RESET}:$(strip-ansi ${EATOUTPUT})" >&2
+	disconnect-msgs
+	return $?
+}
+
+get-connection-status () {
+	local STATUS
+
+	STATUS=$(bt-command info ${1}) 
+	[[ ${DEBUG} == "true" ]] && echo "${RED_FG}bt-command info${RESET}:$(strip-ansi ${STATUS})" >&2
+	STATUS=$(echo ${STATUS} | grep 'Connected:' | cut -d: -f2 | tr -d '[:space:]')
+	if [[ ${STATUS} == "yes" ]];then
+		echo "connected"
+		return 0
+	else
+		echo "disconnected"
+		return 1
+	fi
+}
+
+list-devices () {
+	create-device-list
+	[[ ${#DEVICES} -eq 0 ]] && echo 'No bluetooth devices found.' && exit
+	NDX=0
+	for k in ${(@k)DEVICES}; do
+		((NDX++))
+		echo "${WHITE_FG}${NDX}${RESET})${GREEN_FG}->${RESET}${DEVICES[${k}]}${RESET}"
+		LOOKUP+=( ${DEVICES[${k}]} )
+	done
+}
+
+get-device () {
+	local RESPONSE
+
+	while true;do
+		list-devices 
+		echo "${WHITE_FG}Press <ENTER> to exit...${RESET}" 
+		echo -n "Enter device:"
+		read RESPONSE
+		if [[ -z ${RESPONSE} ]];then
+		  kill -SIGINT $$ 
+		fi
+		if is_number ${RESPONSE};then
+		  if is_within_range ${RESPONSE} ${NDX};then
+			SELECTED[DEVICE]=${LOOKUP[${RESPONSE}]}
+			SELECTED[MAC]=${(k)DEVICES[(r)${LOOKUP[${RESPONSE}]}]} #reverse lookup
+			break
+		  fi
+		fi
+	done
+}
+
+wait-status-change () {
+	local TIMEOUT=5
+	local INITIAL_STATUS=${1}
+	local CURRENT_STATUS
+	local RC
+
+	TIMER=0
+	echo "Current status:${WHITE_FG}${1}${RESET}"
+	while true;do
+		(( TIMER++ ))
+		CURRENT_STATUS=$(get-connection-status ${SELECTED[MAC]})
+		if [[ ${INITIAL_STATUS} != ${CURRENT_STATUS} ]];then
+			echo "Changed status:${GREEN_FG}${CURRENT_STATUS}${RESET}"
+			RC=0
+			break
+		fi
+		sleep 1 
+		[[ ${TIMER} -gt ${TIMEOUT} ]] && echo "${RED_FG}Command timed out${RESET}" && RC=1 && break #wait 30 seconds
+	done
+	return ${RC}
+}
+
+connect-msgs () {
+	echo "Connecting..."
+	wait-status-change disconnected
+	if [[ $? -eq 0 ]];then
+		echo "Connection successful..."
+	else
+		echo "Connection failed..."
+		return 1
+	fi
+}
+
+disconnect-msgs () {
+	echo "Waiting for disconnection..."
+	wait-status-change connected
+	if [[ $? -eq 0 ]];then
+		echo "Disconnecting..."
+		return 0
+	else
+		echo "Disconnection failed..."
+		return 1
+	fi
+}
+
+set-matching-devices () {
+	local FOUND
+	echo "Searching for device matching [${WHITE_FG}${1}${RESET}]" >&2
+	create-device-list
+	FOUND=false
+	for k in ${(@k)DEVICES}; do
+		if [[ ${DEVICES[${k}]:l} =~ "${1:l}" ]];then
+			FOUND=true
+			MATCHING_DEVICES+=(${DEVICES[${k}]})
+			echo -n "Found matching device:${WHITE_FG}${DEVICES[${k}]}${RESET}" >&2
+		fi
+	done
+	[[ ${FOUND} = "false" ]] && echo "${RED_FG}No matching device was found${RESET}" && return 1
+	return 0
+}
+
+get-mac () {
+	echo ${(k)DEVICES[(r)${1}]} #reverse lookup
+}
+
+OPTS=tdcis
+usage () {
+	echo "\n${WHITE_FG}Usage:${RESET} bt -${OPTS} <Device Name>"
+	echo "Options:${WHITE_FG}-t${RESET} TOGGLE, ${WHITE_FG}-d${RESET} DISCONNECT, ${WHITE_FG}-c${RESET} CONNECT, ${WHITE_FG}-i${RESET} INFO, ${WHITE_FG}-s${RESET} SETSINK"
+	kill -SIGINT $$ 
+}
+
+command-line () {
+	local TOGGLE=false
+	local DISCON=false
+	local CONNECT=false
+	local INFO=false
+	local SINK=false
+	local MAC=?
+	local STATUS
+
+	#switches
+	case $@ in
+		-t*) TOGGLE=true;shift;;
+		-d*) DISCON=true;shift;;
+		-c*) CONNECT=true;shift;;
+		-i*) INFO=true;shift;;
+		-s*) SINK=true;shift;;
+		  *) usage;;
+	esac
+
+	DEVICE="$@"
+	[[ -z ${DEVICE} ]] && echo "no device specified" && usage
+
+	set-matching-devices ${DEVICE}
+	RC=$?
+	if [[ ${RC} -eq 0 ]];then
+		for D in ${MATCHING_DEVICES};do
+			MAC=$(get-mac ${D})
+			SELECTED[DEVICE]=${D}
+			SELECTED[MAC]=${MAC}
+			STATUS=$(get-connection-status ${MAC})
+			echo "\nTarget device:${WHITE_FG}${D}${RESET} (MAC:${WHITE_FG}${MAC}${RESET})..."
+			if [[ ${INFO} == "true" ]];then
+				[[ ${STATUS} == "connected" ]] && MSGCOLOR=${GREEN_FG} || MSGCOLOR=${RED_FG}
+				echo "${WHITE_FG}${D}${RESET} is ${MSGCOLOR}${STATUS}${RESET}"
+				continue
+			fi
+			if [[ ${SINK} == "true" && ${STATUS} == "connected" ]];then
+				set-valid-sink ${SELECTED[DEVICE]}
+				RC=$?
+				set-vol 100
+				sound-test
+				continue
+			fi
+			if [[ ${STATUS} == "disconnected" ]];then #disconnected
+				[[ ${DISCON} == "true" ]] && echo "Current status:${RED_FG}disconnected${RESET}"
+				if [[ ${CONNECT} == "true" || ${TOGGLE} == "true" || ${SINK} == "true" ]];then
+					connect-device ${MAC}
+					RC=$?
+					if [[ $? -eq 0 ]];then
+						break
+					fi
+				fi
+			else #connected
+				if [[ ${CONNECT} == "true" ]];then #already connected;show info
+					echo "${WHITE_FG}${D}${RESET} connection status is:${WHITE_FG}${STATUS}${RESET}"
+					echo "MAC:${WHITE_FG}${MAC}${RESET}"
+					continue
+				fi
+				if [[ ${DISCON} == "true" || ${TOGGLE} == "true" ]];then
+					disconnect-device ${MAC}
+					RC=$?
+					if [[ $? -eq 0 ]];then
+						break
+					fi
+				fi
+				if [[ ${TOGGLE} == "true" ]];then
+					connect-device ${MAC}
+					RC=$?
+					if [[ $? -eq 0 ]];then
+						break
+					fi
+				fi
+			fi
+		done
+	else
+		echo "DEVICE:${WHITE_FG}${1} ${RED_FG}NOT${RESET} found"
+		echo "${WHITE_FG}Valid trusted devices${RESET}"
+		list-devices
+		RC=1
+	fi
+	return ${RC}
+}
+
+interactive () {
+	get-device
+	CONNECT_STATUS=$(get-connection-status ${SELECTED[MAC]})
+	if [[ ${CONNECT_STATUS} == "connected" ]];then
+		echo "${WHITE_FG}${SELECTED[DEVICE]}${RESET} is ${GREEN_FG}connected${RESET}" 
+		get-action
+		gaRC=$?
+		if [[ ${gaRC} -eq 1 ]];then
+			echo "Disconnecting"
+			disconnect-device ${SELECTED[MAC]}
+			RC=$?
+		fi
+		if [[ ${gaRC} -eq 2 ]];then
+			echo "Toggling"
+			connect-device ${SELECTED[MAC]}
+			RC=$?
+		fi
+	else
+		echo "${WHITE_FG}${SELECTED[DEVICE]}${RESET} is ${RED_FG}disconnected${RESET}"
+		echo "Would you like to connect ${WHITE_FG}${SELECTED[DEVICE]}${RESET}?"
+		get-yes-no
+		if [[ $? -eq 0 ]];then
+			echo "Connecting"
+			connect-device ${SELECTED[MAC]}
+			RC=$?
+		fi
+	fi
+	return ${RC}
+}
+
+#---Execution---
+[[ ${1} == "-D" ]] && DEBUG=true && shift
+
+bt-up
+
+if [[ $# -ne 0 ]];then
+	echo "Passing $@ to command-line"
+	command-line $@
+	RC=$?
+	echo "${WHITE_FG}Obtaining pulseaudio sink info...${RESET}"
+	LIMIT=10
+	HIT=false
+	while true;do
+		TEST=$(setsink -i ${DEVICE})
+		[[ ${TEST} == "true" ]] && HIT=true && break
+		((LIMIT--))
+		[[ ${LIMIT} -eq 0 ]] && break
+		sleep .5
+	done
+	sinks -i
+	if [[ ${HIT} == "true" ]];then
+		echo "Device:${WHITE_FG}${DEVICE}${RESET} sink ${GREEN_FG}is active${RESET}"
+		echo "${WHITE_FG}Playing test sound${RESET}"
+		sound-test
+	else
+		echo "Device:${WHITE_FG}${DEVICE}${RESET} sink ${RED_FG}not active${RESET}"
+	fi
+else
+	interactive
+	RC=$?
+fi
+
+setsink
+exit ${RC}

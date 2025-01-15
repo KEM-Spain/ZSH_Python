@@ -1,0 +1,103 @@
+#!/usr/bin/zsh
+
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Declarations
+typeset -A _SRC_CLR
+typeset -A _SOURCES
+typeset -aU _TODO_LIST
+typeset -a _TODO_TEXT
+
+# Constants
+_THIS=${0:t}
+_SOURCES[${PWD}]=PWD
+_SOURCES[/usr/local/bin]=PROD
+_SOURCES[/usr/local/bin/system]=PROD
+_SOURCES[/usr/local/lib]=PROD
+_SOURCES[/home/kmiller/Code/LOCAL]=DEV
+_SRC_CLR[PROD]=${GREEN_FG}
+_SRC_CLR[DEV]=${RED_FG}
+_SRC_CLR[PWD]=${WHITE_ON_GREY}
+
+# Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+read -r -d '' DESC<<EOF
+Show list of TODO labels embedded in scripts
+\tUse -d to include development files
+EOF
+
+# Functions
+usage () {
+	local -a PENDING_MSGS=(${@})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	echo "Usage: ${_SCRIPT}"
+	echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
+	exit_leave $(msg_exit W ${PENDING_MSGS})
+}
+
+# Execution
+[[ ${1} == '-H' ]] && usage
+[[ ${1} == '-d' ]] && SHOW_DEV=true || SHOW_DEV=false
+
+clear
+echo "[${WHITE_FG}${0}${RESET}] Searching for TODO items...\n"
+[[ ${SHOW_DEV} == 'false' ]] && echo "Development [-d] not selected\n"
+
+for S in ${(k)_SOURCES};do
+	_TODO_LIST+=("${(f)$(find ${S} -maxdepth 2 -type f)}")
+done
+
+HIT=false
+for F in ${_TODO_LIST};do
+	[[ ${F:e} == 'bak' ]] && continue
+	[[ ${F:e} == 'orig' ]] && continue
+	LINE=$(grep "#TODO" ${F})
+	[[ ${?} -ne 0 ]] && continue
+	grep -q "grep" <<<${LINE} # Skip 'todo' itself
+	[[ ${?} -eq 0 ]] && continue
+	for S in ${(Ok)_SOURCES};do # Longest path first
+		if [[ ${F:h} =~ ${S} ]];then
+			[[ ${SHOW_DEV} == 'false' && ${_SOURCES[${MATCH}]} == 'DEV' ]] && break 2
+			echo "${_SRC_CLR[${_SOURCES[${MATCH}]}]}${_SOURCES[${MATCH}]}${RESET}" && break
+		fi
+	done
+	echo "File:${WHITE_FG}${F}${RESET}"
+	_TODO_TEXT=("${(f)$(grep '#TODO' ${F})}")
+	for T in ${_TODO_TEXT};do
+		TXT=$(str_trim ${T})
+		TXT=$(echo ${RESET}${TXT} | str_trim | sed "s/TODO/$(echo ${WHITE_FG}${ITALIC})TODO$(echo ${RESET})$(echo ${MAGENTA_FG})/g")
+		echo "${TXT}${RESET}"
+	done
+	HIT=true
+	echo
+done
+
+[[ ${HIT} == 'false' ]] && echo "No TODO tags found"
+
+exit_leave

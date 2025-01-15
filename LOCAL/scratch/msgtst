@@ -1,0 +1,104 @@
+#!/usr/bin/zsh
+
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+_LIB_DIR=/usr/local/lib
+
+#Imports
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/ANSI.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/EXIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+source ./MSG.zsh
+source ./UTILS.zsh
+
+
+box_coords_overlap () {
+	local TAG_1=${1}
+	local TAG_2=${2}
+
+	local -A BOX_A_COORDS=($(box_coords_get ${TAG_1}))
+	local -A BOX_B_COORDS=($(box_coords_get ${TAG_2}))
+
+	local -i L1_X=${BOX_A_COORDS[X]}
+	local -i R1_X=$(( BOX_A_COORDS[X] + BOX_A_COORDS[H] -1 ))
+	local -i L1_Y=${BOX_A_COORDS[Y]}
+	local -i R1_Y=$(( BOX_A_COORDS[Y] + BOX_A_COORDS[W] -1 ))
+
+	#tput cup ${L1_X} ${L1_Y};echo -n "${RED_FG}(L1 X:${L1_X},Y:${L1_Y})${RESET}"
+	#tput cup ${R1_X} ${R1_Y};echo -n "${RED_FG}(R1 X:${R1_X},Y:${R1_Y})${RESET}"
+
+	local -i L2_X=${BOX_B_COORDS[X]}
+	local -i R2_X=$(( BOX_B_COORDS[X] + BOX_B_COORDS[H] -1 ))
+	local -i L2_Y=${BOX_B_COORDS[Y]}
+	local -i R2_Y=$(( BOX_B_COORDS[Y] + BOX_B_COORDS[W] -1 ))
+
+	#tput cup ${L2_X} ${L2_Y};echo -n "${GREEN_FG}(L2 X:${L2_X},Y:${L2_Y})${RESET}"
+	#tput cup ${R2_X} ${R2_Y};echo -n "${GREEN_FG}(R2 X:${R2_X},Y:${R2_Y})${RESET}"
+
+	local STATE=OVERLAP
+	[[ ${L2_X} -gt ${R1_X} ]] && STATE=CLEAR
+	[[ ${L2_Y} -gt ${R1_Y} ]] && STATE=CLEAR
+	echo ${STATE}
+}
+
+do_msg () {
+	RC=${1}
+	[[ ${RC} -eq 0 ]] && echo "OVERLAP" || echo "CLEAR"
+}
+
+# Initialize traps
+unsetopt localtraps
+for SIG in {1..9}; do
+	trap 'exit_sigexit '${SIG}'' ${SIG}
+done
+_FUNC_TRAP=true
+
+# Initialize debugging
+[[ -e ${_DEBUG_FILE} ]] && /bin/rm ${_DEBUG_FILE}
+
+_MSG_LIB_DBG=1
+_DEBUG=0
+
+clear
+
+msg_box -TMSG1 -jl -x10 -y10 -w30 -h10 "<w>MSG1 Left Message<N>|XXX|YYY|ZZZ"
+msg_box -TMSG2 -H1 -x12 -y55 -w30 -h10 "<w>MSG2 Center Message<N>|XXX|YYY|ZZZ"
+msg_box -TMSG3 -jl -x14 -y20 -w30 -h10 "<w>MSG3 Left Message<N>|XXX|YYY|ZZZ"
+msg_box -TMSG4 -H1 -x16 -y55 -w30 -h10 "<w>MSG4 Center Message<N>|XXX|YYY|ZZZ|111|222|333"
+
+#box_coords_dump
+
+echo
+STATE=$(box_coords_overlap MSG2 MSG4)
+echo "MSG2 MSG4 ${STATE}"
+STATE=$(box_coords_overlap MSG1 MSG4)
+echo "MSG1 MSG4 ${STATE}"
+STATE=$(box_coords_overlap MSG1 MSG2)
+echo "MSG1 MSG2 ${STATE}"
+STATE=$(box_coords_overlap MSG1 MSG3)
+echo "MSG1 MSG3 ${STATE}"
+STATE=$(box_coords_overlap MSG3 MSG2)
+echo "MSG3 MSG2 ${STATE}"
+
+tput cnorm

@@ -1,0 +1,80 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ./SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+typeset -a LIST
+typeset -A _UTILS_DESC=(
+external "EXTERNAL:verify or mount external drive"
+fstab_info "FSTAB:display fstab details"
+space "SPACE:show current disk usage"
+unplug "DETACH:safely detach device"
+usbdisks "USB:display usb disk details"
+)
+
+#_DEBUG=4
+cursor_off
+
+while true;do
+	LIST=()
+	LIST+="one"
+	LIST+="two"
+	LIST+="three"
+	LIST+="four"
+	LIST+="five"
+	LIST+="six"
+	LIST+="seven"
+	LIST+="eight"
+	LIST+="nine"
+	LIST+="ten"
+	clear
+	sel_set_list ${LIST}
+	sel_list -T"NUM" -x8 -y15 -H"<r>Unsorted Numbers<N>"
+
+	LIST=()
+	LIST+="apple"
+	LIST+="orange"
+	LIST+="kiwi"
+	LIST+="cherry"
+	LIST+="strawberry"
+	LIST+="blueberry"
+	LIST+="plum"
+	LIST+="peach"
+	LIST+="tangerine"
+	LIST+="pear"
+	clear
+	sel_set_list ${(on)LIST}
+	sel_list -T"FRUIT" -O${CYAN_FG} -H"Fruit" -F"<w>Pick a Fruit or <h>(q)uit<N>"
+
+	clear
+	sel_set_list ${(v)_UTILS_DESC}
+	sel_list -T"DUT" -O${CYAN_FG} -C -H"Disk Utilities" -F"<w>Show Disk Utilities usage or <h>(q)uit and a whole bunch of other stuff<N>"
+done
+
+clear
+sel_list ${LIST}
+
+cursor_on

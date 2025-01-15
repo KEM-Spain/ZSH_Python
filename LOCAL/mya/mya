@@ -1,0 +1,68 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Declarations
+typeset -A ALIASES=()
+
+# Constants
+FN=/etc/zsh/aliases
+HELP="${WHITE_FG}Usage${RESET}:\t${0:t} [-H] [SEARCHTERM]\n${WHITE_FG} Desc${RESET}:\tshow all or matching aliases separated by type\n\tSEARCHTERM matches leading chars of alias\n"
+
+# Vars
+SEARCHTERM=''
+
+# Executions
+[[ ${1} == '-H' ]] && echo ${HELP} && exit
+[[ ${#} -ne 0 ]] && SEARCHTERM=${1}
+[[ -n ${SEARCHTERM} ]] && TAG="${WHITE_FG}(${RESET}FILTER = \"${WHITE_FG}${SEARCHTERM}${RESET}\"${WHITE_FG})${RESET}" || TAG="${WHITE_FG}(${RESET}UNFILTERED${WHITE_FG})${RESET}"
+
+source /usr/local/lib/STR.zsh
+
+while read LINE;do
+	[[ ! ${LINE} =~ '=' ]] && continue
+	ALIAS=$(cut -d'=' -f1 <<<${LINE} | sed 's/alias//' | str_trim)
+	CMD=$(cut -d'=' -f2 <<<${LINE} | sed -e "s/'//g" -e 's/"//g')
+	ALIASES[${ALIAS}]=${CMD}
+done < ${FN}
+
+{
+printf "\n${MAGENTA_FG}Directory Change${RESET} ${TAG}${RESET}\n\n"
+
+HIT=false
+for A in ${(ok)ALIASES};do
+	[[ ! ${ALIASES[${A}]} =~ 'cd' ]] && continue
+	[[ ! ${A} =~ "^${SEARCHTERM}.*" ]] && continue
+	HIT=true
+	printf "${CYAN_FG}%15s ${WHITE_FG}%-50s${RESET}\n" ${A} ${ALIASES[${A}]}
+done
+[[ ${HIT} == 'false' ]] && echo "${RED_FG}FILTERED${RESET}"
+
+printf "\n${MAGENTA_FG}Commands${RESET} ${TAG}${RESET}\n\n"
+
+HIT=false
+for A in ${(ok)ALIASES};do
+	[[ ${ALIASES[${A}]} =~ 'cd' ]] && continue
+	[[ ! ${A} =~ "^${SEARCHTERM}.*" ]] && continue
+	HIT=true
+	printf "${CYAN_FG}%15s ${WHITE_FG}%-50s${RESET}\n" ${A} ${ALIASES[${A}]}
+done
+[[ ${HIT} == 'false' ]] && echo "${RED_FG}FILTERED${RESET}"
+} | mypager

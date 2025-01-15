@@ -1,0 +1,54 @@
+#!/usr/bin/zsh
+#vim: syntax off
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+LIB=/usr/local/lib
+source ${LIB}/common.zsh
+
+test_func () {
+	local -A SELECT_LIST_DECODE=(special s owner o group g world w all a umask u)
+	local -A PERM_DECODE=(no-access N execute E write W write-execute WE read R read-execute RE read-write RW read-write-execute RWE)
+	local -A CHANGE_DECODE=(Change-Owner CO Change-Group CG)
+	local M
+	local NDX
+	local PTYPE
+	local STITLE
+	local UMASK_PERMS=false
+
+	selection_list_set ${(C)${(k)SELECT_LIST_DECODE}}
+
+	selection_list -x10 -y30 "Set permissions for:"
+	[[ ${?} -eq 2 ]] && list_clear_selected && return 0
+
+	PTYPE=${SELECT_LIST_DECODE[${_SELECTION_VALUE:l}]}
+
+	STITLE="Select permission for "
+	case ${PTYPE} in
+		a) selection_list_set "RWE-RW-RW RWE-RWE-RW RWE-RWE-RWE RW-RW-RW RW-RO-RO RW-NONE-NONE";STITLE="Select combo permissions";;
+		s) selection_list_set "STICKY SETGID STKGID SETUID STKUID SETUGD STKUGI";STITLE+="Special";;
+		o) selection_list_set ${(C)${(k)PERM_DECODE}};STITLE+="Owner";;
+		g) selection_list_set ${(C)${(k)PERM_DECODE}};STITLE+="Group";;
+		w) selection_list_set ${(C)${(k)PERM_DECODE}};STITLE+="World";;
+		u) UMASK_PERMS=true;;
+	esac
+
+	selection_list -x11 -y32 "${STITLE}"
+
+	PTYPE=${PERM_DECODE[${_SELECTION_VALUE:l}]}
+	msg_box -p "_SELECTION_VALUE: ${_SELECTION_VALUE:l} PTYPE:${PTYPE}"
+}
+
+test_func

@@ -1,0 +1,61 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+APP=${1}
+[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}Missing argument${RESET}: <APP>" >&2 && exit 1
+
+for X in {1..10};do
+	PID=$(pgrep -i ${APP})
+	[[ -n ${PID} ]] && break
+	sleep .1
+done
+[[ -z ${PID} ]] && echo "${0}: Application:${WHITE_FG}${APP}${RESET} is ${RED_FG}${ITALIC}NOT${RESET} running" >&2 && exit 1
+
+typeset -A SINGLE_WIN_APPS=(gnome-terminal 1 deluge 1 vlc 1 chrome 1 haruna 1 viber 1 pycharm 1)
+typeset -a WIN_INFO
+
+CYCLE=0
+MAX_CYCLES=100
+
+ID_CNT=0
+ID_CHANGE=0
+MAX_CHANGES=3 # some apps open preliminary windows and id's change - 3 changes should be sufficient
+
+LAST_WID=?
+STABLE_ID=12 # 12 iterations without a change of id should indicate a stable id
+
+while true;do
+	((CYCLE++))
+	[[ ${CYCLE} -ge ${MAX_CYCLES} ]] && echo "${0}: Window for:${APP} not found" >&2 && break 
+	WIN_INFO=("${(f)$(wmctrl -lx 2>/dev/null)}")
+	for I in ${WIN_INFO};do
+		WDW_ID=$(echo ${I} | grep -i ${APP} | tr -s '[:space:]' | cut -d' ' -f1)
+		if [[ ${WDW_ID} =~ '0x' ]];then
+			[[ ${LAST_WID} != ${WDW_ID} ]] && LAST_WID=${WDW_ID} && ((ID_CHANGE++)) && ID_CNT=0
+			[[ ${LAST_WID} == ${WDW_ID} ]] && ((ID_CNT++))
+			if [[ (${SINGLE_WIN_APPS[${APP}]} -eq 1) || (${ID_CHANGE} -ge ${MAX_CHANGES}) || (${ID_CNT} -ge ${STABLE_ID}) ]];then
+				echo ${WDW_ID}
+				break 2
+			fi
+		fi
+	done
+	sleep .2
+done 
+
+exit 0

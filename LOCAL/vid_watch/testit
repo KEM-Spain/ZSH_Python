@@ -1,0 +1,37 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+
+_COMPLETED=.
+_VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
+_AUDIO_REGEX='.*\(\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\)$'
+
+/bin/rm xxx.flac >/dev/null 2>&1
+/bin/rm xxx.mp3 >/dev/null 2>&1
+/bin/rm yyy.mkv >/dev/null 2>&1
+
+#touch xxx.flac
+#touch xxx.mp3
+touch yyy.mkv
+
+echo "Video files"
+VID_CNT=$(find ${_COMPLETED} -type f -iregex "${_VIDEO_REGEX}" ! -path ${_COMPLETED} | wc -l) 
+echo "VID_CNT:${VID_CNT}"
+
+echo "Audio files"
+AUD_CNT=$(find ${_COMPLETED} -type f -iregex "${_AUDIO_REGEX}" ! -path ${_COMPLETED} | wc -l) 
+echo "AUD_CNT:${AUD_CNT}"

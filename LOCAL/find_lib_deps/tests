@@ -1,0 +1,253 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+_LIB_DIR=~/Code/LOCAL/LIBS
+
+#Imports
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/DATE.zsh
+source ${_LIB_DIR}/DBG.zsh
+source ${_LIB_DIR}/DURABLE.zsh
+source ${_LIB_DIR}/EXIT.zsh
+source ${_LIB_DIR}/LIST.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/PATH.zsh
+source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/TPUT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
+source ${_LIB_DIR}/WIN.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+typeset -a _ARR=(1 1 1 1)
+EXPECT=4
+echo -n "arr_get_nonzero_count:"
+[[ $(arr_get_nonzero_count ${_ARR}) -eq ${EXPECT} ]] && boolean_color_word "pass" || boolean_color_word "fail";echo
+typeset -a _ARR=(1 1 0 1)
+EXPECT=3
+echo -n "arr_get_nonzero_count:"
+[[ $(arr_get_nonzero_count ${_ARR}) -eq ${EXPECT} ]] && boolean_color_word "pass" || boolean_color_word "fail";echo
+typeset -a _ARR=()
+EXPECT=0
+echo -n "arr_get_nonzero_count:"
+[[ $(arr_get_nonzero_count ${_ARR}) -eq ${EXPECT} ]] && boolean_color_word "pass" || boolean_color_word "fail";echo
+
+# arr_get_populated_count /usr/local/lib/ARRAY.zsh
+# arr_is_populated /usr/local/lib/ARRAY.zsh
+# arr_long_elem /usr/local/lib/ARRAY.zsh
+# arr_long_elem_len /usr/local/lib/ARRAY.zsh
+# in_array /usr/local/lib/ARRAY.zsh
+# date_diff /usr/local/lib/DATE.zsh
+# date_text /usr/local/lib/DATE.zsh
+# file_date_diff /usr/local/lib/DATE.zsh
+# time_diff_mins_fmod /usr/local/lib/DATE.zsh
+# dbg /usr/local/lib/DBG.zsh
+# dbg_msg /usr/local/lib/DBG.zsh
+# dbg_parse /usr/local/lib/DBG.zsh
+# dbg_record /usr/local/lib/DBG.zsh
+# dbg_set_level /usr/local/lib/DBG.zsh
+# dbg_to_file /usr/local/lib/DBG.zsh
+# dbg_trace /usr/local/lib/DBG.zsh
+# durable_array /usr/local/lib/DURABLE.zsh
+# durable_get /usr/local/lib/DURABLE.zsh
+# durable_set /usr/local/lib/DURABLE.zsh
+# exit_leave /usr/local/lib/EXIT.zsh
+# exit_pre_exit /usr/local/lib/EXIT.zsh
+# exit_request /usr/local/lib/EXIT.zsh
+# exit_sigexit /usr/local/lib/EXIT.zsh
+# get_exit_value /usr/local/lib/EXIT.zsh
+# set_exit_callback /usr/local/lib/EXIT.zsh
+# set_exit_value /usr/local/lib/EXIT.zsh
+# list_set_type /usr/local/lib/LIB_INIT.zsh
+# list_add_header_break /usr/local/lib/LIST.zsh
+# list_call_sort /usr/local/lib/LIST.zsh
+# list_clear_selected /usr/local/lib/LIST.zsh
+# list_do_header /usr/local/lib/LIST.zsh
+# list_get_index_range /usr/local/lib/LIST.zsh
+# list_get_next_page /usr/local/lib/LIST.zsh
+# list_get_page_target /usr/local/lib/LIST.zsh
+# list_get_selected /usr/local/lib/LIST.zsh
+# list_get_selected_count /usr/local/lib/LIST.zsh
+# list_get_selection_limit /usr/local/lib/LIST.zsh
+# list_is_valid_selection /usr/local/lib/LIST.zsh
+# list_is_within_range /usr/local/lib/LIST.zsh
+# list_item_highlight /usr/local/lib/LIST.zsh
+# list_item_normal /usr/local/lib/LIST.zsh
+# list_parse_series /usr/local/lib/LIST.zsh
+# list_quote_marked_elements /usr/local/lib/LIST.zsh
+# list_repaint /usr/local/lib/LIST.zsh
+# list_reset /usr/local/lib/LIST.zsh
+# list_search /usr/local/lib/LIST.zsh
+# list_select /usr/local/lib/LIST.zsh
+# list_select_range /usr/local/lib/LIST.zsh
+# list_set_action_msgs /usr/local/lib/LIST.zsh
+# list_set_barlines /usr/local/lib/LIST.zsh
+# list_set_clear_ghosts /usr/local/lib/LIST.zsh
+# list_set_client_warn /usr/local/lib/LIST.zsh
+# list_set_header /usr/local/lib/LIST.zsh
+# list_set_header_break_color /usr/local/lib/LIST.zsh
+# list_set_header_callback /usr/local/lib/LIST.zsh
+# list_set_header_init /usr/local/lib/LIST.zsh
+# list_set_index /usr/local/lib/LIST.zsh
+# list_set_index_range /usr/local/lib/LIST.zsh
+# list_set_key_callback /usr/local/lib/LIST.zsh
+# list_set_key_msg /usr/local/lib/LIST.zsh
+# list_set_line_item /usr/local/lib/LIST.zsh
+# list_set_max_sort_col /usr/local/lib/LIST.zsh
+# list_set_no_top_offset /usr/local/lib/LIST.zsh
+# list_set_page_hold /usr/local/lib/LIST.zsh
+# list_set_pages /usr/local/lib/LIST.zsh
+# list_set_prompt /usr/local/lib/LIST.zsh
+# list_set_searchable /usr/local/lib/LIST.zsh
+# list_set_selectable /usr/local/lib/LIST.zsh
+# list_set_select_callback /usr/local/lib/LIST.zsh
+# list_set_selected /usr/local/lib/LIST.zsh
+# list_set_selection_limit /usr/local/lib/LIST.zsh
+# list_set_sortable /usr/local/lib/LIST.zsh
+# list_set_sort_col_default /usr/local/lib/LIST.zsh
+# list_set_sort_cols /usr/local/lib/LIST.zsh
+# list_set_sort_type /usr/local/lib/LIST.zsh
+# list_set_targets /usr/local/lib/LIST.zsh
+# list_show_key /usr/local/lib/LIST.zsh
+# list_sort /usr/local/lib/LIST.zsh
+# list_sort_assoc /usr/local/lib/LIST.zsh
+# list_sort_flat /usr/local/lib/LIST.zsh
+# list_sort_set_direction /usr/local/lib/LIST.zsh
+# list_toggle_all /usr/local/lib/LIST.zsh
+# list_toggle_selected /usr/local/lib/LIST.zsh
+# list_validate_selection /usr/local/lib/LIST.zsh
+# list_verify_sort_params /usr/local/lib/LIST.zsh
+# list_warn_invisible_rows /usr/local/lib/LIST.zsh
+# list_write_to_file /usr/local/lib/LIST.zsh
+# msg_box /usr/local/lib/MSG.zsh
+# msg_box_align /usr/local/lib/MSG.zsh
+# msg_box_clear /usr/local/lib/MSG.zsh
+# msg_calc_gap /usr/local/lib/MSG.zsh
+# msg_err /usr/local/lib/MSG.zsh
+# msg_get_text /usr/local/lib/MSG.zsh
+# msg_info /usr/local/lib/MSG.zsh
+# msg_list /usr/local/lib/MSG.zsh
+# msg_markup /usr/local/lib/MSG.zsh
+# msg_nomarkup /usr/local/lib/MSG.zsh
+# msg_paging /usr/local/lib/MSG.zsh
+# msg_proc /usr/local/lib/MSG.zsh
+# msg_repaint /usr/local/lib/MSG.zsh
+# msg_stream /usr/local/lib/MSG.zsh
+# msg_unicode_box /usr/local/lib/MSG.zsh
+# msg_warn /usr/local/lib/MSG.zsh
+# path_abbv /usr/local/lib/PATH.zsh
+# path_expand /usr/local/lib/PATH.zsh
+# path_find_prep /usr/local/lib/PATH.zsh
+# path_get_inode /usr/local/lib/PATH.zsh
+# path_get_label /usr/local/lib/PATH.zsh
+# path_get_raw /usr/local/lib/PATH.zsh
+# path_get_raw_cmdline /usr/local/lib/PATH.zsh
+# path_get_raw_path /usr/local/lib/PATH.zsh
+# path_read_raw /usr/local/lib/PATH.zsh
+# path_split_fn /usr/local/lib/PATH.zsh
+# path_strip_options /usr/local/lib/PATH.zsh
+# path_trailing_segs /usr/local/lib/PATH.zsh
+# sel_list /usr/local/lib/SEL_LIST.zsh
+# sel_list_get_cat /usr/local/lib/SEL_LIST.zsh
+# sel_list_get_label /usr/local/lib/SEL_LIST.zsh
+# sel_list_hilite /usr/local/lib/SEL_LIST.zsh
+# sel_list_norm /usr/local/lib/SEL_LIST.zsh
+# sel_list_pos_exitbox /usr/local/lib/SEL_LIST.zsh
+# sel_list_repaint /usr/local/lib/SEL_LIST.zsh
+# sel_list_set /usr/local/lib/SEL_LIST.zsh
+# sel_list_set_page_help /usr/local/lib/SEL_LIST.zsh
+# sel_list_set_pg() /usr/local/lib/SEL_LIST.zsh
+# str_array_to_num /usr/local/lib/STR.zsh
+# str_center /usr/local/lib/STR.zsh
+# str_center_pad /usr/local/lib/STR.zsh
+# str_clean_line_len /usr/local/lib/STR.zsh
+# str_clean_path /usr/local/lib/STR.zsh
+# str_expanded_length /usr/local/lib/STR.zsh
+# str_from_hex /usr/local/lib/STR.zsh
+# str_pad_digit /usr/local/lib/STR.zsh
+# str_pad_string /usr/local/lib/STR.zsh
+# str_pluralize /usr/local/lib/STR.zsh
+# str_rep_char /usr/local/lib/STR.zsh
+# str_strip_ansi /usr/local/lib/STR.zsh
+# str_to_hex /usr/local/lib/STR.zsh
+# str_trim /usr/local/lib/STR.zsh
+# str_truncate /usr/local/lib/STR.zsh
+# str_unicode_line /usr/local/lib/STR.zsh
+# str_unpipe /usr/local/lib/STR.zsh
+# coord_center /usr/local/lib/TPUT.zsh
+# cursor_home /usr/local/lib/TPUT.zsh
+# cursor_off /usr/local/lib/TPUT.zsh
+# cursor_on /usr/local/lib/TPUT.zsh
+# cursor_restore /usr/local/lib/TPUT.zsh
+# cursor_row /usr/local/lib/TPUT.zsh
+# cursor_save /usr/local/lib/TPUT.zsh
+# do_rmcup /usr/local/lib/TPUT.zsh
+# do_smcup /usr/local/lib/TPUT.zsh
+# arg_parse /usr/local/lib/UTILS.zsh
+# assoc_del_key /usr/local/lib/UTILS.zsh
+# boolean_color /usr/local/lib/UTILS.zsh
+# boolean_color_word /usr/local/lib/UTILS.zsh
+# box_coords_del /usr/local/lib/UTILS.zsh
+# box_coords_dump /usr/local/lib/UTILS.zsh
+# box_coords_get /usr/local/lib/UTILS.zsh
+# box_coords_overlap /usr/local/lib/UTILS.zsh
+# box_coords_set /usr/local/lib/UTILS.zsh
+# box_coords_upd /usr/local/lib/UTILS.zsh
+# cmd_get_raw /usr/local/lib/UTILS.zsh
+# format_pct /usr/local/lib/UTILS.zsh
+# func_delete /usr/local/lib/UTILS.zsh
+# func_list /usr/local/lib/UTILS.zsh
+# func_normalize /usr/local/lib/UTILS.zsh
+# func_print /usr/local/lib/UTILS.zsh
+# get_delim_field_cnt /usr/local/lib/UTILS.zsh
+# get_keys /usr/local/lib/UTILS.zsh
+# inline_vi_edit /usr/local/lib/UTILS.zsh
+# is_bare_word /usr/local/lib/UTILS.zsh
+# is_dir /usr/local/lib/UTILS.zsh
+# is_empty_dir /usr/local/lib/UTILS.zsh
+# is_file /usr/local/lib/UTILS.zsh
+# is_glob /usr/local/lib/UTILS.zsh
+# is_singleton /usr/local/lib/UTILS.zsh
+# is_symbol_dir /usr/local/lib/UTILS.zsh
+# kbd_activate /usr/local/lib/UTILS.zsh
+# kbd_get_keyboard_id /usr/local/lib/UTILS.zsh
+# kbd_suspend /usr/local/lib/UTILS.zsh
+# key_wait /usr/local/lib/UTILS.zsh
+# logit /usr/local/lib/UTILS.zsh
+# max /usr/local/lib/UTILS.zsh
+# min /usr/local/lib/UTILS.zsh
+# num_byte_conv /usr/local/lib/UTILS.zsh
+# num_human /usr/local/lib/UTILS.zsh
+# parse_find_valid_delim /usr/local/lib/UTILS.zsh
+# parse_get_last_field /usr/local/lib/UTILS.zsh
+# validate_is_integer /usr/local/lib/VALIDATE.zsh
+# validate_is_list_item /usr/local/lib/VALIDATE.zsh
+# validate_is_number /usr/local/lib/VALIDATE.zsh
+# win_close /usr/local/lib/WIN.zsh
+# win_focus /usr/local/lib/WIN.zsh
+# win_focus_title /usr/local/lib/WIN.zsh
+# win_get_id /usr/local/lib/WIN.zsh
+# win_get_pid /usr/local/lib/WIN.zsh
+# win_list /usr/local/lib/WIN.zsh
+# win_xdo_id_fix /usr/local/lib/WIN.zsh
+# win_xwin_dump /usr/local/lib/WIN.zsh

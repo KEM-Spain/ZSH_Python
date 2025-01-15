@@ -1,0 +1,66 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+echo "l"
+l
+read
+
+echo "l."
+l.
+read
+
+echo "ll"
+ll
+read
+
+echo "ll."
+ll.
+read
+
+echo "llr"
+llr
+read
+
+echo "l file_1"
+l file_1
+read
+
+echo "l dir_1"
+l dir_1
+read
+
+echo "l. dir_1"
+l. dir_1
+read
+
+echo "l ~"
+l ~
+read
+
+echo "l. ~"
+l. ~
+read
+
+echo "l /etc"
+l /etc
+read
+
+echo "l. /etc"
+l. /etc
+read

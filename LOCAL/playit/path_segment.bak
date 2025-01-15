@@ -1,0 +1,74 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+typeset -a _MUSIC_DIRS
+
+_MUSIC_DIRS+="${PWD}/"
+_MUSIC_DIRS+="/home/kmiller/Documents/Music"
+_MUSIC_DIRS+="/media/kmiller/KEM_Misc/Music/KEM-B9"
+
+path_segment () {
+	local P=${1}
+	local TARGET=${2}
+	local -a SEGS
+	local M S X
+	local SHORTEST=${#P}
+	local M_SHORTEST
+	local P_OUT
+
+	for M in ${_MUSIC_DIRS};do
+		if [[ ${#${P}##${M}} -le ${SHORTEST} ]];then
+			[[ ${M} =~ ${PWD} ]] && M_SHORTEST='' ||  M_SHORTEST="${M}/"
+			SHORTEST=${#${P}##${M}} 
+			SEGS=(${(s:/:)${${P}##${M}}})
+		fi
+	done
+
+	#Numeric targets
+	if [[ -n ${TARGET} && ${TARGET} == ${TARGET%%[!0-9]*} ]];then
+		[[ ${TARGET} -le 0 ]] && echo "TARGET:${TARGET} invalid" && return 1
+		[[ ${TARGET} -gt ${#SEGS} ]] && echo "TARGET:${TARGET} exceeds SEGMENTS:${#SEGS}" && return 1
+
+		if [[ ${TARGET} -ge 1 && ${TARGET} -le ${#SEGS} ]];then
+			P_OUT="${M_SHORTEST}"
+			for (( X=1; X <= ${#SEGS}; X++ ));do
+				P_OUT+="${SEGS[${X}]}/"
+				[[ ${X} -eq ${TARGET} ]] && break
+			done
+			echo ${P_OUT}
+		fi
+	else
+		#Keyword targets
+		#TODO: convert next to last to algorithm
+		case ${TARGET} in
+			head) echo "${M_SHORTEST}${SEGS[1]}";; #first seg
+			tail) echo "${M_SHORTEST}${SEGS[${#SEGS}]}";; #last seg
+			 n2l) if [[ ${#SEGS} -gt 1 ]];then # next to last seg
+						echo "${M_SHORTEST}${SEGS[$(( ${#SEGS} - 1 ))]}"
+					fi;;
+			n2l2) if [[ ${#SEGS} -gt 2 ]];then # next to last 2 segs
+						echo "${M_SHORTEST}${SEGS[$(( ${#SEGS} - 2 ))]}/${SEGS[$(( ${#SEGS} - 1 ))]}/"
+					fi;;
+			n2l3) if [[ ${#SEGS} -gt 3 ]];then # next to last 3 segs
+						echo "${M_SHORTEST}${SEGS[$(( ${#SEGS} - 3 ))]}/${SEGS[$(( ${#SEGS} - 2 ))]}/${SEGS[$(( ${#SEGS} - 1 ))]}/"
+					fi;;
+			*) return 1;;
+		esac
+	fi
+	return 0
+}
+echo $(path_segment "${1}" $2)

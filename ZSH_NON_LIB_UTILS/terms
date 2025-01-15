@@ -1,0 +1,16 @@
+#!/usr/bin/zsh
+SHOW_COUNT=false
+[[ ${1} == '-c' ]] && SHOW_COUNT=true
+
+THIS_TTY=$(tty)
+LIST=("${(@f)$(ps aux | grep -v root | grep pts | tr -s '[:space:]' | cut -d\  -f1,7 | sort -u)}")
+
+if [[ ${SHOW_COUNT} == 'true' ]];then
+	 echo ${#LIST}
+else
+	echo "${#LIST} sessions"
+	for T in ${(no)LIST};do
+		[[ "${THIS_TTY:t}" == "${T:t}" ]] && FLAG='*' || FLAG=''
+		echo ${T} ${FLAG}
+	done
+fi

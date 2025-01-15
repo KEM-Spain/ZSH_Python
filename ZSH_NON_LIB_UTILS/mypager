@@ -1,0 +1,73 @@
+#!/usr/bin/zsh
+
+_SCRIPT=${0:t}
+
+read -r -d '' DESC<<EOF
+Filter to display screen buffer content as pages
+\tBy default, no pause for keypress will occur
+\tif content does not fill the available screen.
+\tThe [wait] option overrides this behavior and
+\twill force a wait for keypress to continue.
+\n
+EOF
+
+usage () {
+	tabs 5
+
+	(
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} [wait]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
+	) >&2
+
+	exit 0
+}
+
+page () {
+	read -r -d '' PERL_SCRIPT <<'___EOF'
+	use strict;
+	use warnings;
+	use 5.010;
+	use Term::ReadKey;
+
+	my $BUFFER='';
+	my $LN_OPT=$ENV{'LN_OPT'};
+	my $LESS_CMD="less $LN_OPT -R -F -P'COMMANDS\\: (h)elp (f,d)PgDn (b,u)PgUp (q)uit vi-keys arrows .?ltLine %lt .?e<EOF>'"; 
+	my $LINE;
+	my $LINES;
+	my $TERM_LINES = `tput lines`;
+	my $WAIT = $ARGV[0] if (defined($ARGV[0]));
+	 
+	for ($LINES=0; $LINES<$TERM_LINES; $LINES++) { 
+		if (defined($LINE=<STDIN>)) { 
+			$BUFFER .= $LINE;
+		} else { # Less than a full screen will be printed and exit
+			print $BUFFER;
+			print "\n";
+			if (defined $WAIT) { # If WAIT is populated end with msg
+				print "Press any key...";
+			}
+			exit 1;
+		} 
+	} # The first screen is bufferred
+
+	open LESS, "| $LESS_CMD"; # Feed the first screen to less
+	print LESS $BUFFER; 
+
+	while (defined($LINE=<STDIN>)) { # Feed any subsequent screens to less
+		print LESS $LINE; 
+	} 
+
+	close LESS;
+___EOF
+
+perl -e "$PERL_SCRIPT" ${1}
+}
+
+[[ ${1} == '-H' ]] && usage
+[[ ${1} == '-n' ]] && export LN_OPT='-N' || export LN_OPT=''
+
+page ${1}
+RC=${?}
+
+[[ ${1} == 'wait' && ${RC} -eq 1 ]] && read -sk1

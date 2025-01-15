@@ -1,0 +1,60 @@
+#!/usr/bin/zsh
+
+for D in $(find -type d);do
+	[[ ${D} =~ "swap" ]] && rm -rf ${D}
+done
+
+(
+rm -rf ./Completed/*
+rm -rf ./Library/*
+) 2>/dev/null
+
+md "./Completed/'Dont.Breathe.2016.1080p.BluRay.1400MB.DD5.1.x264-GalaxyRG[TGx]"
+touch "./Completed/'Dont.Breathe.2016.1080p.BluRay.1400MB.DD5.1.x264-GalaxyRG[TGx]/Dont.Breathe.2016.1080p.BluRay.1400MB.DD5.1.x264-GalaxyRG.mkv"
+
+md ./Completed/Black.Mass.2015.1080p.BRRip.x264.AAC-ETRG
+touch "./Completed/Black.Mass.2015.1080p.BRRip.x264.AAC-ETRG/Black.Mass.2015.1080p.BRRip.x264.AAC-ETRG.mp4"
+touch "./Completed/Black.Mass.2015.1080p.BRRip.x264.AAC-ETRG/English.srt"
+echo "is" > "./Completed/Black.Mass.2015.1080p.BRRip.x264.AAC-ETRG/English.srt"
+touch "./Completed/Black.Mass.2015.1080p.BRRip.x264.AAC-ETRG/Torrent Downloaded From ExtraTorrent.cc.txt"
+
+md ./Completed/movie_one # movie in subdir
+touch "./Completed/movie_one/movie_one.1972.720p.WEB.x265-MiNX[TGx].mp4" #movie with orphan subs
+touch "./Completed/movie_one/English.srt"
+touch "./Completed/movie_one/French.srt"
+
+touch "./Completed/The Man From U.N.C.L.E (Uncle) 2015 720p BluRay HEVC H265 BONE.mp4"
+touch "./Completed/The Man From U.N.C.L.E [Uncle] 2015 720p BluRay HEVC H265 BONE.mp4"
+
+touch "./Completed/movie_top.1972.720p.WEB.x265-MiNX[TGx].mp4" #movie at top level
+touch "./Completed/movie_top.720p.with other junk.srt"
+
+touch "./Completed/Venom.2018.1080p.BluRay.H264.AC3.DD5.1.Will1869.mp4" #movie at top level
+touch "./Completed/Venom.2018.1080p.BluRay.H264.AC3.DD5.1.Will1869.srt"
+
+touch "./Completed/series_one with a long name S01E01.720p.WEB.x265-MiNX[TGx].mkv" #series
+touch "./Completed/series_one with a long name S01E02.720p.WEB.x265-MiNX[TGx].mkv"
+touch "./Completed/series_one with a long name S01E03.720p.WEB.x265-MiNX[TGx].mkv"
+
+touch "./Completed/series_one with a long name S01E01.720p.WEB.x265-MiNX[TGx]_blah_blah.srt"
+touch "./Completed/series_one with a long name S01E02.720p.WEB.x265-MiNX[TGx]_blah_blah.srt"
+touch "./Completed/series_one with a long name S01E03.720p.WEB.x265-MiNX[TGx]_blah_blah.srt"
+
+touch "./Completed/series_two_with_a_long_name_S01E01.720p.WEB.x265-MiNX[TGx].avi"
+touch "./Completed/series_two_with_a_long_name_S01E02.720p.WEB.x265-MiNX[TGx].avi"
+touch "./Completed/series_two_with_a_long_name_S01E03.720p.WEB.x265-MiNX[TGx].avi"
+
+md ./Completed/movie_two # movie in subdir
+touch "./Completed/movie_two/movie_two.(2003).720p.WEB.x265-MiNX[TGx].mkv"
+touch "./Completed/movie_two/movie_two.nfo"
+touch "./Completed/movie_two/movie_two_other_stuff.srt"
+touch "./Completed/movie_two/Movie Two 2003 720p.en.srt"
+touch "./Completed/movie_two/movie_two.sample"
+
+md ./Completed/movie_three # movie in subdir
+touch "./Completed/movie_three/movie_three.720p.WEB.x265-MiNX[TGx].mkv"
+touch "./Completed/movie_three/movie_three.nfo"
+touch "./Completed/movie_three/movie_three_other_stuff.srt"
+touch "./Completed/movie_three/movie_three.sample"
+
+

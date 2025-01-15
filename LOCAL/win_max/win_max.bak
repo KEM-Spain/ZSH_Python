@@ -1,0 +1,136 @@
+#!/usr/bin/zsh
+# Declarations
+typeset -A CUR_KEYS
+typeset -A MAX_KEYS
+typeset -A SINGLE_WIN_APPS=(deluge 1 vlc 1 chrome 1 haruna 1 viber 1 pycharm 1)
+typeset -A WIN_KEYS
+typeset -a WIN_INFO
+
+# Constants
+_LOG=/tmp/${_SCRIPT}.log
+_SCRIPT=${0:t}
+
+# Globals
+CYCLE=0
+ID_CHANGE=0
+ID_CNT=0
+ITER=0
+LAST_WID=?
+MAX_CHANGES=4 # some apps open preliminary windows and id's change 
+MAX_CYCLES=100 # max wmctrl requests
+MAX_ITER=500
+MAX_WMCTRL_CALLS=10
+STABLE_ID=10 # iterations without a change of id should indicate a stable id
+WMCTRL_CALL=0
+
+# Functions
+log_it () {
+	local MSG=${@}
+	echo "$(date +"%D-%T") ${MSG}" >> ${_LOG}
+}
+
+# Execution
+[[ -e ${_LOG} ]] && rm -f ${_LOG}
+ 
+# Singleton
+INSTANCES=$(pgrep -ci win_max)
+[[ ${INSTANCES} -gt 1 ]] && log_it "win_max instance detected - exiting">>${_LOG} && exit 1
+
+# Args
+APP=${1}
+[[ ${#} -eq 0 ]] && echo "${0}: Missing argument:<APP>">&2 && exit 1
+
+log_it "${_SCRIPT}: Waiting for application:${APP}"
+
+# Get PID
+for X in {1..100};do
+	PID=$(pgrep -ni ${APP:t})
+	[[ -n ${PID} ]] && break
+	sleep .1
+done
+
+if [[ -n ${PID} ]];then
+	log_it "${_SCRIPT}: Application:${APP} PID:${PID}"
+else
+	log_it "${_SCRIPT}: Application:${APP} is NOT running" && exit 1
+fi
+
+# Maximize APP win
+while true;do
+	((ITER++))
+	[[ ${ITER} -ge ${MAX_ITER} ]] && log_it "Reached MAX_ITER" && break
+
+	while true;do
+		((WMCTRL_CALL++))
+		[[ ${WMCTRL_CALL} -ge ${MAX_WMCTRL_CALLS} ]] && log_it "Unable to fetch window list (wmctrl) - exiting" && exit 1
+		APP_WDWS=("${(f)$(wmctrl -plx 2>/dev/null | grep -i ${APP})}") # all app windows
+		if [[ -z ${APP_WDWS} ]];then
+			sleep 2
+		else
+			WMCTRL_CALL=0
+			break
+		fi
+		log_it "WMCTRL_CALL:${WMCTRL_CALL} - Waiting for window list"
+	done
+
+	log_it "Resetting KEYS..."
+	for K in ${(k)CUR_KEYS};do
+		CUR_KEYS[${K}]=0
+	done
+
+	for W in ${APP_WDWS};do
+		log_it "APP_WINDOW:${W}"
+		W_ID=$(echo ${W} | grep -i ${W} | tr -s '[:space:]' | cut -d' ' -f1) # app window id
+		W_PID=$(echo ${W} | grep -i ${W} | tr -s '[:space:]' | cut -d' ' -f3) # app window pid
+		KEY=${APP}:${W_PID}:${W_ID}
+		CUR_KEYS[${KEY}]=1
+		log_it "${KEY} is CURRENT"
+		[[ -z ${WIN_KEYS[${KEY}]} ]] && WIN_KEYS[${KEY}]=0
+	done
+
+	[[ -z ${KEY} ]] && continue
+	((CYCLE++))
+	log_it "CYCLE:${CYCLE}"
+
+	CALL_MAXIMIZE=false
+
+	for K in ${(k)CUR_KEYS};do
+		[[ ${CUR_KEYS[${K}]} -eq 0 ]] && log_it "DEAD KEY:${K}" && continue
+		log_it "LIVE KEY:${K}"
+
+		ID_CNT=${WIN_KEYS[${K}]}
+		((ID_CNT++))
+		WIN_KEYS[${K}]=${ID_CNT}
+		log_it "WIN_KEYS[${K}]=${WIN_KEYS[${K}]}"
+
+		MAX_KEYS[${K}]=0
+		if [[ ${WIN_KEYS[${K}]} -ge ${STABLE_ID} ]];then
+			log_it "${K}:STABLE"
+			MAX_KEYS[${K}]=1
+			CALL_MAXIMIZE=true
+		else
+			W_APP=$(cut -d':' -f1 <<<${K})
+			if [[ ${SINGLE_WIN_APPS[${W_APP}]} -eq 1 ]];then
+				MAX_KEYS[${K}]=1
+				log_it "${K}:SINGLE_WIN_APP"
+				CALL_MAXIMIZE=true
+			fi
+		fi
+	done
+
+	if [[ ${CALL_MAXIMIZE} == 'true' ]];then
+		for K in ${(k)MAX_KEYS};do
+			if [[ ${MAX_KEYS[${K}]} -eq 1 ]];then
+				ID=$(cut -d':' -f3 <<<${K})
+				wmctrl -i -r ${ID} -b add,maximized_vert,maximized_horz >/dev/null 2>&1
+				log_it "${K}:MAXIMIZED"
+			fi
+		done
+		break
+	fi
+
+	[[ ${CYCLE} -ge ${MAX_CYCLES} ]] && log_it "${0}: Reached MAX_CYCLES - Window for:${APP} not found" && break
+	sleep .1
+done 
+
+exit 0

@@ -1,0 +1,394 @@
+#!/usr/bin/zsh
+
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Echoed ansi
+E_BOLD=$(echo -n "\033[1m")
+E_ITALIC=$(echo -n "\033[3m")
+E_RESET=$(echo -n "\033[m")
+E_REVERSE=$(echo -n "\033[7m")
+E_STRIKE=$(echo -n "\033[9m")
+E_UNDER=$(echo -n "\033[4m")
+
+E_BLUE_FG=$(echo -n "\033[34m")
+E_CYAN_FG=$(echo -n "\033[36m")
+E_GREEN_FG=$(echo -n "\033[32m")
+E_MAGENTA_FG=$(echo -n "\033[35m")
+E_RED_FG=$(echo -n "\033[31m")
+E_WHITE_FG=$(echo -n "\033[37m")
+E_YELLOW_FG=$(echo -n "\033[33m")
+
+E_BLACK_BG=$(echo -n "\033[40m")
+E_BLUE_BG=$(echo -n "\033[44m")
+E_CYAN_BG=$(echo -n "\033[46m")
+E_GREEN_BG=$(echo -n "\033[42m")
+E_MAGENTA_BG=$(echo -n "\033[45m")
+E_RED_BG=$(echo -n "\033[41m")
+E_WHITE_BG=$(echo -n "\033[47m")
+E_YELLOW_BG=$(echo -n "\033[43m")
+
+# Declarations
+typeset -A _EXTERNAL=(desktop_files 1 sed 1 zsh_comp_official 1 zsh_comp_guide 1)
+typeset -A _EXTERNAL_FILES
+typeset -a _TIPS
+
+# Constants
+_EXT_DIR=/usr/local/etc
+_TIP_DIR=${_EXT_DIR}/tips
+_EXTERNAL_FILES=(
+desktop_files "${_EXT_DIR}/Desktop Entry Specification.pdf"
+sed_a "${_EXT_DIR}/StreamEditor-BasicCommands.pdf"
+sed_b "${_EXT_DIR}/sed-reference.pdf"
+zsh_comp_official "${_EXT_DIR}/zsh-completions-howto.pdf"
+zsh_comp_guide "${_EXT_DIR}/ZshUserGuideCompletion.pdf"
+zsh_cheatsheet "${_EXT_DIR}/zsh-cheatsheet.md"
+)
+
+_SCRIPT_FQFN=${0}
+_TIPS=(
+cron 
+desktop_files 
+dpkg 
+ex 
+git 
+linux 
+mail
+mime 
+nfs 
+perl 
+printf 
+pup 
+regex 
+rsync 
+sed 
+tput 
+vim 
+vimcolors 
+vim_keymap 
+vlc 
+zsh 
+zsh_comp_official 
+zsh_comp_guide
+zshdb 
+zsh_params 
+zsh_primitives 
+zsh_cheatsheet 
+)
+
+# Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+# Functions
+find_keyword () {
+	local -A OPTS=('-w' '-w' '-i' '-i' '-d' '-n')
+	local -a GREP_OPTS=()
+	local -a LIST
+	local A D F
+	local HIT=false
+	local KW=''
+	local -a DETAIL=()
+	local TEXT=''
+
+	for A in ${@};do
+		GREP_OPTS+=${OPTS[${A}]}
+	done
+	[[ -n ${GREP_OPTS} ]] && echo "OPTIONS:${WHITE_FG}${GREP_OPTS}${RESET}"
+	KW=${@[-1]}
+
+	LIST=("${(f)$(find ${_TIP_DIR} -type f ! -path ${_TIP_DIR})}")
+
+	if [[ ${GREP_OPTS} =~ '-n' ]];then
+		for F in ${LIST};do
+			DETAIL=("${(f)$(grep ${GREP_OPTS} ${KW} ${F})}")
+			[[ ${?} -eq 0 ]] && HIT=true
+			for D in ${DETAIL};do
+				LN=$(cut -d: -f1 <<<${D})
+				TEXT=$(cut -d: -f2 <<<${D})
+				printf "${MAGENTA_FG}%20s ${CYAN_FG}%4s ${WHITE_FG}%.90s${RESET}\n" ${F:t} ${LN} "$(str_trim ${TEXT} | tr -d '\n' | sed "s/${KW}/${E_RED_FG}${KW}${E_RESET}/g")"
+			done
+		done | mypager
+	else
+		for F in ${LIST};do
+			grep -q ${GREP_OPTS} ${KW} ${F}
+			[[ ${?} -eq 0 ]] && HIT=true && echo "Keyword:\"${CYAN_FG}${KW}${RESET}\" located in:${WHITE_FG}${F}${RESET}"
+		done
+	fi
+
+	[[ ${HIT} == 'false' ]] && echo "Keyword:\"${CYAN_FG}${KW}${RESET}\" not found"
+}
+
+tip_cron () {
+source ${_TIP_DIR}/cron.tip
+}
+
+tip_desktop_files () {
+source ${_TIP_DIR}/desktop_files.tip
+}
+
+tip_dpkg () {
+source ${_TIP_DIR}/dpkg.tip
+}
+
+tip_ex () {
+source ${_TIP_DIR}/ex.tip
+}
+
+tip_git () {
+source ${_TIP_DIR}/git.tip
+}
+
+tip_linux () {
+source ${_TIP_DIR}/linux.tip
+}
+
+tip_mail () {
+source ${_TIP_DIR}/mail.tip
+}
+
+tip_mime () {
+source ${_TIP_DIR}/mime.tip
+}
+
+tip_nfs () {
+source ${_TIP_DIR}/nfs.tip
+}
+
+tip_perl () {
+source ${_TIP_DIR}/perl.tip
+}
+
+tip_printf () {
+source ${_TIP_DIR}/printf.tip
+}
+
+tip_pup () {
+source ${_TIP_DIR}/pup.tip
+}
+
+tip_regex () {
+source ${_TIP_DIR}/regex.tip
+}
+
+tip_rsync () {
+source ${_TIP_DIR}/rsync.tip
+}
+
+tip_sed () {
+source ${_TIP_DIR}/sed.tip
+}
+
+tip_tput () {
+source ${_TIP_DIR}/tput.tip
+}
+
+tip_vim () {
+source ${_TIP_DIR}/vim.tip
+}
+
+tip_vimcolors () {
+source ${_TIP_DIR}/vimcolors.tip
+}
+
+tip_vim_keymap () {
+source ${_TIP_DIR}/vim_keymap.tip
+}
+
+tip_vlc () {
+source ${_TIP_DIR}/vlc.tip
+}
+
+tip_zsh () {
+source ${_TIP_DIR}/zsh.tip
+}
+
+tip_zsh_comp_official () {
+source ${_TIP_DIR}/zsh_comp_official.tip
+}
+
+tip_zsh_comp_guide () {
+source ${_TIP_DIR}/zsh_comp_guide.tip
+}
+
+tip_zshdb () {
+source ${_TIP_DIR}/zshdb.tip
+}
+
+tip_zsh_params () {
+source ${_TIP_DIR}/zsh_params.tip
+}
+
+tip_zsh_primitives () {
+source ${_TIP_DIR}/zsh_primitives.tip
+}
+
+tip_zsh_cheatsheet () {
+source ${_TIP_DIR}/zsh_cheatsheet.tip
+}
+#--MAX_RANGE_MARKER--
+
+#--Begin GetOpts--
+read -r -d '' DESC<<EOF
+Display collected tips on various topics
+\tFor <KEYWORD> searches, additional options
+\tmay be included to enhance search:
+\t-d line detail -w word boundary, -i case sensitive
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( ${OPTIONS}[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		k) echo "<KEYWORD>";;
+		t) echo "<TIP_NAME>";;
+	esac
+}
+
+usage () {
+
+	tabs 5
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	local OPTS=$(parse_opts ${OPTSTR})
+	local -a PENDING_MSGS=(${@})
+	(
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-i ${RESET} keyword search is case insensitive"
+	echo -e "${WHITE_FG}-k $(opt_type k)${RESET} search for keyword (do not combine options)"
+	echo -e "${WHITE_FG}-s ${RESET} show availablel tip categories"
+	echo -e "${WHITE_FG}-w ${RESET} keyword matches whole word"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
+	) >&2
+
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	exit_leave
+}
+
+typeset -a OPTIONS
+OPTSTR=":HDdk:isw"
+OPTIND=0
+
+KEYWORD=''
+KEYWORD_DETAIL=''
+WORD=''
+CASE=''
+SHOW_TIPS=false
+
+while getopts ${OPTSTR} OPTION;do
+	case ${OPTION} in
+     H) usage;;
+     D) dbg_set_level;;
+     i) CASE='-i';;
+     d) KEYWORD_DETAIL='-d';;
+     k) KEYWORD=${OPTARG};;
+     s) SHOW_TIPS=true;;
+     w) WORD='-w';;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+[[ ${#} -ne 0 ]] && ARG=${1} || ARG=''
+
+typeset -A KEY_RANGE
+typeset -a PDF_LIST
+typeset -aU HITS
+
+MR=$(grep -n -m1 "MAX_RANGE_MARKER" ${_SCRIPT_FQFN})
+LINE=$(cut -d':' -f1 <<<${MR})
+MAX_RANGE=${LINE}
+
+MIN_RANGE=0
+if [[ -n ${KEYWORD} ]];then
+	echo "Searching for KEYWORD:${WHITE_FG}\"${KEYWORD}\"${RESET}"
+	find_keyword ${CASE} ${WORD} ${KEYWORD_DETAIL} ${KEYWORD}
+	exit_leave
+fi
+
+if [[ ${SHOW_TIPS} == 'true' ]];then
+	echo "${WHITE_FG}AVAILABLE TIPS${RESET}"
+	for T in ${_TIPS};do 
+		echo "\t \\u2022 ${T}"
+	done
+	exit_leave
+fi
+
+clear
+do_smcup
+if [[ -n ${ARG} ]];then
+	if [[ ${${_TIPS[(i)${ARG}]}} -le ${#_TIPS} ]];then
+		if [[ ${_EXTERNAL[${ARG}]} -eq 1 ]];then
+			tip_${ARG}
+		else
+			tip_${ARG} | mypager wait
+		fi
+	else
+		exit_leave $(msg_exit E "Tip not found:${ARG}")
+	fi
+else
+	while true;do
+		sel_list_set ${_TIPS}
+		sel_list_set_header "Collected Tips"
+		sel_list_set_page_help "Press <Enter> to select tip or (<w>q<N>)uit"
+		sel_list -O ${CYAN_FG} "<w>Select Tip or <h>(q)uit<N>"
+		clear # wipe menu
+		if [[ ${${_TIPS[(i)${_SEL_VAL}]}} -le ${#_TIPS} ]];then
+			if [[ ${_EXTERNAL[${_SEL_VAL}]} -eq 1 ]];then
+				tip_${_SEL_VAL}
+			else
+				tip_${_SEL_VAL} | mypager wait
+			fi
+			clear # wipe tip
+		fi
+	done
+fi
+do_rmcup
+
+exit_leave
