@@ -1,0 +1,51 @@
+#!/usr/bin/zsh
+#vim: syntax off
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+[[ ${#} -eq 0 ]] && echo "Usage ${0}: <ZIPFILE>" && exit
+[[ ${1:e} != 'zip' ]] && echo "${1} ${RED_FG}not a zip file${RESET}" && exit
+ZIP=${1}
+
+OLD_TAKEOUT=$(find . -type d -name 'takeout*')
+if [[ -n ${OLD_TAKEOUT} ]];then
+	echo "Clearing directory:${WHITE_FG}${OLD_TAKEOUT}${RESET}"
+	rm -rf ${OLD_TAKEOUT}
+fi
+
+if [[ -f MBOX.clean ]];then
+	echo "Clearing old MBOX.clean"
+	rm -f MBOX.clean
+fi
+
+OLD_VOCAB=$(find . -type f -name '*vocab.dat')
+if [[ -n ${OLD_VOCAB} ]];then
+	echo "Clearing ${OLD_VOCAB} file:${WHITE_FG}${OLD_VOCAB}${RESET}"
+	rm -rf ${OLD_VOCAB}
+fi
+
+ext ${ZIP}
+parse_gmail_mbox
+
+VOCAB_DATA=$(find . -type f -name '*vocab.dat')
+if [[ -n ${VOCAB_DATA} ]];then
+	echo "Appending ${WHITE_FG}${VOCAB_DATA}${RESET} to database"
+	manage_db -a ${VOCAB_DATA}
+fi
+
+if [[ -f MBOX.clean ]];then
+	echo "Clearing MBOX.clean"
+	rm -f MBOX.clean
+fi

@@ -1,0 +1,321 @@
+#!/usr/bin/zsh
+#Declarations
+typeset -A MOOD_TENSE
+
+#Constants
+MOODS=(indicative subjunctive imperative progressive perfect perfect_subj)
+IND_TENSES=(present preterite imperfect conditional future)
+SUBJ_TENSES=(present imperfect imperfect2 future)
+IMP_TENSES=(affirmative negative)
+PROG_TENSES=(present preterite imperfect conditional future)
+PERF_TENSES=(present preterite imperfect conditional future)
+PERFSUBJ_TENSES=(present past future)
+MOOD_TENSE=(indicative IND_TENSES subjunctive SUBJ_TENSES imperative IMP_TENSES progressive PROG_TENSES perfect PERF_TENSES perfect_subj PERFSUBJ_TENSES)
+IRREGULAR_LIST=/usr/local/etc/spanish_irregular_verbs.txt
+
+#Declarations
+typeset -a ESTAR_PRES
+typeset -a ESTAR_PRET
+typeset -a ESTAR_IMPE
+typeset -a ESTAR_COND
+typeset -a ESTAR_FUTU
+typeset -a TRANSLATION
+typeset -a PART_GERUND
+typeset -a IND_PRES
+typeset -a IND_PRET
+typeset -a IND_IMPE
+typeset -a IND_COND
+typeset -a IND_FUTU
+typeset -a SUB_PRES
+typeset -a SUB_IMPE
+typeset -a SUB_FITU
+typeset -a IMPERATIVE
+typeset -a PROG_PRES
+typeset -a PROG_PRET
+typeset -a PROG_IMPE
+typeset -a PROG_COND
+typeset -a PROG_FUTU
+typeset -a PERF_PRES
+typeset -a PERF_PRET
+typeset -a PERF_IMPE
+typeset -a PERF_COND
+typeset -a PERF_FUTU
+typeset -a PSUB_PRES
+typeset -a PSUB_PAST
+typeset -a PSUB_FUTU
+
+#Functions
+get_data () {
+	local VERB=${1}
+
+	echo "getting translation, participle, gerund..."
+	#Trans/Part/Ger
+	TRANSLATION=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-tense/${VERB}/" | pup '.verb-translation text{}'))
+	[[ ${#TRANSLATION} -eq 0 ]] && echo "Verb:${WHITE_FG}${VERB} ${RED_FG}NOT${RESET} found" && exit 1
+	PART_GERUND=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/participle-gerund/${VERB}/" | pup '.verb-entry text{}'))
+
+	echo "getting estar..."
+	#Needed for Progressive
+	ESTAR_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-tense/estar/" | pup '.verb-entry text{}' ))
+	ESTAR_PRET=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/preterite/estar/" | pup '.verb-entry text{}' ))
+	ESTAR_IMPE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/imperfect/estar/" | pup '.verb-entry text{}' ))
+	ESTAR_COND=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/conditional-tense/estar/" | pup '.verb-entry text{}' ))
+	ESTAR_FUTU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-tense/estar/" | pup '.verb-entry text{}' ))
+
+	echo "getting indicative..."
+	#Indicative
+	IND_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-tense/${VERB}/" | pup '.verb-entry text{}' ))
+	IND_PRET=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/preterite/${VERB}/" | pup '.verb-entry text{}' ))
+	IND_IMPE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/imperfect/${VERB}/" | pup '.verb-entry text{}' ))
+	IND_COND=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/conditional-tense/${VERB}/" | pup '.verb-entry text{}' ))
+	IND_FUTU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-tense/${VERB}/" | pup '.verb-entry text{}' ))
+
+	echo "getting subjunctive..."
+	#Subjunctive
+	SUB_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
+	SUB_IMPE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/imperfect-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
+	SUB_FITU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
+
+	echo "getting imperative..."
+	#Imperative
+	IMPERATIVE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/imperative-command/${VERB}/" | pup '.verb-entry text{}' ))
+
+	echo "getting progressive..."
+	#Progressive
+	PROG_PRES=($(for W in ${ESTAR_PRES};do echo "${W}_${PART_GERUND[2]}";done))
+	PROG_PREt=($(for W in ${ESTAR_PRET};do echo "${W}_${PART_GERUND[2]}";done))
+	PROG_IMPE=($(for W in ${ESTAR_IMPE};do echo "${W}_${PART_GERUND[2]}";done))
+	PROG_COND=($(for W in ${ESTAR_COND};do echo "${W}_${PART_GERUND[2]}";done))
+	PROG_FUTU=($(for W in ${ESTAR_FUTU};do echo "${W}_${PART_GERUND[2]}";done))
+
+	echo "getting perfect..."
+	#Perfect
+	PERF_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-perfect/${VERB}/" | pup '.verb-entry text{}' ))
+	PERF_PRET=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/past-anterior/${VERB}/" | pup '.verb-entry text{}' ))
+	PERF_IMPE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/past-perfect/${VERB}/" | pup '.verb-entry text{}' ))
+	PERF_COND=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/conditional-perfect/${VERB}/" | pup '.verb-entry text{}' ))
+	PERF_FUTU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-perfect/${VERB}/" | pup '.verb-entry text{}' ))
+
+	echo "getting perfect subjunctive..."
+	#Perfect Subjunctive
+	PSUB_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-perfect-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
+	PSUB_PAST=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/pluperfect-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
+	PSUB_FUTU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-perfect-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
+}
+
+#--Begin GetOpts--
+RESET="\033[m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+
+SCRIPT=${0:t}
+function parse_opts {
+	local OPTS=${@}
+	local -a OPTSTRING
+	for O in {1..${#OPTS}};do
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+="<PARAM>" && continue
+		OPTSTRING+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTRING}
+}
+
+function usage {
+	local OPTS=$(parse_opts ${OPTSTR})
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET} ${OPTS} ${WHITE_FG}]${RESET} <VERB>\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-a${RESET} append data to database (default)"
+	echo -e "${WHITE_FG}-l${RESET} load database from local data files"
+	echo -e "${WHITE_FG}-s${RESET} simulation - download but do not load database"
+	echo -e "${WHITE_FG}-u${RESET} update data in database"
+	echo -e "\n${WHITE_FG}DESC${RESET}:Pull verb conjugation data from spanishconjugation.net and save to database\n"
+	exit
+
+}
+
+OPTSTR=":HDalsu"
+
+DEBUG=false
+APPEND=false
+UPDATE=false
+SIMULATION=false
+LOCAL_FILES=false
+OPTIND=0
+while getopts ${OPTSTR} OPTION;do
+	case ${OPTION} in
+     H) usage;;
+     D) DEBUG=true;;
+     a) APPEND=true;DB_OPT='-a';;
+     l) LOCAL_FILES=true;echo "Reading local files";;
+     s) SIMULATION=true;echo "Simulation only";;
+     u) UPDATE=true;DB_OPT='-u';;
+     :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
+	esac
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+#Execution
+[[ -z ${DB_OPT} ]] && DB_OPT='-a' #default to append
+[[ -z ${1} ]] && echo "Need verb" && exit
+
+if [[ ${LOCAL_FILES} == 'false' ]];then #go straight to data load
+	get_data ${1}
+
+	#create verb master
+	PP=${PART_GERUND[1]}
+	GER=${PART_GERUND[2]}
+	TRANS=${TRANSLATION}
+	IRR=0
+	if [[ -e irregular.txt ]];then
+		grep -q ${1:l} < ${IRREGULAR_LIST}
+		[[ ${?} -eq 0 ]] && IRR=1 || IRR=0
+	fi
+	echo -n "${1}," > ${1}_verb.dat #add verb
+	echo -n "${GER}," >> ${1}_verb.dat #add gerund
+	echo -n "${PP}," >> ${1}_verb.dat #add participle
+	echo -n "${IRR}," >> ${1}_verb.dat #add irregular placeholder
+	echo \"${TRANS}\" >> ${1}_verb.dat #add translation
+
+	#tweak for haber
+	[[ ${1} == 'haber' ]] && IND_PRES=$(sed 's# ha # ha/hay #' <<<${IND_PRES})
+
+	echo ${IND_PRES}>>${1}_temp.dat
+	echo ${IND_PRET}>>${1}_temp.dat
+	echo ${IND_IMPE}>>${1}_temp.dat
+	echo ${IND_COND}>>${1}_temp.dat
+	echo ${IND_FUTU}>>${1}_temp.dat
+
+	echo ${SUB_PRES}>>${1}_temp.dat
+	echo ${SUB_IMPE[1,6]}>>${1}_temp.dat
+	echo ${SUB_IMPE[7,-1]}>>${1}_temp.dat
+	echo ${SUB_FITU}>>${1}_temp.dat
+
+	TXT=$(echo ${=IMPERATIVE} | sed -e 's/\xE2\x80\x94/-/g' -e 's/- - -/---/g' -e 's/no /no_/g')
+	IMP=($(echo ${TXT}))
+	echo ${IMP[1,6]}>>${1}_temp.dat
+	echo ${IMP[7,-1]}>>${1}_temp.dat
+
+	echo ${PROG_PRES}>>${1}_temp.dat
+	echo ${PROG_PREt}>>${1}_temp.dat
+	echo ${PROG_IMPE}>>${1}_temp.dat
+	echo ${PROG_COND}>>${1}_temp.dat
+	echo ${PROG_FUTU}>>${1}_temp.dat
+
+	local -a PF1
+	NDX=0
+	for W in ${PERF_PRES};do
+		((NDX++))
+		[[ ${NDX} -eq 1 ]] && W1=${W}
+		[[ ${NDX} -eq 2 ]] && W2=${W}
+		[[ -n ${W2} ]] && PF1+="${W1}_${W2}"
+		[[ ${NDX} -eq 2 ]] && NDX=0 && W1='' && W2=''
+	done
+	echo ${PF1}>>${1}_temp.dat
+
+	local -a PF2
+	NDX=0
+	for W in ${PERF_PRET};do
+		((NDX++))
+		[[ ${NDX} -eq 1 ]] && W1=${W}
+		[[ ${NDX} -eq 2 ]] && W2=${W}
+		[[ -n ${W2} ]] && PF2+="${W1}_${W2}"
+		[[ ${NDX} -eq 2 ]] && NDX=0 && W1='' && W2=''
+	done
+	echo ${PF2}>>${1}_temp.dat
+
+	local -a PF3
+	NDX=0
+	for W in ${PERF_IMPE};do
+		((NDX++))
+		[[ ${NDX} -eq 1 ]] && W1=${W}
+		[[ ${NDX} -eq 2 ]] && W2=${W}
+		[[ -n ${W2} ]] && PF3+="${W1}_${W2}"
+		[[ ${NDX} -eq 2 ]] && NDX=0 && W1='' && W2=''
+	done
+	echo ${PF3}>>${1}_temp.dat
+
+	local -a PF4
+	NDX=0
+	for W in ${PERF_COND};do
+		((NDX++))
+		[[ ${NDX} -eq 1 ]] && W1=${W}
+		[[ ${NDX} -eq 2 ]] && W2=${W}
+		[[ -n ${W2} ]] && PF4+="${W1}_${W2}"
+		[[ ${NDX} -eq 2 ]] && NDX=0 && W1='' && W2=''
+	done
+	echo ${PF4}>>${1}_temp.dat
+
+	local -a PF5
+	NDX=0
+	for W in ${PERF_FUTU};do
+		((NDX++))
+		[[ ${NDX} -eq 1 ]] && W1=${W}
+		[[ ${NDX} -eq 2 ]] && W2=${W}
+		[[ -n ${W2} ]] && PF5+="${W1}_${W2}"
+		[[ ${NDX} -eq 2 ]] && NDX=0 && W1='' && W2=''
+	done
+	echo ${PF5}>>${1}_temp.dat
+
+	local -a PF6
+	NDX=0
+	for W in ${PSUB_PRES};do
+		((NDX++))
+		[[ ${NDX} -eq 1 ]] && W1=${W}
+		[[ ${NDX} -eq 2 ]] && W2=${W}
+		[[ -n ${W2} ]] && PF6+="${W1}_${W2}"
+		[[ ${NDX} -eq 2 ]] && NDX=0 && W1='' && W2=''
+	done
+	echo ${PF6}>>${1}_temp.dat
+
+	local -a PF7
+	NDX=0
+	for W in ${PSUB_PAST};do
+		((NDX++))
+		[[ ${NDX} -eq 1 ]] && W1=${W}
+		[[ ${NDX} -eq 2 ]] && W2=${W}
+		[[ -n ${W2} ]] && PF7+="${W1}_${W2}"
+		[[ ${NDX} -eq 2 ]] && NDX=0 && W1='' && W2=''
+	done
+	echo ${PF7[1,6]}>>${1}_temp.dat
+	echo ${PF7[7,-1]}>>${1}_temp.dat
+
+	local -a PF8
+	NDX=0
+	for W in ${PSUB_FUTU};do
+		((NDX++))
+		[[ ${NDX} -eq 1 ]] && W1=${W}
+		[[ ${NDX} -eq 2 ]] && W2=${W}
+		[[ -n ${W2} ]] && PF8+="${W1}_${W2}"
+		[[ ${NDX} -eq 2 ]] && NDX=0 && W1='' && W2=''
+	done
+	echo ${PF8}>>${1}_temp.dat
+
+	sed -i 's/ /,/g' ${1}_temp.dat #delimit
+
+	#parse/create verb tenses
+	WORDLIST=("${(f)$(<${1}_temp.dat)}")
+
+	rm -f debug.out
+
+	(
+	NDX=0
+	for M in ${MOODS};do
+		for T in ${(P)MOOD_TENSE[${M}]};do
+			((NDX++))
+			echo -n "${1},${M},${T},"
+			echo -n ${WORDLIST[${NDX}]}
+			echo ",${IRR}"
+		done
+	done
+	) > ${1}_tense.dat
+fi
+
+if [[ ${SIMULATION} == 'false' ]];then
+	make_spanish_db ${DB_OPT} ${1}
+
+	#cleanup
+	[[ ${DEBUG} == "false" ]] && rm -f *${1}*
+fi

@@ -69,6 +69,11 @@ copy_dev_files () {
 	for D in ${BIN_LIST};do
 		[[ ${DEV_LIST[${D:t}]} -eq 1 ]] && cp -r ${_DEV_DIR}/${D:t} ${_DEV}
 	done
+
+	cp -r ${_DEV_DIR}/LIBS/scratch ${_DEV}
+	cp -r ${_DEV_DIR}/LIBS/spanish_quiz ${_DEV}
+	cp -r ${_DEV_DIR}/LIBS/takeout ${_DEV}
+	cp -r ${_DEV_DIR}/LIBS/manage_db ${_DEV}
 }
 
 copy_zsh_lib_utils () {

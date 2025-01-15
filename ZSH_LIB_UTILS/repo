@@ -71,9 +71,9 @@ copy_dev_files () {
 	done
 
 	cp -r ${_DEV_DIR}/LIBS/scratch ${_DEV}
-	cp -r ${_DEV_DIR}/LIBS/spanish_quiz ${_DEV}
-	cp -r ${_DEV_DIR}/LIBS/takeout ${_DEV}
-	cp -r ${_DEV_DIR}/LIBS/manage_db ${_DEV}
+	cp -r ${_DEV_DIR}/spanish_quiz ${_DEV}
+	cp -r ${_DEV_DIR}/takeout ${_DEV}
+	cp -r ${_DEV_DIR}/manage_db ${_DEV}
 }
 
 copy_zsh_lib_utils () {

@@ -1,0 +1,334 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="${BOLD}${ITALIC}\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+#Declarations
+typeset _VERB=''
+typeset _FIELDS=0
+typeset -a VERB_DATA
+typeset -A _MOODS=(indicative 1 subjunctive 2 perfect 3 perfect_subj 4 progressive 5 imperative 6)
+typeset -A _CONTEXT_LABELS=(1 yo 2 tu 3 el 4 nosotros 5 vosotros 6 ellos)
+
+#Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/STR.zsh
+
+for D in ${=_DEPS_};do
+	if [[ -e ${_LIB_DIR}/${D} ]];then
+		source ${_LIB_DIR}/${D}
+	else
+		echo "Cannot source:${_LIB_DIR}/${D} - not found"
+		exit 1
+	fi
+done
+translation () {
+	local TRANS=$(do_query -s '|' "select translation from spanish_verb where verb = '${_VERB}'")
+	echo ${TRANS}
+}
+
+participle () {
+	local PART=$(do_query -s '|' "select past_participle from spanish_verb where verb = '${_VERB}'")
+	echo ${PART}
+}
+
+gerund () {
+	local PART=$(do_query -s '|' "select gerund from spanish_verb where verb = '${_VERB}'")
+	echo ${PART}
+}
+
+indicative () {
+	_FIELDS=5
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'present'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'preterite'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'future'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'conditional'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'imperfect'")
+}
+
+subjunctive () {
+	_FIELDS=4
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'subjunctive' and tense = 'present'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'subjunctive' and tense = 'imperfect'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'subjunctive' and tense = 'imperfect2'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'subjunctive' and tense = 'future'")
+}
+
+perfect () {
+	_FIELDS=5
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'present'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'preterite'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'imperfect'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'conditional'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'future'")
+}
+
+perfect_subj () {
+	_FIELDS=3
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect_subj' and tense = 'present'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect_subj' and tense = 'past'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect_subj' and tense = 'future'")
+}
+
+progressive () {
+	_FIELDS=5
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'present'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'preterite'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'imperfect'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'conditional'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'future'")
+}
+
+imperative () {
+	_FIELDS=2
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'imperative' and tense = 'affirmative'")
+	VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'imperative' and tense = 'negative'")
+}
+
+format () {
+	local MOOD_NDX=${1}
+	local MOOD=${(k)_MOODS[(r)${MOOD_NDX}]} 
+	local FIELD=4
+	local FIELD_MAX=10
+	local IRR
+	local I_MSG
+	local L H
+	local NDX
+	local P1 P2 P3 P4 P5
+	local TENSE
+	local VERB
+
+	local MOOD_6_HDRS=("Context" "Present" "Preterite" "Imperfect" "Conditional" "Future")
+	local MOOD_5_HDRS=("Context" "Present" "Imperfect" "Imperfect2" "Future")
+	local MOOD_4_HDRS=("Context" "Present" "Past" "Future")
+	local MOOD_3_HDRS=("Context" "Affirmative" "Negative")
+	local -A MOOD_HEADERS=(1 MOOD_6_HDRS 2 MOOD_5_HDRS 3 MOOD_6_HDRS 4 MOOD_4_HDRS 5 MOOD_6_HDRS 6 MOOD_3_HDRS)
+	local -A MOOD_FIELDS=(1 6 2 5 3 6 4 4 5 6 6 3)
+	local -A MOOD_WIDTH=(1 12 2 12 3 22 4 22 5 22 6 12)
+
+	local MOOD_HDR=${MOOD_HEADERS[${_MOODS[${MOOD}]}]}
+
+	echo "${CYAN_FG}MOOD${RESET}:${WHITE_FG}${(C)MOOD}${RESET}\n"
+
+	# build headers
+	local PF_LINE_1='printf "${WHITE_FG}%-10s'
+	local PF_LINE_2='printf "${CYAN_FG}%-10s'
+	local PF_LINE_3='printf "${MAGENTA_FG}%-10s${RESET}'
+	local PF_LN_VALS=''
+	local PF_HD_VALS=''
+	
+	for (( H=1; H<=${MOOD_FIELDS[${_MOODS[${MOOD}]}]}; H++ ));do
+		PF_LINE_1+=" %-${MOOD_WIDTH[${_MOODS[${MOOD}]}]}s"
+		PF_LINE_2+=" %-${MOOD_WIDTH[${_MOODS[${MOOD}]}]}s"
+		PF_LINE_3+=" %-${MOOD_WIDTH[${_MOODS[${MOOD}]}]}s"
+		PF_LN_VALS+=' ${${(P)MOOD_HDR}['${H}']}'
+		PF_HD_VALS+=' $(str_unicode_line ${#${(P)MOOD_HDR}['${H}']})'
+	done
+	PF_LINE_1+='${RESET}\\n"'
+	PF_LINE_2+='${RESET}\\n"'
+	PF_LINE_3+='${RESET}\\n"'
+
+	# do headers
+	eval "${PF_LINE_1} ${PF_LN_VALS}"
+	#eval "${PF_LINE_2} ${PF_HD_VALS}"
+
+	${MOOD}
+
+	# assign detail vars
+	NDX=0
+	while true;do
+		((NDX++))
+		for L in ${VERB_DATA};do
+			VERB=$(cut -d'|' -f1 <<<${L})
+			MOOD=$(cut -d'|' -f2 <<<${L})
+			TENSE=$(cut -d'|' -f3 <<<${L})
+			IRR=$(cut -d'|' -f10 <<<${L})
+			[[ ${IRR} -eq 0 ]] && I_MSG='(regular)' || I_MSG='(irregular)'
+			case ${_MOODS[${MOOD}]} in
+				1)
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD} <<<${L})
+					;;
+				2)
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'imperfect' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'imperfect2' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P4=$(cut -d'|' -f${FIELD} <<<${L})
+					;;
+				3)
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD} <<<${L})
+					;;
+				4)
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'past' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
+					;;
+				5)
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD} <<<${L})
+					;;
+				6)
+					[[ ${TENSE} == 'affirmative' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'negative' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
+					;;
+			esac
+		done
+
+		# output detail
+		case ${_MOODS[${MOOD}]} in
+			1) eval ${PF_LINE_3} ${_CONTEXT_LABELS[${NDX}]} ${P1} ${P2} ${P3} ${P4} ${P5};;
+			2) eval ${PF_LINE_3} ${_CONTEXT_LABELS[${NDX}]} ${P1} ${P2} ${P3} ${P4};;
+			3) eval ${PF_LINE_3} ${_CONTEXT_LABELS[${NDX}]} ${P1} ${P2} ${P3} ${P4} ${P5};;
+			4) eval ${PF_LINE_3} ${_CONTEXT_LABELS[${NDX}]} ${P1} ${P2} ${P3};;
+			5) eval ${PF_LINE_3} ${_CONTEXT_LABELS[${NDX}]} ${P1} ${P2} ${P3} ${P4} ${P5};;
+			6) eval ${PF_LINE_3} ${_CONTEXT_LABELS[${NDX}]} ${P1} ${P2};;
+		esac
+
+		((FIELD++))
+		[[ ${FIELD} -eq ${FIELD_MAX} ]] && break
+	done
+	printf "\n%-10s\n\n" ${I_MSG}
+}
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+MSG="Limit mood selection with the -m option:"
+read -r -d '' DESC<<EOF
+Display a verb conjugation map
+
+${MSG}
+${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
+$(for V in ${(onv)_MOODS};do
+	printf "${WHITE_FG}%s ${CYAN_FG}%s${RESET}\n" ${V} ${(C)${(k)_MOODS[(r)${V}]}}
+done)
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTRING
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTRING+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTRING}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+		m) echo "<MOOD NUMBER>";;
+		v) echo "<VERB>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} debug (repeats increase level)"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+
+	exit_leave $(msg_err "${PENDING_MSGS}")
+}
+
+OPTSTR=":HDm:"
+OPTIND=0
+
+MOOD_SELECT=''
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     m) MOOD_SELECT=${OPTARG};;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+#Execution
+if [[ ${#} -eq 0 ]];then
+	usage "Missing arg:$(opt_type v)"
+else
+	_VERB=${1}
+fi
+
+VERB_CHECK=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' limit 1")
+[[ -z ${VERB_CHECK} ]] && exit_leave $(msg_err "Verb:${_VERB} not found")
+
+clear
+
+TRANS=$(translation)
+PART=$(participle)
+GER=$(gerund)
+
+(
+printf "\n${CYAN_FG}Verb${RESET}:${WHITE_FG}%s${RESET} - ${ITALIC}%s${RESET}\n" ${(C)_VERB} ${(C)TRANS}
+printf "${CYAN_FG}Past Participle${RESET}:${WHITE_FG}%s${RESET}\n" ${(C)PART}
+printf "${CYAN_FG}Gerund${RESET}:${WHITE_FG}%s${RESET}\n\n" ${(C)GER}
+
+if [[ -n ${MOOD_SELECT} ]];then
+	VALID_MOOD=${(k)_MOODS[(r)${MOOD_SELECT}]} 
+	[[ -z ${VALID_MOOD} ]] && usage "Invalid $(opt_type m):${MOOD_SELECT}"
+
+	format ${MOOD_SELECT}
+else
+	NDX=0
+	for M in ${(ov)_MOODS};do
+		((NDX++))
+		format ${NDX}
+	done
+fi
+) | sed 's/_/ /g' | mypager
+
+exit_leave

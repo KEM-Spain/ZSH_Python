@@ -1,0 +1,467 @@
+#!/usr/bin/zsh
+RESET="\033[m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+BLUE_FG="\033[34m"
+MAGENTA_FG="\033[35m"
+CYAN_FG="\033[36m"
+WHITE_FG="\033[37m"
+BOLD="\033[1m"
+
+#Declarations
+typeset -A MOOD_TENSE
+typeset -A CONTEXTS
+typeset -A USER_PARAMS
+typeset -A VERB_DATA
+typeset -A SEEN
+
+#Constants
+BOX_HEIGHT=500
+BOX_WIDTH=500
+ALIGN=center
+CMD='yad --center --width ${BOX_WIDTH} --height ${BOX_HEIGHT} --list --radiolist --column "Select" --column "Conjugation" --text-align=${ALIGN} --text "${SELECTION}\n\n${QUESTION}" --title "Spanish Verb Conjugation"'
+SPAN_DB=.spanish.db
+IMP_TENSES=(affirmative negative)
+IND_TENSES=(present preterite imperfect conditional future)
+MOODS=(indicative subjunctive imperative progressive perfect perf_subj)
+MOOD_TENSE=(indicative IND_TENSES subjunctive SUBJ_TENSES imperative IMP_TENSES progressive PROG_TENSES perfect PERF_TENSES perf_subj PERFSUBJ_TENSES)
+PERFSUBJ_TENSES=(present past future)
+PERF_TENSES=(present preterite imperfect conditional future)
+PROG_TENSES=(present preterite imperfect conditional future)
+RANDOM=$(date +'%N')
+SUBJ_TENSES=(present imperfect imperfect2 future)
+
+#All combinations of mood/tense
+MT_COMBOS=($(
+for M in ${MOODS};do
+	for T in ${(P)MOOD_TENSE[${M}]};do
+		echo "${M}|${T}"
+	done
+done
+))
+
+CONTEXTS=('1st Person (yo)' p1 'You Familiar (tú)' p2 '3rd Person (él)' p3 '1st Person Plural (nos)' p4 'You Plural (vos)' p5 '3rd Person Plural (ellos)' p6)
+
+#initialize screen state
+wmctrl -r ':ACTIVE:' -b remove,fullscreen
+SCREEN_STATE=normal
+
+#Functions
+make_list() {
+	local -A LIST=(${@:Q}) #remove one level of quotes
+
+	[[ ${DEBUG} == 'true' ]] && echo "Entered:$0 with ${@}" >&2
+
+	#flip key/value pairs for campatibility with yad
+	for L in ${(k)LIST};do
+		printf "%s %s " ${LIST[${L}]} ${(qqq)L} 
+	done
+}
+
+toggle_fullscreen () {
+
+	[[ ${DEBUG} == 'true' ]] && echo "Entered:$0 with ${@}" >&2
+
+	if [[ ${SCREEN_STATE} == "normal" ]];then
+		wmctrl -r ':ACTIVE:' -b add,fullscreen
+		SCREEN_STATE=full
+	else
+		sleep 1
+		wmctrl -r ':ACTIVE:' -b remove,fullscreen
+		SCREEN_STATE=normal
+	fi
+}
+
+display_list () {
+	local CMD=(${1})
+	local CHOICES=(${2})
+	local RESULT=(${3})
+	local ANSWER=(${4})
+	local VERB_INFO=(${5})
+
+
+	[[ ${DEBUG} == 'true' ]] && echo "Entered:$0 with ${@}" >&2
+
+	[[ -z ${RESULT} ]] && RESULT=''
+
+	if [[ -n ${RESULT} ]];then
+		CHOICES=$(echo ${CHOICES} | sed "s/FALSE \"${ANSWER}\"/TRUE \"${ANSWER}\"/g") #highlight the correct choice
+		CMD=$(echo ${CMD} | sed 's/--list /--list --no-selection /g') #disable selection
+		RESULT=" --text \"\n${RESULT}\n${VERB_INFO}\nHit <b>Esc</b> to continue...\""
+	fi
+
+	eval ${CMD} ${CHOICES} ${RESULT}
+}
+
+query () {
+	local SQL=(${@})
+	sqlite3 ${SPAN_DB} <<____END_SQL
+${SQL}
+____END_SQL
+}
+
+get_examples () {
+	local -a VERB=(${@:s/_/ })
+	local -a VERBS
+	local RAW_SENTENCES
+	local -a SENTENCES 
+	local TEXT
+	local S
+	local NDX
+	local -a RANK1
+	local -a RANK2
+	
+	[[ ${DEBUG} == 'true' ]] && echo "Entered:$0 with ${@}" >&2
+
+	NDX=0
+	for V in ${=VERB};do
+		((NDX++))
+		VERBS[${NDX}]=$V
+	done
+
+	echo "Retrieving examples..." >&2
+	[[ ${DEBUG} == 'true' ]] && echo "VERB count is ${#VERBS}, VERB:${VERBS}" >&2
+
+	COMPOUND_VERB=false
+	if [[ ${#VERBS} -eq 2 ]];then
+		COMPOUND_VERB=true
+		[[ ${DEBUG} == 'true' ]] && echo "pulling 2 verbs:VERBS:${VERBS[1]} and VERBS:${VERBS[2]}" >&2
+		RAW_SENTENCES=$(wget -qO- "https://www.123teachme.com/translated_sentences/sp/${VERBS}" | pup --charset utf-8 '.translated-sentence-pair text{}')
+		SENTENCES=("${(f)$( echo ${RAW_SENTENCES} | grep --color=never '\S')}") 
+		RAW_SENTENCES=$(wget -qO- "https://www.123teachme.com/translated_sentences/sp/${VERBS[1]}" | pup --charset utf-8 '.translated-sentence-pair text{}')
+		SENTENCES+=("${(f)$( echo ${RAW_SENTENCES} | grep --color=never '\S')}") 
+		RAW_SENTENCES=$(wget -qO- "https://www.123teachme.com/translated_sentences/sp/${VERBS[2]}" | pup --charset utf-8 '.translated-sentence-pair text{}')
+		SENTENCES+=("${(f)$( echo ${RAW_SENTENCES} | grep --color=never '\S')}") 
+		[[ ${DEBUG} == 'true' ]] && echo "Got ${#SENTENCES} sentences" >&2
+	else
+		RAW_SENTENCES=$(wget -qO- "https://www.123teachme.com/translated_sentences/sp/${VERB}" | pup --charset utf-8 '.translated-sentence-pair text{}')
+		SENTENCES=("${(f)$( echo ${RAW_SENTENCES} | grep --color=never '\S')}") 
+	fi
+
+	if [[ -z ${SENTENCES} ]];then
+		echo "No examples found..."
+		return
+	fi
+
+	NDX=0
+	RANK2_V1_MATCHES=0
+	RANK2_V2_MATCHES=0
+	for S in ${SENTENCES};do
+		((NDX++))
+		[[ ${DEBUG} == 'true' ]] && echo "S:${SENTENCES[${NDX}]}\n${SENTENCES[((${NDX}+1))]}, NDX:${NDX}" >&2
+		[[ ${RANK2_V1_MATCHES} -gt 3 ]] && continue
+		[[ ${RANK2_V2_MATCHES} -gt 3 ]] && continue
+		if [[ ${COMPOUND_VERB} == 'true' ]];then
+			if [[ ${S:l} =~ "${VERBS:l}" ]];then
+				RANK2+=${S}
+				RANK2+="${SENTENCES[$((${NDX}+1))]}\n..."
+				set_match_quality "exact"
+				[[ ${DEBUG} == 'true' && ${S:l} =~ "${VERBS:l}" ]] && echo "Exact COMPOUND_VERB: added "${SENTENCES[$((${NDX}+1))]}" to RANK2" >&2
+				continue #only add once
+			fi
+
+			grep -qwoi ${VERBS[1]} <<< ${S:l} #word boundaries only
+			RC=$?
+			if [[ ${RC} -eq 0 ]];then
+				RANK2+=${S}
+				RANK2+="${SENTENCES[$((${NDX}+1))]}\n..."
+				set_match_quality "partial"
+				((RANK2_V1_MATCHES++))
+				[[ ${DEBUG} == 'true' && ${RC} -eq 0 ]] && echo "Partial COMPOUND_VERB1: added "${SENTENCES[$((${NDX}+1))]}" to RANK2" >&2
+				continue #only add once
+			fi
+
+			grep -qwoi ${VERBS[2]} <<< ${S:l} #word boundaries only
+			RC=$?
+			if [[ ${RC} -eq 0 ]];then
+				RANK2+=${S}
+				RANK2+="${SENTENCES[$((${NDX}+1))]}\n..."
+				set_match_quality "partial"
+				((RANK2_V2_MATCHES++))
+				[[ ${DEBUG} == 'true' && ${RC} -eq 0 ]] && echo "Partial COMPOUND_VERB2: added "${SENTENCES[$((${NDX}+1))]}" to RANK2" >&2
+				continue #only add once
+			fi
+		else
+			[[ ${S:l} =~ ${VERB:l} ]] && RANK1+=${S} && RANK1+="${SENTENCES[$((${NDX}+1))]}\n..." && set_match_quality "exact"
+			[[ ${DEBUG} == 'true' && ${S:l} =~ ${VERB:l} ]] && echo "Exact VERB: added "${SENTENCES[$((${NDX}+1))]}" to RANK1" >&2
+		fi
+	done
+
+	[[ ${COMPOUND_VERB} == 'false' && -z ${RANK1[1]} ]] && echo "No examples found..." && return
+	[[ ${COMPOUND_VERB} == 'true' && -z ${RANK2[1]} ]] && echo "No examples found..." && return
+
+	NDX=0
+	if [[ ${COMPOUND_VERB} == 'true' ]];then
+		for R in ${(u)RANK2};do
+			((NDX++))
+			TEXT=$(echo ${R} | sed "s/${VERBS}/<b><i>${VERBS}<\/i><\/b>/gI")
+			TEXT=$(echo ${TEXT} | sed "s/${VERBS[1]}/<b><i>${VERBS[1]}<\/i><\/b>/gI")
+			TEXT=$(echo ${TEXT} | sed "s/${VERBS[2]}/<b><i>${VERBS[2]}<\/i><\/b>/gI")
+			echo ${TEXT} | fold -s -w120
+			[[ ${NDX} -ge 12 ]] && break
+		done
+		RANK2=()
+	else
+		for R in ${(u)RANK1};do
+			((NDX++))
+			TEXT=$(echo ${R} | sed "s/${VERB}/<b><i>${VERB}<\/i><\/b>/gI")
+			echo ${TEXT} | fold -s -w120
+			[[ ${NDX} -ge 12 ]] && break
+		done
+		RANK1=()
+	fi
+}
+
+set_match_quality () {
+	local QUALITY=$1
+
+	[[ ! -e /tmp/match_quality && -z ${QUALITY} ]] && echo " (No Match)" >/tmp/match_quality && return
+	[[ -e /tmp/match_quality ]] && return
+	echo " (${(C)QUALITY} Match)" > /tmp/match_quality
+}
+
+parse_params () {
+	local PARAMS=(${@})
+	local -a VERBS
+	local MOOD=?
+	local TENSE=?
+	local HIT=false
+	local HIT_COUNT=0
+	local -A USER_PARAMS
+	local REG_SQL
+
+	VERBS=($(query "select distinct verb from spanish_verb"))
+
+	[[ ${DEBUG} == 'true' ]] && echo "Entered:$0 with ${@}" >&2
+
+	for P in ${PARAMS:l};do
+		echo "Evaluating param:${WHITE_FG}${P}${RESET}" >&2
+
+		if [[ -z ${USER_PARAMS[VERB]} ]];then
+			HIT=false
+			for V in ${VERBS};do
+				[[ ${V} == ${P} ]] && USER_PARAMS[VERB]=${V} && HIT=true && ((HIT_COUNT++)) && break
+			done
+			if [[ ${HIT} == 'true' ]];then
+				echo "Param ${WHITE_FG}${P} ${GREEN_FG}matched${RESET} VERB" >&2 
+				continue #next PARAM
+			fi
+		fi
+
+		if [[ -z ${USER_PARAMS[MOOD]} ]];then
+			HIT=false
+			for M in ${MOODS};do
+				[[ ${M} =~ ${P} ]] && USER_PARAMS[MOOD]=${M} && HIT=true && ((HIT_COUNT++)) && break #uses closest param fuzzy match
+			done
+			if [[ ${HIT} == 'true' ]];then
+				echo "Param ${WHITE_FG}${P} ${GREEN_FG}matched${RESET} MOOD" >&2 
+				continue #next PARAM
+			fi
+		fi
+
+		if [[ -z ${USER_PARAMS[TENSE]} ]];then
+			HIT=false
+			for MP in ${MT_COMBOS};do
+				TENSE=$(echo ${MP} | cut -d'|' -f2)
+				[[ ${TENSE} =~ ${P} ]] && USER_PARAMS[TENSE]=${TENSE} && HIT=true && ((HIT_COUNT++)) && break #uses closest param fuzzy match
+			done
+			if [[ ${HIT} == 'true' ]];then
+				echo "Param ${WHITE_FG}${P} ${GREEN_FG}matched${RESET} TENSE" >&2
+				continue #next PARAM
+			fi
+		fi
+
+		[[ ${HIT_COUNT} -ne ${#PARAMS} ]] && echo "${RED_FG}INVALID${RESET}:${WHITE_FG}${P}${RESET}" && return
+	done
+
+	#Ensure valid MOOD/TENSE combo
+	#for UP in ${(k)USER_PARAMS};do
+	#	echo "KEY:${UP}, VALUE:${USER_PARAMS[${UP}]}" >&2
+	#done
+	#exit
+	
+	HIT=false
+	if [[ (-n ${USER_PARAMS[TENSE]}) && (-n ${USER_PARAMS[MOOD]}) ]];then
+		for MP in ${MT_COMBOS};do
+			MOOD=$(echo ${MP} | cut -d'|' -f1)
+			TENSE=$(echo ${MP} | cut -d'|' -f2)
+			[[ ${MOOD} == ${USER_PARAMS[MOOD]} && ${TENSE} == ${USER_PARAMS[TENSE]} ]] && HIT=true && break
+		done
+		if [[ ${HIT} == 'true' ]];then
+			echo "MOOD/TENSE:${USER_PARAMS[MOOD]}/${USER_PARAMS[TENSE]} ${GREEN_FG}matched${RESET} ${MP}" >&2 
+		else
+			echo "MOOD/TENSE combo:${USER_PARAMS[MOOD]}/${USER_PARAMS[TENSE]} ${RED_FG}did not match${RESET} any valid MOOD/TENSE combo" >&2
+			echo "INVALID"
+			return
+		fi
+	fi
+
+	echo "${(kv)USER_PARAMS}"
+
+}
+
+#--Begin GetOpts--
+RESET="\033[m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+
+SCRIPT=${0:t}
+function parse_opts {
+	local OPTS=${@}
+	local -a OPTSTRING
+	for O in {1..${#OPTS}};do
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+="<PARAM>" && continue
+		OPTSTRING+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTRING}
+}
+
+function usage {
+	local OPTS=$(parse_opts ${OPTSTR})
+
+   echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET} ${OPTS} ${WHITE_FG}]${RESET} <VERB &| MOOD &| TENSE>\n"
+   echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-i${RESET} Irregular only"
+	echo -e "${WHITE_FG}-r${RESET} Regular only"
+	echo -e "\n${WHITE_FG}DESC${RESET}:Spanish conjugation quiz\nOptional arguments limit questions to specific VERB and/or MOOD and/or TENSE\nVERB must exist in database\nMOOD must be one of:${MOODS}\nTENSE must be one of:${IND_TENSES}, Imperative:${IMP_TENSES}\n"
+	exit
+}
+
+OPTSTR=":HDeir"
+
+DEBUG=false
+REGULAR=false
+IRREGULAR=false
+SHOW_EXAMPLES=false
+
+OPTIND=0
+while getopts ${OPTSTR} OPTION;do
+	case ${OPTION} in
+     H) usage;;
+     D) DEBUG=true;;
+     e) SHOW_EXAMPLES=true;;
+     i) IRREGULAR=true;;
+     r) REGULAR=true;;
+     :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
+	esac
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+#Execution
+
+#Set Defaults
+[[ ${REGULAR} == 'true' ]] && REG_SQL="where irregular = 0"
+[[ ${IRREGULAR} == 'true' ]] && REG_SQL="where irregular = 1"
+
+VERBS=($(query "select distinct verb from spanish_verb ${REG_SQL}")) #set default values if no user verb argument
+CONTEXT_VALUES=(${(k)CONTEXTS})
+
+#Check for user params
+if [[ ${#} -gt 0 ]];then
+	PARAMS=($(parse_params ${@}))
+	if [[ ${PARAMS} =~ "INVALID" ]];then
+		echo "${PARAMS}:Unable to parse user parameters"
+		exit
+	else
+		USER_PARAMS=(${PARAMS})
+	fi
+	if [[ -n ${USER_PARAMS[VERB]} ]];then
+		VERBS=(${USER_PARAMS[VERB]})
+	fi
+	
+	if [[ -n ${USER_PARAMS[MOOD]} ]];then
+		for MT in ${MT_COMBOS};do
+			MOOD=$(echo ${MT} | cut -d'|' -f1)
+			[[ ${MOOD} != ${USER_PARAMS[MOOD]} ]] && MT_COMBOS=("${(@)MT_COMBOS:#${MT}}")
+		done
+	fi
+	
+	if [[ -n ${USER_PARAMS[TENSE]} ]];then
+		for MT in ${MT_COMBOS};do
+			TENSE=$(echo ${MT} | cut -d'|' -f2)
+			[[ ${TENSE} != ${USER_PARAMS[TENSE]} ]] && MT_COMBOS=("${(@)MT_COMBOS:#${MT}}")
+		done
+	fi
+fi
+
+CONTEXT_COUNT=0
+CONTEXT_MAX=${#CONTEXTS}
+while true;do
+	$(rm -f /tmp/match_quality)
+	((CONTEXT_COUNT++))
+	RANDOM_VERB=${VERBS[ $((${RANDOM} % ${#VERBS[@]} + 1)) ]}
+	MT=${MT_COMBOS[ $((${RANDOM} % ${#MT_COMBOS[@]} + 1)) ]}
+	RANDOM_MOOD=$(echo ${MT} | cut -d'|' -f1)
+	RANDOM_TENSE=$(echo ${MT} | cut -d'|' -f2)
+	while true;do
+		CONTEXT=${CONTEXT_VALUES[ $((${RANDOM} % ${#CONTEXT_VALUES[@]} + 1)) ]}
+		CONTEXT_FIELD=${CONTEXTS[${CONTEXT}]}
+		[[ ${DEBUG} == 'true' ]] && echo "CONTEXT_FIELD:${CONTEXT_FIELD}, SEEN:${SEEN[${CONTEXT_FIELD}]}, CONTEXT_COUNT:${CONTEXT_COUNT}, CONTEXT_MAX:${CONTEXT_MAX}" >&2
+		if [[ (${CONTEXT_COUNT} -le ${CONTEXT_MAX}) && ${SEEN[${CONTEXT_FIELD}]} == 'true'  ]];then
+			continue
+		else
+			SEEN[${CONTEXT_FIELD}]=true
+			break
+		fi
+	done
+	[[ (${CONTEXT_COUNT} -ge ${CONTEXT_MAX}) ]] && CONTEXT_COUNT=0 && SEEN=()
+
+
+	QUERY=($(query "select p1,p2,p3,p4,p5,p6 from spanish_tense where verb = '${RANDOM_VERB}' and mood = '${RANDOM_MOOD}' and tense = '${RANDOM_TENSE}'"))
+	VERB_TYPE=$(query "select distinct irregular from spanish_tense where verb = '${RANDOM_VERB}'")
+	[[ ${VERB_TYPE} == "0" ]] && VERB_TYPE="Regular" || VERB_TYPE="Irregular"
+	[[ ${DEBUG} == 'true' ]] && echo "Query:select p1,p2,p3,p4,p5,p6 from spanish_tense where verb = '${RANDOM_VERB}' and mood = '${RANDOM_MOOD}' and tense = '${RANDOM_TENSE}'"
+
+	BOX_LIST=($(
+	for L in ${QUERY};do
+		echo -n "${L} FALSE "
+	done
+	))
+
+	STR=$(make_list ${(qqq)BOX_LIST}) #quote BOX_LIST with double quotes
+
+	SELECTION="<b>Verb</b>:${(C)RANDOM_VERB} (${VERB_TYPE})\n<b>Mood</b>:${(C)RANDOM_MOOD}\n<b>Tense</b>:${(C)RANDOM_TENSE}"
+	QUESTION="<b>Select conjugation</b>:${CONTEXT}"
+	RESPONSE=$(display_list ${CMD} ${STR:gs/_/ }) #display question
+	ANSWER=($(query "select ${CONTEXT_FIELD} from spanish_tense where verb = '${RANDOM_VERB}' and mood = '${RANDOM_MOOD}' and tense = '${RANDOM_TENSE}'"))
+	LAST_DISPLAY=(${CMD} ${STR:gs/_/ })
+	ANSWER=${ANSWER:s/_/ }
+
+	if [[ ${ANSWER} == $(echo ${RESPONSE} | cut -d'|' -f2) ]];then
+		RESULT="Your answer:<b><u>${ANSWER}</u></b> was <b>correct</b>" 
+		play /usr/share/sounds/gnome/default/alerts/glass.ogg 2>/dev/null
+	else
+		RESULT="Your answer:<b><u>$(echo ${RESPONSE/_/ } | cut -d'|' -f2)</u></b> was <b>incorrect</b>\nThe correct answer is:<b>${ANSWER}</b>"
+		play /usr/share/sounds/gnome/default/alerts/sonar.ogg 2>/dev/null
+	fi
+
+	RESULT_TITLE="Spanish Quiz Results"
+
+	if [[ -n ${RESPONSE} ]];then
+		VERB_RAW=("${(f)$(query "select * from spanish_verb where verb = '${RANDOM_VERB}'")}")
+		VERB_RAW=$(echo ${VERB_RAW} | cut -d' ' --output-delimiter='|' -f1-)
+		#verb, participle, gerund, irregular, translation
+		VERB_DATA[VERB]=$(echo ${VERB_RAW} | cut -d'|' -f1)
+		VERB_DATA[GERUND]=$(echo ${VERB_RAW} | cut -d'|' -f2)
+		VERB_DATA[PARTICIPLE]=$(echo ${VERB_RAW} | cut -d'|' -f3)
+		VERB_DATA[IRREG]=$(echo ${VERB_RAW} | cut -d'|' -f4)
+		VERB_DATA[TRANSLATE]=$(echo ${VERB_RAW} | cut -d'|' -f5- | sed 's/|/ /g')
+		VERB_INFO="\n<b>Participle</b>:${VERB_DATA[PARTICIPLE]}\n<b>Gerund</b>:${VERB_DATA[GERUND]}\n\n<b>Translation</b>:${VERB_DATA[TRANSLATE]}\n"
+		if [[ ${SHOW_EXAMPLES} == 'true' ]];then
+			EXAMPLES=$(get_examples ${ANSWER})
+			set_match_quality
+			while read Q;do
+				MATCH_QUALITY=${Q}
+			done < /tmp/match_quality
+			yad --center --width 1500 --height 500 --align=left --button="gtk-ok:0" --title "${RESULT_TITLE}" --text="<big><b>Question</b>:$(echo ${QUESTION} | cut -d: -f2)\n${RESULT}\n\n${SELECTION}\n\n${VERB_INFO}\n\n<b>EXAMPLES ${MATCH_QUALITY}</b>\n${EXAMPLES}\n</big>"
+		else
+			display_list ${CMD} ${STR:gs/_/ } ${RESULT} ${ANSWER} ${VERB_INFO}
+		fi
+	else
+		break
+	fi
+done
