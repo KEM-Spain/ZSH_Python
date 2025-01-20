@@ -324,7 +324,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -c -O ${CYAN_FG} -w10 -F"<w>Show Text Utilities usage or <h>(q)uit<N>" -H"Text Utilities"
+	sel_list -C -O ${CYAN_FG} -F"<w>Show Text Utilities usage or <h>(q)uit<N>" -H"Text Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

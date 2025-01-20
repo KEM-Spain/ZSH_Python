@@ -1,0 +1,20 @@
+#!/usr/bin/zsh
+ 
+_SCRIPT=${0:t}
+
+usage () {
+	echo "Usage: ${_SCRIPT} on/off/toggle"
+	echo " Desc: enable/disable or toggle the dock"
+	exit
+}
+
+
+# Execution
+[[ ${1} == "-H" ]] && usage
+
+case ${1} in
+	on) gnome-extensions enable ubuntu-dock@ubuntu.com;;
+	off) gnome-extensions disable ubuntu-dock@ubuntu.com;;
+	toggle) gnome-extensions disable ubuntu-dock@ubuntu.com;gnome-extensions enable ubuntu-dock@ubuntu.com;;
+	*) usage;;
+esac

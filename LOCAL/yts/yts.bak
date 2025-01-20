@@ -489,8 +489,9 @@ fav_get () {
 	local HDR # List Header
 	local FTR # List footer
 	local MAP # List map
-	local MSG
-	local QKEY # Query key
+	local TAG=''
+	local MSG=''
+	local QKEY='' # Query key
 	local F
 
 	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -530,9 +531,10 @@ fav_get () {
 
 		HDR="${(C)g_QRY_ENGINE} Query"
 		[[ ${g_CUSTOM_LIST} == 'true' ]] && HDR+=" Custom"
-		MAP="<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
+		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)g_QRY_ENGINE} query${MSG} from history or <h>(q)uit<N>"
-		sel_list -O${RESET} -H"${HDR}" -M${MAP} -F${FTR} ${_SEL_X} ${_SEL_Y} ${_SEL_NDX}
+		TAG=$(tr -d '[:space:]' <<<${HDR})
+		sel_list -T${TAG} -O${RESET} -H"${HDR}" -M${MAP} -F${FTR}
 
 		case ${_SEL_KEY} in
 			d) fav_delete ${_SEL_VAL} && continue;;

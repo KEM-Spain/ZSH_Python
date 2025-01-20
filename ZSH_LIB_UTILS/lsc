@@ -43,44 +43,43 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 action_do () {
 	local M
 	local NDX
-	local -a ACTION_TABLE
+	local -a ACTION_TABLE=()
 	local MSG
 
-	if [[ ${?} -ne 2 ]];then
-		for M in ${_MARKED};do
-			NDX=${_LIST[${M}]}
-			MSG=''
+	for M in ${_MARKED};do
+		NDX=${_LIST[${M}]}
+		MSG=''
 
-			case ${_RUN_STATES[${NDX}]:l} in
-				active) ACTION_TABLE=(view restart stop);;
-				inactive) ACTION_TABLE=(view start);;
-				n/a) ACTION_TABLE=(view start);;
-			esac
+		case ${_RUN_STATES[${NDX}]:l} in
+			active) ACTION_TABLE=(view restart stop);;
+			inactive) ACTION_TABLE=(view start);;
+			n/a) ACTION_TABLE=(view start);;
+		esac
 
-			case ${_STATES[${NDX}]:l} in
-				linked) ACTION_TABLE+="disable";MSG="<w>(<r>disable removes link<w>)";;
-				enabled) ACTION_TABLE+="disable";;
-				disabled) ACTION_TABLE+="enable";;
-			esac
+		case ${_STATES[${NDX}]:l} in
+			linked) ACTION_TABLE+="disable";MSG="<w>(<r>disable removes link<w>)";;
+			enabled) ACTION_TABLE+="disable";;
+			disabled) ACTION_TABLE+="enable";;
+		esac
 
-			sel_list_set ${ACTION_TABLE}
-			sel_list -x11 -y32 -M"<w>Select action for: <c>$(cut -d'.' -f1 <<<${_UNIT_FILES[${M}]}) ${MSG}<N>"
+		sel_set_list ${(o)ACTION_TABLE}
+		sel_list -x11 -y52 -H"Available Actions" -M"<w>Select action for: <c>$(echo ${_UNIT_FILES[${M}]} | rev | cut -d'.' -f2- | rev) ${MSG}<N>or <w>Esc<N> to <r>Cancel<N>"
 
-			if [[ ${_SEL_VAL} == '?' ]];then
-				list_set_selected ${M} 0
-				continue
-			fi
+		if [[ ${?} -ne 0 ]];then # Esc key?
+			clear_region
+			list_set_selected ${M} 0
+			continue
+		fi
 
-			if [[ ${_SEL_VAL} == 'view' ]];then
-				msg_stream "sudo systemctl show ${_UNIT_FILES[${NDX}]}"
-			else
-				action_warn ${_SEL_VAL}
-				[[ ${?} -ne 0 ]] && msg_box -p -PK "Operation Cancelled" && return
-				sudo systemctl ${_SEL_VAL} ${_UNIT_FILES[${NDX}]} 2>/dev/null
-				upd_unit ${M}
-			fi
-		done
-	fi
+		if [[ ${_SEL_VAL} == 'view' ]];then
+			msg_stream "sudo systemctl show ${_UNIT_FILES[${NDX}]}"
+		else
+			action_warn ${_SEL_VAL}
+			[[ ${?} -ne 0 ]] && msg_box -p -PK "Operation Cancelled" && return
+			sudo systemctl ${_SEL_VAL} ${_UNIT_FILES[${NDX}]} 2>/dev/null
+			upd_unit ${M}
+		fi
+	done
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0

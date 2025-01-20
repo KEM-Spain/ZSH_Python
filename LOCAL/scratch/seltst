@@ -35,7 +35,8 @@ unplug "DETACH:safely detach device"
 usbdisks "USB:display usb disk details"
 )
 
-#_DEBUG=4
+_DEBUG=4
+clear
 cursor_off
 
 while true;do
@@ -50,9 +51,8 @@ while true;do
 	LIST+="eight"
 	LIST+="nine"
 	LIST+="ten"
-	clear
 	sel_set_list ${LIST}
-	sel_list -T"NUM" -x8 -y15 -H"<r>Unsorted Numbers<N>"
+	sel_list -c -T"NUM" -x8 -y35 -H"<r>Unsorted Numbers<N>" -M"Some really long string of stuff that needs to be cleared"
 
 	LIST=()
 	LIST+="apple"
@@ -65,16 +65,64 @@ while true;do
 	LIST+="peach"
 	LIST+="tangerine"
 	LIST+="pear"
-	clear
 	sel_set_list ${(on)LIST}
-	sel_list -T"FRUIT" -O${CYAN_FG} -H"Fruit" -F"<w>Pick a Fruit or <h>(q)uit<N>"
+	sel_list -c -T"FRUIT" -O${CYAN_FG} -H"Fruit" -F"<w>Pick a Fruit or <h>(q)uit<N>"
 
-	clear
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -T"DUT" -O${CYAN_FG} -C -H"Disk Utilities" -F"<w>Show Disk Utilities usage or <h>(q)uit and a whole bunch of other stuff<N>"
-done
+	sel_list -c -T"DUT" -O${CYAN_FG} -C -H"Disk Utilities" -F"<w>Show Disk Utilities usage or <h>(q)uit and a whole bunch of other stuff<N>"
 
-clear
-sel_list ${LIST}
+	LIST=()
+	LIST+="Item 1"
+	LIST+="Item 2"
+	LIST+="Item 3"
+	LIST+="Item 4"
+	LIST+="Item 5"
+	LIST+="Item 6"
+	LIST+="Item 7"
+	LIST+="Item 8"
+	LIST+="Item 9"
+	LIST+="Item 10"
+	LIST+="Item 11"
+	LIST+="Item 12"
+	LIST+="Item 13"
+	LIST+="Item 14"
+	LIST+="Item 15"
+	LIST+="Item 16"
+	LIST+="Item 17"
+	LIST+="Item 18"
+	LIST+="Item 19"
+	LIST+="Item 20"
+	LIST+="Item 21"
+	LIST+="Item 22"
+	LIST+="Item 23"
+	LIST+="Item 24"
+	LIST+="Item 25"
+	LIST+="Item 26"
+	LIST+="Item 27"
+	LIST+="Item 28"
+	LIST+="Item 29"
+	LIST+="Item 30"
+	LIST+="Item 31"
+	LIST+="Item 32"
+	LIST+="Item 33"
+	LIST+="Item 34"
+	LIST+="Item 35"
+	LIST+="Item 36"
+	LIST+="Item 37"
+	LIST+="Item 39"
+	LIST+="Item 40"
+	LIST+="Item 41"
+	LIST+="Item 42"
+	LIST+="Item 43"
+	LIST+="Item 44"
+	LIST+="Item 45"
+	LIST+="Item 46"
+	LIST+="Item 47"
+	LIST+="Item 48"
+	LIST+="Item 49"
+	LIST+="Item 50"
+	sel_set_list ${(on)LIST}
+	sel_list -c -T"LONG" -O${CYAN_FG} -H"Long List" -F"<w>Pick an Item or <h>(q)uit<N>"
+done
 
 cursor_on

@@ -28,10 +28,11 @@ _LIB_DIR=/usr/local/lib
 DEV_STATE_COLOR[connected]=${GREEN_FG}
 DEV_STATE_COLOR[disconnected]=${RED_FG}
 _ACTIONS=(toggle connect disconnect)
+_SCRIPT="${0:t}"
 
 # Imports
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -204,20 +205,17 @@ select_device () {
 		tput cup 0 0
 		tput ed
 
-		sel_list_set ${DEVICES}
-		_SEL_VAL='?'
-
-		sel_list -x10 -y11 "<c>Select BT Device or (<w>q<c>)uit<N>"
-		[[ ${_SEL_VAL} == '?' ]] && exit_leave
+		sel_set_list ${DEVICES}
+		sel_list -x10 -y11 -H"Devices" -F"<c>Select BT Device or (<w>q<c>)uit<N>"
+		[[ ${?} -ne 0 ]] && exit_leave "[${_SCRIPT}]:${RED_FG}Operation Cancelled${RESET}"
 		DEV=${_SEL_VAL}
 
 		MAC=${(k)_DEV_MAC_NAME[(r)${DEV}]} # Reverse lookup
 		_SELECTED_DEVICE=${MAC}
 
-		sel_list_set ${_ACTIONS}
-
-		sel_list -x15 -y60 "<c>Select Action for ${DEV} or (<w>q<c>)uit<N>"
-		[[ ${_SEL_VAL} == '?' ]] && continue
+		sel_set_list ${_ACTIONS}
+		sel_list -x15 -y60 -H"Actions" -F"<c>Select Action for ${DEV} or (<w>q<c>)uit<N>"
+		[[ ${?} -ne 0 ]] && exit_leave "[${_SCRIPT}]:${RED_FG}Operation Cancelled${RESET}"
 		ACTION=${_SEL_VAL}
 
 		if [[ ${ACTION} == 'toggle' ]];then
@@ -430,7 +428,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 
 if [[ ${SET_SINK} == 'true' ]];then

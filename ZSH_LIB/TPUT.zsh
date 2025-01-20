@@ -8,27 +8,6 @@ _TPUT_LIB_DBG=5
 _TERM=xterm
 
 # LIB Functions
-coord_center () {
-	local AREA=${1} # Availble space columns/rows
-	local OBJ=${2} # Object width/height
-	local CTR
-	local REM
-	local AC
-	local OC
-
-	[[ ${_DEBUG} -ge ${_TPUT_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	CTR=$((AREA / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && AC=$((CTR+1)) || AC=${CTR}
-
-	CTR=$((OBJ / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && OC=$((CTR+1)) || OC=${CTR}
-
-	echo $((AC-OC+1))
-}
-
 cursor_home () {
 	[[ ${_DEBUG} -ge ${_TPUT_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -100,6 +79,9 @@ do_smcup () {
 tcup () {
 	local X=${1:=0}
 	local Y=${2:=0}
+
+	[[ ${X} -lt 0 ]] && X=1 && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ${RED_FG}CAUGHT BAD X COORD${RESET} Set to 1"
+	[[ ${Y} -lt 0 ]] && Y=1 && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ${RED_FG}CAUGHT BAD Y COORD${RESET} Set to 1"
 
 	[[ ${_DEBUG} -ge ${_TPUT_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 

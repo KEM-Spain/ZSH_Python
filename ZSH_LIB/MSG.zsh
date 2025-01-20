@@ -410,7 +410,7 @@ msg_box () {
 
 			if [[ ${MSG_PAGING} == 'true' ]];then
 				[[ ${_DEBUG} -ge ${_MSG_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}PAGING${RESET}: SCR_NDX:${SCR_NDX} DTL_NDX:${DTL_NDX} MSG_NDX:${MSG_NDX}"
-				[[ ${XDG_SESSION_TYPE:l} == 'x11' ]] && eval "xset ${_XSET_LOW_RATE}"
+				[[ ${XDG_SESSION_TYPE:l} == 'x11' ]] && eval "xset ${_XSET_MENU_RATE}"
 
 				if [[ $(( DTL_NDX % PG_LINES )) -eq 0 ]];then # Page break - pause
 					MSG_PAGE=$(msg_paging_page ${MSG_PAGE} ${_MSG_KEY})

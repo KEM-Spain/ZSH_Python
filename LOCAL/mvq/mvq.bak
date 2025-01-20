@@ -52,7 +52,7 @@ g_REDISPLAY=false
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -181,6 +181,8 @@ cache_select () {
 	local TXT
 	local -A CACHE_LIST=()
 
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${_CACHE_DIR} entries found:LIST:${#LIST}"
+
 	for L in ${(o)LIST};do
 		TXT=$(cut -d'_' -f3- <<<${L:t} | sed 's/_/ /g')
 		case ${L:t} in
@@ -191,8 +193,8 @@ cache_select () {
 		esac
 	done
 
-	sel_list_set ${(k)CACHE_LIST}
-	sel_list -O ${GREEN_FG} -c -w10 "<w>Select from cache or <h>(q)uit<N>"
+	sel_set_list ${(k)CACHE_LIST}
+	sel_list -O ${GREEN_FG} -C -H"Cached  Queries" -F"<w>Select from cache or <h>(q)uit<N>"
 }
 
 imdb () {
@@ -318,13 +320,10 @@ do_list () {
 	local _SEL_F2
 	local D
 	
-	# TODO: SEL_LIST.zsh cursor restore breaks select menus
-	sel_list_set ${(k)_LIST_OPTIONS}
-	sel_list "<w>Select List Type or <h>(q)uit<N>"
-	[[ ${_SEL_VAL} == '?' ]] && exit_leave
+	sel_set_list ${(k)_LIST_OPTIONS}
+	sel_list -F"<w>Select List Type or <h>(q)uit<N>"
+	[[ ${?} -ne 0 ]] && exit_leave
 	msg_box_clear
-
-	sel_list_set_restore false
 
 	case ${_LIST_OPTIONS[${_SEL_VAL}]:l} in
 		a) g_LIST_TYPE=actor
@@ -345,13 +344,13 @@ do_list () {
 	esac
 
 	if [[ ${g_LIST_TYPE} != 'year' ]];then
-			sel_list_set ${(k)_DISPLAY_LIST}
+			sel_set_list ${(k)_DISPLAY_LIST}
 
 			msg_box "loading ${(C)g_LIST_TYPE} list..."
 
 			_SEL_VAL=?
-			sel_list "<w>Select ${(C)g_LIST_TYPE} or <h>(q)uit<N>"
-			[[ ${_SEL_VAL} == '?' ]] && exit_leave
+			sel_list -F"<w>Select ${(C)g_LIST_TYPE} or <h>(q)uit<N>"
+			[[ ${?} -ne 0 ]] && exit_leave
 
 			if [[ ${g_LIST_TYPE} =~ 'actor\|director' ]];then
 				_SEL_F2=$(cut -d: -f2 <<<${_SEL_VAL})

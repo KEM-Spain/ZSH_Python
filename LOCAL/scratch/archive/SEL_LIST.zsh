@@ -11,23 +11,20 @@ typeset -a _SEL_LIST=()
 typeset -a _SEL_LIST_TEXT=()
 
 # LIB Vars
-	_CUR_PAGE=1
-	_HILITE=${WHITE_ON_GREY}
-	_HILITE_X=0
-	_MAX_PAGE=0
-	_PAGE_OPTION_KEY_HELP=''
-	_SEL_KEY=?
-	_SEL_LIST_HDR=''
-	_SEL_LIST_LIB_DBG=3
-	_SEL_LIST_RESTORE=true
-	_SEL_VAL=?
-	_SL_CATEGORY=false
-	_SL_MAX_ITEM_LEN=0
-	_TITLE_HL=${WHITE_ON_GREY}
+_CUR_PAGE=1
+_HILITE=${WHITE_ON_GREY}
+_HILITE_X=0
+_MAX_PAGE=0
+_PAGE_OPTION_KEY_HELP=''
+_SEL_KEY=?
+_SEL_LIST_HDR=''
+_SEL_LIST_LIB_DBG=3
+_SEL_LIST_RESTORE=true
+_SEL_VAL=?
+_SL_CATEGORY=false
+_SL_MAX_ITEM_LEN=0
+_TITLE_HL=${WHITE_ON_GREY}
 
-# TODO: Possible enhancement: create state file for every list and restore state if redisplayed
-# TODO: allowing a chain of lists to maintain state across invocations.
-# TODO: Assign each list an ID comprised of process id and coord tag
 # Functions
 sel_list () {
 	local -A SKEYS

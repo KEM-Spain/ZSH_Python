@@ -225,6 +225,27 @@ box_coords_upd () {
 	return 0
 }
 
+coord_center () {
+	local AREA=${1} # Availble space columns/rows
+	local OBJ=${2} # Object width/height
+	local CTR
+	local REM
+	local AC
+	local OC
+
+	[[ ${_DEBUG} -ge ${_TPUT_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	CTR=$((AREA / 2))
+	REM=$((CTR % 2))
+	[[ ${REM} -ne 0 ]] && AC=$((CTR+1)) || AC=${CTR}
+
+	CTR=$((OBJ / 2))
+	REM=$((CTR % 2))
+	[[ ${REM} -ne 0 ]] && OC=$((CTR+1)) || OC=${CTR}
+
+	echo $((AC-OC+1))
+}
+
 cmd_get_raw () {
 	local CMD_LINE
 
@@ -546,11 +567,11 @@ max () {
 
 min () {
 	local -a NUMLIST=(${@})
-	local MIN=0
+	local MIN=$(max ${NUMLIST})
 	local N
 
 	for N in ${NUMLIST};do
-		[[ ${N} -lt ${MIN} ]] && MIN=${N}
+		[[ ${N} -ge 1 && ${N} -lt ${MIN} ]] && MIN=${N} # Ignore 0's
 	done
 
 	echo ${MIN}
