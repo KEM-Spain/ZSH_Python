@@ -63,7 +63,7 @@ action_do () {
 		esac
 
 		sel_set_list ${(o)ACTION_TABLE}
-		sel_list -x11 -y52 -H"Available Actions" -M"<w>Select action for: <c>$(echo ${_UNIT_FILES[${M}]} | rev | cut -d'.' -f2- | rev) ${MSG}<N>or <w>Esc<N> to <r>Cancel<N>"
+		sel_list -c -x11 -y52 -H"Available Actions" -M"<w>Select action for: <c>$(echo ${_UNIT_FILES[${M}]} | rev | cut -d'.' -f2- | rev) ${MSG}<N>or <w>Esc<N> to <r>Cancel<N>"
 
 		if [[ ${?} -ne 0 ]];then # Esc key?
 			clear_region

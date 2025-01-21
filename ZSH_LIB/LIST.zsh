@@ -1,6 +1,13 @@
 # LIB Dependencies
 _DEPS_+="ARRAY.zsh DBG.zsh MSG.zsh PATH.zsh STR.zsh TPUT.zsh UTILS.zsh VALIDATE.zsh"
 
+# Constants
+_AVAIL_ROW=0
+_HELD_ROW=1
+_GHOST_ROW=2 # Not selectable
+_LIST_LIB_DBG=4
+_SORT_MARKER=$(mktemp /tmp/last_sort.XXXXXX)
+ 
 # LIB Declarations
 typeset -A _KEY_QUIT_CALLBACKS=()
 typeset -A _LIST_SELECTED=() # Status of selected list items; contains digit 0,1,2, etc.; 0,1 can toggle; -gt 1 cannot toggle (action completed)
@@ -65,13 +72,6 @@ _TARGET_MIN=''
 _TARGET_NDX=1
 _TARGET_PAGE=1
 
-# Constants
-_AVAIL_ROW=0
-_HELD_ROW=1
-_GHOST_ROW=2 # Not selectable
-_LIST_LIB_DBG=3
-_SORT_MARKER=$(mktemp /tmp/last_sort.XXXXXX)
- 
 # Initialization
 set_exit_callback list_sort_clear_marker
 /bin/rm -f /tmp/last_sort* >/dev/null 2>&1

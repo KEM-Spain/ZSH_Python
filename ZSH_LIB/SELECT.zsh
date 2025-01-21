@@ -1,6 +1,12 @@
 # LIB Dependencies
 _DEPS_+="ARRAY.zsh DBG.zsh MSG.zsh STR.zsh TPUT.zsh ./UTILS.zsh VALIDATE.zsh"
 
+# Constants
+_SEL_LIB_DBG=4
+_EXIT_BOX=32
+_HILITE=${WHITE_ON_GREY}
+_PAGE_MAX_ROWS=$(( _MAX_ROWS - 15 )) # Longest list that fits the available display
+
 # LIB Declarations
 typeset -A _CAT_COLS=()
 typeset -A _LIST_DATA=()
@@ -11,14 +17,10 @@ typeset -a _PAGE=()
 
 # LIB Vars
 _CURRENT_PAGE=0
-_EXIT_BOX=32
 _HAS_CAT=false
-_HILITE=${WHITE_ON_GREY}
 _HILITE_X=0
 _MAX_PAGE=0
-_PAGE_MAX_ROWS=$(( _MAX_ROWS - 15 )) # Longest list that fits the available display
 _SEL_KEY=''
-_SEL_LIB_DBG=4
 _SEL_VAL=''
 _TAG=''
 _TAG_FILE=''
@@ -166,25 +168,25 @@ sel_list () {
 	# If no X,Y coords are passed default to center
 	LIST_W=$(arr_long_elem_len ${_LIST})
 	[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
-
-	BOX_H=$((LIST_H+2))
-	[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(coord_center $(( _MAX_ROWS - 1 )) ${BOX_H}) || BOX_X=${X_COORD_ARG}
-
-	[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 ))
-	[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(coord_center $(( _MAX_COLS - 1 )) ${BOX_W}) || BOX_Y=${Y_COORD_ARG}
-
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: LIST_W:${LIST_W} LIST_H:${LIST_H}"
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: INNER BOX - BOX_W:${BOX_W} BOX_H:${BOX_H}"
+
+	BOX_H=$((LIST_H+2)) # Box height based on list count
+	[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 )) # Categories get extra padding
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
+
+	[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(coord_center $(( _MAX_ROWS - 1 )) ${BOX_H}) || BOX_X=${X_COORD_ARG}
+	[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(coord_center $(( _MAX_COLS - 1 )) ${BOX_W}) || BOX_Y=${Y_COORD_ARG}
 
 	# Set field widths for lists having categories
 	if [[ ${_HAS_CAT} == 'true' ]];then
-		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: _HAS_CAT:${_HAS_CAT}"
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: CATEGORIES DETECTED"
 		for L in ${_LIST};do
 			F1=$(cut -d: -f1 <<<${L})
 			F2=$(cut -d: -f2 <<<${L})
 			[[ ${#F1} -gt ${_CAT_COLS[1]} ]] && _CAT_COLS[1]=${#F1}
 			[[ ${#F2} -gt ${_CAT_COLS[2]} ]] && _CAT_COLS[2]=${#F2}
 		done
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: SET category field widths: F1:${F1} F2:${F2}"
 		_LIST=(${(o)_LIST}) # Sort categories
 	else
 		_CAT_COLS=()
@@ -192,12 +194,12 @@ sel_list () {
 
 	BOX_BOT=$(( BOX_X + BOX_H)) # Store coordinate
 
-	# Widest element - inner box, header, footer, map, or exit msg
+	# Widest decoration - inner box, header, footer, map, or exit msg
 	((LM+=6)) #Add MAP padding inside outer box
 	MAX=$(max ${BOX_W} ${LH} ${LF} ${LM} ${_EXIT_BOX}) 
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "MAX:${MAX} BOX_W:${BOX_W} LIST_HDR:${LH} LIST_FTR:${LF} LIST_MAP:${LM} _EXIT_BOX:${_EXIT_BOX}" 
 
-	# Handle outer box
+	# Handle outer box coords
 	if [[ ${HAS_OB} == 'true' ]];then
 		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: OUTER BOX DETECTED"
 		OB_X=$(( BOX_X - OB_X_OFFSET ))
@@ -212,6 +214,7 @@ sel_list () {
 		fi
 	fi
 
+	# Store OUTER_BOX coords
 	box_coords_set OUTER_BOX HAS_OB ${HAS_OB} X ${OB_X} Y ${OB_Y} W ${OB_W} H ${OB_H} COLOR ${OB_COLOR}
 
 	# Set coords for list decorations
@@ -231,15 +234,17 @@ sel_list () {
 		FTR_Y=$(sel_box_center ${BOX_Y} ${BOX_W} $(msg_nomarkup ${LIST_FTR}))
 	fi
 
+	# Store DECOR coords
 	box_coords_set DECOR HAS_HDR ${HAS_HDR} HDR_X ${HDR_X} HDR_Y ${HDR_Y} HAS_MAP ${HAS_MAP} MAP_X ${MAP_X} MAP_Y ${MAP_Y} HAS_FTR ${HAS_FTR} FTR_X ${FTR_X} FTR_Y ${FTR_Y}
 
 	local R_H=$(( $(max $(( FTR_X - BOX_X )) $(( MAP_X - BOX_X )) ${BOX_H}) + 1))
 	local R_Y=$(min ${HDR_Y} ${MAP_Y} ${FTR_Y} ${BOX_Y})
 	local R_W=$(max ${#LIST_HDR} ${#LIST_MAP} ${#LIST_FTR} ${BOX_W})
 
+	# Store REGION clearing coords
 	box_coords_set REGION X ${HDR_X} Y ${R_Y} W ${R_W} H ${R_H} OB_W ${OB_W} OB_Y ${OB_Y} # For display region clearing if needed
 
-	# Inner box
+	# Store INNER_BOX coords
 	box_coords_set INNER_BOX X ${BOX_X} Y ${BOX_Y} W ${BOX_W} H ${BOX_H} COLOR ${IB_COLOR} OB_W ${OB_W} OB_Y ${OB_Y}
 
 	# List coords w/ box offset
@@ -258,8 +263,8 @@ sel_list () {
 	_LIST_DATA[MAX]=${#_LIST}
 	_LIST_DATA[CLEAR_REGION]=${CLEAR_REGION}
 
-	sel_set_pages
-	sel_scroll 1
+	sel_set_pages # Create table of page top indexes
+	sel_scroll 1 # Display list and handle user inputs
 }
 
 sel_norm () {
@@ -305,13 +310,14 @@ sel_scroll () {
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	cursor_off
-	[[ ${_LIST_DATA[CLEAR_REGION]} == 'true' ]] && clear_region
+	[[ ${_LIST_DATA[CLEAR_REGION]} == 'true' ]] && clear_region # Clear space around list if indicated
 
 	LIST_X=${_LIST_DATA[X]} # First row
 	BOT_X=$(( _LIST_DATA[X] + _LIST_DATA[H] - 1 )) # Last row
 	X_OFF=$(( _LIST_DATA[X] - 1 )) # Cursor offset
 
 	while true;do
+		# Display decorations
 		[[ ${O_COORDS[HAS_OB]} == 'true' ]] && msg_unicode_box ${O_COORDS[X]} ${O_COORDS[Y]} ${O_COORDS[W]} ${O_COORDS[H]} ${O_COORDS[COLOR]}
 		msg_unicode_box ${I_COORDS[X]} ${I_COORDS[Y]} ${I_COORDS[W]} ${I_COORDS[H]} ${I_COORDS[COLOR]}
 
@@ -332,29 +338,34 @@ sel_scroll () {
 		sel_load_page ${PAGE} # Sets _CURRENT_PAGE
 		PAGE=${_CURRENT_PAGE}
 
+		# Display paging information if multiple pages detected
 		if [[ ${_MAX_PAGE} -gt 1 ]];then
-			PAGING_INFO="<w>Page<N> <w>${_CURRENT_PAGE}<N> of <w>${_MAX_PAGE} pages<N>"
-			MAP_INFO="(<w>N<N>)ext page (<w>P<N>)revious page"
 			[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: PAGING_INFO:${PAGING_INFO} MAP_INFO:${MAP_INFO}"
 
-			PGR_X=$(( _LIST_DATA[X] - 2 ))
-			PGR_Y=$(sel_box_center ${_LIST_DATA[BOX_Y]} ${_LIST_DATA[BOX_W]} $(msg_nomarkup ${PAGING_INFO}))
+			if [[ ${O_COORDS[HAS_OB]} == 'true' ]];then
+				PAGING_INFO="<w>Page<N> <w>${_CURRENT_PAGE}<N> of <w>${_MAX_PAGE}<N>"
+				MAP_INFO="(<w>N<N>)ext page (<w>P<N>)revious page"
+				PGR_X=$(( _LIST_DATA[X] - 2 ))
+				PGR_Y=$(sel_box_center ${_LIST_DATA[BOX_Y]} ${_LIST_DATA[BOX_W]} $(msg_nomarkup ${PAGING_INFO}))
+				tcup ${PGR_X} ${PGR_Y};echo $(msg_markup ${PAGING_INFO})
+			else
+				MAP_INFO="Page<N> <w>${_CURRENT_PAGE}<N> of <w>${_MAX_PAGE}<N> - (<w>N<N>)ext page (<w>P<N>)revious page <w>"
+			fi
 			MAP_Y=$(sel_box_center ${_LIST_DATA[BOX_Y]} ${_LIST_DATA[BOX_W]} $(msg_nomarkup ${MAP_INFO}))
-			tcup ${PGR_X} ${PGR_Y};echo $(msg_markup ${PAGING_INFO})
 			tcup ${D_COORDS[MAP_X]} ${MAP_Y};echo $(msg_markup ${MAP_INFO})
 			box_coords_upd REGION X ${PGR_X} Y ${PGR_Y}
 		fi
 
-		sel_disp_page
+		sel_disp_page # Display list items
 
 		if [[ -e ${_TAG_FILE}  ]];then
-			read TAG_NDX < ${_TAG_FILE}
+			read TAG_NDX < ${_TAG_FILE} # Retrieve any stored menu positions
 		fi
 
 		[[ ${TAG_NDX} -ne 0 ]] && NDX=${TAG_NDX} || NDX=1 # Initialize index
 		_SEL_VAL=${_PAGE[${NDX}]} # Initialize return value
 
-		sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]} # Initial hilite
+		sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]} # Initial item hilite
 
 		while true;do
 			KEY=$(get_keys)
@@ -414,10 +425,10 @@ sel_scroll () {
 				break
 			fi
 
-			if [[ ${NAV} == 'true' ]];then # Return (populate) menu selection
+			if [[ ${NAV} == 'true' ]];then # Set key pressed and item selected
 				_SEL_KEY=${KEY}
 				_SEL_VAL=${_PAGE[${NDX}]}
-				[[ -n ${_TAG_FILE} ]] && echo "${NDX}" >${_TAG_FILE}
+				[[ -n ${_TAG_FILE} ]] && echo "${NDX}" >${_TAG_FILE} # Save menu position if indicated
 			fi
 		done
 	done
@@ -516,6 +527,8 @@ sel_set_pages () {
 	local P
 	local PAGE
 	local PG_TOP
+
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	PAGE=$(( _LIST_DATA[MAX] / _LIST_DATA[H] ))
 	REM=$(( _LIST_DATA[MAX] % _LIST_DATA[H] ))

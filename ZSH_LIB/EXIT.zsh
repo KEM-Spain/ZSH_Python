@@ -4,7 +4,7 @@ _DEPS_+="MSG.zsh UTILS.zsh"
 # LIB vars
 _PRE_EXIT_RAN=false
 _EXIT_CALLBACK=''
-_EXIT_LIB_DBG=1
+_EXIT_LIB_DBG=5
 
 # LIB Functions
 exit_leave () {

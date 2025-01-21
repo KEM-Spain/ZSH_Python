@@ -10,7 +10,7 @@ typeset -A _KWD_ARGS=()
 _EXIT_VALUE=0
 _FUNC_TRAP=false
 _BAREWORD_IS_FILE=false
-_UTILS_LIB_DBG=4
+_UTILS_LIB_DBG=5
 
 arg_parse () {
 	local KWD=false

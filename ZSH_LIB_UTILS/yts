@@ -675,10 +675,10 @@ get_field () {
 	local NDX=${2}
 	local STR=''
 	local TSTR=''
+	local STR_MAX=75
 
-	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge 2 ]] && dbg "${0}:${LINENO} ARGS:FIELD:${FIELD}, NDX:${NDX}"
-	[[ ${_DEBUG} -ge 2 ]] && dbg "${0}:${LINENO} _LIST[NDX]:${_LIST[${NDX}]}"
+	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGS:FIELD:${FIELD}, NDX:${NDX}"
+	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${0}:${LINENO} _LIST[NDX]:${_LIST[${NDX}]}"
 
 	if [[ ${g_QRY_ENGINE} == 'rumble' ]];then
 		case ${FIELD} in
@@ -711,18 +711,15 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'title' ]];then
-		STR=${STR[1,75]} # Limit length
+		STR=${STR[1,${STR_MAX}]} # Limit length
 		STR=$(sed -E 's/^\s+?\?*?\s+?//' <<<${STR}) # Strip leading space 
 		STR=$(html2text -ascii <<<${STR}) # HTML
 		STR=${(C)STR} # Proper case
 		STR=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' <<<${STR}) # Misc fixups
 	fi
 
-	[[ ${_DEBUG} -ge 2 ]] && dbg "${0}:${LINENO} Returning STR:${STR}"
-	
 	#STR=$(iconv -f utf-8 -t ascii//translit <<<${STR}) # Scrub non ascii
-
-	[[ ${_DEBUG} -ge 2 ]] && dbg "${0}:${LINENO} Returning:${STR[1,65]}"
+	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${0}:${LINENO} Returning:STR[1,${STR_MAX}]:${STR[1,${STR_MAX}]}"
 
 	echo -n ${STR}
 }
@@ -731,7 +728,7 @@ item_decorate () {
 	local NDX=${1}
 	local STR
 
-	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."
@@ -1127,7 +1124,7 @@ query_youtube () {
 			[[ ${AUTHOR:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:gs/ //:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
-			[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}:${LINENO} EXPERIMENTAL FILTERING AUTHOR:${AUTHOR} HIT:${HIT}"
+			[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${0}:${LINENO} EXPERIMENTAL FILTERING AUTHOR:${AUTHOR} HIT:${HIT}"
 			[[ ${HIT} == 'false' ]] && continue
 			# --- END Experimental filtering
 		else
@@ -1230,7 +1227,7 @@ select_download () {
 set_item_color () {
 	local ITEM=${1}
 
-	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	case ${ITEM:l} in
 		downloaded*) echo ${GREEN_FG};;

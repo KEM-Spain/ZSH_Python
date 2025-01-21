@@ -251,7 +251,7 @@ else
 		fi
 		echo -n ${RESET}
 	done
-	} | mypager wait
+	} | mypager
 fi
 
 exit_leave

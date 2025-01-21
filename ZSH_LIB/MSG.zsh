@@ -1,6 +1,9 @@
 # LIB Dependencies
 _DEPS_+="ARRAY.zsh DBG.zsh STR.zsh TPUT.zsh UTILS.zsh"
 
+# Constants
+_MSG_LIB_DBG=4
+
 # LIB Declarations
 typeset -a _CONT_BUFFER=()
 typeset -A _CONT_DATA=(BOX false COLS 0 HEADER 0 MAX 0 OUT 0 SCR 0 TOP 0 Y 0 W 0)
@@ -8,7 +11,6 @@ typeset -A _CONT_DATA=(BOX false COLS 0 HEADER 0 MAX 0 OUT 0 SCR 0 TOP 0 Y 0 W 0
 # LIB Vars
 _BOX_LINE_WEIGHT=''
 _MSG_KEY=n
-_MSG_LIB_DBG=4
 _PROC_MSG=false
 _MSG_BOX_TAG=MSG_BOX
 _PROC_BOX_TAG=PROC_BOX

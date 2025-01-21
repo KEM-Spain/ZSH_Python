@@ -375,7 +375,7 @@ if [[ -n ${ARG} ]];then
 else
 	while true;do
 		sel_set_list ${_TIPS}
-		sel_list -O ${CYAN_FG} -M"<w>Select Tip or <h>(q)uit<N>" -H"Collected Tips"
+		sel_list -O ${CYAN_FG} -F"<w>Select Tip or <h>(q)uit<N>" -H"Collected Tips"
 		clear # wipe menu
 		if [[ ${${_TIPS[(i)${_SEL_VAL}]}} -le ${#_TIPS} ]];then
 			if [[ ${_EXTERNAL[${_SEL_VAL}]} -eq 1 ]];then

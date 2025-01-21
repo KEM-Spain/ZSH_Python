@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-#TODO: windows need work
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -36,7 +35,7 @@ typeset -i _FNDX=0
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
@@ -66,47 +65,50 @@ action_do () {
 		[[ ${GROUP_LIST[(i)${U}]} -le ${#GROUP_LIST} ]] && USER_GROUP_LIST+=${U}
 	done
 
-	selection_list_set ${(C)${(k)POP_DECODE}}
-	selection_list -O${RED_FG} -w5 -x${TOP_WIN_X} -y${TOP_WIN_Y} "<w>Select Operation<N>"
-	[[ ${?} -gt 0 ]] && clear_list && return 0
-	POP=${POP_DECODE[${_SELECTION_VALUE:l}]}
+	sel_set_list ${(C)${(k)POP_DECODE}}
+	sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Select Operation<N>"
+	[[ ${?} -ne 0 ]] && clear_list && return 0
+
+	POP=${POP_DECODE[${_SEL_VAL:l}]}
 
 	if [[ ${POP} == 'sp' ]];then
-		selection_list_set ${(C)${(k)PTYPE_DECODE}}
-		selection_list -w5 -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) "<w>Set permissions<N>"
-		[[ ${?} -gt 0 ]] && clear_list && return 0
+		sel_set_list ${(C)${(k)PTYPE_DECODE}}
+		sel_list -c -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) -H"<w>Set permissions<N>"
+		[[ ${?} -ne 0 ]] && clear_list && return 0
 
-		PTYPE=${PTYPE_DECODE[${_SELECTION_VALUE:l}]}
+		PTYPE=${PTYPE_DECODE[${_SEL_VAL:l}]}
 
 		STITLE="Select permission for "
 		case ${PTYPE} in
-			a) selection_list_set ${COMBO_PERMS};STITLE="<w>Select combo permissions<N>";;
-			s) selection_list_set ${(C)${(k)SPECIAL_DECODE}};STITLE+="Special";;
-			o) selection_list_set ${(C)${(k)PERM_DECODE}};STITLE+="Owner";;
-			g) selection_list_set ${(C)${(k)PERM_DECODE}};STITLE+="Group";;
-			w) selection_list_set ${(C)${(k)PERM_DECODE}};STITLE+="World";;
+			a) sel_set_list ${COMBO_PERMS};STITLE="<w>Select combo permissions<N>";;
+			s) sel_set_list ${(C)${(k)SPECIAL_DECODE}};STITLE+="Special";;
+			o) sel_set_list ${(C)${(k)PERM_DECODE}};STITLE+="Owner";;
+			g) sel_set_list ${(C)${(k)PERM_DECODE}};STITLE+="Group";;
+			w) sel_set_list ${(C)${(k)PERM_DECODE}};STITLE+="World";;
 			u) UMASK_PERMS=true;;
 		esac
 
 		if [[ ${UMASK_PERMS} == 'false' ]];then 
-			selection_list -w5 -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) "${STITLE}"
-			[[ ${?} -gt 0 ]] && clear_list && return 0
-			[[ ${PTYPE} == "a" ]] && PERM_CODE=${_SELECTION_VALUE:l}
-			[[ ${PTYPE} =~ "(o|g|w)" ]] && PERM_CODE=${PERM_DECODE[${_SELECTION_VALUE:l}]}
-			[[ ${PTYPE} == "s" ]] && PERM_CODE=${SPECIAL_DECODE[${_SELECTION_VALUE:l}]}
+			sel_list -c -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) -H"${STITLE}"
+			[[ ${?} -ne 0 ]] && clear_list && return 0
+
+			[[ ${PTYPE} == "a" ]] && PERM_CODE=${_SEL_VAL:l}
+			[[ ${PTYPE} =~ "(o|g|w)" ]] && PERM_CODE=${PERM_DECODE[${_SEL_VAL:l}]}
+			[[ ${PTYPE} == "s" ]] && PERM_CODE=${SPECIAL_DECODE[${_SEL_VAL:l}]}
 		fi
 	else
 		case ${POP} in
-			co) selection_list_set ${USER_LIST};STITLE="<w>Select User<N>";;
-		  cog) selection_list_set ${USER_GROUP_LIST};STITLE="<w>Select Owner & Group<N>";;
-			cg) selection_list_set ${GROUP_LIST};STITLE="<w>Select Group<N>";;
+			co) sel_set_list ${USER_LIST};STITLE="<w>Select User<N>";;
+		  cog) sel_set_list ${USER_GROUP_LIST};STITLE="<w>Select Owner & Group<N>";;
+			cg) sel_set_list ${GROUP_LIST};STITLE="<w>Select Group<N>";;
 		esac
-		selection_list -w5 -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) "${STITLE}"
-		[[ ${?} -gt 0 ]] && clear_list && return 0
+		sel_list -c -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) -H"${STITLE}"
+		[[ ${?} -ne 0 ]] && clear_list && return 0
+
 		case ${POP} in
-			co) CHOWN=${_SELECTION_VALUE};;
-	  	  cog) CHOWN=${_SELECTION_VALUE} && CHGRP=${_SELECTION_VALUE};;
-			cg) CHGRP=${_SELECTION_VALUE};;
+			co) CHOWN=${_SEL_VAL};;
+	  	  cog) CHOWN=${_SEL_VAL} && CHGRP=${_SEL_VAL};;
+			cg) CHGRP=${_SEL_VAL};;
 		esac
 
 	fi
@@ -364,7 +366,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:This script..."
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
@@ -423,7 +425,7 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${
 list_set_key_msg '
 printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 '
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to reset permissions (${ITALIC}or exit if none selected${RESET})."
+list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to reset permissions ${ITALIC}or exit if none selected${RESET}"
 list_set_barlines true
 list_set_clear_ghosts true
 list_set_sortable true

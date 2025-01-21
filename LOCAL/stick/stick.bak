@@ -80,7 +80,6 @@ action_do () {
 	done
 
 	# Handle PAYLOAD
-	# TODO: If copying from a subdirectory, create the parent dir before copy
 	if [[ ${g_LAST_VIEW} == 'LOCAL' ]];then # Copy from LOCAL to STICK
 
 		[[ ${_DEBUG} -eq 0 ]] && /bin/rm -f ${_RSYNC_LOG} # Clear log
