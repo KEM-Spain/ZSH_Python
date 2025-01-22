@@ -211,9 +211,7 @@ sel_list () {
 	NM_M=$(msg_nomarkup ${LIST_MAP})
 	NM_P=$(msg_nomarkup ${PAGE_HDR})
 
-	if [[ ${_PAGE_TOPS[MAX]} -gt 1 ]];then
-		PAGING=true
-	fi
+	[[ ${_PAGE_TOPS[MAX]} -gt 1 ]] && PAGING=true
 
 	MH=${#NM_M} # Set default MAP width
 	[[ ${PAGING} == 'true' ]] && PH=${#NM_P} # Set default PAGING width
@@ -327,6 +325,7 @@ sel_scroll () {
 	local -A O_COORDS=($(box_coords_get OUTER_BOX))
 	local BOT_X=0
 	local KEY=''
+	local LAST_TAG=?
 	local LIST_X=0
 	local NAV=''
 	local NDX=0
@@ -334,7 +333,6 @@ sel_scroll () {
 	local SCROLL=''
 	local TAG_NDX=0
 	local X_OFF=0
-	local LAST_TAG=?
 	
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -375,7 +373,7 @@ sel_scroll () {
 
 		if [[ -e ${_TAG_FILE}  ]];then
 			read TAG_NDX < ${_TAG_FILE} # Retrieve any stored menu positions
-			LAST_TAG=${_TAG_FILE}
+			LAST_TAG=${_TAG_FILE} # Only use position memory for differing menus
 		fi
 
 		[[ ${_DEBUG} -gt 0 ]] && dbg "_TAG_FILE:${_TAG_FILE}  LAST_TAG:${LAST_TAG}"
@@ -412,6 +410,8 @@ sel_scroll () {
 				4|b|l) SCROLL="B";;
 				5|p) SCROLL="P";;
 				6|n) SCROLL="N";;
+				7|H) SCROLL="H";;
+				8|L) SCROLL="L";;
 				*) NAV=false;;
 			esac
 
@@ -434,7 +434,7 @@ sel_scroll () {
 				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 				# [[ ${_DEBUG} -gt 0 ]] && dbg "SCROLL:${SCROLL} NDX:${NDX} NORM_NDX:${NORM_NDX} _LIST_DATA[H]:${_LIST_DATA[H]} _PAGE[NORM_NDX]:${_PAGE[${NORM_NDX}]} _PAGE[NDX]:${_PAGE[${NDX}]} #_PAGE:${#_PAGE}"
 			elif [[ ${SCROLL} == 'B' ]];then
-				NORM_NDX=${NDX} && NDX=${_LIST_DATA[H]}
+				NORM_NDX=${NDX} && NDX=${#_PAGE}
 				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
 				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 				# [[ ${_DEBUG} -gt 0 ]] && dbg "SCROLL:${SCROLL} NDX:${NDX} NORM_NDX:${NORM_NDX} _LIST_DATA[H]:${_LIST_DATA[H]} _PAGE[NORM_NDX]:${_PAGE[${NORM_NDX}]} _PAGE[NDX]:${_PAGE[${NDX}]} #_PAGE:${#_PAGE}"
@@ -443,6 +443,12 @@ sel_scroll () {
 				break
 			elif [[ ${SCROLL} == 'P' ]];then
 				[[ ${PAGE} -eq 1 ]] && PAGE=${_PAGE_TOPS[MAX]} || ((PAGE--))
+				break
+			elif [[ ${SCROLL} == 'H' ]];then
+				PAGE=1
+				break
+			elif [[ ${SCROLL} == 'L' ]];then
+				PAGE=${_PAGE_TOPS[MAX]}
 				break
 			fi
 
