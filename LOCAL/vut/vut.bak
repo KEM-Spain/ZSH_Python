@@ -46,7 +46,7 @@ _WRAPPER=${0:t}
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
@@ -200,8 +200,15 @@ length () {
 	local -a FN_ARG=()
 	local DUR=''
 	local LONGEST=0
-	local LIST=()
+	local -a PRELIST=()
+	local -a LIST=()
 	local F=''
+	local DNUM=0
+	local TITLE=''
+	local HDR=''
+	local -a FLIST=()
+	local NDX=0
+	local HIT=false
 
 	read -r -d '' DESC<<___EOF
 Display video duration
@@ -223,21 +230,42 @@ ___EOF
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
-	[[ ${#} -eq 0 ]] && usage "missing video filename(s)" || FN_ARG=(${@})
+	[[ ${#} -eq 0 ]] && FN_ARG=${PWD} || FN_ARG=(${@})
 	
-	for F in ${FN_ARG};do
+	if [[ ${FN_ARG} == ${PWD} ]];then
+		FLIST=("${(f)$(find ${PWD} -maxdepth 2 -type f ! -path ${PWD})}")
+	else
+		FLIST=${FN_ARG}
+	fi
+
+	for F in ${FLIST};do
+		((NDX++))
 		[[ ! -f ${F} ]] && continue
-		[[ ! -f ${F} ]] && exit_leave $(msg_exit E "file not found:${F}")
 		file ${F} | grep -qi 'media\|matroska\|video'
-		[[ ${?} -ne 0 ]] && echo "File:${WHITE_FG}${F}${RESET} not a video file - skipping" && continue
-		[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F}
-		LIST+=${F}
+		#[[ ${?} -ne 0 ]] && echo "File:${WHITE_FG}${F}${RESET} not a video file - skipping" && continue
+		[[ ${?} -ne 0 ]] && echo -n "Searching ${NDX}" && continue
+		[[ ${#F:t} -gt ${LONGEST} ]] && LONGEST=${#F:t}
+		PRELIST+=${F}
+		HIT=true
 	done
 
+	[[ ${HIT} == 'false' ]] && exit_leave "No video files found"
+
 	[[ ${#LIST} -ne 0 ]] && echo "\n${CYAN_FG}Video duration info...${RESET}"
-	for F in ${LIST};do
+
+	for F in ${PRELIST};do
 		DUR=$(ffmpeg -i "${F}"  2>&1 | grep Duration | cut -d':' -f2- | cut -d',' -f1)
-		printf "${WHITE_FG}%*s${RESET}:%10s\n" ${LONGEST} ${F} ${DUR}
+		DNUM=$(sed 's/://g' <<<${DUR})
+		LIST+="${DNUM}|${DUR}|${F:t}"
+	done
+
+	[[ ${#F} -gt 1 ]] && HDR="Titles in Descending Length"
+	[[ -n ${HDR} ]] && echo "\n${MAGENTA_FG}${HDR}${CYAN_FG}" && echo $(str_unicode_line ${#HDR}) && echo -n "${RESET}"
+
+	for F in ${(On)LIST};do
+		TITLE=$(cut -d'|' -f3 <<<${F})
+		DUR=$(cut -d'|' -f2 <<<${F})
+		printf "${WHITE_FG}%*s${RESET}:%10s\n" ${LONGEST} ${TITLE} ${DUR}
 	done
 	echo
 }
@@ -251,7 +279,7 @@ volume () {
 	local F=''
 
 	read -r -d '' DESC<<___EOF
-Display video duration
+Increase video volume by 3db
 ___EOF
 
 	# Functions
@@ -271,21 +299,13 @@ ___EOF
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 	[[ ${#} -eq 0 ]] && usage "missing video filename(s)" || FN_ARG=(${@})
+	[[ ! -f ${FN_ARG} ]] && exit_leave $(msg_exit E "File not found:${FN_ARG}")
 	
-	for F in ${FN_ARG};do
-		[[ ! -f ${F} ]] && continue
-		[[ ! -f ${F} ]] && exit_leave $(msg_exit E "file not found:${F}")
-		file ${F} | grep -qi 'media\|matroska\|video'
-		[[ ${?} -ne 0 ]] && echo "File:${WHITE_FG}${F}${RESET} not a video file - skipping" && continue
-		[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F}
-		LIST+=${F}
-	done
+	file ${FN_ARG} | grep -qi 'media\|matroska\|video'
+	[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "File not a video:${FN_ARG}")
 
-	[[ ${#LIST} -ne 0 ]] && echo "\n${CYAN_FG}Video duration info...${RESET}"
-	for F in ${LIST};do
-		ffmpeg -i "${F} -af volume=3db" ${F}.vol_up_3db
-	done
-	echo
+	echo "\n${CYAN_FG}Increasing volume by 3dB...${RESET}"
+	ffmpeg -i "${FN_ARG}" -af "volume=3dB" ${FN_ARG:r}_v+3d.${FN_ARG:e}
 }
 
 merge () {
@@ -424,6 +444,7 @@ rescale () {
 	local -a RESOLUTIONS
 	local SCALE
 	local FN_OUT
+	local FN
 
 	# Constants
 	local RESOLUTIONS=(1920:1080 1280:720)
@@ -503,8 +524,9 @@ ___EOF
 
 	[[ ! -e ${FN} ]] && usage "File not found:${FN}"
 
-	sel_list_set ${RESOLUTIONS}
-	sel_list -x3 -y3 "<w>Select Resolution<N>"
+	sel_set_list ${RESOLUTIONS}
+	sel_list -x5 -y5 -F"<w>Select Resolution<N>" -H"Video Utilities"
+	read
 	SCALE=${_SEL_VAL}
 
 	FN_OUT="${FN:r} ${SCALE}.mkv"
@@ -618,7 +640,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${#} -ne 0 ]] && UTIL=${1}
+[[ ${#} -ne 0 ]] && UTIL=${1:=none}
 
 [[ ${UTIL} != 'none' && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "UTIL:${UTIL} not found"
 
@@ -629,9 +651,8 @@ if [[ ${UTIL} != 'none' ]];then
 else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-	sel_list_set ${(v)_UTILS_DESC}
-	# Selection_list -O ${CYAN_FG} -x11 -y32 -c -w10 "<w>Show Video Utilities usage or <h>(q)uit<N>"
-	sel_list -O ${CYAN_FG} -c -w10 "<w>Show Video Utilities usage or <h>(q)uit<N>"
+	sel_set_list ${(v)_UTILS_DESC}
+	sel_list -O ${CYAN_FG} -C "<w>Show Video Utilities usage or <h>(q)uit<N>"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

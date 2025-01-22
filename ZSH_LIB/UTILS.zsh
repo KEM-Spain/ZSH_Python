@@ -205,24 +205,17 @@ box_coords_set () {
 }
 
 box_coords_upd () {
-	local TAG=${1}
-	local KEY=${2}
-	local VAL=${3}
-	local -A UPD=()
-	local -a COORDS=()
+	local -a ARGS=(${@})
+	local TAG=${ARGS[1]}
+	local -A UPD=(${ARGS[2,-1]})
+	local -A ORIG=($(box_coords_get ${TAG}))
+	local K V
 
-	[[ ${_DEBUG} -ge ${_UTILS_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} TAG:${TAG}"
+	for K in ${(k)UPD};do
+		ORIG[${K}]=${UPD[${K}]}
+	done
 
-	COORDS=($(box_coords_get ${TAG}))
-	[[ -z ${COORDS} ]] && return 1
-
-	[[ ${_DEBUG} -ge ${_UTILS_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: COORDS:${COORDS}"
-
-	UPD=(${COORDS})
-
-	box_coords_set ${TAG} X ${UPD[X]} Y ${UPD[Y]} W ${UPD[W]} H ${UPD[H]} ${KEY} ${VAL}
-
-	return 0
+	box_coords_set ${TAG} ${(kv)ORIG}
 }
 
 coord_center () {

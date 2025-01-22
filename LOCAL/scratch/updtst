@@ -1,0 +1,54 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+typeset -A _ORIG=(A 1 B 2 C 3 D 4)
+box_coords_set ORIG ${(kv)_ORIG}
+
+coords_upd () {
+	local -a ARGS=(${@})
+	local -A ORIG=($(box_coords_get ${ARGS[1]}))
+	local -A UPD=(${ARGS[2,-1]})
+	local K V
+
+	echo "${0}: ORIG:${WHITE_FG}${(kv)ORIG}${RESET}"
+	echo "${0}:  UPD:${WHITE_FG}${(kv)UPD}${RESET}"
+
+	for K in ${(k)UPD};do
+		ORIG[${K}]=${UPD[${K}]}
+	done
+
+	box_coords_set ${ARGS[1]} ${(kv)ORIG}
+	ORIG=($(box_coords_get ${ARGS[1]}))
+
+	echo "${0}:  UPDATED ${ARGS[1]}:${WHITE_FG}${(kv)ORIG}${RESET}"
+}
+
+typeset -A UPD=(A 1 B 2 C 3 Z 7)
+
+coords_upd ORIG ${(kv)UPD}
+
+

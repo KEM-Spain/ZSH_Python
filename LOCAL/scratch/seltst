@@ -35,7 +35,7 @@ unplug "DETACH:safely detach device"
 usbdisks "USB:display usb disk details"
 )
 
-_DEBUG=4
+_DEBUG=${1}
 clear
 cursor_off
 
