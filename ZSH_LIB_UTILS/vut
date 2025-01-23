@@ -97,7 +97,7 @@ info () {
 
 		DUR=$(sed 's/[0]+$//' <<<${DUR})
 
-		INFO=("${(C)DUR}" "${(C)VID}" "Resolution:${RES}" "${AUD}" "Subtitiles:${(C)SUB}")
+		INFO=("${DUR}" "${(U)VID}" "Resolution:${RES}" "${(U)AUD}" "Subtitiles:${(C)SUB}")
 
 		HDR="\nVideo Information: ${WHITE_FG}${@:t}${RESET}"
 		echo ${HDR}
@@ -408,9 +408,10 @@ ___EOF
 
 	if [[ -e ${DESTINATION_FILE} ]];then
 		echo -n "Overwrite ${DESTINATION_FILE} (y/n):"; read -q RESPONSE
-		[[ ${RESPONSE} == 'n' ]] && exit_leave "Operation cancelled" || echo
+		[[ ${RESPONSE} == 'n' ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}" || echo
 		rm ${DESTINATION_FILE}
 	fi
+
 
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
 	echo "Files to merge:${BOLD}${ITALIC}${WORKFILES}${RESET}"
@@ -418,7 +419,7 @@ ___EOF
 	echo -n "\nPlease review...Continue (y/n):"; read -q RESPONSE
 	echo
 
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(msg_exit W "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave $(msg_exit W "[${WHITE_FG}${0}${RESET}] Operation cancelled")
 
 	echo "Merging:${WHITE_FG}${WORKFILES}${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
 	case ${APP} in
@@ -519,13 +520,14 @@ ___EOF
 	#--End GetOpts--
 
 	# Execution
+	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 	[[ ${#} -eq 0 ]] && usage "Missing argument $(opt_type v)" || FN=${1}
 
 	[[ ! -e ${FN} ]] && usage "File not found:${FN}"
 
 	sel_set_list ${RESOLUTIONS}
-	sel_list -x5 -y5 -F"<w>Select Resolution<N>" -H"Video Utilities"
-	read
+	sel_list -O${CYAN_FG} -x10 -y30 -F"<w>Select Resolution<N>" -H"Video Utilities"
+	[[ ${?} -ne 0 ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
 	SCALE=${_SEL_VAL}
 
 	FN_OUT="${FN:r} ${SCALE}.mkv"

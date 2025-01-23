@@ -245,8 +245,8 @@ action_do () {
 				DEST_1=$(cut -d'|' -f1 <<<${DEST})
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST} | sed 's/_/ /g')
-				HDR1_TXT=$(clean_line ${HDR1_TXT[1,60]})
-				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,60]}<N>"
+				HDR1_TXT=$(clean_line ${HDR1_TXT})
+				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT}<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
@@ -405,7 +405,7 @@ clean_line () {
 
 	[[ ${OUT[-1]} =~ ',$' ]] && OUT[-1]=${OUT[-1][1,-2]} # No trailing commas
 
-	echo ${OUT}
+	echo ${OUT:r} # Remove any file extension
 }
 
 clear_log () {
@@ -534,7 +534,7 @@ fav_get () {
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)g_QRY_ENGINE} query${MSG} from history or <h>(q)uit<N>"
 		TAG=$(tr -d '[:space:]' <<<${HDR})
-		sel_list -T${TAG} -O${RESET} -H"${HDR}" -M${MAP} -F${FTR}
+		sel_list -S -T${TAG} -O${RESET} -H"${HDR}" -M${MAP} -F${FTR}
 
 		case ${_SEL_KEY} in
 			d) fav_delete ${_SEL_VAL} && continue;;
@@ -699,6 +699,8 @@ get_field () {
 			agetime) STR=$(cut -d'|' -f1,5 <<<${_LIST[${NDX}]});STR="(${STR:s/|/ /})";;
 		esac
 	fi
+
+	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
 
 	if [[ ${FIELD} == 'agetime' ]];then
 		STR=$(perl -pe "s/(.*\s+)(\d{1,}\s+\w+\s+ago.*)/\2/" <<<${STR})

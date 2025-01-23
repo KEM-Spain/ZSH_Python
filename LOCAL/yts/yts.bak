@@ -534,7 +534,7 @@ fav_get () {
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)g_QRY_ENGINE} query${MSG} from history or <h>(q)uit<N>"
 		TAG=$(tr -d '[:space:]' <<<${HDR})
-		sel_list -T${TAG} -O${RESET} -H"${HDR}" -M${MAP} -F${FTR}
+		sel_list -S -T${TAG} -O${RESET} -H"${HDR}" -M${MAP} -F${FTR}
 
 		case ${_SEL_KEY} in
 			d) fav_delete ${_SEL_VAL} && continue;;
@@ -700,6 +700,8 @@ get_field () {
 		esac
 	fi
 
+	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
+
 	if [[ ${FIELD} == 'agetime' ]];then
 		STR=$(perl -pe "s/(.*\s+)(\d{1,}\s+\w+\s+ago.*)/\2/" <<<${STR})
 		[[ ! ${STR} =~ '^\(' ]] && STR="(${STR}" # Prefix a paren if not present
@@ -847,6 +849,8 @@ log_find () {
 	local R=0
 	local -A SEEN=()
 
+	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	# Page callback - pre-process list to populate download status
 	 
 	_DOWNLOADS=()
@@ -857,11 +861,17 @@ log_find () {
 		TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R})) # Video length
 		TM=$(tr -d '[()]' <<<${TM} | sed 's/undefined//')
 		TITLE=$(get_field title ${R}) # Title
-		LINE=$(grep -i ${AU:=null 2>/dev/null} ${_DOWNLOAD_LOG} | grep ${TM:=null} 2>/dev/null | grep ${TITLE} 2>/dev/null) # Match on author/time/title
+		[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}: AU:${AU:=null} TM:${TM:=null} TITLE:${TITLE[1,15]}"
+
+		LINE=$(grep -i ${AU:=null 2>/dev/null} ${_DOWNLOAD_LOG} | grep ${TM:=null} 2>/dev/null | grep "${TITLE[1,15]}" 2>/dev/null) # Match on author/time/title
+		[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}: GREPPED ${_DOWNLOAD_LOG} for LINE:${LINE:=null}"
+
 		if [[ -n ${LINE} ]];then 
 			FN=$(cut -d '|' -f3 <<<${LINE})
+			[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}: TARGET _DOWNLOAD_DIR/FN:${_DOWNLOAD_DIR}/${FN}"
 			[[ ${SEEN[${FN}]} == 'true' ]] && continue # Only process a filename once
 			if [[ -e ${_DOWNLOAD_DIR}/${FN} ]];then
+				[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}: FOUND _DOWNLOAD_DIR/FN:${_DOWNLOAD_DIR}/${FN}"
 				[[ ${FN:e} == 'part' ]] && _PARTIALS[${R}]=true || _DOWNLOADS[${R}]=true
 				SEEN[${FN}]=true
 			fi

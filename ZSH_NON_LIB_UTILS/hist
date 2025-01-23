@@ -1,0 +1,49 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+fc -R
+[[ -n ${1} ]] && _SEARCHTERM=${1}
+
+print_list () {
+	[[ -n ${_SEARCHTERM} ]] && HDR="${WHITE_FG}Command History containing${RESET}: \"${_SEARCHTERM}\"" || HDR="${WHITE_FG}Command History${RESET}"
+	local HDR_OUT=false
+	local LINE
+	local D C
+
+	while read LINE;do
+		[[ ${HDR_OUT} == 'false' ]] && echo "${HDR}" && HDR_OUT=true
+		[[ ${LINE} =~ "hist ${_SEARCHTERM}" ]] && continue
+		D=$(cut -d'|' -f1 <<<${LINE})
+		C=$(cut -d'|' -f2 <<<${LINE})
+		if [[ -n ${_SEARCHTERM} ]];then
+			echo ${MAGENTA_FG}${D}${RESET} ${C} | grep ${_SEARCHTERM}
+		else
+			echo ${MAGENTA_FG}${D}${RESET} ${C}
+		fi
+	done | mypager
+}
+
+while read DATE TM CMD;do
+	D="${DATE} ${TM}"
+	U=$(date -d ${D} +%s)
+	echo "${U}|${D}|${CMD}"
+done < <(fc -nli 1 10000) | sort -t'|' -k3 -u | sort -t'|' -k1 -r | cut -d'|' -f2,3  | print_list
+
