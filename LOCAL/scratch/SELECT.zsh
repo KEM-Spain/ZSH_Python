@@ -20,6 +20,7 @@ typeset -a _PAGE=()
 _CURRENT_PAGE=0
 _HAS_CAT=false
 _HILITE_X=0
+_SAVE_MENU_POS=false
 _SEL_KEY=''
 _SEL_VAL=''
 _TAG=''
@@ -29,11 +30,11 @@ sel_box_center () {
 	local BOX_LEFT=${1};shift # Box Y coord
 	local BOX_WIDTH=${1};shift # Box W coord
 	local TXT=${@} # Text to center
-	local TXT_LEN=0
 	local BOX_CTR=0
 	local CTR=0
 	local REM=0
 	local TXT_CTR=0
+	local TXT_LEN=0
 
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -65,6 +66,66 @@ sel_box_center () {
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0} CTR:$(( BOX_LEFT + BOX_CTR - TXT_CTR )) BOX_LEFT:${BOX_LEFT} BOX_CTR:${BOX_CTR} TXT_CTR:${TXT_CTR}"
 
 	echo ${CTR}
+}
+
+sel_clear_region () {
+	local -A R_COORDS
+	local X_ARG=0
+	local Y_ARG=0
+	local W_ARG=0
+	local H_ARG=0
+	local DIFF=0
+	local R=0
+
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	R_COORDS=($(box_coords_get REGION))
+
+	if [[ -z ${R_COORDS} ]];then
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: R_COORDS is null - returning"
+		return -1
+	else
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: R_COORDS: ${(kv)R_COORDS}"
+	fi
+
+	X_ARG=${R_COORDS[X]}
+	Y_ARG=${R_COORDS[Y]}
+	W_ARG=${R_COORDS[W]}
+	H_ARG=${R_COORDS[H]}
+
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
+
+	if	[[ ${R_COORDS[OB_W]} -ne 0 ]];then
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: HAS OUTER BOX"
+		((X_ARG-=1))
+		Y_ARG=$(( R_COORDS[OB_Y] - 4 ))
+		W_ARG=$(( R_COORDS[OB_W] + 8 ))
+		((H_ARG+=5))
+	else
+		((X_ARG-=1))
+		((Y_ARG-=2))
+		((W_ARG+=4))
+		((H_ARG+=2))
+	fi
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: ADJUSTMENTS X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
+
+	local STR=$(str_rep_char "#" ${W_ARG})
+	for (( R=0; R <= ${H_ARG}; R++ ));do
+		tcup $(( X_ARG + R )) ${Y_ARG};tput ech ${W_ARG}
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && tcup $(( X_ARG + R )) ${Y_ARG} && echo -n ${STR}
+	done
+
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: Cleared ${H_ARG} rows starting from row:${X_ARG}, col:${Y_ARG} for:${W_ARG} columns"
+}
+
+sel_disp_page () {
+	local NDX=0
+
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+
+	for (( NDX=1; NDX <= ${#_PAGE}; NDX++ ));do
+		sel_norm $(( _LIST_DATA[X] + NDX - 1 )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+	done
 }
 
 sel_hilite () {
@@ -130,7 +191,7 @@ sel_list () {
 	local L
 
 	local OPTION=''
-	local OPTSTR=":CF:H:I:M:O:T:W:x:y:c"
+	local OPTSTR=":F:H:I:M:O:T:W:x:y:SCc"
 	OPTIND=0
 
 	local CLEAR_REGION=false
@@ -161,6 +222,7 @@ sel_list () {
 	   I) IB_COLOR=${OPTARG};;
 		M) HAS_MAP=true;LIST_MAP=${OPTARG};;
 	   O) HAS_OB=true;OB_COLOR=${OPTARG};;
+		S) _SAVE_MENU_POS=true;;
 	   T) _TAG=${OPTARG};;
 	   W) OB_PAD=${OPTARG};;
 	   c) CLEAR_REGION=true;;
@@ -203,7 +265,7 @@ sel_list () {
 
 	_PAGE_TOPS=($(sel_set_pages ${#_LIST} ${LIST_H})) # Create table of page top indexes
 
-	PAGE_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev"
+	PAGE_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
 
 	# Decorations w/o markup
 	NM_H=$(msg_nomarkup ${LIST_HDR})
@@ -216,8 +278,8 @@ sel_list () {
 	MH=${#NM_M} # Set default MAP width
 	[[ ${PAGING} == 'true' ]] && PH=${#NM_P} # Set default PAGING width
 	if [[ ${HAS_OB} == 'true' ]];then
-		((MH+=6)) # Add padding for MAP if OUTER_BOX
-		[[ ${PAGING} == 'true' ]] && ((PH+=4)) # Add padding for PAGING if OUTER_BOX
+		((MH+=6)) # Add padding for MAP
+		[[ ${PAGING} == 'true' ]] && ((PH+=4)) # Add padding for PAGING
 	fi
 
 	# Widest decoration - inner box, header, footer, map, paging, or exit msg
@@ -268,6 +330,7 @@ sel_list () {
 	# Store DECOR coords
 	box_coords_set DECOR HAS_HDR ${HAS_HDR} HDR_X ${HDR_X} HDR_Y ${HDR_Y} HAS_MAP ${HAS_MAP} MAP_X ${MAP_X} MAP_Y ${MAP_Y} HAS_FTR ${HAS_FTR} FTR_X ${FTR_X} FTR_Y ${FTR_Y}
 
+	# Set coords for region clearing
 	local R_H=$(max $(( FTR_X - BOX_X )) $(( MAP_X - BOX_X )) $(( PGH_X - BOX_X )) ${BOX_H}) 
 	local R_Y=$(min ${HDR_Y} ${MAP_Y} ${FTR_Y} ${PGH_Y} ${BOX_Y})
 	local R_W=$(max ${#LIST_HDR} ${#LIST_MAP} ${#LIST_FTR} ${#PAGE_HDR} ${BOX_W})
@@ -296,7 +359,36 @@ sel_list () {
 	_LIST_DATA[X]=${LIST_X}
 	_LIST_DATA[Y]=${LIST_Y}
 
-	sel_scroll 1 # Display list and handle user inputs
+	sel_scroll 1 # Display list page 1 and handle user inputs
+}
+
+sel_load_page () {
+	local PAGE=${1}
+	local NDX=0
+	local TOP_ROW=1
+
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	# Evaluate/validate PAGE arg
+	if [[ -n ${_PAGE_TOPS[${PAGE}]} ]];then
+		TOP_ROW=${_PAGE_TOPS[${PAGE}]}
+	else
+		TOP_ROW=1
+		PAGE=1
+	fi
+	 
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "TOP_ROW:${TOP_ROW}"
+
+	_PAGE=()
+	for (( NDX=1; NDX <= _LIST_DATA[H]; NDX++ ));do
+		[[ -z ${_LIST[$(( NDX + TOP_ROW - 1 ))]} ]] && continue # No blank rows
+		_PAGE+=${_LIST[$(( NDX + TOP_ROW - 1 ))]}
+		[[ ${NDX} -eq ${#_LIST} ]] && break
+	done
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "ADDED NDX ROWS"
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "_LIST ROWS:${#_LIST} _PAGE ROWS:${#_PAGE} PAGE:${PAGE}"
+
+	_CURRENT_PAGE=${PAGE} # Set the currently displayed page
 }
 
 sel_norm () {
@@ -331,8 +423,10 @@ sel_scroll () {
 	local NDX=0
 	local NORM_NDX=0
 	local SCROLL=''
+	local TAG_PAGE=0
 	local TAG_NDX=0
 	local X_OFF=0
+	local PAGE_CHANGE=false
 	
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -362,27 +456,43 @@ sel_scroll () {
 			tcup ${D_COORDS[MAP_X]} ${D_COORDS[MAP_Y]};echo $(msg_markup ${_LIST_DATA[MAP]})
 		fi
 
+		# Handle stored list position
+		if [[ -e ${_TAG_FILE}  ]];then
+			IFS='|' read -r TAG_PAGE TAG_NDX < ${_TAG_FILE} # Retrieve any stored menu positions
+			LAST_TAG=${_TAG_FILE} # Only use position memory for differing menus unless _SAVE_MENU_POS is indicated
+			[[ ${_DEBUG} -gt 0 ]] && dbg "_TAG_FILE:${_TAG_FILE}  LAST_TAG:${LAST_TAG}"
+		fi
+
+		NDX=1 # Initialize index
+		if [[ ${PAGE_CHANGE} == 'false' ]];then
+			if [[ ${TAG_NDX} -ne 0 ]];then
+				if [[ ${_SAVE_MENU_POS} == 'true' ]];then
+					NDX=${TAG_NDX} # Restore menu position regardless
+					PAGE=${TAG_PAGE} # Restore menu position regardless
+					[[ ${_DEBUG} -gt 0 ]] && dbg "RESTORED POSITION: ${NDX}"
+				else
+					[[ ${LAST_TAG} != ${_TAG_FILE} ]] && NDX=${TAG_NDX} && PAGE=${TAG_PAGE} # Restore menu position only if menu changed
+					[[ ${_DEBUG} -gt 0 ]] && dbg "MENU CHANGED - RESTORED POSITION: ${NDX}"
+				fi
+			fi
+		fi
+
+		# Populate current page array 
 		sel_load_page ${PAGE} # Sets _CURRENT_PAGE
 		PAGE=${_CURRENT_PAGE}
 
+		# Add header for paging
 		if [[ ${_LIST_DATA[PAGING]} == 'true' ]];then
 			tcup ${_LIST_DATA[PGH_X]} ${_LIST_DATA[PGH_Y]};echo -n $(msg_markup "Page <w>${PAGE}<N> of <w>${_PAGE_TOPS[MAX]}<N> <m>${_DMD}<N> (<w>N<N>)ext (<w>P<N>)rev")
 		fi
 
 		sel_disp_page # Display list items
 
-		if [[ -e ${_TAG_FILE}  ]];then
-			read TAG_NDX < ${_TAG_FILE} # Retrieve any stored menu positions
-			LAST_TAG=${_TAG_FILE} # Only use position memory for differing menus
-		fi
-
-		[[ ${_DEBUG} -gt 0 ]] && dbg "_TAG_FILE:${_TAG_FILE}  LAST_TAG:${LAST_TAG}"
-
-		[[ ${TAG_NDX} -ne 0 && ${LAST_TAG} != ${_TAG_FILE} ]] && NDX=${TAG_NDX} || NDX=1 # Initialize index
 		_SEL_VAL=${_PAGE[${NDX}]} # Initialize return value
 
 		sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]} # Initial item hilite
 
+		# Get user inputs
 		while true;do
 			KEY=$(get_keys)
 			_SEL_KEY='?'
@@ -401,7 +511,7 @@ sel_scroll () {
 			NAV=true # Return only menu selections
 
 			case ${KEY} in
-				0) break 2;;
+				0) sel_set_tag ${PAGE} ${NDX}; break 2;;
 				q) exit_request $(sel_set_ebox);break;;
 				27) return -1;;
 				1|u|k) SCROLL="U";;
@@ -440,22 +550,25 @@ sel_scroll () {
 				# [[ ${_DEBUG} -gt 0 ]] && dbg "SCROLL:${SCROLL} NDX:${NDX} NORM_NDX:${NORM_NDX} _LIST_DATA[H]:${_LIST_DATA[H]} _PAGE[NORM_NDX]:${_PAGE[${NORM_NDX}]} _PAGE[NDX]:${_PAGE[${NDX}]} #_PAGE:${#_PAGE}"
 			elif [[ ${SCROLL} == 'N' ]];then
 				((PAGE++))
+				PAGE_CHANGE=true
 				break
 			elif [[ ${SCROLL} == 'P' ]];then
 				[[ ${PAGE} -eq 1 ]] && PAGE=${_PAGE_TOPS[MAX]} || ((PAGE--))
+				PAGE_CHANGE=true
 				break
 			elif [[ ${SCROLL} == 'H' ]];then
 				PAGE=1
+				PAGE_CHANGE=true
 				break
 			elif [[ ${SCROLL} == 'L' ]];then
 				PAGE=${_PAGE_TOPS[MAX]}
+				PAGE_CHANGE=true
 				break
 			fi
 
 			if [[ ${NAV} == 'true' ]];then # Set key pressed and item selected
 				_SEL_KEY=${KEY}
 				_SEL_VAL=${_PAGE[${NDX}]}
-				[[ -n ${_TAG_FILE} ]] && echo "${NDX}" >${_TAG_FILE} # Save menu position if indicated
 			fi
 		done
 	done
@@ -478,6 +591,7 @@ sel_set_ebox () {
 
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	# Set coords for exit msg display
 	I_COORDS=($(box_coords_get INNER_BOX))
 	X_ARG=$(( I_COORDS[X] + 1 ))
 	Y_ARG=$(( I_COORDS[Y] - 2 ))
@@ -499,56 +613,6 @@ sel_set_list () {
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_LIST=(${LIST})
-}
-
-sel_clear_region () {
-	local -A R_COORDS
-	local X_ARG=0
-	local Y_ARG=0
-	local W_ARG=0
-	local H_ARG=0
-	local DIFF=0
-	local R=0
-
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	R_COORDS=($(box_coords_get REGION))
-
-	if [[ -z ${R_COORDS} ]];then
-		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: R_COORDS is null - returning"
-		return -1
-	else
-		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: R_COORDS: ${(kv)R_COORDS}"
-	fi
-
-	X_ARG=${R_COORDS[X]}
-	Y_ARG=${R_COORDS[Y]}
-	W_ARG=${R_COORDS[W]}
-	H_ARG=${R_COORDS[H]}
-
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
-
-	if	[[ ${R_COORDS[OB_W]} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: HAS OUTER BOX"
-		((X_ARG-=1))
-		Y_ARG=$(( R_COORDS[OB_Y] - 4 ))
-		W_ARG=$(( R_COORDS[OB_W] + 8 ))
-		((H_ARG+=5))
-	else
-		((X_ARG-=1))
-		((Y_ARG-=2))
-		((W_ARG+=4))
-		((H_ARG+=2))
-	fi
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: ADJUSTMENTS X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
-
-	local STR=$(str_rep_char "#" ${W_ARG})
-	for (( R=0; R <= ${H_ARG}; R++ ));do
-		tcup $(( X_ARG + R )) ${Y_ARG};tput ech ${W_ARG}
-		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && tcup $(( X_ARG + R )) ${Y_ARG} && echo -n ${STR}
-	done
-
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: Cleared ${H_ARG} rows starting from row:${X_ARG}, col:${Y_ARG} for:${W_ARG} columns"
 }
 
 sel_set_pages () {
@@ -582,41 +646,12 @@ sel_set_pages () {
 	echo ${(kv)PAGE_TOPS}
 }
 
-sel_load_page () {
-	local PAGE=${1}
-	local NDX=0
-	local TOP_ROW=1
+sel_set_tag () {
+	PAGE=${1}
+	NDX=${2}
 
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
 
-	# Evaluate/validate PAGE arg
-	if [[ -n ${_PAGE_TOPS[${PAGE}]} ]];then
-		TOP_ROW=${_PAGE_TOPS[${PAGE}]}
-	else
-		TOP_ROW=1
-		PAGE=1
-	fi
-	 
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "TOP_ROW:${TOP_ROW}"
-
-	_PAGE=()
-	for (( NDX=1; NDX <= _LIST_DATA[H]; NDX++ ));do
-		[[ -z ${_LIST[$(( NDX + TOP_ROW - 1 ))]} ]] && continue # No blank rows
-		_PAGE+=${_LIST[$(( NDX + TOP_ROW - 1 ))]}
-		[[ ${NDX} -eq ${#_LIST} ]] && break
-	done
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "ADDED NDX ROWS"
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "_LIST ROWS:${#_LIST} _PAGE ROWS:${#_PAGE} PAGE:${PAGE}"
-
-	_CURRENT_PAGE=${PAGE} # Set the currently displayed page
+	[[ -n ${_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_TAG_FILE} # Save menu position if indicated
 }
 
-sel_disp_page () {
-	local NDX=0
-
-	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
-
-	for (( NDX=1; NDX <= ${#_PAGE}; NDX++ ));do
-		sel_norm $(( _LIST_DATA[X] + NDX - 1 )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
-	done
-}

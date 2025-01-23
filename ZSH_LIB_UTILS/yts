@@ -66,7 +66,7 @@ _JS_SCRIPT=/usr/local/etc/yts.js
 _MAX_ERRORS=10
 _MAX_FLEN=75
 _OBJECT=video
-_PAUSE_TM=4
+_PAUSE_TM=2
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _YTS_DBG=2
 _YTS_FAVORITES=${_YTS_DIR}/yts_favorites
@@ -847,6 +847,8 @@ log_find () {
 	local R=0
 	local -A SEEN=()
 
+	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	# Page callback - pre-process list to populate download status
 	 
 	_DOWNLOADS=()
@@ -857,11 +859,17 @@ log_find () {
 		TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R})) # Video length
 		TM=$(tr -d '[()]' <<<${TM} | sed 's/undefined//')
 		TITLE=$(get_field title ${R}) # Title
-		LINE=$(grep -i ${AU:=null 2>/dev/null} ${_DOWNLOAD_LOG} | grep ${TM:=null} 2>/dev/null | grep ${TITLE} 2>/dev/null) # Match on author/time/title
+		[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}: AU:${AU:=null} TM:${TM:=null} TITLE:${TITLE[1,15]}"
+
+		LINE=$(grep -i ${AU:=null 2>/dev/null} ${_DOWNLOAD_LOG} | grep ${TM:=null} 2>/dev/null | grep "${TITLE[1,15]}" 2>/dev/null) # Match on author/time/title
+		[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}: GREPPED ${_DOWNLOAD_LOG} for LINE:${LINE:=null}"
+
 		if [[ -n ${LINE} ]];then 
 			FN=$(cut -d '|' -f3 <<<${LINE})
+			[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}: TARGET _DOWNLOAD_DIR/FN:${_DOWNLOAD_DIR}/${FN}"
 			[[ ${SEEN[${FN}]} == 'true' ]] && continue # Only process a filename once
 			if [[ -e ${_DOWNLOAD_DIR}/${FN} ]];then
+				[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}: FOUND _DOWNLOAD_DIR/FN:${_DOWNLOAD_DIR}/${FN}"
 				[[ ${FN:e} == 'part' ]] && _PARTIALS[${R}]=true || _DOWNLOADS[${R}]=true
 				SEEN[${FN}]=true
 			fi
