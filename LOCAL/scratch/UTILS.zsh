@@ -561,8 +561,8 @@ max () {
 
 min () {
 	local -a NUMLIST=(${@})
+	local MIN=0
 	local N
-	local MIN=${NUMLIST[1]}
 
 	for N in ${NUMLIST};do
 		[[ ${N} -lt ${MIN} ]] && MIN=${N}

@@ -32,7 +32,7 @@ page () {
 
 	my $BUFFER='';
 	my $LN_OPT=$ENV{'LN_OPT'};
-	my $LESS_CMD="less $LN_OPT -R -F -P'COMMANDS\\: (h)elp (f,d)PgDn (b,u)PgUp (q)uit vi-keys arrows .?ltLine %lt .?e<EOF>'"; 
+	my $LESS_CMD="less $LN_OPT -R -F -P'PAGER COMMANDS\\: (h)elp (f,d)PgDn (b,u)PgUp (q)uit vi-keys arrows .?ltLine %lt .?e<EOF>'"; 
 	my $LINE;
 	my $LINES;
 	my $TERM_LINES = `tput lines`;

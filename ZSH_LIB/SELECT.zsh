@@ -204,7 +204,9 @@ sel_list () {
 	local LIST_HDR=''
 	local LIST_MAP=''
 	local LM=0
+	local MAX=0
 	local MAX_PAGE=0
+	local MIN=0
 	local OB_COLOR=${RESET}
 	local OB_PAD=0
 	local X_COORD_ARG=0
@@ -288,7 +290,7 @@ sel_list () {
 
 	# Handle outer box coords
 	if [[ ${HAS_OB} == 'true' ]];then
-		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: OUTER BOX DETECTED"
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Setting OUTER BOX coords"
 		OB_X=$(( BOX_X - OB_X_OFFSET ))
 		OB_Y=$(( BOX_Y - OB_Y_OFFSET ))
 		OB_W=$(( BOX_W + OB_Y_OFFSET * 2 ))
@@ -298,6 +300,12 @@ sel_list () {
 			DIFF=$(( (MAX - OB_W) / 2 ))
 			(( OB_Y-=DIFF ))
 			(( OB_W+=DIFF * 2 ))
+		fi
+		MIN=$(min ${OB_X} ${OB_Y} ${OB_W} ${OB_H})
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: OUTER_BOX coords: MIN:${MIN} OB_X:${OB_X}  OB_Y:${OB_Y} OB_W:${OB_W} OB_H:${OB_H}"
+
+		if [[ ${MIN} -lt 1 ]];then
+			exit_leave "[${WHITE_FG}SELECT.zsh${RESET}] ${RED_FG}OUTER BOX${RESET} would exceed available display. ${CYAN_FG}HINT${RESET}: increase sel_list -y option from ${Y_COORD_ARG} to $(( (MIN * -1) + Y_COORD_ARG + 1 ))"
 		fi
 	fi
 
