@@ -417,6 +417,8 @@ get_keys () {
 }
 
 inline_vi_edit () {
+	kbd_suspend
+
 	local PERL_SCRIPT
 	
 	[[ ${_DEBUG} -ge ${_UTILS_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -436,6 +438,7 @@ inline_vi_edit () {
 	}
 ___EOF
 
+kbd_activate
 perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
 }
 

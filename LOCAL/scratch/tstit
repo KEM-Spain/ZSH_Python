@@ -18,6 +18,9 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+PAGE=1
+typeset -a _TARGETS=(3:3:1:next_target 4:4:1:seen 5:5:1:seen 9:9:1:seen 3:3:2:seem 4:4:2:seen 5:5:2:seen 9:9:2:seen)
 
-IFS='|' read F1 F2 
-echo "F1:${F1} F2:${F2}"
+echo ${_TARGETS}
+
+echo ${_TARGETS[(r)*${1}:${PAGE}*]}

@@ -1,0 +1,219 @@
+list_search () {
+	local ACTION=${1}
+	local PAGE=${2} 
+	local TARGET=''
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	[[ ${_LIST_IS_SEARCHABLE} == 'false' ]] && return
+
+	[[ ${ACTION} == 'new' ]] && list_search_new ${PAGE}
+	TARGET=$(list_search_find ${ACTION});;
+	#msg_box -p -PK "TARGET:${TARGET}"
+}
+
+list_search_new () {
+	local PAGE=${1}
+	local HDR=''
+	local H_CTR=0
+	local H_POS=7
+	local PROMPT=''
+	local ROW=0
+	local V_CTR=0
+	local SEARCHTERM=''
+
+	HDR="<m>$(str_unicode_line 12) List Search (Next:<w>><m>, Prev:<w><<m>) $(str_unicode_line 12)<N>"
+
+	V_CTR=$(( _MAX_ROWS/2 - 4 )) # Vertical center
+	H_CTR=$(coord_center $(( _MAX_COLS - 3 )) ${#HDR}) # Horiz center
+
+	for (( ROW=1; ROW<=${H_POS}; ROW++ ));do # Clear a space to place the UI
+		tput cup $(( V_CTR + ROW )) ${H_CTR}
+		tput ech ${#HDR}
+	done
+
+	msg_box -x${V_CTR} -y${H_CTR} "${HDR}" # Display header
+
+	tput cup $(( V_CTR + 4 )) $(( H_CTR + 2 ))
+	PROMPT="${E_RESET}${E_BOLD}Find${E_RESET}:"
+
+	SEARCHTERM=$(inline_vi_edit ${PROMPT} "") # Call line editor
+
+	msg_box_clear X Y ${H_POS} W  # Clear box containing inline edit 
+
+	if [[ -z ${SEARCHTERM} ]];then # User entered nothing
+		list_search_repaint ${H_POS} ${PAGE}
+		return # Abort
+	fi
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: TARGET:${TARGET}"
+
+	if ! list_search_set_targets ${SEARCHTERM};then
+		for (( ROW=0; ROW<=${H_POS}; ROW++ ));do # Clear a space to place the MSG
+			tput cup $(( V_CTR + ROW )) ${H_CTR}
+			tput ech ${#HDR}
+		done
+
+		msg_box -x${V_CTR} -y$(( H_CTR + 10 )) -p -PK "<m>List Search<N>| |\"<w>${SEARCHTERM}<N>\" - <r>NOT<N> found" 
+		msg_box_clear
+
+		list_search_repaint $(( H_POS + 3 )) ${PAGE}
+		return # Abort
+	fi
+
+	list_search_repaint $(( H_POS + 1 )) ${PAGE} # Patch the display
+}
+
+list_search_find () {
+	local DIRECTION=${1}
+	local LAST_KEY=''
+	local TARGET=''
+	local T_CUR=0
+	local T_NDX=0
+	local T_PAGE=0
+	local T_TEXT=''
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: DIRECTION: ${DIRECTION}"
+	
+	TARGET=$(list_search_get_key ${DIRECTION})
+	IFS=":" read T_NDX T_CUR T_PAGE T_TEXT <<<${TARGET}
+
+	LAST_KEY=${_TARGETS[(i)*last_target]} # Index of last_target
+	_TARGETS[${LAST_KEY}]=$(sed "s/last_target/seen/" <<<${_TARGETS[${LAST_KEY}]}) # Update
+	_TARGETS[${T_NDX}]="${T_NDX}:${T_CUR}:${T_PAGE}:last_target" # Set new last_target
+
+	echo ${_TARGETS[${T_NDX}]}
+}
+
+list_search_get_key () {
+	local ACTION=${1}
+	local NDX=0
+	local R C P T N
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	case ${ACTION} in
+		new) NDX=1;;
+		fwd) N=${_TARGETS[(i)*last_target]}; [[ -z ${_TARGETS[$(( N + 1 ))]} ]] && NDX=1 || NDX=$(( N + 1 ));;
+		rev) N=${_TARGETS[(i)*last_target]}; [[ -z ${_TARGETS[$(( N - 1 ))]} ]] && NDX=${#_TARGETS} || NDX=$(( N - 1 ));;
+	esac
+
+	IFS=":" read R C P T <<<${_TARGETS[${NDX}]} # Target text (T) ignored; not used in key
+
+	echo "${R}:${C}:${P}:${NDX}" # Pass the current index
+}
+
+list_search_repaint () {
+	local -A MSG_COORDS=($(box_coords_get MSG_BOX ))
+	local ROWS=${1}
+	local PAGE=${2}
+	local CURSOR=0
+	local DISPLAY_ROWS=0
+	local END_COL=0
+	local END_ROW=0
+	local HDR_OFFSET=${#_LIST_HEADER}
+	local LINE_SNIP=''
+	local SAVED_NDX=${_LIST_NDX}
+	local START_COL=0
+	local START_ROW=0
+	local R
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: STORED SAVED_NDX:${SAVED_NDX}"
+
+	if [[ -z ${MSG_COORDS} ]];then
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: MSG_COORDS is null: returning"
+		return
+	fi
+
+	START_COL=${MSG_COORDS[Y]}
+	START_ROW=${MSG_COORDS[X]}
+	END_COL=$(( START_COL + ${MSG_COORDS[W]} ))
+
+	DISPLAY_ROWS=$(( ${_LIST_INDEX_RANGE[2]} - ${_LIST_INDEX_RANGE[1]} + 1 ))
+	CURSOR=$(( START_ROW - 1 ))
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: START_COL:${START_COL} START_ROW:${START_ROW} END_COL:${END_COL} DISPLAY_ROWS:${DISPLAY_ROWS} CURSOR:${CURSOR}"
+	
+	[[ ${_LIST_HEADER_BREAK} == 'false' ]] && ((HDR_OFFSET--))
+
+	START_ROW=$(( ${_LIST_INDEX_RANGE[1]} + START_ROW - HDR_OFFSET - 1 ))
+	END_ROW=$(( START_ROW + ROWS ))
+	_LIST_NDX=$(( START_ROW - 1 ))
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: START_ROW:${START_ROW} END_ROW:${END_ROW} _LIST_NDX:${_LIST_NDX}"
+
+	for (( R=START_ROW; R<=END_ROW; R++ ));do
+		((CURSOR++))
+		((_LIST_NDX++))
+		if [[ ${_BARLINES} == 'true' ]];then
+			BARLINE=$(( _LIST_NDX % 2 )) # Barlining 
+			[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
+		fi
+		if [[ ${_LIST_NDX} -le ${#_LIST} ]];then
+			tput cup ${CURSOR} 0
+			eval ${_LIST_LINE_ITEM} # Line item printf
+		fi
+	done
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: RETURNING SAVED_NDX:${SAVED_NDX}"
+	_LIST_NDX=${SAVED_NDX}
+}
+
+list_search_set_pages () {
+	local -A PAGES
+	local BOT
+	local PG=0
+	local TOP
+	local L
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	for (( L=1; L <= ${#_LIST}; L++ ));do
+		if [[ $(( L % MAX_DISPLAY_ROWS )) -eq 0 ]];then
+			(( PG++))
+			TOP=$(( L - MAX_DISPLAY_ROWS + 1 ))
+			PAGES[${PG}]="${TOP}:${L}"
+		fi
+	done
+
+	# Last page
+	BOT=$(cut -d: -f2 <<<${PAGES[${PG}]})
+	TOP=$(( BOT + 1 ))
+	BOT=$(( L - 1 ))
+	(( PG++))
+	PAGES[${PG}]=${TOP}:${BOT}
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}:${LINENO} RETURNING page boundaries for ${#PAGES} pages"
+
+	echo "${(kv)PAGES}"
+}
+
+list_search_set_targets () {
+	local SEARCHTERM=${@}
+	local -A PAGES=($(list_search_set_pages ))
+	local BOT=0
+	local RC=0
+	local TOP=0
+	local C P R
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SEARCHTERM:${SEARCHTERM}"
+
+	_TARGETS=("${(f)$(
+	for P in ${(onk)PAGES};do
+		IFS=":" read TOP BOT <<<${PAGES[${P}]}
+		for ((R=TOP; R<=BOT; R++ ));do
+			C=$(( R-TOP+1 ))
+			# TODO: :t limits search to commands only.  Should path (entire string) be included?
+			echo "${C}:${P}:${_LIST[${R}]:t}"
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SEARCHING LIST FOR TARGET: ${C}:${P}:${_LIST[${R}]:t}"
+		done
+	done | grep --color=never -ni -P ":.*${SEARCHTERM}.*" | perl -p -e "s/^(\d+:\d+:\d+)(.*)$/\1/" # Return key:NDX/CURSOR/PAGE
+	)}")
+
+	[[ -z ${_TARGETS} ]] && RC=1 || RC=0
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: RETURNING:${RC}"
+
+	return ${RC}
+}

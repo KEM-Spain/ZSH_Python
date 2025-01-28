@@ -34,10 +34,9 @@ _CURRENT_PAGE=1
 _CURSOR_COL=${CURSOR_COL:=0}
 _CURSOR_ROW=${CURSOR_ROW:=0}
 _HEADER_CALLBACK_FUNC=''
-_HILITE_COLOR=${WHITE_FG}
+_LINE_MARKER=')'
 _HOLD_CURSOR=false
 _HOLD_PAGE=false
-_OFFSCREEN_ROWS_MSG=''
 _KEY_CALLBACK_CONT_FUNC=''
 _KEY_CALLBACK_QUIT_FUNC=''
 _LIST_DELIM='|'
@@ -52,16 +51,19 @@ _LIST_PROMPT=''
 _LIST_SELECT_NDX=0
 _LIST_SELECT_ROW=0
 _LIST_SET_DEFAULTS=true
-_LIST_SORT_COL_MAX=0
 _LIST_SORT_COL_DEFAULT=''
+_LIST_SORT_COL_MAX=0
 _LIST_SORT_DIR_DEFAULT=''
 _LIST_SORT_TYPE=flat
 _LIST_USER_PROMPT_STYLE=none
+_MARKER=${_LINE_MARKER}
 _MSG_KEY=n
 _NO_TOP_OFFSET=false
+_OFFSCREEN_ROWS_MSG=''
 _PAGE_CALLBACK_FUNC=''
 _PROMPT_KEYS=''
 _ROW_OVERRIDE=false
+_SEARCH_MARKER="${BOLD}${RED_FG}\u2022${RESET}"
 _SELECTABLE=true
 _SELECTION_LIMIT=0
 _SELECT_ALL=false
@@ -118,7 +120,7 @@ list_do_header () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: LONGEST_HDR:${LONGEST_HDR} (before any modifications)"
 
 	# Position cursor
-	tput cup 0 0
+	tcup 0 0
 	tput el
 
 	for (( L=1; L<=${#_LIST_HEADER}; L++ ));do
@@ -156,7 +158,7 @@ list_do_header () {
 				echo ${HDR_LINE}
 			fi
 
-			tput cup ${L} 0
+			tcup ${L} 0
 		done
 
 		if [[ ${_LIST_HEADER_BREAK} == 'true' ]];then
@@ -275,6 +277,7 @@ list_is_within_range () {
 
 list_item () {
 	local EFFECT=${1}
+	local HDR_OFFSET=${#_LIST_HEADER}
 	local LINE_ITEM=${2}
 	local X_POS=${3}
 	local Y_POS=${4}
@@ -286,7 +289,19 @@ list_item () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} && -z ${_LIST[${_LIST_NDX}]} ]] && dbg "${0}: _LIST item is empty - returning"
 	[[ -z ${_LIST[${_LIST_NDX}]} ]] && return
 
-	tput cup ${X_POS} ${Y_POS}
+	if [[ ${EFFECT} == 'init' ]];then
+		_MARKER=${_LINE_MARKER}
+	elif [[ ${_TARGETS[(r)*$(( X_POS - 1 )):${PAGE}*]} ]];then
+		_MARKER=${_SEARCH_MARKER}
+	else
+		_MARKER=${_LINE_MARKER}
+	fi
+
+	echo "-----------------------------------" >>x
+	echo "${0}: ${functrace[1]} called ${0}:${LINENO} - ${_TARGETS[(r)*$(( X_POS - 1 )):${PAGE}*]} PAGE:${PAGE} X_POS:${X_POS} _LIST_NDX:${_LIST_NDX} _TARGET_NDX:${_TARGET_NDX} _TARGET_CURSOR:${_TARGET_CURSOR} _TARGET_PAGE:${_TARGET_PAGE}" >>x
+	echo "-----------------------------------" >>x
+
+	tcup ${X_POS} ${Y_POS}
 	[[ ${EFFECT} == 'high' ]] && tput smso || tput rmso
 
 	if [[ ${_BARLINES} == 'true' ]];then
@@ -425,13 +440,13 @@ list_search_new () {
 	H_CTR=$(coord_center $(( _MAX_COLS - 3 )) ${#HDR}) # Horiz center
 
 	for (( ROW=1; ROW<=${H_POS}; ROW++ ));do # Clear a space to place the UI
-		tput cup $(( V_CTR + ROW )) ${H_CTR}
+		tcup $(( V_CTR + ROW )) ${H_CTR}
 		tput ech ${#HDR}
 	done
 
 	msg_box -x${V_CTR} -y${H_CTR} "${HDR}" # Display header
 
-	tput cup $(( V_CTR + 4 )) $(( H_CTR + 2 ))
+	tcup $(( V_CTR + 4 )) $(( H_CTR + 2 ))
 	PROMPT="${E_RESET}${E_BOLD}Find${E_RESET}:"
 
 	SEARCHTERM=$(inline_vi_edit ${PROMPT} "") # Call line editor
@@ -447,7 +462,7 @@ list_search_new () {
 
 	if ! list_search_set_targets ${SEARCHTERM};then
 		for (( ROW=0; ROW<=${H_POS}; ROW++ ));do # Clear a space to place the MSG
-			tput cup $(( V_CTR + ROW )) ${H_CTR}
+			tcup $(( V_CTR + ROW )) ${H_CTR}
 			tput ech ${#HDR}
 		done
 
@@ -550,7 +565,7 @@ list_search_repaint () {
 			[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 		fi
 		if [[ ${_LIST_NDX} -le ${#_LIST} ]];then
-			tput cup ${CURSOR} 0
+			tcup ${CURSOR} 0
 			eval ${_LIST_LINE_ITEM} # Line item printf
 		fi
 	done
@@ -721,11 +736,10 @@ list_select () {
 
 		list_do_header ${PAGE} ${MAX_PAGE}
 
-		[[ ${_NO_TOP_OFFSET} == 'false' ]] && tput cup ${TOP_OFFSET} 0 # Place cursor
+		[[ ${_NO_TOP_OFFSET} == 'false' ]] && tcup ${TOP_OFFSET} 0 # Place cursor
 		 
 		# Initialize page display
-		_LIST_NDX=$(( PAGE_RANGE_TOP - 1 )) # Prime page top
-
+		_LIST_NDX=$(( PAGE_RANGE_TOP - 1 )) # Initialize page top
 		[[ -n ${_PAGE_CALLBACK_FUNC} ]] && ${_PAGE_CALLBACK_FUNC} ${PAGE_RANGE_TOP} ${PAGE_RANGE_BOT}
 
 		for (( R=0; R<${MAX_DISPLAY_ROWS}; R++ ));do
@@ -740,7 +754,7 @@ list_select () {
 			if [[ ${_LIST_NDX} -le ${MAX_ITEM} ]];then
 				OUT=${_LIST_NDX}
 				[[ ${_LIST_SELECTED[${OUT}]} -eq 1 ]] && SHADE=${REVERSE} || SHADE=''
-				eval ${_LIST_LINE_ITEM} # Output line item
+				list_item init ${_LIST_LINE_ITEM} $(( TOP_OFFSET + R )) 0
 			else
 				printf "\n" # Output filler
 			fi
@@ -751,7 +765,7 @@ list_select () {
 			_LIST_NDX=${_CURRENT_ARRAY} # Hold array position
 			CURSOR_NDX=${_CURRENT_CURSOR} # Hold cursor position
 			[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq 1 ]] && SHADE=${REVERSE} || SHADE='' 
-			list_item high ${_LIST_LINE_ITEM} $(( (CURSOR_NDX + TOP_OFFSET) - 1 )) 0 # Highlight current item
+			list_item high ${_LIST_LINE_ITEM} $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0 # Highlight current item
 			_HOLD_CURSOR=false # Reset
 		else
 			_LIST_NDX=${PAGE_RANGE_TOP} # Page top
@@ -843,12 +857,12 @@ list_select () {
 
 			# Clear highlight of last line output
 			ITEM=${_LIST_NDX}; _LIST_NDX=${LAST_LIST_NDX} # Save value of _LIST_NDX
-			list_item norm ${_LIST_LINE_ITEM} $(( TOP_OFFSET + (_CURRENT_CURSOR - 1) )) 0 #_CURRENT_CURSOR is value before nav key
+			list_item norm ${_LIST_LINE_ITEM} $(( TOP_OFFSET + _CURRENT_CURSOR - 1 )) 0 #_CURRENT_CURSOR is value before nav key
 
 			# Highlight current line output
 			_LIST_NDX=${ITEM} # Restore value of _LIST_NDX
 			[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq 1 ]] && SHADE=${REVERSE} || SHADE='' 
-			list_item high ${_LIST_LINE_ITEM} $(( TOP_OFFSET + (CURSOR_NDX - 1) )) 0 # CURSOR_NDX is value after nav key
+			list_item high ${_LIST_LINE_ITEM} $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0 # CURSOR_NDX is value after nav key
 
 			_CURRENT_ARRAY=${ITEM} # Store current array position
 		done
@@ -1360,9 +1374,9 @@ list_toggle_all () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}:  _HEADER_CALLBACK_FUNC:${_HEADER_CALLBACK_FUNC}"
 	[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} 0 "${0}|${_LIST_SELECTED_PAGE[${PAGE}]}"
 
-	tput cup ${TOP_OFFSET} 0
+	tcup ${TOP_OFFSET} 0
 	for (( R=0; R<${MAX_DISPLAY_ROWS}; R++ ));do
-		tput cup $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0
+		tcup $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0
 		if [[ ${_LIST_NDX} -le ${MAX_ITEM} ]];then
 			OUT=${_LIST_NDX}
 
