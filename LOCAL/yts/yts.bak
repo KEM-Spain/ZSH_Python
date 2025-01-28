@@ -675,7 +675,7 @@ get_field () {
 	local NDX=${2}
 	local STR=''
 	local TSTR=''
-	local STR_MAX=72
+	local STR_MAX=75
 
 	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGS:FIELD:${FIELD}, NDX:${NDX}"
 	[[ ${_DEBUG} -gt ${_YTS_DBG} ]] && dbg "${0}:${LINENO} _LIST[NDX]:${_LIST[${NDX}]}"
@@ -1205,6 +1205,7 @@ select_download () {
 	list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${_ACTION} or ${ITALIC}${BOLD}exit${RESET} if none selected"
 	list_set_action_msgs video download
 	list_set_sortable true
+	list_set_searchable false
 	list_set_max_sort_col 3
 	list_set_sort_defaults ${_SORT_DEFAULT[${g_QRY_ENGINE}]}
 	list_set_barlines true
