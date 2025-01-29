@@ -23,6 +23,7 @@ typeset -a _SELECTION_LIST=() # Holds indices of selected items in a list
 typeset -a _TARGETS=() # Target indexes
 
 # LIB Vars
+_ACTIVE_SEARCH=false
 _BARLINES=false
 _CBC_KEY=''
 _CBQ_KEY=''
@@ -285,9 +286,11 @@ list_item () {
 	
 	MARKER=${_TARGETS[(r)*:$(( X_POS - 1 )):${PAGE}*]}
 
-	if [[ -n ${MARKER} ]] && _MARKER=${_SEARCH_MARKER} || _MARKER=${_LINE_MARKER}
+	#tcup ${X_POS} 70;tput el; echo -n "MODE:${MODE} _LIST_NDX:${_LIST_NDX} X_POS:${X_POS} PAGE:${PAGE} MASK:\"$(( X_POS - 1 )):${PAGE}\" MARKER:${_MARKER}"
 
-	#tcup ${X_POS} 80;tput el; echo -n "RECEIVED:${MODE} _LIST_NDX:${_LIST_NDX} X_POS:${X_POS} TARGET:${_TARGETS[(r)*:$(( X_POS - 1 )):${PAGE}*]} MARKER:${_MARKER}"
+	[[ -n ${MARKER} ]] && _MARKER=${_SEARCH_MARKER} || _MARKER=${_LINE_MARKER}
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} && -n ${MARKER} ]] && dbg "${0}: _MARKER:${_MARKER}"
+
 	tcup ${X_POS} ${Y_POS}
 	[[ ${MODE} == 'high' ]] && tput smso || tput rmso
 
@@ -400,24 +403,43 @@ list_search () {
 	local PAGE=${2} 
 	local KEY=''
 	local K_TEXT=''
+	local RC
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: MODE:${MODE} PAGE:${PAGE}"
 
 	[[ ${_LIST_IS_SEARCHABLE} == 'false' ]] && return
 
-	[[ ${MODE} == 'new' ]] && list_search_new ${PAGE} || list_search_find ${MODE}
-	[[ -z ${_TARGETS} ]] && return 1
-	
+	case ${MODE} in
+		new)		list_search_new ${PAGE}
+					RC=${?}
+					[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SEARCH: list_search_new returned ${RC}"
+					[[ ${RC} -ne 0 ]] && return 1	
+					;;
+		fwd|rev)	list_search_find ${MODE}
+					RC=${?}
+					[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SEARCH: list_search_find returned ${RC}"
+					;;
+		*) return 1;;
+	esac
+
+	#tcup 10 40;tput el; echo -n "${0}: KEY:${KEY} _TARGET_NDX:${_TARGET_NDX} _TARGET_CURSOR:${_TARGET_CURSOR} _TARGET_PAGE:${_TARGET_PAGE}"
+	#read
+	 
 	KEY=${_TARGETS[(i)*next_target]} # Index of current target
-	[[ -n ${KEY} ]] && IFS=":" read _TARGET_NDX _TARGET_CURSOR _TARGET_PAGE K_TEXT <<<${_TARGETS[${KEY}]}
+	IFS=":" read _TARGET_NDX _TARGET_CURSOR _TARGET_PAGE K_TEXT <<<${_TARGETS[${KEY}]}
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: _TARGET_NDX:${_TARGET_NDX} _TARGET_CURSOR:${_TARGET_CURSOR} _TARGET_PAGE:${_TARGET_PAGE}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}RETURNING FROM SEARCH - TARGETS SET${RESET}"
+	_ACTIVE_SEARCH=true
 	return 0
 }
 
 list_search_new () {
 	local PAGE=${1}
 	local HDR=''
+	local HL=0
 	local H_CTR=0
-	local H_POS=7
+	local HEIGHT=7
 	local PROMPT=''
 	local ROW=0
 	local V_CTR=0
@@ -429,33 +451,35 @@ list_search_new () {
 	_TARGET_PAGE=''
 
 	HDR="<m>$(str_unicode_line 12) List Search (Next:<w>><m>, Prev:<w><<m>) $(str_unicode_line 12)<N>"
+	HL=$(msg_nomarkup ${HDR});HL=${#HL}
 
 	V_CTR=$(( _MAX_ROWS/2 - 4 )) # Vertical center
-	H_CTR=$(coord_center $(( _MAX_COLS - 3 )) ${#HDR}) # Horiz center
+	H_CTR=$(coord_center $(( _MAX_COLS - 3 )) ${HL}) # Horiz center
 
-	for (( ROW=1; ROW<=${H_POS}; ROW++ ));do # Clear a space to place the UI
-		tcup $(( V_CTR + ROW )) ${H_CTR}
-		tput ech ${#HDR}
+	for (( ROW=1; ROW<=HEIGHT + 1; ROW++ ));do # Clear a space to place the UI
+		tcup $(( V_CTR + ROW - 3 )) $(( H_CTR -3 ))
+		tput ech $(( ${#HDR} + 3 ))
 	done
 
-	msg_box -x${V_CTR} -y${H_CTR} "${HDR}" # Display header
+	msg_box -x${V_CTR} -y${H_CTR} -w${HL} "${HDR}" # Display header
 
 	tcup $(( V_CTR + 4 )) $(( H_CTR + 2 ))
 	PROMPT="${E_RESET}${E_BOLD}Find${E_RESET}:"
-
+	
+	sleep 2 &
 	SEARCHTERM=$(inline_vi_edit ${PROMPT} "") # Call line editor
 
-	msg_box_clear X Y ${H_POS} W  # Clear box containing inline edit 
+	msg_box_clear X Y ${HEIGHT} W  # Clear box containing inline edit 
 
 	if [[ -z ${SEARCHTERM} ]];then # User entered nothing
-		list_search_repaint ${H_POS} ${PAGE}
-		return # Abort
+		list_search_repaint ${HEIGHT} ${PAGE}
+		return 1
 	fi
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: TARGET:${TARGET}"
 
 	if ! list_search_set_targets ${SEARCHTERM};then
-		for (( ROW=0; ROW<=${H_POS}; ROW++ ));do # Clear a space to place the MSG
+		for (( ROW=0; ROW<=${HEIGHT}; ROW++ ));do # Clear a space to place the MSG
 			tcup $(( V_CTR + ROW )) ${H_CTR}
 			tput ech ${#HDR}
 		done
@@ -463,13 +487,14 @@ list_search_new () {
 		msg_box -x${V_CTR} -y$(( H_CTR + 10 )) -p -PK "<m>List Search<N>| |\"<w>${SEARCHTERM}<N>\" - <r>NOT<N> found" 
 		msg_box_clear
 
-		list_search_repaint $(( H_POS + 3 )) ${PAGE}
-		return # Abort
+		list_search_repaint $(( HEIGHT + 3 )) ${PAGE}
+		return 1
 	fi
 
 	_TARGETS[1]="${_TARGETS[1]}:next_target" # Initialize first target
 
-	list_search_repaint $(( H_POS + 1 )) ${PAGE} # Patch the display
+	list_search_repaint $(( HEIGHT + 1 )) ${PAGE} # Patch the display
+	return 0
 }
 
 list_search_find () {
@@ -484,13 +509,15 @@ list_search_find () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: DIRECTION: ${DIRECTION}"
 	
 	NEXT_TARGET=$(list_search_get_key ${DIRECTION})
+	[[ ${?} -ne 0 ]] && return 1
+
 	IFS=":" read T_NDX T_CUR T_PAGE T_NEXT <<<${NEXT_TARGET}
+	[[ -z ${T_NDX} ]] && return 1
 
 	KEY=${_TARGETS[(i)*next_target]} # Index of current target
-	if [[ -n ${KEY} ]];then
-		_TARGETS[${KEY}]=$(sed "s/next_target/seen/" <<<${_TARGETS[${KEY}]}) # Cancel current target
-		_TARGETS[${T_NEXT}]="${T_NDX}:${T_CUR}:${T_PAGE}:next_target" # Set next_target
-	fi
+	_TARGETS[${KEY}]=$(sed "s/next_target/seen/" <<<${_TARGETS[${KEY}]}) # Cancel current target
+	_TARGETS[${T_NEXT}]="${T_NDX}:${T_CUR}:${T_PAGE}:next_target" # Set next_target
+	return 0
 }
 
 list_search_get_key () {
@@ -503,6 +530,7 @@ list_search_get_key () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	CUR_TGT_NDX=${_TARGETS[(i)*next_target]}
+	[[ -z ${CUR_TGT_NDX} ]] && return 1
 
 	case ${MODE} in
 		fwd) [[ $(( CUR_TGT_NDX + 1 )) -gt ${MAX_TARGETS} ]] && NDX=1 || NDX=$(( CUR_TGT_NDX + 1 ));;
@@ -511,6 +539,7 @@ list_search_get_key () {
 
 	IFS=":" read R C P T <<<${_TARGETS[${NDX}]}
 	echo "${R}:${C}:${P}:${NDX}" # Pass the next index
+	return 0
 }
 
 list_search_repaint () {
@@ -605,29 +634,28 @@ list_search_set_targets () {
 	local SEARCHTERM=${@}
 	local -A PAGES=( $(list_search_set_pages) )
 	local BOT=0
-	local RC=0
 	local TOP=0
 	local C P R
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SEARCHTERM:${SEARCHTERM}"
 
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SEARCHING LIST FOR TARGETS"
+
 	_TARGETS=("${(f)$(
 	for P in ${(onk)PAGES};do
 		IFS=":" read TOP BOT <<<${PAGES[${P}]}
 		for (( R=TOP; R<=BOT; R++ ));do
 			C=$(( R - TOP + 1 ))
-			# TODO: :t modifier limits search to commands only.  Should path (entire string) be included?
+			# TODO: list_search_set_targets: :t modifier limits search to commands only.  Should path (entire string) be included?
 			echo "${C}:${P}:${_LIST[${R}]:t}"
-			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SEARCHING LIST FOR TARGET: ${C}:${P}:${_LIST[${R}]:t}"
 		done
 	done | grep --color=never -ni -P ":.*${SEARCHTERM}.*" | perl -p -e "s/^(\d+:\d+:\d+)(.*)$/\1/" # Return key:NDX/CURSOR/PAGE
 	)}")
 
-	[[ -z ${_TARGETS} ]] && RC=1 || RC=0
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: RETURNING:${RC}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: FOUND ${#_TARGETS} TARGETS"
 
-	return ${RC}
+	[[ -n ${_TARGETS} ]] && return 0 || return 1
 }
 
 list_select () {
@@ -731,7 +759,10 @@ list_select () {
 
 		[[ ${PAGE_RANGE_BOT} -gt ${MAX_ITEM} ]] && PAGE_RANGE_BOT=${MAX_ITEM} # Page boundary check
 
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}GENERATING HEADER${RESET}"
 		list_do_header ${PAGE} ${MAX_PAGE}
+		#tcup 10 40; echo -n "${0}: DIR_KEY(PAGE):${DIR_KEY} _CURRENT_ARRAY:${_CURRENT_ARRAY} _CURRENT_CURSOR:${_CURRENT_CURSOR}"
+
 
 		[[ ${_NO_TOP_OFFSET} == 'false' ]] && tcup ${TOP_OFFSET} 0 # Place cursor
 		 
@@ -739,6 +770,7 @@ list_select () {
 		_LIST_NDX=$(( PAGE_RANGE_TOP - 1 )) # Initialize page top
 		[[ -n ${_PAGE_CALLBACK_FUNC} ]] && ${_PAGE_CALLBACK_FUNC} ${PAGE_RANGE_TOP} ${PAGE_RANGE_BOT}
 
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}DISPLAYING LIST${RESET}"
 		for (( R=0; R<${MAX_DISPLAY_ROWS}; R++ ));do
 			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} && -n ${_LIST[${_LIST_NDX}]} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: _LIST display loop - ROW:${R} _LIST_NDX:${_LIST_NDX} - _LIST:${_LIST[${_LIST_NDX}]}"
 
@@ -751,6 +783,7 @@ list_select () {
 				printf "\n" # Output filler
 			fi
 		done
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}LIST DISPLAYED _ACTIVE_SEARCH:${_ACTIVE_SEARCH}${RESET}"
 
 		# Page is displayed; initialize navigation
 		if [[ ${_HOLD_CURSOR} == 'true' ]];then
@@ -766,6 +799,14 @@ list_select () {
 			list_item high ${_LIST_LINE_ITEM} ${TOP_OFFSET} 0 # Highlight first item
 		fi
 
+		if [[ ${_ACTIVE_SEARCH} == 'true' ]];then
+			list_item norm ${_LIST_LINE_ITEM} $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0 # Norm current item
+			_LIST_NDX=${_TARGET_NDX}
+			list_item high ${_LIST_LINE_ITEM} $(( _TARGET_CURSOR + 1 )) 0
+			_ACTIVE_SEARCH=false
+		fi
+
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}STARTING NAVIGATION${RESET}"
 		# Main loop for user navigation
 		while true;do
 			LAST_LIST_NDX=${_LIST_NDX} # Store current index
@@ -796,6 +837,7 @@ list_select () {
 								if [[ ${_TARGET_PAGE} -eq ${PAGE} ]];then # Same page - move cursor
 									CURSOR_NDX=${_TARGET_CURSOR}
 									_LIST_NDX=${_TARGET_NDX}
+									break
 								else # Different page - navigate
 									PAGE_BREAK=true
 									DIR_KEY=${_TARGET_PAGE}
@@ -858,6 +900,7 @@ list_select () {
 			list_item high ${_LIST_LINE_ITEM} $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0 # CURSOR_NDX is value after nav key
 
 			_CURRENT_ARRAY=${ITEM} # Store current array position
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}FINISHED NAVIGATION${RESET} - _LIST_NDX:${_LIST_NDX} CURSOR_NDX:${CURSOR_NDX} _CURRENT_ARRAY:${_CURRENT_ARRAY}"
 		done
 	done
 

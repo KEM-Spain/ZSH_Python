@@ -417,11 +417,10 @@ get_keys () {
 }
 
 inline_vi_edit () {
-	kbd_suspend
+
+	[[ ${_DEBUG} -ge ${_UTILS_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	local PERL_SCRIPT
-	
-	[[ ${_DEBUG} -ge ${_UTILS_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	read -r -d '' PERL_SCRIPT <<'___EOF'
 	use warnings;
@@ -438,8 +437,7 @@ inline_vi_edit () {
 	}
 ___EOF
 
-kbd_activate
-perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
+	perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
 }
 
 is_bare_word () {
