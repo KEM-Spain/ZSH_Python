@@ -200,8 +200,10 @@ list_set_header 'printf "%-*s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" $((L
 list_set_header 'printf "%-*s ${MAGENTA_FG}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s${RESET}" $((LONGEST+5)) "" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})"'
 
 # Set line item
+
+F1=$(cut -d"|" -f1 <<<${_LIST[${_LIST_NDX}]})
 list_set_line_item ' 
-[[ -d $(cut -d"|" -f1 <<<${_LIST[${_LIST_NDX}]}) ]] && local LC=${ITALIC}${CYAN_FG} || local LC=${RESET}
+[[ ${F1}${_MARKER} ]] && local LC=${ITALIC}${CYAN_FG} || local LC=${RESET}
 printf "${BOLD}${WHITE_FG}%4s${RESET}) ${BAR}${LC}%-*s${RESET}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} "$(item_decorate ${_LIST_NDX})" "$(get_stat ${_LIST_NDX} b)" "$(get_stat ${_LIST_NDX} a)" "$(get_stat ${_LIST_NDX} m)"
 '
 list_set_key_msg '

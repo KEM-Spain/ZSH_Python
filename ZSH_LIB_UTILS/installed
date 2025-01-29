@@ -234,7 +234,7 @@ list_set_header 'printf "%5s ${MAGENTA_FG}%-*s  %-*s${RESET}" "" ${LONGEST_PKG} 
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${BAR} ${SHADE}%-*s${RESET} ${BAR} ${WHITE_FG}%-*s${RESET}\n" ${_LIST_NDX} ${LONGEST_PKG} "${_LIST[${_LIST_NDX}]}" ${LONGEST_DESC} "${(C)DESC[${_LIST[${_LIST_NDX}]}]}"
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${BAR} ${SHADE}%-*s${RESET} ${BAR} ${WHITE_FG}%-*s${RESET}\n" ${_LIST_NDX} ${LONGEST_PKG} "${_LIST[${_LIST_NDX}]}" ${LONGEST_DESC} "${(C)DESC[${_LIST[${_LIST_NDX}]}]}"
 '
 
 list_set_prompt "Select packages to inspect:"

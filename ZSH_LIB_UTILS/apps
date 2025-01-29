@@ -601,12 +601,13 @@ local PKG_STATE=$(get_package_state ${_LIST[${_LIST_NDX}]});
 local PKG_NAME=$(get_package_name ${_LIST[${_LIST_NDX}]});
 local PKG_DESC=$(get_package_desc ${_LIST[${_LIST_NDX}]});
 local ST_COLOR=$(set_state_color ${PKG_STATE});
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}${ST_COLOR}%-12s${RESET}${BOLD}${SHADE}${BAR} %-*s${RESET}${SHADE}${BAR} %-.*s${RESET}\n" ${_LIST_NDX} ${PKG_STATE} ${_LONGEST[NAME]} ${PKG_NAME} ${_LONGEST[DESC]} ${PKG_DESC}
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ST_COLOR}%-12s${RESET}${BOLD}${SHADE}${BAR} %-*s${RESET}${SHADE}${BAR} %-.*s${RESET}\n" ${_LIST_NDX} ${PKG_STATE} ${_LONGEST[NAME]} ${PKG_NAME} ${_LONGEST[DESC]} ${PKG_DESC}
 '
 list_set_action_msgs 'install-uninstall app / view app info:'  app
 list_user_prompt_style msg_box
 list_set_no_top_offset # Place the first detail line immediately after heading
 list_set_barlines true
+list_set_searchable false
 
 while true;do
 	# Get selection

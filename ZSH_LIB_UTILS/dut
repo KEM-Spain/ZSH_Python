@@ -456,7 +456,7 @@ ___EOF
 		list_set_line_item ' 
 		local PNDX=${_LIST[${_LIST_NDX}]};
 		[[ ${_MOUNT_POINTS[${PNDX}]} == 'unmounted' ]] && local MOUNT_COLOR=${RED_FG} || local MOUNT_COLOR=${GREEN_FG};
-		printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}%12s %12s ${MOUNT_COLOR}%30s${RESET} %15s${RESET}\n" ${_LIST_NDX} ${_PARTITIONS[${PNDX}]} ${_TYPES[${PNDX}]} ${_MOUNT_POINTS[${PNDX}]} ${_LABELS[${PNDX}]}
+		printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}%12s %12s ${MOUNT_COLOR}%30s${RESET} %15s${RESET}\n" ${_LIST_NDX} ${_PARTITIONS[${PNDX}]} ${_TYPES[${PNDX}]} ${_MOUNT_POINTS[${PNDX}]} ${_LABELS[${PNDX}]}
 		'
 
 		list_set_key_msg '
@@ -468,6 +468,7 @@ ___EOF
 		list_set_sortable true
 		list_set_max_sort_col ${#_SORT_TABLE}
 		list_set_sort_type assoc
+		list_set_searchable false
 
 		while true;do
 			# Get selection

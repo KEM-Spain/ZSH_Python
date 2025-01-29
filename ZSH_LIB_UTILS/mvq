@@ -559,10 +559,11 @@ list_set_header_break_color ${MAGENTA_FG}
 list_set_barlines true
 list_set_key_callback_quit u key_callback # The 'u' key will update the query
 list_set_prompt 'Press (u)pdate to refresh page'
+list_set_searchable false
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%4s ${WHITE_FG}%-50s ${CYAN_FG}%15s ${GREEN_FG}%43s${RESET}\n" ${_LIST_NDX} $(get_field 1 ${_LIST_NDX}) "$(get_field 2 ${_LIST_NDX})" "$(get_field 3 ${_LIST_NDX})" "$(get_field 4 ${_LIST_NDX})"
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%4s ${WHITE_FG}%-50s ${CYAN_FG}%15s ${GREEN_FG}%43s${RESET}\n" ${_LIST_NDX} $(get_field 1 ${_LIST_NDX}) "$(get_field 2 ${_LIST_NDX})" "$(get_field 3 ${_LIST_NDX})" "$(get_field 4 ${_LIST_NDX})"
 '
 
 while true;do

@@ -642,12 +642,14 @@ list_search_set_targets () {
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SEARCHING LIST FOR TARGETS"
 
+	# TODO: list_search_set_targets: :t modifier limits search to commands only.  Should path (entire string) be included?
+	# TODO: investigate making all lists searchable - accomodate different list structures - until then mark
+	# TODO: incompatibles with SEARCHABLE=false
 	_TARGETS=("${(f)$(
 	for P in ${(onk)PAGES};do
 		IFS=":" read TOP BOT <<<${PAGES[${P}]}
 		for (( R=TOP; R<=BOT; R++ ));do
 			C=$(( R - TOP + 1 ))
-			# TODO: list_search_set_targets: :t modifier limits search to commands only.  Should path (entire string) be included?
 			echo "${C}:${P}:${_LIST[${R}]:t}"
 		done
 	done | grep --color=never -ni -P ":.*${SEARCHTERM}.*" | perl -p -e "s/^(\d+:\d+:\d+)(.*)$/\1/" # Return key:NDX/CURSOR/PAGE
@@ -763,7 +765,6 @@ list_select () {
 		list_do_header ${PAGE} ${MAX_PAGE}
 		#tcup 10 40; echo -n "${0}: DIR_KEY(PAGE):${DIR_KEY} _CURRENT_ARRAY:${_CURRENT_ARRAY} _CURRENT_CURSOR:${_CURRENT_CURSOR}"
 
-
 		[[ ${_NO_TOP_OFFSET} == 'false' ]] && tcup ${TOP_OFFSET} 0 # Place cursor
 		 
 		# Initialize page display
@@ -790,19 +791,20 @@ list_select () {
 			_LIST_NDX=${_CURRENT_ARRAY} # Hold array position
 			CURSOR_NDX=${_CURRENT_CURSOR} # Hold cursor position
 			[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq 1 ]] && SHADE=${REVERSE} || SHADE='' 
-			list_item high ${_LIST_LINE_ITEM} $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0 # Highlight current item
+			[[ ${_ACTIVE_SEARCH} == 'false' ]] && list_item high ${_LIST_LINE_ITEM} $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0 # Highlight current item
 			_HOLD_CURSOR=false # Reset
 		else
 			_LIST_NDX=${PAGE_RANGE_TOP} # Page top
 			CURSOR_NDX=1 # Page top
 			[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq 1 ]] && SHADE=${REVERSE} || SHADE='' 
-			list_item high ${_LIST_LINE_ITEM} ${TOP_OFFSET} 0 # Highlight first item
+			[[ ${_ACTIVE_SEARCH} == 'false' ]] && list_item high ${_LIST_LINE_ITEM} ${TOP_OFFSET} 0 # Highlight first item
 		fi
 
+		# TODO: there are alignment problems in some apps
 		if [[ ${_ACTIVE_SEARCH} == 'true' ]];then
 			list_item norm ${_LIST_LINE_ITEM} $(( TOP_OFFSET + CURSOR_NDX - 1 )) 0 # Norm current item
 			_LIST_NDX=${_TARGET_NDX}
-			list_item high ${_LIST_LINE_ITEM} $(( _TARGET_CURSOR + 1 )) 0
+			list_item high ${_LIST_LINE_ITEM} $(( TOP_OFFSET + _TARGET_CURSOR - 1 )) 0
 			_ACTIVE_SEARCH=false
 		fi
 

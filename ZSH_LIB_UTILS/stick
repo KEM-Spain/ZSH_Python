@@ -216,12 +216,13 @@ list_show () {
 
 	#set line item
 	list_set_line_item ' 
-	printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 	'
 
 	list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select, (${GREEN_FG}T${RESET})oggle to view ${WHITE_ON_GREY}${g_NEXT_VIEW}${RESET}, or (${GREEN_FG}D${RESET})etail [1-4] ( <${GREEN_FG}ENTER${RESET}>${ITALIC} will exit if none selected${RESET} )"
 	list_set_key_callback_quit T list_switch
 	list_set_key_callback_quit D list_detail
+	list_set_searchable false
 
 	while true;do
 		#get selection

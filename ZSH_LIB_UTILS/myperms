@@ -419,7 +419,7 @@ list_set_header 'printf "%*s ${CYAN_FG}%4s${RESET} ${CYAN_FG}%4s${RESET} ${CYAN_
 # Set line item
 list_set_line_item ' 
 local FNDX=${_LIST[${_LIST_NDX}]};
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${FNDX}]:t} "(${_FTYPES[${FNDX}]})" ${_PERMS[${FNDX}]} ${_OWNERS[${FNDX}]} ${_GROUPS[${FNDX}]} ${_EPERMS[${FNDX}]} ${_OPERMS[${FNDX}]} ${_GPERMS[${FNDX}]} ${_WPERMS[${FNDX}]}
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${FNDX}]:t} "(${_FTYPES[${FNDX}]})" ${_PERMS[${FNDX}]} ${_OWNERS[${FNDX}]} ${_GROUPS[${FNDX}]} ${_EPERMS[${FNDX}]} ${_OPERMS[${FNDX}]} ${_GPERMS[${FNDX}]} ${_WPERMS[${FNDX}]}
 '
 
 list_set_key_msg '

@@ -225,7 +225,7 @@ list_add_header_break
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%-40s -> %-40s${RESET}\n" ${_LIST_NDX} "${$(get_shortcut_keys ${_LIST[${_LIST_NDX}]})}" "${(C)$(get_key_action ${_LIST[${_LIST_NDX}]})}" 
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%-40s -> %-40s${RESET}\n" ${_LIST_NDX} "${$(get_shortcut_keys ${_LIST[${_LIST_NDX}]})}" "${(C)$(get_key_action ${_LIST[${_LIST_NDX}]})}" 
 '
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> [to do some action] ${ITALIC}or exit if none selected${RESET}"
