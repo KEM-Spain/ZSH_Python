@@ -704,7 +704,6 @@ list_select () {
 	local CURSOR_NDX=0
 	local DIR_KEY='unset'
 	local HDR_NDX=0
-	local ITEM=''
 	local KEY=''
 	local KEY_LINE=''
 	local L R S 
@@ -724,6 +723,7 @@ list_select () {
 	local ROWS=$(tput lines)
 	local SELECTED_COUNT=0
 	local SELECTION_LIMIT=$(list_get_selection_limit)
+	local SWAP_NDX=''
 	local TOP_OFFSET=0
 	local USER_PROMPT=''
 
@@ -867,7 +867,7 @@ list_select () {
 				c) [[ ${_SELECTABLE} == 'true' ]] && list_toggle_all ${_PAGE_DATA[PAGE_RANGE_TOP]} ${_PAGE_DATA[TOP_OFFSET]} ${_MAX_DISPLAY_ROWS} ${_PAGE_DATA[MAX_ITEM]} ${_PAGE_DATA[PAGE]} ${PAGE[MAX_PAGE]} off;; # 'c' Clear
 				h) DIR_KEY=t;CURSOR_NDX=1;_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_TOP]};; # 'h' Top Row current page
 				j) DIR_KEY=d;((CURSOR_NDX++));_LIST_NDX=$(list_set_index ${DIR_KEY} ${_LIST_NDX} ${_PAGE_DATA[PAGE_RANGE_TOP]} ${_PAGE_DATA[PAGE_RANGE_BOT]} ${_PAGE_DATA[MAX_ITEM]});; # 'j' Next row
-				k) DIR_KEY=u;((CURSOR_NDX--));_LIST_NDX=$(list_set_index ${DIR_KEY} ${_LIST_NDX} ${PAGE_RANGE_TOP} ${PAGE_RANGE_BOT} ${MAX_ITEM});; # 'k' Prev row
+				k) DIR_KEY=u;((CURSOR_NDX--));_LIST_NDX=$(list_set_index ${DIR_KEY} ${_LIST_NDX} ${_PAGE_DATA[PAGE_RANGE_TOP]} ${_PAGE_DATA[PAGE_RANGE_BOT]} ${_PAGE_DATA[MAX_ITEM]});; # 'k' Prev row
 				l) DIR_KEY=b;CURSOR_NDX=${MAX_CURSOR};_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_BOT]};; # 'l' Bottom Row current page
 				n) DIR_KEY=n;_PAGE_DATA[PAGE_STATE]='break'; break;; # 'n' Next page
 				p) DIR_KEY=p;_PAGE_DATA[PAGE_STATE]='break'; break;; # 'p' Prev page
@@ -906,11 +906,11 @@ list_select () {
 			[[ ${CURSOR_NDX} -lt 1 ]] && CURSOR_NDX=${MAX_CURSOR}
 
 			# Clear highlight of last line output
-			ITEM=${_LIST_NDX}; _LIST_NDX=${LAST_LIST_NDX} # Save value of _LIST_NDX
+			SWAP_NDX=${_LIST_NDX}; _LIST_NDX=${LAST_LIST_NDX} # Save value of _LIST_NDX
 			list_item norm ${_LIST_LINE_ITEM} $(( _PAGE_DATA[TOP_OFFSET] + _CURRENT_CURSOR - 1 )) 0 #_CURRENT_CURSOR is value before nav key
 
 			# Highlight current line output
-			_LIST_NDX=${ITEM} # Restore value of _LIST_NDX
+			_LIST_NDX=${SWAP_NDX} # Restore value of _LIST_NDX
 			[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq 1 ]] && SHADE=${REVERSE} || SHADE='' 
 			list_item high ${_LIST_LINE_ITEM} $(( _PAGE_DATA[TOP_OFFSET] + CURSOR_NDX - 1 )) 0 # CURSOR_NDX is value after nav key
 
@@ -1020,7 +1020,6 @@ list_set_index () {
 list_set_index_range () {
 	local TOP_NDX=${1}
 	local BOT_NDX=${2}
-
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} TOP_NDX:${TOP_NDX} BOT_NDX:${BOT_NDX}"
 
 	[[ ${TOP_NDX} -lt 0 ]] && return 1 # TOP_NDX must be >= 0
