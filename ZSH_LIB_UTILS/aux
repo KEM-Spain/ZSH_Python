@@ -154,6 +154,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
+
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -ne 0 ]] && KEYWORD=${1} || KEYWORD=?
@@ -166,18 +167,21 @@ RAWLIST=("${(@f)$(ps --no-headers -Ao user,pid,command)}")
 NDX=0
 msg_box "Working... ${#RAWLIST} lines"
 MSG="No matches found for:\"${WHITE_FG}${KEYWORD}${RESET}\""
+
 for R in ${RAWLIST};do
 	[[ ( ${KEYWORD} != '?' ) && ( ! ${R} =~ ${KEYWORD} ) ]] && continue
+	if [[ ${ALL_USERS} == 'false' ]];then
+		if [[ ! "^${R}" =~ ${USER} ]];then
+			MSG="No \"${WHITE_FG}${KEYWORD}${RESET}\" matches for user:${USER} ${RESET}(${CYAN_FG}matching processes found for other users${RESET})" && continue
+			continue
+		fi
+	fi
 	[[ ${R} =~ ${0} ]] && continue
 
 	((NDX++))
 	_OWNER[${NDX}]=$(str_trim $(cut -d' ' -f1 <<<$(squeeze ${R})))
 	_PID[${NDX}]=$(str_trim $(cut -d' ' -f2 <<<$(squeeze ${R})))
 	_CMD[${NDX}]=$(str_trim $(cut -d' ' -f3- <<<$(squeeze ${R})))
-
-	if [[ ${ALL_USERS} == 'false' ]];then
-		[[ ${_OWNER[${NDX}]} != ${USER} ]] && MSG="No \"${WHITE_FG}${KEYWORD}${RESET}\" matches for user:${USER} ${RESET}(${CYAN_FG}matching processes found for other users${RESET})" && continue
-	fi
 
 	_LOCAL_LIST+=${R}
 
@@ -198,7 +202,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 fi
 
 if [[ ${#_LOCAL_LIST} -eq 1 ]];then # Process a single pid directly
-	_LIST=(${_LOCAL_LIST})
+	_LIST=(${(o)_LOCAL_LIST})
 	_MARKED=(1)
 	action_do
 	exit_leave
@@ -217,7 +221,6 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%${_LBL_WIDTH[p]}s
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select process then <${GREEN_FG}ENTER${RESET}> to kill ${ITALIC}or exit if none selected${RESET}"
 list_set_action_msgs kill process
-list_set_searchable false
 
 while true;do
 	# Get selection

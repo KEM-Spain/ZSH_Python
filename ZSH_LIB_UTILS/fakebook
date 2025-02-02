@@ -65,7 +65,7 @@ get_book () {
 }
 
 get_title () {
-	local LINE=${@}
+	local LINE=${(C)@}
 
 	cut -d'|' -f2 <<<${LINE}
 }
