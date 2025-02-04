@@ -118,7 +118,7 @@ done
 shift $((OPTIND -1))
 #--End GetOpts--
 # Execution
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${LIST_EXT} == 'true' ]];then
 	do_rmcup

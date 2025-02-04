@@ -39,7 +39,8 @@ imdb () {
 	URL=$(wget --quiet -O - "http://www.imdb.com/find?q=${STR}" | pup 'div' .ipc-metadata-list-summary-item__t attr{href} | grep 'ttl_1' | sed 's#/?ref.*##')
 	URL="http://www.imdb.com${URL}"
 	if [[ ! $(curl --connect-timeout 2 -Is "${URL}" | head -1) =~ "404" ]];then
-		nohup google-chrome "${URL}" >/dev/null &
+		nohup google-chrome --start-maximized "${URL}" >/dev/null &
+		win_max chrome &
 	else
 		msg_box -p -PK "${0}: Could not obtain a valid URL:${URL}"
 	fi

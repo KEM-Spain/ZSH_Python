@@ -162,7 +162,6 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%-s${RESET}\n" ${_
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to edit ${ITALIC}or exit if none selected${RESET}"
 list_set_action_msgs edit file
 list_set_clear_ghosts true
-list_set_searchable false
 
 while true;do
 	# Get selection

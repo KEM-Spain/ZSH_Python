@@ -44,6 +44,8 @@ while read APP;do
 done < ./applist
 
 clear
+/bin/rm -f ./tst_*
+
 sel_set_list ${APPS}
 sel_list -H"Apps to Test" ${APPS}
 [[ ${?} -ne 0 ]] && exit_leave "Operation Cancelled"
@@ -52,4 +54,3 @@ echo -n "Enter args:"
 read -A ARGS
 do_app ${_SEL_VAL} ${ARGS}
 
-/bin/rm -f ./tst_${APP}

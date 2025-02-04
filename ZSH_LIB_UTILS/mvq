@@ -199,19 +199,9 @@ cache_select () {
 
 imdb () {
 	local STR=${@}
-	local URL
 
 	msg_box "Querying imdb..."
-
-	{
-	URL=$(wget --quiet -O - "http://www.imdb.com/find?q=${STR}" | pup '.ipc-page-content-container a attr{href}' | grep 'tt_1' | sed 's/\/?ref.*//')
-	URL="http://www.imdb.com/${URL}"
-	if [[ ! $(curl --connect-timeout 2 -Is "${URL}" | head -1) =~ "404" ]];then
-		nohup google-chrome "${URL}" >>${_LOG} 2>&1 &
-	else
-		msg_box -p -PK "${0}: Could not obtain a valid URL:${URL}"
-	fi
-	} 2>/dev/null
+	/usr/local/bin/imdb ${STR}
 }
 
 blank_lines () {
@@ -455,7 +445,7 @@ done
 shift $((OPTIND -1))
 #--End GetOpts--
 
-# TODO: queries to flickchart and imdb aren't working
+# TODO: queries to flickchart aren't working
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#OPTIONS} -eq 0 && ${#} -eq 0 ]] && usage
@@ -565,7 +555,6 @@ list_set_searchable false
 list_set_line_item ' 
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%4s ${WHITE_FG}%-50s ${CYAN_FG}%15s ${GREEN_FG}%43s${RESET}\n" ${_LIST_NDX} $(get_field 1 ${_LIST_NDX}) "$(get_field 2 ${_LIST_NDX})" "$(get_field 3 ${_LIST_NDX})" "$(get_field 4 ${_LIST_NDX})"
 '
-
 while true;do
 	# Display list
 	list_select ${_SLIST}
