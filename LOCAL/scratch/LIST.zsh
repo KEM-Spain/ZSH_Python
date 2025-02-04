@@ -9,7 +9,8 @@ _LIST_LIB_DBG=4
 _SORT_MARKER=$(mktemp /tmp/last_sort.XXXXXX)
  
 # LIB Declarations
-typeset -A _KEY_QUIT_CALLBACKS=()
+typeset -A _KEY_CALLBACKS=()
+typeset -A _CBK_RET=()
 typeset -A _LIST_SELECTED=() # Status of selected list items; contains digit 0,1,2, etc.; 0,1 can toggle; -gt 1 cannot toggle (action completed)
 typeset -A _LIST_SELECTED_PAGE=() # Selected rows by page
 typeset -A _PAGE_DATA=()
@@ -25,8 +26,6 @@ typeset -a _TARGETS=() # Target indexes
 # LIB Vars
 _ACTIVE_SEARCH=false
 _BARLINES=false
-_CBC_KEY=''
-_CBQ_KEY=''
 _CLEAR_GHOSTS=false
 _CLIENT_WARN=true
 _CURRENT_NDX=1
@@ -133,7 +132,6 @@ list_do_header () {
 	local SCRIPT_TAG='printf "${_LIST_HEADER_BREAK_COLOR}[${RESET}${_SCRIPT}${_LIST_HEADER_BREAK_COLOR}]${RESET}"'
 	local SELECTED_COUNT=$(list_get_selected_count); 
 
-	# TODO: installed app header _HEADER_LINES is wrong; find out why
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: HEADER COUNT:${#_LIST_HEADER}"
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: PAGE=${PAGE} MAX_PAGE=${MAX_PAGE} SELECTED_COUNT=${SELECTED_COUNT}"
 
@@ -245,12 +243,6 @@ list_get_selection_limit () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	echo ${_SELECTION_LIMIT}
-}
-
-list_is_CBQ () {
-	local KEY=${1}
-
-	[[ -n ${_KEY_QUIT_CALLBACKS[${KEY}]} ]] && echo ${KEY} || echo ''
 }
 
 list_is_valid_selection () {
@@ -693,6 +685,7 @@ list_select () {
 	local -a LIST_SELECTION=()
 	local BARLINE BAR SHADE
 	local BOT_OFFSET=3
+	local CB_KEY=''
 	local COLS=0
 	local CURSOR_NDX=0
 	local DIR_KEY='unset'
@@ -823,7 +816,8 @@ list_select () {
 	
 			# WAIT FOR INPUT
 			KEY=$(get_keys ${USER_PROMPT})
-			_CBQ_KEY=$(list_is_CBQ ${KEY})
+
+			[[ -n ${_KEY_CALLBACKS[${KEY}]} ]] && CB_KEY=${KEY} || CB_KEY='NA'
 
 			case ${KEY} in
 				1) DIR_KEY=u;((CURSOR_NDX--));_LIST_NDX=$(list_set_index ${DIR_KEY});; # Up Arrow
@@ -861,8 +855,12 @@ list_select () {
 				s) [[ ${_LIST_IS_SORTABLE} == 'true' ]] && list_sort;_PAGE_DATA[PAGE_STATE]='hold'; break;; # 's' Sort
 				t) DIR_KEY=fp;_PAGE_DATA[PAGE_STATE]='break'; break;; # 't' Top row first page
 				z) return -1;; # 'z' Quit loop
-				${_CBC_KEY}) ${_KEY_CALLBACK_CONT_FUNC} ${_CBC_KEY}; break;; # Callback and continue
-				${_CBQ_KEY}) ${_KEY_QUIT_CALLBACKS[${_CBQ_KEY}]}; break 2;; # Callback and quit
+				${CB_KEY}) ${_KEY_CALLBACKS[${CB_KEY}]}
+					if [[ ${_CBK_RET[${CB_KEY}]} == 'true' ]];then
+						break 2
+					else
+						break
+					fi;;
 				0) SELECTED_COUNT=$(list_get_selected_count); # Enter
 					_PAGE_DATA[PAGE_STATE]='hold';
 					if [[ ${SELECTED_COUNT} -eq 0 ]];then
@@ -883,8 +881,7 @@ list_select () {
 								continue
 							fi
 						fi
-					fi
-					;;
+					fi;;
 			esac
 
 			# Cursor index boundary
@@ -999,22 +996,30 @@ list_set_index () {
 	echo ${NDX}
 }
 
-list_set_key_callback_cont () {
+list_set_key_callback () {
+	local -A KEY_DATA=()
+	local -a VALID_OPTS=(KEY FUNC RET) # Add options and _CBK_XXX arrays as needed
+	local K=''
+
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	_CBC_KEY=${1}
-	_KEY_CALLBACK_CONT_FUNC=${2}
+	KEY_DATA=(${@})
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: KEY_DATA: ${(kv)KEY_DATA}"
+
+	for K in ${(k)KEY_DATA};do
+		if [[ ${VALID_OPTS[(i)${K}]} -gt ${#KEY_DATA} ]];then
+			echo "${0}: INVALID OPTION:${K} - Valid options are:${VALID_OPTS}" >&2
+			return 1
+		fi
+	done
+
+	_KEY_CALLBACKS[${KEY_DATA[KEY]}]=${KEY_DATA[FUNC]}
+	_CBK_RET[${KEY_DATA[KEY]}]=${KEY_DATA[RET]}
+
+	return 0
 }
 
-list_set_key_callback_quit () {
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${#} -ne 2 ]] && return -1
-
-	_KEY_QUIT_CALLBACKS[${1}]=${2}
-}
-
-list_set_key_msg () {
+list_set_prompt_msg () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_PROMPT_KEYS=${@}

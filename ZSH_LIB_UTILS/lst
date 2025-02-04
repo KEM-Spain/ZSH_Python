@@ -376,10 +376,10 @@ list_set_header 'printf "%*s ${MAGENTA_FG}%-*s  %*s${RESET}" 5 "" ${MAX_FN_LEN} 
 list_set_line_item '
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${BAR}%-*s  %*s${RESET}\n" ${_LIST_NDX} ${MAX_FN_LEN} "$(get_fn ${_LIST_NDX})" ${MAX_DESC_LEN} "$(item_decorate ${_LIST_NDX})"
 '
-list_set_key_msg '
+list_set_prompt_msg '
 printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}"
 '
-list_set_key_msg '
+list_set_prompt_msg '
 printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 '
 list_set_prompt " "

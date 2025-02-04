@@ -146,7 +146,6 @@ ssid_choose () {
 	list_set_prompt "Hit <SPACE> to select SSID then <ENTER> to connect ${ITALIC}or exit if none selected${RESET}"
 	list_set_action_msgs connect "to SSID"
 	list_set_selection_limit 1
-	list_set_searchable false
 
 	list_select ${_LOCAL_LIST}
 

@@ -378,7 +378,7 @@ else
 	printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%*s${RESET}${BAR} %-*s ${ST_COLOR}%-*s${RESET}\n" ${_LIST_NDX} ${_COL_WIDTHS[UNIT]} "${_UNIT_FILES[${FNDX}]}" ${_COL_WIDTHS[STATE]} "${_STATES[${FNDX}]}" ${_COL_WIDTHS[RUN_STATE]} "${_RUN_STATES[${FNDX}]}"'
 fi
 
-list_set_key_msg '
+list_set_prompt_msg '
 printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 '
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to manage unit file ${ITALIC}or exit if none selected${RESET}"

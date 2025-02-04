@@ -1,0 +1,42 @@
+#!/usr/bin/zsh
+ 
+typeset -A _KEY_CALLBACKS=()
+typeset -A _CALLBACK_KEY_RET=()
+typeset -A _CALLBACK_KEY_MSG=()
+
+list_set_key_callback () {
+	local -A KEY_DATA=()
+	local -a VALID_OPTS=(KEY FUNC RET MSG)
+	local K=''
+
+	#[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	KEY_DATA=(${@})
+
+	for K in ${(k)KEY_DATA};do
+		if [[ ${VALID_OPTS[(i)${K}]} -gt ${#KEY_DATA} ]];then
+			echo "${0}: INVALID OPTION:${K} - Valid options are:${VALID_OPTS}" >&2
+			return 1
+		fi
+	done
+	_KEY_CALLBACKS[${KEY_DATA[KEY]}]=${KEY_DATA[FUNC]}
+	_CALLBACK_KEY_RET[${KEY_DATA[KEY]}]=${KEY_DATA[RET]}
+	_CALLBACK_KEY_MSG[${KEY_DATA[KEY]}]=${KEY_DATA[MSG]}
+
+	return 0
+}
+
+list_set_key_callback KEY a FUNC do_a RET false MSG "is a callback"
+echo RC:${?}
+
+for K in ${(k)_KEY_CALLBACKS};do
+	printf "KEY:%s VAL:%s\n" ${K} ${_KEY_CALLBACKS[${K}]}
+done
+for K in ${(k)_CALLBACK_KEY_RET};do
+	printf "RETURN - KEY:%s VAL:%s\n" ${K} ${_CALLBACK_KEY_RET[${K}]}
+done
+for K in ${(k)_CALLBACK_KEY_MSG};do
+	printf "MSG - KEY:%s VAL:%s\n" ${K} ${_CALLBACK_KEY_MSG[${K}]}
+done
+
+echo "${_KEY_CALLBACKS[a]}"

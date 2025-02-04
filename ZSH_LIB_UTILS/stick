@@ -220,8 +220,8 @@ list_show () {
 	'
 
 	list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select, (${GREEN_FG}T${RESET})oggle to view ${WHITE_ON_GREY}${g_NEXT_VIEW}${RESET}, or (${GREEN_FG}D${RESET})etail [1-4] ( <${GREEN_FG}ENTER${RESET}>${ITALIC} will exit if none selected${RESET} )"
-	list_set_key_callback_quit T list_switch
-	list_set_key_callback_quit D list_detail
+	list_set_key_callback_quit KEY T FUNC list_switch RET true
+	list_set_key_callback_quit KEY D FUNC list_detail RET true
 	list_set_searchable false
 
 	while true;do

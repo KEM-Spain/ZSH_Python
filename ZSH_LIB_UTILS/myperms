@@ -422,7 +422,7 @@ local FNDX=${_LIST[${_LIST_NDX}]};
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${FNDX}]:t} "(${_FTYPES[${FNDX}]})" ${_PERMS[${FNDX}]} ${_OWNERS[${FNDX}]} ${_GROUPS[${FNDX}]} ${_EPERMS[${FNDX}]} ${_OPERMS[${FNDX}]} ${_GPERMS[${FNDX}]} ${_WPERMS[${FNDX}]}
 '
 
-list_set_key_msg '
+list_set_prompt_msg '
 printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 '
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to reset permissions ${ITALIC}or exit if none selected${RESET}"

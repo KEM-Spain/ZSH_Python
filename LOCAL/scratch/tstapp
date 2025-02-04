@@ -44,7 +44,9 @@ while read APP;do
 done < ./applist
 
 clear
-/bin/rm -f ./tst_*
+{
+/bin/rm -f ./tst_* 
+}>/dev/null 2>&1
 
 sel_set_list ${APPS}
 sel_list -H"Apps to Test" ${APPS}
@@ -54,3 +56,6 @@ echo -n "Enter args:"
 read -A ARGS
 do_app ${_SEL_VAL} ${ARGS}
 
+{
+/bin/rm -f ./tst_* 
+}>/dev/null 2>&1

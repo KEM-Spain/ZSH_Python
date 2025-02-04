@@ -459,7 +459,7 @@ ___EOF
 		printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}%12s %12s ${MOUNT_COLOR}%30s${RESET} %15s${RESET}\n" ${_LIST_NDX} ${_PARTITIONS[${PNDX}]} ${_TYPES[${PNDX}]} ${_MOUNT_POINTS[${PNDX}]} ${_LABELS[${PNDX}]}
 		'
 
-		list_set_key_msg '
+		list_set_prompt_msg '
 		printf "Press ${WHITE_FG}Home End PgUp PgDn${RESET}, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 		'
 		list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select partition(s) then <${GREEN_FG}ENTER${RESET}> to mount/unmount ${ITALIC}or exit if none selected${RESET}"
