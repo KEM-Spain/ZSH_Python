@@ -462,10 +462,10 @@ list_search_find () {
 
 	IFS=":" read R C P T <<<${NEXT_TARGET}
 
-	KEY=${_TARGETS[(i)*next_target]} # Index of last target
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: LAST KEY: ${KEY}"
+	KEY=${_TARGETS[(i)*next_target]} # Index of current target
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: CURRENT KEY: ${KEY}"
 
-	_TARGETS[${KEY}]=$(sed "s/next_target/seen/" <<<${_TARGETS[${KEY}]}) # Cancel last target
+	_TARGETS[${KEY}]=$(sed "s/next_target/seen/" <<<${_TARGETS[${KEY}]}) # Cancel current target
 	_TARGETS[${T}]="${R}:${C}:${P}:next_target" # Set next_target
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: LAST_TARGET:${_TARGETS[${KEY}]}, NEXT_TARGET:${_TARGETS[${T}]}"
