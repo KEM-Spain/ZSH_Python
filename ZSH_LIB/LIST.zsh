@@ -57,6 +57,7 @@ _LIST_SORT_DIR_DEFAULT=''
 _LIST_SORT_TYPE=flat
 _LIST_USER_PROMPT_STYLE=none
 _MARKER=${_LINE_MARKER}
+_MARKERS=false
 _MAX_DISPLAY_ROWS=0
 _MSG_KEY=n
 _NO_TOP_OFFSET=false
@@ -299,7 +300,7 @@ list_item () {
 	_MARKER=${_LINE_MARKER}
 
 	MARKER=${_TARGETS[(r)*:${X_POS}:${_PAGE_DATA[PAGE]}*]}
-	[[ -n ${MARKER} ]] && _MARKER=${_SEARCH_MARKER}
+	[[ -n ${MARKER} ]] && _MARKER=${_SEARCH_MARKER} && _MARKERS=true
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} && -n ${MARKER} ]] && dbg "${0}: MARKER:${MARKER}"
 
 	tcup ${X_POS} ${Y_POS}
@@ -446,6 +447,8 @@ list_search_find () {
 	local KEY=''
 	local NEXT_TARGET=''
 	local R C P T
+
+	[[ -z ${_TARGETS} ]] && return 1
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: DIR: ${DIR}"
 
@@ -688,7 +691,7 @@ list_select () {
 	local CB_KEY=''
 	local COLS=0
 	local CURSOR_NDX=0
-	local DIR_KEY='unset'
+	local NAV_KEY='unset'
 	local HDR_NDX=0
 	local KEY=''
 	local KEY_LINE=''
@@ -712,6 +715,7 @@ list_select () {
 	local SWAP_NDX=''
 	local TOP_OFFSET=0
 	local USER_PROMPT=''
+	local RC=0
 
 	# Initialization
 	_LIST=(${@})
@@ -747,7 +751,7 @@ list_select () {
 
 	# Navigation init
 	_PAGE_DATA=(
-		PAGE_STATE hold 
+		PAGE_STATE init 
 		PAGE_RANGE_TOP 1 
 		PAGE_RANGE_BOT ${_MAX_DISPLAY_ROWS} 
 		PAGE 1 
@@ -755,6 +759,7 @@ list_select () {
 		MAX_PAGE ${MAX_PAGE} 
 		MAX_ITEM ${MAX_ITEM} 
 		TOP_OFFSET ${TOP_OFFSET}
+		LAST_PAGE 0
 	)
 	# End of Initialization
 
@@ -764,10 +769,10 @@ list_select () {
 		tput clear
 
 		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}SETTING PARAMETERS FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
-		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}_ACTIVE_SEARCH:${_ACTIVE_SEARCH} PAGE_STATE:${_PAGE_DATA[PAGE_STATE]} DIR_KEY:${DIR_KEY}${RESET}"
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}_ACTIVE_SEARCH:${_ACTIVE_SEARCH} PAGE_STATE:${_PAGE_DATA[PAGE_STATE]} NAV_KEY:${NAV_KEY}${RESET}"
 
 		if [[ ${_PAGE_DATA[PAGE_STATE]} == 'break' ]];then
-			_PAGE_DATA[PAGE]=$(list_get_next_page ${DIR_KEY} ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}) # Next page
+			_PAGE_DATA[PAGE]=$(list_get_next_page ${NAV_KEY} ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}) # Next page
 			_PAGE_DATA[PAGE_RANGE_TOP]=$(( (_PAGE_DATA[PAGE] - 1) * _MAX_DISPLAY_ROWS + 1 ))
 			_PAGE_DATA[PAGE_RANGE_BOT]=$(( (_PAGE_DATA[PAGE_RANGE_TOP] - 1) + _MAX_DISPLAY_ROWS ))
 		elif [[ ${_PAGE_DATA[PAGE_STATE]} == 'hold' ]];then
@@ -781,8 +786,12 @@ list_select () {
 		[[ ${_PAGE_DATA[PAGE_RANGE_BOT]} -gt ${_PAGE_DATA[MAX_ITEM]} ]] && _PAGE_DATA[PAGE_RANGE_BOT]=${_PAGE_DATA[MAX_ITEM]} # Page boundary check
 
 		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: _PAGE_DATA:${(kv)_PAGE_DATA}"
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: _ACTIVE_SEARCH:${_ACTIVE_SEARCH} _MARKERS:${_MARKERS} PAGE:${_PAGE_DATA[PAGE]} LAST_PAGE:${_PAGE_DATA[LAST_PAGE]}"
 
-		list_display_page
+		[[ ${_PAGE_DATA[LAST_PAGE]} -ne ${_PAGE_DATA[PAGE]} || ${_ACTIVE_SEARCH} == 'true' || ${_MARKERS} == 'true' || ${NAV_KEY} == 'sort' ]] && list_display_page
+
+		_MARKERS=false
+		_PAGE_DATA[LAST_PAGE]=${_PAGE_DATA[PAGE]}
 
 		# Page is displayed; initialize navigation
 		if [[ ${_HOLD_CURSOR} == 'true' ]];then
@@ -800,8 +809,8 @@ list_select () {
 
 		if [[ ${_ACTIVE_SEARCH} == 'true' ]];then
 			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}REPOSITIONING CURSOR TO NEXT TARGET, MODE:${MODE}"
-			R=$( echo "${DIR_KEY}" | sed 's/^[-+]*[0-9]*//g' )
-			if [[ ${DIR_KEY} == 'search' || -z ${R} ]];then
+			R=$( echo "${NAV_KEY}" | sed 's/^[-+]*[0-9]*//g' )
+			if [[ ${NAV_KEY} == 'search' || -z ${R} ]];then
 				_LIST_NDX=${_TARGET_NDX} 
 				CURSOR_NDX=${_TARGET_CURSOR}
 			else
@@ -809,7 +818,6 @@ list_select () {
 				CURSOR_NDX=${_PAGE_DATA[TOP_OFFSET]}
 			fi
 			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: TARGETS:${_TARGETS} _TARGET_NDX:${_TARGET_NDX}  _TARGET_CURSOR:${_TARGET_CURSOR}  _TARGET_PAGE:${_TARGET_PAGE}, CALLING list_item: _LIST_NDX:${_LIST_NDX} CURSOR:${_TARGET_CURSOR}"
-			#tcup 2 0;tput el;echo -n "PAGE:${_PAGE_DATA[PAGE]} _LIST_NDX:${_LIST_NDX} CURSOR_NDX:${CURSOR_NDX} _TARGET_NDX:${_TARGET_NDX}  _TARGET_CURSOR:${_TARGET_CURSOR}  _TARGET_PAGE:${_TARGET_PAGE}"
 			list_item high ${_LIST_LINE_ITEM} ${CURSOR_NDX} 0 # Highlight target
 		fi
 
@@ -818,7 +826,7 @@ list_select () {
 		while true;do
 			NDX_SAVE=${_LIST_NDX} # Store current index
 			_CURRENT_CURSOR=${CURSOR_NDX} # Store current cursor position
-			DIR_KEY=unset
+			NAV_KEY=unset
 
 			# Partial page boundary
 			[[ ${_PAGE_DATA[PAGE]} -eq ${_PAGE_DATA[MAX_PAGE]} ]] && MAX_CURSOR=$(( (_PAGE_DATA[MAX_ITEM] - _PAGE_DATA[PAGE_RANGE_TOP]) + 1 )) || MAX_CURSOR=${_MAX_DISPLAY_ROWS}
@@ -829,42 +837,52 @@ list_select () {
 			[[ -n ${_KEY_CALLBACKS[${KEY}]} ]] && CB_KEY=${KEY} || CB_KEY='NA'
 
 			case ${KEY} in
-				1) DIR_KEY=u;((CURSOR_NDX--));_LIST_NDX=$(list_set_index ${DIR_KEY});; # Up Arrow
-				2) DIR_KEY=d;((CURSOR_NDX++));_LIST_NDX=$(list_set_index ${DIR_KEY});; # Down Arrow
-				3) DIR_KEY=t;CURSOR_NDX=1;_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_TOP]};; # Left Arrow
-				4) DIR_KEY=b;CURSOR_NDX=${MAX_CURSOR};_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_BOT]};; # Right Arrow
-				5) DIR_KEY=p;_PAGE_DATA[PAGE_STATE]='break'; break;; # PgUp 
-				6) DIR_KEY=n;_PAGE_DATA[PAGE_STATE]='break'; break;; # PgDn
-				7) DIR_KEY=fp;_PAGE_DATA[PAGE_STATE]='break'; break;; # Home
-				8) DIR_KEY=lp;_PAGE_DATA[PAGE_STATE]='break'; break;; # End
+				1) NAV_KEY=u;((CURSOR_NDX--));_LIST_NDX=$(list_set_index ${NAV_KEY});; # Up Arrow
+				2) NAV_KEY=d;((CURSOR_NDX++));_LIST_NDX=$(list_set_index ${NAV_KEY});; # Down Arrow
+				3) NAV_KEY=t;CURSOR_NDX=1;_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_TOP]};; # Left Arrow
+				4) NAV_KEY=b;CURSOR_NDX=${MAX_CURSOR};_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_BOT]};; # Right Arrow
+				5) NAV_KEY=p;_PAGE_DATA[PAGE_STATE]='break'; break;; # PgUp 
+				6) NAV_KEY=n;_PAGE_DATA[PAGE_STATE]='break'; break;; # PgDn
+				7) NAV_KEY=fp;_PAGE_DATA[PAGE_STATE]='break'; break;; # Home
+				8) NAV_KEY=lp;_PAGE_DATA[PAGE_STATE]='break'; break;; # End
 				32) [[ ${_SELECTABLE} == 'true' ]] && list_toggle_selected ${_LIST_NDX};; # Space
 				47|60|62)	[[ ${KEY} -eq 47 ]] && MODE=new; # Forward slash
 								[[ ${KEY} -eq 60 ]] && MODE=rev; # Less than
 								[[ ${KEY} -eq 62 ]] && MODE=fwd; # Greater than
 								list_search ${MODE} ${_PAGE_DATA[PAGE]}
+								RC=${?}
+								if [[ ${RC} -ne 0 ]];then
+									if [[ ${_MARKERS} == 'true' ]];then # Clear old search markers
+										_MARKER=${_LINE_MARKER}
+										_PAGE_DATA[PAGE_STATE]='hold' # No page change
+										break
+									else
+										continue
+									fi
+								fi
 								if [[ ${_TARGET_PAGE} -eq ${_PAGE_DATA[PAGE]} ]];then
-									DIR_KEY='search'
+									NAV_KEY='search'
 									_PAGE_DATA[PAGE_STATE]='hold' # No page change
 									CURSOR_NDX=${_TARGET_CURSOR}
 									_LIST_NDX=${_TARGET_NDX}
 									break
 								else
-									DIR_KEY=${_TARGET_PAGE}
+									NAV_KEY=${_TARGET_PAGE}
 									_PAGE_DATA[PAGE_STATE]='break' # Invoke page change
 									break
 								fi;;
 				a) [[ ${_SELECTABLE} == 'true' ]] && list_toggle_all toggle;; # 'a' Toggle all
-				b) DIR_KEY=lp;_PAGE_DATA[PAGE_STATE]='break'; break;; # 'b' Top row last page
+				b) NAV_KEY=lp;_PAGE_DATA[PAGE_STATE]='break'; break;; # 'b' Top row last page
 				c) [[ ${_SELECTABLE} == 'true' ]] && list_toggle_all clear;; # 'c' Clear
-				h) DIR_KEY=t;CURSOR_NDX=1;_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_TOP]};; # 'h' Top Row current page
-				j) DIR_KEY=d;((CURSOR_NDX++));_LIST_NDX=$(list_set_index ${DIR_KEY});; # 'j' Next row
-				k) DIR_KEY=u;((CURSOR_NDX--));_LIST_NDX=$(list_set_index ${DIR_KEY});; # 'k' Prev row
-				l) DIR_KEY=b;CURSOR_NDX=${MAX_CURSOR};_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_BOT]};; # 'l' Bottom Row current page
-				n) DIR_KEY=n;_PAGE_DATA[PAGE_STATE]='break'; break;; # 'n' Next page
-				p) DIR_KEY=p;_PAGE_DATA[PAGE_STATE]='break'; break;; # 'p' Prev page
+				h) NAV_KEY=t;CURSOR_NDX=1;_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_TOP]};; # 'h' Top Row current page
+				j) NAV_KEY=d;((CURSOR_NDX++));_LIST_NDX=$(list_set_index ${NAV_KEY});; # 'j' Next row
+				k) NAV_KEY=u;((CURSOR_NDX--));_LIST_NDX=$(list_set_index ${NAV_KEY});; # 'k' Prev row
+				l) NAV_KEY=b;CURSOR_NDX=${MAX_CURSOR};_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_BOT]};; # 'l' Bottom Row current page
+				n) NAV_KEY=n;_PAGE_DATA[PAGE_STATE]='break'; break;; # 'n' Next page
+				p) NAV_KEY=p;_PAGE_DATA[PAGE_STATE]='break'; break;; # 'p' Prev page
 				q) exit_request; break;;
-				s) [[ ${_LIST_IS_SORTABLE} == 'true' ]] && list_sort;_PAGE_DATA[PAGE_STATE]='hold'; break;; # 's' Sort
-				t) DIR_KEY=fp;_PAGE_DATA[PAGE_STATE]='break'; break;; # 't' Top row first page
+				s) [[ ${_LIST_IS_SORTABLE} == 'true' ]] && list_sort;_PAGE_DATA[PAGE_STATE]='hold';NAV_KEY='sort'; break;; # Sort
+				t) NAV_KEY=fp;_PAGE_DATA[PAGE_STATE]='break'; break;; # 't' Top row first page
 				z) return -1;; # 'z' Quit loop
 				${CB_KEY}) ${_KEY_CALLBACKS[${CB_KEY}]}
 					if [[ ${_CBK_RET[${CB_KEY}]} == 'true' ]];then
