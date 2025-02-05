@@ -283,6 +283,7 @@ action_do () {
 				((ERROR_CNT++))
 				msg_box -T ALERT -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<r>Network Errors<N>:<w>${ERROR_CNT}<N>"
 				HAD_ERROR=true
+				sleep 2
 				if [[ ${ERROR_CNT} -ge ${_MAX_ERRORS} ]];then
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Too many errors - Unable to download<N>"
 					msg_box -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"

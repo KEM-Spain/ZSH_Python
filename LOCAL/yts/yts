@@ -283,6 +283,7 @@ action_do () {
 				((ERROR_CNT++))
 				msg_box -T ALERT -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<r>Network Errors<N>:<w>${ERROR_CNT}<N>"
 				HAD_ERROR=true
+				sleep 2
 				if [[ ${ERROR_CNT} -ge ${_MAX_ERRORS} ]];then
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Too many errors - Unable to download<N>"
 					msg_box -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
@@ -1199,7 +1200,7 @@ select_download () {
  # Set line item
 	list_set_line_item ' 
 	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
-	printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
 	'
 
 	list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${_ACTION} or ${ITALIC}${BOLD}exit${RESET} if none selected"

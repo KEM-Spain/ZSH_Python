@@ -246,7 +246,7 @@ action_do () {
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST} | sed 's/_/ /g')
 				HDR1_TXT=$(clean_line ${HDR1_TXT})
-				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT}<N>"
+				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,69]}<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
@@ -1199,7 +1199,7 @@ select_download () {
  # Set line item
 	list_set_line_item ' 
 	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
-	printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
 	'
 
 	list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${_ACTION} or ${ITALIC}${BOLD}exit${RESET} if none selected"

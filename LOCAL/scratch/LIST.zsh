@@ -800,9 +800,17 @@ list_select () {
 
 		if [[ ${_ACTIVE_SEARCH} == 'true' ]];then
 			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}REPOSITIONING CURSOR TO NEXT TARGET, MODE:${MODE}"
-			_LIST_NDX=${_TARGET_NDX}
+			R=$( echo "${DIR_KEY}" | sed 's/^[-+]*[0-9]*//g' )
+			if [[ ${DIR_KEY} == 'search' || -z ${R} ]];then
+				_LIST_NDX=${_TARGET_NDX} 
+				CURSOR_NDX=${_TARGET_CURSOR}
+			else
+				_LIST_NDX=${_PAGE_DATA[PAGE_RANGE_TOP]} 
+				CURSOR_NDX=${_PAGE_DATA[TOP_OFFSET]}
+			fi
 			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: TARGETS:${_TARGETS} _TARGET_NDX:${_TARGET_NDX}  _TARGET_CURSOR:${_TARGET_CURSOR}  _TARGET_PAGE:${_TARGET_PAGE}, CALLING list_item: _LIST_NDX:${_LIST_NDX} CURSOR:${_TARGET_CURSOR}"
-			list_item high ${_LIST_LINE_ITEM} ${_TARGET_CURSOR} 0 # Highlight target
+			#tcup 2 0;tput el;echo -n "PAGE:${_PAGE_DATA[PAGE]} _LIST_NDX:${_LIST_NDX} CURSOR_NDX:${CURSOR_NDX} _TARGET_NDX:${_TARGET_NDX}  _TARGET_CURSOR:${_TARGET_CURSOR}  _TARGET_PAGE:${_TARGET_PAGE}"
+			list_item high ${_LIST_LINE_ITEM} ${CURSOR_NDX} 0 # Highlight target
 		fi
 
 		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}STARTING NAVIGATION FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
@@ -810,6 +818,7 @@ list_select () {
 		while true;do
 			NDX_SAVE=${_LIST_NDX} # Store current index
 			_CURRENT_CURSOR=${CURSOR_NDX} # Store current cursor position
+			DIR_KEY=unset
 
 			# Partial page boundary
 			[[ ${_PAGE_DATA[PAGE]} -eq ${_PAGE_DATA[MAX_PAGE]} ]] && MAX_CURSOR=$(( (_PAGE_DATA[MAX_ITEM] - _PAGE_DATA[PAGE_RANGE_TOP]) + 1 )) || MAX_CURSOR=${_MAX_DISPLAY_ROWS}
@@ -834,12 +843,14 @@ list_select () {
 								[[ ${KEY} -eq 62 ]] && MODE=fwd; # Greater than
 								list_search ${MODE} ${_PAGE_DATA[PAGE]}
 								if [[ ${_TARGET_PAGE} -eq ${_PAGE_DATA[PAGE]} ]];then
+									DIR_KEY='search'
+									_PAGE_DATA[PAGE_STATE]='hold' # No page change
 									CURSOR_NDX=${_TARGET_CURSOR}
 									_LIST_NDX=${_TARGET_NDX}
 									break
 								else
 									DIR_KEY=${_TARGET_PAGE}
-									_PAGE_DATA[PAGE_STATE]='break'
+									_PAGE_DATA[PAGE_STATE]='break' # Invoke page change
 									break
 								fi;;
 				a) [[ ${_SELECTABLE} == 'true' ]] && list_toggle_all toggle;; # 'a' Toggle all
@@ -861,7 +872,7 @@ list_select () {
 					else
 						break
 					fi;;
-				0) SELECTED_COUNT=$(list_get_selected_count); # Enter
+				0) SELECTED_COUNT=$(list_get_selected_count); # Enter key
 					_PAGE_DATA[PAGE_STATE]='hold';
 					if [[ ${SELECTED_COUNT} -eq 0 ]];then
 						break 2
