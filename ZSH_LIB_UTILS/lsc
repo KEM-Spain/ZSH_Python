@@ -369,7 +369,7 @@ if [[ ${RUNNING} == 'true' ]];then
 	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%-*s${RESET} ${BAR}${ST_COLOR}%-*s${RESET} ${BAR}%-*s${RESET}\n" ${_LIST_NDX} ${_COL_WIDTHS[UNIT]} "${_UNIT_FILES[${FNDX}]}" ${_COL_WIDTHS[STATE]} "${_STATES[${FNDX}]}" ${_COL_WIDTHS[DESC]} "${_DESCRIPTIONS[${FNDX}]}"'
 else
 	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_COL_WIDTHS[UNIT]} "Unit File" ${_COL_WIDTHS[STATE]} "State" ${_COL_WIDTHS[RUN_STATE]} "Status"'
-	list_set_header 'printf "%*s ${MAGENTA_FG}%*s %*s %*s${RESET}" 5 "" ${_COL_WIDTHS[UNIT]} $(str_unicode_line ${_COL_WIDTHS[UNIT]}) ${_COL_WIDTHS[STATE]} $(str_unicode_line ${_COL_WIDTHS[STATE]}) ${_COL_WIDTHS[RUN_STATE]} $(str_unicode_line ${_COL_WIDTHS[RUN_STATE]})'
+	list_set_header 'printf "%*s ${SCOL1_CLR}%*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_COL_WIDTHS[UNIT]} $(str_unicode_line ${_COL_WIDTHS[UNIT]}) ${_COL_WIDTHS[STATE]} $(str_unicode_line ${_COL_WIDTHS[STATE]}) ${_COL_WIDTHS[RUN_STATE]} $(str_unicode_line ${_COL_WIDTHS[RUN_STATE]})'
 
 	# Set line item
 	list_set_line_item ' 

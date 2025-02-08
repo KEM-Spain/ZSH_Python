@@ -28,10 +28,10 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 gen_list () {
 	local MAX=${1}
-	local R
+	local -Z3 R
 
 	for (( R=1; R <= ${MAX}; R++ ));do
-		echo "List item ${R}"
+		echo "List item ${R} filler  filler  filler  filler  filler  filler  filler  filler  filler  filler  filler  filler  filler"
 	done
 }
 
@@ -58,6 +58,8 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_L
 '
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to delete ${ITALIC}or exit if none selected${RESET}"
 list_set_action_msgs delete file
+list_set_sortable true
+list_set_max_sort_col 1
 
 while true;do
 	# Display list

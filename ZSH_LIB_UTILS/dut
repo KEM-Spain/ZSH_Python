@@ -450,7 +450,7 @@ ___EOF
 		list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Partitions\tSelected:${WHITE_FG}%-d${RESET}" ${#_LIST} ${SELECTED_COUNT}'
 		list_set_header 'printf " "'
 		list_set_header 'printf "%*s %12s %12s %30s %15s" 5 "" "Partition" "Type" "Mount Point" "Label"'
-		list_set_header 'printf "%*s ${MAGENTA_FG}%12s %12s %30s %15s${RESET}" 5 "" $(str_unicode_line 12) $(str_unicode_line 12) $(str_unicode_line 30)  $(str_unicode_line 15)'
+		list_set_header 'printf "%*s ${SCOL1_CLR}%12s${RESET} ${SCOL2_CLR}%12s${RESET} ${SCOL3_CLR}%30s${RESET} ${SCOL4_CLR}%15s${RESET}" 5 "" $(str_unicode_line 12) $(str_unicode_line 12) $(str_unicode_line 30)  $(str_unicode_line 15)'
 
 		# Set line item
 		list_set_line_item ' 

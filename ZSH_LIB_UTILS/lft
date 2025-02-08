@@ -197,7 +197,7 @@ LBL_WIDTH=17
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize file)  Path:${WHITE_FG}%-40s${RESET} ${_PG}" ${#_LIST} "${PATHLBL}"'
 list_set_header 'printf " "'
 list_set_header 'printf "%-*s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" $((LONGEST+5)) "" ${_TYPE_LABELS[a]} ${_TYPE_LABELS[m]} ${_TYPE_LABELS[b]}'
-list_set_header 'printf "%-*s ${MAGENTA_FG}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s${RESET}" $((LONGEST+5)) "" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})"'
+list_set_header 'printf "%-*s ${SCOL2_CLR}%${LBL_WIDTH}s${RESET} ${SCOL3_CLR}%${LBL_WIDTH}s${RESET} ${SCOL4_CLR}%${LBL_WIDTH}s${RESET}" $((LONGEST+5)) "" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})"'
 
 # Set line item
 

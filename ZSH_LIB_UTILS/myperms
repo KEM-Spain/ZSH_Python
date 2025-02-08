@@ -25,7 +25,7 @@ typeset -A _OWNERS
 typeset -A _PERMS
 typeset -A _WPERMS
 typeset -A _PERM_LABELS=(s Special o Owner g Group w World)
-typeset -A _SORT_TABLE=(1 _FILES 2 _FTYPES 3 _PERMS 4 _OWNERS 5 _GROUPS 6 _EPERMS 7 _OPERMS 8 _GPERMS 9 _WPERMS)
+typeset -A _SORT_TABLE=()
 typeset -a _MARKED
 typeset -a _RAWLIST
 typeset -a _LOCAL_LIST
@@ -384,6 +384,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+# TODO: Sort generates SORT TABLE not POPULATED
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 RAWPATH=$(path_get_raw)
@@ -409,12 +410,14 @@ done
 
 LBL_WIDTH=8
 
+_SORT_TABLE=(1 _FILES 2 _FTYPES 3 _PERMS 4 _OWNERS 5 _GROUPS 6 _EPERMS 7 _OPERMS 8 _GPERMS 9 _WPERMS)
+
 # TODO: some jagged columns w/ long file names
 # Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET}  Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} "${PATHLBL}" ${SELECTED_COUNT}'
 list_set_header 'printf " "'
 list_set_header 'printf "%*s %*s %4s %4s %10s %10s %-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" 5 "" ${LONGEST} "File" "Type" "Perm" "Owner" "Group" ${_PERM_LABELS[s]} ${_PERM_LABELS[o]} ${_PERM_LABELS[g]} ${_PERM_LABELS[w]}'
-list_set_header 'printf "%*s ${CYAN_FG}%4s${RESET} ${CYAN_FG}%4s${RESET} ${CYAN_FG}%4s${RESET} ${CYAN_FG}%10s${RESET} ${CYAN_FG}%10s${RESET} ${MAGENTA_FG}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s${RESET}" $((LONGEST+1)) "" $(str_unicode_line 4) $(str_unicode_line 4) $(str_unicode_line 4)  $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 12) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH})' 
+list_set_header 'printf "%*s ${SCOL1_CLR}%4s${RESET} ${SCOL2_CLR}%4s${RESET} ${SCOL3_CLR}%4s${RESET} ${SCOL4_CLR}%10s${RESET} ${SCOL5_CLR}%10s${RESET} ${SCOL6_CLR}%-12s${RESET} ${SCOL7_CLR}%${LBL_WIDTH}s${RESET} ${SCOL8_CLR}%${LBL_WIDTH}s${RESET} ${SCOL9_CLR}%${LBL_WIDTH}s${RESET}" $((LONGEST+1)) "" $(str_unicode_line 4) $(str_unicode_line 4) $(str_unicode_line 4)  $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 12) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH})' 
 
 # Set line item
 list_set_line_item ' 

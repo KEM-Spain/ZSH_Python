@@ -1201,7 +1201,7 @@ list_sort () {
 	SORT_COL=${_MSG_KEY}
 
 	if [[ ${SORT_COL} -lt 1 || ${SORT_COL} -gt ${FIELD_MAX} ]];then
-		msg_box -p -PK "Invalid sort column:${SORT_COL}"
+		msg_box -c -p -PK "Invalid sort column:${SORT_COL}"
 		return 1
 	fi
 

@@ -283,6 +283,7 @@ action_do () {
 				((ERROR_CNT++))
 				msg_box -T ALERT -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<r>Network Errors<N>:<w>${ERROR_CNT}<N>"
 				HAD_ERROR=true
+				sleep 2
 				if [[ ${ERROR_CNT} -ge ${_MAX_ERRORS} ]];then
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Too many errors - Unable to download<N>"
 					msg_box -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
@@ -1252,12 +1253,20 @@ set_item_color () {
 show_down () {
 	local LINE=${@}
 	local MASK="\\u2B24"
+	local L_A="🡄 "
+	local R_A="🡆"
 	local LINE_COLOR=''
 	local X=$((_ALERT_COORDS[X]-3))
 	local MASK_Y=5
 
 	X=$((X+3))
-	[[ ${g_LAST_MASK_Y} -eq 2 ]] && MASK_Y=6 || MASK_Y=2
+	if [[ ${g_LAST_MASK_Y} -eq 2 ]];then
+		MASK_Y=6
+		MASK=${R_A}
+	else
+		MASK_Y=2
+		MASK=${L_A}
+	fi
 
 	case ${ETA:l} in
 		*mib*) LINE_COLOR="${BOLD}${GREEN_FG}";;
