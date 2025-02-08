@@ -37,7 +37,7 @@ print_hist () {
 	local NDX=0
 	local HLEN=0
 
-	[[ -n ${_SEARCHTERM} ]] && HDR="${WHITE_FG}Command History containing${RESET}: \"${_SEARCHTERM}\"" || HDR="${WHITE_FG}Last ${_HIST_LINES} $(str_pluralize line ${_HIST_LINES}) of Command History${RESET}"
+	[[ -n ${_SEARCHTERM} ]] && HDR="${WHITE_FG}Command History containing${RESET}: \"${_SEARCHTERM}\"" || HDR="${WHITE_FG}Last ${_HIST_LINES} $(str_pluralize line ${_HIST_LINES}) of Command History${RESET} (most recent first)"
 
 	HLEN=$(echo ${HDR} | str_strip_ansi) && HLEN=${#HLEN}
 

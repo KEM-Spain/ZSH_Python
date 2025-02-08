@@ -139,7 +139,7 @@ done  | sort -n > ${_HIST_FILE_NEW}
 HIST_UNIQ=${#HIST}
 
 DUPLICATE_CNT=$(( HIST_CNT-HIST_UNIQ ))
-printf "History (${WHITE_FG}%d${RESET}) | ${WHITE_FG}%d${RESET} unique lines\n" ${HIST_CNT} ${HIST_UNIQ}
+printf "History (${WHITE_FG}%d${RESET}) | ${WHITE_FG}%d${RESET} unique command/arg combinations\n" ${HIST_CNT} ${HIST_UNIQ}
 
 [[ -e ${_HIST_FILE_NEW} && -s ${_HIST_FILE_NEW} ]] && mv -f ${_HIST_FILE_NEW} ${_HIST_FILE}
 

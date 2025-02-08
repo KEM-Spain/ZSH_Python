@@ -182,11 +182,11 @@ for L in ${(o)_RAWLIST};do
 	tput cup 0 0; 
 	printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_RAWLIST} $(( (NDX * 100.00)  / ${#_RAWLIST} ))
 	_STATS=("${(f)$(stat ${L} -c'%x %y %z' | perl -ne 'for (m/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g) { print "$_\n" }')}")
-	_SORT_LIST+="${(f)LINE}|${_STATS[1]}|${_STATS[2]}|${_STATS[3]}" # Columns sort indexing
+	_SORT_LIST+="${(f)LINE}|${_STATS[3]}|${_STATS[2]}|${_STATS[1]}" # Columns sort indexing
 done
 LONGEST=$(( LONGEST+4 )) # Allow for directory markup ' (d)'
 
-_LOCAL_LIST=("${(f)$(list_sort_flat _SORT_LIST 4 a ${_LIST_DELIM})}") && _SORT_DIRECTION[3]=d # Default sort mod_date desc
+_LOCAL_LIST=("${(f)$(list_sort_flat _SORT_LIST 2 a ${_LIST_DELIM})}") && _SORT_DIRECTION[2]=d # Default sort mod_date desc
 
 if [[ ${_DEBUG} -ge 4 ]];then
 	dbg "${0}:${LINENO} $(for L in ${_LOCAL_LIST};do echo "${L}";done)"
@@ -196,7 +196,7 @@ fi
 LBL_WIDTH=17
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize file)  Path:${WHITE_FG}%-40s${RESET} ${_PG}" ${#_LIST} "${PATHLBL}"'
 list_set_header 'printf " "'
-list_set_header 'printf "%-*s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" $((LONGEST+5)) "" ${_TYPE_LABELS[b]} ${_TYPE_LABELS[a]} ${_TYPE_LABELS[m]}'
+list_set_header 'printf "%-*s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" $((LONGEST+5)) "" ${_TYPE_LABELS[a]} ${_TYPE_LABELS[m]} ${_TYPE_LABELS[b]}'
 list_set_header 'printf "%-*s ${MAGENTA_FG}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s${RESET}" $((LONGEST+5)) "" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})"'
 
 # Set line item
@@ -204,7 +204,7 @@ list_set_header 'printf "%-*s ${MAGENTA_FG}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_
 F1=$(cut -d"|" -f1 <<<${_LIST[${_LIST_NDX}]})
 list_set_line_item ' 
 [[ ${F1}${_MARKER} ]] && local LC=${ITALIC}${CYAN_FG} || local LC=${RESET}
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${BAR}${LC}%-*s${RESET}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} "$(item_decorate ${_LIST_NDX})" "$(get_stat ${_LIST_NDX} b)" "$(get_stat ${_LIST_NDX} a)" "$(get_stat ${_LIST_NDX} m)"
+printf "${BOLD}${WHITE_FG}%4s${RESET}) ${BAR}${LC}%-*s${RESET}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} "$(item_decorate ${_LIST_NDX})" "$(get_stat ${_LIST_NDX} a)" "$(get_stat ${_LIST_NDX} m)" "$(get_stat ${_LIST_NDX} b)"
 '
 list_set_prompt_msg '
 printf "Press ${WHITE_FG}Home End PgUp PgDn, ${RESET}<${WHITE_FG}n${RESET}>ext, <${WHITE_FG}p${RESET}>rev, <${WHITE_FG}b${RESET}>ottom, <${WHITE_FG}t${RESET}>op, <${WHITE_FG}s${RESET}>ort columns, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}"
