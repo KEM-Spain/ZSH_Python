@@ -90,7 +90,7 @@ action_do () {
 				msg_box -t1 "Substituted <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|in file:<w>${_LOCAL_LIST[${M}]}<N>|A backup file:${_BAK_DIR}/${_LOCAL_LIST[${M}]:t}.bak was created"
 			fi
 			sudo chmod 664 ${_BAK_DIR}/${_LOCAL_LIST[${M}]:t}.bak
-			list_set_selected ${M} ${_GHOST_ROW} # Mark as complete
+			list_set_selected ${M} ${_STALE_ROW} # Mark as complete
 		fi
 	done
 }
@@ -113,7 +113,7 @@ item_decorate () {
 	local NDX=$1
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		${_GHOST_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}completed${E_RESET}";;
+		${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}completed${E_RESET}";;
 		3) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}no match${E_RESET}";;
 		4) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}command failed${E_RESET}";;
 		*)	tput el;echo -n "${_LIST[${NDX}]:t}"

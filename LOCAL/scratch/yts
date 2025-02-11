@@ -27,7 +27,7 @@ source ${_LIB_DIR}/PATH.zsh
 source ${_LIB_DIR}/DATE.zsh
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/SELECT.zsh
-source ${_LIB_DIR}/LIST.zsh
+source ./LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
@@ -341,7 +341,11 @@ action_do () {
 	done # List complete
 
 	for M in ${_MARKED};do
-		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
+		if [[ ${_DOWNLOADS[${M}]} == 'true' ]];then
+			list_set_selected ${M} ${_GHOST_ROW}
+		else
+			list_set_selected ${M} ${_AVAIL_ROW}
+		fi
 	done
 
 	_MARKED=()

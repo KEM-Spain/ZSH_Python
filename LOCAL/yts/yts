@@ -1214,7 +1214,7 @@ select_download () {
 	while true;do
 	 # Get selection
 		list_reset
-		list_select ${_LOCAL_LIST}
+		list_select ${(on)_LOCAL_LIST}
 		[[ ${?} -eq 0 ]] && break
 
 	 # Get selections

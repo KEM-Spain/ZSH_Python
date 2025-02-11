@@ -42,7 +42,7 @@ action_do () {
 	for M in ${MARKED};do
 		[[ ${M} -eq 0 ]] && continue
 		MARKED[${M}]=0
-		list_set_selected ${M} ${_GHOST_ROW}
+		list_set_selected ${M} ${_STALE_ROW}
 	done
 }
 
@@ -207,7 +207,7 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_L
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to view ${ITALIC}or exit if none selected${RESET}"
 list_set_action_msgs view log
-list_set_clear_ghosts true
+list_set_reuse_stale true
 
 while true;do
 	# Get selection

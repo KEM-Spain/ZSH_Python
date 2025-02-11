@@ -83,7 +83,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_GHOST_ROW}
+		list_set_selected ${M} ${_STALE_ROW}
 	done
 }
 
@@ -383,11 +383,10 @@ printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} 
 '
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to manage unit file ${ITALIC}or exit if none selected${RESET}"
 list_set_sortable true
-list_set_clear_ghosts true
-list_set_max_sort_col ${#_SORT_TABLE}
-list_set_sort_type assoc
+list_set_reuse_stale true
 list_set_barlines true
 list_set_searchable false
+list_set_sort_defaults ARRAY _LIST MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 TABLE "${(kv)_SORT_TABLE}"
 
 while true;do
 	# Get selection

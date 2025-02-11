@@ -82,7 +82,7 @@ action_do () {
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
 		if [[ ${_MSG_KEY} -eq 3 ]];then
-			list_set_selected ${M} ${_GHOST_ROW} # Downloaded
+			list_set_selected ${M} ${_STALE_ROW} # Downloaded
 		else
 			list_set_selected ${M} ${_AVAIL_ROW}
 		fi

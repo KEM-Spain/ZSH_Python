@@ -186,7 +186,6 @@ for L in ${(o)_RAWLIST};do
 done
 LONGEST=$(( LONGEST+4 )) # Allow for directory markup ' (d)'
 
-_LOCAL_LIST=("${(f)$(list_sort_flat _SORT_LIST 2 a ${_LIST_DELIM})}") && _SORT_DIRECTION[2]=d # Default sort mod_date desc
 
 if [[ ${_DEBUG} -ge 4 ]];then
 	dbg "${0}:${LINENO} $(for L in ${_LOCAL_LIST};do echo "${L}";done)"
@@ -213,7 +212,8 @@ list_set_prompt " "
 list_set_barlines true
 list_set_sortable true
 list_set_selectable false
-list_set_max_sort_col 4
+list_set_sort_defaults ARRAY _SORT_LIST COL 2 ORDER a DELIM ${_LIST_DELIM}
+_LOCAL_LIST=("${(f)$(list_sort_flat _SORT_LIST 2 a ${_LIST_DELIM})}") && _SORT_DIRECTION[2]=d # Default sort mod_date desc
 
 while true;do
 	list_select ${_LOCAL_LIST}

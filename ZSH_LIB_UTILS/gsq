@@ -71,7 +71,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_GHOST_ROW}
+		list_set_selected ${M} ${_STALE_ROW}
 	done
 }
 
@@ -268,7 +268,7 @@ printf "${BOLD}${WHITE_FG}%4d${RESET}${_MARKER} ${SHADE}${BAR}${MAGENTA_FG}%-${_
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select line item then <${GREEN_FG}ENTER${RESET}> to edit value ${ITALIC}or exit if none selected${RESET}"
 list_set_barlines true
-list_set_clear_ghosts true
+list_set_reuse_stale true
 
 while true;do
 	# Get selection

@@ -46,7 +46,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
-		[[ ${_MSG_KEY} == 'y' ]] && list_set_selected ${M} ${_GHOST_ROW} || list_set_selected ${M} 0
+		[[ ${_MSG_KEY} == 'y' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} 0
 	done
 }
 

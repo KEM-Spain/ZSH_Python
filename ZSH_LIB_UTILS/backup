@@ -215,10 +215,10 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 g_LAST_RUN=$(last_backup ${_MARKER})
 
-GHOST_NDX=0
+STALE_NDX=0
 while true;do
-	((GHOST_NDX++))
-	[[ ${GHOST_NDX} -gt 1 ]] && exit_leave $(msg_exit E "Unable to clear ghost mounts")
+	((STALE_NDX++))
+	[[ ${STALE_NDX} -gt 1 ]] && exit_leave $(msg_exit E "Unable to clear ghost mounts")
 	if [[ -e ${_MOUNTPOINT}/${_DEST_ID}1 ]];then
 		msg_box "Detected ghost mounts - attempting removal"
 		dut external -u

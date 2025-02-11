@@ -47,7 +47,7 @@ action_do () {
 
 	for M in ${MARKED};do
 		MARKED[${M}]=0
-		list_set_selected ${M} ${_GHOST_ROW}
+		list_set_selected ${M} ${_STALE_ROW}
 	done
 
 }

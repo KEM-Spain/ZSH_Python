@@ -22,7 +22,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 # Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ./SELECT.zsh
+source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 typeset -a LIST
