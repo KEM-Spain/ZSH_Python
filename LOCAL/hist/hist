@@ -141,8 +141,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-clear
-
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -n ${1} ]] && _SEARCHTERM=${1}
 
 fc -R

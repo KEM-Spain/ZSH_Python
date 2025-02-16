@@ -146,6 +146,7 @@ copy_user_files () {
 	echo "${WHITE_FG}USER FILES${RESET}" >&2
 	cp /home/kmiller/.zshrc ${_USER_DIR}
 	cp /home/kmiller/.zsh_history ${_USER_DIR}
+	cp -R /home/kmiller/.vim ${_USER_DIR}
 	cp -R /home/kmiller/.mvq ${_USER_DIR}
 	cp -R /home/kmiller/.yts ${_USER_DIR}
 	cp -R /home/kmiller/.openvpn3 ${_USER_DIR}

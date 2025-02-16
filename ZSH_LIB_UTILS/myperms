@@ -413,6 +413,7 @@ _SORT_TABLE=(1 _FILES 2 _FTYPES 3 _PERMS 4 _OWNERS 5 _GROUPS 6 _EPERMS 7 _OPERMS
 
 # TODO: some jagged columns w/ long file names
 # Set headings
+local F1 F2 F3 F4 F5 F6 F7 F8 F9
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET}  Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} "${PATHLBL}" ${SELECTED_COUNT}'
 list_set_header 'printf " "'
 list_set_header 'printf "%*s %*s %4s %4s %10s %10s %-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" 5 "" ${LONGEST} "File" "Type" "Perm" "Owner" "Group" ${_PERM_LABELS[s]} ${_PERM_LABELS[o]} ${_PERM_LABELS[g]} ${_PERM_LABELS[w]}'
@@ -420,16 +421,8 @@ list_set_header 'printf "%*s ${SCOL1_CLR}%4s${RESET} ${SCOL2_CLR}%4s${RESET} ${S
 
 # Set line item
 list_set_line_item ' 
-local F1=$(cut -d"${_LIST_DELIM}" -f1 <<<${_LIST[${_LIST_NDX}]})
-local F2=$(cut -d"${_LIST_DELIM}" -f2 <<<${_LIST[${_LIST_NDX}]})
-local F3=$(cut -d"${_LIST_DELIM}" -f3 <<<${_LIST[${_LIST_NDX}]})
-local F4=$(cut -d"${_LIST_DELIM}" -f4 <<<${_LIST[${_LIST_NDX}]})
-local F5=$(cut -d"${_LIST_DELIM}" -f5 <<<${_LIST[${_LIST_NDX}]})
-local F6=$(cut -d"${_LIST_DELIM}" -f6 <<<${_LIST[${_LIST_NDX}]})
-local F7=$(cut -d"${_LIST_DELIM}" -f7 <<<${_LIST[${_LIST_NDX}]})
-local F8=$(cut -d"${_LIST_DELIM}" -f8 <<<${_LIST[${_LIST_NDX}]})
-local F9=$(cut -d"${_LIST_DELIM}" -f9 <<<${_LIST[${_LIST_NDX}]})
-printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${F1}]:t} "(${_FTYPES[${F2}]})" ${_PERMS[${F3}]} ${_OWNERS[${F4}]} ${_GROUPS[${F5}]} ${_EPERMS[${F6}]} ${_OPERMS[${F7}]} ${_GPERMS[${F8}]} ${_WPERMS[${F9}]}
+IFS="${_LIST_DELIM}" read F1 F2 F3 F4 F5 F6 F7 F8 F9 <<<${_LIST[${_LIST_NDX}]}
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${F1}]:t} "${_FTYPES[${F2}]}" ${_PERMS[${F3}]} ${_OWNERS[${F4}]} ${_GROUPS[${F5}]} ${_EPERMS[${F6}]} ${_OPERMS[${F7}]} ${_GPERMS[${F8}]} ${_WPERMS[${F9}]}
 '
 
 list_set_prompt_msg '

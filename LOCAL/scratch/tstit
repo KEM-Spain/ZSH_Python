@@ -19,45 +19,43 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-typeset -A TBL1=(1 one 2 two 3 three)
-typeset -A TBL2=(3 xxx 2 yyy 1 zzz)
-typeset -A TBL3=(1 r16 2 r23 3 r27)
-typeset -A TBL4=(1 z49 2 z45 3 z43)
-typeset -A TABLE=(1 TBL1 2 TBL2 3 TBL3 4 TBL4)
-typeset TCNT=${#TABLE}
 
+typeset -A C_TAB=()
 
-ORDER=${1}
-SORT_TABLE=${TABLE[${2}]}
-TCNT=${#TABLE}
-DELIM='|'
+# Load LS_COLORS into table
+IFS='='
+while read OBJ CODE;do
+	C_TAB[${OBJ}]=${CODE}
+done<<<$(sed -e 's/:/\n/g' -e 's/\*\.//g'<<<${LS_COLORS})
+IFS=''
 
-if [[ ${ORDER} == "a" ]];then
-	LIST=("${(f)$(
-		for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
-			echo -n "${${(P)SORT_TABLE}[${R}]}"
-			for (( T=1; T<=TCNT; T++ ));do
-				echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
-			done
-			echo
-		done | sort -n -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2-
-	)}")
+SHOW_TAB=false
+[[ ${1} == '-t' ]] && SHOW_TAB=true
+
+if [[ ${SHOW_TAB} == 'true' ]];then
+	for K in ${(ok)C_TAB};do
+		F1=$(cut -d';' -f1 <<<${C_TAB[$K]})
+		F2=$(cut -d';' -f2 <<<${C_TAB[$K]})
+		printf "%4s \033[%s;%smTEST${RESET} \n" ${K} ${F1} ${F2}
+	done | mypager
 else
-	LIST=("${(f)$(
-		for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
-			echo -n "${${(P)SORT_TABLE}[${R}]}"
-			for (( T=1; T<=TCNT; T++ ));do
-				echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
-			done
-			echo
-		done | sort -n -r -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2-
-	)}")
-fi
+	EXT=${1:e}
+	[[ -x ${1} ]] && EXT=ex 
 
-for L in ${LIST};do
-	N1=$(cut -d'|' -f1 <<<${L})
-	N2=$(cut -d'|' -f2 <<<${L})
-	N3=$(cut -d'|' -f3 <<<${L})
-	N4=$(cut -d'|' -f4 <<<${L})
-	echo ${TBL1[${N1}]} ${TBL2[${N2}]} ${TBL3[${N3}]} ${TBL4[${N4}]} 
-done
+	if [[ -z ${EXT} ]];then
+		TYPE=$(file ${1})
+		case ${TYPE} in
+			*zsh*) EXT=zsh;;
+			*) EXT=fi;;
+		esac
+	fi
+
+	CODE=${C_TAB[${EXT}]}
+	if [[ -n ${CODE} ]];then
+		F1=$(cut -d';' -f1 <<<${CODE})
+		F2=$(cut -d';' -f2 <<<${CODE})
+		echo "\033[${F1};${F2}m${1}${RESET}"
+	else
+		echo "${EXT} not found"
+	fi
+fi
