@@ -26,44 +26,33 @@ source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
  
 # Vars
-_ALL=false
 _HIST_LINES=35
 _SEARCHTERM=''
 
 # Functions
 print_hist () {
 	local HDR=''
+	local HDR_OUT=false
 	local LINE=''
-	local -a LIST=()
+	local D C
 	local NDX=0
+	local HLEN=0
+	local -a LIST=()
 
-	msg_box -x1 -y1 "<w>Collecting history...<N>"
+	sleep .5
+	msg_box_clear
 
 	while read LINE;do
-		if [[ ${_ALL} == 'false' ]];then
-			((NDX++))
-			[[ ${NDX} -gt ${_HIST_LINES} ]] && break
-		fi
 		LIST+=${LINE}
 	done
 
-	msg_box_clear
-
-	if [[ -n ${_SEARCHTERM} ]];then
-		HDR="<c>History containing<N>: \"${_SEARCHTERM}\""
-	elif [[ ${_ALL} == 'true' ]];then
-		HDR="<c>All History<N> (<w>${#LIST} lines<N>)"
-	else
-		HDR="<c>Last ${_HIST_LINES} Lines of History<N>"
-	fi
-
 	sel_set_list ${LIST}
-
-	sel_list -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard" -M"Use keypad for extended page navigation" -C
+	sel_list -d'#' -H"<c>History containing<N>: \"${_SEARCHTERM}\"" -C
 	if [[ -n ${_SEL_VAL} ]];then
 		cut -d'#' -f2 <<<${_SEL_VAL} | xclip -i -selection clipboard
 		msg_box "Command was copied to clipboard"
 	fi
+
 }
 
 #--Begin GetOpts--
@@ -115,7 +104,6 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [SEARCHTERM]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-a${RESET} all history lines"
 	echo -e "${WHITE_FG}-l${RESET} history lines (default: ${_HIST_LINES}) (SEARCHTERM overrides)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
@@ -123,14 +111,13 @@ usage () {
 	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
-OPTSTR=":HDl:a"
+OPTSTR=":HDl:"
 OPTIND=0
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-	  a) _ALL=true;;
 	  l) _HIST_LINES=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -147,11 +134,12 @@ clear
 
 fc -R
 
+msg_box -x1 -y1 "<w>Working...<N>"
+
 while read DATE TM CMD;do
-	[[ -n ${_SEARCHTERM} && ! ${CMD} =~ ${_SEARCHTERM} ]] && continue
 	D="${DATE} ${TM}"
 	U=$(date -d ${D} +%s)
 	echo "${U}#${D}#${CMD}"
-done < <(fc -nrli 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r | cut -d'#' -f2,3 | print_hist
+done < <(fc -nli 1 100000) | grep ${_SEARCHTERM} | sort -t'#' -k3 -u | sort -t'#' -k1 -r | cut -d'#' -f2,3 | print_hist
 
 exit_leave

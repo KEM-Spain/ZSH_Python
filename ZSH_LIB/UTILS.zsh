@@ -331,6 +331,7 @@ get_delim_field_cnt () {
 
 	if [[ -n ${DELIM} ]];then
 		FCNT=$(echo ${DELIM_ROW} | grep -o ${DELIM} | wc -l)
+		((FCNT++))
 		echo ${FCNT}
 		return 0
 	else

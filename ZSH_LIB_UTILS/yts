@@ -136,7 +136,9 @@ action_do () {
 
 	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	msg_box_clear
+	for M in ${_MARKED};do
+		list_set_selected ${M} ${_AVAIL_ROW}
+	done
 
 	for M in ${_MARKED};do
 		((DL_CNT++))
@@ -1178,11 +1180,12 @@ select_download () {
 	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 
 	SEARCHTYPE=Videos
+
 	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
 		_SORT_TABLE=(1 4 2 2 3 3) # Age, author, title
 		[[ ${g_LIVE} == 'true' ]] && SEARCHTYPE=Live
 	elif [[ ${g_QRY_ENGINE:l} == 'youtube' ]];then
-		_SORT_TABLE=(null null)
+		_SORT_TABLE=(none none)
 		[[ ${g_STRICT} == 'true' ]] && SEARCHTYPE="Strict (${g_STRICT_MSG})"
 	fi
 
@@ -1205,11 +1208,10 @@ select_download () {
 	list_set_searchable false
 	list_set_barlines true
 	list_set_page_callback log_find 
-	list_set_sort_defaults ARRAY "_LIST" COL 1 ORDER "a" DELIM ${_LIST_DELIM} TYPE "flat" TABLE "${(kv)_SORT_TABLE}"
+	list_set_sort_defaults ARRAY "_LIST" COL 1 ORDER "a" DELIM ${_LIST_DELIM} TYPE "flat" TABLE "${(kv)_SORT_TABLE}" MAXCOL 3
 
 	while true;do
 	 # Get selection
-		#list_reset
 		list_select ${_LOCAL_LIST}
 		[[ ${?} -eq 0 ]] && break
 
@@ -1221,6 +1223,7 @@ select_download () {
 			if [[ ${_MSG_KEY} == "y" ]];then
 				action_do
 			fi
+			_LIST_SELECTED=()
 		fi
 	done
 

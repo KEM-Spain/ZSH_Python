@@ -17,39 +17,47 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-typeset -a TSTARR=(1 2 3 4 5 6 7 8 9 10)
-_ORDER=a
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-sort_it () {
-	local S
-	local -a RESULT=()
-	local -A FLIP=(a d d a)
+typeset -A TBL1=(1 one 2 two 3 three)
+typeset -A TBL2=(3 xxx 2 yyy 1 zzz)
+typeset -A TBL3=(1 r16 2 r23 3 r27)
+typeset -A TBL4=(1 z49 2 z45 3 z43)
+typeset -A TABLE=(1 TBL1 2 TBL2 3 TBL3 4 TBL4)
+typeset TCNT=${#TABLE}
 
-	if [[ ${_ORDER} == "a" ]];then
-		RESULT=("${(f)$(
-			for S in ${TSTARR};do
-				echo "${S}"
-			done | sort -n
-		)}")
-	else
-		RESULT=("${(f)$(
-			for S in ${TSTARR};do
-				echo "${S}"
-			done | sort -r -n
-		)}")
-	fi
 
-	echo "--------------"
-	echo "_ORDER:${_ORDER}"
-	echo "--------------"
-	for S in ${RESULT};do
-		echo ${S}
-	done
+ORDER=${1}
+SORT_TABLE=${TABLE[${2}]}
+TCNT=${#TABLE}
+DELIM='|'
 
-	_ORDER=${FLIP[${_ORDER}]}
-}
+if [[ ${ORDER} == "a" ]];then
+	LIST=("${(f)$(
+		for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
+			echo -n "${${(P)SORT_TABLE}[${R}]}"
+			for (( T=1; T<=TCNT; T++ ));do
+				echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
+			done
+			echo
+		done | sort -n -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2-
+	)}")
+else
+	LIST=("${(f)$(
+		for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
+			echo -n "${${(P)SORT_TABLE}[${R}]}"
+			for (( T=1; T<=TCNT; T++ ));do
+				echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
+			done
+			echo
+		done | sort -n -r -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2-
+	)}")
+fi
 
-sort_it
-sort_it
-sort_it
-sort_it
+for L in ${LIST};do
+	N1=$(cut -d'|' -f1 <<<${L})
+	N2=$(cut -d'|' -f2 <<<${L})
+	N3=$(cut -d'|' -f3 <<<${L})
+	N4=$(cut -d'|' -f4 <<<${L})
+	echo ${TBL1[${N1}]} ${TBL2[${N2}]} ${TBL3[${N3}]} ${TBL4[${N4}]} 
+done

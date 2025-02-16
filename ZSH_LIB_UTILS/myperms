@@ -132,7 +132,7 @@ action_do () {
 			parse_stat ${NDX} ${_FILES[${NDX}]}
 		fi
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_STALE_ROW}
+		list_set_selected ${M} ${_GHOST_ROW}
 	done
 }
 
@@ -306,7 +306,7 @@ parse_stat () {
 	[[ ${RC} -ne 0 ]] && msg_box -p -PK "stat returned an error (${RC})"
 
 	for L in ${STAT};do
-		_FILES[${NDX}]=$(cut -d'|' -f1 <<<${L})
+		_FILES[${NDX}]=$(cut -d'|' -f1 <<<${L:t})
 		_OWNERS[${NDX}]=$(cut -d'|' -f2 <<<${L})
 		_GROUPS[${NDX}]=$(cut -d'|' -f3 <<<${L})
 		PERM=$(cut -d'|' -f4 <<<${L})
@@ -420,8 +420,16 @@ list_set_header 'printf "%*s ${SCOL1_CLR}%4s${RESET} ${SCOL2_CLR}%4s${RESET} ${S
 
 # Set line item
 list_set_line_item ' 
-local FNDX=${_LIST[${_LIST_NDX}]};
-printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${FNDX}]:t} "(${_FTYPES[${FNDX}]})" ${_PERMS[${FNDX}]} ${_OWNERS[${FNDX}]} ${_GROUPS[${FNDX}]} ${_EPERMS[${FNDX}]} ${_OPERMS[${FNDX}]} ${_GPERMS[${FNDX}]} ${_WPERMS[${FNDX}]}
+local F1=$(cut -d"${_LIST_DELIM}" -f1 <<<${_LIST[${_LIST_NDX}]})
+local F2=$(cut -d"${_LIST_DELIM}" -f2 <<<${_LIST[${_LIST_NDX}]})
+local F3=$(cut -d"${_LIST_DELIM}" -f3 <<<${_LIST[${_LIST_NDX}]})
+local F4=$(cut -d"${_LIST_DELIM}" -f4 <<<${_LIST[${_LIST_NDX}]})
+local F5=$(cut -d"${_LIST_DELIM}" -f5 <<<${_LIST[${_LIST_NDX}]})
+local F6=$(cut -d"${_LIST_DELIM}" -f6 <<<${_LIST[${_LIST_NDX}]})
+local F7=$(cut -d"${_LIST_DELIM}" -f7 <<<${_LIST[${_LIST_NDX}]})
+local F8=$(cut -d"${_LIST_DELIM}" -f8 <<<${_LIST[${_LIST_NDX}]})
+local F9=$(cut -d"${_LIST_DELIM}" -f9 <<<${_LIST[${_LIST_NDX}]})
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${F1}]:t} "(${_FTYPES[${F2}]})" ${_PERMS[${F3}]} ${_OWNERS[${F4}]} ${_GROUPS[${F5}]} ${_EPERMS[${F6}]} ${_OPERMS[${F7}]} ${_GPERMS[${F8}]} ${_WPERMS[${F9}]}
 '
 
 list_set_prompt_msg '
@@ -429,10 +437,9 @@ printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} 
 '
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to reset permissions ${ITALIC}or exit if none selected${RESET}"
 list_set_barlines false
-list_set_reuse_stale true
 list_set_searchable false
 list_set_sortable true
-list_set_sort_defaults ARRAY _LIST MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 TABLE "${(kv)_SORT_TABLE}"
+list_set_sort_defaults MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 DELIM ${_LIST_DELIM} TABLE "${(kv)_SORT_TABLE}" 
 
 while true;do
 	# Get selection

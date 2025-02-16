@@ -1,0 +1,65 @@
+#!/usr/bin/zsh
+FIELD=${1:=1}
+ORDER=${2:=a}
+
+typeset -a LIST=(
+"(17 years ago 58:29)|University Of California T|Conversations With History: John Mearsheimer"
+"(9 years ago 1:14:16)|The University Of Chicago|Why Is Ukraine The West's Fault? Featuring John Mearsheimer"
+"(1 year ago 3:26:42)|Lex Fridman|John Mearsheimer: Israel-Palestine, Russia-Ukraine, China, Nato, And Ww3 :"
+"(1 year ago 23:32)|Lex Clips|How Superpowers Survive: War, Money, Size : John Mearsheimer And Lex Fridma"
+"(1 year ago 6:31)|John Anderson Media|The Most Important Video On Ukraine : Prof. John Mearsheimer"
+"(3 months ago 1:07:12)|Unherd John Mearsheimer:|How The 'Realists' Won"
+"(3 months ago 0:59)|Al Jazeera English|John Mearsheimer's Advice For The Next Us President : Centre Stage Shorts"
+"(2 months ago 6:16)|John Anderson Media|Did The West Push Russia To War? : John Mearsheimer"
+"(1 month ago 28:03)|Judge Napolitano - Judging|Prof. John Mearsheimer : Is Israel Over-Extended?"
+"(4 weeks ago 20:29)|Crux|John Mearsheimer, Who Predicted Russia-Ukraine War, Says Truce Between Isra"
+"(3 weeks ago 1:08:52)|The Duran|What To Expect With The Return Of Trump - John Mearsheimer, Alexander Merco"
+"(3 weeks ago 1:14:59)|Reinvent Money|John Mearsheimer On The Renationalization Of Europe, The War In Ukraine, Mi"
+"(3 weeks ago 24:22)|Judge Napolitano - Judging|Prof. John Mearsheimer : Can Us And Russia Have Enduring Peace?"
+"(2 weeks ago 25:18)|Judge Napolitano - Judging|Prof. John Mearsheimer : Should Trump Trust Netanyahu?"
+"(2 weeks ago 49:36)|Daniel Davis / Deep Dive|John Mearsheimer: Putin: Peace Can Only Happen On My Terms"
+"(13 days ago 48:58)|Piers Morgan Uncensored|Trump Is Not A Warmonger John Mearsheimer On Gaza, Russia & More"
+"(13 days ago 24:02)|Al Jazeera English|Mearsheimer: 'the Israelis Lost In Gaza' : The Bottom Line"
+"(9 days ago 23:30)|Judge Napolitano - Judging|Prof. John Mearsheimer : Can Trump Control Netanyahu?"
+"(6 days ago 26:08)|Mearsheimer: Realism And P|John Mearsheimer Interview - War Over? The U.S. Abandons Ukraine, Russia Wi"
+"(1 day ago 54:56)|The Spectator|Rebuilding Gaza & A Deal With Putin - Professor John Mearsheimer On Trump"
+)
+
+
+typeset -A _CAL_SORT=(year G7 month F6 week E5 day D4 hour C3 minute B2 second A1)
+typeset -a SORT_ARRAY=()
+DELIM='|'
+
+
+for L in ${LIST};do
+	SORT_KEY=$(cut -d"${DELIM}" -f${FIELD} <<<${L})
+
+	[[ ${SORT_KEY} =~ "year" ]] && SORT_ARRAY+="${_CAL_SORT[year]}${SORT_KEY}${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ "month" ]] && SORT_ARRAY+="${_CAL_SORT[month]}${SORT_KEY}${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ "week" ]] && SORT_ARRAY+="${_CAL_SORT[week]}${SORT_KEY}${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ "day" ]] && SORT_ARRAY+="${_CAL_SORT[day]}${SORT_KEY}${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ "hour" ]] && SORT_ARRAY+="${_CAL_SORT[hour]}${SORT_KEY}${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ "min" ]] && SORT_ARRAY+="${_CAL_SORT[minute]}${SORT_KEY}${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ "sec" ]] && SORT_ARRAY+="${_CAL_SORT[second]}${SORT_KEY}${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ '^[A-Za-z0-9]' ]] && SORT_ARRAY+="${SORT_KEY[1]}${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ '^[(]?\d{4}-\d{2}-\d{2}' ]] && SORT_ARRAY+="${SORT_KEY[1,10]}${DELIM}${L}" && FLIP=true && continue
+	[[ ${SORT_KEY} =~ '\d{4}$' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/(.*)(\d{4})$/\2\1\2/g')" && continue
+	[[ ${SORT_KEY} =~ '\d[.]\d\D' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/([.]\d)(.*)((G|M).*)$/${1}0 ${3}/g')" && continue
+	[[ ${SORT_KEY} =~ 'Mi?B' ]] && SORT_ARRAY+="A888${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ 'Gi?B' ]] && SORT_ARRAY+="B999${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ ':' ]] && SORT_ARRAY+="B999${DELIM}${L}" && continue
+	[[ ${SORT_KEY} =~ '-' ]] && SORT_ARRAY+="A888${DELIM}${L}" && continue
+
+	SORT_ARRAY+="${SORT_KEY}${DELIM}${L}"
+done
+
+if [[ ${ORDER} == 'a' ]];then
+	for L in ${(o)SORT_ARRAY};do
+		printf "%s\n" ${L[1,30]}
+	done
+else
+	for L in ${(O)SORT_ARRAY};do
+		printf "%s\n" ${L[1,30]}
+	done
+fi
+

@@ -43,7 +43,7 @@ typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
 typeset -A _PARTIALS=()
 typeset -A _REJECTS=()
-typeset -A _SORT_DEFAULT=()
+typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _LOCAL_LIST=()
 
@@ -136,7 +136,9 @@ action_do () {
 
 	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	msg_box_clear
+	for M in ${_MARKED};do
+		list_set_selected ${M} ${_AVAIL_ROW}
+	done
 
 	for M in ${_MARKED};do
 		((DL_CNT++))
@@ -341,7 +343,7 @@ action_do () {
 	done # List complete
 
 	for M in ${_MARKED};do
-		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_GHOST_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
+		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
 	done
 
 	_MARKED=()
@@ -818,7 +820,6 @@ list_reset () {
 	_LIST_SELECTED=()
 	_MARKED=()
 	_SELECTION_LIST=()
-	_SORT_TABLE=()
 }
 
 log_download () {
@@ -1179,11 +1180,12 @@ select_download () {
 	[[ ${_DEBUG} -ge ${_YTS_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 
 	SEARCHTYPE=Videos
+
 	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
-		list_set_sort_cols 1 4 2 2 3 3 # Age, author, title
+		_SORT_TABLE=(1 4 2 2 3 3) # Age, author, title
 		[[ ${g_LIVE} == 'true' ]] && SEARCHTYPE=Live
 	elif [[ ${g_QRY_ENGINE:l} == 'youtube' ]];then
-		list_set_sort_cols '' # Age, author, title
+		_SORT_TABLE=(none none)
 		[[ ${g_STRICT} == 'true' ]] && SEARCHTYPE="Strict (${g_STRICT_MSG})"
 	fi
 
@@ -1204,17 +1206,13 @@ select_download () {
 	list_set_action_msgs video download
 	list_set_sortable true
 	list_set_searchable false
-	list_set_max_sort_col 3
-	list_set_sort_defaults ${_SORT_DEFAULT[${g_QRY_ENGINE}]}
 	list_set_barlines true
 	list_set_page_callback log_find 
-
-	_LOCAL_LIST=("${(f)$(list_sort_flat _LOCAL_LIST 1 a ${_LIST_DELIM})}") # Sort
+	list_set_sort_defaults ARRAY "_LIST" COL 1 ORDER "a" DELIM ${_LIST_DELIM} TYPE "flat" TABLE "${(kv)_SORT_TABLE}" MAXCOL 3
 
 	while true;do
 	 # Get selection
-		list_reset
-		list_select ${(on)_LOCAL_LIST}
+		list_select ${_LOCAL_LIST}
 		[[ ${?} -eq 0 ]] && break
 
 	 # Get selections
@@ -1225,6 +1223,7 @@ select_download () {
 			if [[ ${_MSG_KEY} == "y" ]];then
 				action_do
 			fi
+			_LIST_SELECTED=()
 		fi
 	done
 

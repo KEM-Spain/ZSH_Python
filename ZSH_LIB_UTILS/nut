@@ -976,7 +976,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -O ${CYAN_FG} -C -F"<w>Show Network Utilities usage or <h>(q)uit<N>" -H"Network Utilities"
+	sel_list -sa -O ${CYAN_FG} -C -F"<w>Show Network Utilities usage or <h>(q)uit<N>" -H"Network Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

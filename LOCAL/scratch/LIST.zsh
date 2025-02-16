@@ -56,6 +56,7 @@ _SELECTABLE=true
 _SELECTION_LIMIT=0
 _SELECT_ALL=false
 _SELECT_CALLBACK_FUNC=''
+_INIT_TAG_FILE="/tmp/$$:${0:t}.state"
 _TARGET_CURSOR=1
 _TARGET_KEY=''
 _TARGET_NDX=1
@@ -81,8 +82,12 @@ list_display_page () {
 	local -A PG_LIMITS=($(list_get_page_limits))
 	local X_POS=0
 	local R=0
+	local TEXT=''
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}GENERATING HEADER FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
+
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}
 
 	_LIST_NDX=$(( PG_LIMITS[TOP] - 1 )) # Initialize page top
@@ -95,9 +100,10 @@ list_display_page () {
 		((_LIST_NDX++))
 		X_POS=$(( R + _PAGE_DATA[TOP_OFFSET] - 1 ))
 		if [[ ${X_POS} -le ${PG_LIMITS[MAX_CURSOR]} ]];then
+			tcup ${X_POS} 0;tput el
 			list_item init ${_LIST_LINE_ITEM} ${X_POS} 0
 		else
-			tcup ${X_POS} 0; tput el
+			tcup ${X_POS} 0;tput el
 		fi
 	done
 
@@ -299,16 +305,23 @@ list_item () {
 	[[ -n ${MARKER} ]] && _MARKER=${_SEARCH_MARKER} && _MARKERS=true
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} && -n ${MARKER} ]] && dbg "${0}: MARKER:${MARKER}"
 
-	tcup ${X_POS} ${Y_POS};tput el
-	[[ ${MODE} == 'high' ]] && tput smso || tput rmso
-	 
-	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]] && SHADE=${REVERSE} || SHADE='' 
+	tput rmso # Clear any previous smso
 
-	# TODO: BARLINES extend beyond text area in some apps (myperms)
+	case ${MODE} in
+		high) tput smso;;
+		norm) tput rmso;;
+		select) SHADE=${REVERSE};tput smso;;
+		deselect) SHADE='';tput smso;;
+	esac
+
+	tcup ${X_POS} ${Y_POS}
+
 	if [[ ${_BARLINES} == 'true' ]];then
 		BARLINE=$(( _LIST_NDX % 2 )) # Barlining 
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 	fi
+
+	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq 1 ]] && SHADE=${REVERSE} || SHADE=''
 
 	eval ${LINE_ITEM} # Output line
 
@@ -322,7 +335,7 @@ list_nav_handler () {
 	local PG=0
 	local C
 
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	if [[ ${KEY} == 'u' ]];then      # Up row
 		list_item norm ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
@@ -354,15 +367,13 @@ list_nav_handler () {
 		list_item norm ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 		PG_LIMITS=($(list_get_page_limits))
 		_LIST_NDX=${PG_LIMITS[TOP]}
-		_CURSOR_NDX=${PG_LIMITS[MIN_CURSOR]}
-		list_item high ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
+		list_item high ${_LIST_LINE_ITEM} ${PG_LIMITS[MIN_CURSOR]} 0
 
 	elif [[ ${KEY} == 'b' ]];then    # Bottom of page
 		list_item norm ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 		PG_LIMITS=($(list_get_page_limits))
 		_LIST_NDX=${PG_LIMITS[BOT]}
-		_CURSOR_NDX=${PG_LIMITS[MAX_CURSOR]}
-		list_item high ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
+		list_item high ${_LIST_LINE_ITEM} ${PG_LIMITS[MAX_CURSOR]} 0
 
 	elif [[ ${KEY} == 'fp' ]];then   # First page
 		_PAGE_DATA[PAGE]=1
@@ -379,11 +390,15 @@ list_nav_handler () {
 		list_display_page
 
 	elif [[ ${KEY} == 'sort' ]];then # Sort
-		[[ ${_LIST_IS_SORTABLE} == 'true' ]] && list_sort
+		list_sort
 		list_display_page
 
-	# TODO: myperms distorts when list_search is called. (myperms is not searchable)
 	elif [[ ${KEY} =~ 'mark' ]];then # Search new
+		if [[ ${_LIST_IS_SEARCHABLE} == 'false' ]];then
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0} SEARCH DENIED: _LIST_IS_SEARCHABLE:${_LIST_IS_SEARCHABLE}"
+			return # Ignore not searchable
+		fi
+
 		MODE=$(cut -d'_' -f2 <<<${KEY})
 		list_search ${MODE} ${_PAGE_DATA[PAGE]}
 		RC=${?}
@@ -437,85 +452,6 @@ list_next_page () {
 	echo ${PAGE}
 }
 
-list_parse_series () {
-	local PATTERN=(${@})
-	local -a FROM=()
-	local -a TO=()
-	local -a R1=()
-	local -a R2=()
-	local -a SELECTED=()
-	local -a KEYLIST=()
-	local RANGE=false
-	local BEG
-	local END
-	local P K
-
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	PATTERN+="#" # Force extra parse cycle
-
-	for P in ${PATTERN};do
-		[[ ${P} == '-' ]] && RANGE=true && continue
-
-		if [[ ${P} =~ "[,# ]" ]];then # Hit separator
-			if [[ ${RANGE} == 'true' ]];then
-				BEG=$(str_array_to_num ${FROM})
-				KEYLIST+="B${BEG}"
-				FROM=()
-				END=$(str_array_to_num ${TO})
-				KEYLIST+="E${END}"
-				TO=()
-			else
-				ITEM=$(str_array_to_num ${FROM})
-				KEYLIST+=${ITEM}
-
-				FROM=()
-			fi
-			RANGE=false
-			continue
-		fi
-
-		if [[ ${RANGE} == 'true' ]];then
-			TO+=${P}
-		else
-			FROM+=${P}
-		fi
-	done
-
-	for K in ${KEYLIST};do
-		if [[ ${K[1,1]} =~ "[BE]" ]];then
-			case ${K[1,1]} in
-				B) R1+=${K[2,${#K}]};continue;;
-				E) R2+=${K[2,${#K}]};continue;;
-			esac
-		fi
-		SELECTED+=${K} # Non range element
-	done
-
-	# Handle range elements
-	if [[ -n ${R1} ]];then
-		for (( X=1;X<=${#R1};X++ ));do
-			SELECTED+=$(echo {${R1[${X}]}..${R2[${X}]}})
-		done
-	fi
-
-	echo ${SELECTED}
-}
-
-list_quote_marked_elements () {
-	local MARKED=(${@})
-	local M
-	local -a STR
-
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	for M in ${MARKED};do
-		STR+=${(q)_LIST[${M}]}
-	done
-
-	echo ${STR}
-}
-
 list_reset () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -533,11 +469,9 @@ list_search () {
 	local K_TEXT=''
 	local RC
 
-	# TODO: list search is broken in lft and probably others
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: MODE:${MODE} PAGE:${PAGE}"
 
-	[[ ${_LIST_IS_SEARCHABLE} == 'false' ]] && return
 
 	case ${MODE} in
 		new)		list_search_new ${PAGE}
@@ -647,10 +581,8 @@ list_search_new () {
 
 	msg_box -x${V_CTR} -y${H_CTR} -w${HL} "${HDR}" # Display header
 
-	tcup $(( V_CTR + 4 )) $(( H_CTR + 2 ))
+	tcup $(( V_CTR + 4 )) $(( H_CTR + 2 )) # Position editor
 	PROMPT="${E_RESET}${E_BOLD}Find${E_RESET}:"
-	
-	sleep 4 &
 	SEARCHTERM=$(inline_vi_edit ${PROMPT} "") # Call line editor
 
 	msg_box_clear X Y ${HEIGHT} W  # Clear box containing inline edit 
@@ -710,7 +642,6 @@ list_search_set_targets () {
 	return 0
 }
 
-# TODO: top row is not selectable in certain situations.  Find out what those situations are.
 list_select () {
 	local -a ACTION_MSGS=()
 	local -a LIST_SELECTION=()
@@ -722,7 +653,6 @@ list_select () {
 	local HDR_NDX=0
 	local KEY=''
 	local KEY_LINE=''
-	local L R S 
 	local LINE_ITEM=''
 	local LIST_DATA=''
 	local MAX_ITEM=0
@@ -739,14 +669,14 @@ list_select () {
 	local SELECTED_COUNT=0
 	local SELECTION_LIMIT=$(list_get_selection_limit)
 	local SHADE=''
+	local SORT_SOURCE="USER"
 	local SWAP_NDX=''
 	local TOP_OFFSET=0
-	local TAG_FILE="/tmp/$$.${0}.state"
 	local USER_PROMPT=''
+	local L R S 
 
 	# Initialization
 	_LIST=(${@})
-
 	_SELECT_ALL=false
 
 	# Max line
@@ -787,34 +717,35 @@ list_select () {
 	# End of Navigation Init
 
 	# Sort Init
-	if [[ -z ${_SORT_DATA} ]];then
-		_SORT_DATA=(
-			ORDER a
-			COL 1
-			MAXCOL 0
-			DELIM '|'
-			TYPE flat
-			ARRAY '_LIST'
-			TABLE 'none'
-		)
+	if [[ ${_LIST_IS_SORTABLE} == 'true' ]];then
+		if [[ -z ${_SORT_DATA} ]];then
+			_SORT_DATA=(
+				ORDER a
+				COL 1
+				MAXCOL 0
+				DELIM '|'
+				TYPE flat
+				ARRAY '_LIST'
+				TABLE 'null null'
+			)
+			SORT_SOURCE="GENERATED DEFAULT"
+		else
+			SORT_SOURCE="PASSED FROM APP"
+		fi
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT INIT: _SORT_DATA:${(kv)_SORT_DATA} SORT_SOURCE:${SORT_SOURCE}"
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: CALLING INITIAL SORT"
+		list_sort noprompt # Invoke default sort
 	fi
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: _SORT_DATA:${(kv)_SORT_DATA}"
 	# End of Sort Init
-
-	if [[ ${_LIST_IS_SORTABLE} == 'true' && ! -e ${TAG_FILE} ]];then
-		list_sort noprompt # Initial sort
-		echo "$$:$(date +%s)" > ${TAG_FILE}
-	fi
 	 
 	# Display current page of list items
 	tput civis >&2
 	tput clear
-
 	list_display_page
 	_LIST_NDX=1
 	_CURSOR_NDX=$(( _LIST_NDX + _PAGE_DATA[TOP_OFFSET] - 1 ))
 
-	# Main loop for user navigation
+	# Main navigation loop
 	while true;do
 		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ${WHITE_FG}STARTING NAVIGATION FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
 
@@ -847,7 +778,7 @@ list_select () {
 				p) NAV_KEY=p;break;;  # 'p' Prev page
 				n) NAV_KEY=n;break;;  # 'n' Next page
 				s) [[ ${_LIST_IS_SORTABLE} == 'true' ]] && NAV_KEY='sort';break;; # Sort
-				32) [[ ${_SELECTABLE} == 'true' ]] && list_toggle_selected ${_LIST_NDX};; # Space
+				32) [[ ${_SELECTABLE} == 'true' ]] && list_toggle_selected;; # Space
 				a)  [[ ${_SELECTABLE} == 'true' ]] && list_toggle_all toggle;; # 'a' Toggle all
 				c)  [[ ${_SELECTABLE} == 'true' ]] && list_toggle_all clear;; # 'c' Clear
 				q) exit_request; break;;
@@ -913,12 +844,6 @@ list_set_barlines () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_BARLINES=${1}
-}
-
-list_set_reuse_stale () {
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	_REUSE_STALE=${1}
 }
 
 list_set_client_warn () {
@@ -1046,6 +971,12 @@ list_set_prompt_msg () {
 	_PROMPT_KEYS=${@}
 }
 
+list_set_reuse_stale () {
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	_REUSE_STALE=${1}
+}
+
 list_set_searchable () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
@@ -1065,8 +996,8 @@ list_set_select_callback () {
 }
 
 list_set_selected () {
-	local -i ROW=${1}
-	local -i VAL=${2}
+	local ROW=${1}
+	local VAL=${2}
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${functrace[1]} ARGC:${#@} ROW:${ROW} VAL:${VAL}"
 
@@ -1077,6 +1008,261 @@ list_set_selection_limit () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	_SELECTION_LIMIT=${1}
+}
+
+list_set_sortable () {
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	_LIST_IS_SORTABLE=${1}
+}
+
+list_set_sort_defaults () {
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:\n${@}"
+	
+	_SORT_DATA=(${@})
+}
+
+list_sort () {
+	local PROMPT=${1:=true}
+	local -A ORD_TOGGLE=(a d d a)
+	local -A SORT_TEXT=(a ascending d descending)
+	local COL=0
+	local A C
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	# Reject non-sortable
+	if [[ ${_LIST_IS_SORTABLE} == 'false' ]];then
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0} SORT DENIED: _LIST_IS_SORTABLE:${_LIST_IS_SORTABLE}"
+		return
+	fi
+
+	if arr_is_populated "${_LIST_SELECTED}";then
+		for A in ${(k)_LIST_SELECTED};do
+			if [[ ${_LIST_SELECTED[${A}]} -ne 0 ]];then
+				msg_box -H1 -t2 "<r>Sort Unavailable<N>|Pending actions - sorting not possible"
+				[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0} SORT DENIED: ACTIVE SELECTIONS"
+				return
+			fi
+		done
+	fi
+
+	# Handle MAXCOL
+	if [[ ${_SORT_DATA[MAXCOL]} -eq 0 ]];then
+		_SORT_DATA[MAXCOL]=$(get_delim_field_cnt ${_LIST[1]})
+		if [[ ${_SORT_DATA[MAXCOL]} -eq 0 ]];then
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: DEFAULTING MAXCOL TO 1 COL"
+			_SORT_DATA[MAXCOL]=1
+		else
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: MAXCOL BASED ON DELIM:${_SORT_DATA[MAXCOL]}"
+		fi
+	fi
+
+	# Handle prompting
+	if [[ ${PROMPT} == 'true' && ${_SORT_DATA[MAXCOL]} -gt 1 ]];then
+		_SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]}
+		msg_box -p "Enter column to sort ${SORT_TEXT[${_SORT_DATA[ORDER]}]}|Range: <w>1<N> through <w>${_SORT_DATA[MAXCOL]}<N>|(Default is <w>${_SORT_DATA[COL]}<N>)"
+		COL=${_MSG_KEY}
+
+		[[ ${COL} -eq 27 ]] && return # User hit Esc key
+		[[ ${COL} -eq 0 ]] && COL=${_SORT_DATA[COL]} # Set default
+
+		if [[ ${COL} -lt 1 || ${COL} -gt ${_SORT_DATA[MAXCOL]} ]];then
+			msg_box -c -p -PK "Invalid sort column:${COL}"
+			return 1
+		fi
+
+		_SORT_DATA[COL]=${COL} # Either user key or default
+	else
+		COL=${_SORT_DATA[COL]}
+	fi
+
+	[[ -z ${_SORT_DATA[TYPE]} ]] && msg_box -H1 -p -PK "<r>Warning<N>|Application:<w>${_SCRIPT}<N> did not provide a <I><U><w>sort type<N> ( _SORT_DATA[TYPE] )|Data will remain unsorted"
+
+	# Call sort type
+	case ${_SORT_DATA[TYPE]} in
+		assoc) list_sort_assoc;;
+		flat) list_sort_flat;;
+	esac
+
+	# Define highlighting
+	for (( C=1; C <= _SORT_DATA[MAXCOL]; C++ ));do
+		setopt nowarncreateglobal # No Monitor locals
+		if [[ ${COL} -eq ${C} ]];then
+			eval "SCOL${C}_CLR"=${E_BOLD}${E_WHITE_FG}
+		else
+			eval "SCOL${C}_CLR"=${E_MAGENTA_FG}
+		fi
+		setopt warncreateglobal # Monitor locals
+	done
+}
+
+list_sort_assoc () {
+	local -a SORT_TABLE=()
+	local -A TABLE=()
+	local DELIM=${_SORT_DATA[DELIM]}
+	local TCNT=0
+	local R 
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	# Handle sort table
+	if [[ -n ${_SORT_DATA[TABLE]} ]];then
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
+		[[ ! ${_SORT_DATA[TABLE]} =~ 'null' ]] && TABLE=(${=_SORT_DATA[TABLE]}) || TABLE=()
+	fi
+
+	TCNT=${#TABLE}
+	SORT_TABLE=${TABLE[${_SORT_DATA[COL]}]}
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: TABLE COUNT:${TCNT}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT KEY:${_SORT_DATA[COL]}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT TABLE:${SORT_TABLE}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: PREPARING TO SORT ${#${(P)SORT_TABLE}} ROWS in ${SORT_TABLE}"
+
+	if [[ ${_SORT_DATA[ORDER]} == "a" ]];then
+		_LIST=("${(f)$(
+			for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
+				echo -n "${${(P)SORT_TABLE}[${R}]}"
+				for (( T=1; T<=TCNT; T++ ));do
+					echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
+				done
+				echo
+			done | sort -n -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2-
+		)}")
+	else
+		_LIST=("${(f)$(
+			for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
+				echo -n "${${(P)SORT_TABLE}[${R}]}"
+				for (( T=1; T<=TCNT; T++ ));do
+					echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
+				done
+				echo
+			done | sort -n -r -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2-
+		)}")
+	fi
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORTED ${#_LIST} ROWS"
+}
+
+list_sort_flat () {
+	local ARGS=(${@})
+	local -A ARG_TABLE=()
+	local -A TABLE=()
+	local -A _CAL_SORT=(year G7 month F6 week E5 day D4 hour C3 minute B2 second A1)
+	local -a SORT_ARRAY=()
+	local ARRAY_NAME=''
+	local FLDCNT=0
+	local FLIP=false
+	local DELIM=''
+	local FIELD=''
+	local SORT_KEY=''
+	local SORT_ORDER=''
+	local NDX=0
+	local SEL=0
+	local A L R
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	# Handle direct call
+	if [[ -n ${ARGS} ]];then
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
+		ARG_TABLE=(${=ARGS})
+		for A in ${(k)ARG_TABLE};do
+			_SORT_DATA[${A}]=${ARG_TABLE[${A}]}
+		done
+	fi
+
+	# Simplify vars
+	ARRAY_NAME=${_SORT_DATA[ARRAY]:=_LIST}
+	DELIM=${_SORT_DATA[DELIM]}
+	SORT_ORDER=${_SORT_DATA[ORDER]}
+		
+	if [[ -z ${_SORT_DATA[NOKEY]} ]];then # Using keys
+		# Handle sort table
+		if [[ -n ${_SORT_DATA[TABLE]} && ! ${_SORT_DATA[TABLE]} =~ 'none' ]];then
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
+			TABLE=(${=_SORT_DATA[TABLE]})
+			FIELD=${TABLE[${_SORT_DATA[COL]}]} # Mapped keys
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: MAPPED SORT KEY IS:${FIELD}"
+		else
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: NO SORT TABLE FOUND"
+			[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT KEY IS _SORT_DATA[COL]:${_SORT_DATA[COL]}"
+		fi
+
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: PREPARING TO SORT ${#${(P)ARRAY_NAME}} ROWS in ARRAY:${ARRAY_NAME}"
+
+		for L in ${(P)ARRAY_NAME};do # Dereference array name
+			if [[ -n ${FIELD} ]];then
+				SORT_KEY=$(cut -d "${_SORT_DATA[DELIM]}" -f${FIELD} <<<${L}) # Keys based on line content
+			else
+				SORT_KEY=$(cut -d "${_SORT_DATA[DELIM]}" -f ${_SORT_DATA[COL]} <<<${L}) # Keys based on line content
+			fi
+
+			[[ ${SORT_KEY} =~ "year" ]] && SORT_ARRAY+="${_CAL_SORT[year]}${SORT_KEY}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ "month" ]] && SORT_ARRAY+="${_CAL_SORT[month]}${SORT_KEY}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ "week" ]] && SORT_ARRAY+="${_CAL_SORT[week]}${SORT_KEY}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ "day" ]] && SORT_ARRAY+="${_CAL_SORT[day]}${SORT_KEY}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ "hour" ]] && SORT_ARRAY+="${_CAL_SORT[hour]}${SORT_KEY}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ "min" ]] && SORT_ARRAY+="${_CAL_SORT[minute]}${SORT_KEY}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ "sec" ]] && SORT_ARRAY+="${_CAL_SORT[second]}${SORT_KEY}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ '^[A-Za-z0-9]' ]] && SORT_ARRAY+="${SORT_KEY[1]}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ '^[(]?\d{4}-\d{2}-\d{2}' ]] && SORT_ARRAY+="${SORT_KEY[1,10]}${DELIM}${L}" && FLIP=true && continue
+			[[ ${SORT_KEY} =~ '\d{4}$' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/(.*)(\d{4})$/\2\1\2/g')" && continue
+			[[ ${SORT_KEY} =~ '\d[.]\d\D' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/([.]\d)(.*)((G|M).*)$/${1}0 ${3}/g')" && continue
+			[[ ${SORT_KEY} =~ 'Mi?B' ]] && SORT_ARRAY+="A888${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ 'Gi?B' ]] && SORT_ARRAY+="B999${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ ':' ]] && SORT_ARRAY+="B999${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ '-' ]] && SORT_ARRAY+="A888${DELIM}${L}" && continue
+
+			SORT_ARRAY+="${SORT_KEY}${DELIM}${L}"
+		done
+
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORTED ${#SORT_ARRAY} ROWS"
+
+		if [[ ${FLIP} == 'true' ]];then
+			[[ ${_SORT_DATA[ORDER]} == 'a' ]] && SORT_ORDER=d || SORT_ORDER=a # Reverse sort for numeric dates
+			[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: Flipped SORT_ORDER for numeric date"
+		fi
+
+		[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT_ORDER:${SORT_ORDER}"
+	else # Not using keys
+		[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: NOKEY SPECIFIED - SKIPPED SORT_KEY PARSE"
+		SORT_ARRAY=(${(P)ARRAY_NAME})
+	fi
+
+	if [[ -z ${_SORT_DATA[NOKEY]} ]];then # Using keys
+		[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: SORTING WITH SORT KEYS"
+		if [[ ${SORT_ORDER} == "a" ]];then
+			_LIST=("${(f)$(
+				for L in ${(on)SORT_ARRAY};do
+					cut -d"${_SORT_DATA[DELIM]}" -f2- <<<${L}
+				done
+			)}")
+		else
+			_LIST=("${(f)$(
+				for L in ${(On)SORT_ARRAY};do
+					cut -d"${_SORT_DATA[DELIM]}" -f2- <<<${L}
+				done
+			)}")
+		fi
+	else # Not using keys
+		[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: SORTING WITHOUT KEYS"
+		if [[ ${SORT_ORDER} == "a" ]];then
+			_LIST=(${(on)SORT_ARRAY})
+		else
+			_LIST=(${(On)SORT_ARRAY})
+		fi
+	fi
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ADDED ${#_LIST} ROWS to _LIST ARRAY"
+
+	if [[ -n ${ARGS} ]];then # Called directly - return list to caller
+		[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: DIRECT CALL - ECHOING ${#_LIST} ROWS"
+		for L in ${_LIST};do
+			echo "${L}"
+		done
+	fi
 }
 
 list_toggle_all () {
@@ -1132,18 +1318,18 @@ list_toggle_all () {
 }
 
 list_toggle_selected () {
-	local ROW_NDX=${1}
 	local COUNT=$(list_get_selected_count)
 
 	if [[ -n ${_SELECT_CALLBACK_FUNC} ]];then
-		${_SELECT_CALLBACK_FUNC} ${ROW_NDX}
+		${_SELECT_CALLBACK_FUNC} ${_LIST_NDX}
 		[[ ${?} -ne 0 ]] && return
 	fi
 
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ROW_NDX:${ROW_NDX} _REUSE_STALE:${_REUSE_STALE} _SELECTION_LIMIT:${_SELECTION_LIMIT}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: _LIST_NDX:${_LIST_NDX} _REUSE_STALE:${_REUSE_STALE} _SELECTION_LIMIT:${_SELECTION_LIMIT}"
 
-	if [[ ${_REUSE_STALE} == 'false' && ${_LIST_SELECTED[${ROW_NDX}]} -eq ${_STALE_ROW} ]];then
-		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: STALE ROW:${ROW_NDX} WAS REJECTED _LIST_SELECTED: ${_LIST_SELECTED[${ROW_NDX}]}"
+	if [[ ${_REUSE_STALE} == 'false' && ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_STALE_ROW} ]];then
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: STALE ROW:${_LIST_NDX} WAS REJECTED _LIST_SELECTED: ${_LIST_SELECTED[${_LIST_NDX}]}"
 		return # Ignore stale
 	fi
 
@@ -1154,75 +1340,19 @@ list_toggle_selected () {
 		return # Ignore over limit
 	fi
 
-	if [[ ${_LIST_SELECTED[${ROW_NDX}]} -eq ${_AVAIL_ROW} ]];then
-		list_set_selected ${ROW_NDX} ${_SELECTED_ROW} 
-		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ROW:${ROW_NDX} was set to _SELECTED_ROW:${_SELECTED_ROW}"
-		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${ROW_NDX} "${0}|1" # All on
-		list_item high ${_LIST_LINE_ITEM} $(( _LIST_NDX + _PAGE_DATA[TOP_OFFSET] - 1 )) 0
+	if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_AVAIL_ROW} ]];then
+		list_set_selected ${_LIST_NDX} ${_SELECTED_ROW} 
+		list_item select ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
+		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|1" # All on
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_SELECTED_ROW}"
 	else
-		list_set_selected ${ROW_NDX} ${_AVAIL_ROW}
-		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ROW:${ROW_NDX} was set to _AVAIL_ROW:${_AVAIL_ROW}"
-		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${ROW_NDX} "${0}|0" # All off
-		list_item norm ${_LIST_LINE_ITEM} $(( _LIST_NDX + _PAGE_DATA[TOP_OFFSET] - 1 )) 0
+		list_set_selected ${_LIST_NDX} ${_AVAIL_ROW}
+		list_item deselect ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
+		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|0" # All off
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_AVAIL_ROW}"
 	fi
 
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}
-}
-
-list_validate_selection () {
-	local -a KEYLIST
-	local -A OPTION
-	local -a R1
-	local -a R2
-	local -a SELECTED
-	local -a NDX_RANGE
-	local K X MSG
-	local RC
-
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${1} == '-r' ]] && OPTION[no_range_check]=1 && shift
-
-	KEYLIST=(${@})
-	KEYLIST=("${(f)$(echo ${KEYLIST} | grep -o .)}")
-	KEYLIST=$(list_parse_series ${KEYLIST})
-
-	R1=()
-	R2=()
-	SELECTED=()
-	for K in ${=KEYLIST};do
-		if [[ ${K[1,1]} =~ "[BE]" ]];then
-			case ${K[1,1]} in
-				B) R1+=${K[2,${#K}]};continue;;
-				E) R2+=${K[2,${#K}]};continue;;
-			esac
-		fi
-		SELECTED+=${K} # Non range element
-	done
-
-	# Handle range elements
-	if [[ -n ${R1} ]];then
-		for (( X=1;X<=${#R1};X++ ));do
-			SELECTED+=$(echo {${R1[${X}]}..${R2[${X}]}})
-		done
-	fi
-
-	RC=0
-	if [[ ${OPTION[no_range_check]} -ne 1 ]];then
-		NDX_RANGE=($(list_get_index_range ))
-		MSG=$(list_is_valid_selection ${NDX_RANGE[1]} ${NDX_RANGE[-1]} ${SELECTED})
-		RC=$?
-	fi
-
-	if [[ ${RC} -eq 0 ]];then
-		echo ${(on)SELECTED}
-
-		return 0
-	else
-		echo "Invalid Selection"
-
-		return 1
-	fi
 }
 
 list_warn_invisible_rows () {
@@ -1264,190 +1394,4 @@ list_write_to_file () {
 	else
 		msg_box -c -p -PK "List is empty - nothing to write"
 	fi
-}
-
-list_sort () {
-	local PROMPT=${1}
-	local -A ORD_TOGGLE=(a d d a)
-	local -A SORT_TEXT=(a Ascending d Descending)
-	local COL=0
-	local C
-	
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	if ! list_sort_verify_params;then
-		return 1
-	fi
-
-	[[ ${_SORT_DATA[MAXCOL]} -eq 0 ]] && _SORT_DATA[MAXCOL]=$(get_delim_field_cnt ${_LIST[1]})
-
-	if [[ ${_SORT_DATA[MAXCOL]} -gt 1 && ${PROMPT} != 'noprompt' ]];then
-		msg_box -p "Enter column to sort ${SORT_TEXT[${_SORT_DATA[ORDER]}]}|Range: <w>1<N> through <w>${_SORT_DATA[MAXCOL]}<N>|(Default is <w>1<N>)"
-		COL=${_MSG_KEY}
-
-		[[ ${COL} -eq 27 ]] && return
-		[[ ${COL} -eq 0 ]] && COL=1 # Set default
-
-		if [[ ${COL} -lt 1 || ${COL} -gt ${_SORT_DATA[MAXCOL]} ]];then
-			msg_box -c -p -PK "Invalid sort column:${COL}"
-			return 1
-		fi
-	fi
-
-	case ${_SORT_DATA[TYPE]} in
-		assoc) list_sort_assoc;;
-		flat) list_sort_flat;;
-	esac
-
-	for (( C=1; C <= _SORT_DATA[MAXCOL]; C++ ));do
-		setopt nowarncreateglobal # No Monitor locals
-		if [[ ${COL} -eq ${C} ]];then
-			eval "SCOL${C}_CLR"=${E_BOLD}${E_WHITE_FG}
-		else
-			eval "SCOL${C}_CLR"=${E_MAGENTA_FG}
-		fi
-		setopt warncreateglobal # Monitor locals
-	done
-
-	_SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]} # Reverse subsequent sort
-}
-
-list_sort_assoc () {
-	local ARRAY=${_SORT_DATA[ARRAY]}
-	local -a SORT_ARRAY=(${(P)ARRAY})
-	local -A TABLE=()
-	local S
-
-	if [[ -n ${_SORT_DATA[TABLE]} ]];then
-		[[ ! ${_SORT_DATA[TABLE]} =~ 'null' ]] && TABLE=(${=_SORT_DATA[TABLE]}) || TABLE=()
-	fi
-
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARRAY NAME:${ARRAY}"
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARRAY SIZE:${#SORT_ARRAY}"
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TABLE:${TABLE}"
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: COL:${_SORT_DATA[COL]}"
-
-	[[ ${#${(P)ARRAY}} -eq 0 ]] && msg_box -p -PK "ARRAY:${ARRAY} has no rows" && return 1 # Bounce
-
-	[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: _SORT_DATA[ORDER]:${_SORT_DATA[ORDER]}"
-
-	if [[ ${_SORT_DATA[ORDER]} == "a" ]];then
-		_LIST=("${(f)$(
-			for S in ${(k)TABLE};do
-				echo "${S}|${(P)TABLE[${S}]}"
-				echo "${S}|${(P)TABLE[${S}]}" >>x
-			done | sort -n -t'|' -k2 | cut -d'|' -f1
-		)}")
-	else
-		_LIST=("${(f)$(
-			for S in ${(k)TABLE};do
-				echo "${S}|${(P)TABLE[${S}]}"
-				echo "${S}|${(P)TABLE[${S}]}" >>x
-			done | sort -n -r -t'|' -k2 | cut -d'|' -f1
-		)}")
-	fi
-}
-
-list_sort_flat () {
-	local ARRAY=${_SORT_DATA[ARRAY]}
-	local -A TABLE=()
-	local -A _CAL_SORT=(year G7 month F6 week E5 day D4 hour C3 minute B2 second A1)
-	local -a SORT_ARRAY=()
-	local DELIM=${_SORT_DATA[DELIM]}
-	local FLIP=false
-	local SORT_KEY=''
-	local SORT_ORDER=${_SORT_DATA[ORDER]}
-	local L
-
-	if [[ -n ${_SORT_DATA[TABLE]} ]];then
-		[[ ! ${_SORT_DATA[TABLE]} =~ 'null' ]] && TABLE=(${=_SORT_DATA[TABLE]}) || TABLE=()
-	fi
-
-	for L in ${(P)ARRAY};do # Dereference array name
-		if [[ -n ${TABLE} ]];then
-			SORT_KEY=${TABLE[${SORT_COL}]} # Mapped keys
-		else
-			SORT_KEY=$(cut -d "${_SORT_DATA[DELIM]}" -f ${_SORT_DATA[COL]} <<<${L}) # Keys based on line content
-		fi
-
-		[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: COL:${_SORT_DATA[COL]} KEY:${SORT_KEY}"
-
-		[[ ${SORT_KEY} =~ 'year' ]] && SORT_ARRAY+="${_CAL_SORT[year]}${SORT_KEY}${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ 'month' ]] && SORT_ARRAY+="${_CAL_SORT[month]}${SORT_KEY}${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ 'week' ]] && SORT_ARRAY+="${_CAL_SORT[week]}${SORT_KEY}${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ 'day' ]] && SORT_ARRAY+="${_CAL_SORT[day]}${SORT_KEY}${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ 'hour' ]] && SORT_ARRAY+="${_CAL_SORT[hour]}${SORT_KEY}${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ 'min' ]] && SORT_ARRAY+="${_CAL_SORT[minute]}${SORT_KEY}${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ 'sec' ]] && SORT_ARRAY+="${_CAL_SORT[second]}${SORT_KEY}${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ '^[(]?\d{4}-\d{2}-\d{2}' ]] && SORT_ARRAY+="${SORT_KEY[1,10]}${DELIM}${L}" && FLIP=true && continue
-		[[ ${SORT_KEY} =~ '\d{4}$' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/(.*)(\d{4})$/\2\1\2/g')" && continue
-		[[ ${SORT_KEY} =~ '\d[.]\d\D' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/([.]\d)(.*)((G|M).*)$/${1}0 ${3}/g')" && continue
-		[[ ${SORT_KEY} =~ 'Mi?B' ]] && SORT_ARRAY+="A888${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ 'Gi?B' ]] && SORT_ARRAY+="B999${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ ':' ]] && SORT_ARRAY+="B999${DELIM}${L}" && continue
-		[[ ${SORT_KEY} =~ '-' ]] && SORT_ARRAY+="A888${DELIM}${L}" && continue
-
-		SORT_ARRAY+="${SORT_KEY}${DELIM}${L}"
-	done
-
-	if [[ ${FLIP} == 'true' ]];then
-		[[ ${_SORT_DATA[ORDER]} == 'a' ]] && SORT_ORDER=d || SORT_ORDER=a # Reverse sort for numeric dates
-		[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: Flipped SORT_ORDER for numeric date"
-	fi
-
-	[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT_ORDER:${SORT_ORDER}"
-
-	if [[ ${SORT_ORDER} == "a" ]];then
-		_LIST=("${(f)$(
-			for L in ${(on)SORT_ARRAY};do
-				cut -d"${DELIM}" -f2- <<<${L}
-			done
-		)}")
-	else
-		_LIST=("${(f)$(
-			for L in ${(On)SORT_ARRAY};do
-				cut -d"${DELIM}" -f2- <<<${L}
-			done
-		)}")
-	fi
-
-	if [[ ${ARRAY} != "_LIST" ]];then # Return list to caller
-		for L in ${_LIST};do
-			echo "${L}"
-		done
-	fi
-}
-
-list_sort_verify_params () {
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
-
-	if ! validate_is_integer ${_SORT_DATA[MAXCOL]};then
-		msg_box -p -PK "Invalid sort column:${_SORT_DATA[MAXCOL]}"
-		return 1
-	fi
-
-	if [[ ${_SORT_DATA[TYPE]} == 'assoc' ]];then
-		if [[ ${_SORT_DATA[TABLE]} == 'none' ]];then
-			msg_box -p -PK "SORT TABLE is not populated for assoc sort"
-			return 1
-		fi
-	fi
-
-	return 0
-}
-
-list_set_sortable () {
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
-
-	_LIST_IS_SORTABLE=${1}
-}
-
-list_set_sort_defaults () {
-	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:\n${@}"
-	local LIST=${@}
-
-	[[ -z ${LIST} ]] && LIST="null null"
-
-	_SORT_DATA=(${@})
 }

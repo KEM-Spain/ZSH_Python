@@ -526,7 +526,7 @@ ___EOF
 	[[ ! -e ${FN} ]] && usage "File not found:${FN}"
 
 	sel_set_list ${RESOLUTIONS}
-	sel_list -O${CYAN_FG} -x10 -y30 -F"<w>Select Resolution<N>" -H"Video Utilities"
+	sel_list -sa -O${CYAN_FG} -x10 -y30 -F"<w>Select Resolution<N>" -H"Video Utilities"
 	[[ ${?} -ne 0 ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
 	SCALE=${_SEL_VAL}
 
@@ -653,7 +653,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -O ${CYAN_FG} -C "<w>Show Video Utilities usage or <h>(q)uit<N>"
+	sel_list -sa -O ${CYAN_FG} -C "<w>Show Video Utilities usage or <h>(q)uit<N>"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

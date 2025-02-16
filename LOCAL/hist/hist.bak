@@ -59,7 +59,7 @@ print_hist () {
 
 	sel_set_list ${LIST}
 
-	sel_list -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard" -M"Use keypad for extended page navigation" -C
+	sel_list -O${MAGENTA_FG} -sn -d'#' -H${HDR} -C
 	if [[ -n ${_SEL_VAL} ]];then
 		cut -d'#' -f2 <<<${_SEL_VAL} | xclip -i -selection clipboard
 		msg_box "Command was copied to clipboard"

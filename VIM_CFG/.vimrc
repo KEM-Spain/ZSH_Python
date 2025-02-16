@@ -5,9 +5,8 @@ if !has("gui_running")
 	Plug 'https://github.com/powerman/vim-plugin-AnsiEsc.git'
 	Plug 'https://github.com/tpope/vim-sensible.git'
 	Plug 'https://github.com/segeljakt/vim-stealth.git'
-	"Plug 'https://github.com/sainnhe/everforest.git'
 	Plug 'https://github.com/sheerun/vim-polyglot'
-	"Plug 'https://github.com/vim-airline/vim-airline'
+	Plug 'https://github.com/morhetz/gruvbox'
 	call plug#end()
 
 	"Begin (Keyword Detection) related
@@ -142,5 +141,6 @@ if !has("gui_running")
 	set whichwrap+=<,>,[,] "where to wrap long lines
 	set wmh=0 "minimum window height
 
+	let g:gruvbox_termcolors=16
 	colorscheme darkburn
 endif

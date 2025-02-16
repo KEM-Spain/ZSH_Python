@@ -2475,7 +2475,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -O ${GREEN_FG} -C -F"<w>Show System Utilities usage or <h>(q)uit<N>" -H"System Utilities"
+	sel_list -sa -O ${GREEN_FG} -C -F"<w>Show System Utilities usage or <h>(q)uit<N>" -H"System Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	${_SCRIPT} -H # Call function help

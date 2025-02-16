@@ -18,7 +18,9 @@ typeset -a _PAGE=()
 
 # LIB Vars
 _CURRENT_PAGE=0
+_CAT_DELIM=':'
 _HAS_CAT=false
+_CAT_SORT=r
 _HILITE_X=0
 _SAVE_MENU_POS=false
 _SEL_KEY=''
@@ -140,8 +142,9 @@ sel_hilite () {
 
 	do_smso
 	if [[ ${_HAS_CAT} == 'true' ]];then
-		F1=$(cut -d: -f1 <<<${TEXT})
-		F2=$(cut -d: -f2 <<<${TEXT})
+		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
+		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0} PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		printf "${WHITE_FG}%-*s${RESET} ${_HILITE}%-*s${RESET}\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
 	else
 		echo ${TEXT}
@@ -191,14 +194,14 @@ sel_list () {
 	local L
 
 	local OPTION=''
-	local OPTSTR=":F:H:I:M:O:T:W:x:y:SCc"
+	local OPTSTR=":F:H:I:M:O:T:W:d:s:x:y:SCc"
 	OPTIND=0
 
 	local CLEAR_REGION=false
 	local HAS_FTR=false
 	local HAS_HDR=false
 	local HAS_MAP=false
-	local HAS_OB=false
+	local HAS_OUTER=false
 	local IB_COLOR=${RESET}
 	local LIST_FTR=''
 	local LIST_HDR=''
@@ -223,11 +226,13 @@ sel_list () {
 		H) HAS_HDR=true;LIST_HDR=${OPTARG};;
 	   I) IB_COLOR=${OPTARG};;
 		M) HAS_MAP=true;LIST_MAP=${OPTARG};;
-	   O) HAS_OB=true;OB_COLOR=${OPTARG};;
+	   O) HAS_OUTER=true;OB_COLOR=${OPTARG};;
 		S) _SAVE_MENU_POS=true;;
 	   T) _TAG=${OPTARG};;
 	   W) OB_PAD=${OPTARG};;
 	   c) CLEAR_REGION=true;;
+	   d) _CAT_DELIM=${OPTARG};;
+	   s) _CAT_SORT=${OPTARG};;
 	   x) X_COORD_ARG=${OPTARG};;
 	   y) Y_COORD_ARG=${OPTARG};;
 	   :) exit_leave "${RED_FG}${0}${RESET}: option: -${OPTARG} requires an argument";;
@@ -235,6 +240,8 @@ sel_list () {
 		esac
 	done
 	shift $(( OPTIND - 1 ))
+
+	[[ ${#_LIST} -gt 100 ]] && msg_box "<w>Building list...<N>"
 
 	[[ -n ${_TAG}  ]] && _TAG_FILE="/tmp/$$.${_TAG}.state"
 
@@ -254,13 +261,18 @@ sel_list () {
 	if [[ ${_HAS_CAT} == 'true' ]];then
 		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: CATEGORIES DETECTED"
 		for L in ${_LIST};do
-			F1=$(cut -d: -f1 <<<${L})
-			F2=$(cut -d: -f2 <<<${L})
+			F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${L})
+			F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${L})
+			[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0} PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 			[[ ${#F1} -gt ${_CAT_COLS[1]} ]] && _CAT_COLS[1]=${#F1}
 			[[ ${#F2} -gt ${_CAT_COLS[2]} ]] && _CAT_COLS[2]=${#F2}
 		done
-		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: SET category field widths: F1:${F1} F2:${F2}"
-		_LIST=(${(o)_LIST}) # Sort categories
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: SET category field widths: F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+		case ${_CAT_SORT} in
+			r) _LIST=(${(O)_LIST});; # Descending categories
+			a) _LIST=(${(o)_LIST});; # Ascending categories
+			n) _LIST=(${_LIST});; # No sorting of categories
+		esac
 	else
 		_CAT_COLS=()
 	fi
@@ -279,7 +291,7 @@ sel_list () {
 
 	MH=${#NM_M} # Set default MAP width
 	[[ ${PAGING} == 'true' ]] && PH=${#NM_P} # Set default PAGING width
-	if [[ ${HAS_OB} == 'true' ]];then
+	if [[ ${HAS_OUTER} == 'true' ]];then
 		((MH+=6)) # Add padding for MAP
 		[[ ${PAGING} == 'true' ]] && ((PH+=4)) # Add padding for PAGING
 	fi
@@ -289,7 +301,7 @@ sel_list () {
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "MAX:${MAX} BOX_W:${BOX_W} LIST_HDR:${#NM_H} LIST_FTR:${#NM_F} LIST_MAP:${MH} PAGE_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
 
 	# Handle outer box coords
-	if [[ ${HAS_OB} == 'true' ]];then
+	if [[ ${HAS_OUTER} == 'true' ]];then
 		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Setting OUTER BOX coords"
 		OB_X=$(( BOX_X - OB_X_OFFSET ))
 		OB_Y=$(( BOX_Y - OB_Y_OFFSET ))
@@ -310,12 +322,12 @@ sel_list () {
 	fi
 
 	# Store OUTER_BOX coords
-	box_coords_set OUTER_BOX HAS_OB ${HAS_OB} X ${OB_X} Y ${OB_Y} W ${OB_W} H ${OB_H} COLOR ${OB_COLOR}
+	box_coords_set OUTER_BOX HAS_OUTER ${HAS_OUTER} X ${OB_X} Y ${OB_Y} W ${OB_W} H ${OB_H} COLOR ${OB_COLOR}
 
 	BOX_BOT=$(( BOX_X + BOX_H)) # Store coordinate
 
 	# Set coords for list decorations
-	if [[ ${HAS_OB} == 'true' ]];then
+	if [[ ${HAS_OUTER} == 'true' ]];then
 		HDR_X=$(( BOX_X - 3 ))
 		HDR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_H})
 		MAP_X=${BOX_BOT}
@@ -367,6 +379,8 @@ sel_list () {
 	_LIST_DATA[X]=${LIST_X}
 	_LIST_DATA[Y]=${LIST_Y}
 
+	msg_box_clear
+
 	sel_scroll 1 # Display list page 1 and handle user inputs
 }
 
@@ -410,8 +424,9 @@ sel_norm () {
 	tcup ${X} ${Y}
 	do_rmso
 	if [[ ${_HAS_CAT} == 'true' ]];then
-		F1=$(cut -d: -f1 <<<${TEXT})
-		F2=$(cut -d: -f2 <<<${TEXT})
+		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
+		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0} PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		printf "${WHITE_FG}%-*s${RESET} %-*s\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
 	else
 		echo ${TEXT}
@@ -448,7 +463,7 @@ sel_scroll () {
 
 	while true;do
 		# Display decorations
-		[[ ${O_COORDS[HAS_OB]} == 'true' ]] && msg_unicode_box ${O_COORDS[X]} ${O_COORDS[Y]} ${O_COORDS[W]} ${O_COORDS[H]} ${O_COORDS[COLOR]}
+		[[ ${O_COORDS[HAS_OUTER]} == 'true' ]] && msg_unicode_box ${O_COORDS[X]} ${O_COORDS[Y]} ${O_COORDS[W]} ${O_COORDS[H]} ${O_COORDS[COLOR]}
 		msg_unicode_box ${I_COORDS[X]} ${I_COORDS[Y]} ${I_COORDS[W]} ${I_COORDS[H]} ${I_COORDS[COLOR]}
 
 		# Display list decorations
@@ -610,6 +625,10 @@ sel_set_ebox () {
 	elif [[ ${MSG_LEN} -gt ${I_COORDS[W]}  ]];then
 		DIFF=$(( (MSG_LEN - I_COORDS[W]) / 2 ))
 		Y_ARG=$(( I_COORDS[Y] - DIFF ))
+	else
+		X_ARG=$(( I_COORDS[X] + 2 ))
+		Y_ARG=$(( I_COORDS[Y] + 2 ))
+		W_ARG=$(( I_COORDS[W] - 2 ))
 	fi
 
 	echo ${X_ARG} ${Y_ARG} ${W_ARG} 

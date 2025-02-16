@@ -67,7 +67,7 @@ _MAX_ERRORS=10
 _MAX_FLEN=75
 _OBJECT=video
 _PAUSE_TM=2
-_SORT_DEFAULT=(youtube 1:d rumble 1:d)
+_SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _YTS_DBG=2
 _YTS_FAVORITES=${_YTS_DIR}/yts_favorites
 _YTS_GIT=${_SRC_DIR}/yt-dlp
@@ -1214,7 +1214,7 @@ select_download () {
 	while true;do
 	 # Get selection
 		list_reset
-		list_select ${_LOCAL_LIST}
+		list_select ${(on)_LOCAL_LIST}
 		[[ ${?} -eq 0 ]] && break
 
 	 # Get selections
