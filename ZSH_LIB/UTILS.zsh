@@ -640,9 +640,6 @@ ls_color () {
 	local F1=''
 	local F2=''
 	local OBJ=''
-	local SHOW_TAB=false
-	local TYPE=''
-	local K
 
 	# Load LS_COLORS into table
 	IFS='='
@@ -651,27 +648,17 @@ ls_color () {
 	done<<<$(sed -e 's/:/\n/g' -e 's/\*\.//g'<<<${LS_COLORS})
 	IFS=''
 
-	[[ ${FN} == '-t' ]] && SHOW_TAB=true
+	EXT=${FN:e}
+	if [[ -z ${EXT} ]];then
+		[[ -x ${1} ]] && EXT=ex || EXT=fi # Minimal differentiation
+	fi
 
-	if [[ ${SHOW_TAB} == 'true' ]];then
-		for K in ${(ok)C_TAB};do
-			F1=$(cut -d';' -f1 <<<${C_TAB[$K]})
-			F2=$(cut -d';' -f2 <<<${C_TAB[$K]})
-			printf "%4s \033[%s;%smTEST${RESET} \n" ${K} ${F1} ${F2}
-		done | mypager
+	CODE=${C_TAB[${EXT}]}
+	if [[ -n ${CODE} ]];then
+		F1=$(cut -d';' -f1 <<<${CODE})
+		F2=$(cut -d';' -f2 <<<${CODE})
+		echo "\033[${F1};${F2}m"
 	else
-		EXT=${FN:e}
-		if [[ -z ${EXT} ]];then
-			[[ -x ${1} ]] && EXT=ex || EXT=fi # Minimal differentiation
-		fi
-
-		CODE=${C_TAB[${EXT}]}
-		if [[ -n ${CODE} ]];then
-			F1=$(cut -d';' -f1 <<<${CODE})
-			F2=$(cut -d';' -f2 <<<${CODE})
-			echo "\033[${F1};${F2}m"
-		else
-			echo "${FN} or ${EXT} not found"
-		fi
+		echo "${RESET}"
 	fi
 }

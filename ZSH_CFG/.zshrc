@@ -136,7 +136,7 @@ _check_updates () {
 	local NUM=0
 	local M
 
-	MSGS_1+=("${(f)$(sudo run-parts ${_MOTD_DIR})}")
+	MSGS_1+=("${(f)$(sudo run-parts ${_MOTD_DIR} | grep -vi esm)}")
 
 	for M in ${MSGS_1};do
 		[[ ${M:l} =~ 'esm' ]] && continue

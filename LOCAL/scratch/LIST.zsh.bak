@@ -452,6 +452,85 @@ list_next_page () {
 	echo ${PAGE}
 }
 
+list_parse_series () {
+	local PATTERN=(${@})
+	local -a FROM=()
+	local -a TO=()
+	local -a R1=()
+	local -a R2=()
+	local -a SELECTED=()
+	local -a KEYLIST=()
+	local RANGE=false
+	local BEG
+	local END
+	local P K
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	PATTERN+="#" # Force extra parse cycle
+
+	for P in ${PATTERN};do
+		[[ ${P} == '-' ]] && RANGE=true && continue
+
+		if [[ ${P} =~ "[,# ]" ]];then # Hit separator
+			if [[ ${RANGE} == 'true' ]];then
+				BEG=$(str_array_to_num ${FROM})
+				KEYLIST+="B${BEG}"
+				FROM=()
+				END=$(str_array_to_num ${TO})
+				KEYLIST+="E${END}"
+				TO=()
+			else
+				ITEM=$(str_array_to_num ${FROM})
+				KEYLIST+=${ITEM}
+
+				FROM=()
+			fi
+			RANGE=false
+			continue
+		fi
+
+		if [[ ${RANGE} == 'true' ]];then
+			TO+=${P}
+		else
+			FROM+=${P}
+		fi
+	done
+
+	for K in ${KEYLIST};do
+		if [[ ${K[1,1]} =~ "[BE]" ]];then
+			case ${K[1,1]} in
+				B) R1+=${K[2,${#K}]};continue;;
+				E) R2+=${K[2,${#K}]};continue;;
+			esac
+		fi
+		SELECTED+=${K} # Non range element
+	done
+
+	# Handle range elements
+	if [[ -n ${R1} ]];then
+		for (( X=1;X<=${#R1};X++ ));do
+			SELECTED+=$(echo {${R1[${X}]}..${R2[${X}]}})
+		done
+	fi
+
+	echo ${SELECTED}
+}
+
+list_quote_marked_elements () {
+	local MARKED=(${@})
+	local M
+	local -a STR
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	for M in ${MARKED};do
+		STR+=${(q)_LIST[${M}]}
+	done
+
+	echo ${STR}
+}
+
 list_reset () {
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -653,6 +732,7 @@ list_select () {
 	local HDR_NDX=0
 	local KEY=''
 	local KEY_LINE=''
+	local L R S 
 	local LINE_ITEM=''
 	local LIST_DATA=''
 	local MAX_ITEM=0
@@ -669,11 +749,10 @@ list_select () {
 	local SELECTED_COUNT=0
 	local SELECTION_LIMIT=$(list_get_selection_limit)
 	local SHADE=''
-	local SORT_SOURCE="USER"
 	local SWAP_NDX=''
 	local TOP_OFFSET=0
 	local USER_PROMPT=''
-	local L R S 
+	local SORT_SOURCE="USER"
 
 	# Initialization
 	_LIST=(${@})
@@ -1353,6 +1432,62 @@ list_toggle_selected () {
 	fi
 
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}
+}
+
+list_validate_selection () {
+	local -a KEYLIST
+	local -A OPTION
+	local -a R1
+	local -a R2
+	local -a SELECTED
+	local -a NDX_RANGE
+	local K X MSG
+	local RC
+
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	[[ ${1} == '-r' ]] && OPTION[no_range_check]=1 && shift
+
+	KEYLIST=(${@})
+	KEYLIST=("${(f)$(echo ${KEYLIST} | grep -o .)}")
+	KEYLIST=$(list_parse_series ${KEYLIST})
+
+	R1=()
+	R2=()
+	SELECTED=()
+	for K in ${=KEYLIST};do
+		if [[ ${K[1,1]} =~ "[BE]" ]];then
+			case ${K[1,1]} in
+				B) R1+=${K[2,${#K}]};continue;;
+				E) R2+=${K[2,${#K}]};continue;;
+			esac
+		fi
+		SELECTED+=${K} # Non range element
+	done
+
+	# Handle range elements
+	if [[ -n ${R1} ]];then
+		for (( X=1;X<=${#R1};X++ ));do
+			SELECTED+=$(echo {${R1[${X}]}..${R2[${X}]}})
+		done
+	fi
+
+	RC=0
+	if [[ ${OPTION[no_range_check]} -ne 1 ]];then
+		NDX_RANGE=($(list_get_index_range ))
+		MSG=$(list_is_valid_selection ${NDX_RANGE[1]} ${NDX_RANGE[-1]} ${SELECTED})
+		RC=$?
+	fi
+
+	if [[ ${RC} -eq 0 ]];then
+		echo ${(on)SELECTED}
+
+		return 0
+	else
+		echo "Invalid Selection"
+
+		return 1
+	fi
 }
 
 list_warn_invisible_rows () {

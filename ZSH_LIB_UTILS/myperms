@@ -406,6 +406,7 @@ for L in ${(o)_RAWLIST};do
 	[[ ${#_FILES[${_FNDX}]:t} -gt ${LONGEST} ]] && LONGEST=${#_FILES[${_FNDX}]:t} 
 	_LOCAL_LIST+=${_FNDX}
 done
+[[ ${LONGEST} -gt 50 ]] && LONGEST=50
 
 LBL_WIDTH=8
 
@@ -422,7 +423,7 @@ list_set_header 'printf "%*s ${SCOL1_CLR}%4s${RESET} ${SCOL2_CLR}%4s${RESET} ${S
 # Set line item
 list_set_line_item ' 
 IFS="${_LIST_DELIM}" read F1 F2 F3 F4 F5 F6 F7 F8 F9 <<<${_LIST[${_LIST_NDX}]}
-printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${F1}]:t} "${_FTYPES[${F2}]}" ${_PERMS[${F3}]} ${_OWNERS[${F4}]} ${_GROUPS[${F5}]} ${_EPERMS[${F6}]} ${_OPERMS[${F7}]} ${_GPERMS[${F8}]} ${_WPERMS[${F9}]}
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}$(ls_color ${_FILES[${F1}]:t})%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${${_FILES[${F1}]:t}[1,${LONGEST}]} "${_FTYPES[${F2}]}" ${_PERMS[${F3}]} ${_OWNERS[${F4}]} ${_GROUPS[${F5}]} ${_EPERMS[${F6}]} ${_OPERMS[${F7}]} ${_GPERMS[${F8}]} ${_WPERMS[${F9}]}
 '
 
 list_set_prompt_msg '

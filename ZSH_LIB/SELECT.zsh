@@ -247,6 +247,14 @@ sel_list () {
 
 	# If no X,Y coords are passed default to center
 	LIST_W=$(arr_long_elem_len ${_LIST})
+	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: arr_long_elem_len returned: ${LIST_W}"
+
+	if [[ ${LIST_W} -gt ${_MAX_COLS} ]];then
+		LIST_W=$(( _MAX_COLS - 20 ))
+		local LONG_EL=$(arr_long_elem ${_LIST})
+		[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${0}: arr_long_elem returned: ${LONG_EL}"
+	fi
+
 	[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: LIST_W:${LIST_W} LIST_H:${LIST_H}"
 
