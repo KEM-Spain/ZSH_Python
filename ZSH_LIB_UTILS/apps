@@ -575,6 +575,7 @@ if [[ ${DO_APT_UPDATE} == true ]];then
 	stat -c '%Y' ${_SOURCES} >${_LAST_APT_UPD}
 fi
 
+msg_box "Searching for:${SEARCHTERM}..."
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PATTERN:${PATTERN}"
 
 # Get data
@@ -607,6 +608,7 @@ list_set_action_msgs 'install-uninstall app / view app info:'  app
 list_user_prompt_style msg_box
 list_set_no_top_offset # Place the first detail line immediately after heading
 list_set_barlines true
+list_set_searchable true
 
 while true;do
 	# Get selection

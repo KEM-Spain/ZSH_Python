@@ -275,14 +275,14 @@ usage () {
 OPTSTR=":HDst:"
 
 _SUMMARY_ONLY=false
-TYPE_ONLY=false
+TYPE_FILTER=false
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      s) _SUMMARY_ONLY=true;;
-     t) TYPE_ONLY=${OPTARG};;
+     t) TYPE_FILTER=${OPTARG};;
      :) print -u2 "${_SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -312,7 +312,7 @@ for L in ${(on)_RAWLIST};do
 	tput cup 0 0; tput el; printf "\rProcessing line ${WHITE_FG}%-d${RESET} of ${WHITE_FG}%-d${RESET} files ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_RAWLIST} $(( NDX * 100. / ${#_RAWLIST} )) >&2
 	DESC=$(file_type ${L})
 	[[ -n ${SEARCHTERM} && ! ${DESC} =~ ${SEARCHTERM} ]] && continue
-	[[ ${TYPE_ONLY} != 'false' && ! ${DESC} =~ ${TYPE_ONLY} ]] && continue
+	[[ ${TYPE_FILTER} != 'false' && ! ${DESC} =~ ${TYPE_FILTER} ]] && continue
 	_LOCAL_LIST+=("${LINE}|${DESC}")
 	if [[ -L ${L} ]];then # Links show fullpath
 		RP=$(realpath ${L:t})
@@ -329,12 +329,12 @@ if [[ ${_DEBUG} -ge 4 ]];then
 	done | dbg
 fi
 
-_LOCAL_LIST=("${(f)$(list_sort_flat _LOCAL_LIST 2 a ${_LIST_DELIM})}") # Forward sort default type asc
+_LOCAL_LIST=("${(f)$(list_sort_flat ARRAY _LOCAL_LIST COL 1 ORDER a DELIM ${_LIST_DELIM} TYPE flat)}") # Forward sort default type asc
 
 # Verify existence of data
 if ! arr_is_populated "${_LOCAL_LIST}";then
-	if [[ ${TYPE_ONLY} != 'false' ]];then
-		exit_leave $(msg_exit W "No file types matched:${TYPE_ONLY}")
+	if [[ ${TYPE_FILTER} != 'false' ]];then
+		exit_leave $(msg_exit W "No file types matched:${TYPE_FILTER}")
 	else
 		exit_leave $(msg_exit W "No known file types found")
 	fi
@@ -387,7 +387,7 @@ list_set_action_msgs delete file
 list_set_barlines true
 list_set_selectable false
 list_set_sortable true
-list_set_max_sort_col 2
+list_set_sort_defaults COL 1 ORDER a DELIM ${_LIST_DELIM} TYPE flat
 
 while true;do
 	# Get selection

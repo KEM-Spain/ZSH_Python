@@ -647,7 +647,7 @@ sel_set_list () {
 
 	[[ ${_DEBUG} -ge ${_SEL_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	_LIST=(${LIST})
+	_LIST=(${(o)LIST})
 }
 
 sel_set_pages () {

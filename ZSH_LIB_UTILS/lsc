@@ -31,6 +31,7 @@ typeset -a _STATE_SELECT
 
 # Constants
 _MAX_ITEM_LEN=75
+_APP_DBG=4
 
 # Imports
 _LIB_DIR=/usr/local/lib
@@ -220,7 +221,7 @@ done
 shift $((OPTIND -1))
 #--End GetOpts--
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ -n ${1} ]] && SEARCHTERM=${1} || SEARCHTERM=''
 
@@ -228,7 +229,7 @@ if [[ ${RUNNING} == 'true' ]];then
 	msg_box -t2 "<w>Gathering systemd information for running units<N>..."
 	_RAWLIST=("${(f)$(sudo systemctl list-units --all --type=service --state=active | tail -n +2 | head -n -6 | sed 's/^ *//g' | tr -s '[:space:]')}")
 
-	if [[ ${_DEBUG} -ge 2 ]];then
+	if [[ ${_DEBUG} -ge ${_APP_DBG} ]];then
 		dbg "${0}:${LINENO} Running _RAWLIST"
 		(
 		echo "${GREEN_FG}DEBUG${RESET}:${WHITE_FG}Running list_units...${RESET}"
@@ -251,9 +252,6 @@ if [[ ${RUNNING} == 'true' ]];then
 		DESC=$(cut -d' ' -f5- <<<$(echo ${L}))
 
 		((NDX++))
-#		echo "UNIT:${UNIT}"
-#		echo "_MAX_ITEM_LEN:${_MAX_ITEM_LEN}"
-#		echo "UNIT-LEN:${UNIT[1,${_MAX_ITEM_LEN}]}"
 		_UNIT_FILES[${NDX}]=${UNIT[1,${_MAX_ITEM_LEN}]}
 		_STATES[${NDX}]=${STATE}
 		_DESCRIPTIONS[${NDX}]=${DESC[1,${_MAX_ITEM_LEN}]}
@@ -268,7 +266,7 @@ else
 	_RAWLIST=("${(f)$(sudo systemctl list-unit-files | tr -s '[:space:]' | tail -n +2 | head -n -2)}")
 	_RAW_STATES=("${(f)$(sudo systemctl list-units -all | tr -s '[:space:]' | tail -n +2 | head -n -2)}")
 
-	if [[ ${_DEBUG} -gt 2 ]];then
+	if [[ ${_DEBUG} -ge ${_APP_DBG} ]];then
 		dbg "${0}:${LINENO} Not Running _RAWLIST"
 		dbg "${0}:${LINENO} Not Running _RAW_STATES"
 		(
@@ -333,7 +331,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 fi
 
 
-if [[ ${_DEBUG} -gt 2 ]];then
+if [[ ${_DEBUG} -ge ${_APP_DBG} ]];then
 	dbg "${0}:${LINENO} _LOCAL_LIST"
 	(
 	echo "${GREEN_FG}DEBUG${RESET}:${WHITE_FG}_UNIT_FILES...${RESET}"
@@ -358,24 +356,25 @@ fi
 # Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} System Control ${HDR_TYPE}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${SELECTED_COUNT}'
 list_set_header 'printf ""'
+local F1 F2 F3
 if [[ ${RUNNING} == 'true' ]];then
 	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_COL_WIDTHS[UNIT]} "Unit File" ${_COL_WIDTHS[STATE]} "State" ${_COL_WIDTHS[DESC]} "Description"'
 	list_set_header 'printf "%*s ${MAGENTA_FG}%-*s %-*s %-*s${RESET}" 5 "" ${_COL_WIDTHS[UNIT]} $(str_unicode_line ${_COL_WIDTHS[UNIT]}) ${_COL_WIDTHS[STATE]} $(str_unicode_line ${_COL_WIDTHS[STATE]}) ${_COL_WIDTHS[DESC]} $(str_unicode_line ${_COL_WIDTHS[DESC]})'
 
 	# Set line item
 	list_set_line_item ' 
-	local FNDX=${_LIST[${_LIST_NDX}]};
-	local ST_COLOR=$(boolean_color ${_STATES[${FNDX}]});
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%-*s${RESET} ${BAR}${ST_COLOR}%-*s${RESET} ${BAR}%-*s${RESET}\n" ${_LIST_NDX} ${_COL_WIDTHS[UNIT]} "${_UNIT_FILES[${FNDX}]}" ${_COL_WIDTHS[STATE]} "${_STATES[${FNDX}]}" ${_COL_WIDTHS[DESC]} "${_DESCRIPTIONS[${FNDX}]}"'
+	IFS="${_LIST_DELIM}" read F1 F2 F3 <<<${_LIST[${_LIST_NDX}]}
+	local ST_COLOR=$(boolean_color ${_STATES[${F2}]});
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%-*s${RESET} ${BAR}${ST_COLOR}%-*s${RESET} ${BAR}%-*s${RESET}\n" ${_LIST_NDX} ${_COL_WIDTHS[UNIT]} "${_UNIT_FILES[${F1}]}" ${_COL_WIDTHS[STATE]} "${_STATES[${F2}]}" ${_COL_WIDTHS[DESC]} "${_DESCRIPTIONS[${F3}]}"'
 else
 	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_COL_WIDTHS[UNIT]} "Unit File" ${_COL_WIDTHS[STATE]} "State" ${_COL_WIDTHS[RUN_STATE]} "Status"'
 	list_set_header 'printf "%*s ${SCOL1_CLR}%*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_COL_WIDTHS[UNIT]} $(str_unicode_line ${_COL_WIDTHS[UNIT]}) ${_COL_WIDTHS[STATE]} $(str_unicode_line ${_COL_WIDTHS[STATE]}) ${_COL_WIDTHS[RUN_STATE]} $(str_unicode_line ${_COL_WIDTHS[RUN_STATE]})'
 
 	# Set line item
 	list_set_line_item ' 
-	local FNDX=${_LIST[${_LIST_NDX}]};
-	local ST_COLOR=$(boolean_color ${_RUN_STATES[${FNDX}]});
-	printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%*s${RESET}${BAR} %-*s ${ST_COLOR}%-*s${RESET}\n" ${_LIST_NDX} ${_COL_WIDTHS[UNIT]} "${_UNIT_FILES[${FNDX}]}" ${_COL_WIDTHS[STATE]} "${_STATES[${FNDX}]}" ${_COL_WIDTHS[RUN_STATE]} "${_RUN_STATES[${FNDX}]}"'
+	IFS="${_LIST_DELIM}" read F1 F2 F3 <<<${_LIST[${_LIST_NDX}]}
+	local ST_COLOR=$(boolean_color ${_RUN_STATES[${F2}]});
+	printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%*s${RESET}${BAR} %-*s ${ST_COLOR}%-*s${RESET}\n" ${_LIST_NDX} ${_COL_WIDTHS[UNIT]} "${_UNIT_FILES[${F1}]}" ${_COL_WIDTHS[STATE]} "${_STATES[${F2}]}" ${_COL_WIDTHS[RUN_STATE]} "${_RUN_STATES[${F3}]}"'
 fi
 
 list_set_prompt_msg '
@@ -386,7 +385,7 @@ list_set_sortable true
 list_set_reuse_stale true
 list_set_barlines true
 list_set_searchable false
-list_set_sort_defaults ARRAY _LIST MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 TABLE "${(kv)_SORT_TABLE}"
+list_set_sort_defaults ARRAY _LIST MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 DELIM ${_LIST_DELIM} TABLE "${(kv)_SORT_TABLE}"
 
 while true;do
 	# Get selection

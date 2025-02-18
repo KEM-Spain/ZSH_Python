@@ -325,6 +325,8 @@ list_item () {
 
 	eval ${LINE_ITEM} # Output line
 
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: _LIST DATA:${_LIST[${_LIST_NDX}]}"
+
 	_CURSOR_NDX=${X_POS}
 }
 
@@ -1077,7 +1079,7 @@ list_sort () {
 		COL=${_SORT_DATA[COL]}
 	fi
 
-	[[ -z ${_SORT_DATA[TYPE]} ]] && msg_box -H1 -p -PK "<r>Warning<N>|Application:<w>${_SCRIPT}<N> did not provide a <I><U><w>sort type<N> ( _SORT_DATA[TYPE] )|Data will remain unsorted"
+	[[ -z ${_SORT_DATA[TYPE]} ]] && msg_box -H1 -p -PK "<r>Warning<N>|Application:<w>${_SCRIPT}<N> did not provide a <I><U><w>sort type<N> ( _SORT_DATA[TYPE] )|Need (flat/assoc) - data will remain unsorted"
 
 	# Call sort type
 	case ${_SORT_DATA[TYPE]} in
@@ -1098,6 +1100,8 @@ list_sort () {
 }
 
 list_sort_assoc () {
+	local ARGS=(${$@})
+	local -A ARG_TABLE=()
 	local -a SORT_TABLE=()
 	local -A TABLE=()
 	local DELIM=${_SORT_DATA[DELIM]}
@@ -1105,6 +1109,15 @@ list_sort_assoc () {
 	local R 
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	# Handle direct call
+	if [[ -n ${ARGS} ]];then
+		[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
+		ARG_TABLE=(${=ARGS})
+		for A in ${(k)ARG_TABLE};do
+			_SORT_DATA[${A}]=${ARG_TABLE[${A}]}
+		done
+	fi
 
 	# Handle sort table
 	if [[ -n ${_SORT_DATA[TABLE]} ]];then
@@ -1116,16 +1129,20 @@ list_sort_assoc () {
 	SORT_TABLE=${TABLE[${_SORT_DATA[COL]}]}
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: TABLE COUNT:${TCNT}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: TABLE DATA:${(kv)TABLE}"
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT KEY:${_SORT_DATA[COL]}"
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT TABLE:${SORT_TABLE}"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT TABLE SAMPLE:${${(P)SORT_TABLE}[1]}"
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: PREPARING TO SORT ${#${(P)SORT_TABLE}} ROWS in ${SORT_TABLE}"
 
 	if [[ ${_SORT_DATA[ORDER]} == "a" ]];then
 		_LIST=("${(f)$(
 			for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
 				echo -n "${${(P)SORT_TABLE}[${R}]}"
+				[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT_TABLE[${R}]:${${(P)SORT_TABLE}[${R}]}"
 				for (( T=1; T<=TCNT; T++ ));do
 					echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
+					[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: (k)TABLE[${T}][${R}]:${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
 				done
 				echo
 			done | sort -n -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2-
@@ -1134,8 +1151,10 @@ list_sort_assoc () {
 		_LIST=("${(f)$(
 			for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
 				echo -n "${${(P)SORT_TABLE}[${R}]}"
+				[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: SORT_TABLE[${R}]:${${(P)SORT_TABLE}[${R}]}"
 				for (( T=1; T<=TCNT; T++ ));do
 					echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
+					[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: (k)TABLE[${T}][${R}]:${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
 				done
 				echo
 			done | sort -n -r -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2-
@@ -1143,6 +1162,7 @@ list_sort_assoc () {
 	fi
 
 	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: SORTED ${#_LIST} ROWS"
+	[[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${0}: _LIST DATA SAMPLE:${_LIST[1,2]}"
 }
 
 list_sort_flat () {
@@ -1235,13 +1255,13 @@ list_sort_flat () {
 		[[ ${_DEBUG} -gt ${_LIST_LIB_DBG} ]] && dbg "${0}: SORTING WITH SORT KEYS"
 		if [[ ${SORT_ORDER} == "a" ]];then
 			_LIST=("${(f)$(
-				for L in ${(on)SORT_ARRAY};do
+				for L in ${(on)SORT_ARRAY};do # Ascending
 					cut -d"${_SORT_DATA[DELIM]}" -f2- <<<${L}
 				done
 			)}")
 		else
 			_LIST=("${(f)$(
-				for L in ${(On)SORT_ARRAY};do
+				for L in ${(On)SORT_ARRAY};do # Descending
 					cut -d"${_SORT_DATA[DELIM]}" -f2- <<<${L}
 				done
 			)}")

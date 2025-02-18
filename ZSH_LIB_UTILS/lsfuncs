@@ -124,8 +124,8 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-n${RESET} no prompting"
 	echo -e "${WHITE_FG}-a${RESET} no ansi (pertains to print options only)"
-	echo -e "${WHITE_FG}-l${RESET} print list of files/functions (<SEARCHTERM> may apply)"
-	echo -e "${WHITE_FG}-f${RESET} print functions in files (<SEARCHTERM> may apply)"
+	echo -e "${WHITE_FG}-l${RESET} print list of files/functions (<SEARCHTERM> will apply)"
+	echo -e "${WHITE_FG}-f${RESET} print functions in files (<SEARCHTERM> will apply)"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 

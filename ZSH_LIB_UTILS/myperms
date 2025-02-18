@@ -412,7 +412,6 @@ LBL_WIDTH=8
 
 _SORT_TABLE=(1 _FILES 2 _FTYPES 3 _PERMS 4 _OWNERS 5 _GROUPS 6 _EPERMS 7 _OPERMS 8 _GPERMS 9 _WPERMS)
 
-# TODO: some jagged columns w/ long file names
 # Set headings
 local F1 F2 F3 F4 F5 F6 F7 F8 F9
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET}  Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} "${PATHLBL}" ${SELECTED_COUNT}'

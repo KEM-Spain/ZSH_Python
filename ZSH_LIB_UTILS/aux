@@ -221,6 +221,7 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%${_LBL_WIDTH[p]}s
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select process then <${GREEN_FG}ENTER${RESET}> to kill ${ITALIC}or exit if none selected${RESET}"
 list_set_action_msgs kill process
+list_set_searchable true
 
 while true;do
 	# Get selection

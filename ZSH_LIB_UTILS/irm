@@ -176,6 +176,7 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_L
 '
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> [to do some action] ${ITALIC}or exit if none selected${RESET}"
+list_set_searchable true
 
 while true;do
 	# Get selection

@@ -241,6 +241,7 @@ list_set_prompt "Select packages to inspect:"
 list_set_action_msgs inspect package
 list_set_reuse_stale true
 list_set_barlines true
+list_set_searchable true
 
 while true;do
 	# Get selection
