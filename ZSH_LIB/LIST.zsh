@@ -760,8 +760,8 @@ list_select () {
 			[[ -n ${_KEY_CALLBACKS[${KEY}]} ]] && CB_KEY=${KEY} || CB_KEY='NA'
 
 			case ${KEY} in
-				1) NAV_KEY=u;((_CURSOR_NDX--));break;; # Up Arrow
-				2) NAV_KEY=d;((_CURSOR_NDX++));break;; # Down Arrow
+				1) NAV_KEY=u;break;;  # Up Arrow
+				2) NAV_KEY=d;break;;  # Down Arrow
 				3) NAV_KEY=t;break;;  # Left Arrow
 				4) NAV_KEY=b;break;;  # Right Arrow
 				5) NAV_KEY=p;break;;  # PgUp 

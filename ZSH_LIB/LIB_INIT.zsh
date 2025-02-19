@@ -1,4 +1,5 @@
 # Default Options
+# TODO: Improve debugging detail levels - set APP_DBG, and LIB_DBG at this level.  Deep detail should test for -gt
 setopt warncreateglobal # Monitor locals
 setopt rematchpcre # Use perl regex
 
