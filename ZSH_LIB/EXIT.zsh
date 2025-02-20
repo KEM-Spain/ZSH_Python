@@ -13,7 +13,7 @@ exit_leave () {
 	local -a MSGS=()
 	local RET_9=false
 
-	[[ ${_DEBUG} -ne 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ ${#} -eq 2 ]];then
 		OPT=${1}; shift
@@ -22,7 +22,7 @@ exit_leave () {
 
 	MSGS=(${@})
 
-	if [[ ${_DEBUG} -ne 0 ]];then
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
 		dbg "${RED_FG}${0}${RESET}: #_MSGS:${#_MSGS}"
 		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
@@ -50,35 +50,34 @@ exit_leave () {
 exit_pre_exit () {
 	local C
 
-	[[ ${_DEBUG} -ne 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ ${_PRE_EXIT_RAN} == 'true' ]] && return
 	
 	_PRE_EXIT_RAN=true
 
 	if [[ -n ${_EXIT_CALLBACKS} ]];then
-		[[ ${_DEBUG} -ne 0 ]] && echo "${RED_FG}${0}${RESET}: EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${RED_FG}${0}${RESET}:EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
 		for C in ${_EXIT_CALLBACKS};do
 			${C}
 		done
 	fi
 
-	[[ ${_DEBUG} -ne 0 ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
 
 	if [[ ${XDG_SESSION_TYPE:l} == 'x11' ]];then
 		xset r on # Reset key repeat
 		eval "xset ${_XSET_DEFAULT_RATE}" # Reset key rate
-		[[ ${_DEBUG} -ne 0 ]] && echo "${0}: reset key rate:${_XSET_DEFAULT_RATE}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${0}: reset key rate:${_XSET_DEFAULT_RATE}"
 	fi
 
 	kbd_activate
-	[[ ${_DEBUG} -ne 0 ]] && echo "${0}: activated keyboard"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${0}: activated keyboard"
 
 	[[ ${$(tabs -d | grep --color=never -o "tabs 8")} != 'tabs 8' ]] && tabs 8
-	[[ ${_DEBUG} -ne 0 ]] && echo "${0}: reset tabstops"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${0}: reset tabstops"
 
-	[[ ${_DEBUG} -ne 0 ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
-
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
 	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}\n"
 }
 
@@ -92,7 +91,7 @@ exit_request () {
 	local FRAME_WIDTH=6
 	local TAG=EXR_BOX
 
-	[[ ${_DEBUG} -ne 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ ${#} -eq 0 ]];then
 		msg_box -T ${TAG} -jc -O ${RED_FG} -p ${MSG}
@@ -124,26 +123,35 @@ exit_sigexit () {
 		7 "Memory Error" 8 "FLoating Point Exception" 9 "Termination Called from kill"
 	)
 
-	[[ ${_DEBUG} -ne 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Traps arrive here
-	[[ ${_DEBUG} -ne 0 ]] && echo "\n${RED_FG}${0}${RESET}: Exited via interrupt: ${SIG} (${SIGNAME}) ${SIGNAMES[${SIG}]}" # Announce the interrupt
-
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: Exited via interrupt: ${SIG} (${SIGNAME}) ${SIGNAMES[${SIG}]}" # Announce the interrupt
 	exit_pre_exit # Pre-exit housekeeping
 
 	exit ${SIG} # Leave the app
 }
 
 get_exit_value () {
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	echo ${_EXIT_VALUE}
 }
 
 set_exit_callback () {
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	_EXIT_CALLBACKS+=${1}
-	[[ ${_DEBUG} -ne 0 ]] && echo "\n${RED_FG}${0}${RESET}: REGISTERED CALLBACK:${1}"
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: REGISTERED CALLBACK:${1}"
 }
 
 set_exit_value () {
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	_EXIT_VALUE=${1}
 }
 

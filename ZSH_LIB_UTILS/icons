@@ -22,14 +22,13 @@ typeset -a SUBLIST
 typeset -a _ICO_DIRS=(/opt /home/kmiller/.local/share /usr/share/icons /usr/share/pixmaps)
 
 # Constants
-_LIB_DIR=/usr/local/lib
 _ICO_REGEX='.*(ico|png|svg)$'
 
 # Globals
 g_LIMIT=200
 
 # Imports
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh

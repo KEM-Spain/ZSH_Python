@@ -22,21 +22,20 @@ typeset -A _SEEN=()
 typeset -a _EXTRA_FUNCS=()
 typeset -a _NEEDED_FUNCS=()
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
 # Constants
 _BLACKLIST+=(usage 1 parse_opts 1 opt_type 1 opt_exists 1 dbg 1 dbg_msg 1 dbg_set_level 1)
-_LIB_DIR=/usr/local/lib
 _LIB_FUNCS=${PWD}/lib.sorted.functions
 _LIB_LIST=(${_LIB_DIR}/*zsh)
 _SCRIPT=${0:t}
 _FUNC_REGEX='^.* () {$'
 _FUNC_TAG='^# Functions'
-
-# Imports
-_LIB_DIR=/usr/local/lib
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Functions
 clear_work_files () {

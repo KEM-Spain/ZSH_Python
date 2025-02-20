@@ -24,7 +24,7 @@ typeset -a _SELECTED_DEVICE
 typeset -a _ACTIONS
 
 # Constants
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 DEV_STATE_COLOR[connected]=${GREEN_FG}
 DEV_STATE_COLOR[disconnected]=${RED_FG}
 _ACTIONS=(toggle connect disconnect)

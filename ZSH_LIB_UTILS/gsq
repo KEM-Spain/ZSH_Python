@@ -8,13 +8,12 @@ typeset -a _URLS
 typeset -a _VALUES
 
 # Constants
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 _MAX_DISPLAY_LEN=40
 _TYPE_LABELS=(u "URL" k "Key" v "Value")
 _MAX_FIELD=40 # Max field width
 
 # Imports
-_LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh

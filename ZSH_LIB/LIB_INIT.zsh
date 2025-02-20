@@ -1,5 +1,4 @@
 # Default Options
-# TODO: Improve debugging detail levels - set APP_DBG, and LIB_DBG at this level.  Deep detail should test for -gt
 setopt warncreateglobal # Monitor locals
 setopt rematchpcre # Use perl regex
 
@@ -30,28 +29,20 @@ typeset -aU _DEPS_
 typeset -A _BOX_COORDS=()
 typeset -A _REL_COORDS=()
 
+# Debug levels
+_LOW_DBG=1
+_LOW_DETAIL_DBG=2
+_MID_DBG=3
+_MID_DETAIL_DBG=4
+_HIGH_DBG=5
+
 # LIB var inits
 _CURSOR_STATE=on
-_DEBUG_INIT=true
 _DEBUG=0
+_DEBUG_INIT=true
 _EXIT_MSGS=''
 
-# Import default LIBS
-if [[ -e ./LIB_INIT.zsh && ${LIB_TESTING} == 'true' ]];then
-	clear;tput -T xterm cup 0 0;echo "LIB TESTING is active - press any key";read
-	_LIB_DIR=${PWD}
-	for D in ${=_DEPS_};do
-		if [[ -e ${_LIB_DIR}/${D} ]];then
-			source ${_LIB_DIR}/${D}
-		else
-			echo "Cannot source:${_LIB_DIR}/${D} - not found"
-			exit 1
-		fi
-	done
-else
-	_LIB_DIR=/usr/local/lib
-fi
-
+# Import standard libs
 source ${_LIB_DIR}/ANSI.zsh
 source ${_LIB_DIR}/EXIT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh

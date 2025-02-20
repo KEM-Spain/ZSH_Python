@@ -35,7 +35,6 @@ _ACTOR_LIST=${_MVQ_DIR}/actor_list.txt
 _DIRECTOR_LIST=${_MVQ_DIR}/director_list.txt
 _CACHE_DIR=~/.mvq
 _DECADE_LIST=(1960 1970 1980 1990 2000 2010 2020)
-_LIB_DIR=/usr/local/lib
 _LIST_OPTIONS=(Actor A Director D Decade E Year Y)
 _LOG=/tmp/mvqry.log
 _HEADERS=(A "Movies starring:" D "Movies directed by:" E "Movies for the decade:" Y "Movies for the year:")
@@ -49,7 +48,7 @@ g_UPDATE=false
 g_REDISPLAY=false
 
 # Imports
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/SELECT.zsh

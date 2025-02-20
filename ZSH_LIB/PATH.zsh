@@ -6,7 +6,6 @@ typeset -A _ARGS # Holds command line arguments for raw path parsing
 
 # LIB Vars
 _RAW_CMD_LINE=false # For testing
-_PATH_LIB_DBG=5
 
 # LIB Functions
 path_abbv () {
@@ -17,7 +16,7 @@ path_abbv () {
 	local OPTSTR="l:"
 	local LEN_LIMIT
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
@@ -54,10 +53,10 @@ path_expand () {
 	local ARG_TST
 	local PATH_TST
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARG:${ARG}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARG:${ARG}"
 
 	if [[ ${ARG} =~ "^[\.\~]" ]];then # Something to expand
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Expanding tilde or dot"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Expanding tilde or dot"
 		ARG_TST=${ARG}
 
 		[[ ${ARG_TST} =~ '\*$' ]] && ARG_TST=${ARG_TST:h} # Remove glob
@@ -67,7 +66,7 @@ path_expand () {
 
 		[[ -f ${PATH_TST} ]] && echo ${PATH_TST:h} || echo ${PATH_TST} # If it points to a file return only the head
 	else
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Nothing to expand"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Nothing to expand"
 		echo ${ARG}
 		return 1
 	fi
@@ -80,7 +79,7 @@ path_find_prep () {
 	local K
 	local HIT=false
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	FLIST='\( '
 	for K in ${(k)_ARGS};do
@@ -104,7 +103,7 @@ path_get_inode () {
 	local FN=${@}
 	local INODE
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	INODE=$(ls -i ${FN:Q} 2>/dev/null | cut -d' ' -f1 2>/dev/null)
 
@@ -112,7 +111,7 @@ path_get_inode () {
 		echo ${INODE}
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}Unable to obtain inode${RESET}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${RED_FG}Unable to obtain inode${RESET}"
 		return 1
 	fi
 }
@@ -125,27 +124,27 @@ path_get_label () {
 	local PATH_HEAD
 	local PATH_EXPANDED
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	RAW_PATH=$(path_get_raw_path)
 
 	[[ ! -d ${RAW_PATH:h} ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${0} calling path_expand with: ${RAW_PATH}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: calling path_expand with: ${RAW_PATH}"
 	PATH_EXPANDED=$(path_expand ${RAW_PATH:h})
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${0} path_expand returned: ${PATH_EXPANDED}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: path_expand returned: ${PATH_EXPANDED}"
 
 	[[ -n ${MAX_LEN} ]] && MAX_LEN="-l ${MAX_LEN}" || MAX_LEN=''
 
 	LABEL=$(echo ${PATH_EXPANDED} | path_abbv ${MAX_LEN})
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Abbreviated ${PATH_EXPANDED} added to label"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Abbreviated ${PATH_EXPANDED} added to label"
 
 	if [[ ${RAW_PATH:t} =~ "^[\.\~]$" ]];then
 		TAIL=''
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TAIL is symbolic path - omitted from label"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: TAIL is symbolic path - omitted from label"
 	elif is_glob ${RAW_PATH:t};then
 		TAIL="/${RAW_PATH:t}"
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TAIL is glob - added to label"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: TAIL is glob - added to label"
 	fi
 
 	LABEL=${LABEL}${TAIL}
@@ -168,7 +167,7 @@ path_get_raw () {
 	local T
 	local PATH_EXPANDED
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ ${_DURABLE[TESTMODE]} == 'true' ]];then
 		RAW_CMD_LINE=${_RAW_CMD_LINE}
@@ -178,13 +177,13 @@ path_get_raw () {
 	fi
 
 	[[ ${RAW_CMD_LINE} =~ '\|\s+${_SCRIPT}' ]] && echo "Input is piped" && return 1
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
 
 	RAW_CMD_LINE=($(echo ${RAW_CMD_LINE} | perl -p -e 's/[^\s]+//')) # Strip leading word (script name)
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Stripped command name: RAW_CMD_LINE:${RAW_CMD_LINE}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Stripped command name: RAW_CMD_LINE:${RAW_CMD_LINE}"
 
 	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Stripped options: RAW_CMD_LINE:${RAW_CMD_LINE}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Stripped options: RAW_CMD_LINE:${RAW_CMD_LINE}"
 
 	[[ -z ${RAW_PATH} ]] && PATH_HEAD=. # Empty path resolves to PWD
 
@@ -196,13 +195,13 @@ path_get_raw () {
 				[[ ! -f ${T} ]] && break
 				PATH_HEAD=${T:h}
 			done
-			[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: RAW_PATH:${RAW_PATH} PATH_HEAD:${PATH_HEAD}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RAW_PATH:${RAW_PATH} PATH_HEAD:${PATH_HEAD}"
 		fi
 	fi
 
 	if [[ ${PATH_HEAD} == '?' ]];then
 		TOKENIZED=("${(f)$(path_read_raw ${RAW_PATH})}") # Parse tokens incl names w/ spaces)
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Tokenized: TOKENIZED:${TOKENIZED}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Tokenized: TOKENIZED:${TOKENIZED}"
 
 		# Eliminate all bare words from command line
 		WORDS=0
@@ -215,40 +214,40 @@ path_get_raw () {
 			fi
 		done
 
-		if [[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]];then
-			dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}RAW_CMD_LINE${RESET}:${RAW_CMD_LINE}"
-			dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}${WORDS}${RESET} plain words eliminated from command line"
-			dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}${#TOKENS}${RESET} remaining tokens"
+		if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
+			dbg "${0}: ${WHITE_FG}RAW_CMD_LINE${RESET}:${RAW_CMD_LINE}"
+			dbg "${0}: ${WHITE_FG}${WORDS}${RESET} plain words eliminated from command line"
+			dbg "${0}: ${WHITE_FG}${#TOKENS}${RESET} remaining tokens"
 		fi
 
 		RAW_PATH=${TOKENS:=.} # Default to PWD
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}RAW_PATH STRIPPED${RESET}:[${WHITE_FG}${RAW_PATH}${RESET}]"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${RED_FG}RAW_PATH STRIPPED${RESET}:[${WHITE_FG}${RAW_PATH}${RESET}]"
 
 		PATH_EXPANDED=$(path_expand ${RAW_PATH})
 
 		PATH_HEAD=${PATH_EXPANDED}
 	fi
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}PATH_HEAD${RESET}:${WHITE_FG}${PATH_HEAD}${RESET} is set"
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${MAGENTA_FG}Parsing TAIL${RESET}:${RAW_PATH:t}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${GREEN_FG}PATH_HEAD${RESET}:${WHITE_FG}${PATH_HEAD}${RESET} is set"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${MAGENTA_FG}Parsing TAIL${RESET}:${RAW_PATH:t}"
 
 	case ${RAW_PATH:t} in
-	   '*') PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}TAIL is ASTERISK:${RAW_PATH:t}${RESET}";;
-		 "") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}TAIL is NULL:${RAW_PATH:t}${RESET}";;
-		"~") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}TAIL is TILDE:${RAW_PATH:t}${RESET}";;
-		".") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}TAIL is DOT:${RAW_PATH:t}${RESET}";;
+	   '*') PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is ASTERISK:${RAW_PATH:t}${RESET}";;
+		 "") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is NULL:${RAW_PATH:t}${RESET}";;
+		"~") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is TILDE:${RAW_PATH:t}${RESET}";;
+		".") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is DOT:${RAW_PATH:t}${RESET}";;
 		  *)	if is_dir ${RAW_PATH};then
-					[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}PATH is DIR:${RAW_PATH}${RESET}"
+					[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}PATH is DIR:${RAW_PATH}${RESET}"
 					PATH_TAIL="-name '*'"
 				elif is_file ${PATH_HEAD}/${RAW_PATH:t};then
-					[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}HEAD/TAIL is FILE:${PATH_HEAD}/${RAW_PATH:t}${RESET}"
+					[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}HEAD/TAIL is FILE:${PATH_HEAD}/${RAW_PATH:t}${RESET}"
 					I=$(path_get_inode "${PATH_HEAD}/${RAW_PATH:t}")
 					[[ ${?} -eq 0 ]] && PATH_TAIL="-inum ${I}" || PATH_TAIL='?' # Fallback to prevent empty inode being passed
 				elif is_dir ${PATH_HEAD}/${RAW_PATH:t};then
-					[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}HEAD/TAIL is DIR:${PATH_HEAD}/${RAW_PATH:t}${RESET}"
+					[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}HEAD/TAIL is DIR:${PATH_HEAD}/${RAW_PATH:t}${RESET}"
 					PATH_TAIL="-name '${RAW_PATH:t}'"
 				elif is_glob ${RAW_PATH:t};then
-					[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${WHITE_FG}TAIL is GLOB:${RAW_PATH:t}${RESET}"
+					[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is GLOB:${RAW_PATH:t}${RESET}"
 					PATH_TAIL="-name '${RAW_PATH:t}'"
 				else
 					PATH_TAIL=?
@@ -264,7 +263,7 @@ path_get_raw () {
 				((FNDX++))
 				_ARGS[list${FNDX}]=${I} # Gather all items on command line
 			else
-				[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "TOKEN is neither file nor dir"
+				[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "TOKEN is neither file nor dir"
 			fi
 		done
 		if [[ ${FNDX} -ne 0 ]];then
@@ -274,17 +273,17 @@ path_get_raw () {
 	fi
 
 	if [[ ${PATH_TAIL} == '?' && ${FNDX} -eq 0 ]];then
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "No TOKENS were valid paths or files (invalid path or file name)" >&2
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "No TOKENS were valid paths or files (invalid path or file name)" >&2
 		echo "${PATH_HEAD}|Invalid Path:${RAW_PATH}" # Return result
 		return 1
 	fi
 
 	if [[ ${PATH_HEAD} = '?' || ${PATH_TAIL} = '?' ]];then
-		[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}Unable to parse command line${RESET}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${RED_FG}Unable to parse command line${RESET}"
 		return 1
 	fi
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${CYAN_FG}PATH_HEAD:${PATH_HEAD} PATH_TAIL:${PATH_TAIL}${RESET}" 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${CYAN_FG}PATH_HEAD:${PATH_HEAD} PATH_TAIL:${PATH_TAIL}${RESET}" 
 
 	PATH_HEAD=$(realpath ${PATH_HEAD})
 
@@ -293,7 +292,7 @@ path_get_raw () {
 }
 
 path_get_raw_cmdline () {
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	fc -R
 	local RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
@@ -308,17 +307,17 @@ path_get_raw_path () {
 	local A
 	local RAW_PATH
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	fc -R
 	RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
 	[[ ${RAW_CMD_LINE} =~ '\|' ]] && echo "Input is piped" && return 0
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
 
 	RAW_CMD_LINE=($(echo ${RAW_CMD_LINE} | perl -p -e 's/[^\s]+//')) # Strip leading word (script name)
 
 	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${CYAN_FG}RAW_PATH:${RAW_PATH} (removed script name & options)${RESET}" 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_PATH:${RAW_PATH} (removed script name & options)${RESET}" 
 
 	TOKENIZED=("${(f)$(path_read_raw ${RAW_PATH})}") # Read whole lines (non-traditional file/dir names - spaces)
 
@@ -340,7 +339,7 @@ path_read_raw () {
 	local LINE
 	local L
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	while read -r LINE;do
 		TEXT+=${LINE}
@@ -354,7 +353,7 @@ path_read_raw () {
 path_split_fn () {
 	local TEXT="${@}"
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	perl -pe 's/(?<![\\])[ ]/\n/g' <<<${TEXT}
 }
@@ -362,7 +361,7 @@ path_split_fn () {
 path_strip_options () {
 	local LINE=${@}
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	while true;do # Strip options
         grep -qP '^\-\w+' <<<${LINE}
@@ -382,7 +381,7 @@ path_trailing_segs () {
 	local OUT
 	local S
 
-	[[ ${_DEBUG} -ge ${_PATH_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	for S in ${SEGS};do
 		((NDX++))

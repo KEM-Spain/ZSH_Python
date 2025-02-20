@@ -64,7 +64,7 @@ _DEST_ID=KEM_Backup
 _TAG=$(hostname)_RSYNC2
 _DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
 _MARKER=~/.${_TAG}.lastrun
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 _LOGFILE=/home/kmiller/.${_TAG}.log
 _TODAY=$(date +'%Y-%m-%d') 
 

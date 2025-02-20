@@ -23,30 +23,19 @@ _SCRIPT=${0:t}
 
 usage () {
 	echo "Usage: ${ITALIC}${WHITE_FG}source${RESET} ${_SCRIPT} on|off"
-	echo "(must be sourced)"
 }
 
-
-if [[ ${#} -eq 0 ]];then
-	if [[ -n ${LIB_TESTING} ]];then
-		echo "LIB_TESTING is on"
-	else
-		echo "LIB_TESTING is off"
-	fi
+if [[ -z ${1} ]];then
+	[[ -n ${ZSH_LIB_DIR} ]] && echo "LIB_TESTING is on" || echo "LIB_TESTING is off"
 else
-	[[ ! (${1} == 'on' || ${1} == 'off') ]] && usage
-	if [[ ${1} == 'on' ]];then
-		if [[ -z ${LIB_TESTING} ]];then
-			export LIB_TESTING=true
-		fi
+	if [[ ! ${1} =~ "on|off" ]];then
+		echo "${RED_FG}Error${RESET}"
+		usage
+	elif [[ ${1} == 'on' ]];then
+		export ZSH_LIB_DIR=${PWD}
 		echo "LIB_TESTING is on"
 	elif [[ ${1} == 'off' ]];then
-		if [[ -n ${LIB_TESTING} ]];then
-			unset LIB_TESTING
-		fi
+		unset ZSH_LIB_DIR
 		echo "LIB_TESTING is off"
-	else
-		echo "${RED_FG}Error${RESET}: ARG:${WHITE_FG}${1} ${RED_FG}invalid${RESET}"
-		usage
 	fi
 fi

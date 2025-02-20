@@ -11,10 +11,9 @@ BOLD="\033[1m"
 
 # Constants
 JAR=/usr/local/etc/jdraw_v1.1.5.jar
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 
 # Imports
-_LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh

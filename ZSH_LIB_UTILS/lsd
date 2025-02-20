@@ -35,7 +35,7 @@ typeset -a _LOCAL_LIST=()
 typeset -a _FILTER
 
 # Constants
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 
 # Imports
 source ${_LIB_DIR}/LIB_INIT.zsh

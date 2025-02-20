@@ -15,8 +15,6 @@ dbg () {
 	local LINE
 	local A
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "Entered ${0} with args:${@}" >>${_DBG_TRACE}
-
 	if [[ ${#} -ne 0 ]];then
 		dbg_to_file ${ARGS} # With arguments
 	else
@@ -30,8 +28,6 @@ dbg () {
 dbg_msg () {
 	local D
 	local LINE
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "Entered ${0} with args:${@}" >>${_DBG_TRACE}
 
 	echo 
 
@@ -52,8 +48,6 @@ dbg_parse () {
 	local FN=$(cut -d: -f1 <<<${@})
 	local LN=$(cut -d: -f2 <<<${@})
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "Entered ${0} with args:${@}" >>${_DBG_TRACE}
-
 	(
 	sed -n ${LN}p ${FN} | tr -d '[(){}]' | tr -s '[:space:]' | str_trim
 	) 2>/dev/null
@@ -61,8 +55,6 @@ dbg_parse () {
 
 dbg_record () {
 	local LINE
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "Entered ${0} with args:${@}" >>${_DBG_TRACE}
 
 	_DEBUG_LINES+="-- msgs --"
 
@@ -81,8 +73,6 @@ dbg_to_file () {
 	local -a ARGS=(${@})
 	local A
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "Entered ${0} with args:${@}" >>${_DBG_TRACE}
-
 	[[ -n ${ARGS} ]] && echo "-- msgs --" >>${_DEBUG_FILE}
 	for A in ${ARGS};do
 		echo ${A} >>${_DEBUG_FILE}
@@ -96,8 +86,6 @@ dbg_trace () {
 	local L
 	local FIRST_TIME=true
 	local DD=false
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "Entered ${0} with args:${@}" >>${_DBG_TRACE}
 
 	for L in ${(on)funcfiletrace};do
 		[[ ${L} =~ "dbg" ]] && continue # Omit calls to any dbg func

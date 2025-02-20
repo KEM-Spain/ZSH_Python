@@ -33,7 +33,7 @@ E_STRIKE=$(echo "\033[9m")
 [[ -e /usr/bin/snap ]] && _SNAP_INSTALLED=true || _SNAP_INSTALLED=false
 _HDR_BAR=$'\u2501' # Header character
 _LAST_APT_UPD=~/.last_apt_upd
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 _SOURCES=/etc/apt/sources.list.d
 
 # Imports

@@ -1,13 +1,10 @@
 # LIB Dependencies
 _DEPS_+="DBG.zsh"
 
-# LIB Vars
-_WIN_LIB_DBG=5
-
 win_close () {
 	local WDW_ID=$(win_xdo_id_fix ${1})
 
-	[[ ${_DEBUG} -ge ${_WIN_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${1} ]] && echo "$0: Missing argument WDW_ID" && return 1
 
@@ -19,7 +16,7 @@ win_close () {
 win_focus () {
 	local WDW_ID=$(win_xdo_id_fix ${1})
 
-	[[ ${_DEBUG} -ge ${_WIN_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${1} ]] && echo "$0: Missing argument WDW_ID" && return 1
 
@@ -33,7 +30,7 @@ win_focus_title () {
 	local WIN_NAME=${1}
 	local WDW_ID
 
-	[[ ${_DEBUG} -ge ${_WIN_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${1} ]] && echo "$0: Missing argument WIN_NAME" && return 1
 
@@ -45,7 +42,7 @@ win_get_id () {
 	local WIN_NAME=${1}
 	local WDW_ID
 
-	[[ ${_DEBUG} -ge ${_WIN_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${1} ]] && echo "$0: Missing argument WIN_NAME" && return 1
 
@@ -64,7 +61,7 @@ win_get_pid () {
 	local WIN_NAME=${1}
 	local WDW_PID
 
-	[[ ${_DEBUG} -ge ${_WIN_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${1} ]] && echo "$0: Missing argument WIN_NAME" && return 1
 
@@ -78,7 +75,7 @@ win_get_pid () {
 win_list () {
 	local WIN_NAME=${1}
 
-	[[ ${_DEBUG} -ge ${_WIN_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${1} ]] && echo "$0: Missing argument WIN_NAME" && return 1
 
@@ -90,7 +87,7 @@ win_list () {
 win_xdo_id_fix () {
 	local ID=${1}
 
-	[[ ${_DEBUG} -ge ${_WIN_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${1} ]] && echo "$0: Missing argument ID" && return 1
 
@@ -100,7 +97,7 @@ win_xdo_id_fix () {
 win_xwin_dump () {
 	local WIN_NAME=${1}
 
-	[[ ${_DEBUG} -ge ${_WIN_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${1} ]] && echo "$0: Missing argument WIN_NAME" && return 1
 

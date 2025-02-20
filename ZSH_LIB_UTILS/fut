@@ -45,7 +45,6 @@ surface "EXTRACT:Extract files from sub directory"
 )
 
 # Constants
-_LIB_DIR=/usr/local/lib
 _WRAPPER=${0:t}
 
 # Globals
@@ -53,7 +52,7 @@ g_USAGE=false
 g_UTIL=''
 
 # Imports
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/VALIDATE.zsh
