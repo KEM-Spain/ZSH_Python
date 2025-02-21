@@ -41,28 +41,28 @@ sel_box_center () {
 
 	if validate_is_integer ${TXT};then # Accept either strings or integers
 		TXT_LEN=${TXT}
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: GOT INTEGER FOR TXT_LEN"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: GOT INTEGER FOR TXT_LEN"
 	else
 		TXT_LEN=${#TXT}
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: GOT STRING FOR TXT_LEN"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: GOT STRING FOR TXT_LEN"
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ARGC:${#@} TXT:${TXT} TXT_LEN:${TXT_LEN}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ARGC:${#@} TXT:${TXT} TXT_LEN:${TXT_LEN}"
 
 	CTR=$(( TXT_LEN / 2 )) && REM=$((TXT_LEN % 2))
 	[[ ${REM} -ne 0 ]] && TXT_CTR=$((CTR+1)) || TXT_CTR=${CTR}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CTR='$(( TXT_LEN / 2 )) && REM=$((CTR % 2))':$(( TXT_LEN / 2 )) && REM:$((CTR % 2))"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CTR='$(( TXT_LEN / 2 )) && REM=$((CTR % 2))':$(( TXT_LEN / 2 )) && REM:$((CTR % 2))"
 
 	CTR=$(( BOX_WIDTH / 2 )) && REM=$((BOX_WIDTH % 2))
 	[[ ${REM} -ne 0 ]] && BOX_CTR=$((CTR+1)) || BOX_CTR=${CTR}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CTR='$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))':$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CTR='$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))':$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))"
 
 	CTR=$(( BOX_LEFT + BOX_CTR - TXT_CTR ))
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CTR='$(( BOX_LEFT + BOX_CTR - TXT_CTR ))': $(( BOX_LEFT + BOX_CTR - TXT_CTR ))"
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: BOX_LEFT:${BOX_LEFT} BOX_CTR:${BOX_CTR} TXT_CTR:${TXT_CTR}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CTR='$(( BOX_LEFT + BOX_CTR - TXT_CTR ))': $(( BOX_LEFT + BOX_CTR - TXT_CTR ))"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: BOX_LEFT:${BOX_LEFT} BOX_CTR:${BOX_CTR} TXT_CTR:${TXT_CTR}"
 
 	echo ${CTR}
 }
@@ -81,10 +81,10 @@ sel_clear_region () {
 	R_COORDS=($(box_coords_get REGION))
 
 	if [[ -z ${R_COORDS} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: R_COORDS is null - returning"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: R_COORDS is null - returning"
 		return -1
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: R_COORDS: ${(kv)R_COORDS}"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: R_COORDS: ${(kv)R_COORDS}"
 	fi
 
 	X_ARG=${R_COORDS[X]}
@@ -92,10 +92,10 @@ sel_clear_region () {
 	W_ARG=${R_COORDS[W]}
 	H_ARG=${R_COORDS[H]}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
 
 	if	[[ ${R_COORDS[OB_W]} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: HAS OUTER BOX"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: HAS OUTER BOX"
 		((X_ARG-=1))
 		Y_ARG=$(( R_COORDS[OB_Y] - 4 ))
 		W_ARG=$(( R_COORDS[OB_W] + 8 ))
@@ -106,15 +106,15 @@ sel_clear_region () {
 		((W_ARG+=4))
 		((H_ARG+=2))
 	fi
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ADJUSTMENTS X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ADJUSTMENTS X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
 
 	local STR=$(str_rep_char "#" ${W_ARG})
 	for (( R=0; R <= ${H_ARG}; R++ ));do
 		tcup $(( X_ARG + R )) ${Y_ARG};tput ech ${W_ARG}
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && tcup $(( X_ARG + R )) ${Y_ARG} && echo -n ${STR}
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && tcup $(( X_ARG + R )) ${Y_ARG} && echo -n ${STR} # Show cleared display area in debug
 	done
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Cleared ${H_ARG} rows starting from row:${X_ARG}, col:${Y_ARG} for:${W_ARG} columns"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Cleared ${H_ARG} rows starting from row:${X_ARG}, col:${Y_ARG} for:${W_ARG} columns"
 }
 
 sel_disp_page () {
@@ -141,7 +141,7 @@ sel_hilite () {
 	if [[ ${_HAS_CAT} == 'true' ]];then
 		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
 		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		printf "${WHITE_FG}%-*s${RESET} ${_HILITE}%-*s${RESET}\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
 	else
 		echo ${TEXT}
@@ -244,35 +244,35 @@ sel_list () {
 
 	# If no X,Y coords are passed default to center
 	LIST_W=$(arr_long_elem_len ${_LIST})
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: arr_long_elem_len returned: ${LIST_W}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: arr_long_elem_len returned: ${LIST_W}"
 
 	if [[ ${LIST_W} -gt ${_MAX_COLS} ]];then
 		LIST_W=$(( _MAX_COLS - 20 ))
 		local LONG_EL=$(arr_long_elem ${_LIST})
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: arr_long_elem returned: ${LONG_EL}"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: arr_long_elem returned: ${LONG_EL}"
 	fi
 
 	[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: LIST_W:${LIST_W} LIST_H:${LIST_H}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LIST_W:${LIST_W} LIST_H:${LIST_H}"
 
 	BOX_H=$((LIST_H+2)) # Box height based on list count
 	[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 )) # Categories get extra padding
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
 
 	[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(coord_center $(( _MAX_ROWS - 1 )) ${BOX_H}) || BOX_X=${X_COORD_ARG}
 	[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(coord_center $(( _MAX_COLS - 1 )) ${BOX_W}) || BOX_Y=${Y_COORD_ARG}
 
 	# Set field widths for lists having categories
 	if [[ ${_HAS_CAT} == 'true' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CATEGORIES DETECTED"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CATEGORIES DETECTED"
 		for L in ${_LIST};do
 			F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${L})
 			F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${L})
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 			[[ ${#F1} -gt ${_CAT_COLS[1]} ]] && _CAT_COLS[1]=${#F1}
 			[[ ${#F2} -gt ${_CAT_COLS[2]} ]] && _CAT_COLS[2]=${#F2}
 		done
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SET category field widths: F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SET category field widths: F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		case ${_CAT_SORT} in
 			r) _LIST=(${(O)_LIST});; # Descending categories
 			a) _LIST=(${(o)_LIST});; # Ascending categories
@@ -303,11 +303,11 @@ sel_list () {
 
 	# Widest decoration - inner box, header, footer, map, paging, or exit msg
 	MAX=$(max ${BOX_W} ${#NM_H} ${#NM_F} ${MH} ${PH} ${_EXIT_BOX}) # Add padding for MAP
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} LIST_HDR:${#NM_H} LIST_FTR:${#NM_F} LIST_MAP:${MH} PAGE_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} LIST_HDR:${#NM_H} LIST_FTR:${#NM_F} LIST_MAP:${MH} PAGE_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
 
 	# Handle outer box coords
 	if [[ ${HAS_OUTER} == 'true' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Setting OUTER BOX coords"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Setting OUTER BOX coords"
 		OB_X=$(( BOX_X - OB_X_OFFSET ))
 		OB_Y=$(( BOX_Y - OB_Y_OFFSET ))
 		OB_W=$(( BOX_W + OB_Y_OFFSET * 2 ))
@@ -319,7 +319,7 @@ sel_list () {
 			(( OB_W+=DIFF * 2 ))
 		fi
 		MIN=$(min ${OB_X} ${OB_Y} ${OB_W} ${OB_H})
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: OUTER_BOX coords: MIN:${MIN} OB_X:${OB_X}  OB_Y:${OB_Y} OB_W:${OB_W} OB_H:${OB_H}"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: OUTER_BOX coords: MIN:${MIN} OB_X:${OB_X}  OB_Y:${OB_Y} OB_W:${OB_W} OB_H:${OB_H}"
 
 		if [[ ${MIN} -lt 1 ]];then
 			exit_leave "[${WHITE_FG}SELECT.zsh${RESET}] ${RED_FG}OUTER BOX${RESET} would exceed available display. ${CYAN_FG}HINT${RESET}: increase sel_list -y option from ${Y_COORD_ARG} to $(( (MIN * -1) + Y_COORD_ARG + 1 ))"
@@ -404,7 +404,7 @@ sel_load_page () {
 		PAGE=1
 	fi
 	 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: TOP_ROW:${TOP_ROW}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: TOP_ROW:${TOP_ROW}"
 
 	_PAGE=()
 	for (( NDX=1; NDX <= _LIST_DATA[H]; NDX++ ));do
@@ -412,8 +412,8 @@ sel_load_page () {
 		_PAGE+=${_LIST[$(( NDX + TOP_ROW - 1 ))]}
 		[[ ${NDX} -eq ${#_LIST} ]] && break
 	done
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ADDED NDX ROWS"
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _LIST ROWS:${#_LIST} _PAGE ROWS:${#_PAGE} PAGE:${PAGE}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ADDED NDX ROWS"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST ROWS:${#_LIST} _PAGE ROWS:${#_PAGE} PAGE:${PAGE}"
 
 	_CURRENT_PAGE=${PAGE} # Set the currently displayed page
 }
@@ -431,7 +431,7 @@ sel_norm () {
 	if [[ ${_HAS_CAT} == 'true' ]];then
 		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
 		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		printf "${WHITE_FG}%-*s${RESET} %-*s\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
 	else
 		echo ${TEXT}
@@ -488,7 +488,7 @@ sel_scroll () {
 		if [[ -e ${_TAG_FILE}  ]];then
 			IFS='|' read -r TAG_PAGE TAG_NDX < ${_TAG_FILE} # Retrieve any stored menu positions
 			LAST_TAG=${_TAG_FILE} # Only use position memory for differing menus unless _SAVE_MENU_POS is indicated
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:_TAG_FILE:${_TAG_FILE}  LAST_TAG:${LAST_TAG}"
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:_TAG_FILE:${_TAG_FILE}  LAST_TAG:${LAST_TAG}"
 		fi
 
 		NDX=1 # Initialize index
@@ -497,10 +497,10 @@ sel_scroll () {
 				if [[ ${_SAVE_MENU_POS} == 'true' ]];then
 					NDX=${TAG_NDX} # Restore menu position regardless
 					PAGE=${TAG_PAGE} # Restore menu position regardless
-					[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:RESTORED POSITION: ${NDX}"
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:RESTORED POSITION: ${NDX}"
 				else
 					[[ ${LAST_TAG} != ${_TAG_FILE} ]] && NDX=${TAG_NDX} && PAGE=${TAG_PAGE} # Restore menu position only if menu changed
-					[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:MENU CHANGED - RESTORED POSITION: ${NDX}"
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:MENU CHANGED - RESTORED POSITION: ${NDX}"
 				fi
 			fi
 		fi
@@ -527,10 +527,10 @@ sel_scroll () {
 
 			# Reserved application key breaks from navigation
 			if [[ ${_APP_KEYS[(i)${KEY}]} -le ${#_APP_KEYS} ]];then # App key was pressed
-				[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}KEYPRESS IS APP KEY${RESET}: KEY:${KEY} _APP_KEYS:${_APP_KEYS}"
+				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}KEYPRESS IS APP KEY${RESET}: KEY:${KEY} _APP_KEYS:${_APP_KEYS}"
 
 				_SEL_KEY=${KEY} 
-				[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}_SEL_KEY:${_SEL_KEY} _SEL_VAL:${_SEL_VAL}"
+				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}_SEL_KEY:${_SEL_KEY} _SEL_VAL:${_SEL_VAL}"
 
 				break 2 # Quit navigation
 			fi
@@ -659,14 +659,14 @@ sel_set_pages () {
 	[[ ${REM} -ne 0 ]] && (( PAGE++ ))
 
 	MAX_PAGE=${PAGE} # Page boundary
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: MAX_PAGE:${MAX_PAGE} PAGE:${PAGE}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MAX_PAGE:${MAX_PAGE} PAGE:${PAGE}"
 
 	for (( P=1; P<=PAGE; P++ ));do
 		[[ ${P} -eq 1 ]] && PG_TOP=1 || PG_TOP=$(( PAGE_TOPS[$(( P-1 ))] + LIST_HEIGHT ))
 		PAGE_TOPS[${P}]=${PG_TOP}
 	done
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _PAGE_TOPS:${(kv)PAGE_TOPS}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _PAGE_TOPS:${(kv)PAGE_TOPS}"
 
 	PAGE_TOPS[MAX]=${MAX_PAGE}
 
