@@ -31,7 +31,6 @@ typeset -a _STATE_SELECT
 
 # Constants
 _MAX_ITEM_LEN=75
-_APP_DBG=4
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -229,7 +228,7 @@ if [[ ${RUNNING} == 'true' ]];then
 	msg_box -t2 "<w>Gathering systemd information for running units<N>..."
 	_RAWLIST=("${(f)$(sudo systemctl list-units --all --type=service --state=active | tail -n +2 | head -n -6 | sed 's/^ *//g' | tr -s '[:space:]')}")
 
-	if [[ ${_DEBUG} -ge ${_APP_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}:${LINENO} Running _RAWLIST"
 		(
 		echo "${GREEN_FG}DEBUG${RESET}:${WHITE_FG}Running list_units...${RESET}"
@@ -266,7 +265,7 @@ else
 	_RAWLIST=("${(f)$(sudo systemctl list-unit-files | tr -s '[:space:]' | tail -n +2 | head -n -2)}")
 	_RAW_STATES=("${(f)$(sudo systemctl list-units -all | tr -s '[:space:]' | tail -n +2 | head -n -2)}")
 
-	if [[ ${_DEBUG} -ge ${_APP_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}:${LINENO} Not Running _RAWLIST"
 		dbg "${0}:${LINENO} Not Running _RAW_STATES"
 		(
@@ -331,7 +330,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 fi
 
 
-if [[ ${_DEBUG} -ge ${_APP_DBG} ]];then
+if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 	dbg "${0}:${LINENO} _LOCAL_LIST"
 	(
 	echo "${GREEN_FG}DEBUG${RESET}:${WHITE_FG}_UNIT_FILES...${RESET}"

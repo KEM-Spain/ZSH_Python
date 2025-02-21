@@ -30,7 +30,6 @@ typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
 _PATHLBL=''
 
 # Constants
-_STICK_DBG=4
 _SCRIPT=${0:t}
 _RSYNC_LOG=/tmp/rsync.log
 _LOCAL_PATH=''
@@ -290,9 +289,9 @@ load_local () {
 
 	_LOCAL_LIST=("${(f)$(eval "find ${PWD:q} -maxdepth ${DETAIL_LVL} -type ${TYPE} ! -path ${PWD:q}" 2>/dev/null | sort)}")
 	if [[ ${?} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_STICK_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${PWD} -maxdepth 1 -type f ! -path ${PWD}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${PWD} -maxdepth 1 -type f ! -path ${PWD}"
 	else
-		[[ ${_DEBUG} -ge ${_STICK_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 	fi
 
 	if arr_is_populated "${_LOCAL_LIST}";then
@@ -318,9 +317,9 @@ load_stick () {
 
 	_STICK_LIST=("${(f)$(eval "find ${STICK_DATA[PATH]} -maxdepth ${DETAIL_LVL} -type ${TYPE} ! -path ${STICK_DATA[PATH]}" 2>/dev/null | sort)}")
 	if [[ ${?} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_STICK_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${STICK_DATA[PATH]} -maxdepth 1 -type f ! -path ${STICK_DATA[PATH]}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${STICK_DATA[PATH]} -maxdepth 1 -type f ! -path ${STICK_DATA[PATH]}"
 	else
-		[[ ${_DEBUG} -ge ${_STICK_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_STICK_LIST COUNT${RESET}:${#_STICK_LIST}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_STICK_LIST COUNT${RESET}:${#_STICK_LIST}"
 	fi
 
 	if arr_is_populated "${_STICK_LIST}";then

@@ -35,7 +35,6 @@ typeset -a _STATS
 
 # Constants
 _TYPE_LABELS=(b "Birth Date" a "Last Access" m "Last Modification")
-_APP_DBG=4
 
 # Globals
 g_FN_TAG=''
@@ -52,7 +51,7 @@ get_stat () {
 	local TYPE=${2}
 	local STAT
 
-	[[ ${_DEBUG} -ge ${_APP_DBG}  ]] && dbg "${0}:${LINENO} NDX:${NDX} TYPE:${TYPE}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG}  ]] && dbg "${0}:${LINENO} NDX:${NDX} TYPE:${TYPE}"
 
 	case ${TYPE} in
 		b) STAT=$(echo "${_LIST[${NDX}]}" | cut -d'|' -f2);;
@@ -60,7 +59,7 @@ get_stat () {
 		m) STAT=$(echo "${_LIST[${NDX}]}" | cut -d'|' -f4);;
 	esac
 
-	[[ ${_DEBUG} -ge ${_APP_DBG}  ]] && dbg "${0}:${LINENO} Returning: STAT:${STAT}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG}  ]] && dbg "${0}:${LINENO} Returning: STAT:${STAT}"
 
 	echo ${STAT}
 }
@@ -167,7 +166,7 @@ FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
 _RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} ! -path ${FPATH}")}")
-[[ ${_DEBUG} -ge ${_APP_DBG} ]] && dbg "${0}:${LINENO} find ${FPATH} -maxdepth 1 ${FGLOB} ! -path ${FPATH}"
+[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} find ${FPATH} -maxdepth 1 ${FGLOB} ! -path ${FPATH}"
 
 if ! arr_is_populated "${_RAWLIST}";then
 	exit_leave $(msg_exit W "Nothing found for: ${FPATH}")
@@ -189,7 +188,7 @@ LONGEST=$(( LONGEST+4 )) # Allow for directory markup ' (d)'
 
 _LOCAL_LIST=("${(f)$(list_sort_flat "ARRAY _SORT_LIST COL 2 ORDER d DELIM ${_LIST_DELIM}")}") # Pre sort
 
-if [[ ${_DEBUG} -ge ${_APP_DBG} ]];then
+if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 	dbg "${0}:${LINENO} $(for L in ${_LOCAL_LIST};do echo "${L}";done)"
 fi
 
