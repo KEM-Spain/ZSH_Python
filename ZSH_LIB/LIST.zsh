@@ -1106,7 +1106,7 @@ list_sort () {
 }
 
 list_sort_assoc () {
-	local ARGS=(${$@})
+	local ARGS=${@}
 	local -A ARG_TABLE=()
 	local -a SORT_TABLE=()
 	local -A TABLE=()
