@@ -34,10 +34,8 @@ typeset -a _MARKED=()
 typeset -a _LOCAL_LIST=()
 typeset -a _FILTER
 
-# Constants
-_LIB_DIR=/usr/local/lib
-
 # Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -60,7 +58,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_GHOST_ROW}
+		list_set_selected ${M} ${_STALE_ROW}
 	done
 }
 
@@ -90,9 +88,9 @@ action_warn () {
 
 item_decorate () {
 	local NDX=${1}
-	local _MAX=$((_MAX_COLS - 10))
+	local _MAX=$(( _MAX_COLS - 10 ))
 
-	[[ ${_LIST_SELECTED[${NDX}]} -eq 2 ]] && echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}][1,${_MAX}]}${E_RESET} ${E_ITALIC}deleted${E_RESET}" || echo -n ${_LIST[${NDX}][1,${_MAX}]}
+	[[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]] && echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}][1,${_MAX}]}${E_RESET} ${E_ITALIC}deleted${E_RESET}" || echo -n ${_LIST[${NDX}][1,${_MAX}]}
 }
 
 sort_option () {
@@ -221,11 +219,12 @@ list_set_header_break_color ${RED_FG}
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 '
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to delete ${ITALIC}or exit if none selected${RESET}"
 list_set_action_msgs delete file
+list_set_searchable true
 
 while true;do
 	# Display list

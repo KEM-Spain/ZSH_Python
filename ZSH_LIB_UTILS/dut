@@ -230,7 +230,7 @@ external () {
 
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
 
-		LIST=("${(f)$(lsof | grep --color=never ${_MOUNT_POINTS[${PART}]})}")
+		LIST=("${(f)$(lsof | grep --color=never ${_MOUNT_POINTS[${PART}]} 2>/dev/null)}")
 
 		for L in ${LIST};do
 			[[ ${L} =~ 'DIR' ]] && return 20

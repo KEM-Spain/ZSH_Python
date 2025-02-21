@@ -121,7 +121,7 @@ msg_box () {
 	done
 	shift $(( OPTIND -1 ))
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -n ${TAG_ARG} ]] && TAG=${TAG_ARG} || TAG=${_MSG_BOX_TAG}
 
@@ -477,7 +477,7 @@ msg_box_align () {
 	local PADDED=''
 	local TEXT=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} TAG:${TAG} COORDS:${BOX_COORDS} MSG LEN:${#MSG}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} TAG:${TAG} COORDS:${BOX_COORDS} MSG LEN:${#MSG}"
 
 	# Handle embed:<Z> Blank line
 	if [[ ${MSG} =~ '<Z>' ]];then # Blank Line?
@@ -537,7 +537,7 @@ msg_box_clear () {
 	local W_COORD_ARG=''
 	local X
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} PARAMS:${#} TAG:${TAG}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} PARAMS:${#} TAG:${TAG}"
 
 	# Process arguments
 	if [[ ${#} -eq 1 ]];then
@@ -629,7 +629,7 @@ msg_calc_gap () {
 	local GAP=0
 	local NEED
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ARGS: MSG_ROWS:${MSG_ROWS},DISP_ROWS:${DISP_ROWS}"
 
 	TL_PAGES=$(( MSG_ROWS / DISP_ROWS ))
@@ -648,7 +648,7 @@ msg_err () {
 	local MSG=${@}
 	local LABEL='Error'
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${MSG} ]] && return
 
@@ -667,7 +667,7 @@ msg_exit () {
 	local LABEL=''
 	local LCOLOR=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${MSG} ]] && return
 
@@ -688,7 +688,7 @@ msg_info () {
 	local MSG=${@}
 	local LABEL='Info'
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${MSG} ]] && return
 
@@ -702,7 +702,7 @@ msg_info () {
 }
 
 msg_line_weight () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_BOX_LINE_WEIGHT=${1}
 }
@@ -713,7 +713,7 @@ msg_list () {
 	local DELIM='|'
 	local NDX=0
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: MSG COUNT:${#MSG}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: MSG COUNT:${#MSG}"
 
 	for L in ${MSG};do
 		(( NDX++))
@@ -727,7 +727,7 @@ msg_list () {
 msg_markup () {
 	local MSG=${@}
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Apply markup
 	perl -pe 'BEGIN { 
@@ -756,7 +756,7 @@ msg_nomarkup () {
 	local MSG=${@}
 	local MSG_OUT
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	MSG_OUT=$(perl -pe 's/(<B>|<I>|<L>|<N>|<O>|<R>|<U>|<b>|<c>|<g>|<h>|<m>|<r>|<w>|<y>)//g' <<<${MSG})
 
@@ -775,7 +775,7 @@ msg_paging () {
 	local PGUP=0
 	local PGDN=0
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	TL_PAGES=$(( LIST_ROWS / PG_LINES ))
 	PARTIAL=$(( LIST_ROWS % PG_LINES ))
@@ -806,7 +806,7 @@ msg_paging_page () {
 	local PAGE=${1}
 	local KEY=${2}
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	case ${KEY} in
 		j|d) (( PAGE++));;
@@ -823,7 +823,7 @@ msg_proc () {
 	local V_POS=$(( _MAX_ROWS/2 - BOX_H ))
 	local X R C
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	msg_unicode_box ${V_POS} ${H_POS} ${BOX_W} ${BOX_H}
 	tput cup $(( V_POS+1 )) $(( H_POS+2 ));echo -n "${GREEN_FG}Processing...${RESET}"
@@ -870,7 +870,7 @@ msg_stream () {
 	done
 	shift $(( OPTIND -1 ))
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	FOLD="| fold -s -w ${FOLD_WIDTH}"
 
@@ -937,7 +937,7 @@ msg_unicode_box () {
 	T_SPAN=$(( BOX_X_COORD+1 ))
 	B_SPAN=$(( BOX_X_COORD+BOX_HEIGHT ))
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ ${_BOX_LINE_WEIGHT} == 'heavy' ]] && HEAVY=true && shift
 
@@ -1013,7 +1013,7 @@ msg_warn () {
 	local MSG=${@}
 	local LABEL='Warning'
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	grep -q '|' <<<${MSG}
 	[[ ${?} -eq 0 ]] && LABEL=$(cut -d '|' -f1 <<<${MSG}) && MSG=$(cut -d '|' -f2 <<<${MSG})

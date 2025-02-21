@@ -57,7 +57,7 @@ exit_pre_exit () {
 	_PRE_EXIT_RAN=true
 
 	if [[ -n ${_EXIT_CALLBACKS} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${RED_FG}${0}${RESET}:EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}:EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
 		for C in ${_EXIT_CALLBACKS};do
 			${C}
 		done
@@ -68,16 +68,16 @@ exit_pre_exit () {
 	if [[ ${XDG_SESSION_TYPE:l} == 'x11' ]];then
 		xset r on # Reset key repeat
 		eval "xset ${_XSET_DEFAULT_RATE}" # Reset key rate
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${0}: reset key rate:${_XSET_DEFAULT_RATE}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset key rate:${_XSET_DEFAULT_RATE}"
 	fi
 
 	kbd_activate
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${0}: activated keyboard"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: activated keyboard"
 
 	[[ ${$(tabs -d | grep --color=never -o "tabs 8")} != 'tabs 8' ]] && tabs 8
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${0}: reset tabstops"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset tabstops"
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
 	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}\n"
 }
 
@@ -126,7 +126,7 @@ exit_sigexit () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Traps arrive here
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: Exited via interrupt: ${SIG} (${SIGNAME}) ${SIGNAMES[${SIG}]}" # Announce the interrupt
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: Exited via interrupt: ${SIG} (${SIGNAME}) ${SIGNAMES[${SIG}]}" # Announce the interrupt
 	exit_pre_exit # Pre-exit housekeeping
 
 	exit ${SIG} # Leave the app
@@ -145,7 +145,7 @@ set_exit_callback () {
 
 	_EXIT_CALLBACKS+=${1}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: REGISTERED CALLBACK:${1}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: REGISTERED CALLBACK:${1}"
 }
 
 set_exit_value () {

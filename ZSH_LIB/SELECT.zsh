@@ -37,7 +37,7 @@ sel_box_center () {
 	local TXT_CTR=0
 	local TXT_LEN=0
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if validate_is_integer ${TXT};then # Accept either strings or integers
 		TXT_LEN=${TXT}
@@ -76,7 +76,7 @@ sel_clear_region () {
 	local DIFF=0
 	local R=0
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	R_COORDS=($(box_coords_get REGION))
 
@@ -120,7 +120,7 @@ sel_clear_region () {
 sel_disp_page () {
 	local NDX=0
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	for (( NDX=1; NDX <= ${#_PAGE}; NDX++ ));do
 		sel_norm $(( _LIST_DATA[X] + NDX - 1 )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
@@ -133,7 +133,7 @@ sel_hilite () {
 	local TEXT=${3}
 	local F1 F2
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: X:${X} Y:${Y} TEXT:${TEXT}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: X:${X} Y:${Y} TEXT:${TEXT}"
 
 	tcup ${X} ${Y}
 
@@ -214,7 +214,7 @@ sel_list () {
 	local _HAS_CAT=false
 	local STR=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
@@ -394,7 +394,7 @@ sel_load_page () {
 	local NDX=0
 	local TOP_ROW=1
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	# Evaluate/validate PAGE arg
 	if [[ -n ${_PAGE_TOPS[${PAGE}]} ]];then
@@ -424,7 +424,7 @@ sel_norm () {
 	local TEXT=${3}
 	local F1 F2
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: X:${X} Y:${Y} TEXT:${TEXT}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: X:${X} Y:${Y} TEXT:${TEXT}"
 
 	tcup ${X} ${Y}
 	do_rmso
@@ -456,7 +456,7 @@ sel_scroll () {
 	local X_OFF=0
 	local PAGE_CHANGE=false
 	
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	cursor_off
 
@@ -599,7 +599,7 @@ sel_scroll () {
 }
 
 sel_set_app_keys () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: _APP_KEYS:${_APP_KEYS}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: _APP_KEYS:${_APP_KEYS}"
 
 	_APP_KEYS=(${@})
 }
@@ -612,7 +612,7 @@ sel_set_ebox () {
 	local W_ARG=0
 	local DIFF=0
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Set coords for exit msg display
 	I_COORDS=($(box_coords_get INNER_BOX))
@@ -637,7 +637,7 @@ sel_set_ebox () {
 sel_set_list () {
 	local -a LIST=(${@})
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_LIST=(${(o)LIST})
 }
@@ -652,7 +652,7 @@ sel_set_pages () {
 	local REM=0
 	local P
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	PAGE=$(( LIST_MAX / LIST_HEIGHT ))
 	REM=$(( LIST_MAX % LIST_HEIGHT ))
@@ -677,7 +677,7 @@ sel_set_tag () {
 	PAGE=${1}
 	NDX=${2}
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
 
 	[[ -n ${_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_TAG_FILE} # Save menu position if indicated
 }

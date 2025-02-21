@@ -1,3 +1,9 @@
+# Import standard libs
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/ANSI.zsh
+source ${_LIB_DIR}/EXIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Default Options
 setopt warncreateglobal # Monitor locals
 setopt rematchpcre # Use perl regex
@@ -41,11 +47,6 @@ _CURSOR_STATE=on
 _DEBUG=0
 _DEBUG_INIT=true
 _EXIT_MSGS=''
-
-# Import standard libs
-source ${_LIB_DIR}/ANSI.zsh
-source ${_LIB_DIR}/EXIT.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Initialize traps
 unsetopt localtraps
