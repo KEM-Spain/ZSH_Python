@@ -62,12 +62,13 @@ action_do () {
 			disabled) ACTION_TABLE+="enable";;
 		esac
 
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ACTIONS: \n$(echo ${_UNIT_FILES[${M}]} | rev | cut -d'.' -f2- | rev)"
+
 		sel_set_list ${(o)ACTION_TABLE}
 		sel_list -c -x11 -y52 -H"Available Actions" -M"<w>Select action for: <c>$(echo ${_UNIT_FILES[${M}]} | rev | cut -d'.' -f2- | rev) ${MSG}<N>or <w>Esc<N> to <r>Cancel<N>"
-
-		if [[ ${?} -ne 0 ]];then # Esc key?
+		if [[ ${_SEL_KEY} -eq 27 ]];then # Esc key?
 			clear_region
-			list_set_selected ${M} 0
+			list_set_selected ${M} ${_AVAIL_ROW}
 			continue
 		fi
 
@@ -83,7 +84,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_STALE_ROW}
+		list_set_selected ${M} ${_AVAIL_ROW}
 	done
 }
 
@@ -107,9 +108,9 @@ action_warn () {
 item_decorate () {
   local NDX=$1
 
-  case ${_LIST_SELECTED[${NDX}]} in
-			 2) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
-			 *)      tput el;echo -n ${_UNIT_FILES[${_LIST[${NDX}]}]};;
+	case ${_LIST_SELECTED[${NDX}]} in
+	${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+					*) tput el;echo -n ${_UNIT_FILES[${_LIST[${NDX}]}]};;
   esac
 }
 
@@ -265,7 +266,7 @@ else
 	_RAWLIST=("${(f)$(sudo systemctl list-unit-files | tr -s '[:space:]' | tail -n +2 | head -n -2)}")
 	_RAW_STATES=("${(f)$(sudo systemctl list-units -all | tr -s '[:space:]' | tail -n +2 | head -n -2)}")
 
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 		dbg "${0}:${LINENO} Not Running _RAWLIST"
 		dbg "${0}:${LINENO} Not Running _RAW_STATES"
 		(
@@ -330,7 +331,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 fi
 
 
-if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
 	dbg "${0}:${LINENO} _LOCAL_LIST"
 	(
 	echo "${GREEN_FG}DEBUG${RESET}:${WHITE_FG}_UNIT_FILES...${RESET}"

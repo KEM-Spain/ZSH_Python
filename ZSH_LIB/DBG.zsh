@@ -1,19 +1,19 @@
 # LIB Dependencies
 _DEPS_+="STR.zsh"
 
-# LIB Declarations
-typeset -a _DEBUG_LINES # Store debugging output 
-
-if [[ ${_DEBUG_INIT} == 'true' ]];then
-	sudo /bin/rm -f ${_DEBUG_FILE} # _DEBUG_FILE declared in LIB_INIT
-	_DEBUG_INIT=false # _DBG_INIT declared in LIB_INIT
-fi
+# Declarations
+typeset -a _DEBUG_LINES=()
 
 # LIB Functions
 dbg () {
 	local -a ARGS=(${@})
 	local LINE
 	local A
+
+	if [[ ${_DEBUG_INIT} == 'true' ]];then
+		echo "${WHITE_FG}DEBUG Level ${_DEBUG}${RESET}: ${BOLD}${MAGENTA_FG}${_DEBUG_LEVELS[${_DEBUG}]}${RESET}" >> ${_DEBUG_FILE}
+		_DEBUG_INIT=false
+	fi
 
 	if [[ ${#} -ne 0 ]];then
 		dbg_to_file ${ARGS} # With arguments

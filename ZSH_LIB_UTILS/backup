@@ -218,12 +218,12 @@ g_LAST_RUN=$(last_backup ${_MARKER})
 STALE_NDX=0
 while true;do
 	((STALE_NDX++))
-	[[ ${STALE_NDX} -gt 1 ]] && exit_leave $(msg_exit E "Unable to clear ghost mounts")
-	if [[ -e ${_MOUNTPOINT}/${_DEST_ID}1 ]];then
-		msg_box "Detected ghost mounts - attempting removal"
+	[[ ${STALE_NDX} -gt 1 ]] && exit_leave $(msg_exit E "Unable to clear orphaned mounts")
+	if [[ -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
+		msg_box "Detected orphaned mounts - attempting removal"
 		dut external -u
 	else
-		msg_box -c "Ghost mounts removed"
+		msg_box -c "Orphaned mounts removed"
 		break
 	fi
 done

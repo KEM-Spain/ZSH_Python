@@ -53,14 +53,12 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 external () {
 	# Constants
-	local	PARTITION
-	local ACTION
-	local DEVICES=0
-	local L
-	local MOUNTED=0
 	local MOUNT_ROOT=/media/kmiller
+
+	#App Vars
 	local -a MSG_OUT
-	local UNMOUNTED=0
+	local	PARTITION=''
+	local L
 
 	# Declarations
 	local -A _SORT_TABLE=(1 _PARTITIONS 2 _TYPES 3 _MOUNT_POINTS 4 _LABELS)
@@ -72,7 +70,7 @@ external () {
 	local -a _LOCAL_LIST
 	local -a MARKED
 	local -a RAW_DISK_STATUS
-	local -A _ERR_CODES=(
+	local -A _MOUNT_CODES=(
 	0 "0 - success"
 	1 "1 - incorrect invocation or permissions"
 	2 "2 - system error (out of memory, cannot fork, no more loop devices)"
@@ -107,6 +105,8 @@ external () {
 
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
 
+		msg_box "Working..."
+
 		for M in ${MARKED};do
 			NDX=${_LIST[${M}]}
 			if is_mounted ${NDX};then
@@ -118,7 +118,7 @@ external () {
 			do_${ACTION} ${NDX}
 
 			if [[ ${?} -ne 0 ]];then
-				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_ERR_CODES[${g_MOUNT_ERROR}]}"
+				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
 			else
 				get_disk_info
 			fi
@@ -270,7 +270,7 @@ external () {
 			LBL=$(cut -d'|' -f8 <<<${RAW_DISK_STATUS[${D}]})
 
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART} TYPE:${TYPE} MP:${MP} LBL:${LBL}"
-			[[ -e ${MOUNT_ROOT}/${LBL} ]] && _MOUNT_DIRS[${PART}]="${MOUNT_ROOT}/${LBL}"
+			[[ -e ${MOUNT_ROOT}/${LBL} ]] && _MOUNT_DIRS[${D}]="${MOUNT_ROOT}/${LBL}"
 
 			_PARTITIONS[${D}]=${PART:=null}
 			_TYPES[${D}]=${TYPE:=null}
@@ -297,7 +297,7 @@ external () {
 			fi
 		done
 
-		[[ ${g_MOUNT_ERROR} -ne 0 && ${g_VERBOSE} == 'true' ]] && printf "${BOLD}${RED_FG}%s${RESET}:${WHITE_FG}%s${RESET}\n" "Mount error" "${_ERR_CODES[${g_MOUNT_ERROR}]}"
+		[[ ${g_MOUNT_ERROR} -ne 0 && ${g_VERBOSE} == 'true' ]] && printf "${BOLD}${RED_FG}%s${RESET}:${WHITE_FG}%s${RESET}\n" "Mount error" "${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
 		echo
 	}
 

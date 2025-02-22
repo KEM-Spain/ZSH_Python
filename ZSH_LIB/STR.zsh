@@ -260,7 +260,7 @@ str_strip_ansi () {
 	IFS='' # Preserve white space
 	while read -r LINE_IN;do
 		# Strip ansi escape chars
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LINE_IN:\"${LINE_IN}\""
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:  LINE_IN:\"${LINE_IN}\""
 		LINE_OUT+=$(perl -pe 's/\x1B\[+[\d;]*[mK]//g' <<<${LINE_IN})
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LINE_OUT:\"${LINE_OUT}\""
 	done

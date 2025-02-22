@@ -540,7 +540,7 @@ sel_scroll () {
 			case ${KEY} in
 				0) sel_set_tag ${PAGE} ${NDX}; break 2;;
 				q) exit_request $(sel_set_ebox);break;;
-				27) return -1;;
+				27) _SEL_KEY=${KEY} && return -1;;
 				1|u|k) SCROLL="U";;
 				2|d|j) SCROLL="D";;
 				3|t|h) SCROLL="T";;

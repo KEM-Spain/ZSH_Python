@@ -400,7 +400,7 @@ list_nav_handler () {
 
 	elif [[ ${KEY} =~ 'mark' ]];then # Search new
 		if [[ ${_LIST_IS_SEARCHABLE} == 'false' ]];then
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SEARCH DENIED: _LIST_IS_SEARCHABLE:${_LIST_IS_SEARCHABLE}"
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SEARCH REJECTED: _LIST_IS_SEARCHABLE:${_LIST_IS_SEARCHABLE}"
 			return # Ignore not searchable
 		fi
 
@@ -1049,8 +1049,11 @@ list_sort () {
 		for A in ${(k)_LIST_SELECTED};do
 			if [[ ${_LIST_SELECTED[${A}]} -ne 0 ]];then
 				msg_box -H1 -t2 "<r>Sort Unavailable<N>|Active Selections"
-				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT DENIED: ACTIVE SELECTIONS"
-				return
+				if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+					dbg "${0}: SORT REJECTED: ACTIVE SELECTIONS"
+					dbg "$(for C in ${(k)_LIST_SELECTED};do; echo ${C} - ${_LIST_SELECTED[${C}]};done)"
+					return
+				fi
 			fi
 		done
 	fi
