@@ -147,6 +147,7 @@ do_copy () {
 
 	if [[ ${?} -eq 0 || ${PROMPT} != 'true' ]];then
 		cp ${SOURCE_FN} ${DEST_FN}
+		[[ ${DEST_FN} =~ "\.bak$" ]] && chmod 666 ${DEST_FN}
 		echo "${OP} ${GREEN_FG}complete${RESET}"
 		return 0
 	else

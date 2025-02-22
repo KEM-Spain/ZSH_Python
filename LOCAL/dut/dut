@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -19,7 +19,7 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-#Declarations
+# Declarations
 typeset -A _UTILS=(
 external 1
 fstab_info 1
@@ -36,32 +36,24 @@ unplug "DETACH:safely detach device"
 usbdisks "USB:display usb disk details"
 )
 
-#Constants
-_LIB_DIR=/usr/local/lib
+# Constants
 _WRAPPER=${0:t}
 
-#Globals
+# Globals
 g_USAGE=false
 g_UTIL=''
 
-#Imports
-_LIB_DIR=/usr/local/lib
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB_DIR}/${D} ]];then
-		source ${_LIB_DIR}/${D}
-	else
-		echo "Cannot source:${_LIB_DIR}/${D} - not found"
-		exit 1
-	fi
-done
-
-#Functions
+# Functions
 external () {
-	#Constants
+	# TODO: migrate from passing values to indexes to enable assoc sort compatability
+	# Constants
 	local	PARTITION
 	local ACTION
 	local DEVICES=0
@@ -71,7 +63,7 @@ external () {
 	local -a MSG_OUT
 	local UNMOUNTED=0
 
-	#Declarations
+	# Declarations
 	local -A _SORT_TABLE=(1 _PARTITIONS 2 _TYPES 3 _MOUNT_POINTS 4 _LABELS)
 	local -A _LABELS
 	local -A _MOUNT_POINTS
@@ -96,7 +88,7 @@ external () {
 	64 "64 - some mount succeeded"
 	)
 
-	#Globals
+	# Globals
 	local	g_FORCE_ALL_MOUNT=false
 	local	g_FORCE_ALL_UNMOUNT=false
 	local	g_SHOW_LIST=false
@@ -106,67 +98,64 @@ external () {
 	local g_VERBOSE=false
 	local g_FCNT=0
 
-	#Functions
+	# Functions
 	action_do () {
 		local ACTION
 		local M
-		local PNDX
 		local -a MLIST
 		local STATE
 
 		for M in ${MARKED};do
-			PNDX=${_LIST[${M}]}
-			if is_mounted ${PNDX};then
+			if is_mounted ${M};then
 				ACTION=unmount
 			else
 				ACTION=mount
 			fi
 
-			do_${ACTION} ${_PARTITIONS[${PNDX}]}
+			do_${ACTION} ${_PARTITIONS[${M}]}
 
 			if [[ ${?} -ne 0 ]];then
-				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${PNDX}]}<N>| |${_ERR_CODES[${g_MOUNT_ERROR}]}"
+				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${M}]}<N>| |${_ERR_CODES[${g_MOUNT_ERROR}]}"
 			else
 				get_disk_info
 			fi
 		done
 
 		for M in ${MARKED};do
-			PNDX=${_LIST[${M}]}
-			if is_mounted ${PNDX};then
+			if is_mounted ${M};then
 				STATE=mounted
 			else
 				STATE=unmounted
 			fi
-			MLIST+="${_PARTITIONS[${PNDX}]} is ${STATE}"
+			MLIST+="${_PARTITIONS[${M}]} is ${STATE}"
 		done
 		msg_box -p -PK "Mount Status| |$(msg_list ${MLIST})"
 
 		for M in ${MARKED};do
 			MARKED[${M}]=0
-			list_set_selected ${M} ${_GHOST_ROW}
+			list_set_selected ${M} ${_AVAIL_ROW}
 		done
 	}
 
 	do_mount () {
-		local PART=${1}
+		local NDX=${1}
 		local RC=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${NDX}]}"
 
-		is_mounted ${PART}
+		is_mounted ${NDX}
 		RC=${?}
-		[[ ${RC} -eq 0 && ${g_VERBOSE} == 'true' ]] && g_MOUNT_ERROR=35 && set_exit_value 35 && return 35 # already mounted
+		[[ ${RC} -eq 0 && ${g_VERBOSE} == 'true' ]] && g_MOUNT_ERROR=35 && set_exit_value 35 && return 35 # Already mounted
 
 		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x16 -t.3 "Mounting..."
-		if [[ ${RC} -ne 0 ]];then # not mounted
-			grep -q ${MOUNT_ROOT}/${_LABELS[${PART}]} <<<$(fut comments /etc/fstab)
+		if [[ ${RC} -ne 0 ]];then # Not mounted
+			grep -q ${MOUNT_ROOT}/${_LABELS[${NDX}]} <<<$(fut comments /etc/fstab)
 			if [[ ${?} -eq 0 ]];then
-				sudo mount /dev/${PART} 2>/dev/null
+				sudo mount /dev/${_PARTITIONS[${NDX}]} 2>/dev/null
 				RC=${?}
 			else
-				[[ ! -e ${MOUNT_ROOT}/${_LABELS[${PART}]} ]] && sudo mkdir ${MOUNT_ROOT}/${_LABELS[${PART}]}
-				sudo mount -t ${_TYPES[${PART}]} /dev/${PART} ${MOUNT_ROOT}/${_LABELS[${PART}]} 2>/dev/null
+				[[ ! -e ${MOUNT_ROOT}/${_LABELS[${NDX}]} ]] && sudo mkdir ${MOUNT_ROOT}/${_LABELS[${NDX}]}
+				sudo mount -t ${_TYPES[${NDX}]} /dev/${_PARTITIONS[${NDX}]} ${MOUNT_ROOT}/${_LABELS[${NDX}]} 2>/dev/null
 				RC=${?}
 			fi
 		fi
@@ -177,30 +166,30 @@ external () {
 			set_exit_value ${RC}
 		fi
 
-		_MOUNT_POINTS[${PART}]=mounted
+		_MOUNT_POINTS[${NDX}]=mounted
 
 		return ${RC}
 	}
 
 	do_unmount () {
-		local PART=${1}
+		local NDX=${1}
 		local RC=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${NDX}]}"
 
-		is_mounted ${PART}
+		is_mounted ${NDX}
 		RC=${?}
-		[[ ${RC} -ne 0 ]] && g_MOUNT_ERROR=25 && set_exit_value 25 && return 25 # not mounted
+		[[ ${RC} -ne 0 ]] && g_MOUNT_ERROR=25 && set_exit_value 25 && return 25 # Not mounted
 
 		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x16 -t.3 "Unmounting..."
 		if [[ ${RC} -eq 0 ]];then
-			is_partition_free ${PART}
+			is_partition_free ${NDX}
 			RC=${?}
 			[[ ${RC} -ne 0 && ${g_VERBOSE} == 'true' ]] && g_MOUNT_ERROR=${RC} && set_exit_value ${RC} && return ${RC}
 		fi
 
 		if [[ ${RC} -eq 0 ]];then
-			sudo umount /dev/${PART} 2>/dev/null
+			sudo umount /dev/${_PARTITIONS[${NDX}]} 2>/dev/null
 			RC=${?}
 		fi
 
@@ -212,7 +201,7 @@ external () {
 			set_exit_value ${RC}
 		fi
 
-		_MOUNT_POINTS[${PART}]=unmounted
+		_MOUNT_POINTS[${NDX}]=unmounted
 
 		return ${RC}
 	}
@@ -223,7 +212,7 @@ external () {
 		local TITLE="Current status for external drives"
 		echo "\n${TITLE}"
 		echo $(str_unicode_line ${#TITLE})
-		for P in ${_PARTITIONS};do
+		for P in ${(k)_PARTITIONS};do
 			if is_mounted ${P};then
 				printf "%s ${GREEN_FG}mounted${RESET} on: %s\n" "/dev/${P}" ${_MOUNT_POINTS[${P}]}
 			else
@@ -233,13 +222,13 @@ external () {
 	}
 
 	is_partition_free () {
-		local PART=${1}
+		local NDX=${1}
 		local -a LIST
 		local L
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${PART}]}"
 
-		LIST=("${(f)$(lsof | grep --color=never ${_MOUNT_POINTS[${PART}]})}")
+		LIST=("${(f)$(lsof 2>/dev/null | grep --color=never ${_MOUNT_POINTS[${NDX}]})}")
 
 		for L in ${LIST};do
 			[[ ${L} =~ 'DIR' ]] && return 20
@@ -250,11 +239,11 @@ external () {
 	}
 
 	is_mounted () {
-		local PART=${1}
+		local NDX=${1}
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${PART}]}"
 
-		[[ ${_MOUNT_POINTS[${PART}]} == "unmounted" ]] && return 1 || return 0
+		[[ ${_MOUNT_POINTS[${NDX}]} == "unmounted" ]] && return 1 || return 0
 	}
 
 	get_disk_info () {
@@ -266,21 +255,20 @@ external () {
 
 		RAW_DISK_STATUS=("${(f)$(sudo lsblk -P -o NAME,FSTYPE,MOUNTPOINT,LABEL | grep 'sd.[0-9]' | sed -e 's/=/|/g' -e 's/ /|/g' -e 's/\"//g')}")
 
-		for D in ${RAW_DISK_STATUS};do
-			PART=$(cut -d'|' -f2 <<<${D})
-			TYPE=$(cut -d'|' -f4 <<<${D})
-			MP=$(cut -d'|' -f6 <<<${D})
-			LBL=$(cut -d'|' -f8 <<<${D})
+		for (( D=1; D<=${#RAW_DISK_STATUS}; D++ ));do
+			PART=$(cut -d'|' -f2 <<<${RAW_DISK_STATUS[${D}]})
+			TYPE=$(cut -d'|' -f4 <<<${RAW_DISK_STATUS[${D}]})
+			MP=$(cut -d'|' -f6 <<<${RAW_DISK_STATUS[${D}]})
+			LBL=$(cut -d'|' -f8 <<<${RAW_DISK_STATUS[${D}]})
 
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART} TYPE:${TYPE} MP:${MP} LBL:${LBL}"
 			[[ -e ${MOUNT_ROOT}/${LBL} ]] && _MOUNT_DIRS[${PART}]="${MOUNT_ROOT}/${LBL}"
 
-			_PARTITIONS[${PART}]=${PART:=null}
-			_TYPES[${PART}]=${TYPE:=null}
-			_MOUNT_POINTS[${PART}]=${MP:=unmounted}
-			_LABELS[${PART}]=${LBL:=unlabeled}
+			_PARTITIONS[${D}]=${PART:=null}
+			_TYPES[${D}]=${TYPE:=null}
+			_MOUNT_POINTS[${D}]=${MP:=unmounted}
+			_LABELS[${D}]=${LBL:=unlabeled}
 		done
-
 
 		_LOCAL_LIST=(${(k)_PARTITIONS})
 	}
@@ -312,7 +300,7 @@ external () {
 			unmounted) msg_box -p -P"Mount all devices (y/n)?" "All devices are unmounted";;
 			mounted) msg_box -p -P"Unmount all devices (y/n)?" "All devices are mounted";;
 		esac
-		[[ ${_MSG_KEY} == 'n' ]] && clear && exit_leave $(msg_warn "Operation cancelled")
+		[[ ${_MSG_KEY} == 'n' ]] && clear && exit_leave $(msg_exit I "Operation cancelled")
 		return 0
 	}
 
@@ -376,7 +364,8 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
 	typeset -a OPTIONS
@@ -400,18 +389,18 @@ ___EOF
 	done
 	shift $((OPTIND -1))
 	#--End GetOpts--
-	#Execution
+	# Execution
 
 	[[ -n ${1} ]] && PARTITION=${1} || PARTITION=''
-	[[ ${#OPTIONS} -eq 0 ]] && g_BRIEF=true # default
+	[[ ${#OPTIONS} -eq 0 ]] && g_BRIEF=true # Default
 
 	get_disk_info
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		set_exit_value 1
-		exit_leave "\nNo external disks found"
+		exit_leave -9 "No external disks found"
 	fi
 
-	if [[ -n ${PARTITION} ]];then # arg was passed
+	if [[ -n ${PARTITION} ]];then # Arg was passed
 		if [[ ${_MOUNT_POINTS[${PARTITION:t}]} == 'unmounted' ]];then
 			do_mount ${PARTITION:t}
 		else
@@ -453,35 +442,35 @@ ___EOF
 			echo ${L}
 		done
 	elif [[ ${g_SHOW_LIST} == 'true' ]];then # -l option
-		#set headings
+		# Set headings
 		list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Partitions\tSelected:${WHITE_FG}%-d${RESET}" ${#_LIST} ${SELECTED_COUNT}'
 		list_set_header 'printf " "'
 		list_set_header 'printf "%*s %12s %12s %30s %15s" 5 "" "Partition" "Type" "Mount Point" "Label"'
-		list_set_header 'printf "%*s ${MAGENTA_FG}%12s %12s %30s %15s${RESET}" 5 "" $(str_unicode_line 12) $(str_unicode_line 12) $(str_unicode_line 30)  $(str_unicode_line 15)'
+		list_set_header 'printf "%*s ${SCOL1_CLR}%12s${RESET} ${SCOL2_CLR}%12s${RESET} ${SCOL3_CLR}%30s${RESET} ${SCOL4_CLR}%15s${RESET}" 5 "" $(str_unicode_line 12) $(str_unicode_line 12) $(str_unicode_line 30)  $(str_unicode_line 15)'
 
-		#set line item
+		# Set line item
 		list_set_line_item ' 
-		local PNDX=${_LIST[${_LIST_NDX}]};
-		[[ ${_MOUNT_POINTS[${PNDX}]} == 'unmounted' ]] && local MOUNT_COLOR=${RED_FG} || local MOUNT_COLOR=${GREEN_FG};
-		printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}%12s %12s ${MOUNT_COLOR}%30s${RESET} %15s${RESET}\n" ${_LIST_NDX} ${_PARTITIONS[${PNDX}]} ${_TYPES[${PNDX}]} ${_MOUNT_POINTS[${PNDX}]} ${_LABELS[${PNDX}]}
+		local NDX=${_LIST[${_LIST_NDX}]};
+		[[ ${_MOUNT_POINTS[${NDX}]} == 'unmounted' ]] && local MOUNT_COLOR=${RED_FG} || local MOUNT_COLOR=${GREEN_FG};
+		printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}%12s %12s ${MOUNT_COLOR}%30s${RESET} %15s${RESET}\n" ${_LIST_NDX} ${_PARTITIONS[${NDX}]} ${_TYPES[${NDX}]} ${_MOUNT_POINTS[${NDX}]} ${_LABELS[${NDX}]}
 		'
 
-		list_set_key_msg '
+		list_set_prompt_msg '
 		printf "Press ${WHITE_FG}Home End PgUp PgDn${RESET}, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 		'
-		list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select partition(s) then <${GREEN_FG}ENTER${RESET}> to mount/unmount (${WHITE_FG}${ITALIC}or exit if none selected${RESET})."
+		list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select partition(s) then <${GREEN_FG}ENTER${RESET}> to mount/unmount ${ITALIC}or exit if none selected${RESET}"
 		list_set_barlines true
-		list_set_clear_ghosts true
+		list_set_reuse_stale true
+		list_set_searchable false
 		list_set_sortable true
-		list_set_max_sort_col ${#_SORT_TABLE}
-		list_set_sort_type assoc
+		list_set_sort_defaults MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 DELIM ${_LIST_DELIM} TABLE "${(kv)_SORT_TABLE}" 
 
 		while true;do
-			#get selection
+			# Get selection
 			list_select ${_LOCAL_LIST}
 			[[ ${?} -eq 0 ]] && break
 
-			#get selections
+			# Get selections
 			MARKED=($(list_get_selected))
 			
 			if [[ $(list_get_selected_count) -ne 0 ]];then
@@ -507,14 +496,14 @@ space () {
 	local -aU PARTITIONS
 	local DIRCNT
 
-	#Declarations
+	# Declarations
 	local -a PART_DATA
 	local -a PART_DETAIL
 
-	#Globals
+	# Globals
 	local g_SYSTEM_TOTAL=0
 
-	#Functions
+	# Functions
 	convert_GMK () {
 		local ARG=${1}
 		local NUM=${ARG[1,-2]}
@@ -580,7 +569,8 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
 	local -a OPTIONS
@@ -602,10 +592,10 @@ ___EOF
 	shift $((OPTIND -1))
 	#--End GetOpts--
 
-	#Execution
+	# Execution
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-	#PARTITIONS=("${(f)$(lsblk -Anif | grep -v "truecrypt\|loop" | sed '1d' | cut -c3- | tr -s '[:blank:]' | cut -d' ' -f1)}") 
+	# PARTITIONS=("${(f)$(lsblk -Anif | grep -v "truecrypt\|loop" | sed '1d' | cut -c3- | tr -s '[:blank:]' | cut -d' ' -f1)}") 
 	PARTITIONS=("${(f)$(mount -t ext3,ext4,vfat,ntfs,fuseblk | sed 's/ on.*//' | cut -d'/' -f3)}") 
 
 	DIRCNT=$(find . ! -path . -type d 2>/dev/null | wc -l)
@@ -637,7 +627,7 @@ ___EOF
 			printf "%16s %6s %6s %6s %8s %-20s\n" ${FS} ${SZ} ${US} ${AV} ${PU} ${MN}
 		done
 
-		echo "\n${WHITE_FG}  Current Directory${RESET}:$(pwd)\n"
+		echo "\n${WHITE_FG}  Current Directory${RESET}:${CYAN_FG}$(pwd)${RESET}"
 
 		local -A NORMAL
 		local -A HIDDEN
@@ -682,10 +672,13 @@ ___EOF
 			) | sort -k1.6 -n${SORT}
 		fi
 
-		DU=$(sudo du -s 2>/dev/null | sed -e 's/\t/ /' -e 's/\./Total (including non directories)/g')
-		SZ=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f1)
+		DU=$(sudo du -s 2>/dev/null | sed -e 's/\t/ /' -e 's/\./Total/g')
+		TSZ=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f1) # Total PWD size in bytes
+
+		DU=$(sudo du -sh 2>/dev/null | sed -e 's/\t/ /' -e 's/\./Total/g')
+		SZ=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f1) # Total PWD size in human readable
 		FN=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f2)
-		HU=$(numfmt --to=iec $((${SZ}*1024)))
+		HU=$(numfmt --to=iec $((${TSZ}*1024))) # For percentage
 
 		if [[ ${DIRCNT} -ne 0 ]];then
 			printf "\\u2500%.0s" {1..$((LONGEST+17))}
@@ -694,19 +687,21 @@ ___EOF
 		else
 			printf "  "
 			printf "\\u2500%.0s" {1..${#DU}}
-			printf "\n  %s\n" ${DU}
+			printf "\n  ${WHITE_FG}%s${RESET} %s\n" $(cut -d' ' -f1 <<<${DU}) $(cut -d' ' -f2 <<<${DU})
 			printf "  "
 			printf "\\u2500%.0s" {1..${#DU}}
 			printf "\n"
 		fi
 
-		#Percentage of total
+		# Percentage of total
 		D=$(convert_GMK ${HU})
 		S=$(convert_GMK ${g_SYSTEM_TOTAL})
 		PCT=$(format_pct $(( D*1.0/S*1.0 * 100 )))
 
 		echo "\nDirectory:${WHITE_FG}${PWD:t}${RESET} is ${CYAN_FG}${PCT}%${RESET} of total disk space ${RESET}(${WHITE_FG}${g_SYSTEM_TOTAL}${RESET})"
 	} | mypager wait
+
+	exit_leave
 }
 
 unplug () {
@@ -731,11 +726,11 @@ ___EOF
 		exit_leave
 	fi
 
-	LIST=("${(f)$(mount | grep ${PART_REGEX} 2>/dev/null | cut -d' '  -f1-3 | sed 's/ on /|/')}") # all sdX
+	LIST=("${(f)$(mount | grep ${PART_REGEX} 2>/dev/null | cut -d' '  -f1-3 | sed 's/ on /|/')}") # All sdX
 
 	for L in ${LIST};do
-		MD=$(cut -d'|' -f1 <<<${L}) #device
-		MP=$(cut -d'|' -f2 <<<${L}) #mountpoint
+		MD=$(cut -d'|' -f1 <<<${L}) # Device
+		MP=$(cut -d'|' -f2 <<<${L}) # Mountpoint
 		[[ ${#MD} -gt ${STRLEN[DEV]} ]] && STRLEN[DEV]=${#MD}
 		[[ ${#MP} -gt ${STRLEN[DIR]} ]] && STRLEN[DIR]=${#MP}
 		MOUNTS[${MD}]=${MP}
@@ -756,7 +751,7 @@ ___EOF
 		read -k1 RESPONSE
 		echo
 
-		[[ ${RESPONSE} =~ "^\x0a" ]] && exit_leave $(msg_warn "Operation cancelled")
+		[[ ${RESPONSE} =~ "^\x0a" ]] && exit_leave $(msg_exit I "Operation cancelled")
 
 		NDX=0
 		for M in ${(k)MOUNTS};do
@@ -770,7 +765,7 @@ ___EOF
 		[[ ${?} -ne 0 ]] && echo "An error occurred ejecting ${M}:$?" || echo "Safe to unplug"
 	else
 		echo
-		exit_leave $(msg_warn "No:${PART_REGEX} partitions appear to be mounted")
+		exit_leave $(msg_exit W "No:${PART_REGEX} partitions appear to be mounted")
 	fi
 }
 
@@ -824,7 +819,7 @@ ___EOF
 }
 
 fstab_info () {
-	#Declarations
+	# Declarations
 	local -A UUID2DEV
 	local -a DEVS=($(ls -la /dev/disk/by-uuid | cut -d \  -f12 | sed s^../..^/dev^))
 	local -a UUIDS=($(ls -la /dev/disk/by-uuid | cut -d \  -f10))
@@ -836,7 +831,7 @@ fstab_info () {
 	local WAS_PARSED
 	local U
 
-	#Execution
+	# Execution
 	read -r -d '' DESC<<___EOF
 Display fstab info
 ___EOF
@@ -864,7 +859,7 @@ ___EOF
 	local DUMPS=($(cut -d' ' -f5 < /tmp/fst))
 	local PASSES=($(cut -d' ' -f6 < /tmp/fst))
 
-	WAS_PARSED=true #ensure all fields parsed
+	WAS_PARSED=true # Ensure all fields parsed
 	[[ ${#MOUNTS} != ${#POINTS} ]] && WAS_PARSED=false
 	[[ ${#MOUNTS} != ${#TYPES} ]] && WAS_PARSED=false
 	[[ ${#MOUNTS} != ${#OPTIONS} ]] && WAS_PARSED=false
@@ -950,7 +945,8 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err "${PENDING_MSGS}")
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	exit_leave
 }
 
 OPTSTR=":HD"
@@ -969,7 +965,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
-#Execution
+# Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
 [[ ${UTIL} != 'none' && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "UTIL:${UTIL} not found"
@@ -981,12 +977,12 @@ if [[ ${UTIL} != 'none' ]];then
 else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-	selection_list_set ${(v)_UTILS_DESC}
-	selection_list -O ${CYAN_FG} -x11 -y32 -c -w10 "<w>Show Disk Utilities usage or <h>(q)uit<N>"
+	sel_set_list ${(v)_UTILS_DESC}
+	sel_list -sa -O ${CYAN_FG} -C -F"<w>Show Disk Utilities usage or <h>(q)uit<N>" -H"Disk Utilities"
 
-	_SCRIPT=${(k)_UTILS_DESC[(r)${_SELECTION_VALUE}]}
-	echo #clear read
-	${_SCRIPT} -H # call function help
+	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
+	echo # Clear read
+	${_SCRIPT} -H # Call function help
 
 	exit_leave
 fi

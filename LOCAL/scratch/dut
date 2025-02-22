@@ -52,6 +52,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 external () {
+	# TODO: migrate from passing values to indexes to enable assoc sort compatability
 	# Constants
 	local	PARTITION
 	local ACTION
@@ -320,8 +321,6 @@ external () {
 	read -r -d '' DESC<<___EOF
 Utility to mount/unmount external disks
 \tDefault is to toggle disk mounts
-\tIf a <PARTITION> is passed an attempt will 
-\tbe made to toggle its state.
 ___EOF
 
 	parse_opts () {
@@ -411,20 +410,10 @@ ___EOF
 	fi
 
 	if [[ -n ${PARTITION} ]];then # Arg was passed
-		local NDX=0
-		for P in ${(k)_PARTITIONS};do
-			if [[ ${_PARTITIONS[${P}]} == ${PARTITION} ]];then
-				NDX=${P}
-				break
-			fi
-		done
-
-		[[ ${NDX} -eq 0 ]] && exit_leave $(msg_err "Unknown partition:${PARTITION}")
-
 		if [[ ${_MOUNT_POINTS[${PARTITION:t}]} == 'unmounted' ]];then
-			do_mount ${NDX}
+			do_mount ${PARTITION:t}
 		else
-			do_unmount ${NDX}
+			do_unmount ${PARTITION:t}
 		fi
 	elif [[ ${g_FORCE_ALL_MOUNT} == 'true' ]];then # -m option
 		for L in ${(on)_LOCAL_LIST};do
