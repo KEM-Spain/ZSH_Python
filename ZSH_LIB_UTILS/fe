@@ -31,7 +31,7 @@ _DEPTH=1
 zmodload -F zsh/stat b:zstat
 
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -49,7 +49,7 @@ action_do () {
 			msg_box -p -P"File is not editable" "<U><c>Selected File<N>|${_LIST[${M}]}"
 		fi
 		MARKED[${M}]=0
-		list_set_selected ${M} 0
+		list_set_selected ${M} ${_AVAIL_ROW}
 	done
 }
 

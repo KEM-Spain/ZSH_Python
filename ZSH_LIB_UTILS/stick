@@ -42,7 +42,7 @@ g_LOCAL_LVL=1
 g_STICK_LVL=1
 
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIST.zsh
@@ -122,14 +122,14 @@ action_do () {
 		msg_box -p -PK -x $((_COORDS[X] + 3)) "Transfer Complete"
 
 		for M in ${(k)PAYLOAD};do
-			list_set_selected ${M} 3
+			list_set_selected ${M} ${_USED_ROW}
 		done
 	else
 		# Call rm
 		msg_box "Deleting..."
 		/bin/rm -rf ${(v)PAYLOAD}
 		for M in ${(k)PAYLOAD};do
-			list_set_selected ${M} 2
+			list_set_selected ${M} ${_STALE_ROW}
 		done
 		msg_box_clear
 	fi
@@ -145,7 +145,7 @@ action_warn () {
 	if [[ ! -w ${_STICK_PATH} ]];then
 		msg_box -H1 -p -PK "<r>Error - Unable to Copy<N>|Stick is Readonly"
 		for M in ${_MARKED};do
-			list_set_selected ${M} 0
+			list_set_selected ${M} ${_AVAIL_ROW}
 		done
 		return -1
 	fi
@@ -177,9 +177,9 @@ item_decorate () {
 	[[ ${g_LAST_VIEW} == "LOCAL" ]] && ITEM=${${ITEM}##${_LOCAL_PATH}} || ITEM=${${ITEM}##${_STICK_PATH}}
 	ITEM=${ITEM[1,${_MAX}]}
 	
-	if [[ ${_LIST_SELECTED[${NDX}]} -eq 2 ]];then # 2 = deleted
+	if [[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]];then # 2 = deleted
 		echo -n "${E_STRIKE}${E_RED_FG}${ITEM}${E_RESET} ${E_ITALIC}deleted${E_RESET}" || echo -n ${ITEM}
-	elif [[ ${_LIST_SELECTED[${NDX}]} -eq 3 ]];then # 3 = copied
+	elif [[ ${_LIST_SELECTED[${NDX}]} -eq ${_USED_ROW} ]];then # 3 = copied
 		echo -n "${E_STRIKE}${E_CYAN_FG}${ITEM}${E_RESET} ${E_ITALIC}copied${E_RESET}" || echo -n ${ITEM}
 	else
 		case ${_LIST_OBJS[${NDX}]} in

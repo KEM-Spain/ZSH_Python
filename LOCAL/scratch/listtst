@@ -20,10 +20,10 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
-source ./LIST.zsh
+source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 typeset -a LOCAL_LIST=()
@@ -65,16 +65,15 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_L
 '
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to delete ${ITALIC}or exit if none selected${RESET}"
 list_set_action_msgs delete file
-list_set_sortable true
 list_set_searchable true
 list_set_barlines true
+list_set_sortable true
 list_set_sort_defaults COL 1 ORDER "a" DELIM "|" TYPE "flat" NOKEY true
 
 while true;do
 	# Display list
 	list_select ${LOCAL_LIST}
 	RC=${?}
-
 	[[ ${RC} -eq 0 ]] && break
 
 	# Get user selections

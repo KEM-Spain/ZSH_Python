@@ -20,6 +20,8 @@ typeset -a _RAWLIST
 
 # Constants
 _BAK_DIR=./.gsub_bak_$(date +%s)
+_FAILED_ROW=8
+_NOMATCH_ROW=9
 
 # Globals
 g_FROM_TEXT=?
@@ -27,7 +29,7 @@ g_TO_TEXT=?
 g_SIMULATE=false
 
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -65,7 +67,7 @@ action_do () {
 		MATCHES=("${(f)$(perl -ne "if (/${g_FROM_TEXT:q}/) { print }" ${_LOCAL_LIST[${M}]})}")
 		if ! arr_is_populated "${MATCHES}";then
 			msg_box -p -PK "Nothing matches <w>${(qq)g_FROM_TEXT}<N>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
-			list_set_selected ${M} 3 # Mark as missing match
+			list_set_selected ${M} ${_NOMATCH_ROW} # Mark as missing match
 		else
 			if [[ ${APPROVE_ALL} == 'false' ]];then
 				[[ ${#_MARKED} -gt 1 ]] && PROMPT=N || PROMPT=C
@@ -83,14 +85,14 @@ action_do () {
 		sudo perl -i.bak -pe "s/${g_FROM_TEXT:q}/${g_TO_TEXT:q}/g" ${_LOCAL_LIST[${M}]}
 		if [[ ${?} -ne 0 ]];then
 			msg_box -p -PK "Substitution <r>failed<N> for <w>${(qq)g_FROM_TEXT}<N>|in file:<w>${_LOCAL_LIST[${M}]}<N>"
-			list_set_selected ${M} 4 # Mark as failed
+			list_set_selected ${M} ${_FAILED_ROW} # Mark as failed
 		else
 			[[ -e ${_LOCAL_LIST[${M}]}.bak ]] && sudo mv ${_LOCAL_LIST[${M}]}.bak ${_BAK_DIR}
 			if [[ ${APPROVE_ALL} == 'false' ]];then
 				msg_box -t1 "Substituted <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|in file:<w>${_LOCAL_LIST[${M}]}<N>|A backup file:${_BAK_DIR}/${_LOCAL_LIST[${M}]:t}.bak was created"
 			fi
 			sudo chmod 664 ${_BAK_DIR}/${_LOCAL_LIST[${M}]:t}.bak
-			list_set_selected ${M} ${_STALE_ROW} # Mark as complete
+			list_set_selected ${M} ${_USED_ROW} # Mark as complete
 		fi
 	done
 }
@@ -110,12 +112,12 @@ action_warn () {
 }
 
 item_decorate () {
-	local NDX=$1
+	local NDX=${1}
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}completed${E_RESET}";;
-		3) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}no match${E_RESET}";;
-		4) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}command failed${E_RESET}";;
+		${_USED_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}completed${E_RESET}";;
+		${_NOMATCH_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}no match${E_RESET}";;
+		${_FAILED_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}command failed${E_RESET}";;
 		*)	tput el;echo -n "${_LIST[${NDX}]:t}"
 	esac
 }

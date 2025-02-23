@@ -20,13 +20,16 @@ typeset -a _RAWLIST
 
 # Constants
 _BAK_DIR=./.gsub_bak_$(date +%s)
+_FAILED_ROW=8
+_NOMATCH_ROW=9
 
 # Globals
 g_FROM_TEXT=?
 g_TO_TEXT=?
+g_SIMULATE=false
 
 # Imports
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -41,38 +44,55 @@ action_do () {
 	local MBOX_OPTS
 	local PROMPT
 
+	if [[ ${g_SIMULATE} == 'true' ]];then
+		do_rmcup
+		echo "${WHITE_FG}SUBSTITUTION${RESET}: s/${g_FROM_TEXT}/${g_TO_TEXT}/g"
+		for M in ${(on)_MARKED};do
+			echo "\n${WHITE_FG}${_LOCAL_LIST[${M}]}${RESET}"
+			echo "${CYAN_FG}$(str_unicode_line ${#_LOCAL_LIST[${M}]})${RESET}"
+			local BEFORE=$(grep ${g_FROM_TEXT} ${_LOCAL_LIST[${M}]})
+			local AFTER=$(echo "${g_FROM_TEXT}" | perl -pe "s/${g_FROM_TEXT:q}/${g_TO_TEXT:q}/g" )
+			echo "${GREEN_FG}BEFORE${RESET}:$(str_trim ${BEFORE})"
+			echo "${RED_FG} AFTER${RESET}:${AFTER}"
+			list_clear_selected ${M}
+		done | mypager
+		key_wait
+		return
+	fi
+
 	[[ ! -e ${_BAK_DIR} ]] && mkdir ${_BAK_DIR} && RC=${?}
-	[[ ${RC} -ne 0 ]] && exit_leave $(msg_warn "Unable to create backup directory: ${_BAK_DIR} (RC=${RC})")
+	[[ ${RC} -ne 0 ]] && exit_leave $(msg_exit W "Unable to create backup directory: ${_BAK_DIR} (RC=${RC})")
 
 	for M in ${(on)_MARKED};do
-		MATCHES=("${(f)$(perl -ne "if (/${g_FROM_TEXT}/) { print }" ${_LOCAL_LIST[${M}]})}")
+		MATCHES=("${(f)$(perl -ne "if (/${g_FROM_TEXT:q}/) { print }" ${_LOCAL_LIST[${M}]})}")
 		if ! arr_is_populated "${MATCHES}";then
 			msg_box -p -PK "Nothing matches <w>${(qq)g_FROM_TEXT}<N>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
-			list_set_selected ${M} 3 # Mark as missing match
+			list_set_selected ${M} ${_NOMATCH_ROW} # Mark as missing match
 		else
 			if [[ ${APPROVE_ALL} == 'false' ]];then
 				[[ ${#_MARKED} -gt 1 ]] && PROMPT=N || PROMPT=C
 				msg_box -H1 -p -P${PROMPT} "Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|Lines:|$(msg_list ${MATCHES})|<Z>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
 				case ${_MSG_KEY} in
-					a) APPROVE_ALL=true;;
+					a|y) APPROVE_ALL=true;;
 					s) list_clear_selected ${M};continue;;
 					*) list_clear_selected ${M};continue;;
 				esac
 			fi
 		fi
 
-		sudo perl -i.bak -pe "s/${g_FROM_TEXT}/${g_TO_TEXT}/g" ${_LOCAL_LIST[${M}]}
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} perl command: sudo perl -i.bak -pe "s/${g_FROM_TEXT:q}/${g_TO_TEXT:q}/g" ${_LOCAL_LIST[${M}]}"
 
+		sudo perl -i.bak -pe "s/${g_FROM_TEXT:q}/${g_TO_TEXT:q}/g" ${_LOCAL_LIST[${M}]}
 		if [[ ${?} -ne 0 ]];then
 			msg_box -p -PK "Substitution <r>failed<N> for <w>${(qq)g_FROM_TEXT}<N>|in file:<w>${_LOCAL_LIST[${M}]}<N>"
-			list_set_selected ${M} 4 # Mark as failed
+			list_set_selected ${M} ${_FAILED_ROW} # Mark as failed
 		else
 			[[ -e ${_LOCAL_LIST[${M}]}.bak ]] && sudo mv ${_LOCAL_LIST[${M}]}.bak ${_BAK_DIR}
 			if [[ ${APPROVE_ALL} == 'false' ]];then
 				msg_box -t1 "Substituted <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|in file:<w>${_LOCAL_LIST[${M}]}<N>|A backup file:${_BAK_DIR}/${_LOCAL_LIST[${M}]:t}.bak was created"
 			fi
 			sudo chmod 664 ${_BAK_DIR}/${_LOCAL_LIST[${M}]:t}.bak
-			list_set_selected ${M} ${_GHOST_ROW} # Mark as complete
+			list_set_selected ${M} ${_USED_ROW} # Mark as complete
 		fi
 	done
 }
@@ -82,6 +102,8 @@ action_warn () {
 
 	msg_box -p -PP "Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|in <w>${#_MARKED}<N> $(str_pluralize file ${#_MARKED})"
 
+	[[ ${g_SIMULATE} == 'true' ]] && msg_box -t2 'SIMULATING'
+
 	if [[ ${_MSG_KEY} != "y" ]];then
 		for M in ${_MARKED};do
 			list_clear_selected ${M}
@@ -90,12 +112,12 @@ action_warn () {
 }
 
 item_decorate () {
-	local NDX=$1
+	local NDX=${1}
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		${_GHOST_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}completed${E_RESET}";;
-		3) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}no match${E_RESET}";;
-		4) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}command failed${E_RESET}";;
+		${_USED_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}completed${E_RESET}";;
+		${_NOMATCH_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}no match${E_RESET}";;
+		${_FAILED_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}command failed${E_RESET}";;
 		*)	tput el;echo -n "${_LIST[${NDX}]:t}"
 	esac
 }
@@ -150,10 +172,10 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err ${PENDING_MSGS})
+	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
-OPTSTR=":HDi"
+OPTSTR=":HDis"
 
 CASE=''
 
@@ -163,6 +185,7 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
      D) dbg_set_level;;
      i) CASE=i;;
+     s) g_SIMULATE=true;;
      :) print -u2 "${_SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -173,12 +196,12 @@ shift $((OPTIND -1))
 # Execution
 [[ ${#} -ne 2 ]] && usage "2 arguments required:$(opt_type f) ${WHITE_FG}${ITALIC}$(opt_type t)${RESET}"
 
-g_FROM_TEXT=${1}
-g_TO_TEXT=${2}
+[[ ${1} =~ "|" ]] && g_FROM_TEXT=${1:gs/|/\\|} || g_FROM_TEXT=${1} # Escape message box delims
+[[ ${2} =~ "|" ]] && g_TO_TEXT=${2:gs/|/\\|} || g_TO_TEXT=${2} # Escape message box delims
 
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ ${g_FROM_TEXT} == ${g_TO_TEXT} ]] && exit_leave $(msg_err "$(opt_type f) and $(opt_type t) are identical")
+[[ ${g_FROM_TEXT} == ${g_TO_TEXT} ]] && exit_leave $(msg_exit E "$(opt_type f) and $(opt_type t) are identical")
 
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
@@ -190,7 +213,7 @@ _RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f" 2>/dev/null )}")
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${GREEN_FG}LIST COUNT${RESET}:${#_RAWLIST}"
 
 if ! arr_is_populated "${_RAWLIST}";then
-	exit_leave $(msg_warn "No files match:${@}")
+	exit_leave $(msg_exit W "No files match:${@}")
 fi
 
 for R in ${(o)_RAWLIST};do
@@ -202,21 +225,21 @@ for R in ${(o)_RAWLIST};do
 done
 
 if ! arr_is_populated "${_LOCAL_LIST}";then
-	exit_leave $(msg_warn "No ${ITALIC}text${RESET} files contain candidates:${WHITE_FG}${(qq)g_FROM_TEXT}${RESET}")
+	exit_leave $(msg_exit W "No ${ITALIC}text${RESET} files contain candidates:${WHITE_FG}${(qq)g_FROM_TEXT}${RESET}")
 fi
 
 [[ ${CASE} == 'i' ]] && CASE_MSG="Case insensitive" || CASE_MSG="Case sensitive"
 # Set headings
-list_set_header 'printf "${RED_FG}Substituting${RESET}:${WHITE_FG}%s${RESET} with ${WHITE_FG}%s${RESET}" ${(qq)g_FROM_TEXT} ${(qq)g_TO_TEXT}'
+list_set_header 'printf "${RED_FG}Substituting${RESET}:${WHITE_FG}%s${RESET} with ${WHITE_FG}%s${RESET}" ${(qq)g_FROM_TEXT:gs/\\//} ${(qq)g_TO_TEXT:gs/\\//}'
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize file ${#_LIST})  Search:${WHITE_FG}${CASE_MSG}${RESET}  Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} "${PATHLBL}" ${SELECTED_COUNT}'
 list_add_header_break
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 '
-
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) <${GREEN_FG}ENTER${RESET}> to process (${ITALIC}or exit if none selected${RESET})."
+list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) <${GREEN_FG}ENTER${RESET}> to process ${ITALIC}or exit if none selected${RESET}"
+list_set_searchable true
 
 while true;do
 	# Get selection

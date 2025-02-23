@@ -17,18 +17,21 @@ mbegin=''
 mend=''
 
 # Constants
-_AVAIL_ROW=0 # Selectable
 _DEBUG_FILE=/tmp/${_SCRIPT}_debug.out
 _GEO_KEY="key=uMibiyDeEGlYxeK3jx6J"
 _GEO_PROVIDER="https://extreme-ip-lookup.com"
 _MAX_COLS=$(tput -T xterm cols)
 _MAX_ROWS=$(tput -T xterm lines)
 _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
-_SELECTED_ROW=1 # Selected
-_STALE_ROW=2 # Not selectable
 _TERM=xterm
 _XSET_DEFAULT_RATE="r rate 500 33" # Default <delay> <repeat>
 _XSET_MENU_RATE="r rate 600 20" # Menu rate <delay> <repeat>
+
+# ROW status 
+_AVAIL_ROW=0 # Selectable
+_SELECTED_ROW=1 # Selected
+_STALE_ROW=2 # Not selectable
+_USED_ROW=3 # Processed row
 
 # LIB declarations
 typeset -aU _DEPS_

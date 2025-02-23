@@ -25,10 +25,10 @@ typeset -a _LOCAL_LIST=()
 typeset -a _MARKED=()
 
 # Constants
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 _HDR_LBL=(o "Owner" p "Process ID" c "Command")
 
 # Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -46,7 +46,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
-		[[ ${_MSG_KEY} == 'y' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} 0
+		[[ ${_MSG_KEY} == 'y' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
 	done
 }
 
@@ -59,7 +59,7 @@ item_decorate () {
 	local NDX=${1}
 	local D_OUT=$(get_cmd ${NDX})
 
-	if [[ ${_LIST_SELECTED[${NDX}]} -eq 2 ]];then
+	if [[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]];then
 		echo -n "${E_STRIKE}${E_RED_FG}${D_OUT}${E_RESET} ${E_RED_FG}${E_ITALIC}killed${E_RESET}" 
 	else
 		echo -n ${D_OUT}

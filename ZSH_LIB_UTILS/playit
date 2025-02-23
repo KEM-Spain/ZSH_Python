@@ -37,7 +37,7 @@ g_TITLE=''
 g_ARTIST=''
 
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/WIN.zsh
@@ -62,7 +62,7 @@ action_warn () {
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do
-			list_set_selected ${M} 0
+			list_set_selected ${M} ${_AVAIL_ROW}
 		done
 	fi
 }
@@ -76,12 +76,12 @@ item_decorate () {
 
 	for M in ${_MUSIC_DIRS};do
 		if [[ ${#${FN}##${M}} -lt ${#FN} ]];then
-			if [[ ${_LIST_SELECTED[${NDX}]} -eq 2 ]];then
+			if [[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]];then
 				echo -n "${${FN}##${M}/} ${ITALIC}${BOLD}${GREEN_FG} -- queued${RESET}"
 			else
 				tput el
 				echo -n "${${FN}##${M}/}"
-				list_set_selected ${NDX} 0
+				list_set_selected ${NDX} ${_AVAIL_ROW}
 			fi
 		fi
 	done

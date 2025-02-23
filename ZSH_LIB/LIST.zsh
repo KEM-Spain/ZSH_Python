@@ -299,14 +299,14 @@ list_item () {
 	local MARKER=''
 	local BARLINE BAR
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ARGV - MODE:${MODE} LINE_ITEM LEN:${#LINE_ITEM} X_POS:${X_POS} Y_POS:${Y_POS} TOP_OFFSET:${_PAGE_DATA[TOP_OFFSET]} _LIST_NDX:${_LIST_NDX}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ARGV - MODE:${MODE} LINE_ITEM LEN:${#LINE_ITEM} X_POS:${X_POS} Y_POS:${Y_POS} TOP_OFFSET:${_PAGE_DATA[TOP_OFFSET]} _LIST_NDX:${_LIST_NDX}"
 
 	_MARKER=${_LINE_MARKER}
 
 	MARKER=${_TARGETS[(r)*:${X_POS}:${_PAGE_DATA[PAGE]}*]}
 	[[ -n ${MARKER} ]] && _MARKER=${_SEARCH_MARKER} && _MARKERS=true
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} && -n ${MARKER} ]] && dbg "${0}: MARKER:${MARKER}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} && -n ${MARKER} ]] && dbg "${0}: MARKER:${MARKER}"
 
 	tput rmso # Clear any previous smso
 
@@ -324,11 +324,11 @@ list_item () {
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 	fi
 
-	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq 1 ]] && SHADE=${REVERSE} || SHADE=''
+	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]] && SHADE=${REVERSE} || SHADE=''
 
 	eval ${LINE_ITEM} # Output line
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST DATA:${_LIST[${_LIST_NDX}]}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST DATA:${_LIST[${_LIST_NDX}]}"
 
 	_CURSOR_NDX=${X_POS}
 }
@@ -1071,7 +1071,6 @@ list_sort () {
 
 	# Handle prompting
 	if [[ ${PROMPT} == 'true' && ${_SORT_DATA[MAXCOL]} -gt 1 ]];then
-		_SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]}
 		msg_box -p "Enter column to sort ${SORT_TEXT[${_SORT_DATA[ORDER]}]}|Range: <w>1<N> through <w>${_SORT_DATA[MAXCOL]}<N>|(Default is <w>${_SORT_DATA[COL]}<N>)"
 		COL=${_MSG_KEY}
 
@@ -1106,6 +1105,8 @@ list_sort () {
 		fi
 		setopt warncreateglobal # Monitor locals
 	done
+
+	_SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]}
 }
 
 list_sort_assoc () {
@@ -1121,7 +1122,7 @@ list_sort_assoc () {
 
 	# Handle direct call
 	if [[ -n ${ARGS} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
 
 		ARG_TABLE=(${=ARGS})
 		for A in ${(k)ARG_TABLE};do
@@ -1175,7 +1176,7 @@ list_sort_assoc () {
 		)}")
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORTED ${#_LIST} ROWS"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORTED ${#_LIST} ROWS"
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST DATA SAMPLE:${_LIST[1,2]}"
 }
 
@@ -1200,7 +1201,7 @@ list_sort_flat () {
 
 	# Handle direct call
 	if [[ -n ${ARGS} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
 		ARG_TABLE=(${=ARGS})
 		for A in ${(k)ARG_TABLE};do
 			_SORT_DATA[${A}]=${ARG_TABLE[${A}]}
@@ -1252,7 +1253,7 @@ list_sort_flat () {
 			SORT_ARRAY+="${SORT_KEY}${DELIM}${L}"
 		done
 
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORTED ${#SORT_ARRAY} ROWS"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORTED ${#SORT_ARRAY} ROWS"
 
 		if [[ ${FLIP} == 'true' ]];then
 			[[ ${_SORT_DATA[ORDER]} == 'a' ]] && SORT_ORDER=d || SORT_ORDER=a # Reverse sort for numeric dates
@@ -1266,14 +1267,16 @@ list_sort_flat () {
 	fi
 
 	if [[ -z ${_SORT_DATA[NOKEY]} ]];then # Using keys
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORTING WITH SORT KEYS"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORTING WITH SORT KEYS"
 		if [[ ${SORT_ORDER} == "a" ]];then
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT ASCENDING"
 			_LIST=("${(f)$(
 				for L in ${(on)SORT_ARRAY};do # Ascending
 					cut -d"${_SORT_DATA[DELIM]}" -f2- <<<${L}
 				done
 			)}")
 		else
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT DESCENDING"
 			_LIST=("${(f)$(
 				for L in ${(On)SORT_ARRAY};do # Descending
 					cut -d"${_SORT_DATA[DELIM]}" -f2- <<<${L}
@@ -1281,10 +1284,12 @@ list_sort_flat () {
 			)}")
 		fi
 	else # Not using keys
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORTING WITHOUT KEYS"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORTING WITHOUT KEYS"
 		if [[ ${SORT_ORDER} == "a" ]];then
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT ASCENDING"
 			_LIST=(${(on)SORT_ARRAY})
 		else
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT DESCENDING"
 			_LIST=(${(On)SORT_ARRAY})
 		fi
 	fi
@@ -1292,9 +1297,9 @@ list_sort_flat () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ADDED ${#_LIST} ROWS to _LIST ARRAY"
 
 	if [[ -n ${ARGS} ]];then # Called directly - return list to caller
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DIRECT CALL - ECHOING ${#_LIST} ROWS"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: DIRECT CALL - ECHOING ${#_LIST} ROWS"
 		for L in ${_LIST};do
-			echo "${L}"
+			echo ${L}
 		done
 	fi
 }
@@ -1381,10 +1386,17 @@ list_toggle_selected () {
 		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|1" # All on
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_SELECTED_ROW}"
 	else
-		list_set_selected ${_LIST_NDX} ${_AVAIL_ROW}
-		list_item deselect ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
-		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|0" # All off
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_AVAIL_ROW}"
+		if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]];then
+			list_set_selected ${_LIST_NDX} ${_AVAIL_ROW}
+			list_item deselect ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
+			[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|0" # All off
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_AVAIL_ROW}"
+		elif [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_STALE_ROW} ]];then
+			msg_box -c -p -PK "Row <r>not<N> selectable|This row is marked as STALE"
+		elif [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]];then
+			msg_box -c -p -PK "Row <r>not<N> selectable|This row is marked as USED"
+		fi
+		msg_box_clear
 	fi
 
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}

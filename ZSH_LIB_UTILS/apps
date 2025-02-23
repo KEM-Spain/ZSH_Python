@@ -33,10 +33,10 @@ E_STRIKE=$(echo "\033[9m")
 [[ -e /usr/bin/snap ]] && _SNAP_INSTALLED=true || _SNAP_INSTALLED=false
 _HDR_BAR=$'\u2501' # Header character
 _LAST_APT_UPD=~/.last_apt_upd
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 _SOURCES=/etc/apt/sources.list.d
 
 # Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -104,7 +104,7 @@ action_do () {
 
 	[[ ${UPD_PKG_LIST} == 'true' ]] && upd_package_list ${PKG_NAME} ${_MARKED}
 
-	list_set_selected ${_MARKED} 0
+	list_set_selected ${_MARKED} ${_AVAIL_ROW}
 }
 
 action_warn () {
@@ -161,7 +161,7 @@ action_warn () {
 		v) g_INFO_OPTION=true;;
 	esac
 
-	list_set_selected ${_MARKED} 0
+	list_set_selected ${_MARKED} ${_AVAIL_ROW}
 
 	return ${RC}
 }
