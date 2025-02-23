@@ -743,7 +743,7 @@ list_select () {
 		fi
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT INIT: _SORT_DATA:${(kv)_SORT_DATA} SORT_SOURCE:${SORT_SOURCE}"
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CALLING INITIAL SORT"
-		list_sort noprompt # Invoke default sort
+		list_sort init # Invoke default sort
 	fi
 	# End of Sort Init
 	 
@@ -1031,11 +1031,20 @@ list_set_sort_defaults () {
 }
 
 list_sort () {
-	local PROMPT=${1:=true}
+	local INIT=${1}
+	local PROMPT=false
 	local -A ORD_TOGGLE=(a d d a)
 	local -A SORT_TEXT=(a ascending d descending)
 	local COL=0
 	local A C
+
+	if [[ ${INIT} == 'init' ]];then
+		INIT=true
+		PROMPT=false
+	else
+		INIT=false
+		PROMPT=true
+	fi
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -1106,7 +1115,7 @@ list_sort () {
 		setopt warncreateglobal # Monitor locals
 	done
 
-	_SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]}
+	[[ ${INIT} == 'false' ]] && _SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]}
 }
 
 list_sort_assoc () {

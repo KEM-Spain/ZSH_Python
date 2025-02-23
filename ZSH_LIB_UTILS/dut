@@ -126,10 +126,11 @@ external () {
 
 		for M in ${MARKED};do
 			NDX=${_LIST[${M}]}
-			if is_mounted ${M};then
+			if is_mounted ${NDX};then
 				STATE=mounted
 			else
 				STATE=unmounted
+				remove_orphan ${NDX} true
 			fi
 			MLIST+="${_PARTITIONS[${NDX}]} is ${STATE}"
 		done
@@ -312,6 +313,34 @@ external () {
 		return 0
 	}
 
+	remove_orphan () {
+		local NDX=${1}
+		local MSG=${2}
+		local MSG_TEXT=''
+
+		if ! is_mounted ${NDX};then
+			if [[ -n ${_MOUNT_DIRS[${NDX}]} && -e ${_MOUNT_DIRS[${NDX}]} ]];then
+				if [[ ${MSG} == 'true' ]];then
+					if [[ -e ${_MOUNT_DIRS[${NDX}]} ]];then
+						MSG_TEXT+="|Detected orphaned mount - <r>deleting<N>:<w>${_MOUNT_DIRS[${NDX}]}<N>"
+						g_FCNT=$(find ${_MOUNT_DIRS[${NDX}]} -maxdepth 1 ! -path ${_MOUNT_DIRS[${NDX}]} | wc -l)
+						[[ ${g_FCNT} -eq 0 ]] && sudo /bin/rm -rf ${_MOUNT_DIRS[${NDX}]} || MSG_TEXT+="|<r>Warning<N>: Orphan mount Not deleted:${g_FCNT} files found"
+					fi
+					msg_box -t2 ${MSG_TEXT}
+				else
+					(
+					echo "${WHITE_FG}${_MOUNT_DIRS[${NDX}]}${RESET} is unmounted"
+					if [[ -e ${_MOUNT_DIRS[${NDX}]} ]];then
+						echo "Detected orphaned mount - ${RED_FG}deleting${RESET}:${WHITE_FG}${_MOUNT_DIRS[${NDX}]}${RESET}"
+						g_FCNT=$(find ${_MOUNT_DIRS[${NDX}]} -maxdepth 1 ! -path ${_MOUNT_DIRS[${NDX}]} | wc -l)
+						[[ ${g_FCNT} -eq 0 ]] && sudo /bin/rm -rf ${_MOUNT_DIRS[${NDX}]} || echo "${RED_FG}Warning${RESET}: Orphan mount Not deleted:${g_FCNT} files found"
+					fi
+					) >&2
+				fi
+			fi
+		fi
+	}
+
 	#--Begin GetOpts--
 	RESET="\033[m"
 	RED_FG="\033[31m"
@@ -425,6 +454,7 @@ ___EOF
 			do_mount ${NDX}
 		else
 			do_unmount ${NDX}
+			remove_orphan ${NDX}
 		fi
 	elif [[ ${g_FORCE_ALL_MOUNT} == 'true' ]];then # -m option
 		for L in ${(on)_LOCAL_LIST};do
@@ -433,18 +463,7 @@ ___EOF
 	elif [[ ${g_FORCE_ALL_UNMOUNT} == 'true' ]];then # -u option
 		for L in ${(on)_LOCAL_LIST};do
 			do_unmount ${L}
-			if ! is_mounted ${L};then
-				if [[ -n ${_MOUNT_DIRS[${L}]} && -e ${_MOUNT_DIRS[${L}]} ]];then
-					(
-					echo "${WHITE_FG}${_MOUNT_DIRS[${L}]}${RESET} is unmounted"
-					if [[ -e ${_MOUNT_DIRS[${L}]} ]];then
-						echo "Detected orphaned mount - ${RED_FG}deleting${RESET}:${WHITE_FG}${_MOUNT_DIRS[${L}]}${RESET}"
-						g_FCNT=$(find ${_MOUNT_DIRS[${L}]} -maxdepth 1 ! -path ${_MOUNT_DIRS[${L}]} | wc -l)
-						[[ ${g_FCNT} -eq 0 ]] && sudo /bin/rm -rf ${_MOUNT_DIRS[${L}]} || echo "Orphan mount Not deleted:${g_FCNT} files found"
-					fi
-					) >&2
-				fi
-			fi
+			remove_orphan ${L}
 		done
 	elif [[ ${g_BRIEF} == 'true' ]];then # -b option
 		g_VERBOSE=false

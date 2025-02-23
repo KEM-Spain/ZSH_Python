@@ -24,6 +24,8 @@ _MAX_COLS=$(tput -T xterm cols)
 _MAX_ROWS=$(tput -T xterm lines)
 _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
 _TERM=xterm
+_USER_NAME=$(id -un)
+_USER_HOME=/home/${_USER_NAME}
 _XSET_DEFAULT_RATE="r rate 500 33" # Default <delay> <repeat>
 _XSET_MENU_RATE="r rate 600 20" # Menu rate <delay> <repeat>
 
