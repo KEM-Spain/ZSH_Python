@@ -19,6 +19,7 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -36,7 +37,7 @@ imdb () {
 	STR=$(sed 's/ /%20/g' <<<${STR})
 
 	{
-	URL=$(wget --quiet -O - "http://www.imdb.com/find?q=${STR}" | pup 'div' .ipc-metadata-list-summary-item__t attr{href} | grep 'ttl_1' | sed 's#/?ref.*##')
+	URL=$(wget --user-agent=${AGENT} --quiet -O - "http://www.imdb.com/find?q=${STR}" | pup 'div' .ipc-metadata-list-summary-item__t attr{href} | grep 'ttl_1' | sed 's#/?ref.*##')
 	URL="http://www.imdb.com${URL}"
 	if [[ ! $(curl --connect-timeout 2 -Is "${URL}" | head -1) =~ "404" ]];then
 		nohup google-chrome --start-maximized "${URL}" >/dev/null &
