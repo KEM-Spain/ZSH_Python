@@ -214,18 +214,11 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 g_LAST_RUN=$(last_backup ${_MARKER})
 
-STALE_NDX=0
-while true;do
-	((STALE_NDX++))
-	[[ ${STALE_NDX} -gt 1 ]] && exit_leave $(msg_exit E "Unable to clear orphaned mounts")
-	if [[ -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
-		msg_box "Detected orphaned mounts - attempting removal"
-		dut external -u
-	else
-		msg_box -c "Orphaned mounts removed"
-		break
-	fi
-done
+if [[ -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
+	msg_box "Clearing orphaned mountpoints"
+	dut external -u
+	msg_box -c "Orphaned mounts removed"
+fi
 
 # Info option
 [[ ${INFO} == 'true' ]] && msg_box -p -PK "Last backup was ${WHITE_FG}${g_LAST_RUN}${RESET}" && exit_leave

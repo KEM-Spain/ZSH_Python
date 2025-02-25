@@ -36,9 +36,6 @@ typeset -a _STATS
 # Constants
 _TYPE_LABELS=(b "Birth Date" a "Last Access" m "Last Modification")
 
-# Globals
-g_FN_TAG=''
-
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -67,9 +64,11 @@ get_stat () {
 item_decorate () {
 	local NDX=${1}
 	local FN=$(cut -d'|' -f1 <<<"${_LIST[${NDX}]:t}")
+	local FN_TAG=''
 
-	[[ -d ${FN} ]] && g_FN_TAG=' (d)' || g_FN_TAG=''
-	echo -n ${FN}${g_FN_TAG}
+	[[ -d ${FN} ]] && FN_TAG=' (d)' || FN_TAG=''
+
+	echo -n "${FN}${FN_TAG}"
 }
 
 
@@ -193,17 +192,20 @@ if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 fi
 
 # Set headings
-LBL_WIDTH=17
+local F1=0
+local LBL_WIDTH=17
+local LC=''
+
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize file)  Path:${WHITE_FG}%-40s${RESET} ${_PG}" ${#_LIST} "${PATHLBL}"'
 list_set_header 'printf " "'
 list_set_header 'printf "%-*s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" $((LONGEST+5)) "" ${_TYPE_LABELS[a]} ${_TYPE_LABELS[m]} ${_TYPE_LABELS[b]}'
 list_set_header 'printf "%-*s ${SCOL2_CLR}%${LBL_WIDTH}s${RESET} ${SCOL3_CLR}%${LBL_WIDTH}s${RESET} ${SCOL4_CLR}%${LBL_WIDTH}s${RESET}" $((LONGEST+5)) "" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})"'
 
 # Set line item
-
-F1=$(cut -d"|" -f1 <<<${_LIST[${_LIST_NDX}]})
 list_set_line_item ' 
-[[ ${F1}${_MARKER} ]] && local LC=${ITALIC}${CYAN_FG} || local LC=${RESET}
+F1=$(cut -d"|" -f1 <<<${_LIST[${_LIST_NDX}]})
+[[ "${_MARKER}" != ")" ]] && LC=${ITALIC}${CYAN_FG} || LC=${RESET}
+[[ -d ${F1} ]] && LC=${BOLD}${ITALIC}${MAGENTA_FG} || LC=${CYAN_FG}
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${BAR}${LC}%-*s${RESET}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} "$(item_decorate ${_LIST_NDX})" "$(get_stat ${_LIST_NDX} a)" "$(get_stat ${_LIST_NDX} m)" "$(get_stat ${_LIST_NDX} b)"
 '
 list_set_prompt_msg '
@@ -214,7 +216,7 @@ list_set_barlines true
 list_set_sortable true
 list_set_searchable true
 list_set_selectable false
-list_set_sort_defaults ARRAY _SORT_LIST COL 2 ORDER d DELIM ${_LIST_DELIM} TYPE flat
+list_set_sort_defaults ARRAY _SORT_LIST COL 2 ORDER a DELIM ${_LIST_DELIM} TYPE flat
 
 while true;do
 	list_select ${_LOCAL_LIST}

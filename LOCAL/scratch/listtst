@@ -23,7 +23,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIST.zsh
+source ./LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 typeset -a LOCAL_LIST=()
