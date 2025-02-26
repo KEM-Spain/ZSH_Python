@@ -69,6 +69,7 @@ desktop_files
 dpkg 
 ex 
 git 
+langkeys
 linux 
 mail
 mime 
@@ -156,6 +157,10 @@ source ${_TIP_DIR}/ex.tip
 
 tip_git () {
 source ${_TIP_DIR}/git.tip
+}
+
+tip_langkeys () {
+source ${_TIP_DIR}/langkeys.tip
 }
 
 tip_linux () {

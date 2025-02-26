@@ -53,7 +53,6 @@ _SELECTABLE=true
 _SELECTION_LIMIT=0
 _SELECT_ALL=false
 _SELECT_CALLBACK_FUNC=''
-_INIT_TAG_FILE="/tmp/$$:${0:t}.state"
 _TARGET_CURSOR=1
 _TARGET_KEY=''
 _TARGET_NDX=1
@@ -75,11 +74,12 @@ list_clear_selected () {
 }
 
 list_display_page () {
-	local INIT_CURSOR=${1:=true}
+	local HILITE=${1}
 	local -A PG_LIMITS=($(list_get_page_limits))
-	local X_POS=0
 	local R=0
-	local TEXT=''
+	local X_POS=0
+
+	[[ ${HILITE} == 'nohilite' ]] && HILITE=false || HILITE=true 
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}GENERATING HEADER FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
@@ -106,7 +106,7 @@ list_display_page () {
 	_LIST_NDX=${PG_LIMITS[TOP]} # Initialize page top
 	_CURSOR_NDX=${_PAGE_DATA[TOP_OFFSET]}
 
-	[[ ${INIT_CURSOR} == 'true' ]] && list_item high ${_LIST_LINE_ITEM} ${_CURSOR_NDX}  0
+	[[ ${HILITE} == 'true' ]] && list_item high ${_LIST_LINE_ITEM} ${_CURSOR_NDX}  0
 }
 
 list_do_header () {
@@ -395,7 +395,7 @@ list_nav_handler () {
 		list_display_page
 
 	elif [[ ${KEY} == 'sort' ]];then # Sort
-		list_sort
+		list_sort key
 		list_display_page
 
 	elif [[ ${KEY} =~ 'mark' ]];then # Search new
@@ -414,10 +414,10 @@ list_nav_handler () {
 			PG=$(list_find_page ${_TARGET_NDX})
 			if [[ ${PG} -ne ${_PAGE_DATA[PAGE]} ]];then
 				_PAGE_DATA[PAGE]=${PG}
-				list_display_page false # No initial highlight of cursor
+				list_display_page nohilite # No initial highlight of cursor
 			fi
 			list_item norm ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
-			list_display_page false # No initial highlight of cursor
+			list_display_page nohilite # No initial highlight of cursor
 			_LIST_NDX=${_TARGET_NDX}
 			list_item high ${_LIST_LINE_ITEM} ${_TARGET_CURSOR} 0
 		fi
@@ -743,7 +743,7 @@ list_select () {
 		fi
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT INIT: _SORT_DATA:${(kv)_SORT_DATA} SORT_SOURCE:${SORT_SOURCE}"
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CALLING INITIAL SORT"
-		list_sort init # Invoke default sort
+		list_sort # Invoke default sort
 	fi
 	# End of Sort Init
 	 
@@ -1031,21 +1031,15 @@ list_set_sort_defaults () {
 }
 
 list_sort () {
-	local INIT=${1}
+	local TRIGGER=${1:=none}
 	local PROMPT=false
 	local -A ORD_TOGGLE=(a d d a)
 	local -A SORT_TEXT=(a ascending d descending)
 	local COL=0
 	local SORT_SET=false
 	local A C
-
-	if [[ ${INIT} == 'init' ]];then
-		INIT=true
-		PROMPT=false
-	else
-		INIT=false
-		PROMPT=true
-	fi
+	
+	[[ ${TRIGGER} == 'key' ]] && PROMPT=true && _SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]}
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -1118,7 +1112,6 @@ list_sort () {
 		setopt warncreateglobal # Monitor locals
 	done
 
-	[[ ${SORT_SET} == 'true' || ${INIT} == 'true' ]] && _SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]}
 }
 
 list_sort_assoc () {

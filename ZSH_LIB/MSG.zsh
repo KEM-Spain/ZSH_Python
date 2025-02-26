@@ -679,7 +679,8 @@ msg_exit () {
 	esac
 
 	if [[ -n ${MSG} ]];then
-		[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:([[:print:]]+?\s)(\w+.*)?$/\e[m:\e[3;37m$1\e[m\2/' <<<${MSG})
+		#[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:([[:print:]]+?\s)(\w+.*)?$/\e[m:\e[3;37m$1\e[m\2/' <<<${MSG})
+		[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:(.*$)/\e[m:\e[3;37m$1\e[m\2/' <<<${MSG})
 		printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "${MSG}"
 	fi
 }
@@ -696,6 +697,7 @@ msg_info () {
 	[[ ${?} -eq 0 ]] && LABEL=$(cut -d '|' -f1 <<<${MSG}) && MSG=$(cut -d '|' -f2 <<<${MSG})
 
 	if [[ -n ${MSG} ]];then
+		#[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:([[:print:]]+?\s)(\w+.*)?$/\e[m:\e[3;37m$1\e[m\2/' <<<${MSG})
 		[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:(.*)\s/\e[m:\e[3;37m$1\e[m /g' <<<${MSG})
 		printf "[${WHITE_FG}%s${RESET}]:[${BOLD}${CYAN_FG}${LABEL}${RESET}] %s" ${_SCRIPT} "${MSG}"
 	fi

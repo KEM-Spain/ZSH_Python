@@ -238,9 +238,9 @@ sel_list () {
 	done
 	shift $(( OPTIND - 1 ))
 
-	[[ ${#_LIST} -gt 100 ]] && msg_box "<w>Building list...<N>"
+	[[ ${#_LIST} -gt 100 ]] && msg_box -c "<w>Working...<N>"
 
-	[[ -n ${_TAG}  ]] && _TAG_FILE="/tmp/$$.${_TAG}.state"
+	[[ -n ${_TAG}  ]] && _TAG_FILE="/tmp/$$.${_TAG}.state" || _TAG_FILE="/tmp/$$.${0}.state"
 
 	# If no X,Y coords are passed default to center
 	LIST_W=$(arr_long_elem_len ${_LIST})
@@ -488,7 +488,7 @@ sel_scroll () {
 		if [[ -e ${_TAG_FILE}  ]];then
 			IFS='|' read -r TAG_PAGE TAG_NDX < ${_TAG_FILE} # Retrieve any stored menu positions
 			LAST_TAG=${_TAG_FILE} # Only use position memory for differing menus unless _SAVE_MENU_POS is indicated
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:_TAG_FILE:${_TAG_FILE}  LAST_TAG:${LAST_TAG}"
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RESTORING MENU POS: _TAG_FILE:${_TAG_FILE}  LAST_TAG:${LAST_TAG}"
 		fi
 
 		NDX=1 # Initialize index
@@ -679,6 +679,7 @@ sel_set_tag () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
 
-	[[ -n ${_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_TAG_FILE} # Save menu position if indicated
+	[[ -n ${_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_TAG_FILE} || dbg "_TAG_FILE not defined" # Save menu position
+	[[ -e ${_TAG_FILE} ]] && dbg "${_TAG_FILE} was created" || dbg "${_TAG_FILE} was NOT created"
 }
 
