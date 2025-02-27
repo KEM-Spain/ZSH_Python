@@ -527,8 +527,8 @@ shift $((OPTIND -1))
 [[ ${#OPTIONS} -eq 0 && ${#} -eq 0 ]] && usage
 [[ ! -e ${_CACHE_DIR} ]] && mkdir ${_CACHE_DIR}
 
-CALLED_WITH_CMDLINE_ARGS=false
-[[ -n ${ACTOR_ARG} || -n ${DIRECTOR_ARG}  || -n ${DECADE_ARG} || -n ${YEAR_ARG} ]] && CALLED_WITH_CMDLINE_ARGS=true
+CMDLINE_ARGS=false
+[[ -n ${ACTOR_ARG} || -n ${DIRECTOR_ARG}  || -n ${DECADE_ARG} || -n ${YEAR_ARG} ]] && CMDLINE_ARGS=true
 
 # Process arguments
 [[ ${#OPTIONS} -eq 0 ]] && YEAR_ARG=${1} # invoke default
@@ -623,7 +623,7 @@ while true;do
 	fi
 
 	list_selection
-	[[ ${CALLED_WITH_CMDLINE_ARGS} == 'true' ]] && break
+	[[ ${CMDLINE_ARGS} == 'true' ]] && break
 	clear
 done
 

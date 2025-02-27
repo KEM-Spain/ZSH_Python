@@ -32,10 +32,10 @@ E_STRIKE=$(echo "\033[9m")
 # Declarations
 typeset -a _MARKED=()
 typeset -a _LOCAL_LIST=()
-typeset -a _FILTER
+typeset -a _FILTER=()
 
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -184,9 +184,9 @@ PATHLBL=$(path_get_label 40)
 
 if [[ ${DIRS} == 'true' ]];then
 	RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH}" 2>/dev/null)}") # Double quote surrounding command
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH}"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${_SCRIPT}:${LINENO} FIND CMD: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH}"
 else
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} find ${FPATH} -maxdepth 1 ${FGLOB} -type f ! -path ${FPATH}"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${_SCRIPT}:${LINENO} FIND CMD: find ${FPATH} -maxdepth 1 ${FGLOB} -type f ! -path ${FPATH}"
 	RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} -type f,l ! -path ${FPATH}" 2>/dev/null)}") # Double quote surrounding command
 fi
 
@@ -202,7 +202,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 	exit_leave $(msg_exit W "No regular ${MSG1}${RESET}${BOLD}${ITALIC}$(str_pluralize ${OBJTYPE})${RESET} found${MSG2}")
 fi
 
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} echo LOCAL_LIST:${_LOCAL_LIST}"
+[[ ${_DEBUG} -gt ${_LOW_DETAIL_DBG} ]] && dbg "${_SCRIPT}: LOCAL_LIST:\n$(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
 if [[ ${DIRS} == 'true' ]];then
 	_FILTER+='Dirs Only'

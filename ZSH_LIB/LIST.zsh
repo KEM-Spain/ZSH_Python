@@ -690,7 +690,6 @@ list_select () {
 
 	# Initialization
 	_LIST=(${@})
-	_LIST_SELECTED=()
 	_SELECT_ALL=false
 
 	# Max line
@@ -1060,7 +1059,7 @@ list_sort () {
 
 	if arr_is_populated "${_LIST_SELECTED}";then
 		for A in ${(k)_LIST_SELECTED};do
-			if [[ ${_LIST_SELECTED[${A}]} -ne 0 ]];then
+			if [[ ${_LIST_SELECTED[${A}]} -ne ${_AVAIL_ROW} ]];then
 				msg_box -H1 -t2 "<r>Sort Unavailable<N>|Active Selections"
 				if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
 					dbg "${0}: SORT REJECTED: ACTIVE SELECTIONS"
@@ -1420,9 +1419,10 @@ list_warn_invisible_rows () {
 		if [[ ${S} -ge ${FIRST_ITEM} && ${S} -le ${LAST_ITEM}  ]];then
 			continue 
 		else
-			[[ ${_LIST_SELECTED[${S}]} -eq 0 || ${_LIST_SELECTED[${S}]} -eq ${_STALE_ROW} ]] && continue 
-			_OFF_SCREEN_ROWS_MSG="(<w><I>there are marked rows on other pages<N>)|"
-			break
+			if [[ ${_LIST_SELECTED[${S}]} -eq ${_SELECTED_ROW} ]];then
+				_OFF_SCREEN_ROWS_MSG="(<w><I>there are marked rows on other pages<N>)|"
+				break
+			fi
 		fi
 	done
 	[[ -n ${_OFF_SCREEN_ROWS_MSG} ]] && msg_box -p -PK ${_OFF_SCREEN_ROWS_MSG}
