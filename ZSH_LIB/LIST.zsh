@@ -637,7 +637,8 @@ list_search_set_targets () {
 		IFS=":" read TOP BOT <<<${_PAGES[${P}]}
 		for (( R=TOP; R<=BOT; R++ ));do
 			C=$(( R - TOP + _PAGE_DATA[TOP_OFFSET] ))
-			echo "${C}:${P}:${_LIST[${R}]:t}"
+			echo "${C}:${P}:${_LIST[${R}]}"
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SEARCHING in ${_LIST[${R}]} for ${SEARCHTERM}"
 		done
 	done | grep --color=never -ni -P ":.*${SEARCHTERM}.*" | perl -p -e "s/^(\d+:\d+:\d+)(.*)$/\1/" # Return key:NDX/CURSOR/PAGE
 	)}")
