@@ -441,6 +441,10 @@ inline_vi_edit () {
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	cursor_on
+
+	# Requires xdotool
+	
 	local PERL_SCRIPT
 
 	read -r -d '' PERL_SCRIPT <<'___EOF'
@@ -451,7 +455,8 @@ inline_vi_edit () {
 	my $term = new Term::ReadLine 'list_search';
 	$term->parse_and_bind("set editing-mode vi");
 
-	system('sleep .1;xdotool key Home &');
+	system('xdotool key Home End &');
+	
 	while ( defined ($_ = $term->readline($ARGV[0],$ARGV[1])) ) {
 		print $_;
 		exit;
@@ -459,6 +464,8 @@ inline_vi_edit () {
 ___EOF
 
 	perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
+
+	cursor_off
 }
 
 is_bare_word () {

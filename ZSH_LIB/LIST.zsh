@@ -491,13 +491,13 @@ list_search () {
 					;;
 	esac
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MODE:${MODE} RETURNED ${RC}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL} ]] && dbg "${0}: list_search_${MODE} RETURNED: ${RC}"
 
 	if [[ ${RC} -eq 0 ]];then
 		_ACTIVE_SEARCH=true
 		KEY=${_TARGETS[(i)*next_target]} # Index of current target
 		IFS=":" read _TARGET_NDX _TARGET_CURSOR _TARGET_PAGE K_TEXT <<<${_TARGETS[${KEY}]}
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}KEY:${KEY}, SEARCH TARGETS SET${RESET} - _TARGET_NDX:${_TARGET_NDX} _TARGET_CURSOR:${_TARGET_CURSOR} _TARGET_PAGE:${_TARGET_PAGE}"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL} ]] && dbg "${0}: ${WHITE_FG}KEY:${KEY}, SEARCH TARGETS SET${RESET} - _TARGET_NDX:${_TARGET_NDX} _TARGET_CURSOR:${_TARGET_CURSOR} _TARGET_PAGE:${_TARGET_PAGE}"
 	else
 		_ACTIVE_SEARCH=false
 	fi
@@ -644,11 +644,11 @@ list_search_set_targets () {
 	)}")
 
 	if ! arr_is_populated "${_TARGETS}";then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: NO TARGETS FOUND"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL} ]] && dbg "${0}: NO TARGETS FOUND"
 		return 1
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: FOUND ${#_TARGETS} TARGETS - TARGET LIST:"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL} ]] && dbg "${0}: FOUND ${#_TARGETS} TARGETS - TARGET LIST:"
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "\n$(for R in ${_TARGETS};do echo ${WHITE_FG}${R}${RESET};done)"
 
 	msg_box -c -t1 "Found: ${#_TARGETS} $(str_pluralize match ${#_TARGETS})"

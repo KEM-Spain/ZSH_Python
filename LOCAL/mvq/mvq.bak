@@ -97,134 +97,50 @@ action_do () {
 	done
 }
 
-list_selection () {
-	# Set headings
-	list_clear_header
-	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Selected:${WHITE_FG}%-3d %s ${CYAN_FG}%s ${BLACK_FG}${_PAD}${WHITE_FG}${_PG}${RESET}" ${#_SLIST} ${SELECTED_COUNT} ${HEADER} ${SEARCHTERM}'
-	list_add_header_break
-	list_set_header_break_color ${MAGENTA_FG}
-	list_set_barlines true
-	list_set_key_callback KEY u FUNC key_callback RET true # The 'u' key will update the query
-	list_set_prompt 'Press (u)pdate to refresh page'
-	list_set_searchable false
-	list_set_sortable false
-	# TODO: make list sortable
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	# Set line item
-	list_set_line_item ' 
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%4s ${WHITE_FG}%-50s ${CYAN_FG}%15s ${GREEN_FG}%43s${RESET}\n" ${_LIST_NDX} $(get_field 1 ${_LIST_NDX}) "$(get_field 2 ${_LIST_NDX})" "$(get_field 3 ${_LIST_NDX})" "$(get_field 4 ${_LIST_NDX})"
-	'
-
-	while true;do
-		# Display list
-		_LIST_SELECTED=()
-		list_select ${(on)_SLIST}
-
-		if [[ $(list_get_selected_count) -ne 0 ]];then
-			# Get user selections
-			_MARKED=($(list_get_selected))
-			action_do
-		else
-			[[ ${g_REDISPLAY} == 'false' ]] && break
-			g_REDISPLAY=false # List updates require a redisplay - clear state
-		fi
-	done
-}
-
-is_cached () {
-	local ARGS=${@}
-	local CACHE_FN=''
+blank_lines () {
+	local FN=${@}
 	local LINE
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ -z ${ARGS} ]] && return 1
-
-	[[ ${ACTOR_ARG} == 'true' ]] && CACHE_FN+="_ACT_${ARGS:gs/ /_/}"
-	[[ ${DIRECTOR_ARG} == 'true' ]] && CACHE_FN+="_DIR_${ARGS:gs/ /_/}"
-	[[ ${DECADE_ARG} == 'true' ]] && CACHE_FN+="_DEC_${1}"
-	[[ ${YEAR_ARG} == 'true' ]] && CACHE_FN+="_YR_${1}"
-
-	if [[ -e "${_MVQ_DIR}/${CACHE_FN}" ]];then
+	if [[ ! -t 0 ]];then
 		while read LINE;do
-			_SLIST+=${LINE}
-		done < ${_MVQ_DIR}/${CACHE_FN}
-		return 0
+			echo ${LINE} | sed -r '/^\s*$/d'
+		done
 	else
-		return 1
+		sed -r '/^\s*$/d' <${FN}
 	fi
 }
 
-key_callback () {
-	local LIST
+cache_delete () {
+	local FAV=${1}
+	local TYPE=''
+	local VAL=''
+	local PFX=''
+	local FN=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	IFS=: read TYPE VAL <<<${FAV}
 
-	if [[ ${g_IS_CACHED} == 'true' ]];then
-		msg_box "Updating...${g_LAST_QRY}"
-		LIST=("${(f)$(do_query ${g_LAST_QRY})}")
-	fi
+	case ${TYPE:l} in
+		actor) PFX=_ACT;;
+		decade)PFX=_DEC;;
+		director)PFX=_DIR;;
+		year)PFX=_YR;;
+	esac
 
-	format_list ${LIST}
-	set_cache ${SEARCHTERM}
-}
+	FN="${_MVQ_DIR}/${PFX}_${VAL:gs/ /_/}"
 
-format_list () {
-	local -a LIST=(${@})
-	local NDX=0
-	local LN=0
-	local TITLE=''
-	local URL=''
-	local YR=''
-	local LEN=0
-	local L
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	_SLIST=()
-
-	for L in ${LIST};do
-		((NDX++))
-		((LN++))
-		case ${LN} in
-			1) TITLE=$(html2text -ascii <<<${L});;
-			2) URL=${L};;
-			3) YR=${L};;
-			4) LEN=$(sed 's/^,*//' <<<${L});;
-		esac
-		if [[ $(( NDX % 4 )) -eq 0 ]];then
-			_SLIST+="${YR}|${TITLE[1,50]}|${LEN}|${URL}"
-			LN=0
+	if [[ -e ${FN} ]];then
+		msg_box -p -PD "${FN}"
+		if [[ ${_MSG_KEY} == 'y' ]];then
+			/usr/bin/rm -f ${FN} && RC=$?
+			[[ ${RC} -ne 0 ]] && msg_box -p -PK "Unable to delete:${FN}|Return code:${RC}"
 		fi
-	done
-	_SLIST=(${(on)_SLIST}) # Sort
-}
-
-set_cache () {
-	local ARGS=${@}
-	local CACHE_FN=''
-	local LINE
+	else
+		msg_box -p -PK "Unable to delete:${FN}|<r>File not found<N>"
+	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ -z ${ARGS} ]] && return 1
-
-	[[ ${ACTOR_ARG} == 'true' ]] && CACHE_FN+="_ACT_${ARGS:gs/ /_/}"
-	[[ ${DIRECTOR_ARG} == 'true' ]] && CACHE_FN+="_DIR_${ARGS:gs/ /_/}"
-	[[ ${DECADE_ARG} == 'true' ]] && CACHE_FN+="_DEC_${1}"
-	[[ ${YEAR_ARG} == 'true' ]] && CACHE_FN+="_YR_${1}"
-
-	CACHE_FN=${_MVQ_DIR}/${CACHE_FN}
-
-	[[ -e ${CACHE_FN} && ${g_UPDATE} == 'true' ]] && /bin/rm -f ${CACHE_FN}
-
-	for S in ${_SLIST};do
-		echo ${S} >> ${CACHE_FN}
-	done
-
-	g_REDISPLAY=true
 }
 
 cache_select () {
@@ -251,151 +167,6 @@ cache_select () {
 	sel_set_app_keys d
 	sel_set_list ${(k)_CACHE_LIST}
 	sel_list -S -T"CACHE" -sa -O ${GREEN_FG} -C -H"Cached Favorites" -F"<w>Select from cache or <h>(q)uit<N>" -M ${MAP}
-}
-
-cache_delete () {
-	local FAV=${1}
-	local TYPE=''
-	local VAL=''
-	local PFX=''
-	local FN=''
-
-	IFS=: read TYPE VAL <<<${FAV}
-
-	case ${TYPE:l} in
-		actor) PFX=_ACT;;
-		decade)PFX=_DEC;;
-		director)PFX=_DIR;;
-		year)PFX=_YR;;
-	esac
-
-	FN="${_MVQ_DIR}/${PFX}_${VAL:gs/ /_/}"
-
-	[[ -e ${FN} ]] && msg_box -p -PD "${FN}"
-	[[ ${_MSG_KEY} == 'y' ]] && /usr/bin/rm -f ${FN} && RC=$?
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-}
-
-imdb () {
-	local STR=${@}
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	msg_box "Querying imdb..."
-	/usr/local/bin/imdb ${STR}
-}
-
-blank_lines () {
-	local FN=${@}
-	local LINE
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	if [[ ! -t 0 ]];then
-		while read LINE;do
-			echo ${LINE} | sed -r '/^\s*$/d'
-		done
-	else
-		sed -r '/^\s*$/d' <${FN}
-	fi
-}
-
-get_field () {
-	local FIELD=${1}
-	local NDX=${2}
-	local YR TITLE LEN URL
-
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	case ${FIELD} in
-		1) YR=$(cut -d'|' -f1 <<<${_SLIST[${NDX}]});echo -n ${YR};;
-		2) TITLE=$(cut -d'|' -f2 <<<${_SLIST[${NDX}]});echo -n ${TITLE};;
-		3) LEN=$(cut -d'|' -f3 <<<${_SLIST[${NDX}]});echo -n ${LEN};;
-		4) URL=$(cut -d'|' -f4 <<<${_SLIST[${NDX}]});echo -n ${URL};;
-	esac
-}
-
-url_quote () {
-	local TXT=${@}
-	local PY_SCRIPT
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	read -r -d '' PY_SCRIPT <<_EOF
-
-import urllib.parse
-print(urllib.parse.quote_plus("${TXT}", safe=''))
-
-_EOF
-
-python <<<${PY_SCRIPT}
-}
-
-load_list_file () {
-	local LIST=${1}
-	local LINE
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	while read LINE;do
-		_DISPLAY_LIST[${LINE}]=1
-	done < ${LIST}
-}
-
-# Initialize an unsorted list
-name_list_uninitialized () {
-	local -a RAW_NAME
-	local -A LAST_NAME
-	local LAST REST LINE
-	local R K FN
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	while read LINE;do
-		RAW_NAME+=${LINE}
-		_DISPLAY_LIST[${LINE}]=1
-	done < ${_LIST_FILE}
-
-	for R in ${RAW_NAME};do
-		LAST=$(rev <<<${R} | cut -d' ' -f1 | rev)
-		REST=$(rev <<<${R} | cut -d' ' -f2- | rev)
-		LAST_NAME[${LAST}]=${REST}
-	done
-
-	for K in ${(ok)LAST_NAME};do
-		FN="${K}, ${LAST_NAME[${K}]}"
-		_DISPLAY_LIST[${FN}]=1
-	done
-}
-
-do_query () {
-	local QRY=${1}
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${_DEBUG} -gt 0 ]] && dbg "wget -O - https://www.flickchart.com/Charts.aspx?${QRY}&perpage=100"
-
-	wget -O - "https://www.flickchart.com/Charts.aspx?${QRY}&perpage=100" 2>/dev/null | pup --charset utf8 '.movieTitle text{}' | blank_lines
-
-	g_LAST_QRY=${QRY}
-}
-
-get_year () {
-	local YR
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	echo -n "Enter 4 digit year:" >&2
-	read -k4 YR
-
-	echo ${YR}
-
-	if [[ -n ${YR} && ${YR} == ${YR%%[!0-9]*} ]];then
-		return 0
-	else
-		return 1
-	fi
 }
 
 do_list () {
@@ -449,6 +220,242 @@ do_list () {
 				g_LIST_VALUE=${_SEL_VAL}
 			fi
 	fi
+}
+
+do_query () {
+	local QRY=${1}
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	[[ ${_DEBUG} -gt 0 ]] && dbg "wget -O - https://www.flickchart.com/Charts.aspx?${QRY}&perpage=100"
+
+	wget -O - "https://www.flickchart.com/Charts.aspx?${QRY}&perpage=100" 2>/dev/null | pup --charset utf8 '.movieTitle text{}' | blank_lines
+
+	g_LAST_QRY=${QRY}
+}
+
+format_list () {
+	local -a LIST=(${@})
+	local NDX=0
+	local LN=0
+	local TITLE=''
+	local URL=''
+	local YR=''
+	local LEN=0
+	local L
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	_SLIST=()
+
+	for L in ${LIST};do
+		((NDX++))
+		((LN++))
+		case ${LN} in
+			1) TITLE=$(html2text -ascii <<<${L});;
+			2) URL=${L};;
+			3) YR=${L};;
+			4) LEN=$(sed 's/^,*//' <<<${L});;
+		esac
+		if [[ $(( NDX % 4 )) -eq 0 ]];then
+			_SLIST+="${YR}|${TITLE[1,50]}|${LEN}|${URL}"
+			LN=0
+		fi
+	done
+
+	_SLIST=(${(on)_SLIST}) # Sort
+}
+
+get_field () {
+	local FIELD=${1}
+	local NDX=${2}
+	local YR TITLE LEN URL
+
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	case ${FIELD} in
+		1) YR=$(cut -d'|' -f1 <<<${_SLIST[${NDX}]});echo -n ${YR};;
+		2) TITLE=$(cut -d'|' -f2 <<<${_SLIST[${NDX}]});echo -n ${TITLE};;
+		3) LEN=$(cut -d'|' -f3 <<<${_SLIST[${NDX}]});echo -n ${LEN};;
+		4) URL=$(cut -d'|' -f4 <<<${_SLIST[${NDX}]});echo -n ${URL};;
+	esac
+}
+
+get_year () {
+	local YR
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	echo -n "Enter 4 digit year:" >&2
+	read -k4 YR
+
+	echo ${YR}
+
+	if [[ -n ${YR} && ${YR} == ${YR%%[!0-9]*} ]];then
+		return 0
+	else
+		return 1
+	fi
+}
+
+imdb () {
+	local STR=${@}
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	msg_box "Querying imdb..."
+	/usr/local/bin/imdb ${STR}
+}
+
+is_cached () {
+	local ARGS=${@}
+	local CACHE_FN=''
+	local LINE
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	[[ -z ${ARGS} ]] && return 1
+
+	_SLIST=()
+
+	[[ ${ACTOR_ARG} == 'true' ]] && CACHE_FN+="_ACT_${ARGS:gs/ /_/}"
+	[[ ${DIRECTOR_ARG} == 'true' ]] && CACHE_FN+="_DIR_${ARGS:gs/ /_/}"
+	[[ ${DECADE_ARG} == 'true' ]] && CACHE_FN+="_DEC_${1}"
+	[[ ${YEAR_ARG} == 'true' ]] && CACHE_FN+="_YR_${1}"
+
+	if [[ -e "${_MVQ_DIR}/${CACHE_FN}" ]];then
+		while read LINE;do
+			_SLIST+=${LINE}
+		done < ${_MVQ_DIR}/${CACHE_FN}
+		return 0
+	else
+		return 1
+	fi
+}
+
+key_callback () {
+	local LIST
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	if [[ ${g_IS_CACHED} == 'true' ]];then
+		msg_box "Updating...${g_LAST_QRY}"
+		LIST=("${(f)$(do_query ${g_LAST_QRY})}")
+	fi
+
+	format_list ${LIST}
+	set_cache ${SEARCHTERM}
+}
+
+list_selection () {
+	# Set headings
+	list_clear_header
+	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Selected:${WHITE_FG}%-3d %s ${CYAN_FG}%s ${BLACK_FG}${_PAD}${WHITE_FG}${_PG}${RESET}" ${#_SLIST} ${SELECTED_COUNT} ${HEADER} ${SEARCHTERM}'
+	list_add_header_break
+	list_set_header_break_color ${MAGENTA_FG}
+	list_set_barlines true
+	list_set_key_callback KEY u FUNC key_callback RET true # The 'u' key will update the query
+	list_set_prompt 'Press (u)pdate to refresh page'
+	list_set_searchable true
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	# Set line item
+	list_set_line_item ' 
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%4s ${WHITE_FG}%-50s ${CYAN_FG}%15s ${GREEN_FG}%43s${RESET}\n" ${_LIST_NDX} $(get_field 1 ${_LIST_NDX}) "$(get_field 2 ${_LIST_NDX})" "$(get_field 3 ${_LIST_NDX})" "$(get_field 4 ${_LIST_NDX})"
+	'
+
+	while true;do
+		# Display list
+		_LIST_SELECTED=()
+		list_select ${(on)_SLIST}
+
+		if [[ $(list_get_selected_count) -ne 0 ]];then
+			# Get user selections
+			_MARKED=($(list_get_selected))
+			action_do
+		else
+			[[ ${g_REDISPLAY} == 'false' ]] && break
+			g_REDISPLAY=false # List updates require a redisplay - clear state
+		fi
+	done
+}
+
+load_list_file () {
+	local LIST=${1}
+	local LINE
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	while read LINE;do
+		_DISPLAY_LIST[${LINE}]=1
+	done < ${LIST}
+}
+
+name_list_uninitialized () {
+	local -a RAW_NAME
+	local -A LAST_NAME
+	local LAST REST LINE
+	local R K FN
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	while read LINE;do
+		RAW_NAME+=${LINE}
+		_DISPLAY_LIST[${LINE}]=1
+	done < ${_LIST_FILE}
+
+	for R in ${RAW_NAME};do
+		LAST=$(rev <<<${R} | cut -d' ' -f1 | rev)
+		REST=$(rev <<<${R} | cut -d' ' -f2- | rev)
+		LAST_NAME[${LAST}]=${REST}
+	done
+
+	for K in ${(ok)LAST_NAME};do
+		FN="${K}, ${LAST_NAME[${K}]}"
+		_DISPLAY_LIST[${FN}]=1
+	done
+}
+
+set_cache () {
+	local ARGS=${@}
+	local CACHE_FN=''
+	local LINE
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	[[ -z ${ARGS} ]] && return 1
+
+	[[ ${ACTOR_ARG} == 'true' ]] && CACHE_FN+="_ACT_${ARGS:gs/ /_/}"
+	[[ ${DIRECTOR_ARG} == 'true' ]] && CACHE_FN+="_DIR_${ARGS:gs/ /_/}"
+	[[ ${DECADE_ARG} == 'true' ]] && CACHE_FN+="_DEC_${1}"
+	[[ ${YEAR_ARG} == 'true' ]] && CACHE_FN+="_YR_${1}"
+
+	CACHE_FN=${_MVQ_DIR}/${CACHE_FN}
+
+	[[ -e ${CACHE_FN} && ${g_UPDATE} == 'true' ]] && /bin/rm -f ${CACHE_FN}
+
+	for S in ${_SLIST};do
+		echo ${S} >> ${CACHE_FN}
+	done
+
+	g_REDISPLAY=true
+}
+
+url_quote () {
+	local TXT=${@}
+	local PY_SCRIPT
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	read -r -d '' PY_SCRIPT <<_EOF
+
+import urllib.parse
+print(urllib.parse.quote_plus("${TXT}", safe=''))
+
+_EOF
+
+python <<<${PY_SCRIPT}
 }
 
 #--Begin GetOpts--
@@ -567,9 +574,9 @@ CMDLINE_ARGS=false
 [[ -n ${ACTOR_ARG} ]] && QRY="actor=${ACTOR_ARG}" && HEADER=${_HEADERS[A]} && SEARCHTERM=${(C)ACTOR_ARG} && ACTOR_ARG=true
 [[ -n ${DIRECTOR_ARG} ]] && QRY="director=${DIRECTOR_ARG}" && HEADER=${_HEADERS[D]} && SEARCHTERM=${(C)DIRECTOR_ARG} && DIRECTOR_ARG=true
 
+CACHE_DEL=false
 while true;do
 	HEADER=''
-	_SLIST=()
 	if [[ ${CACHE_SELECT} == 'true' ]];then
 		cache_select
 		CACHE_DEL=false
