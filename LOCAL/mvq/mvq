@@ -422,6 +422,7 @@ set_cache () {
 	local ARGS=${@}
 	local CACHE_FN=''
 	local LINE
+	local S
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -434,13 +435,15 @@ set_cache () {
 
 	CACHE_FN=${_MVQ_DIR}/${CACHE_FN}
 
-	[[ -e ${CACHE_FN} && ${g_UPDATE} == 'true' ]] && /bin/rm -f ${CACHE_FN}
+	if [[ -e ${CACHE_FN} && ${g_UPDATE} == 'true' ]];then
+		/bin/rm -f ${CACHE_FN}
+		g_REDISPLAY=true
+	fi
 
 	for S in ${_SLIST};do
 		echo ${S} >> ${CACHE_FN}
 	done
 
-	g_REDISPLAY=true
 }
 
 url_quote () {
@@ -581,25 +584,28 @@ while true;do
 	if [[ ${CACHE_SELECT} == 'true' ]];then
 		cache_select
 		CACHE_DEL=false
+
 		if [[ ${_SEL_KEY} == 'd' ]];then
 			cache_delete ${_SEL_VAL}
 			CACHE_DEL=true
+		else
+			C_TYPE=$(cut -d: -f1 <<<${_SEL_VAL})
+			SEARCHTERM=$(cut -d: -f2 <<<${_SEL_VAL})
+
+			#msg_box -p -PK "LOOP SECTION 1|C_TYPE:${C_TYPE} SEARCHTERM:${SEARCHTERM}"
+
+			case ${C_TYPE:l} in
+				actor) ACTOR_ARG=${SEARCHTERM};;
+				decade) DECADE_ARG=${SEARCHTERM};;
+				director) DIRECTOR_ARG=${SEARCHTERM};;
+				year) YEAR_ARG=${SEARCHTERM};;
+			esac
+
+			[[ -n ${YEAR_ARG} ]] && QRY="year=${YEAR_ARG}" && HEADER=${_HEADERS[Y]} && SEARCHTERM=${YEAR_ARG} && YEAR_ARG=true
+			[[ -n ${DECADE_ARG} ]] && QRY="decade=${DECADE_ARG}" && HEADER=${_HEADERS[E]} && SEARCHTERM=${DECADE_ARG} && DECADE_ARG=true
+			[[ -n ${ACTOR_ARG} ]] && QRY="actor=${ACTOR_ARG}" && HEADER=${_HEADERS[A]} && SEARCHTERM=${(C)ACTOR_ARG} && ACTOR_ARG=true
+			[[ -n ${DIRECTOR_ARG} ]] && QRY="director=${DIRECTOR_ARG}" && HEADER=${_HEADERS[D]} && SEARCHTERM=${(C)DIRECTOR_ARG} && DIRECTOR_ARG=true
 		fi
-
-		C_TYPE=$(cut -d: -f1 <<<${_SEL_VAL})
-		SEARCHTERM=$(cut -d: -f2 <<<${_SEL_VAL})
-
-		case ${C_TYPE:l} in
-			actor) ACTOR_ARG=${SEARCHTERM};;
-			decade) DECADE_ARG=${SEARCHTERM};;
-			director) DIRECTOR_ARG=${SEARCHTERM};;
-			year) YEAR_ARG=${SEARCHTERM};;
-		esac
-
-		[[ -n ${YEAR_ARG} ]] && QRY="year=${YEAR_ARG}" && HEADER=${_HEADERS[Y]} && SEARCHTERM=${YEAR_ARG} && YEAR_ARG=true
-		[[ -n ${DECADE_ARG} ]] && QRY="decade=${DECADE_ARG}" && HEADER=${_HEADERS[E]} && SEARCHTERM=${DECADE_ARG} && DECADE_ARG=true
-		[[ -n ${ACTOR_ARG} ]] && QRY="actor=${ACTOR_ARG}" && HEADER=${_HEADERS[A]} && SEARCHTERM=${(C)ACTOR_ARG} && ACTOR_ARG=true
-		[[ -n ${DIRECTOR_ARG} ]] && QRY="director=${DIRECTOR_ARG}" && HEADER=${_HEADERS[D]} && SEARCHTERM=${(C)DIRECTOR_ARG} && DIRECTOR_ARG=true
 
 	elif [[ ${DO_LIST} == 'true' ]];then
 		do_list
@@ -631,6 +637,9 @@ while true;do
 	g_LAST_QRY=${QRY}
 
 	if [[ ${CACHE_DEL} == 'false' ]];then
+
+		#msg_box -p -PK "LOOP SECTION 2|CACHE_DEL:${CACHE_DEL}"
+
 		HLEN=$((${#TITLE} + "${#HEADER}" + ${#SEARCHTERM} + 17))
 		HPAD=$((_DISP-HLEN))
 		_PAD=$(str_rep_char '-' ${HPAD})
@@ -639,6 +648,7 @@ while true;do
 		if [[ ${IGNORE_CACHE} == 'false' ]];then
 			is_cached ${SEARCHTERM}
 			[[ ${?} -eq 0 ]] && g_IS_CACHED=true
+			#msg_box -p -PK "LOOP SECTION 2|SEARCHTERM:${SEARCHTERM} is cached"
 		fi
 
 		if [[ ${g_IS_CACHED} == 'false' ]];then
@@ -657,6 +667,8 @@ while true;do
 
 			msg_box -c "Working...formatting data"
 			format_list ${LIST}
+
+			#msg_box -p -PK "Updating cache"
 			set_cache ${SEARCHTERM}
 			msg_box_clear
 		fi
@@ -668,6 +680,14 @@ while true;do
 		list_selection
 		[[ ${CMDLINE_ARGS} == 'true' ]] && break
 	fi
+
+	# Clear vars for next loop
+	YEAR_ARG=''
+	DECADE_ARG=''
+	ACTOR_ARG=''
+	DIRECTOR_ARG=''
+	CACHE_DEL=true
+	SEARCHTERM=''
 	clear
 done
 
