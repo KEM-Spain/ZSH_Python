@@ -344,7 +344,6 @@ key_callback () {
 	fi
 
 	format_list ${LIST}
-	set_cache ${SEARCHTERM}
 }
 
 list_selection () {
