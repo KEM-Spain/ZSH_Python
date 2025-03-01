@@ -21,7 +21,7 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/PATH.zsh
 source ${_LIB_DIR}/DATE.zsh
@@ -726,7 +726,7 @@ get_field () {
 		STR=$(sed -E 's/^\s+?\?*?\s+?//' <<<${STR}) # Strip leading space 
 		STR=$(html2text -ascii <<<${STR}) # HTML
 		STR=${(C)STR} # Proper case
-		STR=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' <<<${STR}) # Misc fixups
+		STR=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' -e 's/(I)(i+)/\1\U\2/g' <<<${STR}) # Misc fixups
 	fi
 
 	#STR=$(iconv -f utf-8 -t ascii//translit <<<${STR}) # Scrub non ascii
@@ -772,6 +772,7 @@ kill_job () {
 		PIDS=("${(f)$(ps -aux | grep "${g_PID}\|yt-dlp\|/usr/local/bin/yt" 2>/dev/null)}")
 		for P in ${PIDS};do
 			PID=$(tr -s '[:space:]' <<<${P} | cut -d' ' -f2)
+			[[ ${PID} -eq ${g_PID} ]] && continue # Don't kill ourselves
 			[[ -n ${PID} ]] && kill -9 ${PID} >/dev/null 2>&1
 			echo "${0}: Killed ${PID}" >> ${_YTS_DBG_LOG}
 		done
@@ -936,6 +937,7 @@ post_process () {
 		NEW_FN=$(echo ${NEW_FN} | fsub -y '\\.\\.' '\\.') # Multi dot
 		NEW_FN=$(echo ${NEW_FN} | fsub -y ' \\.' '\\.')   # Dangling file extensions
 		NEW_FN=$(echo ${NEW_FN} | fsub -y -P)             # Proper case
+		NEW_FN=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' -e 's/(I)(i+)/\1\U\2/g' <<<${NEW_FN}) # Misc fixups
 
 		if [[ ${#NEW_FN} -gt ${_MAX_FLEN} ]];then
 			NEW_FN=$(echo ${NEW_FN} | fsub -y -t${_MAX_FLEN}) # Truncate length

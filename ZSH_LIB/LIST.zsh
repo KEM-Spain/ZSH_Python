@@ -4,7 +4,7 @@ _DEPS_+="ARRAY.zsh DBG.zsh MSG.zsh PATH.zsh STR.zsh TPUT.zsh UTILS.zsh VALIDATE.
 # LIB Declarations
 typeset -A _KEY_CALLBACKS=()
 typeset -A _CBK_RET=()
-typeset -A _LIST_SELECTED=() # Status of selected list items; contains digit 0,1,2, etc.; 0,1 can toggle; -gt 1 cannot toggle (action completed)
+typeset -A _LIST_SELECTED=()
 typeset -A _LIST_SELECTED_PAGE=() # Selected rows by page
 typeset -A _PAGES=()
 typeset -A _PAGE_DATA=()
@@ -1256,7 +1256,7 @@ list_sort_flat () {
 			[[ ${SORT_KEY} =~ "hour" ]] && SORT_ARRAY+="${_CAL_SORT[hour]}${SORT_KEY}${DELIM}${L}" && continue
 			[[ ${SORT_KEY} =~ "min" ]] && SORT_ARRAY+="${_CAL_SORT[minute]}${SORT_KEY}${DELIM}${L}" && continue
 			[[ ${SORT_KEY} =~ "sec" ]] && SORT_ARRAY+="${_CAL_SORT[second]}${SORT_KEY}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ '^[A-Za-z0-9]' ]] && SORT_ARRAY+="${SORT_KEY[1]}${DELIM}${L}" && continue
+			[[ ${SORT_KEY} =~ '^[A-Za-z]' ]] && SORT_ARRAY+="${SORT_KEY[1]}${DELIM}${L}" && continue
 			[[ ${SORT_KEY} =~ '^[(]?\d{4}-\d{2}-\d{2}' ]] && SORT_ARRAY+="${SORT_KEY[1,10]}${DELIM}${L}" && FLIP=true && continue
 			[[ ${SORT_KEY} =~ '\d{4}$' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/(.*)(\d{4})$/\2\1\2/g')" && continue
 			[[ ${SORT_KEY} =~ '\d[.]\d\D' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/([.]\d)(.*)((G|M).*)$/${1}0 ${3}/g')" && continue
@@ -1382,6 +1382,7 @@ list_toggle_selected () {
 		return # Ignore over limit
 	fi
 
+	# TODO: No strategy in place for USED_ROWS
 	if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_AVAIL_ROW} ]];then
 		list_set_selected ${_LIST_NDX} ${_SELECTED_ROW} 
 		list_item select ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
@@ -1395,10 +1396,8 @@ list_toggle_selected () {
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_AVAIL_ROW}"
 		elif [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_STALE_ROW} ]];then
 			msg_box -c -p -PK "Row <r>not<N> selectable|This row is marked as STALE"
-		elif [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]];then
-			msg_box -c -p -PK "Row <r>not<N> selectable|This row is marked as USED"
+			msg_box_clear
 		fi
-		msg_box_clear
 	fi
 
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}

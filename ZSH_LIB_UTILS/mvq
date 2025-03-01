@@ -670,7 +670,6 @@ while true;do
 
 			#msg_box -p -PK "Updating cache"
 			set_cache ${SEARCHTERM}
-			msg_box_clear
 		fi
 
 		if ! arr_is_populated "${_SLIST}";then
