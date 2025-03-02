@@ -58,7 +58,6 @@ g_LAST_QRY=''
 g_LIST_TYPE=''
 g_LIST_VALUE=''
 g_UPDATE=false
-g_REDISPLAY=false
 
 # Functions
 action_do () {
@@ -346,6 +345,7 @@ key_callback () {
 	fi
 
 	format_list ${LIST}
+	g_UPDATE=true
 }
 
 list_selection () {
@@ -368,18 +368,18 @@ list_selection () {
 	'
 
 	while true;do
+		g_UPDATE=false
 		# Display list
 		_LIST_SELECTED=()
 		list_select ${(on)_SLIST}
-		list_set_position
+		list_set_position # Maintain list position when returning from action
 
 		if [[ $(list_get_selected_count) -ne 0 ]];then
 			# Get user selections
 			_MARKED=($(list_get_selected))
 			action_do
 		else
-			[[ ${g_REDISPLAY} == 'false' ]] && break
-			g_REDISPLAY=false # List updates require a redisplay - clear state
+			[[ ${g_UPDATE} == 'false' ]] && break # key_callback will set: true
 		fi
 	done
 }
@@ -439,7 +439,6 @@ set_cache () {
 
 	if [[ -e ${CACHE_FN} && ${g_UPDATE} == 'true' ]];then
 		/bin/rm -f ${CACHE_FN}
-		g_REDISPLAY=true
 	fi
 
 	for S in ${_SLIST};do
@@ -670,7 +669,7 @@ while true;do
 			msg_box -c "Working...formatting data"
 			format_list ${LIST}
 
-			#msg_box -p -PK "Updating cache"
+			msg_box -p -PK "Updating cache"
 			set_cache ${SEARCHTERM}
 			msg_box_clear
 		fi

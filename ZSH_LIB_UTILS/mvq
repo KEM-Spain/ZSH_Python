@@ -345,6 +345,7 @@ key_callback () {
 	fi
 
 	format_list ${LIST}
+	g_UPDATE=true
 }
 
 list_selection () {
@@ -367,13 +368,18 @@ list_selection () {
 	'
 
 	while true;do
+		g_UPDATE=false
+		# Display list
 		_LIST_SELECTED=()
 		list_select ${(on)_SLIST}
-		echo "${_LIST_NDX}|${_CURSOR_NDX}" > ${_LIST_TAG_FILE}
+		list_set_position # Maintain list position when returning from action
 
 		if [[ $(list_get_selected_count) -ne 0 ]];then
+			# Get user selections
 			_MARKED=($(list_get_selected))
 			action_do
+		else
+			[[ ${g_UPDATE} == 'false' ]] && break # key_callback will set: true
 		fi
 	done
 }
@@ -663,8 +669,9 @@ while true;do
 			msg_box -c "Working...formatting data"
 			format_list ${LIST}
 
-			#msg_box -p -PK "Updating cache"
+			msg_box -p -PK "Updating cache"
 			set_cache ${SEARCHTERM}
+			msg_box_clear
 		fi
 
 		if ! arr_is_populated "${_SLIST}";then

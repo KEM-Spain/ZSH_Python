@@ -358,6 +358,7 @@ list_selection () {
 	list_set_key_callback KEY u FUNC key_callback RET true # The 'u' key will update the query
 	list_set_prompt 'Press (u)pdate to refresh page'
 	list_set_searchable true
+	list_restore_position true
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -370,14 +371,15 @@ list_selection () {
 		# Display list
 		_LIST_SELECTED=()
 		list_select ${(on)_SLIST}
+		list_set_position
 
 		if [[ $(list_get_selected_count) -ne 0 ]];then
 			# Get user selections
 			_MARKED=($(list_get_selected))
 			action_do
 		else
+			# TODO: redisplay is not happening - set in set_cache
 			[[ ${g_REDISPLAY} == 'false' ]] && break
-			g_REDISPLAY=false # List updates require a redisplay - clear state
 		fi
 	done
 }
@@ -435,13 +437,15 @@ set_cache () {
 
 	CACHE_FN=${_MVQ_DIR}/${CACHE_FN}
 
-	[[ -e ${CACHE_FN} && ${g_UPDATE} == 'true' ]] && /bin/rm -f ${CACHE_FN}
+	if [[ -e ${CACHE_FN} && ${g_UPDATE} == 'true' ]];then
+		/bin/rm -f ${CACHE_FN}
+		g_REDISPLAY=true
+	fi
 
 	for S in ${_SLIST};do
 		echo ${S} >> ${CACHE_FN}
 	done
 
-	g_REDISPLAY=true
 }
 
 url_quote () {
@@ -585,12 +589,7 @@ while true;do
 
 		if [[ ${_SEL_KEY} == 'd' ]];then
 			cache_delete ${_SEL_VAL}
-			YEAR_ARG=''
-			DECADE_ARG=''
-			ACTOR_ARG=''
-			DIRECTOR_ARG=''
 			CACHE_DEL=true
-			SEARCHTERM=''
 		else
 			C_TYPE=$(cut -d: -f1 <<<${_SEL_VAL})
 			SEARCHTERM=$(cut -d: -f2 <<<${_SEL_VAL})
@@ -671,7 +670,7 @@ while true;do
 			msg_box -c "Working...formatting data"
 			format_list ${LIST}
 
-			#msg_box -p -PK "Updating cache"
+			msg_box -p -PK "Updating cache"
 			set_cache ${SEARCHTERM}
 			msg_box_clear
 		fi
@@ -683,6 +682,15 @@ while true;do
 		list_selection
 		[[ ${CMDLINE_ARGS} == 'true' ]] && break
 	fi
+
+	# Clear vars for next loop
+	YEAR_ARG=''
+	DECADE_ARG=''
+	ACTOR_ARG=''
+	DIRECTOR_ARG=''
+	CACHE_DEL=true
+	SEARCHTERM=''
+	g_REDISPLAY=false
 	clear
 done
 
