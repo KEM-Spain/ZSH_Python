@@ -342,7 +342,7 @@ action_do () {
 	done # List complete
 
 	for M in ${_MARKED};do
-		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
+		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_USED_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
 	done
 
 	_MARKED=()
@@ -826,7 +826,6 @@ list_reset () {
 
 	_LIST_SELECTED=()
 	_MARKED=()
-	_SELECTION_LIST=()
 }
 
 log_download () {

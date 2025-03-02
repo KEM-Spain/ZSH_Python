@@ -13,7 +13,6 @@ typeset -a _LIST=() # Holds the values to be managed by the menu
 typeset -a _LIST_ACTION_MSGS=() # Holds text for contextual prompts
 typeset -a _LIST_HEADER=() # Holds header lines
 typeset -a _MARKED=()
-typeset -a _SELECTION_LIST=() # Holds indices of selected items in a list
 typeset -a _TARGETS=() # Target indexes
 
 # LIB Vars
@@ -48,11 +47,14 @@ _NO_TOP_OFFSET=false
 _OFF_SCREEN_ROWS_MSG=''
 _PAGE_CALLBACK_FUNC=''
 _PROMPT_KEYS=''
+_RESTORE_POS=false
 _SEARCH_MARKER="${BOLD}${RED_FG}\u25CF${RESET}"
+_USED_MARKER="${BOLD}${MAGENTA_FG}\u25CA${RESET}"
 _SELECTABLE=true
 _SELECTION_LIMIT=0
 _SELECT_ALL=false
 _SELECT_CALLBACK_FUNC=''
+_LIST_TAG_FILE="/tmp/$$.${0:t}.state"
 _TARGET_CURSOR=1
 _TARGET_KEY=''
 _TARGET_NDX=1
@@ -79,6 +81,13 @@ list_display_page () {
 	local R=0
 	local X_POS=0
 
+	[[ ${_RESTORE_POS} == 'true' ]] && list_get_position
+
+	if [[ ${_PAGE_DATA[RESTORE]} == 'true' ]];then
+		_PAGE_DATA[PAGE]=$(list_find_page ${_PAGE_DATA[POS_NDX]})
+		PG_LIMITS=($(list_get_page_limits))
+	fi
+
 	[[ ${HILITE} == 'nohilite' ]] && HILITE=false || HILITE=true 
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -103,8 +112,14 @@ list_display_page () {
 		fi
 	done
 
-	_LIST_NDX=${PG_LIMITS[TOP]} # Initialize page top
-	_CURSOR_NDX=${_PAGE_DATA[TOP_OFFSET]}
+	if [[ ${_PAGE_DATA[RESTORE]} == 'true' ]];then
+		_LIST_NDX=${_PAGE_DATA[POS_NDX]} # Initialize page position
+		_CURSOR_NDX=${_PAGE_DATA[POS_CUR]}
+		_PAGE_DATA[RESTORE]=false
+	else
+		_LIST_NDX=${PG_LIMITS[TOP]} # Initialize page top
+		_CURSOR_NDX=${_PAGE_DATA[TOP_OFFSET]}
+	fi
 
 	[[ ${HILITE} == 'true' ]] && list_item high ${_LIST_LINE_ITEM} ${_CURSOR_NDX}  0
 }
@@ -312,6 +327,7 @@ list_item () {
 	[[ -n ${MARKER} ]] && _MARKER=${_SEARCH_MARKER} && _MARKERS=true
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} && -n ${MARKER} ]] && dbg "${0}: MARKER:${MARKER}"
 
+
 	tput rmso # Clear any previous smso
 
 	case ${MODE} in
@@ -328,7 +344,9 @@ list_item () {
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 	fi
 
+	# TODO: IN PROGRESS: setting marker for used rows
 	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]] && SHADE=${REVERSE} || SHADE=''
+	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]] && _MARKER=${_USED_MARKER}
 
 	eval ${LINE_ITEM} # Output line
 
@@ -470,7 +488,6 @@ list_reset () {
 	_LIST_PROMPT=''
 	_LIST_SELECTED=()
 	_MARKED=()
-	_SELECTION_LIST=()
 }
 
 list_search () {
@@ -722,11 +739,11 @@ list_select () {
 	_PAGE_DATA=(
 		PAGE_STATE init 
 		PAGE 1 
-		CURRENT_PAGE 1 
 		MAX_PAGE ${#_PAGES} 
 		MAX_ITEM ${#_LIST} 
 		TOP_OFFSET ${TOP_OFFSET}
 		LAST_PAGE 0
+		RESTORE false
 	)
 	# End of Navigation Init
 
@@ -974,6 +991,35 @@ list_set_pages () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RETURNING page boundaries for ${#PAGES} pages"
 
 	echo "${(kv)PAGES}"
+}
+
+list_restore_position () {
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	_RESTORE_POS=${1}
+}
+	
+list_get_position () {
+	local NDX=0
+	local CUR=0
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	if [[ -e ${_LIST_TAG_FILE} ]];then
+		IFS='|' read -r NDX CUR < ${_LIST_TAG_FILE} # Retrieve stored position
+		[[ -n ${NDX} ]] && _PAGE_DATA[POS_NDX]=${NDX} || _PAGE_DATA[POS_NDX]=''
+		[[ -n ${CUR} ]] && _PAGE_DATA[POS_CUR]=${CUR} || _PAGE_DATA[POS_CUR]=''
+		[[ -n ${_PAGE_DATA[POS_NDX]} && -n ${_PAGE_DATA[POS_CUR]} ]] && _PAGE_DATA[RESTORE]=true || _PAGE_DATA[RESTORE]=false
+		/bin/rm -f ${_LIST_TAG_FILE}
+	fi
+}
+
+list_set_position () {
+	local POS=${@}
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	echo "${_LIST_NDX}|${_CURSOR_NDX}" > ${_LIST_TAG_FILE}
 }
 
 list_set_prompt () {

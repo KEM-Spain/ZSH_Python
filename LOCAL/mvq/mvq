@@ -358,6 +358,7 @@ list_selection () {
 	list_set_key_callback KEY u FUNC key_callback RET true # The 'u' key will update the query
 	list_set_prompt 'Press (u)pdate to refresh page'
 	list_set_searchable true
+	list_restore_position true
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -370,6 +371,7 @@ list_selection () {
 		# Display list
 		_LIST_SELECTED=()
 		list_select ${(on)_SLIST}
+		list_set_position
 
 		if [[ $(list_get_selected_count) -ne 0 ]];then
 			# Get user selections

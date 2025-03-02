@@ -11,6 +11,7 @@ _DMD="\u25C8"
 typeset -A _CAT_COLS=()
 typeset -A _LIST_DATA=()
 typeset -A _PAGE_TOPS=()
+typeset -A _TAG_DATA=()
 typeset -a _APP_KEYS=()
 typeset -a _LIST=()
 typeset -a _PAGE=()
@@ -25,7 +26,7 @@ _SAVE_MENU_POS=false
 _SEL_KEY=''
 _SEL_VAL=''
 _TAG=''
-_TAG_FILE=''
+_SELECT_TAG_FILE=''
 
 sel_box_center () {
 	local BOX_LEFT=${1};shift # Box Y coord
@@ -240,7 +241,7 @@ sel_list () {
 
 	[[ ${#_LIST} -gt 100 ]] && msg_box -c "<w>Working...<N>"
 
-	[[ -n ${_TAG}  ]] && _TAG_FILE="/tmp/$$.${_TAG}.state" || _TAG_FILE="/tmp/$$.${0}.state"
+	[[ -n ${_TAG}  ]] && _SELECT_TAG_FILE="/tmp/$$.${_TAG}.state" || _SELECT_TAG_FILE="/tmp/$$.${0}.state"
 
 	# If no X,Y coords are passed default to center
 	LIST_W=$(arr_long_elem_len ${_LIST})
@@ -485,23 +486,24 @@ sel_scroll () {
 		fi
 
 		# Handle stored list position
-		if [[ -e ${_TAG_FILE}  ]];then
-			IFS='|' read -r TAG_PAGE TAG_NDX < ${_TAG_FILE} # Retrieve any stored menu positions
-			LAST_TAG=${_TAG_FILE} # Only use position memory for differing menus unless _SAVE_MENU_POS is indicated
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RESTORING MENU POS: _TAG_FILE:${_TAG_FILE}  LAST_TAG:${LAST_TAG}"
+		sel_get_position
+		if [[ ${_TAG_DATA[RESTORE]} == 'true'  ]];then
+			LAST_TAG=${_SELECT_TAG_FILE} # Only use position memory for differing menus unless _SAVE_MENU_POS is indicated
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  LAST_TAG:${LAST_TAG}"
 		fi
 
 		NDX=1 # Initialize index
 		if [[ ${PAGE_CHANGE} == 'false' ]];then
-			if [[ ${TAG_NDX} -ne 0 ]];then
+			if [[ ${_TAG_DATA[RESTORE]} == 'true' ]];then
 				if [[ ${_SAVE_MENU_POS} == 'true' ]];then
-					NDX=${TAG_NDX} # Restore menu position regardless
-					PAGE=${TAG_PAGE} # Restore menu position regardless
-					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:RESTORED POSITION: ${NDX}"
+					NDX=${_TAG_DATA[NDX]} # Restore menu position regardless
+					PAGE=${_TAG_DATA[PAGE]} # Restore menu position regardless
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:RESTORED POSITION: ${_TAG_DATA[NDX]}"
 				else
-					[[ ${LAST_TAG} != ${_TAG_FILE} ]] && NDX=${TAG_NDX} && PAGE=${TAG_PAGE} # Restore menu position only if menu changed
-					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:MENU CHANGED - RESTORED POSITION: ${NDX}"
+					[[ ${LAST_TAG} != ${_SELECT_TAG_FILE} ]] && NDX=${_TAG_DATA[NDX]} && PAGE=${_TAG_DATA[PAGE]} # Restore menu position only if menu changed
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:MENU CHANGED - RESTORED POSITION: ${_TAG_DATA[NDX]}"
 				fi
+				_TAG_DATA[RESTORE]=false
 			fi
 		fi
 
@@ -538,7 +540,7 @@ sel_scroll () {
 			NAV=true # Return only menu selections
 
 			case ${KEY} in
-				0) sel_set_tag ${PAGE} ${NDX}; break 2;;
+				0) sel_set_position ${PAGE} ${NDX}; break 2;;
 				q) exit_request $(sel_set_ebox);break;;
 				27) _SEL_KEY=${KEY} && return -1;;
 				1|u|k) SCROLL="U";;
@@ -673,13 +675,28 @@ sel_set_pages () {
 	echo ${(kv)PAGE_TOPS}
 }
 
-sel_set_tag () {
+sel_set_position () {
 	PAGE=${1}
 	NDX=${2}
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
 
-	[[ -n ${_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_TAG_FILE} || dbg "_TAG_FILE not defined" # Save menu position
-	[[ -e ${_TAG_FILE} ]] && dbg "${_TAG_FILE} was created" || dbg "${_TAG_FILE} was NOT created"
+	[[ -n ${_SELECT_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_SELECT_TAG_FILE} || dbg "_SELECT_TAG_FILE not defined" # Save menu position
+	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "${_SELECT_TAG_FILE} was NOT created"
+}
+
+sel_get_position () {
+	local PAGE=0
+	local NDX=0
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	if [[ -e ${_SELECT_TAG_FILE} ]];then
+		IFS='|' read -r PAGE NDX < ${_SELECT_TAG_FILE} # Retrieve stored position
+		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
+		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
+		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
+		/bin/rm -f ${_SELECT_TAG_FILE}
+	fi
 }
 
