@@ -773,8 +773,8 @@ list_select () {
 	tput civis >&2
 	tput clear
 	list_display_page
-	_LIST_NDX=1
-	_CURSOR_NDX=$(( _LIST_NDX + _PAGE_DATA[TOP_OFFSET] - 1 ))
+	#_LIST_NDX=1
+	#_CURSOR_NDX=$(( _LIST_NDX + _PAGE_DATA[TOP_OFFSET] - 1 ))
 
 	# Main navigation loop
 	while true;do

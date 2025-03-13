@@ -669,7 +669,6 @@ while true;do
 			msg_box -c "Working...formatting data"
 			format_list ${LIST}
 
-			msg_box -p -PK "Updating cache"
 			set_cache ${SEARCHTERM}
 			msg_box_clear
 		fi
