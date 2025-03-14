@@ -427,7 +427,7 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}$(ls_color ${_FILE
 list_set_prompt_msg '
 printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 '
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to reset permissions ${ITALIC}or exit if none selected${RESET}"
+list_set_select_action "reset permissions"
 list_set_barlines false
 list_set_searchable false
 list_set_sortable true

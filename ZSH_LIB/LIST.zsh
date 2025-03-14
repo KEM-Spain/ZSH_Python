@@ -52,6 +52,7 @@ _SEARCH_MARKER="${BOLD}${RED_FG}\u25CF${RESET}"
 _USED_MARKER="${BOLD}${MAGENTA_FG}\u25CA${RESET}"
 _SELECTABLE=true
 _SELECTION_LIMIT=0
+_SELECT_ACTION='do action'
 _SELECT_ALL=false
 _SELECT_CALLBACK_FUNC=''
 _LIST_TAG_FILE="/tmp/$$.${0:t}.state"
@@ -729,10 +730,12 @@ list_select () {
 
 	# Assign Defaults for Header, Prompt, and Line_Item formatting
 	[[ -z ${_LIST_LINE_ITEM} ]] && _LIST_LINE_ITEM='printf "${BOLD}${_HILITE_COLOR}%*d${RESET}) ${SHADE}%s${RESET}\n" ${#MAX_ITEM} ${_LIST_NDX} ${${_LIST[${_LIST_NDX}]}[1,${MAX_LINE_WIDTH}]}'
-	[[ -n ${_LIST_PROMPT} ]] && USER_PROMPT=${_LIST_PROMPT} || USER_PROMPT="Enter to toggle selection"
+	[[ -n ${_LIST_PROMPT} ]] && USER_PROMPT=${_LIST_PROMPT} || USER_PROMPT="Hit <${GREEN_FG}SPACE${RESET}> to select then <${GREEN_FG}ENTER${RESET}> to ${_SELECT_ACTION}. ${WHITE_FG}Note${RESET}: <${GREEN_FG}ENTER${RESET}> will ${ITALIC}${WHITE_FG}exit${RESET} if none are selected"
 	[[ -n ${_LIST_ACTION_MSGS[1]} ]] && ACTION_MSGS[1]=${_LIST_ACTION_MSGS[1]} || ACTION_MSGS[1]="process"
 	[[ -n ${_LIST_ACTION_MSGS[2]} ]] && ACTION_MSGS[2]=${_LIST_ACTION_MSGS[2]} || ACTION_MSGS[2]="item"
-	[[ -n ${_PROMPT_KEYS} ]] && KEY_LINE=$(eval ${_PROMPT_KEYS}) || KEY_LINE=$(printf "Press ${WHITE_FG}%s%s%s%s${RESET} Home End PgUp PgDn <${WHITE_FG}n${RESET}>ext, <${WHITE_FG}p${RESET}>rev, <${WHITE_FG}b${RESET}>ottom, <${WHITE_FG}t${RESET}>op, <${WHITE_FG}c${RESET}>lear, vi[${WHITE_FG}h,j,k,l${RESET}], <${WHITE_FG}a${RESET}>ll${RESET}, <${GREEN_FG}ENTER${RESET}>${RESET}, <${WHITE_FG}q${RESET}>uit${RESET}" $'\u2190' $'\u2191' $'\u2193' $'\u2192')
+	[[ -n ${_PROMPT_KEYS} ]] && KEY_LINE=$(eval ${_PROMPT_KEYS}) || KEY_LINE=$(printf "Press ${WHITE_FG}%s%s%s%s${RESET} Home End PgUp PgDn <${WHITE_FG}n${RESET}>ext, <${WHITE_FG}p${RESET}>rev, <${WHITE_FG}b${RESET}>ottom, <${WHITE_FG}t${RESET}>op, <${WHITE_FG}c${RESET}>lear, vi[${WHITE_FG}h,j,k,l${RESET}], Select <${WHITE_FG}a${RESET}>ll${RESET}, <${WHITE_FG}q${RESET}>uit${RESET}" $'\u2190' $'\u2191' $'\u2193' $'\u2192')
+	[[ ${_LIST_IS_SORTABLE} == 'true' ]] && KEY_LINE+=", <${WHITE_FG}s${RESET}>ort"
+	[[ ${_LIST_IS_SEARCHABLE} == 'true' ]] && KEY_LINE+=", \"${WHITE_FG}/${RESET}\" to ${WHITE_FG}search${RESET}"
 	[[ -n ${KEY_LINE} ]] && USER_PROMPT="${KEY_LINE}\n${USER_PROMPT}"
 
 	# Navigation Init
@@ -1050,6 +1053,12 @@ list_set_selectable () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	_SELECTABLE=${1}
+}
+
+list_set_select_action () {
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	[[ -n ${@} ]] && _SELECT_ACTION=${@}
 }
 
 list_set_select_callback () {

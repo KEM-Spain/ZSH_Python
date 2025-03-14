@@ -208,10 +208,6 @@ F1=$(cut -d"|" -f1 <<<${_LIST[${_LIST_NDX}]})
 [[ -d ${F1} ]] && LC=${BOLD}${ITALIC}${MAGENTA_FG} || LC=${CYAN_FG}
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${BAR}${LC}%-*s${RESET}%${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} "$(item_decorate ${_LIST_NDX})" "$(get_stat ${_LIST_NDX} a)" "$(get_stat ${_LIST_NDX} m)" "$(get_stat ${_LIST_NDX} b)"
 '
-list_set_prompt_msg '
-printf "Press ${WHITE_FG}Home End PgUp PgDn, ${RESET}<${WHITE_FG}n${RESET}>ext, <${WHITE_FG}p${RESET}>rev, <${WHITE_FG}b${RESET}>ottom, <${WHITE_FG}t${RESET}>op, <${WHITE_FG}s${RESET}>ort columns, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}"
-'
-list_set_prompt " "
 list_set_barlines true
 list_set_sortable true
 list_set_searchable true
