@@ -38,7 +38,7 @@ _LIST_NDX=0
 _LIST_PROMPT=''
 _LIST_SELECT_NDX=0
 _LIST_SELECT_ROW=0
-_LIST_USER_PROMPT_STYLE=none
+_LIST_SELECT_PROMPT_STYLE=none
 _MARKER=${_LINE_MARKER}
 _MARKERS=false
 _MAX_DISPLAY_ROWS=0
@@ -50,7 +50,7 @@ _PROMPT_KEYS=''
 _RESTORE_POS=false
 _SEARCH_MARKER="${BOLD}${RED_FG}\u25CF${RESET}"
 _USED_MARKER="${BOLD}${MAGENTA_FG}\u25CA${RESET}"
-_SELECTABLE=true
+_LIST_IS_SELECTABLE=true
 _SELECTION_LIMIT=0
 _SELECT_ACTION='do action'
 _SELECT_ALL=false
@@ -704,7 +704,8 @@ list_select () {
 	local SORT_SOURCE="USER"
 	local SWAP_NDX=''
 	local TOP_OFFSET=0
-	local USER_PROMPT=''
+	local SELECT_PROMPT=''
+	local SEL_ALL=' '
 	local L R S 
 
 	# Initialization
@@ -728,15 +729,19 @@ list_select () {
 	_MAX_DISPLAY_ROWS=$(( ROWS - (TOP_OFFSET + BOT_OFFSET) ))
 	_PAGES=($(list_set_pages))
 
+
 	# Assign Defaults for Header, Prompt, and Line_Item formatting
 	[[ -z ${_LIST_LINE_ITEM} ]] && _LIST_LINE_ITEM='printf "${BOLD}${_HILITE_COLOR}%*d${RESET}) ${SHADE}%s${RESET}\n" ${#MAX_ITEM} ${_LIST_NDX} ${${_LIST[${_LIST_NDX}]}[1,${MAX_LINE_WIDTH}]}'
-	[[ -n ${_LIST_PROMPT} ]] && USER_PROMPT=${_LIST_PROMPT} || USER_PROMPT="Hit <${GREEN_FG}SPACE${RESET}> to select then <${GREEN_FG}ENTER${RESET}> to ${_SELECT_ACTION}. ${WHITE_FG}Note${RESET}: <${GREEN_FG}ENTER${RESET}> will ${ITALIC}${WHITE_FG}exit${RESET} if none are selected"
+	if [[ ${_LIST_IS_SELECTABLE} == 'true' ]];then
+		SEL_ALL=" select <${WHITE_FG}a${RESET}>ll${RESET}, "
+		[[ -n ${_LIST_PROMPT} ]] && SELECT_PROMPT=${_LIST_PROMPT} || SELECT_PROMPT="Hit <${GREEN_FG}SPACE${RESET}> to select then <${GREEN_FG}ENTER${RESET}> to ${_SELECT_ACTION}. ${WHITE_FG}Note${RESET}: <${GREEN_FG}ENTER${RESET}> will ${ITALIC}${WHITE_FG}exit${RESET} if none are selected"
+	fi
 	[[ -n ${_LIST_ACTION_MSGS[1]} ]] && ACTION_MSGS[1]=${_LIST_ACTION_MSGS[1]} || ACTION_MSGS[1]="process"
 	[[ -n ${_LIST_ACTION_MSGS[2]} ]] && ACTION_MSGS[2]=${_LIST_ACTION_MSGS[2]} || ACTION_MSGS[2]="item"
-	[[ -n ${_PROMPT_KEYS} ]] && KEY_LINE=$(eval ${_PROMPT_KEYS}) || KEY_LINE=$(printf "Press ${WHITE_FG}%s%s%s%s${RESET} Home End PgUp PgDn <${WHITE_FG}n${RESET}>ext, <${WHITE_FG}p${RESET}>rev, <${WHITE_FG}b${RESET}>ottom, <${WHITE_FG}t${RESET}>op, <${WHITE_FG}c${RESET}>lear, vi[${WHITE_FG}h,j,k,l${RESET}], Select <${WHITE_FG}a${RESET}>ll${RESET}, <${WHITE_FG}q${RESET}>uit${RESET}" $'\u2190' $'\u2191' $'\u2193' $'\u2192')
+	[[ -n ${_PROMPT_KEYS} ]] && KEY_LINE=$(eval ${_PROMPT_KEYS}) || KEY_LINE=$(printf "Press ${WHITE_FG}%s%s%s%s${RESET} Home End PgUp PgDn <${WHITE_FG}n${RESET}>ext, <${WHITE_FG}p${RESET}>rev, <${WHITE_FG}b${RESET}>ottom, <${WHITE_FG}t${RESET}>op, <${WHITE_FG}c${RESET}>lear, vi[${WHITE_FG}h,j,k,l${RESET}],${SEL_ALL}<${WHITE_FG}q${RESET}>uit${RESET}" $'\u2190' $'\u2191' $'\u2193' $'\u2192')
 	[[ ${_LIST_IS_SORTABLE} == 'true' ]] && KEY_LINE+=", <${WHITE_FG}s${RESET}>ort"
 	[[ ${_LIST_IS_SEARCHABLE} == 'true' ]] && KEY_LINE+=", \"${WHITE_FG}/${RESET}\" to ${WHITE_FG}search${RESET}"
-	[[ -n ${KEY_LINE} ]] && USER_PROMPT="${KEY_LINE}\n${USER_PROMPT}"
+	[[ -n ${KEY_LINE} ]] && SELECT_PROMPT="${KEY_LINE}\n${SELECT_PROMPT}"
 
 	# Navigation Init
 	_PAGE_DATA=(
@@ -787,7 +792,7 @@ list_select () {
 			NAV_KEY=unset
 
 			# WAIT FOR INPUT
-			KEY=$(get_keys ${USER_PROMPT})
+			KEY=$(get_keys ${SELECT_PROMPT})
 
 			[[ -n ${_KEY_CALLBACKS[${KEY}]} ]] && CB_KEY=${KEY} || CB_KEY='NA'
 
@@ -812,9 +817,9 @@ list_select () {
 				p) NAV_KEY=p;break;;  # 'p' Prev page
 				n) NAV_KEY=n;break;;  # 'n' Next page
 				s) [[ ${_LIST_IS_SORTABLE} == 'true' ]] && NAV_KEY='sort';break;; # Sort
-				32) [[ ${_SELECTABLE} == 'true' ]] && list_toggle_selected;; # Space
-				a)  [[ ${_SELECTABLE} == 'true' ]] && list_toggle_all toggle;; # 'a' Toggle all
-				c)  [[ ${_SELECTABLE} == 'true' ]] && list_toggle_all clear;; # 'c' Clear
+				32) [[ ${_LIST_IS_SELECTABLE} == 'true' ]] && list_toggle_selected;; # Space
+				a)  [[ ${_LIST_IS_SELECTABLE} == 'true' ]] && list_toggle_all toggle;; # 'a' Toggle all
+				c)  [[ ${_LIST_IS_SELECTABLE} == 'true' ]] && list_toggle_all clear;; # 'c' Clear
 				q) exit_request; break;;
 				z) return -1;; # 'z' Quit loop
 				${CB_KEY}) ${_KEY_CALLBACKS[${CB_KEY}]}
@@ -1052,7 +1057,7 @@ list_set_searchable () {
 list_set_selectable () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
-	_SELECTABLE=${1}
+	_LIST_IS_SELECTABLE=${1}
 }
 
 list_set_select_action () {
