@@ -1,0 +1,191 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIST.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Declarations
+typeset -a _LOCAL_LIST=()
+
+# Constants
+_GIT_REPO=~/Code/REPO
+
+# Vars
+
+# Functions
+action_do () {
+	local M
+
+	for M in ${_MARKED};do
+		pushd ${_GIT_REPO}
+		git show $(get_field 1)
+		popd
+		list_set_selected ${M} ${_USED_ROW}
+	done
+}
+
+action_warn () {
+	local M
+	
+	msg_box -p -PP "<I>Please respond|$(str_unicode_line 14)| |${#_MARKED} $(str_pluralize ${g_OBJECT} ${#_MARKED}) selected"
+
+	if [[ ${_MSG_KEY} == 'n' ]];then
+		for M in ${_MARKED};do
+			list_set_selected ${M} 0
+		done
+	fi
+}
+
+get_field () {
+	local FLD=${1}
+
+	echo $(cut -d'|' -f${FLD} <<<${_LOCAL_LIST[${_LIST_NDX}]})
+}
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+This script does...
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave $(msg_exit W ${PENDING_MSGS})
+}
+
+OPTSTR=":HD"
+OPTIND=0
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+RAWPATH=$(path_get_raw)
+FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+
+[[ ${?} -ne 0 ]] && exit_leave "${0}: ${RED_FG}no matches found${RESET} ${WHITE_FG}${@}${RESET}"
+PATHLBL=$(path_get_label 40)
+
+pushd ${_GIT_REPO}
+RAW_LIST=("${(f)$(git log -g --pretty=reference)}")
+if [[ ${?} -ne 0 ]];then
+	dbg "${0}:${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path . 2>/dev/null" 
+else
+	dbg "${0}:${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#LOCAL_LIST}"
+fi
+popd
+
+for L in ${(u)RAW_LIST};do
+	REF=$(cut -d' ' -f1 <<<${L})
+	DTM=$(cut -d'(' -f2 <<<${L})
+	DTM=$(cut -d',' -f1 <<<${DTM})
+	DT=$(cut -d'-' -f1-3 <<<${DTM})
+	TM=$(cut -d'-' -f4 <<<${DTM})
+	_LOCAL_LIST+="${REF}|${DT}|${TM}"
+done
+
+#set headings
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO} ${_GIT_REPO} ${SELECTED_COUNT}'
+list_add_header_break
+
+#set line item
+list_set_line_item ' 
+printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s %s %s${RESET}\n" ${_LIST_NDX} $(get_field 1) $(get_field 2) $(get_field 3) 
+'
+
+list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${g_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${g_ACTION} ${g_OBJECT}(s) (${ITALIC}or exit if none selected${RESET})"
+list_restore_position true
+
+while true;do
+	#get selection
+	list_select ${_LOCAL_LIST}
+	[[ ${?} -eq 0 ]] && break
+
+	#get selections
+	_MARKED=($(list_get_selected))
+	
+	if [[ $(list_get_selected_count) -ne 0 ]];then
+		action_warn
+		if [[ ${_MSG_KEY} == "y" ]];then
+			action_do
+		fi
+	fi
+done

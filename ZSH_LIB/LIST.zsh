@@ -47,7 +47,7 @@ _NO_TOP_OFFSET=false
 _OFF_SCREEN_ROWS_MSG=''
 _PAGE_CALLBACK_FUNC=''
 _PROMPT_KEYS=''
-_RESTORE_POS=false
+_LIST_RESTORE_POS=false
 _SEARCH_MARKER="${BOLD}${RED_FG}\u25CF${RESET}"
 _USED_MARKER="${BOLD}${MAGENTA_FG}\u25CA${RESET}"
 _LIST_IS_SELECTABLE=true
@@ -82,7 +82,7 @@ list_display_page () {
 	local R=0
 	local X_POS=0
 
-	[[ ${_RESTORE_POS} == 'true' ]] && list_get_position
+	[[ ${_LIST_RESTORE_POS} == 'true' ]] && list_get_position
 
 	if [[ ${_PAGE_DATA[RESTORE]} == 'true' ]];then
 		_PAGE_DATA[PAGE]=$(list_find_page ${_PAGE_DATA[POS_NDX]})
@@ -852,6 +852,7 @@ list_select () {
 			esac
 		done
 		list_nav_handler ${NAV_KEY}
+		[[ ${_LIST_RESTORE_POS} == 'true' ]] && list_set_position
 	done
 
 	return $(list_get_selected_count)
@@ -1004,7 +1005,7 @@ list_set_pages () {
 list_restore_position () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	_RESTORE_POS=${1}
+	_LIST_RESTORE_POS=${1}
 }
 	
 list_get_position () {
