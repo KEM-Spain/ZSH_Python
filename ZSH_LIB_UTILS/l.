@@ -323,6 +323,8 @@ shift $((OPTIND -1))
 # Execution
 clear
 
+[[ ${#} -ne 0 ]] && MATCHED=" ${BOLD}matching${RESET}" || MATCHED=''
+
 RECURSE=false
 case ${0:t} in
 	l) _HIDDEN_ONLY=false;;
@@ -361,7 +363,7 @@ elif [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'true' ]];then
 	if [[ ${RC} -eq 0 ]];then
 		exec tree -a .* 2>/dev/null | mypager
 	else
-		echo "No hidden files found"
+		echo "No${MATCHED}hidden file(s) found"
 	fi
 	exit_leave
 else
@@ -423,6 +425,7 @@ if [[ ${_DIRS_ONLY} == 'true' || ${_FILES_ONLY} == 'true' || ${_LINKS_ONLY} == '
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}find ${_LS_ARGS:h} -maxdepth 1 -name ${_LS_ARGS:t} -type ${_F_TYPE} ! -path ${_LS_ARGS:h}${RESET}"
 	F_LIST=("${(f)$(find ${_LS_ARGS:h} -maxdepth 1 -name ${_LS_ARGS:t} -type ${_F_TYPE} ! -path ${_LS_ARGS:h} 2>/dev/null)}")
 
+
 	for F in ${F_LIST};do
 		if [[ ${_ALL_FILES} == 'false' ]];then
 			[[ ${_HIDDEN_ONLY} == 'false' && ${F:t} =~ '^\.' ]] && continue
@@ -433,7 +436,7 @@ if [[ ${_DIRS_ONLY} == 'true' || ${_FILES_ONLY} == 'true' || ${_LINKS_ONLY} == '
 	done
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST} || echo No matching$(not_found)found${RESET}"
-	[[ -n ${_LS_LIST} ]] && eval "ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST}" || echo "No matching$(not_found)found"
+	[[ -n ${_LS_LIST} ]] && eval "ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST}" || echo "No${MATCHED}$(not_found)found"
 
 	exit_leave
 fi
@@ -442,7 +445,7 @@ fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} 2>/dev/null${RESET}"
 eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS}" 2>/dev/null
-[[ ${?} -ne 0 ]] && echo "No matching$(not_found)found"
+[[ ${?} -ne 0 ]] && echo "No${MATCHED}$(not_found)found"
 [[ -n ${H_MARK} ]] && echo ${H_MARK}
 
 exit_leave
