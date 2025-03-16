@@ -17,17 +17,18 @@ typeset -a _LIST=()
 typeset -a _PAGE=()
 
 # LIB Vars
-_CURRENT_PAGE=0
 _CAT_DELIM=':'
-_HAS_CAT=false
 _CAT_SORT=r
+_CURRENT_PAGE=0
+_HAS_CAT=false
 _HILITE_X=0
 _SAVE_MENU_POS=false
+_SELECT_TAG_FILE="/tmp/$$.${0:t}.state"
 _SEL_KEY=''
 _SEL_VAL=''
 _TAG=''
-_SELECT_TAG_FILE=''
 
+# Functtons
 sel_box_center () {
 	local BOX_LEFT=${1};shift # Box Y coord
 	local BOX_WIDTH=${1};shift # Box W coord
@@ -126,6 +127,21 @@ sel_disp_page () {
 	for (( NDX=1; NDX <= ${#_PAGE}; NDX++ ));do
 		sel_norm $(( _LIST_DATA[X] + NDX - 1 )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 	done
+}
+
+sel_get_position () {
+	local PAGE=0
+	local NDX=0
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	if [[ -e ${_SELECT_TAG_FILE} ]];then
+		IFS='|' read -r PAGE NDX < ${_SELECT_TAG_FILE} # Retrieve stored position
+		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
+		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
+		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
+		/bin/rm -f ${_SELECT_TAG_FILE}
+	fi
 }
 
 sel_hilite () {
@@ -241,7 +257,7 @@ sel_list () {
 
 	[[ ${#_LIST} -gt 100 ]] && msg_box -c "<w>Working...<N>"
 
-	[[ -n ${_TAG}  ]] && _SELECT_TAG_FILE="/tmp/$$.${_TAG}.state" || _SELECT_TAG_FILE="/tmp/$$.${0}.state"
+	[[ -n ${_TAG}  ]] && _SELECT_TAG_FILE="/tmp/$$.${_TAG}.state"
 
 	# If no X,Y coords are passed default to center
 	LIST_W=$(arr_long_elem_len ${_LIST})
@@ -681,22 +697,7 @@ sel_set_position () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
 
-	[[ -n ${_SELECT_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_SELECT_TAG_FILE} || dbg "_SELECT_TAG_FILE not defined" # Save menu position
-	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "${_SELECT_TAG_FILE} was NOT created"
-}
-
-sel_get_position () {
-	local PAGE=0
-	local NDX=0
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
-
-	if [[ -e ${_SELECT_TAG_FILE} ]];then
-		IFS='|' read -r PAGE NDX < ${_SELECT_TAG_FILE} # Retrieve stored position
-		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
-		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
-		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
-		/bin/rm -f ${_SELECT_TAG_FILE}
-	fi
+	[[ -n ${_SELECT_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_SELECT_TAG_FILE} # Save menu position
+	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "_SELECT_TAG_FILE NOT defined"
 }
 

@@ -68,6 +68,10 @@ list_add_header_break () {
 	_LIST_HEADER_BREAK=true
 }
 
+list_clear_header () {
+	_LIST_HEADER=()
+}
+
 list_clear_selected () {
 	local NDX=${1}
 
@@ -234,6 +238,21 @@ list_get_page_limits () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	echo "TOP ${TOP} BOT ${BOT} MAX_CURSOR ${MAX_CURSOR} MIN_CURSOR ${MIN_CURSOR}"
+}
+
+list_get_position () {
+	local NDX=0
+	local CUR=0
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	if [[ -e ${_LIST_TAG_FILE} ]];then
+		IFS='|' read -r NDX CUR < ${_LIST_TAG_FILE} # Retrieve stored position
+		[[ -n ${NDX} ]] && _PAGE_DATA[POS_NDX]=${NDX} || _PAGE_DATA[POS_NDX]=''
+		[[ -n ${CUR} ]] && _PAGE_DATA[POS_CUR]=${CUR} || _PAGE_DATA[POS_CUR]=''
+		[[ -n ${_PAGE_DATA[POS_NDX]} && -n ${_PAGE_DATA[POS_CUR]} ]] && _PAGE_DATA[RESTORE]=true || _PAGE_DATA[RESTORE]=false
+		/bin/rm -f ${_LIST_TAG_FILE}
+	fi
 }
 
 list_get_selected () {
@@ -489,6 +508,12 @@ list_reset () {
 	_LIST_PROMPT=''
 	_LIST_SELECTED=()
 	_MARKED=()
+}
+
+list_restore_position () {
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	_LIST_RESTORE_POS=${1}
 }
 
 list_search () {
@@ -891,10 +916,6 @@ list_set_client_warn () {
 	_CLIENT_WARN=${1}
 }
 
-list_clear_header () {
-	_LIST_HEADER=()
-}
-
 list_set_header () {
 	local HDR_LINE=${1}
 
@@ -1000,27 +1021,6 @@ list_set_pages () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RETURNING page boundaries for ${#PAGES} pages"
 
 	echo "${(kv)PAGES}"
-}
-
-list_restore_position () {
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	_LIST_RESTORE_POS=${1}
-}
-	
-list_get_position () {
-	local NDX=0
-	local CUR=0
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
-
-	if [[ -e ${_LIST_TAG_FILE} ]];then
-		IFS='|' read -r NDX CUR < ${_LIST_TAG_FILE} # Retrieve stored position
-		[[ -n ${NDX} ]] && _PAGE_DATA[POS_NDX]=${NDX} || _PAGE_DATA[POS_NDX]=''
-		[[ -n ${CUR} ]] && _PAGE_DATA[POS_CUR]=${CUR} || _PAGE_DATA[POS_CUR]=''
-		[[ -n ${_PAGE_DATA[POS_NDX]} && -n ${_PAGE_DATA[POS_CUR]} ]] && _PAGE_DATA[RESTORE]=true || _PAGE_DATA[RESTORE]=false
-		/bin/rm -f ${_LIST_TAG_FILE}
-	fi
 }
 
 list_set_position () {
@@ -1505,3 +1505,4 @@ list_write_to_file () {
 		msg_box -c -p -PK "List is empty - nothing to write"
 	fi
 }
+
