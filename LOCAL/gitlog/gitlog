@@ -36,14 +36,16 @@ _GIT_REPO=~/Code/REPO
 action_do () {
 	local M
 	local COMMIT=''
+	local SZ=0
 
 	for M in ${_MARKED};do
 		COMMIT=$(get_field 1)
+		SZ=$(get_field 4)
 		pushd ${_GIT_REPO}
 		tcup 0 0
 		tput ed
 		git show -P ${COMMIT} ${FN_ARG}
-		echo -n "Press any key..." && read
+		[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		popd
 		list_set_selected ${M} ${_USED_ROW}
 	done
@@ -187,7 +189,7 @@ for L in ${(u)RAW_LIST};do
 	DTM=$(cut -d',' -f1 <<<${DTM})
 	DT=$(cut -d'-' -f1-3 <<<${DTM})
 	TM=$(cut -d'-' -f4 <<<${DTM})
-	_LOCAL_LIST+="${REF}|${DT}|${TM}"
+	_LOCAL_LIST+="${REF}|${DT}|${TM}|${SIZE}"
 done
 
 # Set headings

@@ -32,15 +32,18 @@ typeset -a _LOCAL_LIST=()
 # Constants
 _GIT_REPO=~/Code/REPO
 
-# Vars
-
 # Functions
 action_do () {
 	local M
+	local COMMIT=''
 
 	for M in ${_MARKED};do
+		COMMIT=$(get_field 1)
 		pushd ${_GIT_REPO}
-		git show $(get_field 1)
+		tcup 0 0
+		tput ed
+		git show -P ${COMMIT} ${FN_ARG}
+		echo -n "Press any key..." && read
 		popd
 		list_set_selected ${M} ${_USED_ROW}
 	done
@@ -49,13 +52,22 @@ action_do () {
 action_warn () {
 	local M
 	
-	msg_box -p -PP "<I>Please respond|$(str_unicode_line 14)| |${#_MARKED} $(str_pluralize ${g_OBJECT} ${#_MARKED}) selected"
+	msg_box -p -PP "<I>Please respond|$(str_unicode_line 14)| |${#_MARKED} $(str_pluralize commit ${#_MARKED}) selected"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do
 			list_set_selected ${M} 0
 		done
 	fi
+}
+
+item_decorate () {
+	local LINE=${@}
+
+	case ${_LIST_SELECTED[${_LIST_NDX}]} in
+		${_USED_ROW}) echo "${E_STRIKE}${E_RED_FG}${LINE}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		*)	tput el;echo ${LINE};;
+	esac
 }
 
 get_field () {
@@ -70,7 +82,9 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-This script does...
+Show diffs for selected commits
+\tIf a filename is passed results
+\tare limited to the file specified
 EOF
 
 parse_opts () {
@@ -110,7 +124,7 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -137,6 +151,12 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
+# Resolve file arg path
+if [[ ${#} -gt 0 ]];then
+	FN_ARG=$(find ${_GIT_REPO} -name ${@} | grep -v scratch)
+	[[ -z ${FN_ARG} ]] && exit_leave $(msg_exit E "File:${@} not found")
+fi
+
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
@@ -145,7 +165,7 @@ FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
 pushd ${_GIT_REPO}
-RAW_LIST=("${(f)$(git log -g --pretty=reference)}")
+RAW_LIST=("${(f)$(git log -g --pretty=reference ${FN})}")
 if [[ ${?} -ne 0 ]];then
 	dbg "${0}:${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path . 2>/dev/null" 
 else
@@ -153,8 +173,16 @@ else
 fi
 popd
 
+MD=${PWD}
+SIZE=0
 for L in ${(u)RAW_LIST};do
 	REF=$(cut -d' ' -f1 <<<${L})
+	if [[ -n ${FN_ARG} ]];then
+		pushd ${_GIT_REPO}
+		SIZE=$(git show ${REF} ${FN_ARG} | wc -l)
+		[[ ${SIZE} -eq 0 ]] && continue
+		popd
+	fi
 	DTM=$(cut -d'(' -f2 <<<${L})
 	DTM=$(cut -d',' -f1 <<<${DTM})
 	DT=$(cut -d'-' -f1-3 <<<${DTM})
@@ -162,24 +190,25 @@ for L in ${(u)RAW_LIST};do
 	_LOCAL_LIST+="${REF}|${DT}|${TM}"
 done
 
-#set headings
+# Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO} ${_GIT_REPO} ${SELECTED_COUNT}'
+[[ -n ${FN_ARG} ]] && list_set_header 'printf "Results limited to FILE:${MAGENTA_FG}${FN_ARG}${RESET}"'
 list_add_header_break
 
-#set line item
+# Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s %s %s${RESET}\n" ${_LIST_NDX} $(get_field 1) $(get_field 2) $(get_field 3) 
+printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate $(get_field 1) $(get_field 2) $(get_field 3))"
 '
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${g_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${g_ACTION} ${g_OBJECT}(s) (${ITALIC}or exit if none selected${RESET})"
 list_restore_position true
 
 while true;do
-	#get selection
+	# Get selection
 	list_select ${_LOCAL_LIST}
 	[[ ${?} -eq 0 ]] && break
 
-	#get selections
+	# Get selections
 	_MARKED=($(list_get_selected))
 	
 	if [[ $(list_get_selected_count) -ne 0 ]];then
