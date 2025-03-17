@@ -1481,12 +1481,12 @@ list_warn_invisible_rows () {
 			continue 
 		else
 			if [[ ${_LIST_SELECTED[${S}]} -eq ${_SELECTED_ROW} ]];then
-				_OFF_SCREEN_ROWS_MSG="(<w><I>there are marked rows on other pages<N>)|"
+				_OFF_SCREEN_ROWS_MSG="(<w><I>There are marked rows on other pages<N>)|"
 				break
 			fi
 		fi
 	done
-	[[ -n ${_OFF_SCREEN_ROWS_MSG} ]] && msg_box -p -PK ${_OFF_SCREEN_ROWS_MSG}
+	[[ -n ${_OFF_SCREEN_ROWS_MSG} ]] && msg_box -H1 -p -PK "<r>Warning<N>|${_OFF_SCREEN_ROWS_MSG}"
 }
 
 list_write_to_file () {

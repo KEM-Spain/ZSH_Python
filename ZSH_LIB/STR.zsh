@@ -163,6 +163,7 @@ str_pluralize () {
 		candidate) RETURN_WORD="candidates";;
 		choice) RETURN_WORD="choices";;
 		command) RETURN_WORD="commands";;
+		commit) RETURN_WORD="commits";;
 		config) RETURN_WORD="configs";;
 		country) RETURN_WORD="countries";;
 		cup) RETURN_WORD="cups";;
