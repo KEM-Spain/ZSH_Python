@@ -423,6 +423,10 @@ clear_log () {
 	fi
 }
 
+clear_tmp () {
+	[[ -e /tmp/*$$*state ]] && rm -rf /tmp/*$$*state
+}
+
 download_log_update () {
 	local FN_HIT=''
 	local IN=''
@@ -1420,6 +1424,8 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+set_exit_callback clear_tmp
+
 g_LAST_CODE_UPD=$(last_code_update ${_CODE_MARKER})
 [[ ${g_FIX_AUDIO} == 'true' && ${g_QRY_ENGINE} == 'rumble' ]] && g_FIX_AUDIO=false && msg_box -p -PK "FIX AUDIO not supported for Rumble| FIX AUDIO ignored"
 

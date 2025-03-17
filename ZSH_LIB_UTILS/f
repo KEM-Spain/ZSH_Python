@@ -37,6 +37,8 @@ WHITE_FG="\033[37m"
 
 read -r -d '' DESC<<EOF
 Find files and/or directories in or below the current directory
+\tAll <SEARCHTERM> args are find command regex components
+\tA leading and trailing match component '.*/<REGEX>.*' are automatically included
 EOF
 
 parse_opts () {
@@ -79,10 +81,8 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug; when repeated increases level"
 	echo -e "${WHITE_FG}-L${RESET} add listing detail"
-	echo -e "${WHITE_FG}-d${RESET} depth; when repeated increases depth"
-	echo -e "${WHITE_FG}-l${RESET} matches anchored to beginning of filename (leading match)"
+	echo -e "${WHITE_FG}-d${RESET} depth; each repetition increases search depth"
 	echo -e "${WHITE_FG}-p${RESET} search path (default pwd)"
-	echo -e "${WHITE_FG}-r${RESET} arg is a 'regex'"
 	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} (any valid type:f,d,l,p,c,s,b)  Default:${WHITE_FG}any${RESET}"
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
@@ -96,10 +96,10 @@ LISTING=false
 LEADING=false
 TYPE=''
 OPTIND=0
-REGEX=''
+REGEX_ARG=''
 FIND_PATH=${PWD}
 
-OPTSTR=":HDLdp:lr:t:"
+OPTSTR=":HDLdp:t:"
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -107,9 +107,7 @@ while getopts ${OPTSTR} OPTION;do
      D) dbg_set_level;;
      L) LISTING=true;;
      d) depth_set_level;;
-     l) LEADING=true;;
      p) FIND_PATH=${OPTARG};;
-     r) REGEX="${OPTARG}";;
      t) TYPE="${OPTARG}";;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
@@ -120,14 +118,16 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+
 # Marshall find command args
 MAXDEPTH=${_DEPTH}
 
-INAME=${1}
-[[ ${LEADING} == 'true' ]] && INAME="${INAME}*" || INAME="*${INAME}*"
-INAME=${(qqq)INAME}
-REGEX=${REGEX:='.*'}
-REGEX=${(qqq)REGEX}
+REGEX_ARG=''
+if [[ ${#} -ne 0 ]];then
+	REGEX_ARG=${1}
+	REGEX=".*/${REGEX_ARG}.*"
+	REGEX="-regextype 'posix-extended' -regex ${(qqq)REGEX}"
+fi
 
 case ${TYPE} in
 	f) TYPE='-type f';TDESC='Regular File';;
@@ -142,7 +142,7 @@ esac
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nOBJ_TYPE:${OBJ_TYPE:-any}"
 
-CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} -iname ${INAME} -regex ${REGEX} ${TYPE}"
+CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE}"
 
 LIST=("${(f)$(eval ${CMD})}")
 if ! arr_is_populated "${LIST}" ;then
@@ -153,7 +153,7 @@ fi
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#LIST}"
 
 {
-echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} -iname ${WHITE_FG}${INAME}${RESET} -regex ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
+echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
 if [[ ${LISTING} == 'true' ]];then
 	ls -lAdrt ${LIST}
 else

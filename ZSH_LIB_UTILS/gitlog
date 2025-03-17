@@ -179,12 +179,10 @@ MD=${PWD}
 SIZE=0
 for L in ${(u)RAW_LIST};do
 	REF=$(cut -d' ' -f1 <<<${L})
-	if [[ -n ${FN_ARG} ]];then
-		pushd ${_GIT_REPO}
-		SIZE=$(git show ${REF} ${FN_ARG} | wc -l)
-		[[ ${SIZE} -eq 0 ]] && continue
-		popd
-	fi
+	pushd ${_GIT_REPO}
+	SIZE=$(git show ${REF} ${FN_ARG} | wc -l)
+	[[ ${SIZE} -eq 0 ]] && continue
+	popd
 	DTM=$(cut -d'(' -f2 <<<${L})
 	DTM=$(cut -d',' -f1 <<<${DTM})
 	DT=$(cut -d'-' -f1-3 <<<${DTM})
