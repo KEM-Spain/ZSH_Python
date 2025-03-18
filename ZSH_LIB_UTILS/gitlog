@@ -37,6 +37,7 @@ action_do () {
 	local M
 	local COMMIT=''
 	local SZ=0
+	local -a FLIST=()
 
 	for M in ${_MARKED};do
 		COMMIT=$(get_field 1)
@@ -44,8 +45,17 @@ action_do () {
 		pushd ${_GIT_REPO}
 		tcup 0 0
 		tput ed
-		git show -P ${COMMIT} ${FN_ARG}
-		[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
+		if [[ -z ${FN_ARG} ]];then
+			FLIST=("${(f)$(git diff-tree --no-commit-id --name-only ${COMMIT} -r)}")
+			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list ${FLIST})"
+			if [[ ${_MSG_KEY} == 'y' ]];then
+				git show -P ${COMMIT}
+				[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
+			fi
+		else
+			git show -P ${COMMIT} ${FN_ARG}
+			[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
+		fi
 		popd
 		list_set_selected ${M} ${_USED_ROW}
 	done
@@ -155,7 +165,7 @@ shift $((OPTIND -1))
 
 # Resolve file arg path
 if [[ ${#} -gt 0 ]];then
-	FN_ARG=$(find ${_GIT_REPO} -name ${@} | grep -v scratch)
+	FN_ARG=$(find ${_GIT_REPO} -name ${@} | grep -v scratch | grep ZSH)
 	[[ -z ${FN_ARG} ]] && exit_leave $(msg_exit E "File:${@} not found")
 fi
 

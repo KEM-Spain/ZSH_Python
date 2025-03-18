@@ -364,7 +364,6 @@ list_item () {
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 	fi
 
-	# TODO: IN PROGRESS: setting marker for used rows
 	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]] && SHADE=${REVERSE} || SHADE=''
 	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]] && _MARKER=${_USED_MARKER}
 
@@ -854,6 +853,7 @@ list_select () {
 						break
 					fi;;
 				0) SELECTED_COUNT=$(list_get_selected_count); # Enter key
+					[[ ${_LIST_RESTORE_POS} == 'true' ]] && list_set_position
 					_PAGE_DATA[PAGE_STATE]='hold';
 					if [[ ${SELECTED_COUNT} -eq 0 ]];then
 						break 2
@@ -877,7 +877,6 @@ list_select () {
 			esac
 		done
 		list_nav_handler ${NAV_KEY}
-		[[ ${_LIST_RESTORE_POS} == 'true' ]] && list_set_position
 	done
 
 	return $(list_get_selected_count)
@@ -1443,7 +1442,6 @@ list_toggle_selected () {
 		return # Ignore over limit
 	fi
 
-	# TODO: No strategy in place for USED_ROWS
 	if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_AVAIL_ROW} ]];then
 		list_set_selected ${_LIST_NDX} ${_SELECTED_ROW} 
 		list_item select ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
