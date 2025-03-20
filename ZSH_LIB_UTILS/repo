@@ -25,8 +25,9 @@ _PYTHON=${_REPO}/PYTHON
 _SYSTEM=${_REPO}/SYSTEM
 _DEV=${_REPO}/LOCAL
 _VIM_CFG=${_REPO}/VIM_CFG
+_VIM_CFG_USER=${_REPO}/VIM_CFG/USER
 _ZSH_CFG=${_REPO}/ZSH_CFG
-_ZSH_CFG_COMP=${_REPO}/ZSH_CFG/COMP
+_ZSH_CFG_USER=${_REPO}/ZSH_CFG/USER
 _ZSH_LIB=${_REPO}/ZSH_LIB
 _ZSH_LIB_UTILS=${_REPO}/ZSH_LIB_UTILS
 _ZSH_NON_LIB_UTILS=${_REPO}/ZSH_NON_LIB_UTILS
@@ -39,8 +40,8 @@ _UL_BIN_CONV_DIR=/usr/local/bin/conversion
 _UL_ETC_DIR=/usr/local/etc
 _UL_LIB_DIR=/usr/local/lib
 _VIM_DIR=/home/kmiller/.vim
+_ZSH_DIR=/home/kmiller/.zsh
 _ZSH_CFG_DIR=/etc/zsh
-_ZSH_COMP_DIR=/home/kmiller/.zsh/completions
 
 # Declarations
 typeset -a _DEVELOPMENT
@@ -122,15 +123,15 @@ copy_zsh_cfg_files () {
 	for L in ${_ZSH_CFG_FILES};do
 		cp "${L}" ${_ZSH_CFG}
 	done
-	for L in ${_ZSH_COMP_FILES};do
-		cp -rp "${L}" ${_ZSH_CFG_COMP}
-	done
+	sudo rsync -a ${_ZSH_DIR} ${_ZSH_CFG}
+	cp /home/kmiller/.zshrc ${_ZSH_CFG_USER}
+	cp /home/kmiller/.zsh_history ${_ZSH_CFG_USER}
 }
 
 copy_vim_cfg_files () {
 	echo "${WHITE_FG}VIM CONFIG FILES${RESET}" >&2
 	sudo rsync -a ${_VIM_DIR} ${_VIM_CFG}
-	cp ~/.vimrc ${_VIM_CFG}
+	cp ~/.vimrc ${_VIM_CFG_USER}
 }
 
 copy_python_files () {
@@ -144,12 +145,9 @@ copy_python_files () {
 
 copy_user_files () {
 	echo "${WHITE_FG}USER FILES${RESET}" >&2
-	cp /home/kmiller/.zshrc ${_USER_DIR}
-	cp /home/kmiller/.zsh_history ${_USER_DIR}
 	cp -R /home/kmiller/.mvq ${_USER_DIR} 2>/dev/null
 	cp -R /home/kmiller/.yts ${_USER_DIR} 2>/dev/null
 	cp -R /home/kmiller/.openvpn3 ${_USER_DIR} 2>/dev/null
-	cp -R /home/kmiller/.zsh ${_USER_DIR} 2>/dev/null
 	cp -R /home/kmiller/Code/LOCAL/ovpn/ovpn ${_USER_DIR} 2>/dev/null
 }
 
@@ -166,7 +164,9 @@ pushd ~/Code
 [[ ! -e ${_PYTHON} ]] && mkdir -p ${_PYTHON}
 [[ ! -e ${_SYSTEM} ]] && mkdir -p ${_SYSTEM}
 [[ ! -e ${_VIM_CFG} ]] && mkdir -p ${_VIM_CFG}
-[[ ! -e ${_ZSH_CFG_COMP} ]] && mkdir -p ${_ZSH_CFG_COMP}
+[[ ! -e ${_VIM_CFG_USER} ]] && mkdir -p ${_VIM_CFG_USER}
+[[ ! -e ${_ZSH_CFG} ]] && mkdir -p ${_ZSH_CFG}
+[[ ! -e ${_ZSH_CFG_USER} ]] && mkdir -p ${_ZSH_CFG_USER}
 [[ ! -e ${_ZSH_LIB} ]] && mkdir -p ${_ZSH_LIB}
 [[ ! -e ${_ZSH_LIB_UTILS} ]] && mkdir -p ${_ZSH_LIB_UTILS}
 [[ ! -e ${_ZSH_NON_LIB_UTILS} ]] && mkdir -p ${_ZSH_NON_LIB_UTILS}
@@ -207,7 +207,6 @@ copy_etc_files
 
 # zsh
 _ZSH_CFG_FILES=("${(f)$(find ${_ZSH_CFG_DIR} -maxdepth 1 -type f)}")
-_ZSH_CFG_FILES+=~/.zshrc
 echo "Total zsh config files:${#_ZSH_CFG_FILES}"
 
 _ZSH_COMP_FILES+=("${(f)$(find ${_ZSH_COMP_DIR} ! -path ${_ZSH_COMP_DIR})}")
