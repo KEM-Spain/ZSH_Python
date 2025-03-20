@@ -131,7 +131,6 @@ copy_vim_cfg_files () {
 	echo "${WHITE_FG}VIM CONFIG FILES${RESET}" >&2
 	sudo rsync -a ${_VIM_DIR} ${_VIM_CFG}
 	cp ~/.vimrc ${_VIM_CFG}
-	#cp -R ~/.vim ${_VIM_CFG}
 }
 
 copy_python_files () {
