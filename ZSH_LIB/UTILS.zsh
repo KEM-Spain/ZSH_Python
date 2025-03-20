@@ -127,31 +127,27 @@ box_coords_get () {
 box_coords_overlap () {
 	local TAG_1=${1}
 	local TAG_2=${2}
-	local -A BOX_A_COORDS=($(box_coords_get ${TAG_1}))
-	local -A BOX_B_COORDS=($(box_coords_get ${TAG_2}))
-	local -i L1_X=${BOX_A_COORDS[X]}
-	local -i R1_X=$(( BOX_A_COORDS[X] + BOX_A_COORDS[H] -1 ))
-	local -i L1_Y=${BOX_A_COORDS[Y]}
-	local -i R1_Y=$(( BOX_A_COORDS[Y] + BOX_A_COORDS[W] -1 ))
 
-	#tput cup ${L1_X} ${L1_Y};echo -n "${RED_FG}(L1 X:${L1_X},Y:${L1_Y})${RESET}"
-	#tput cup ${R1_X} ${R1_Y};echo -n "${RED_FG}(R1 X:${R1_X},Y:${R1_Y})${RESET}"
+	local -A BOX_1_COORDS=($(box_coords_get ${TAG_1}))
+	local -A BOX_2_COORDS=($(box_coords_get ${TAG_2}))
 
-	local -i L2_X=${BOX_B_COORDS[X]}
-	local -i R2_X=$(( BOX_B_COORDS[X] + BOX_B_COORDS[H] -1 ))
-	local -i L2_Y=${BOX_B_COORDS[Y]}
-	local -i R2_Y=$(( BOX_B_COORDS[Y] + BOX_B_COORDS[W] -1 ))
+	local X1_MIN=${BOX_1_COORDS[X]}
+	local X1_MAX=$(( BOX_1_COORDS[X] + BOX_1_COORDS[H] -1 )) # Add the height
+	local Y1_MIN=${BOX_1_COORDS[Y]}
+	local Y1_MAX=$(( BOX_1_COORDS[Y] + BOX_1_COORDS[W] -1 )) # Add the width
 
-	#tput cup ${L2_X} ${L2_Y};echo -n "${GREEN_FG}(L2 X:${L2_X},Y:${L2_Y})${RESET}"
-	#tput cup ${R2_X} ${R2_Y};echo -n "${GREEN_FG}(R2 X:${R2_X},Y:${R2_Y})${RESET}"
+	local X2_MIN=${BOX_2_COORDS[X]}
+	local X2_MAX=$(( BOX_2_COORDS[X] + BOX_2_COORDS[H] -1 )) # Add the height
+	local Y2_MIN=${BOX_2_COORDS[Y]}
+	local Y2_MAX=$(( BOX_2_COORDS[Y] + BOX_2_COORDS[W] -1 )) # Add the width
 
-	local STATE=OVERLAP
-	[[ ${L2_X} -gt ${R1_X} ]] && STATE=CLEAR
-	[[ ${L2_Y} -gt ${R1_Y} ]] && STATE=CLEAR
+	# isOverlapping = (x1min < x2max) && (x2min < x1max) && (y1min < y2max) && (y2min < y1max)
+	
+	local OVERLAP=1
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${X1_MIN} -lt ${X2_MAX} && ${X2_MIN} -lt ${X1_MAX} && ${Y1_MIN} -lt ${Y2_MAX} && ${Y2_MIN} -lt ${Y1_MAX} ]] && OVERLAP=0
 
-	echo ${STATE}
+	return ${OVERLAP} # Return true - is overlap
 }
 
 box_coords_relative () {

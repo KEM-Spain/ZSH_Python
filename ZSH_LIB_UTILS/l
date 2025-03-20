@@ -352,7 +352,7 @@ _LS_OPTS=$(get_ls_opts ${_CALLER})
 
 if [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'false' ]];then
 	[[ ${_DEBUG} -lt 2 ]] && _DEBUG=0
-	exec tree -C ${RAW_CMD} | mypager
+	exec tree -C -Ra ${RAW_CMD} | mypager
 	exit_leave
 elif [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'true' ]];then
 	[[ ${_DEBUG} -lt 2 ]] && _DEBUG=0
@@ -361,7 +361,7 @@ elif [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'true' ]];then
 	RC=${?}
 	setopt nomatch
 	if [[ ${RC} -eq 0 ]];then
-		exec tree -a .* 2>/dev/null | mypager
+		exec tree -Ra .* 2>/dev/null | mypager
 	else
 		echo "No${MATCHED}hidden file(s) found"
 	fi

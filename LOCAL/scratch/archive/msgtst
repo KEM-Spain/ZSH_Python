@@ -36,23 +36,41 @@ box_coords_overlap () {
 	local TAG_1=${1}
 	local TAG_2=${2}
 
-	local -A BOX_A_COORDS=($(box_coords_get ${TAG_1}))
-	local -A BOX_B_COORDS=($(box_coords_get ${TAG_2}))
+	local -A BOX_1_COORDS=($(box_coords_get ${TAG_1}))
+	local -A BOX_2_COORDS=($(box_coords_get ${TAG_2}))
 
-	local -i L1_X=${BOX_A_COORDS[X]}
-	local -i R1_X=$(( BOX_A_COORDS[X] + BOX_A_COORDS[H] -1 ))
-	local -i L1_Y=${BOX_A_COORDS[Y]}
-	local -i R1_Y=$(( BOX_A_COORDS[Y] + BOX_A_COORDS[W] -1 ))
+	local X1_MIN=${BOX_1_COORDS[X]}
+	local X1_MAX=$(( BOX_1_COORDS[X] + BOX_1_COORDS[H] -1 )) # Add the height
+	local Y1_MIN=${BOX_1_COORDS[Y]}
+	local Y1_MAX=$(( BOX_1_COORDS[Y] + BOX_1_COORDS[W] -1 )) # Add the width
 
-	local -i L2_X=${BOX_B_COORDS[X]}
-	local -i R2_X=$(( BOX_B_COORDS[X] + BOX_B_COORDS[H] -1 ))
-	local -i L2_Y=${BOX_B_COORDS[Y]}
-	local -i R2_Y=$(( BOX_B_COORDS[Y] + BOX_B_COORDS[W] -1 ))
+	local X2_MIN=${BOX_2_COORDS[X]}
+	local X2_MAX=$(( BOX_2_COORDS[X] + BOX_2_COORDS[H] -1 )) # Add the height
+	local Y2_MIN=${BOX_2_COORDS[Y]}
+	local Y2_MAX=$(( BOX_2_COORDS[Y] + BOX_2_COORDS[W] -1 )) # Add the width
 
-	local STATE=OVERLAP
-	[[ ${L2_X} -gt ${R1_X} ]] && STATE=CLEAR
-	[[ ${L2_Y} -gt ${R1_Y} ]] && STATE=CLEAR
-	echo ${STATE}:${L2_X}:${R1_X}:${L2_Y}:${R1_Y}
+	# isOverlapping = (x1min < x2max) && (x2min < x1max) && (y1min < y2max) && (y2min < y1max)
+	
+	local STATE=CLEAR
+	[[ ${X1_MIN} -lt ${X2_MAX} && ${X2_MIN} -lt ${X1_MAX} && ${Y1_MIN} -lt ${Y2_MAX} && ${Y2_MIN} -lt ${Y1_MAX} ]] && STATE=OVERLAP
+	echo ${STATE}:${X1_MIN}:${Y1_MIN}:${X1_MAX}:${Y1_MAX}:${X2_MIN}:${Y2_MIN}:${X2_MAX}:${Y2_MAX}
+}
+
+NDX=0
+get_state () {
+	local B1=${1}
+	local B2=${2}
+
+	local STATE=$(box_coords_overlap ${B1} ${B2})
+	local ST X1_MIN Y1_MIN X1_MAX Y1_MAX X2_MIN Y2_MIN X2_MAX Y2_MAX
+
+	IFS=: read ST X1_MIN Y1_MIN X1_MAX Y1_MAX X2_MIN Y2_MIN X2_MAX Y2_MAX <<<${STATE}
+	tcup ${X1_MIN} ${Y1_MIN}; echo -n "${GREEN_FG}L(${X1_MIN},${Y1_MIN})${RESET}"
+	tcup ${X1_MAX} ${Y1_MAX}; echo -n "${RED_FG}R(${X1_MAX},${Y1_MAX})${RESET}"
+	tcup ${X2_MIN} ${Y2_MIN}; echo -n "${GREEN_FG}L(${X2_MIN},${Y2_MIN})${RESET}"
+	tcup ${X2_MAX} ${Y2_MAX}; echo -n "${RED_FG}R(${X2_MAX},${Y2_MAX})${RESET}"
+	tcup ${NDX} 0;echo -n "${B1} ${B2}:${ST}"
+	((NDX++))
 }
 
 clear
@@ -66,41 +84,12 @@ msg_box -TMSG5 -H1 -x16 -y95 -w30 -h10 "<w>MSG5 Right Message<N>|XXX|YYY|ZZZ|111
 
 #box_coords_dump
 
-STATE=$(box_coords_overlap MSG2 MSG4)
-IFS=: read ST L2X R1X L2Y R1Y <<<${STATE}
-tcup ${L2X} ${L2Y}; echo -n "${GREEN_FG}L(${L2X},${L2Y})${RESET}"
-tcup ${R1X} ${R1Y}; echo -n "${RED_FG}R(${R1X},${R1Y})${RESET}"
-tcup 0 0;echo -n "MSG2 MSG4:${ST} ${L2X} > ${R1X} ${L2Y} > ${R1Y}"
-
-STATE=$(box_coords_overlap MSG1 MSG4)
-IFS=: read ST L2X R1X L2Y R1Y <<<${STATE}
-tcup ${L2X} ${L2Y}; echo -n "${GREEN_FG}L(${L2X},${L2Y})${RESET}"
-tcup ${R1X} ${R1Y}; echo -n "${RED_FG}R(${R1X},${R1Y})${RESET}"
-tcup 1 0;echo -n "MSG1 MSG4:${ST} ${L2X} > ${R1X} ${L2Y} > ${R1Y}"
-
-STATE=$(box_coords_overlap MSG1 MSG2)
-IFS=: read ST L2X R1X L2Y R1Y <<<${STATE}
-tcup ${L2X} ${L2Y}; echo -n "${GREEN_FG}L(${L2X},${L2Y})${RESET}"
-tcup ${R1X} ${R1Y}; echo -n "${RED_FG}R(${R1X},${R1Y})${RESET}"
-tcup 2 0;echo -n "MSG1 MSG2:${ST} ${L2X} > ${R1X} ${L2Y} > ${R1Y}"
-
-STATE=$(box_coords_overlap MSG1 MSG3)
-IFS=: read ST L2X R1X L2Y R1Y <<<${STATE}
-tcup ${L2X} ${L2Y}; echo -n "${GREEN_FG}L(${L2X},${L2Y})${RESET}"
-tcup ${R1X} ${R1Y}; echo -n "${RED_FG}R(${R1X},${R1Y})${RESET}"
-tcup 3 0;echo -n "MSG1 MSG3:${ST} ${L2X} > ${R1X} ${L2Y} > ${R1Y}"
-
-STATE=$(box_coords_overlap MSG3 MSG2)
-IFS=: read ST L2X R1X L2Y R1Y <<<${STATE}
-tcup ${L2X} ${L2Y}; echo -n "${GREEN_FG}L(${L2X},${L2Y})${RESET}"
-tcup ${R1X} ${R1Y}; echo -n "${RED_FG}R(${R1X},${R1Y})${RESET}"
-tcup 4 0;echo -n "MSG3 MSG2:${ST} ${L2X} > ${R1X} ${L2Y} > ${R1Y}"
-
-STATE=$(box_coords_overlap MSG5 MSG2)
-IFS=: read ST L2X R1X L2Y R1Y <<<${STATE}
-tcup ${L2X} ${L2Y}; echo -n "${GREEN_FG}L(${L2X},${L2Y})${RESET}"
-tcup ${R1X} ${R1Y}; echo -n "${RED_FG}R(${R1X},${R1Y})${RESET}"
-tcup 5 0;echo -n "MSG5 MSG2:${ST} ${L2X} > ${R1X} ${L2Y} > ${R1Y}"
+get_state MSG2 MSG1
+get_state MSG1 MSG4
+get_state MSG1 MSG2
+get_state MSG1 MSG3
+get_state MSG2 MSG4
+get_state MSG5 MSG2
 
 read
 tput cnorm
