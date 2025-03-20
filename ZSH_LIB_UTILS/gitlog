@@ -165,7 +165,7 @@ shift $((OPTIND -1))
 
 # Resolve file arg path
 if [[ ${#} -gt 0 ]];then
-	FN_ARG=$(find ${_GIT_REPO} -name ${@} | grep -v scratch | grep ZSH)
+	FN_ARG=$(find ${_GIT_REPO} -name ${@} | grep -v 'scratch\|VIM\|USER' | grep ZSH)
 	[[ -z ${FN_ARG} ]] && exit_leave $(msg_exit E "File:${@} not found")
 fi
 
