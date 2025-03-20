@@ -1,8 +1,0 @@
-#compdef llr
-
-_files -W ${PWD} llr
-
-_arguments \
-'-H[help]' \
-'-D[debug]' \
-'-T[tree help (opt_type o)]'
