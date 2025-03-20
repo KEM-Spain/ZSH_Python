@@ -49,7 +49,6 @@ typeset -a _UL_BIN_ZSH_FILES
 typeset -a _UL_LIB_ZSH_FILES
 typeset -a _UL_ETC_FILES
 typeset -a _ZSH_CFG_FILES
-typeset -a _ZSH_COMP_FILES
 typeset -a _PYTHON_FILES
 typeset -a _USER_FILES
 
@@ -209,8 +208,6 @@ copy_etc_files
 _ZSH_CFG_FILES=("${(f)$(find ${_ZSH_CFG_DIR} -maxdepth 1 -type f)}")
 echo "Total zsh config files:${#_ZSH_CFG_FILES}"
 
-_ZSH_COMP_FILES+=("${(f)$(find ${_ZSH_COMP_DIR} ! -path ${_ZSH_COMP_DIR})}")
-echo "Total zsh completion files:${#_ZSH_COMP_FILES}"
 copy_zsh_cfg_files
 
 # vim
