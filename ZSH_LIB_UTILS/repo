@@ -122,7 +122,7 @@ copy_zsh_cfg_files () {
 	for L in ${_ZSH_CFG_FILES};do
 		cp "${L}" ${_ZSH_CFG}
 	done
-	sudo rsync -a ${_ZSH_DIR} ${_ZSH_CFG}
+	sudo rsync -a -r ${_ZSH_DIR} ${_ZSH_CFG}
 	cp /home/kmiller/.zshrc ${_ZSH_CFG_USER}
 	cp /home/kmiller/.zsh_history ${_ZSH_CFG_USER}
 }
