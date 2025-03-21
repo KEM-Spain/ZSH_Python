@@ -31,6 +31,7 @@ typeset -a _LOCAL_LIST=()
 
 # Constants
 _GIT_REPO=~/Code/REPO
+_PWD=${PWD}
 
 # Functions
 action_do () {
@@ -38,6 +39,9 @@ action_do () {
 	local COMMIT=''
 	local SZ=0
 	local -a FLIST=()
+	local V_PATH=''
+	local FN=''
+	local OVERWRITE=true
 
 	for M in ${_MARKED};do
 		COMMIT=$(get_field 1)
@@ -53,7 +57,20 @@ action_do () {
 				[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 			fi
 		else
-			git show -P ${COMMIT} ${FN_ARG}
+			if [[ ${PRINT_FILE} == 'true' ]];then
+				V_PATH=${${FN_ARG}##${_GIT_REPO}/}
+				FN=${V_PATH:t}
+				msg_box -p -P"(v)iew, (w)rite" "View or write to file:<w>${_PWD}/${FN}.log.out<N> ?"
+				if [[ ${_MSG_KEY} == 'w' ]];then
+					if [[ -e ${_PWD}/${FN}.log.out ]];then
+						msg_box -p -PO -H1 "<r>Warning<N>|File:<w>${_PWD}/${FN}.log.out<N> already exists"
+						[[ ${_MSG_KEY} != 'y' ]] && OVERWRITE=false
+					fi
+					[[ ${OVERWRITE} == 'true'  ]] && git show -P ${COMMIT}:${V_PATH} > ${_PWD}/${FN}.log.out
+				fi
+			else
+				git show -P ${COMMIT} ${FN_ARG}
+			fi
 			[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		fi
 		popd
@@ -97,6 +114,8 @@ read -r -d '' DESC<<EOF
 Show diffs for selected commits
 \tIf a filename is passed results
 \tare limited to the file specified
+\tIf a <FILE> arg is passed and the -p option is applied
+\tthe file contents are output instead of the diff
 EOF
 
 parse_opts () {
@@ -139,19 +158,22 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-p${RESET} print the <FILE> when commit is selected"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
-OPTSTR=":HD"
+OPTSTR=":HDp"
 OPTIND=0
+PRINT_FILE=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     p) PRINT_FILE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -165,8 +187,10 @@ shift $((OPTIND -1))
 
 # Resolve file arg path
 if [[ ${#} -gt 0 ]];then
-	FN_ARG=$(find ${_GIT_REPO} -name ${@} | grep -v scratch)
+	FN_ARG=$(find ${_GIT_REPO} -name ${@})
 	[[ -z ${FN_ARG} ]] && exit_leave $(msg_exit E "File:${@} not found")
+else
+	[[ ${PRINT_FILE} == 'true' ]] && exit_leave $(msg_exit W "Print file option requires a <FILE> argument")
 fi
 
 RAWPATH=$(path_get_raw)
@@ -187,18 +211,19 @@ popd
 
 MD=${PWD}
 SIZE=0
+
+pushd ${_GIT_REPO}
 for L in ${(u)RAW_LIST};do
 	REF=$(cut -d' ' -f1 <<<${L})
-	pushd ${_GIT_REPO}
 	SIZE=$(git show ${REF} ${FN_ARG} | wc -l)
 	[[ ${SIZE} -eq 0 ]] && continue
-	popd
 	DTM=$(cut -d'(' -f2 <<<${L})
 	DTM=$(cut -d',' -f1 <<<${DTM})
 	DT=$(cut -d'-' -f1-3 <<<${DTM})
 	TM=$(cut -d'-' -f4 <<<${DTM})
 	_LOCAL_LIST+="${REF}|${DT}|${TM}|${SIZE}"
 done
+popd
 
 # Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO} ${_GIT_REPO} ${SELECTED_COUNT}'

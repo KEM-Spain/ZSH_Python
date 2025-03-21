@@ -134,7 +134,7 @@ external () {
 			fi
 			MLIST+="${_PARTITIONS[${NDX}]} is ${STATE}"
 		done
-		msg_box -p -PK "Mount Status| |$(msg_list ${MLIST})"
+		msg_box -p -PK "Mount Status| |$(msg_list_bullet ${MLIST})"
 
 		for M in ${MARKED};do
 			MARKED[${M}]=0

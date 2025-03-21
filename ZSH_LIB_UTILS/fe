@@ -226,7 +226,7 @@ if [[ ${HIT} == 'false' ]];then
 	[[ ${FUZZY} == 'false' && ${FUZZY_CNT} -ne 0 ]] && OPTMSGS+="| |<w>Use option [-f] to select from files that matched<N> (<w>${FUZZY_CNT}<N>) <w>the substring \"${SEARCHTERM}\"<N>"
 	[[ ${EXACT_MATCH} == 'true' && ${EXACT_CNT} -ne 0 ]] && OPTMSGS+="| |<w>Use option [-x] to see files<N> (<w>${EXACT_CNT}<N>) <w>that matched but not exactly<N>"
 	[[ ${IS_OWNER} == 'true' && ${OWNER_CNT} -ne 0 ]] && OPTMSGS+="| |<w>Use option [-o] to see files that matched<N> (<w>${OWNER_CNT}<N>) but you are not the owner<N>"
-	msg_box -H$((${#OPTMSGS}+1)) -p -PK -jl "<r>No Matches for a file named${RESET}:${SEARCHTERM}${OPTMSGS}|$(msg_list ${(o)_RAWLIST})"
+	msg_box -H$((${#OPTMSGS}+1)) -p -PK -jl "<r>No Matches for a file named${RESET}:${SEARCHTERM}${OPTMSGS}|$(msg_list_bullet ${(o)_RAWLIST})"
 	msg_box_clear
 	exit_leave
 fi

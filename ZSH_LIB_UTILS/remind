@@ -141,7 +141,7 @@ do_smcup
 [[ ${WAIT} == 'false' ]] && OPT='-t2' || OPT='-p'
 
 MSGS=("${(f)$(cat ${_REMINDERS})}")
-msg_box -H1 ${OPT} "<g><U>Reminder<N>||<w>$(msg_list ${MSGS})<N>"
+msg_box -H1 ${OPT} "<g><U>Reminder<N>||<w>$(msg_list_bullet ${MSGS})<N>"
 
 exit_leave
 

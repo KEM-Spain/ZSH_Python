@@ -460,7 +460,7 @@ else
 		if [[ ${DEV_RELEASE} == 'true' ]];then
 			LIST=('1) Normal Production' '2) Library Module' '3) System Utility')
 			tput sc
-			msg_box -p -H1 -P"Select Type" "<r>No production copy exists<N>| |<w>What type of module is this?<N>| |$(msg_list ${LIST})"
+			msg_box -p -H1 -P"Select Type" "<r>No production copy exists<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
 			msg_box_clear
 			tput rc
 			case ${_MSG_KEY} in

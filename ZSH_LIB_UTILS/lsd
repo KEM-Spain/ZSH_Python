@@ -77,7 +77,7 @@ action_warn () {
 
 	[[ -n ${_OFFSCREEN_ROWS_MSG} ]] && ((HDRS++))
 
-	msg_box -O${RED_FG} -H${HDRS} -c -p -PD "<I><w>Please respond...<N>|$(str_pluralize ${OBJTYPE} ${CNT} true) queued for deletion|${_OFFSCREEN_ROWS_MSG}|$(msg_list ${(o)DLIST})"
+	msg_box -O${RED_FG} -H${HDRS} -c -p -PD "<I><w>Please respond...<N>|$(str_pluralize ${OBJTYPE} ${CNT} true) queued for deletion|${_OFFSCREEN_ROWS_MSG}|$(msg_list_bullet ${(o)DLIST})"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do

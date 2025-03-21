@@ -196,14 +196,14 @@ _SESSION_DATA[DELIM]='|' # set default delim
 
 if [[ ${SHOW_DBS} == 'true' ]];then
 	set_db_list
-	msg_box -p -PK -H1 "Sql Databases|$(msg_list ${_DB_LIST:t})"
+	msg_box -p -PK -H1 "Sql Databases|$(msg_list_bullet ${_DB_LIST:t})"
 fi
 
 if [[ ${SHOW_TABS} == 'true' ]];then
 	set_db_list
 	select_db
 	_TB_LIST=($(set_tabs))
-	msg_box -p -PK -H2 -jl "<w>Table List|<c>DB${RESET}:${_SESSION_DATA[DB]}|$(msg_list ${_TB_LIST})"
+	msg_box -p -PK -H2 -jl "<w>Table List|<c>DB${RESET}:${_SESSION_DATA[DB]}|$(msg_list_bullet ${_TB_LIST})"
 fi
 
 if [[ ${SHOW_SCHEMA} == 'true' ]];then

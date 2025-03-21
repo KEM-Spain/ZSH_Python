@@ -492,8 +492,17 @@ msg_box_align () {
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added heading separator: SEP:${MSG} BOX_WIDTH:${BOX_WIDTH} TEXT_PAD_L:\"${TEXT_PAD_L}\" TEXT_PAD_R:\"${TEXT_PAD_R}\""
 
 	# Handle embed: <L> List item
-	elif [[ ${MSG} =~ '<L>' ]];then # List?
-		MSG=$(sed -e 's/<L>/\\u2022 /' <<<${MSG}) # Add bullet and space
+	elif [[ ${MSG} =~ '<L>' ]];then # Bullet list?
+		MSG=$(sed -e 's/<L>/\\u2022 /' <<<${MSG}) # Swap marker with bullet and space
+		TEXT=${MSG}
+		TEXT=$(msg_nomarkup ${TEXT})
+		TEXT=$(str_trim ${TEXT})
+		TEXT_PAD_L=' '
+		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - ( ${#TEXT_PAD_L}+${#TEXT} ) - OFFSET -1 ))) # compensate for bullet/space
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item text"
+
+	elif [[ ${MSG} =~ '<X>' ]];then # Numbered List?
+		MSG=$(sed -e 's/<X>//' <<<${MSG}) # Remove markup
 		TEXT=${MSG}
 		TEXT=$(msg_nomarkup ${TEXT})
 		TEXT=$(str_trim ${TEXT})
@@ -708,7 +717,7 @@ msg_line_weight () {
 	_BOX_LINE_WEIGHT=${1}
 }
 
-msg_list () {
+msg_list_bullet () {
 	local -a MSG=(${@})
 	local L
 	local DELIM='|'
@@ -719,6 +728,23 @@ msg_list () {
 	for L in ${MSG};do
 		(( NDX++))
 		echo -n "<L>${L}"
+		[[ ${NDX} -lt ${#MSG} ]] && echo ${DELIM}
+	done
+
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Generated ${NDX} lines"
+}
+
+msg_list_number () {
+	local -a MSG=(${@})
+	local L
+	local DELIM='|'
+	local NDX=0
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: MSG COUNT:${#MSG}"
+
+	for L in ${MSG};do
+		(( NDX++))
+		echo -n "<X>${NDX}) ${L}"
 		[[ ${NDX} -lt ${#MSG} ]] && echo ${DELIM}
 	done
 

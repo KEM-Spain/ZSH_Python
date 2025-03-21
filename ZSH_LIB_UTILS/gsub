@@ -71,7 +71,7 @@ action_do () {
 		else
 			if [[ ${APPROVE_ALL} == 'false' ]];then
 				[[ ${#_MARKED} -gt 1 ]] && PROMPT=N || PROMPT=C
-				msg_box -H1 -p -P${PROMPT} "Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|Lines:|$(msg_list ${MATCHES})|<Z>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
+				msg_box -H1 -p -P${PROMPT} "Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|Lines:|$(msg_list_bullet ${MATCHES})|<Z>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
 				case ${_MSG_KEY} in
 					a|y) APPROVE_ALL=true;;
 					s) list_clear_selected ${M};continue;;
