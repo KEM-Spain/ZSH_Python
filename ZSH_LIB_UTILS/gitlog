@@ -41,7 +41,8 @@ action_do () {
 	local -a FLIST=()
 	local V_PATH=''
 	local FN_OUT=''
-	local OVERWRITE=true
+	local OVERWRITE=false
+	local VIEW=false
 
 	for M in ${_MARKED};do
 		COMMIT=$(get_field 1)
@@ -51,26 +52,28 @@ action_do () {
 		tput ed
 		if [[ -z ${_FN_ARG} ]];then
 			FLIST=("${(f)$(git diff-tree --no-commit-id --name-only ${COMMIT} -r)}")
-			if ! arr_is_populated "${FLIST}";then
-				msg_box -p -PP -H1 "No files could be identified within this commit<N>|View anyway?"
-				[[ ${_MSG_KEY} != 'y' ]] && return
-			else
-				msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list_bullet ${FLIST})"
-				[[ ${_MSG_KEY} != 'y' ]] && return
-			fi
+			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list_bullet ${FLIST})"
+			[[ ${_MSG_KEY} != 'y' ]] && continue
 			git show -P ${COMMIT}
 			[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		else
 			if [[ ${PRINT_FILE} == 'true' ]];then
 				V_PATH=${${_FN_ARG}##${_GIT_REPO}/}
-				FN_OUT=${V_PATH:t}
+				FN_OUT=${COMMIT}_${V_PATH:t}
+				VIEW=true
 				msg_box -p -P"(v)iew, (w)rite" "View or write to file:<w>${_PWD}/${FN_OUT}.log.out<N> ?"
 				if [[ ${_MSG_KEY} == 'w' ]];then
+					VIEW=false
+					OVERWRITE=true
 					if [[ -e ${_PWD}/${FN_OUT}.log.out ]];then
 						msg_box -p -PO -H1 "<r>Warning<N>|File:<w>${_PWD}/${FN_OUT}.log.out<N> already exists"
 						[[ ${_MSG_KEY} != 'y' ]] && OVERWRITE=false
 					fi
-					[[ ${OVERWRITE} == 'true'  ]] && git show -P ${COMMIT}:${V_PATH} > ${_PWD}/${FN_OUT}.log.out
+				fi
+				if [[ ${VIEW} == 'true' ]];then
+					git show -P ${COMMIT}:${V_PATH}
+				else
+					[[ ${OVERWRITE} == 'true'  ]] && git show -P ${COMMIT}:${V_PATH} > ${_PWD}/${FN_OUT}.log.out && echo "\nWriting log to file:${WHITE_FG}${_PWD}/${FN_OUT}.log.out${RESET}"
 				fi
 			else
 				git show -P ${COMMIT} ${_FN_ARG}
