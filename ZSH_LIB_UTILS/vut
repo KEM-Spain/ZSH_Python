@@ -406,12 +406,11 @@ ___EOF
 
 	DESTINATION_FILE=${_DEFAULT_OUT}.${1:e}
 
-	if [[ -e ${DESTINATION_FILE} ]];then
-		echo -n "Overwrite ${DESTINATION_FILE} (y/n):"; read -q RESPONSE
-		[[ ${RESPONSE} == 'n' ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}" || echo
+	if overwrite_file ${DESTINATION_FILE};then
 		rm ${DESTINATION_FILE}
+	else
+		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}" || echo
 	fi
-
 
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
 	echo "Files to merge:${BOLD}${ITALIC}${WORKFILES}${RESET}"

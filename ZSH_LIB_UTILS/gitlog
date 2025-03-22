@@ -116,8 +116,8 @@ read -r -d '' DESC<<EOF
 Show diffs for selected commits
 \tIf a filename is passed results
 \tare limited to the file specified
-\tIf a <FILE> arg is passed and the -p option is applied
-\tthe file contents are output instead of the diff
+\tIf a <FILE> arg is passed and the -p option is applied:
+\tone may either view or write file content
 EOF
 
 parse_opts () {
