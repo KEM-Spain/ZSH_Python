@@ -3,8 +3,10 @@ _gd_MOUNTPOINT='/home/kmiller/GoogleDrive'
 _gd_VOLUME=~/PRS1;
 
 _gd_dismount () {
-	echo -e "\nUnmounting Google Drive volume...\n"
+	echo "Unmounting Google Drive volume..."
 	sudo umount google-drive-ocamlfuse
+	echo "Removing mountpoint:${WHITE_FG}${_gd_MOUNTPOINT}${RESET}..."
+	/bin/rm -rf ${_gd_MOUNTPOINT}
 	kill -SIGINT $$;
 }
 
@@ -60,16 +62,17 @@ if [[ ${STATUS_CALL} == 'false' ]];then
 	fi
 
 	if [[ ! -d ${_gd_MOUNTPOINT} ]];then
-		 echo "creating ${_gd_MOUNTPOINT}..."
+		 echo "Creating mountpoint:${WHITE_FG}${_gd_MOUNTPOINT}...${RESET}"
 		 sudo mkdir ${_gd_MOUNTPOINT}
 		 if [[ ${?} != 0 ]];then
-			  echo "${0} failed - Problem creating mount point: ${_gd_MOUNTPOINT}"
+			  echo "${0} ${RED_FG}failed${RESET} - Problem creating mount point:${WHITE_FG}${_gd_MOUNTPOINT}${RESET}"
 		 fi
+		 sudo chown kmiller:kmiller ${_gd_MOUNTPOINT}
 	fi
 
 	# Mount if not already mounted
 	if ! _gd_is_mounted;then
-		echo -e "\nMounting Google Drive volume at ${_gd_MOUNTPOINT}\n"
+		echo "Mounting Google Drive volume on:${WHITE_FG}${_gd_MOUNTPOINT}${RESET}"
 		google-drive-ocamlfuse ${_gd_MOUNTPOINT}
 	fi
 

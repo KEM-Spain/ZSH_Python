@@ -5,7 +5,7 @@ Type=Application
 Name=PyCharm Community Edition
 Icon=/snap/pycharm-community/465/bin/pycharm.png
 X-SnapAppName=pycharm-community
-Exec=/usr/local/bin/system/launchers/run_pycharm-community_pycharm-community BAMF_DESKTOP_FILE_HINT=/var/lib/snapd/desktop/applications/pycharm-community_pycharm-community.desktop /snap/bin/pycharm-community %f
+Exec=env BAMF_DESKTOP_FILE_HINT=/var/lib/snapd/desktop/applications/pycharm-community_pycharm-community.desktop /snap/bin/pycharm-community %f
 Comment=Python IDE for Professional Developers
 Categories=Development;IDE;
 Terminal=false
