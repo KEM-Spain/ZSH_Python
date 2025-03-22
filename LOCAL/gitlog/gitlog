@@ -41,12 +41,11 @@ action_do () {
 	local -a FLIST=()
 	local V_PATH=''
 	local FN_OUT=''
-	local OVERWRITE=false
 	local VIEW=false
 
 	for M in ${_MARKED};do
-		COMMIT=$(get_field 1)
-		SZ=$(get_field 4)
+		COMMIT=$(get_field 1 ${M})
+		SZ=$(get_field 4 ${M})
 		pushd ${_GIT_REPO}
 		tcup 0 0
 		tput ed
@@ -55,31 +54,26 @@ action_do () {
 			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list_bullet ${FLIST})"
 			[[ ${_MSG_KEY} != 'y' ]] && continue
 			git show -P ${COMMIT}
-			[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		else
 			if [[ ${PRINT_FILE} == 'true' ]];then
 				V_PATH=${${_FN_ARG}##${_GIT_REPO}/}
-				FN_OUT=${COMMIT}_${V_PATH:t}
+				FN_OUT=${_PWD}/${COMMIT}_${V_PATH:t}.log.out
 				VIEW=true
-				msg_box -p -P"(v)iew, (w)rite" "View or write to file:<w>${_PWD}/${FN_OUT}.log.out<N> ?"
-				if [[ ${_MSG_KEY} == 'w' ]];then
-					VIEW=false
-					OVERWRITE=true
-					if [[ -e ${_PWD}/${FN_OUT}.log.out ]];then
-						msg_box -p -PO -H1 "<r>Warning<N>|File:<w>${_PWD}/${FN_OUT}.log.out<N> already exists"
-						[[ ${_MSG_KEY} != 'y' ]] && OVERWRITE=false
-					fi
-				fi
+				msg_box -p -P"(v)iew, (w)rite" "View or write to file:<w>${FN_OUT}<N> ?"
+				[[ ${_MSG_KEY} == 'w' ]] && VIEW=false
 				if [[ ${VIEW} == 'true' ]];then
 					git show -P ${COMMIT}:${V_PATH}
 				else
-					[[ ${OVERWRITE} == 'true'  ]] && git show -P ${COMMIT}:${V_PATH} > ${_PWD}/${FN_OUT}.log.out && echo "\nWriting log to file:${WHITE_FG}${_PWD}/${FN_OUT}.log.out${RESET}"
+					if overwrite_file ${FN_OUT};then
+						git show -P ${COMMIT}:${V_PATH} > ${FN_OUT} && msg_box -p -PK "Wrote log to file:<w>${FN_OUT}<N>"
+					fi
+					continue
 				fi
 			else
 				git show -P ${COMMIT} ${_FN_ARG}
 			fi
-			[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		fi
+		[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		popd
 		list_set_selected ${M} ${_USED_ROW}
 	done
@@ -108,8 +102,9 @@ item_decorate () {
 
 get_field () {
 	local FLD=${1}
+	local NDX=${2}
 
-	echo $(cut -d'|' -f${FLD} <<<${_LOCAL_LIST[${_LIST_NDX}]})
+	echo $(cut -d'|' -f${FLD} <<<${_LIST[${NDX}]})
 }
 
 #--Begin GetOpts--
@@ -260,7 +255,7 @@ list_add_header_break
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate $(get_field 1) $(get_field 2) $(get_field 3))"
+printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate $(get_field 1 ${_LIST_NDX}) $(get_field 2 ${_LIST_NDX}) $(get_field 3 ${_LIST_NDX}))"
 '
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${g_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${g_ACTION} ${g_OBJECT}(s) (${ITALIC}or exit if none selected${RESET})"

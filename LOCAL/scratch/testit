@@ -1,8 +1,29 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/UTILS.zsh
+source ./UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
@@ -17,8 +38,13 @@ action_do () {
 	local M
 
 	for M in ${_MARKED};do
-		msg_box -p -PK "Place action here"
-		list_set_selected ${M} ${_GHOST_ROW}
+		#msg_box -p -PK "Place action here"
+		if overwrite_file ${_LIST[${M}]};then
+			msg_box -p -PK "Overwriting"
+		else
+			msg_box -p -PK "NOT Overwriting"
+		fi
+		list_set_selected ${M} ${_USED_ROW}
 	done
 }
 
