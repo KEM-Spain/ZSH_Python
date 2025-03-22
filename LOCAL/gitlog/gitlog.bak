@@ -40,7 +40,7 @@ action_do () {
 	local SZ=0
 	local -a FLIST=()
 	local V_PATH=''
-	local FN=''
+	local FN_OUT=''
 	local OVERWRITE=true
 
 	for M in ${_MARKED};do
@@ -49,27 +49,31 @@ action_do () {
 		pushd ${_GIT_REPO}
 		tcup 0 0
 		tput ed
-		if [[ -z ${FN_ARG} ]];then
+		if [[ -z ${_FN_ARG} ]];then
 			FLIST=("${(f)$(git diff-tree --no-commit-id --name-only ${COMMIT} -r)}")
-			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list ${FLIST})"
-			if [[ ${_MSG_KEY} == 'y' ]];then
-				git show -P ${COMMIT}
-				[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
+			if ! arr_is_populated "${FLIST}";then
+				msg_box -p -PP -H1 "No files could be identified within this commit<N>|View anyway?"
+				[[ ${_MSG_KEY} != 'y' ]] && return
+			else
+				msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list_bullet ${FLIST})"
+				[[ ${_MSG_KEY} != 'y' ]] && return
 			fi
+			git show -P ${COMMIT}
+			[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		else
 			if [[ ${PRINT_FILE} == 'true' ]];then
-				V_PATH=${${FN_ARG}##${_GIT_REPO}/}
-				FN=${V_PATH:t}
-				msg_box -p -P"(v)iew, (w)rite" "View or write to file:<w>${_PWD}/${FN}.log.out<N> ?"
+				V_PATH=${${_FN_ARG}##${_GIT_REPO}/}
+				FN_OUT=${V_PATH:t}
+				msg_box -p -P"(v)iew, (w)rite" "View or write to file:<w>${_PWD}/${FN_OUT}.log.out<N> ?"
 				if [[ ${_MSG_KEY} == 'w' ]];then
-					if [[ -e ${_PWD}/${FN}.log.out ]];then
-						msg_box -p -PO -H1 "<r>Warning<N>|File:<w>${_PWD}/${FN}.log.out<N> already exists"
+					if [[ -e ${_PWD}/${FN_OUT}.log.out ]];then
+						msg_box -p -PO -H1 "<r>Warning<N>|File:<w>${_PWD}/${FN_OUT}.log.out<N> already exists"
 						[[ ${_MSG_KEY} != 'y' ]] && OVERWRITE=false
 					fi
-					[[ ${OVERWRITE} == 'true'  ]] && git show -P ${COMMIT}:${V_PATH} > ${_PWD}/${FN}.log.out
+					[[ ${OVERWRITE} == 'true'  ]] && git show -P ${COMMIT}:${V_PATH} > ${_PWD}/${FN_OUT}.log.out
 				fi
 			else
-				git show -P ${COMMIT} ${FN_ARG}
+				git show -P ${COMMIT} ${_FN_ARG}
 			fi
 			[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		fi
@@ -185,12 +189,27 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-# Resolve file arg path
-if [[ ${#} -gt 0 ]];then
-	FN_ARG=$(find ${_GIT_REPO} -name ${@})
-	[[ -z ${FN_ARG} ]] && exit_leave $(msg_exit E "File:${@} not found")
-else
-	[[ ${PRINT_FILE} == 'true' ]] && exit_leave $(msg_exit W "Print file option requires a <FILE> argument")
+[[ ${#} -ne 0 ]] && _FN_ARG=${1} || _FN_ARG=''
+[[ -z ${_FN_ARG} && ${PRINT_FILE} == 'true' ]] && exit_leave $(msg_exit W "Print file option requires a <FILE> argument")
+
+if [[ -n ${_FN_ARG} ]];then
+	typeset -a FLIST=()
+
+	# Resolve file arg path
+	FLIST=("${(f)$(find ${_GIT_REPO} -name ${_FN_ARG} -type f)}")
+	[[ -z ${FLIST} ]] && exit_leave $(msg_exit E "File:${@} not found")
+
+	NDX=0
+	if [[ ${#FLIST} -gt 1 ]];then
+		msg_box -p -P"Select file:1-${#FLIST}" -H1 "Disambiguation Required|Argument:<w>${_FN_ARG}<N> was not unique|<Z>|$(msg_list_number ${FLIST})"
+		if validate_is_integer ${_MSG_KEY};then
+			if [[ ${_MSG_KEY} -ge 1 && ${_MSG_KEY} -le ${#FLIST} ]];then
+				_FN_ARG=${FLIST[${_MSG_KEY}]}
+			else
+				exit_leave "${RED_FG}Operation Cancelled${RESET}:Invalid selection"
+			fi
+		fi
+	fi
 fi
 
 RAWPATH=$(path_get_raw)
@@ -201,7 +220,7 @@ FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
 pushd ${_GIT_REPO}
-RAW_LIST=("${(f)$(git log -g --pretty=reference ${FN})}")
+RAW_LIST=("${(f)$(git log -g --pretty=reference ${_FN_ARG})}")
 if [[ ${?} -ne 0 ]];then
 	dbg "${0}:${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path . 2>/dev/null" 
 else
@@ -215,7 +234,7 @@ SIZE=0
 pushd ${_GIT_REPO}
 for L in ${(u)RAW_LIST};do
 	REF=$(cut -d' ' -f1 <<<${L})
-	SIZE=$(git show ${REF} ${FN_ARG} | wc -l)
+	SIZE=$(git show ${REF} ${_FN_ARG} | wc -l)
 	[[ ${SIZE} -eq 0 ]] && continue
 	DTM=$(cut -d'(' -f2 <<<${L})
 	DTM=$(cut -d',' -f1 <<<${DTM})
@@ -227,7 +246,7 @@ popd
 
 # Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO} ${_GIT_REPO} ${SELECTED_COUNT}'
-[[ -n ${FN_ARG} ]] && list_set_header 'printf "Results limited to FILE:${MAGENTA_FG}${FN_ARG}${RESET}"'
+[[ -n ${_FN_ARG} ]] && list_set_header 'printf "Results limited to FILE:${MAGENTA_FG}${_FN_ARG}${RESET}"'
 list_add_header_break
 
 # Set line item

@@ -201,7 +201,7 @@ if [[ -n ${_FN_ARG} ]];then
 
 	NDX=0
 	if [[ ${#FLIST} -gt 1 ]];then
-		msg_box -p -P"Select file:1-${#FLIST}" -H1 "Disambiguation Required|Argument:<w>${_FN_ARG}<N> was not unique|<Z>|$(msg_list_bullet_number ${FLIST})"
+		msg_box -p -P"Select file:1-${#FLIST}" -H1 "Disambiguation Required|Argument:<w>${_FN_ARG}<N> was not unique|<Z>|$(msg_list_number ${FLIST})"
 		if validate_is_integer ${_MSG_KEY};then
 			if [[ ${_MSG_KEY} -ge 1 && ${_MSG_KEY} -le ${#FLIST} ]];then
 				_FN_ARG=${FLIST[${_MSG_KEY}]}
@@ -209,6 +209,8 @@ if [[ -n ${_FN_ARG} ]];then
 				exit_leave "${RED_FG}Operation Cancelled${RESET}:Invalid selection"
 			fi
 		fi
+	else
+		_FN_ARG=${FLIST[1]}
 	fi
 fi
 
@@ -220,13 +222,17 @@ FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
 pushd ${_GIT_REPO}
-RAW_LIST=("${(f)$(git log -g --pretty=reference ${_FN_ARG})}")
+RAW_LIST=("${(f)$(git log -g --pretty=reference ${FN_ARG})}")
 if [[ ${?} -ne 0 ]];then
 	dbg "${0}:${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path . 2>/dev/null" 
 else
 	dbg "${0}:${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#LOCAL_LIST}"
 fi
 popd
+
+if ! arr_is_populated "${RAW_LIST}";then
+	[[ ${?} -ne 0 ]] && exit_leave "${0}: ${RED_FG}no commits found for${RESET}:${WHITE_FG}${FN_ARG}${RESET}"
+fi
 
 MD=${PWD}
 SIZE=0
