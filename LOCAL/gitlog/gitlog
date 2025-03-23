@@ -52,6 +52,7 @@ action_do () {
 		if [[ -z ${_FN_ARG} ]];then
 			FLIST=("${(f)$(git diff-tree --no-commit-id --name-only ${COMMIT} -r)}")
 			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list_bullet ${FLIST})"
+			# TODO: continue not showing selection as viewed (item_decorate)
 			[[ ${_MSG_KEY} != 'y' ]] && continue
 			git show -P ${COMMIT}
 		else

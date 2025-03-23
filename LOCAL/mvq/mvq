@@ -33,6 +33,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 typeset -A _CACHE_LIST=()
 typeset -A _DISPLAY_LIST=()
 typeset -A _HEADERS=()
+typeset -A _ACTIONS=()
 typeset -A _LIST_OPTIONS=()
 typeset -a LIST=()
 typeset -a RAWLIST=()
@@ -51,6 +52,9 @@ _LIST_OPTIONS=(Actor A Director D Decade E Year Y)
 _LOG=/tmp/mvqry.log
 _HEADERS=(A "Movies starring:" D "Movies directed by:" E "Movies for the decade:" Y "Movies for the year:")
 _DISP=122
+_REVIEW=7
+_IMDB=8
+_PYTS=9
 
 # Globals
 g_IS_CACHED=false
@@ -79,7 +83,7 @@ action_do () {
 		1) ddgr -n5 "${TITLE} ${YR} review";;
 		2) imdb "${TITLE} ${YR}";;
 		3) pyts "${TITLE} ${YR}";;
-		27) return;;
+		0|27) return;;
 		*) msg_box -p -PK "You entered:<w>${_MSG_KEY}<N>|Valid options: 1,2,3"
 	esac
 
@@ -87,12 +91,12 @@ action_do () {
 	[[ ${?} -eq 1 ]] && logit "${TITLE} ${YR}"
 
 	for M in ${_MARKED};do
-		_MARKED[${M}]=0
-		if [[ ${_MSG_KEY} -eq 3 ]];then
-			list_set_selected ${M} ${_USED_ROW} 
-		else
-			list_set_selected ${M} ${_AVAIL_ROW}
-		fi
+		case ${_MSG_KEY} in
+			1) _ACTIONS[${M}]=${_REVIEW};;
+			2) _ACTIONS[${M}]=${_IMDB};;
+			3) _ACTIONS[${M}]=${_PYTS};;
+		esac
+		list_set_selected ${M} ${_AVAIL_ROW}
 	done
 }
 
@@ -334,6 +338,17 @@ is_cached () {
 	fi
 }
 
+item_decorate () {
+	local LINE=${@}
+
+	case ${_ACTIONS[${_LIST_NDX}]} in
+		${_REVIEW}) echo "${E_ITALIC}${E_RED_FG}${LINE}${E_RESET} ${E_ITALIC}review${E_RESET}";;
+		${_IMDB}) echo "${E_ITALIC}${E_RED_FG}${LINE}${E_RESET} ${E_ITALIC}imdb${E_RESET}";;
+		${_PYTS}) echo "${E_ITALIC}${E_RED_FG}${LINE}${E_RESET} ${E_ITALIC}pyts${E_RESET}";;
+		*) echo ${LINE};;
+	esac
+}
+
 key_callback () {
 	local LIST
 
@@ -364,19 +379,15 @@ list_selection () {
 
 	# Set line item
 	list_set_line_item ' 
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%4s ${WHITE_FG}%-50s ${CYAN_FG}%15s ${GREEN_FG}%43s${RESET}\n" ${_LIST_NDX} $(get_field 1 ${_LIST_NDX}) "$(get_field 2 ${_LIST_NDX})" "$(get_field 3 ${_LIST_NDX})" "$(get_field 4 ${_LIST_NDX})"
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%4s ${WHITE_FG}%-50s ${CYAN_FG}%15s ${GREEN_FG}%43s${RESET}\n" ${_LIST_NDX} $(get_field 1 ${_LIST_NDX}) "$(get_field 2 ${_LIST_NDX})" "$(get_field 3 ${_LIST_NDX})" "$(item_decorate $(get_field 4 ${_LIST_NDX}))"
 	'
 
 	while true;do
 		g_UPDATE=false
-		# Display list
-		_LIST_SELECTED=()
-		list_select ${(on)_SLIST}
-		list_set_position # Maintain list position when returning from action
+		list_select ${(on)_SLIST} # Display list
 
 		if [[ $(list_get_selected_count) -ne 0 ]];then
-			# Get user selections
-			_MARKED=($(list_get_selected))
+			_MARKED=($(list_get_selected)) # Get user selections
 			action_do
 		else
 			[[ ${g_UPDATE} == 'false' ]] && break # key_callback will set: true
@@ -669,7 +680,6 @@ while true;do
 			msg_box -c "Working...formatting data"
 			format_list ${LIST}
 
-			msg_box -p -PK "Updating cache"
 			set_cache ${SEARCHTERM}
 			msg_box_clear
 		fi
