@@ -19,7 +19,7 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/SELECT.zsh
@@ -27,7 +27,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
  
 # Vars
 _ALL=false
-_HIST_LINES=35
+_HIST_LINES=24
 _SEARCHTERM=''
 
 # Functions
@@ -40,10 +40,10 @@ print_hist () {
 	msg_box -x1 -y1 "<w>Collecting history...<N>"
 
 	while read LINE;do
-		if [[ ${_ALL} == 'false' ]];then
-			((NDX++))
-			[[ ${NDX} -gt ${_HIST_LINES} ]] && break
-		fi
+#		if [[ ${_ALL} == 'false' ]];then
+#			((NDX++))
+#			[[ ${NDX} -gt ${_HIST_LINES} ]] && break
+#		fi
 		LIST+=${LINE}
 	done
 
@@ -54,14 +54,16 @@ print_hist () {
 	elif [[ ${_ALL} == 'true' ]];then
 		HDR="<c>All History<N> (<w>${#LIST} lines<N>)"
 	else
-		HDR="<c>Last ${_HIST_LINES} Lines of History<N>"
+		HDR="<c>Last ${_HIST_LINES} $(str_pluralize line ${_HIST_LINES}) of History<N>"
 	fi
+
+	[[ ${#LIST} -eq 1 ]] && msg_box -p -PK -H1 "${HDR}|$(cut -d# -f1 <<<${LIST[1]}) $(cut -d# -f2 <<<${LIST[1]})" && return
 
 	sel_set_list ${LIST}
 
 	sel_list -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard" -M"Use keypad for extended page navigation" -C
 	if [[ -n ${_SEL_VAL} ]];then
-		cut -d'#' -f2 <<<${_SEL_VAL} | xclip -i -selection clipboard
+		cut -d'#' -f2 <<<${_SEL_VAL} | tr -d \\n | xclip -i -selection clipboard
 		msg_box "Command was copied to clipboard"
 	fi
 }
@@ -116,14 +118,14 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} all history lines"
-	echo -e "${WHITE_FG}-l${RESET} history lines (default: ${_HIST_LINES}) (SEARCHTERM overrides)"
+	echo -e "${WHITE_FG}-n${RESET} history lines (default: ${_HIST_LINES})"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
-OPTSTR=":HDl:a"
+OPTSTR=":HDan:"
 OPTIND=0
 
 while getopts ${OPTSTR} OPTION;do
@@ -131,7 +133,7 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
      D) dbg_set_level;;
 	  a) _ALL=true;;
-	  l) _HIST_LINES=${OPTARG};;
+	  n) _HIST_LINES=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -141,17 +143,22 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-clear
-
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -n ${1} ]] && _SEARCHTERM=${1}
+if ! validate_is_integer ${_HIST_LINES};then
+	exit_leave $(msg_exit E "Option <-n> value:${_HIST_LINES} not allowed - integer required")
+fi
 
 fc -R
 
 while read DATE TM CMD;do
-	[[ -n ${_SEARCHTERM} && ! ${CMD} =~ ${_SEARCHTERM} ]] && continue
+	if [[ -n ${_SEARCHTERM} ]];then
+		[[ ${CMD} == "hist ${_SEARCHTERM}" ]] && continue
+		[[ ! ${CMD} =~ ${_SEARCHTERM} ]] && continue
+	fi
 	D="${DATE} ${TM}"
 	U=$(date -d ${D} +%s)
 	echo "${U}#${D}#${CMD}"
-done < <(fc -nrli 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r | cut -d'#' -f2,3 | print_hist
+done < <(fc -nrli 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r | cut -d'#' -f2,3 | head -n${_HIST_LINES} | print_hist
 
 exit_leave
