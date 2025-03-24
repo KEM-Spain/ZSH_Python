@@ -235,6 +235,7 @@ List files
 \tll - long listing
 \tllr - recursive listing
 \t<FILTER> matches the leading portion
+\tDefault sort is by extension
 EOF
 
 parse_opts () {
@@ -279,7 +280,6 @@ usage () {
 	echo -e "${WHITE_FG}-a${RESET} all files"
 	echo -e "${WHITE_FG}-d [$(opt_type d)]${RESET} directories only"
 	echo -e "${WHITE_FG}-f [$(opt_type f)]${RESET} files only"
-	echo -e "${WHITE_FG}-e${RESET} sort by extension"
 	echo -e "${WHITE_FG}-i${RESET} add inode to listing"
 	echo -e "${WHITE_FG}-l [$(opt_type d)]${RESET} links only"
 	echo -e "${WHITE_FG}-t${RESET} sort by time"
@@ -290,7 +290,7 @@ usage () {
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDadfeilrt"
+OPTSTR=":HDadfilrt"
 OPTIND=0
 
 [[ ${_CALLER} =~ 'listing' ]] && _CALLER='l'
@@ -307,7 +307,6 @@ while getopts ${OPTSTR} OPTION;do
 		a) _ALL_FILES=true;_LS_OPTS+='-A';;
 		d) _DIRS_ONLY=true;_F_TYPE='d';;
 		f) _FILES_ONLY=true;_F_TYPE='f';;
-		e) _LS_FORMAT+='-X';;
 		i) _LS_FORMAT+='-i';;
 		l) _LINKS_ONLY=true;_F_TYPE='l';;
 		t) _TIME_SORT=true;_LS_OPTS+='-t';;
