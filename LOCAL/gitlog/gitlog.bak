@@ -53,7 +53,7 @@ action_do () {
 			FLIST=("${(f)$(git diff-tree --no-commit-id --name-only ${COMMIT} -r)}")
 			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list_bullet ${FLIST})"
 			# TODO: continue not showing selection as viewed (item_decorate)
-			[[ ${_MSG_KEY} != 'y' ]] && continue
+			[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
 			git show -P ${COMMIT}
 		else
 			if [[ ${PRINT_FILE} == 'true' ]];then
@@ -68,7 +68,7 @@ action_do () {
 					if overwrite_file ${FN_OUT};then
 						git show -P ${COMMIT}:${V_PATH} > ${FN_OUT} && msg_box -p -PK "Wrote log to file:<w>${FN_OUT}<N>"
 					fi
-					continue
+					[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
 				fi
 			else
 				git show -P ${COMMIT} ${_FN_ARG}
@@ -76,7 +76,7 @@ action_do () {
 		fi
 		[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
 		popd
-		list_set_selected ${M} ${_USED_ROW}
+		list_set_selected ${M} ${_USED_ROW} && continue
 	done
 }
 
