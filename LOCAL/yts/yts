@@ -53,7 +53,7 @@ _SRC_DIR=/usr/local/src
 _ACTION=download
 _ALERT_TM=.2
 _CMD_LINE_ARGS=false
-_CODE_MARKER=${_YTS_DIR}/yts-upd.lastrun
+_UPD_MARKER=${_YTS_DIR}/yts-upd.lastrun
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _DOWNLOAD_LOG=${_YTS_DIR}/yts.downloads
 _ERROR_LIMIT=5
@@ -342,7 +342,7 @@ action_do () {
 	done # List complete
 
 	for M in ${_MARKED};do
-		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_USED_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
+		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
 	done
 
 	_MARKED=()
@@ -421,6 +421,10 @@ clear_log () {
 		rm -f ${g_YTS_LOG}
 		echo "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}" >> ${_YTS_DBG_LOG} # Debug is NOT active - clear the log
 	fi
+}
+
+clear_tmp () {
+	[[ -e /tmp/*$$*state ]] && rm -rf /tmp/*$$*state
 }
 
 download_log_update () {
@@ -796,14 +800,11 @@ last_code_update () {
 
 	if [[ -e ${MARKER_ARG} ]];then
 		LAST_UPD=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
+		[[ -e ${MARKER_ARG} ]] && LAST_TIME=$(stat -c"%x" ${MARKER_ARG} | cut -d. -f1 | cut -d' ' -f2 | cut -d: -f1,2) 
+		echo "$(date_since_today ${_TODAY} ${LAST_UPD}) at ${LAST_TIME}"
 	else
-		touch ${MARKER_ARG}
-		exit_leave $(msg_exit W "${_SCRIPT}: Last update date is unknown")
+		echo "${MARKER_ARG} not found"
 	fi
-
-	[[ -e ${MARKER_ARG} ]] && LAST_TIME=$(stat -c"%x" ${MARKER_ARG} | cut -d. -f1 | cut -d' ' -f2 | cut -d: -f1,2) 
-
-	echo "$(date_since_today ${_TODAY} ${LAST_UPD}) at ${LAST_TIME}"
 }
 
 last_file () {
@@ -826,6 +827,7 @@ list_reset () {
 
 	_LIST_SELECTED=()
 	_MARKED=()
+	_SELECTION_LIST=()
 }
 
 log_download () {
@@ -1010,7 +1012,6 @@ query_rumble () {
 			[[ ${g_LIVE_OPT} == 'true' ]] && { [[ ${g_LIVE} == 'true' ]] && g_LIVE=false || g_LIVE=true }
 			[[ ${g_LIVE} == 'true' ]] && MSG="Searching livestreams..." || MSG="Searching videos..."
 
-			#TODO Overlay previous message completely with this msg
 			if [[ -n ${INNER_BOX} ]];then
 				_REL_COORDS=($(box_coords_relative INNER_BOX X +6 Y ${REL_Y} H 3 W ${LAST_MSG[W]}))
 				msg_box -T SEARCH -R -c ${MSG}
@@ -1134,8 +1135,8 @@ query_youtube () {
 
 		[[ ${g_ENGINE_KEY:l} =~ 'p' ]] && CUSTOM_KEY=true
 
-		# --- BEGIN Experimental filtering
 		if [[ ${CUSTOM_KEY} == 'false' ]];then
+			# --- BEGIN Experimental filtering
 			g_SEARCH_TYPE='channel'
 			HIT=false
 			AUTHOR=$(cut -d'|' -f2 <<<${LINE})
@@ -1211,7 +1212,7 @@ select_download () {
 	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
 	'
 
-	list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${_ACTION} or ${ITALIC}${BOLD}exit${RESET} if none selected"
+	list_set_select_action ${_ACTION}
 	list_set_action_msgs video download
 	list_set_sortable true
 	list_set_searchable false
@@ -1293,9 +1294,9 @@ start_job () {
 	g_YTS_LOG=$(mktemp /tmp/yt.log.XXXXXX)
 
 	if [[ ${g_FIX_AUDIO} == 'true' ]];then
-		CMD="nohup yt -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
+		CMD="nohup yt -N4 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
 	else
-		CMD="nohup yt -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
+		CMD="nohup yt -N4 -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
 	fi
 
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} # Log command
@@ -1419,7 +1420,8 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-g_LAST_CODE_UPD=$(last_code_update ${_CODE_MARKER})
+set_exit_callback clear_tmp
+
 [[ ${g_FIX_AUDIO} == 'true' && ${g_QRY_ENGINE} == 'rumble' ]] && g_FIX_AUDIO=false && msg_box -p -PK "FIX AUDIO not supported for Rumble| FIX AUDIO ignored"
 
 g_GOT_URL=false
@@ -1441,15 +1443,20 @@ FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
-if [[ (! -f ${_CODE_MARKER}) || (-f ${_CODE_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 'today')) ]];then
+g_LAST_CODE_UPD=$(last_code_update ${_UPD_MARKER})
+if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 'today')) ]];then
 	clear
-	msg_box -t1 "Updating yts-dlp..."
+	msg_box -t1 "Updating yt-dlp..."
 	{
+		CUR_VER=$(yt --version)
 		pushd ${_YTS_GIT}
 		git pull
 		popd
-		touch ${_CODE_MARKER}
+		touch ${_UPD_MARKER}
+		UPD_VER=$(yt --version)
 	} >/dev/null 2>&1
+	[[ ${CUR_VER} == ${UPD_VER} ]] && MSG="yt-dlp version:<r>${CUR_VER}<N>" || MSG="yt-dlp was updated from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
+	msg_box -t1 ${MSG}
 fi
 
 clear

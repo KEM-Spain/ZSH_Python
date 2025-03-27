@@ -255,7 +255,7 @@ sel_list () {
 	done
 	shift $(( OPTIND - 1 ))
 
-	[[ ${#_LIST} -gt 100 ]] && msg_box -c "<w>Working...<N>"
+	[[ ${#_LIST} -gt 100 ]] && msg_box -c "<w>Building select list...<N>"
 
 	[[ -n ${_TAG}  ]] && _SELECT_TAG_FILE="/tmp/$$.${_TAG}.state"
 

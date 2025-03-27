@@ -500,6 +500,20 @@ list_next_page () {
 	echo ${PAGE}
 }
 
+list_quote_marked_elements () {
+       local MARKED=(${@})
+       local M
+       local -a STR
+
+       [[ ${_DEBUG} -ge ${_LIST_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+       for M in ${MARKED};do
+               STR+=${(q)_LIST[${M}]}
+       done
+
+       echo ${STR}
+}
+
 list_reset () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 

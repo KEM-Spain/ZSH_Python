@@ -134,7 +134,7 @@ msg_box () {
 	[[ ${CLEAR_MSG} == 'true' ]] && msg_box_clear # Clear last msg?
 
 	# Process MSG arguments
-	MSG=(${@}) # MSG ARGS
+	MSG=(${@}) # MSG text
 	[[ -z ${MSG} ]] && return # If no MSG
 
 	# Long messages display feedback while parsing

@@ -28,6 +28,7 @@ _LOG=/tmp/${0:t}.log
 _ENPASS=/opt/enpass/Enpass 
 
 start_enpass () {
+	local ARG=${1}
 	local _ENPASS_PID
 
 	send-notification ${_DELAY} "Looking for running Enpass instance..."
@@ -40,7 +41,12 @@ start_enpass () {
 
 	#Start Enpass...
 	logit "Starting Enpass..."
-	exec ${_ENPASS} 2>/dev/null & 
+	if [[ ${ARG} == 'foreground' ]];then
+		echo "Control-C to exit..." >&2
+		${_ENPASS} 2>/dev/null
+	else
+		exec ${_ENPASS} 2>/dev/null & 
+	fi
 
 	logit "Waiting for Enpass to start..."
 	send-notification ${_DELAY} "Waiting for Enpass instance..."
@@ -101,7 +107,12 @@ close_enpass_window () {
 }
 
 #Execution
-start_enpass
+if [[ ${1} == "foreground" ]];then
+	start_enpass foreground
+else
+	start_enpass
+fi
+
 if [[ ${1} != "noauto" ]];then
 	pass_login_to_enpass
 	close_enpass_window
