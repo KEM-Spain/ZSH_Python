@@ -34,7 +34,7 @@ typeset -a _SORT_LIST
 typeset -a _STATS
 
 # Constants
-_TYPE_LABELS=(b "Birth Date" a "Last Access" m "Last Modification")
+_TYPE_LABELS=(b "Change Date" a "Last Access" m "Last Modification")
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -81,15 +81,13 @@ read -r -d '' DESC<<EOF
 Show file statistics
 
 ${WHITE_FG}Access Time${RESET}: is the time when the file was last accessed or read. 
-For example, using the cat, head or an editor. But remember you did not modify the contents.
+For example, using the cat, head or an editor and no modification of the contents.
 
 ${WHITE_FG}Modification Time${RESET}: is the time when the contents of the file was last modified. 
 For example, you used an editor to add new content or delete some existing content.
 
 ${WHITE_FG}Change Time${RESET}: is the time when the file’s inode has been changed. 
 For example, by changing permissions, ownership, file name, number of hard links.
-
-Column sorting alternates between forward and reverse.
 EOF
 
 parse_opts () {
