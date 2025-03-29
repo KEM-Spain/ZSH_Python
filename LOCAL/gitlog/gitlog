@@ -114,10 +114,11 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Show diffs for selected commits
-\tIf a filename is passed results
-\tare limited to the file specified
-\tIf a <FILE> arg is passed and the -p option is applied:
-\tone may either view or write file content
+\tIf a filename is passed, results
+\tare limited to the file specified.
+\tIf a <FILE> arg is passed and the -p option is applied,
+\tone is given the choice to either ${BOLD}${ITALIC}view the diff${RESET} or 
+\t${BOLD}${ITALIC}write the file${RESET} as it existed at commit time
 EOF
 
 parse_opts () {

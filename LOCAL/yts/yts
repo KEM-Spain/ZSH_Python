@@ -69,7 +69,6 @@ _OBJECT=video
 _PAUSE_TM=2
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _YTS_FAVORITES=${_YTS_DIR}/yts_favorites
-_YTS_GIT=${_SRC_DIR}/yt-dlp
 _YTS_URL_LOG=/tmp/yts.url.log
 _YTS_DBG_LOG=/tmp/yt.dbg.log
 
@@ -1012,6 +1011,7 @@ query_rumble () {
 			[[ ${g_LIVE_OPT} == 'true' ]] && { [[ ${g_LIVE} == 'true' ]] && g_LIVE=false || g_LIVE=true }
 			[[ ${g_LIVE} == 'true' ]] && MSG="Searching livestreams..." || MSG="Searching videos..."
 
+			#TODO Overlay previous message completely with this msg
 			if [[ -n ${INNER_BOX} ]];then
 				_REL_COORDS=($(box_coords_relative INNER_BOX X +6 Y ${REL_Y} H 3 W ${LAST_MSG[W]}))
 				msg_box -T SEARCH -R -c ${MSG}
@@ -1135,8 +1135,8 @@ query_youtube () {
 
 		[[ ${g_ENGINE_KEY:l} =~ 'p' ]] && CUSTOM_KEY=true
 
+		# --- BEGIN Experimental filtering
 		if [[ ${CUSTOM_KEY} == 'false' ]];then
-			# --- BEGIN Experimental filtering
 			g_SEARCH_TYPE='channel'
 			HIT=false
 			AUTHOR=$(cut -d'|' -f2 <<<${LINE})
@@ -1448,12 +1448,10 @@ if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 
 	clear
 	msg_box -t1 "Updating yt-dlp..."
 	{
-		CUR_VER=$(yt --version)
-		pushd ${_YTS_GIT}
-		git pull
-		popd
+		CUR_VER=$(yt-dlp --version)
+		yt-dlp -U
 		touch ${_UPD_MARKER}
-		UPD_VER=$(yt --version)
+		UPD_VER=$(yt-dlp --version)
 	} >/dev/null 2>&1
 	[[ ${CUR_VER} == ${UPD_VER} ]] && MSG="yt-dlp version:<r>${CUR_VER}<N>" || MSG="yt-dlp was updated from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
 	msg_box -t1 ${MSG}
