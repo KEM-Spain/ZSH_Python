@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-_gd_MOUNTPOINT='/home/kmiller/GoogleDrive'
+_gd_MOUNTPOINT="${HOME}/GoogleDrive"
 _gd_VOLUME=~/PRS1;
 
 _gd_dismount () {
@@ -67,7 +67,7 @@ if [[ ${STATUS_CALL} == 'false' ]];then
 		 if [[ ${?} != 0 ]];then
 			  echo "${0} ${RED_FG}failed${RESET} - Problem creating mount point:${WHITE_FG}${_gd_MOUNTPOINT}${RESET}"
 		 fi
-		 sudo chown kmiller:kmiller ${_gd_MOUNTPOINT}
+		 sudo chown ${_USER_NAME}:${_USER_NAME} ${_gd_MOUNTPOINT}
 	fi
 
 	# Mount if not already mounted

@@ -35,7 +35,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 if [[ -n ${MUSIC_DIR} ]];then
 	MUSIC_DIR=(${MUSIC_DIR}) # From the environment
 else
-	MUSIC_DIR=(/media/kmiller/KEM_Misc/Music/KEM-B9)
+	MUSIC_DIR=(/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9)
 fi
 
 [[ ! -e ${AGREP} ]] && exit_leave $(msg_exit E "Requires ${AGREP}")

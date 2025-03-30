@@ -61,9 +61,9 @@ _APP_TYPE[VLC]=GUI
 _APP_TYPE[HARUNA]=GUI
 _APP_TYPE[VIM]=TERM
 
-_MD_EXTERNAL="/media/kmiller/KEM_Misc/Music/KEM-B9"
-_MD_LOCAL="/home/kmiller/Documents/Music"
-_MD_MUSE="/home/kmiller/Documents/MuseScore4/Scores"
+_MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MD_LOCAL="${HOME}/Documents/Music"
+_MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}

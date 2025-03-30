@@ -19,7 +19,7 @@ YELLOW_FG="\033[33m"
 typeset -a LIST
 typeset -R2 SNDX=0
 typeset -a SUBLIST
-typeset -a _ICO_DIRS=(/opt /home/kmiller/.local/share /usr/share/icons /usr/share/pixmaps)
+typeset -a _ICO_DIRS=(/opt ${HOME}/.local/share /usr/share/icons /usr/share/pixmaps)
 
 # Constants
 _ICO_REGEX='.*(ico|png|svg)$'

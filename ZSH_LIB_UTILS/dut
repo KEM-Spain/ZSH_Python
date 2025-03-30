@@ -53,7 +53,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 external () {
 	# Constants
-	local MOUNT_ROOT=/media/kmiller
+	local MOUNT_ROOT=/media/${_USER_NAME}
 
 	#App Vars
 	local -a MSG_OUT

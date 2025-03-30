@@ -62,7 +62,7 @@ RS_EXCL+=(--exclude='.config/google-chrome')
 RS_EXCL+=(--exclude='.git')
 
 RS_INCL+=(--include='Downloads/Torrents/Completed')
-BACKUP_DIRS=(/root ${_USER_HOME} /usr/local /etc /opt)
+BACKUP_DIRS=(/root ${HOME} /usr/local /etc /opt)
 
 # Constants
 _MOUNT=media
@@ -71,7 +71,7 @@ _DEST_ID=KEM_Backup
 _TAG=$(hostname)_RSYNC2
 _DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
 _MARKER=~/.${_TAG}.lastrun
-_LOGFILE=${_USER_HOME}/.${_TAG}.log
+_LOGFILE=${HOME}/.${_TAG}.log
 _TODAY=$(date +'%Y-%m-%d') 
 
 # Globals

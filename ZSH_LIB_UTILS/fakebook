@@ -23,7 +23,7 @@ typeset -A _COL_WIDTHS
 typeset -a _MARKED
 
 # Constants
-FAKE_BOOKS=/home/kmiller/Documents/Music/Printed/FakeBooks/RealBook
+FAKE_BOOKS=${HOME}/Documents/Music/Printed/FakeBooks/RealBook
 _BOOKS["New Real Book Vol 1"]=13
 _BOOKS["New Real Book Vol 2"]=12
 _BOOKS["New Real Book Vol 3"]=10
