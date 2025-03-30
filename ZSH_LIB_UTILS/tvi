@@ -160,7 +160,7 @@ try_locate () {
 
 	if [[ ${UPDATE_LOCATE_DB} == 'true' ]];then
 		echo "Updating locate database..."
-		sudo updatedb --prunepaths='/media/kmiller/KEM_Backup' 2>/dev/null
+		sudo updatedb --prunepaths="/media/${USER_NAME}/KEM_Backup" 2>/dev/null
 	fi
 
 	LIST=("${(f)$(sudo locate -r "\/${ARG:q}$")}") 

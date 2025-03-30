@@ -92,7 +92,7 @@ autostart () {
 	# Constants
 	AUTODIRS+=/etc/xdg/autostart
 	AUTODIRS+=~/.config/autostart
-	local USER=kmiller
+	local USER=${_USER_NAME}
 
 	# Functions
 	action_do () {

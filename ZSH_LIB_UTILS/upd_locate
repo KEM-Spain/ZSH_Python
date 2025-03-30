@@ -19,12 +19,12 @@ YELLOW_FG="\033[33m"
 typeset -a LOCATE_OPTS
 
 #--Option settings for locate--
-LOCATE_OPTS+=('--prunepaths=/media/kmiller/KEM_Backup') # No external drives
+LOCATE_OPTS+=("--prunepaths=/media/${USER}/KEM_Backup") # No external drives
 
 # Constants
 _TAG=$(hostname)_LOCATE
 _MARKER=~/.${_TAG}.lastrun
-_LOGFILE=/home/kmiller/.${_TAG}.log
+_LOGFILE=${HOME}/.${_TAG}.log
 _TODAY=$(date +'%Y-%m-%d') 
 
 # Globals

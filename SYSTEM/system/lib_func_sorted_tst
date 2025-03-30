@@ -30,7 +30,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be sourced last
 typeset -a LIST
 
 # Constants
-LIB_DIR=/home/kmiller/Code/LOCAL/LIBS
+LIB_DIR=${HOME}/Code/LOCAL/LIBS
 
 #--Begin GetOpts--
 local -a OPTIONS

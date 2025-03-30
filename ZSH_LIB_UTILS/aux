@@ -159,8 +159,6 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -ne 0 ]] && KEYWORD=${1} || KEYWORD=?
 
-USER=$(id -un)
-
 # Set content
 RAWLIST=("${(@f)$(ps --no-headers -Ao user,pid,command)}")
 

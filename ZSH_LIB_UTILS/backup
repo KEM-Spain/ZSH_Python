@@ -66,7 +66,7 @@ BACKUP_DIRS=(/root ${HOME} /usr/local /etc /opt)
 
 # Constants
 _MOUNT=media
-_MOUNTPOINT="/${_MOUNT}/${_USER_NAME}"
+_MOUNTPOINT="/${_MOUNT}/${USER}"
 _DEST_ID=KEM_Backup
 _TAG=$(hostname)_RSYNC2
 _DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
