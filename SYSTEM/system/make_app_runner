@@ -36,6 +36,6 @@ EXEC_LINE=$(grep -m1 "^Exec=" ${_DESKTOPS}/${APP}.desktop | sed -e 's/Exec=//' -
 echo '#!/usr/bin/zsh' > ${RUNNER_FILE}
 echo "${EXEC_LINE} &" >> ${RUNNER_FILE}
 echo "win_max ${WM_APP} &" >> ${RUNNER_FILE}
-sudo chown root:$(id -un) ${RUNNER_FILE}
+sudo chown root:${USER} ${RUNNER_FILE}
 sudo chmod 775 ${RUNNER_FILE}
 echo "${RUNNER_FILE} created"
