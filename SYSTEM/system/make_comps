@@ -113,6 +113,7 @@ if [[ ${PRINT_RAW} == 'true' ]];then
 else
 	{
 	echo "#compdef ${FN:t}"
+	echo "_files -W ${PWD}"
 	echo
 	echo "_arguments \\"
 	sed -n '/-H/,/DESC/p' ${FN} \

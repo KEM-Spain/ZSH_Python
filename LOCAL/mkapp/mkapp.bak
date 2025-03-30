@@ -20,7 +20,7 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-_TEMPLATE_DIR=/usr/local/etc
+TEMPLATE_DIR=/usr/local/etc
 _APP=${0:t}
 _LIST=false
 
@@ -34,6 +34,12 @@ usage () {
 }
 
 [[ ${#} -eq 0 || ${1} == '-H' ]] && usage
+
+_DEBUG=false
+if [[ ${1} == '-D' ]];then
+	_DEBUG=true
+	shift
+fi
 
 _LIST=false
 if [[ ${1} == '-l' ]];then
@@ -52,11 +58,21 @@ if [[ -e ${_APP_NAME} ]];then
 fi
 
 echo '#!/usr/bin/zsh' > ${_APP_NAME}
-cat ${_TEMPLATE_DIR}/color.template >> ${_APP_NAME} && echo >>${_APP_NAME}
-cat ${_TEMPLATE_DIR}/import.template >> ${_APP_NAME}
-echo '\n# Declarations\n# Constants\n# Globals\n# Functions' >>${_APP_NAME}
-echo >> ${_APP_NAME} && cat ${_TEMPLATE_DIR}/getopt.template >> ${_APP_NAME}
+cat ${TEMPLATE_DIR}/color.template >> ${_APP_NAME}
+cat ${TEMPLATE_DIR}/import.template >> ${_APP_NAME}
+echo '\n# Declarations\n# Constants\n# Globals' >> ${_APP_NAME}
+
+if [[ ${_LIST} == 'true' ]];then
+	echo 'g_ACTION=action\ng_OBJECT=object\n' >> ${_APP_NAME}
+fi
+
+echo '\n# Functions\n' >>${_APP_NAME}
+cat ${TEMPLATE_DIR}/getopt.template >> ${_APP_NAME}
 echo '\n# Execution' >>${_APP_NAME}
+
+if [[ ${_LIST} == 'true' ]];then
+	cat ${TEMPLATE_DIR}/list_cursor.template >> ${_APP_NAME}
+fi
 
 echo '\nexit_leave' >>${_APP_NAME}
 chmod 775 ${_APP_NAME}
@@ -64,14 +80,6 @@ chmod 775 ${_APP_NAME}
 if [[ ${_LIST} == 'true' ]];then
 	sed -i '/LIB_DEPS/i \
 source ${_LIB_DIR}/LIST.zsh' ${_APP_NAME}
-
-	sed -i "/Functions/ {
-	r ${_TEMPLATE_DIR}/app_funcs.template
-	}" ${_APP_NAME}
-
-	sed -i "/Execution/ {
-	r ${_TEMPLATE_DIR}/app_loop.template
-	}" ${_APP_NAME}
 fi
 
 echo "Template for application:${WHITE_FG}${_APP_NAME}${RESET} created"

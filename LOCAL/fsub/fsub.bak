@@ -29,7 +29,6 @@ typeset -a _PIPELINE
 typeset -a _KEYWORDS
 
 # Constants
-_LIB_DIR=/usr/local/lib
 _LOG=/tmp/${0:t}.log
 _KEYWORDS=(bluray)
 _TERM=xterm
@@ -45,7 +44,7 @@ g_TO_TEXT=''
 g_VERBOSE=false
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/VALIDATE.zsh
@@ -978,7 +977,7 @@ fi
 echo "Parsing arguments:${@:-null}"
 if [[ -n ${@} ]];then
 	for ((A=1; A <= ${#@}; A++));do
-		OBJ=${@[${A}]:Q}
+		OBJ=${@[${A}]}
 		if [[ -e ${OBJ} ]];then
 			_ARG_LIST[${A}]=file_dir
 			[[ -f ${OBJ} ]] && echo "Found file:${WHITE_FG}${OBJ}${RESET}"

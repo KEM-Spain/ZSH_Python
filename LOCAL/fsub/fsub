@@ -29,7 +29,6 @@ typeset -a _PIPELINE
 typeset -a _KEYWORDS
 
 # Constants
-_LIB_DIR=/usr/local/lib
 _LOG=/tmp/${0:t}.log
 _KEYWORDS=(bluray)
 _TERM=xterm
@@ -45,7 +44,7 @@ g_TO_TEXT=''
 g_VERBOSE=false
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/VALIDATE.zsh
@@ -866,30 +865,30 @@ usage () {
 
 	(
 	echo -e "${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [FromText] [ToText] [FileList]\n"
-	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-C${RESET} eliminate quotes, parens, dots, dashes, commas, underscores, and non-ascii (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-I${RESET} interactive changes"
+	echo -e "${WHITE_FG}-N${RESET} add leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-P${RESET} proper case"
-	echo -e "${WHITE_FG}-S${RESET} silent mode (background job)"
+	echo -e "${WHITE_FG}-S${RESET} service mode (background job)"
+	echo -e "${WHITE_FG}-T${RESET} trim leading/trailing whitespace from files or dirs (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-Y${RESET} eliminate YouTube tags"
 	echo -e "${WHITE_FG}-b${RESET} eliminate extended/non-ascii (${CYAN_FG}M${RESET})"
-	echo -e "${WHITE_FG}-e $(opt_type e)${RESET} limit operations to files having $(opt_type e)"
-	echo -e "${WHITE_FG}-C${RESET} eliminate quotes, parens, dots, dashes, commas, underscores, and non-ascii (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-c${RESET} camelCase (${CYAN_FG}M${RESET})"
-	echo -e "${WHITE_FG}-d${RESET} use directories as candidates"
+	echo -e "${WHITE_FG}-d${RESET} allow directories as candidates"
+	echo -e "${WHITE_FG}-e $(opt_type e)${RESET} limit operations to files having $(opt_type e)"
 	echo -e "${WHITE_FG}-i${RESET} case insensitive"
 	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} operate on matching media title ('enclose multiword args in quotes')"
-	echo -e "${WHITE_FG}-N${RESET} add leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-n${RESET} clean leading numbers (remove dots between numbers and text) (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} prepend text to filenames"
 	echo -e "${WHITE_FG}-r${RESET} preserve resolution (720p/1080p) in media titles (only valid with -m)"
 	echo -e "${WHITE_FG}-s${RESET} eliminate spaces (${CYAN_FG}M${RESET})"
-	echo -e "${WHITE_FG}-T${RESET} trim leading/trailing whitespace from files or dirs (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} truncate filenames to arbitrary length $(opt_type t) (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-u${RESET} unCamelCase (${CYAN_FG}M${RESET})"
+	echo -e "${WHITE_FG}-v${RESET} verbose output"
 	echo -e "${WHITE_FG}-x${RESET} strip leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-y${RESET} no prompting"
-	echo -e "${WHITE_FG}-v${RESET} verbose output"
 	echo -e "${WHITE_FG}Note${RESET}:(${CYAN_FG}M${RESET}) - Macro option - additional args ignored"
 	echo -e "${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
@@ -923,32 +922,33 @@ YT_TAGS=false
 typeset -a OPTIONS
 OPTIND=0
 
+
 while getopts ${OPTSTR} OPT;do
 	case ${OPT} in
-     H) usage;;
+     C) DOTS=true;;
      D) dbg_set_level;;
+     H) usage;;
      I) INTERACTIVE=true;;
+     N) ADD_LEADING_DIGITS=true;;
      P) PROPER_CASE=true;;
      S) SERVICE_MODE=true;;
+     T) TRIM=true;;
+     Y) YT_TAGS=true;;
      b) EXTENDED=true;;
+     c) SPACES=true; DOTS=true; CAMEL=true;;
+     d) g_ALLOW_DIRS=true;;
      e) g_LIMIT_TO_EXT=true;g_EXT_TEXT=${OPTARG};;
      i) CASE=I; GREP_OPTS='-Eiq';;
-     s) SPACES=true;;
-     c) SPACES=true; DOTS=true; CAMEL=true;;
-     C) DOTS=true;;
-     d) g_ALLOW_DIRS=true;;
      m) MEDIA_FILE=true;MEDIA_FILE_TITLE=${OPTARG};;
      n) CLEAN_LEADING_DIGITS=true;;
-     N) ADD_LEADING_DIGITS=true;;
      p) PREPEND=true;PREPEND_TAG=${OPTARG};;
      r) RES=true;;
+     s) SPACES=true;;
      t) TRUNC_FN_LEN=${OPTARG};TRUNCATE=true;;
-     T) TRIM=true;;
      u) UNCAMEL=true;;
-     x) STRIP_LEADING_DIGITS=true;;
-     Y) YT_TAGS=true;;
-     y) g_NO_PROMPTING=true;;
      v) g_VERBOSE=true;;
+     x) STRIP_LEADING_DIGITS=true;;
+     y) g_NO_PROMPTING=true;;
      :) print -u2 "${0}: option: ${WHITE_FG}-${OPTARG} ${BOLD}${RED_FG}requires an argument${RESET}"; usage;;
     \?) print -u2 "${0}: hit ${BOLD}${RED_FG}Unknown option${RESET} ${OPTARG}"; usage;;
 	esac

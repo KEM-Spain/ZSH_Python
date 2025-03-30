@@ -65,7 +65,7 @@ done < ${FN}
 		LAST_ALIAS=?
 		for A in ${(ok)ALIASES};do
 			[[ ! ${ALIASES[${A}]} =~ 'cd' ]] && continue
-			[[ ! ${A} =~ "^${SEARCHTERM}.*" ]] && continue
+			[[ ! ${A} =~ "^.*${SEARCHTERM}.*" ]] && continue
 			HIT=true
 			if [[ ${A} =~ '[[:alpha:]]' && -z ${SEARCHTERM} ]];then
 				[[ ${A[1,2]:l} =~ '\.[a-z]' ]] && TOKEN=${A[2]:l} || TOKEN=${A[1]:l}

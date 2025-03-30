@@ -1,6 +1,5 @@
 #!/usr/bin/zsh
 
-#vim: syntax off
 RESET="\033[m"
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -30,6 +29,7 @@ _VIM=/usr/bin/vim
 _EDITABLE='ascii\|text\|script\|empty\|regular'
 _ROWS=$(tput lines)
 _COLS=$(tput cols)
+_VIM_RC=~/.vimrc
 
 #Imports
 _LIB_DIR=/usr/local/lib
