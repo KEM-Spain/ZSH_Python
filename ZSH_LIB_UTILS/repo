@@ -103,6 +103,7 @@ copy_zsh_libs () {
 copy_sys_files () {
 	echo "${WHITE_FG}SYSTEM FILES${RESET}" >&2
 	rsync -a --no-links ${_UL_BIN_SYS_DIR} ${_SYSTEM}
+	cp /usr/local/bin/yt-dlp ${_SYSTEM}
 }
 
 copy_conv_files () {
