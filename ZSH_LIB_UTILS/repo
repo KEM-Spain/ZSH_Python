@@ -102,12 +102,12 @@ copy_zsh_libs () {
 
 copy_sys_files () {
 	echo "${WHITE_FG}SYSTEM FILES${RESET}" >&2
-	rsync -a ${_UL_BIN_SYS_DIR} ${_SYSTEM}
+	rsync -a --no-links ${_UL_BIN_SYS_DIR} ${_SYSTEM}
 }
 
 copy_conv_files () {
 	echo "${WHITE_FG}CONVERSION FILES${RESET}" >&2
-	rsync -a ${_UL_BIN_CONV_DIR} ${_SYSTEM}
+	rsync -a --no-links ${_UL_BIN_CONV_DIR} ${_SYSTEM}
 }
 
 copy_etc_files () {
@@ -122,20 +122,20 @@ copy_zsh_cfg_files () {
 	for L in ${_ZSH_CFG_FILES};do
 		cp "${L}" ${_ZSH_CFG}
 	done
-	sudo rsync -a ${_ZSH_DIR} ${_ZSH_CFG_USER}
+	sudo rsync -a --no-links ${_ZSH_DIR} ${_ZSH_CFG_USER}
 	cp ${HOME}/.zshrc ${_ZSH_CFG_USER}
 	cp ${HOME}/.zsh_history ${_ZSH_CFG_USER}
 }
 
 copy_vim_cfg_files () {
 	echo "${WHITE_FG}VIM CONFIG FILES${RESET}" >&2
-	sudo rsync -a --exclude='undo' ${_VIM_DIR} ${_VIM_CFG}
+	sudo rsync -a --no-links --exclude='undo' ${_VIM_DIR} ${_VIM_CFG}
 	cp ~/.vimrc ${_VIM_CFG_USER}
 }
 
 copy_python_files () {
 	echo "${WHITE_FG}PYTHON PROJECT FILES${RESET}" >&2
-	rsync -a ${_PYTHON_DIR} ${_PYTHON}
+	rsync -a --no-links ${_PYTHON_DIR} ${_PYTHON}
 	/bin/rm -f ${_PYTHON}/PROJECTS/ts/venv/.gitignore
 	/bin/rm -f ${_PYTHON}/PROJECTS/ts/.idea/.gitignore
 	/bin/rm -f ${_PYTHON}/PROJECTS/st/venv/.gitignore
