@@ -129,9 +129,7 @@ copy_zsh_cfg_files () {
 
 copy_vim_cfg_files () {
 	echo "${WHITE_FG}VIM CONFIG FILES${RESET}" >&2
-	set -xv
 	sudo rsync -a --exclude='undo' ${_VIM_DIR} ${_VIM_CFG}
-	set +xv;read
 	cp ~/.vimrc ${_VIM_CFG_USER}
 }
 

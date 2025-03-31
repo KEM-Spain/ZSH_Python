@@ -368,7 +368,7 @@ ___EOF
 
 lan () {
 	# Declarations
-	local SN=${1:=18}
+	local SUBNETS=${1:=18}
 	local -a STATIC_IPS
 	local -a ARP
 	local -a FIRST_10_NON_STATIC
@@ -459,12 +459,12 @@ ___EOF
 	[[ ${_DEBUG} -eq 0 && ${INLINE} == 'false' ]] && do_smcup
 
 	for I in {2..11};do
-		FIRST_10_NON_STATIC+=192.168.${SN}.${I}
+		FIRST_10_NON_STATIC+=192.168.${SUBNETS}.${I}
 	done
 
-	local STATIC_IPS=(192.168.${SN}.100 192.168.${SN}.101 192.168.${SN}.102 192.168.${SN}.103 192.168.${SN}.200 ${FIRST_10_NON_STATIC})
+	local STATIC_IPS=(192.168.${SUBNETS}.100 192.168.${SUBNETS}.101 192.168.${SUBNETS}.102 192.168.${SUBNETS}.103 192.168.${SUBNETS}.200 ${FIRST_10_NON_STATIC})
 
-	echo "Pinging LAN IP's...SUB NET:${SN}"
+	echo "Pinging LAN IP's...SUB NET:${SUBNETS}"
 
 	if [[ ${SHLVL} -lt 3 ]];then # Called from another script
 		local NDX=0
