@@ -396,7 +396,7 @@ clean_line () {
 	local L
 
 	for L in ${=LINE};do
-		[[ ${L} == '-' ]] && OUT+=${L} && continue # Looks like option to spell
+		[[ ${L} == '-' ]] && OUT+=${L} && continue # Avoid - looks like option to spell
 		[[ ${#L} -eq 1 && ${L:l} == 'a' ]] && OUT+=${L} # The only single letter allowed
 		[[ ${#L} -eq 1 && ${L:l} != 'a' ]] && continue
 		[[ ${L} == ${L%%[!0-9]*} ]] && OUT+=${L} && continue # Skip spell for numbers
