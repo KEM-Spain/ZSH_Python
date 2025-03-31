@@ -135,7 +135,7 @@ copy_vim_cfg_files () {
 
 copy_python_files () {
 	echo "${WHITE_FG}PYTHON PROJECT FILES${RESET}" >&2
-	rsync -a --no-links ${_PYTHON_DIR} ${_PYTHON}
+	rsync -a ${_PYTHON_DIR} ${_PYTHON}
 	/bin/rm -f ${_PYTHON}/PROJECTS/ts/venv/.gitignore
 	/bin/rm -f ${_PYTHON}/PROJECTS/ts/.idea/.gitignore
 	/bin/rm -f ${_PYTHON}/PROJECTS/st/venv/.gitignore
