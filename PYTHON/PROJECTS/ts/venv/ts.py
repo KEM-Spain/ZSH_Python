@@ -180,6 +180,7 @@ class SearchWin(Gtk.Window):
         self.set_query_model(self.engine_key)
         self.hist_model = Gtk.ListStore(str)
         self.hist_file = self.create_history()
+        self.scrolled_hist = Gtk.ScrolledWindow()
 
         # Possible early exit; if search_term was passed, run query
         if self.search_term is not None:
@@ -217,6 +218,7 @@ class SearchWin(Gtk.Window):
         self.treeview.append_column(self.column)
         self.selection = self.treeview.get_selection()
         self.selection.unselect_all()  # initially nothing is selected
+        self.scrolled_hist.add(self.treeview)
 
         self.button1 = Gtk.Button(label="Search")
         self.button1.connect("clicked", self.on_search)
@@ -243,7 +245,7 @@ class SearchWin(Gtk.Window):
         vbox.pack_start(self.prompt, False, False, 0)
         vbox.pack_start(self.entry, False, False, 0)
         vbox.pack_start(self.submit_label, False, False, 0)
-        vbox.pack_start(self.treeview, False, False, 0)
+        vbox.pack_start(self.scrolled_hist, False, False, 0)
         hbox.pack_start(self.button1, False, False, 0)
         hbox.pack_start(self.button2, False, False, 0)
         hbox.pack_start(self.button3, False, False, 0)
