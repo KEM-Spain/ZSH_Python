@@ -359,6 +359,7 @@ action_warn () {
 	msg_box -H1 -x${_COORDS[X]} -p -PG "<w><I>Please respond<N>|<Z>|${#_MARKED} $(str_pluralize ${_OBJECT} ${#_MARKED}) selected"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_MSG_KEY:${_MSG_KEY}"
 		for M in ${_MARKED};do
 			_MARKED[${M}]=0
 			list_set_selected ${M} ${_AVAIL_ROW}
@@ -396,7 +397,7 @@ clean_line () {
 	local L
 
 	for L in ${=LINE};do
-		[[ ${L} == '-' ]] && OUT+=${L} && continue # Looks like option to spell
+		[[ ${L} == '-' ]] && OUT+=${L} && continue # Avoid - looks like option to spell
 		[[ ${#L} -eq 1 && ${L:l} == 'a' ]] && OUT+=${L} # The only single letter allowed
 		[[ ${#L} -eq 1 && ${L:l} != 'a' ]] && continue
 		[[ ${L} == ${L%%[!0-9]*} ]] && OUT+=${L} && continue # Skip spell for numbers
@@ -464,6 +465,7 @@ fav_delete () {
 	echo "${0}: deleting ${FAV} decoded to ${FAV}" >> ${_YTS_DBG_LOG}
 
 	if [[ ${_MSG_KEY} == 'y' ]];then
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_MSG_KEY:${_MSG_KEY}"
 		if [[ -s ${_YTS_FAVORITES} ]];then
 			[[ -e /tmp/favlist.new ]] && /bin/rm -f /tmp/favlist.new
 			while read LINE;do
@@ -595,7 +597,8 @@ fav_set () {
 	[[ ${_DEBUG} -ge 1 ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE} g_LIVE:${g_LIVE}"
 
 	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${FAV} to favorites?"
-	[[ ${_MSG_KEY} != 'y' ]] && return
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_MSG_KEY:${_MSG_KEY}"
+	[[ ${_MSG_KEY} == 'n' ]] && return
 
 	# R    - Rumble  - general query
 	# RL   - Rumble  - livestream query
@@ -1231,6 +1234,7 @@ select_download () {
 		if [[ $(list_get_selected_count) -ne 0 ]];then
 			action_warn
 			if [[ ${_MSG_KEY} == "y" ]];then
+				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_MSG_KEY:${_MSG_KEY}"
 				action_do
 			fi
 			_LIST_SELECTED=()

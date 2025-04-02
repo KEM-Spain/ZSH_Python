@@ -215,9 +215,13 @@ shift $((OPTIND -1))
 g_LAST_RUN=$(last_backup ${_MARKER})
 
 if [[ -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
-	msg_box "Clearing orphaned mountpoints"
+	msg_box "Clearing orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DEST_ID}${RESET}"
 	dut external -u
-	msg_box -c "Orphaned mounts removed"
+	if [[ ! -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
+		msg_box -c "Orphaned mounts removed"
+	else
+		exit_leave "Unable to remove orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DEST_ID}${RESET}"
+	fi
 fi
 
 # Info option

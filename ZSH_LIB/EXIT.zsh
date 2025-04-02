@@ -133,25 +133,18 @@ exit_sigexit () {
 }
 
 get_exit_value () {
-
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
 	echo ${_EXIT_VALUE}
 }
 
 set_exit_callback () {
-
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
 	_EXIT_CALLBACKS+=${1}
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: REGISTERED CALLBACK:${1}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "\n${RED_FG}${0}${RESET}: REGISTERED CALLBACK:${1}"
 }
 
 set_exit_value () {
-
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
 	_EXIT_VALUE=${1}
 }
 

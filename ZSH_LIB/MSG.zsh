@@ -424,6 +424,7 @@ msg_box () {
 					tput ech ${MSG_COLS} # Clear line
 					echo -n "${MSG_OUT}"
 					_MSG_KEY=$(get_keys)
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}_MSG_KEY:${_MSG_KEY}"
 					case ${_MSG_KEY} in
 						27) return;;
 						q) exit_request $(msg_box_ebox_coords ${BOX_X_COORD} ${BOX_Y_COORD} ${BOX_WIDTH} ${#MSG_HEADER});(( MSG_NDX-=PG_LINES ));; # No advance if declined
