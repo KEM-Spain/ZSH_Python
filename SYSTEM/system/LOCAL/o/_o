@@ -1,9 +1,0 @@
-#compdef o
-
-_files -W ${PWD} o
-
-_arguments \
-'-H[help]' \
-'-D[debug]' \
-'-a[show unsupported files]' \
-'-m[process music files]' \
