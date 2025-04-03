@@ -98,8 +98,9 @@ TYPE=''
 OPTIND=0
 REGEX_ARG=''
 FIND_PATH=${PWD}
+SHOW_CMD=false
 
-OPTSTR=":HDLdp:t:"
+OPTSTR=":HDLdp:t:c"
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -109,6 +110,7 @@ while getopts ${OPTSTR} OPTION;do
      d) depth_set_level;;
      p) FIND_PATH=${OPTARG};;
      t) TYPE="${OPTARG}";;
+     c) SHOW_CMD=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -153,7 +155,7 @@ fi
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#LIST}"
 
 {
-echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
+[[ ${SHOW_CMD} == 'true' ]] && echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
 if [[ ${LISTING} == 'true' ]];then
 	ls -lAdrt ${LIST}
 else

@@ -31,8 +31,7 @@ source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Defaults
-NUM_COLS=7
-COL_WIDTH=20
+NUM_COLS_DEFAULT=4
 HEADER=''
 
 #--Begin GetOpts--
@@ -98,12 +97,15 @@ usage () {
 OPTSTR=":HDc:w:h:"
 OPTIND=0
 
+NUM_COLS_ARG=''
+COL_WIDTH_ARG=''
+
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     c) NUM_COLS=${OPTARG};;
-     w) COL_WIDTH=${OPTARG};;
+     c) NUM_COLS_ARG=${OPTARG};;
+     w) COL_WIDTH_ARG=${OPTARG};;
      h) HEADER=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -113,16 +115,28 @@ done
 shift $((OPTIND -1))
 #--End GetOpts--
 
-# Execution
-if ! validate_is_integer ${NUM_COLS};then
-	usage "Invalid $(opt_type i) Number of Columns:${NUM_COLS}"
-elif ! validate_is_integer ${COL_WIDTH};then
-	usage "Invalid $(opt_type i) Column Width:${COL_WIDTH}"
-elif [[ ${NUM_COLS} -le 0 ]];then
-	usage "Invalid $(opt_type i) Number of Columns:${NUM_COLS}"
-elif [[ ${COL_WIDTH} -le 0 ]];then
-	usage "Invalid $(opt_type i) Column Width:${COL_WIDTH}"
+if [[ -n ${NUM_COLS_ARG} && ${NUM_COLS_ARG} -le 0 ]];then
+	usage "Invalid $(opt_type i) Number of Columns:${NUM_COLS_ARG}"
+elif [[ -n ${COL_WIDTH_ARG} && ${COL_WIDTH_ARG} -le 0 ]];then
+	usage "Invalid $(opt_type i) Column Width:${COL_WIDTH_ARG}"
 fi
+
+# Execution
+# Get lines
+LINES_IN=("${(f)$(
+	while read -r LINE;do
+		ansi2txt <<<${LINE} | col -b
+	done 
+)}")
+[[ -z ${LINES_IN} ]] && exit_leave $(msg_exit E 'No input provided')
+
+CALC_WIDTH=0
+for L in ${LINES_IN};do
+	[[ ${#L} -gt ${CALC_WIDTH} ]] && CALC_WIDTH=${#L}
+done
+
+[[ -z ${NUM_COLS_ARG} ]] && NUM_COLS=${NUM_COLS_DEFAULT} || NUM_COLS=${NUM_COLS_ARG}
+[[ -z ${COL_WIDTH_ARG} ]] && COL_WIDTH=${CALC_WIDTH} || COL_WIDTH=${COL_WIDTH_ARG}
 
 # Generate printf
 PF_FMT='printf "'
@@ -130,14 +144,6 @@ for ((C=1; C<=NUM_COLS; C++ ));do
 	PF_FMT+=' %-'${COL_WIDTH}'.'${COL_WIDTH}'s'
 done
 PF_FMT+='\\n"'
-
-# Get lines
-LINES_IN=("${(f)$(
-	while read -t -r LINE;do
-		ansi2txt <<<${LINE} | col -b
-	done 
-)}")
-[[ -z ${LINES_IN} ]] && exit_leave $(msg_exit E 'No input provided')
 
 # Header
 if [[ -n ${HEADER} ]];then
