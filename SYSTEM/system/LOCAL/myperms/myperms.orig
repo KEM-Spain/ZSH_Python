@@ -1,0 +1,256 @@
+#!/usr/bin/zsh
+REVERSE="\033[7m"
+RESET="\033[m"
+BOLD="\033[1m"
+BLACK_FG="\033[30m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+BLUE_FG="\033[34m"
+MAGENTA_FG="\033[35m"
+CYAN_FG="\033[36m"
+WHITE_FG="\033[37m"
+
+#Declarations
+typeset -a LIST
+
+#Constants
+NAME=$0
+MYID=$(id | cut -d \( -f2 | sed 's/).*//g')
+MYGROUP=$(id | cut -d \( -f4 | sed 's/).*//g')
+DEFAULT_DIRPERMS=755
+DEFAULT_EXECPERMS=755
+DEFAULT_FILEPERMS=644
+
+#Functions
+validate_depth () {
+	local VAL=${1}
+	local RET
+
+	RET=$(echo "${VAL}" | sed 's/[0-9]*//g')
+
+	if [[ -n ${RET} ]];then
+		echo "Error: Non integers detected in depth" >&2 && exit
+		return 1
+	fi
+}
+
+validate_permissions () {
+	local VAL=${1}
+	local RET
+	local NDX
+
+	RET=$(echo "${VAL}" | sed 's/[0-9]*//g')
+
+	if [[ -n ${RET} ]];then
+		echo "Error: Non integers detected in permissions" >&2 && exit
+		return 1
+	fi
+
+	if [[ ! (${#VAL} -gt 1 && ${#VAL} -le 4) ]];then
+		echo "Error: Max permissions is 3 or 4 octal numbers" >&2 && exit
+		return 1
+	fi
+
+	for ((NDX=0; NDX <= ${#VAL}; NDX++));do
+		if [[ ! (${VAL[${NDX}]} -ge 0 && ${VAL[${NDX}]} -le 7) ]];then
+			echo "Error: Valid octal range is 0-7" >&2 && exit
+		fi
+	done
+
+	return 0
+}
+
+function usage {
+	echo "${WHITE_FG}Usage${RESET}: $NAME $OPTSTR [files] (default:ALL)"
+	echo "         -H this help"
+	echo "         -D DEBUG"
+	echo "         -W No warning before execution"
+	echo "         -S Simulation only"
+	echo "         -O Do not alter OWNER and GROUP"
+	echo "         -r Depth of recursion: int (default:${DEPTH} level)"
+	echo "         -d set arbitrary directory permissions: 3-4 octal digits (default:${DEFAULT_DIRPERMS})"
+	echo "         -p set arbitrary regular file permissions: 3-4 octal digits (default:${DEFAULT_FILEPERMS})"
+	echo "         -f Make all files regular (default:${DEFAULT_FILEPERMS})"
+	echo "         -e Make all files executable (default:${DEFAULT_EXECPERMS})"
+	echo -e "\n${WHITE_FG}Desc${RESET}:\tScan permissions on all files and directories in current path and update as indicated.\n\tIf no arguments are provided, non conforming permissions are set to defaults."
+	kill -SIGINT $$
+}
+
+#Getopts
+DEBUG=false
+DEPTH=1
+OWNER=true
+FILEPERMS=${DEFAULT_FILEPERMS}
+DIRPERMS=${DEFAULT_DIRPERMS}
+ALL_REGULAR=false
+ALL_EXEC=false
+WARNINGS=true
+SIMULATE=false
+
+OPTSTR=:HDWSOfed:r:p:
+while getopts $OPTSTR opt; do
+    case $opt in
+        H) usage;;
+        D) DEBUG=true;;
+        W) WARNINGS=false;;
+		  S) SIMULATE=true;;
+		  O) OWNER=false;;
+        r) DEPTH=$OPTARG;;
+        d) DIRPERMS=$OPTARG;;
+        p) FILEPERMS=$OPTARG;;
+        f) ALL_REGULAR=true;;
+        e) ALL_EXEC=true;;
+        :) print -u2 "$0: option: -$OPTARG requires an argument"; usage ;;
+        \?) print -u2 "$0: unknown option $OPTARG"; usage ;;
+    esac
+done
+shift OPTIND-1
+
+#Execution
+if [[ ${FILEPERMS} != ${DEFAULT_FILEPERMS} ]];then
+	if ! validate_permissions ${FILEPERMS};then
+		echo "Option:-p must be a valid series of octal permission integers"
+		exit
+	fi
+fi
+
+if [[ ${DIRPERMS} != ${DEFAULT_DIRPERMS} ]];then
+	if ! validate_permissions ${DIRPERMS};then
+		echo "Option:-p must be a valid series of octal permission integers"
+		exit
+	fi
+fi
+
+if [[ ${DEPTH} -ne 1 ]];then
+	if ! validate_depth ${DEPTH};then
+		echo "Option:-r (recurse depth) must be an integer"
+		exit
+	fi
+fi
+
+if [[ $# == 0 ]];then
+	LIST=("${(@f)$(sudo find ./* -maxdepth ${DEPTH})}") #no file arg;do current dir
+else
+	LIST=($@) #use cmdline args
+fi
+
+FILES=0
+DIRS=0
+TOTAL=0
+
+for L in ${LIST};do
+	[[ -d $L ]] && ((DIRS++))
+	[[ -f $L ]] && ((FILES++))
+	((TOTAL++))
+done
+
+if [[ ${TOTAL} -gt 1 ]];then
+	printf "${WHITE_FG}%12s${RESET}:%s\n" "User ID" ${MYID}
+	printf "${WHITE_FG}%12s${RESET}:%s\n" "User Group" ${MYGROUP}
+	printf "${WHITE_FG}%12s${RESET}:%s\n" "Search Depth" ${DEPTH}
+	[[ ${SIMULATE} == 'true' ]] && echo "${GREEN_FG}[ ${RESET}${REVERSE}Simulation Mode${RESET} ${GREEN_FG}]${RESET}"
+
+	[[ $DIRS -ne 0 ]] && echo "There are ${WHITE_FG}${FILES}${RESET} files to process (${DIRS} directories)."
+	[[ ${ALL_EXEC} == "true" ]] && echo "${WHITE_FG}All files to be made executable${RESET}"
+	[[ ${ALL_REGULAR} == "true" ]] && echo "${WHITE_FG}All files to be made regular${RESET}"
+
+	if [[ ${TOTAL} -gt 10 ]];then
+		echo "${BOLD}${MAGENTA_FG}$(ls -lA | grep -vi total | head -10)${RESET}"
+		echo "${BOLD}${RED_FG}Warning${RESET}:partial listing - ${WHITE_FG}$((FILES - 10))${RESET} file(s) ${RED_FG}NOT SHOWN${RESET}."
+	else
+		echo "${BOLD}${MAGENTA_FG}$(ls -lA ${LIST})${RESET}"
+	fi
+
+	if [[ ${WARNINGS} == 'true' ]];then
+		echo -n "Press ${WHITE_FG}Y${RESET} to continue..."
+		read -sq RESPONSE
+		[[ ${RESPONSE} != "y" ]] && kill -SIGINT $$
+		echo
+	fi
+fi
+
+HIT=false
+for FN in $LIST;do
+	[[ $FN == "." ]] && continue
+
+	CURR_PERMS=$(sudo stat -c "%a" $FN)
+	OG=$(stat -c '%U:%G' ${FN})
+
+	if [[ ! -O $FN && ! -G $FN ]];then
+		[[ ${DEBUG} == 'true' ]] && echo "Hit owner test" >&2
+		[[ ${SIMULATE} == 'true' ]] && echo -n "${GREEN_FG}Simulation: ${RESET}"
+		if [[ ${OWNER} == 'true' ]];then
+			echo "Changing owner and group of: ${WHITE_FG}$FN${RESET} from ${OG} to ${MYID}:${MYGROUP}"
+			[[ ${SIMULATE} == 'false' ]] && sudo chown ${MYID}:${MYGROUP} $FN
+			HIT=true
+		else
+			echo "Owner and Group changes overridden for:${WHITE_FG}${OG} $FN${RESET}"
+		fi
+	fi
+
+	if [[ ${FILEPERMS} -ne ${DEFAULT_FILEPERMS} && ${CURR_PERMS} -ne ${FILEPERMS} ]];then
+		[[ ${DEBUG} == 'true' ]] && echo "Hit custom FILEPERMS test" >&2
+		if [[ -f $FN ]];then #only regular files
+			[[ ${SIMULATE} == 'true' ]] && echo -n "${GREEN_FG}Simulation: ${RESET}"
+			echo "Changing permissions [${CURR_PERMS}] to custom [${FILEPERMS}] on regular file: ${CYAN_FG}$FN${RESET}"
+			[[ ${SIMULATE} == 'false' ]] && sudo chmod $FILEPERMS $FN
+			HIT=true
+		fi
+		continue
+	fi
+
+	if [[ ${DIRPERMS} -ne ${DEFAULT_DIRPERMS} && ${CURR_PERMS} -ne ${DIRPERMS} ]];then
+		[[ ${DEBUG} == 'true' ]] && echo "Hit custom DIRPERMS test" >&2
+		if [[ -d $FN ]];then #only directories
+			[[ ${SIMULATE} == 'true' ]] && echo -n "${GREEN_FG}Simulation: ${RESET}"
+			echo "Changing permissions [${CURR_PERMS}] to custom [${DIRPERMS}] on directory: ${CYAN_FG}$FN${RESET}"
+			[[ ${SIMULATE} == 'false' ]] && sudo chmod $DIRPERMS $FN
+			HIT=true
+		fi
+		continue
+	else
+		#Return directories to defaults?
+		if [[ -d $FN && ${CURR_PERMS} -ne ${DEFAULT_DIRPERMS} ]];then
+			[[ ${DEBUG} == 'true' ]] && echo "Hit is directory at defaults test" >&2
+			[[ ${SIMULATE} == 'true' ]] && echo -n "${GREEN_FG}Simulation: ${RESET}"
+			echo "Changing permissions [${CURR_PERMS}] to default [${DEFAULT_DIRPERMS}] on directory: ${CYAN_FG}$FN${RESET}"
+			[[ ${SIMULATE} == 'false' ]] && sudo chmod $DEFAULT_DIRPERMS $FN
+			HIT=true
+			continue
+		fi
+	fi
+
+	if [[ ${ALL_EXEC} == "true" && ${CURR_PERMS} -ne ${DEFAULT_EXECPERMS} ]];then
+		[[ ${DEBUG} == 'true' ]] && echo "Hit ALL_EXEC test" >&2
+		if [[ -f $FN ]];then #only regular files
+			[[ ${SIMULATE} == 'true' ]] && echo -n "${GREEN_FG}Simulation: ${RESET}"
+			echo "Changing permissions [${CURR_PERMS}] to default [${DEFAULT_EXECPERMS}] on file: ${GREEN_FG}$FN${RESET}"
+			[[ ${SIMULATE} == 'false' ]] && sudo chmod $DEFAULT_EXECPERMS $FN
+			HIT=true
+		fi
+		continue
+	fi
+
+	if [[ ${ALL_REGULAR} == "true" && ${CURR_PERMS} -ne ${DEFAULT_FILEPERMS} ]];then
+		[[ ${DEBUG} == 'true' ]] && echo "Hit ALL_REGULAR test" >&2
+		if [[ -f $FN ]];then #only regular files
+			[[ ${SIMULATE} == 'true' ]] && echo -n "${GREEN_FG}Simulation: ${RESET}"
+			echo "Changing permissions [${CURR_PERMS}] to default [${DEFAULT_FILEPERMS}] on file: ${GREEN_FG}$FN${RESET}"
+			[[ ${SIMULATE} == 'false' ]] && sudo chmod $DEFAULT_FILEPERMS $FN
+			HIT=true
+		fi
+		continue
+	fi
+
+	#Return files to defaults?
+	if [[ ${ALL_EXEC} == 'false' && ${ALL_REGULAR} == 'false' && -f $FN && ${CURR_PERMS} -ne ${DEFAULT_FILEPERMS} ]];then
+		[[ ${DEBUG} == 'true' ]] && echo "Hit is file at defaults test" >&2
+		[[ ${SIMULATE} == 'true' ]] && echo -n "${GREEN_FG}Simulation: ${RESET}"
+		echo "Changing permissions [${CURR_PERMS}] to default [${DEFAULT_FILEPERMS}] on file: ${CYAN_FG}$FN${RESET}"
+		[[ ${SIMULATE} == 'false' ]] && sudo chmod $DEFAULT_FILEPERMS $FN
+		HIT=true
+		continue
+	fi
+done
+[[ ${HIT} == "false" ]] && printf '%s %s %s %s' "Nothing to do - all permissions conform to defaults" "D:${DEFAULT_DIRPERMS}" "E:${DEFAULT_EXECPERMS}" "F:${DEFAULT_FILEPERMS}"

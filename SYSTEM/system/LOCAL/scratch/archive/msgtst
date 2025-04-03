@@ -1,0 +1,95 @@
+#!/usr/bin/zsh
+
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+_LIB_DIR=/usr/local/lib
+
+#Imports
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/ANSI.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/EXIT.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+box_coords_overlap () {
+	local TAG_1=${1}
+	local TAG_2=${2}
+
+	local -A BOX_1_COORDS=($(box_coords_get ${TAG_1}))
+	local -A BOX_2_COORDS=($(box_coords_get ${TAG_2}))
+
+	local X1_MIN=${BOX_1_COORDS[X]}
+	local X1_MAX=$(( BOX_1_COORDS[X] + BOX_1_COORDS[H] -1 )) # Add the height
+	local Y1_MIN=${BOX_1_COORDS[Y]}
+	local Y1_MAX=$(( BOX_1_COORDS[Y] + BOX_1_COORDS[W] -1 )) # Add the width
+
+	local X2_MIN=${BOX_2_COORDS[X]}
+	local X2_MAX=$(( BOX_2_COORDS[X] + BOX_2_COORDS[H] -1 )) # Add the height
+	local Y2_MIN=${BOX_2_COORDS[Y]}
+	local Y2_MAX=$(( BOX_2_COORDS[Y] + BOX_2_COORDS[W] -1 )) # Add the width
+
+	# isOverlapping = (x1min < x2max) && (x2min < x1max) && (y1min < y2max) && (y2min < y1max)
+	
+	local STATE=CLEAR
+	[[ ${X1_MIN} -lt ${X2_MAX} && ${X2_MIN} -lt ${X1_MAX} && ${Y1_MIN} -lt ${Y2_MAX} && ${Y2_MIN} -lt ${Y1_MAX} ]] && STATE=OVERLAP
+	echo ${STATE}:${X1_MIN}:${Y1_MIN}:${X1_MAX}:${Y1_MAX}:${X2_MIN}:${Y2_MIN}:${X2_MAX}:${Y2_MAX}
+}
+
+NDX=0
+get_state () {
+	local B1=${1}
+	local B2=${2}
+
+	local STATE=$(box_coords_overlap ${B1} ${B2})
+	local ST X1_MIN Y1_MIN X1_MAX Y1_MAX X2_MIN Y2_MIN X2_MAX Y2_MAX
+
+	IFS=: read ST X1_MIN Y1_MIN X1_MAX Y1_MAX X2_MIN Y2_MIN X2_MAX Y2_MAX <<<${STATE}
+	tcup ${X1_MIN} ${Y1_MIN}; echo -n "${GREEN_FG}L(${X1_MIN},${Y1_MIN})${RESET}"
+	tcup ${X1_MAX} ${Y1_MAX}; echo -n "${RED_FG}R(${X1_MAX},${Y1_MAX})${RESET}"
+	tcup ${X2_MIN} ${Y2_MIN}; echo -n "${GREEN_FG}L(${X2_MIN},${Y2_MIN})${RESET}"
+	tcup ${X2_MAX} ${Y2_MAX}; echo -n "${RED_FG}R(${X2_MAX},${Y2_MAX})${RESET}"
+	tcup ${NDX} 0;echo -n "${B1} ${B2}:${ST}"
+	((NDX++))
+}
+
+clear
+
+msg_box -TMSG1 -jl -x10 -y10 -w30 -h10 "<w>MSG1 Left Message<N>|XXX|YYY|ZZZ"
+msg_box -TMSG2 -H1 -x12 -y55 -w30 -h10 "<w>MSG2 Center Message<N>|XXX|YYY|ZZZ"
+msg_box -TMSG3 -jl -x14 -y20 -w30 -h10 "<w>MSG3 Left Message<N>|XXX|YYY|ZZZ"
+msg_box -TMSG4 -H1 -x16 -y55 -w30 -h10 "<w>MSG4 Center Message<N>|XXX|YYY|ZZZ|111|222|333"
+msg_box -TMSG5 -H1 -x16 -y95 -w30 -h10 "<w>MSG5 Right Message<N>|XXX|YYY|ZZZ|111|222|333"
+
+
+#box_coords_dump
+
+get_state MSG2 MSG1
+get_state MSG1 MSG4
+get_state MSG1 MSG2
+get_state MSG1 MSG3
+get_state MSG2 MSG4
+get_state MSG5 MSG2
+
+read
+tput cnorm

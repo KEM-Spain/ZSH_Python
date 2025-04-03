@@ -1,0 +1,313 @@
+#!/usr/bin/env zsh
+RESET="\033[m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+BLUE_FG="\033[34m"
+MAGENTA_FG="\033[35m"
+CYAN_FG="\033[36m"
+WHITE_FG="\033[37m"
+
+#Globals
+_TARGET_DB=UNKNOWN
+
+#DB DEF
+#Functions
+create_db_name () {
+	local DB=${1}
+
+	[[ ! ${DB:e}  == '.db' ]] && DB="${DB}.db"
+	echo ${DB}
+}
+
+create_table () {
+	local TABLE=${1}
+	local -a TABLE_DEF
+	local L
+
+	[[ -z ${TABLE} ]] && echo "${0}:missing TABLE parameter" >&2 && usage
+	if [[ ! -e ${TABLE}.def ]];then
+		echo "No table definition:${TABLE}.def found"
+		usage
+	fi
+
+	[[ $(echo '.tables' | sqlite3 ${_TARGET_DB}) =~ "${TABLE}" ]] && echo "Table: ${TABLE} already exists in database: ${_TARGET_DB}" && return 1
+
+	echo "Creating table ${TABLE} in database: ${_TARGET_DB}"
+
+	TABLE_DEF+=("${(f)$(echo "create table if not exists ${TABLE}")}")
+	TABLE_DEF+=("${(f)$(echo "(")}")
+	TABLE_DEF+=("${(f)$(< ${TABLE}.def)}")
+	TABLE_DEF+=("${(f)$(echo ");")}")
+
+sqlite3 ${_TARGET_DB} <<___END_SQL
+$(for L in ${TABLE_DEF};do echo ${L};done)
+___END_SQL
+	return ${?}
+}
+
+del_row () {
+	local TABLE=${1}
+	local FIELD=${2}
+	local VALUE=${3}
+	local STATEMENT
+
+	[[ -z ${TABLE} ]] && echo "${0}:missing parameter 1:TABLE" >&2 && usage
+	[[ -z ${FIELD} ]] && echo "${0}:missing parameter 2:FIELD" >&2 && usage
+	[[ -z ${VALUE} ]] && echo "${0}:missing parameter 3:VALUE" >&2 && usage
+
+	STATEMENT=$(echo "delete from ${TABLE} where ${FIELD} = \"${VALUE}\";")
+
+	echo "STATEMENT:${STATEMENT}"
+
+sqlite3 ${_TARGET_DB} <<___END_SQL
+$(echo ${STATEMENT})
+___END_SQL
+	return ${?}
+}
+
+get_row () {
+	local TABLE
+	local FIELD
+	local VALUE
+
+	[[ -z ${TABLE} ]] && echo "${0}:missing parameter 1:TABLE" >&2 && usage
+	[[ -z ${FIELD} ]] && echo "${0}:missing parameter 2:FIELD" >&2 && usage
+	[[ -z ${VALUE} ]] && echo "${0}:missing parameter 3:VALUE" >&2 && usage
+
+	echo "${CYAN_FG}select * from ${TABLE} where ${FIELD} = ${VALUE};${RESET}"
+
+sqlite3 ${_TARGET_DB} <<___END_SQL
+	select * from ${_TARGET_DB} where ${FIELD} = "${VALUE}";
+___END_SQL
+	RC=${?}
+	return ${?}
+}
+
+import () {
+	local TABLE=${1}
+	local DATAFILE=${2}
+
+	[[ -z ${TABLE} ]] && echo "${0}:missing parameter 1:TABLE" >&2 && usage
+	[[ -z ${DATAFILE} ]] && echo "${0}:missing parameter 2:DATAFILE" >&2 && usage
+
+sqlite3 ${_TARGET_DB} <<___END_SQL
+.mode csv
+.separator '|'
+.import ${DATAFILE} ${TABLE}
+___END_SQL
+	RC=${?}
+	return ${?}
+}
+
+ins_row () {
+	local TABLE=${1}
+	local -a FIELDS=(${2})
+	local -a VALUES=(${3})
+	local STATEMENT
+	local V
+	local -a STRIP
+
+	[[ -z ${TABLE} ]] && echo "${0}:missing parameter 1:TABLE" >&2 && usage
+	[[ -z ${FIELDS} ]] && echo "${0}:missing parameter 2:FIELDS" >&2 && usage
+	[[ -z ${VALUES} ]] && echo "${0}:missing parameter 3:VALUES" >&2 && usage
+
+	VALUES=$(quote_values "${VALUES}")
+	STATEMENT=$(echo "insert into ${TABLE} (${FIELDS}) values (${VALUES});")
+
+	echo "STATEMENT:${STATEMENT}"
+
+sqlite3 ${_TARGET_DB} <<___END_SQL
+$(echo ${STATEMENT})
+___END_SQL
+	return ${?}
+}
+
+quote_values () {
+	local -a VALUES=($@)
+	local -a STRIP
+	local V
+
+	STRIP=($(echo ${VALUES} | sed 's/,/ /g'))
+	VALUES=()
+	for ((V=1;V<${#STRIP};V++));do
+		VALUES+="\"${STRIP[${V}]}\","
+	done
+	VALUES+="\"${STRIP[${#STRIP}]}\""
+	echo ${VALUES}
+}
+
+schema () {
+	local TABLE=${1}
+
+	[[ ! $(echo '.tables' | sqlite3 ${_TARGET_DB}) =~ "${TABLE}" ]] && echo "Table: ${TABLE} not found in database: ${_TARGET_DB}" && return 1
+
+sqlite3 ${_TARGET_DB} <<___END_SQL
+.schema ${TABLE}
+___END_SQL
+}
+
+exec_sql () {
+	local STATEMENT=($@)
+	local L
+	
+sqlite3 ${_TARGET_DB} <<___END_SQL
+$(for L in ${STATEMENT};do echo ${L};done)
+___END_SQL
+
+}
+
+upd_row () {
+	local TABLE=${1}
+	local FIELD=${2}
+	local OLD_VALUE=${3}
+	local NEW_VALUE=${4}
+	local STATEMENT
+
+	[[ -z ${TABLE} ]] && echo "${0}:missing parameter 1:TABLE" >&2 && usage
+	[[ -z ${FIELD} ]] && echo "${0}:missing parameter 2:FIELD" >&2 && usage
+	[[ -z ${OLD_VALUE} ]] && echo "${0}:missing parameter 3:OLD_VALUE" >&2 && usage
+	[[ -z ${NEW_VALUE} ]] && echo "${0}:missing parameter 4:NEW_VALUE" >&2 && usage
+
+	STATEMENT=$(echo "update ${TABLE} set ${FIELD} = \"${NEW_VALUE}\" where ${FIELD} = \"${OLD_VALUE}\";")
+
+	echo "STATEMENT:${STATEMENT}"
+
+sqlite3 ${_TARGET_DB} <<___END_SQL
+$(echo ${STATEMENT})
+___END_SQL
+	return ${?}
+}
+
+#--Begin GetOpts--
+RESET="\033[m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+
+SCRIPT=${0:t}
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		f) echo "<FILE>";;
+	esac
+}
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTRING
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTRING+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTRING}
+}
+
+usage () {
+	local OPTS=$(parse_opts $OPTSTR)
+	echo -e "\n${WHITE_FG}Usage${RESET}: $SCRIPT ${WHITE_FG}[${RESET} $OPTS ${WHITE_FG}]${RESET}\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-t${RESET} Create new table: <DATABASE> <TABLE> (expects table definition file: <TABLE>.def)"
+	echo -e "${WHITE_FG}-r${RESET} Read import data to existing table: <DATABASE> <TABLE> <DATAFILE>"
+	echo -e "${WHITE_FG}-i${RESET} Insert row into existing table: <DATABASE> <TABLE> <FIELD> <VALUE>"
+	echo -e "${WHITE_FG}-d${RESET} Delete row in existing table: <DATABASE> <TABLE> <FIELD> <VALUE>"
+	echo -e "${WHITE_FG}-u${RESET} Update row in existing table: <DATABASE> <TABLE> <FIELD> <OLD_VALUE> <NEW_VALUE>"
+	echo -e "${WHITE_FG}-e${RESET} Execute SQL: <DATABASE> <STATEMENT> (statement can be file or 'text')"
+	echo -e "\n${WHITE_FG}DESC${RESET}:Manage database\n"
+	exit
+}
+
+OPTSTR=":HDciuderst"
+
+DEBUG=false
+SCHEMA=false
+TABLE=false
+IMPORT=false
+UPDATE=false
+DELETE=false
+INSERT=false
+SQL=false
+
+OPTIND=0
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) DEBUG=true;;
+     d) DELETE=true;;
+     e) SQL=true;;
+	  i) INSERT=true;;
+     r) IMPORT=true;;
+     t) TABLE=true;;
+     u) UPDATE=true;;
+     S) SCHEMA=true;;
+     :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
+	esac
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+#Execution
+if [[ ${TABLE} == "true" ]];then
+	[[ ${#} -ne 2 ]] && echo "Received:${WHITE_FG}${#}${RESET} arguments-> ${WHITE_FG}2${RESET} arguments needed: <DATABASE> <TABLE>" && usage
+	echo "Creating new table:${WHITE_FG}${_TARGET_DB}${RESET}"
+	_TARGET_DB=$(create_db_name $1)
+	create_table $2
+	echo "RETURN:${?}"
+elif [[ ${DELETE} == "true" ]];then
+	[[ ${#} -ne 4 ]] && echo "Received:${WHITE_FG}${#}${RESET} arguments-> ${WHITE_FG}4${RESET} arguments needed: <DATABASE> <TABLE> <FIELD> <VALUE>" && usage
+	_TARGET_DB=$(create_db_name $1)
+	echo "Deleting row from table"
+	del_row $2 $3 $4
+	echo "RETURN:${?}"
+elif [[ ${UPDATE} == "true" ]];then
+	[[ ${#} -ne 5 ]] && echo "Received:${WHITE_FG}${#}${RESET} arguments-> ${WHITE_FG}5${RESET} arguments needed: <DATABASE> <TABLE> <FIELD> <OLD_VALUE> <NEW_VALUE>" && usage
+	_TARGET_DB=$(create_db_name $1)
+	echo "Updating row in table"
+	upd_row $2 $3 $4 $5
+	echo "RETURN:${?}"
+elif [[ ${INSERT} == "true" ]];then
+	[[ ${#} -ne 4 ]] && echo "Received:${WHITE_FG}${#}${RESET} arguments-> ${WHITE_FG}4${RESET} arguments needed: <DATABASE> <TABLE> <FIELDS> <VALUES>" && usage
+	_TARGET_DB=$(create_db_name $1)
+	echo "Inserting row to table"
+	ins_row $2 "$3" "$4"
+	echo "RETURN:${?}"
+elif [[ ${IMPORT} == "true" ]];then
+	[[ ${#} -ne 3 ]] && echo "Received:${WHITE_FG}${#}${RESET} arguments-> ${WHITE_FG}3${RESET} arguments needed: <DATABASE> <TABLE> <DATAFILE>" && usage
+	_TARGET_DB=$(create_db_name $1)
+	echo "Importing to table"
+	import $2 $3
+	echo "RETURN:${?}"
+elif [[ ${SQL} == "true" ]];then
+	[[ ${#} -ne 2 ]] && echo "Received:${WHITE_FG}${#}${RESET} arguments-> ${WHITE_FG}2${RESET} arguments needed: <DATABASE> <STATEMENT>" && usage
+	_TARGET_DB=$(create_db_name $1)
+	if [[ -e ${2} ]];then
+		#statement is a file
+		local -a SQL
+		while read LINE;do
+			SQL+=${LINE}
+		done<${2}
+	else
+		#statement is text
+		STATEMENT+="${2}"
+	fi
+	echo "Executiong SQL"
+	exec_sql ${SQL}
+	echo "RETURN:${?}"
+elif [[ ${SCHEMA} == "true" ]];then
+	[[ ${#} -ne 2 ]] && echo "Received:${WHITE_FG}${#}${RESET} arguments-> ${WHITE_FG}2${RESET} arguments needed: <DATABASE> <TABLE>" && usage
+	_TARGET_DB=$(create_db_name $1)
+	echo "Showing schema for table"
+	schema $2
+	echo "RETURN:${?}"
+else
+	echo "Nothing to do"
+	usage
+fi
+exit
+

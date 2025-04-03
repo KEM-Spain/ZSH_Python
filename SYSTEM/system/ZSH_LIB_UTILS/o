@@ -1,0 +1,415 @@
+#!/usr/bin/zsh
+# Ansi colors
+REVERSE="\033[7m"
+RESET="\033[m"
+BOLD="\033[1m"
+BLACK_FG="\033[30m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+BLUE_FG="\033[34m"
+MAGENTA_FG="\033[35m"
+CYAN_FG="\033[36m"
+WHITE_FG="\033[37m"
+STRIKE="\033[9m"
+ITALIC="\033[3m"
+UNDER="\033[4m"
+
+# Echoed ansi colors
+E_REVERSE=$(echo "\033[7m")
+E_RESET=$(echo "\033[m")
+E_BOLD=$(echo "\033[1m")
+E_BLACK_FG=$(echo "\033[30m")
+E_RED_FG=$(echo "\033[31m")
+E_GREEN_FG=$(echo "\033[32m")
+E_YELLOW_FG=$(echo "\033[33m")
+E_BLUE_FG=$(echo "\033[34m")
+E_MAGENTA_FG=$(echo "\033[35m")
+E_CYAN_FG=$(echo "\033[36m")
+E_WHITE_FG=$(echo "\033[37m")
+E_STRIKE=$(echo "\033[9m")
+
+# Declarations
+typeset -a _RAWLIST
+typeset -a _MARKED=()
+typeset -a _LOCAL_LIST=()
+typeset -A _FILE_APP
+typeset -A _FILE_NDX
+typeset -A _APP_EXE
+typeset -A _APP_TYPE
+
+# Constants
+_APP_LOG=/tmp/${_SCRIPT}.log
+
+_APP_EXE[EBOOK]="/usr/bin/python2.7 /usr/bin/ebook-viewer"
+_APP_EXE[OKULAR]=/usr/bin/okular
+_APP_EXE[MDLESS]=/usr/local/bin/mdless
+_APP_EXE[MUSE]="/usr/local/bin/system/launchers/run_musescore"
+_APP_EXE[OFFICE]=/usr/bin/libreoffice
+_APP_EXE[IMAGE]=/usr/local/bin/viewnior
+_APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
+_APP_EXE[HARUNA]=/snap/bin/haruna
+_APP_EXE[VIM]=/usr/bin/vim
+
+_APP_TYPE[EBOOK]=GUI
+_APP_TYPE[OKULAR]=GUI
+_APP_TYPE[MDLESS]=TERM
+_APP_TYPE[MUSE]=GUI
+_APP_TYPE[OFFICE]=GUI
+_APP_TYPE[IMAGE]=GUI
+_APP_TYPE[VLC]=GUI
+_APP_TYPE[HARUNA]=GUI
+_APP_TYPE[VIM]=TERM
+
+_MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MD_LOCAL="${HOME}/Documents/Music"
+_MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
+
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIST.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+# Functions
+action_do () {
+	local -a _MARKED=(${@})
+	local M
+	local APP
+	local APP_EXE_PATH
+	local APP_TYPE
+	local FN
+	local ARGS
+	local CMD
+
+
+	for M in ${_MARKED};do
+		FN=${(k)_FILE_NDX[(r)${M}]}
+		APP_EXE_PATH=${_FILE_APP[${FN}]}
+		CMD="${APP_EXE_PATH} ${FN:q}"
+
+		if [[ ${_DEBUG} -gt 0 ]];then
+			dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+			dbg "FN:${FN}"
+			dbg "APP_EXE_PATH:${APP_EXE_PATH}"
+			dbg "CMD:${CMD}"
+		fi
+
+		msg_box -t3 "Starting ${CMD}..."
+		eval "${CMD} 2>${_APP_LOG}" &
+
+		if [[ ${_DEBUG} -gt 0 ]];then
+			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
+		fi
+	done
+
+	for M in ${_MARKED};do
+		[[ ${M} -eq 0 ]] && continue
+		_MARKED[${M}]=0
+		list_set_selected ${M} ${_STALE_ROW}
+	done
+}
+
+action_warn () {
+	local _MARKED=(${@})
+	local CNT=$(list_get_selected_count ${_MARKED})
+	local M
+	
+	msg_box -p "<I>Please respond<N>|==============| |${CNT} $(str_pluralize item $CNT) queued for opening.| |<B>Open? (y/n)<N>"
+	if [[ ${_MSG_KEY} == 'n' ]];then
+		for M in ${_MARKED};do
+			list_clear_selected ${M}
+		done
+	fi
+}
+
+create_list () {
+	local FLIST=(${@})
+	local F
+	local APP
+	local NDX=0
+}
+
+get_app () {
+	local FN=${1}
+	local EXT=${FN:e:l}
+	local APP
+
+	case ${EXT} in
+		avi) APP=${_APP_EXE[HARUNA]};;
+		doc) APP=${_APP_EXE[OFFICE]};;
+		odg) APP=${_APP_EXE[OFFICE]};;
+		epub) APP=${_APP_EXE[EBOOK]};;
+		gif) APP=${_APP_EXE[IMAGE]};;
+		html) APP=${_APP_EXE[VIM]};;
+		jpeg) APP=${_APP_EXE[IMAGE]};;
+		jpg) APP=${_APP_EXE[IMAGE]};;
+		log) APP=${_APP_EXE[VIM]};;
+		markdown) APP=${_APP_EXE[MDLESS]};;
+		md) APP=${_APP_EXE[MDLESS]};;
+		mkv) APP=${_APP_EXE[HARUNA]};;
+		mp3) APP=${_APP_EXE[VLC]};;
+		m4a) APP=${_APP_EXE[HARUNA]};;
+		mp4) APP=${_APP_EXE[HARUNA]};;
+		webm) APP=${_APP_EXE[HARUNA]};;
+		mscz) APP=${_APP_EXE[MUSE]};;
+		ods) APP=${_APP_EXE[OFFICE]};;
+		odt) APP=${_APP_EXE[OFFICE]};;
+		pdf) APP=${_APP_EXE[OKULAR]};;
+		png) APP=${_APP_EXE[IMAGE]};;
+		rtf) APP=${_APP_EXE[OFFICE]};;
+		svg) APP=${_APP_EXE[IMAGE]};;
+		xls) APP=${_APP_EXE[OFFICE]};;
+		txt) APP=${_APP_EXE[VIM]};;
+		wav) APP=${_APP_EXE[VLC]};;
+		flac) APP=${_APP_EXE[VLC]};;
+		*) APP=?;;
+	esac
+	
+	if [[ ${APP} == '?' ]];then
+		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${VIM}
+	fi
+
+	echo ${APP}
+}
+
+item_decorate () {
+	local NDX=$1
+
+	case ${_LIST_SELECTED[${NDX}]} in
+		2) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		3) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
+		*)	tput el;echo -n ${_LOCAL_LIST[${NDX}]};;
+	esac
+}
+
+mark_unsupported () {
+	local NDX=$1
+	local SUPPORTED
+
+	SUPPORTED=$(get_app ${_LOCAL_LIST[${NDX}]})
+	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=3
+}
+
+same_extension () {
+	local _MARKED=(${@})
+	local SAME_EXT=true
+	local LAST_EXT=?
+	local M
+
+	for M in ${_MARKED};do
+		[[ ! -f ${_LOCAL_LIST[${M}]} ]] && continue
+		[[ ${LAST_EXT} == "?" ]] && LAST_EXT=${_LOCAL_LIST[${M}]:e}
+		[[ ${LAST_EXT} != ${_LOCAL_LIST[${M}]:e} ]] && SAME_EXT=false
+	done
+
+	[[ ${SAME_EXT} == 'true' ]] && return 0 || return 1
+}
+
+single_file_launch () {
+	local FN=${1}
+	local APP=$(get_app ${FN})
+
+	[[ ${APP} == '?' ]] && exit_leave "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${FN}${RESET} of type: [$(file -b ${FN})]"
+
+	_LIST+=$(realpath ${FN}) # Add full path
+	_FILE_APP[${F}]=${APP}
+	_FILE_NDX[${F}]=1
+
+	echo "_LIST:${_LIST}"
+	echo "_FILE_APP:${_FILE_APP}"
+	echo "_FILE_NDX:${_FILE_NDX}"
+
+	action_do 1
+}
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Open selected file with associated application
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type d)|$(opt_type f)]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-a${RESET} show unsupported files"
+	echo -e "${WHITE_FG}-m${RESET} process music files"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
+	) >&2
+
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	exit_leave
+}
+
+OPTSTR=":HDam"
+OPTIND=0
+
+FILTER_UNSUPPORTED=true
+FILTER="Supported Only"
+MUSIC_DIRS=false
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     a) FILTER_UNSUPPORTED=false;FILTER="All Files";;
+     m) MUSIC_DIRS=true;;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+#--Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
+
+# File(s) passed on command line or pipe
+typeset -a ARGS
+
+# Command line args
+# 1) none - all files in PWD
+# 2) list - process a list of files
+# 3) file - process a single file
+
+RAWPATH=$(path_get_raw)
+FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH=${FPATH:q}
+FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+PATHLBL=$(path_get_label 40)
+
+[[ ${#} -eq 1 && -f ${1} ]] && FILE_ARG=${1} || FILE_ARG='' # Single file arg
+
+# Verify path/file if passed
+if [[ ${#} -eq 0 ]];then # No args - PWD
+	HDR_MSG="Showing all files in:${PWD}"
+else
+	HDR_MSG="Processing file list"
+	_RAWLIST=(${@})
+	for F in ${_RAWLIST};do
+		[[ ! -e ${F} ]] && exit_leave $(msg_exit E "File:${F} not found")
+	done
+fi
+
+if [[ -z ${_RAWLIST} ]];then
+	_RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f ! -path ${PWD}")}")
+fi
+
+NDX=0
+for F in ${_RAWLIST};do
+	((NDX++))
+	FN=$(realpath ${F}) # Add full path
+	[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "realpath error: ${FN}")
+	_RAWLIST[${NDX}]=${FN}
+done
+
+NDX=0
+for F in ${(o)_RAWLIST};do
+	[[ -d ${F} ]] && continue # Skip any directories
+	APP=$(get_app ${F})
+	[[ ${APP} == '?' && ${FILTER_UNSUPPORTED} == 'true' ]] && continue # Skip any unsupported
+	((NDX++))
+	if [[ ${MUSIC_DIRS} == 'true' ]];then
+		FN=${F}
+		[[ ${#FN} -eq ${#F} ]] && FN=${${FN}##${_MD_EXTERNAL}}
+		[[ ${#FN} -eq ${#F} ]] && FN=${${FN}##${_MD_LOCAL}}
+		[[ ${#FN} -eq ${#F} ]] && FN=${${FN}##${_MD_MUSE}}
+		[[ ${#FN} -eq ${#F} ]] && FN=${FN}
+	else
+		FN=${F:t}
+	fi
+	_LOCAL_LIST+=${FN}
+	mark_unsupported ${NDX}
+	_FILE_APP[${F}]=${APP}
+	_FILE_NDX[${F}]=${NDX}
+done
+
+if [[ -z ${_LOCAL_LIST} ]];then
+	do_rmcup
+	for F in ${(on)_RAWLIST};do
+		echo "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${F:t}${RESET} of type: [$(file -b ${F})]"
+	done
+	exit_leave
+fi
+
+if [[ -n ${FILE_ARG} ]];then # Process a single file arg directly
+	_LIST=(${_LOCAL_LIST})
+	action_do 1
+	exit_leave
+fi
+
+# Set headings
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize file ${#_LIST})  ${WHITE_FG}%-*s${RESET}  Filter:${WHITE_FG}%s${RESET}  Selected:${WHITE_FG}%*d${RESET}  ${_PG}" ${#_LIST} ${#HDR_MSG} "${HDR_MSG}" "${FILTER}" ${#${#SELECTED_COUNT}} ${SELECTED_COUNT}'
+list_add_header_break
+
+# Set line item
+list_set_line_item ' 
+printf "${BOLD}${GREEN_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+'
+
+list_set_select_action "open"
+list_set_action_msgs open file
+list_set_reuse_stale true
+list_set_client_warn true
+list_set_searchable true
+
+while true;do
+	# Get selection
+	list_select ${_LOCAL_LIST}
+	[[ ${?} -eq 0 ]] && break
+
+	# Get selections
+	_MARKED=($(list_get_selected))
+	
+	if [[ $(list_get_selected_count) -gt 1 ]];then
+		action_warn ${_MARKED} # Warn if more than 1 selected
+	fi
+ 
+ 	if [[ ${_MSG_KEY} == "y" || $(list_get_selected_count) -eq 1 ]];then
+ 		action_do ${_MARKED}
+ 	fi
+done
+
+exit_leave

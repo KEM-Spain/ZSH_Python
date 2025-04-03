@@ -1,0 +1,175 @@
+#!/usr/bin/zsh
+#Declarations
+typeset -A _T_DEFS
+typeset -A _Q_NDX
+typeset -a _QTEXT
+
+
+#Constants
+QFILE=/home/kmiller/Code/LOCAL/spanish_quiz/flash/test_questions
+TENSE_DEFS=/home/kmiller/Code/LOCAL/spanish_quiz/flash/tense_defs
+
+#Globals
+
+#Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/STR.zsh
+
+for D in ${=_DEPS_};do
+	if [[ -e ${_LIB_DIR}/${D} ]];then
+		source ${_LIB_DIR}/${D}
+	else
+		echo "Cannot source:${_LIB_DIR}/${D} - not found"
+		exit 1
+	fi
+done
+
+#Functions
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Generate random series of questions
+\tto test knowledge of spanish subjunctive
+\tversus indicative mood
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave $(msg_err "${PENDING_MSGS}")
+}
+
+OPTSTR=":HD"
+OPTIND=0
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+while read LINE;do
+	K=$(cut -d '|' -f1 <<<${LINE})
+	V=$(cut -d '|' -f2- <<<${LINE})
+	_T_DEFS[${K}]=${V}
+done < ${TENSE_DEFS}
+
+QFILE_LEN=1
+while read LINE;do
+	_QTEXT+=${LINE}
+	((QFILE_LEN++))
+done <<<$(tut blank_lines < ${QFILE})
+
+NDX=${RANDOM}
+SEQ=1
+Q_CNT=0
+for ((L=1; L<QFILE_LEN; L++));do
+	if [[ $((${L} % 3)) -eq 0 ]];then
+		_Q_NDX[Q${NDX}_A]=${_QTEXT[${L}]}
+		NDX=${RANDOM}
+		SEQ=1
+		((Q_CNT++))
+	else
+		_Q_NDX[Q${NDX}_${SEQ}]=${_QTEXT[${L}]}
+		((SEQ++))
+	fi
+done
+
+((NDX--))
+
+MSG_W=100
+MSG_H=6
+K_CNT=1
+
+typeset -a MSG
+typeset -A COORDS
+
+for K in ${(onk)_Q_NDX};do
+	tput cup 0 0
+	echo "${K_CNT} of ${Q_CNT}"
+	if [[ ! ${K} =~ '_A' ]];then
+		MSG_READY=false
+		MSG+="${_Q_NDX[${K}]}"
+		continue
+	else
+		MSG_READY=true
+	fi
+
+	ANS=$(sed 's/\(<ANSWER:\)\(.*\)\(:>\)/\2/' <<<${MSG[2]})
+	MSG[2]=$(sed 's/<ANSWER:.*:>/<?>/' <<<${MSG[2]})
+	MSG[2]=$(sed "s/<?>/${ANS}/" <<<${MSG[2]})
+
+	if [[ ${MSG_READY} == 'true' ]];then
+		msg_box -c -q -p -x2 -y1 -w${MSG_W} -h${MSG_H} ${MSG}
+	fi
+
+	[[ ${_MSG_KEY} == 'q' ]] && exit_leave
+
+	if [[ ${K} =~ '_A' ]];then
+		MSG="<w>${_Q_NDX[${K}]}<N>|"
+		MSG+=$(echo ${_T_DEFS[${_Q_NDX[${K}]}]} | fold -w70 -s | sed 's/$/|/g')
+		msg_box -q -p -x10 -y1 -w${MSG_W} ${MSG}
+		[[ ${_MSG_KEY} == 'q' ]] && exit_leave
+	fi
+
+	MSG=()
+	((K_CNT++))
+done
+
+exit_leave

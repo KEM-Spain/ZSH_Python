@@ -1,0 +1,4 @@
+		f1 varchar(20) not null,
+		f2 varchar(20) not null,
+		f3 varchar(20) not null,
+		primary key(f1,f2,f3)

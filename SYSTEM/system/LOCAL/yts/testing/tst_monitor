@@ -1,0 +1,79 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+
+#Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/MSG.zsh
+
+for D in ${=_DEPS_};do
+	if [[ -e ${_LIB_DIR}/${D} ]];then
+		source ${_LIB_DIR}/${D}
+	else
+		echo "Cannot source:${_LIB_DIR}/${D} - not found"
+		exit 1
+	fi
+done
+
+_DOWNLOAD_DIR=~/Downloads
+
+#dbg_set_level
+#dbg_set_level
+#dbg_set_level
+
+_LOG=./yt.log
+
+monitor () {
+	local LINE
+	local NDX=0
+	local -a ETA
+	local DEST
+	local DEST_1
+	local DEST_2
+
+	while true;do
+		((NDX++))
+		if [[ ! -e ${_LOG} ]];then
+			sleep .5
+			[[ ${NDX} -gt 10 ]] && exit_leave "${_LOG} not detected"
+			continue
+		fi
+		DEST=("${(f)$(grep -i 'destination' < <(sed -e 's//\n/g' -e 's#Downloads/#Downloads|#g' -e 's/ \[.*//g' ${_LOG}))}")
+		DEST_1=$(cut -d'|' -f1 <<<${DEST})
+		DEST_2=$(cut -d'|' -f2 <<<${DEST})
+		msg_box -C -jl -x10 -y40 -w80 -h10 ${DEST_1}
+		msg_box -C -jl "[title] ${DEST_2[1,65]}"
+		ETA+=("${(f)$(grep -i 'eta' < <(sed 's//\n/g' ${_LOG} | grep -vi 'unknown'))}")
+		msg_box -C -jl ${ETA[-1]}
+		if [[ ${ETA[-1]} =~ '100' ]];then
+			msg_box -p -PK "Download complete"
+			msg_box_clear $(get_cont_box_coords)
+			break
+		fi
+		sleep .5
+	done
+}
+
+monitor
+
+exit_leave

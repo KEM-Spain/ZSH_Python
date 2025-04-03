@@ -1,0 +1,166 @@
+#!/usr/bin/zsh
+REVERSE="\033[7m"
+RESET="\033[m"
+BOLD="\033[1m"
+BLACK_FG="\033[30m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+BLUE_FG="\033[34m"
+MAGENTA_FG="\033[35m"
+CYAN_FG="\033[36m"
+WHITE_FG="\033[37m"
+STRIKE="\033[9m"
+ITALIC="\033[3m"
+UNDER="\033[4m"
+
+# Constants
+_DEPTH=1
+
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+# Functions
+depth_set_level () {
+	((_DEPTH++))
+}
+
+#--Begin GetOpts--
+RESET="\033[m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+
+read -r -d '' DESC<<EOF
+Find files and/or directories in or below the current directory
+\tAll <SEARCHTERM> args are find command regex components
+\tA leading and trailing match component '.*/<REGEX>.*' are automatically included
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		s) echo "<SEARCHTERM>";;
+		t) echo "<OBJ_TYPE>";;
+	esac
+}
+
+usage () {
+	local OPTS=$(parse_opts ${OPTSTR})
+	local -a PENDING_MSGS=(${@})
+
+	tabs 5
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	(
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type s)]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug; when repeated increases level"
+	echo -e "${WHITE_FG}-L${RESET} add listing detail"
+	echo -e "${WHITE_FG}-d${RESET} depth; each repetition increases search depth"
+	echo -e "${WHITE_FG}-p${RESET} search path (default pwd)"
+	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} (any valid type:f,d,l,p,c,s,b)  Default:${WHITE_FG}any${RESET}"
+	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
+	) >&2
+
+	exit_leave $(msg_exit W ${PENDING_MSGS})
+}
+
+typeset -a OPTIONS
+
+LISTING=false
+LEADING=false
+TYPE=''
+OPTIND=0
+REGEX_ARG=''
+FIND_PATH=${PWD}
+
+OPTSTR=":HDLdp:t:"
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     L) LISTING=true;;
+     d) depth_set_level;;
+     p) FIND_PATH=${OPTARG};;
+     t) TYPE="${OPTARG}";;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+
+# Marshall find command args
+MAXDEPTH=${_DEPTH}
+
+REGEX_ARG=''
+if [[ ${#} -ne 0 ]];then
+	REGEX_ARG=${1}
+	REGEX=".*/${REGEX_ARG}.*"
+	REGEX="-regextype 'posix-extended' -regex ${(qqq)REGEX}"
+fi
+
+case ${TYPE} in
+	f) TYPE='-type f';TDESC='Regular File';;
+	d) TYPE='-type d';TDESC='Directory';;
+	l) TYPE='-type l';TDESC='Symbolic Link';;
+	p) TYPE='-type p';TDESC='Named Pipe';;
+	c) TYPE='-type c';TDESC='Char Special';;
+	s) TYPE='-type s';TDESC='Socket';;
+	b) TYPE='-type b';TDESC='Block Special';;
+	*) TYPE='';TDESC='None';;
+esac
+
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nOBJ_TYPE:${OBJ_TYPE:-any}"
+
+CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE}"
+
+LIST=("${(f)$(eval ${CMD})}")
+if ! arr_is_populated "${LIST}" ;then
+	exit_leave $(msg_exit W "No results for query")
+fi
+
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#LIST}"
+
+{
+echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
+if [[ ${LISTING} == 'true' ]];then
+	ls -lAdrt ${LIST}
+else
+	for L in ${LIST};do
+		echo ${L}
+	done
+fi
+} | mypager
+
+exit_leave

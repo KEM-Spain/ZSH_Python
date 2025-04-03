@@ -1,0 +1,961 @@
+
+[31mset_exit_callback[m: REGISTERED CALLBACK:clear_tmp
+[H[2J[3J[?1049h[22;0;0t[H[2J[3J[27m[35m[8;45H┌[8;46H─[8;47H─[8;48H─[8;49H─[8;50H─[8;51H─[8;52H─[8;53H─[8;54H─[8;55H─[8;56H─[8;57H─[8;58H─[8;59H─[8;60H─[8;61H─[8;62H─[8;63H─[8;64H─[8;65H─[8;66H─[8;67H─[8;68H─[8;69H─[8;70H─[8;71H─[8;72H─[8;73H─[8;74H─[8;75H─[8;76H─[8;77H─[8;78H─[8;79H─[8;80H─[8;81H─[8;82H─[8;83H─[8;84H─[8;85H─[8;86H─[8;87H─[8;88H─[8;89H─[8;90H─[8;91H─[8;92H─[8;93H─[8;94H─[8;95H─[8;96H─[8;97H─[8;98H─[8;99H─[8;100H─[8;101H─[8;102H─[8;103H─[8;104H─[8;105H─[8;106H─[8;107H─[8;108H─[8;109H─[8;110H─[8;111H─[8;112H─┐[9;45H│[67X[9;113H│[10;45H│[67X[10;113H│[11;45H│[67X[11;113H│[12;45H│[67X[12;113H│[13;45H│[67X[13;113H│[14;45H│[67X[14;113H│[15;45H│[67X[15;113H│[16;45H│[67X[16;113H│[17;45H│[67X[17;113H│[18;45H│[67X[18;113H│[19;45H│[67X[19;113H│[20;45H│[67X[20;113H│[21;45H│[67X[21;113H│[22;45H│[67X[22;113H│[23;45H│[67X[23;113H│[24;45H│[67X[24;113H│[25;45H│[67X[25;113H│[26;45H│[67X[26;113H│[27;45H│[67X[27;113H│[28;45H│[67X[28;113H│[29;45H│[67X[29;113H│[30;45H│[67X[30;113H│[31;45H│[67X[31;113H│[32;45H│[67X[32;113H│[33;45H│[67X[33;113H│[34;45H│[67X[34;113H│[35;45H│[67X[35;113H│[36;45H└[36;46H─[36;47H─[36;48H─[36;49H─[36;50H─[36;51H─[36;52H─[36;53H─[36;54H─[36;55H─[36;56H─[36;57H─[36;58H─[36;59H─[36;60H─[36;61H─[36;62H─[36;63H─[36;64H─[36;65H─[36;66H─[36;67H─[36;68H─[36;69H─[36;70H─[36;71H─[36;72H─[36;73H─[36;74H─[36;75H─[36;76H─[36;77H─[36;78H─[36;79H─[36;80H─[36;81H─[36;82H─[36;83H─[36;84H─[36;85H─[36;86H─[36;87H─[36;88H─[36;89H─[36;90H─[36;91H─[36;92H─[36;93H─[36;94H─[36;95H─[36;96H─[36;97H─[36;98H─[36;99H─[36;100H─[36;101H─[36;102H─[36;103H─[36;104H─[36;105H─[36;106H─[36;107H─[36;108H─[36;109H─[36;110H─[36;111H─[36;112H─[36;113H┘[m[27m[m[10;68H┌[10;69H─[10;70H─[10;71H─[10;72H─[10;73H─[10;74H─[10;75H─[10;76H─[10;77H─[10;78H─[10;79H─[10;80H─[10;81H─[10;82H─[10;83H─[10;84H─[10;85H─[10;86H─[10;87H─[10;88H─[10;89H─┐[11;68H│[21X[11;90H│[12;68H│[21X[12;90H│[13;68H│[21X[13;90H│[14;68H│[21X[14;90H│[15;68H│[21X[15;90H│[16;68H│[21X[16;90H│[17;68H│[21X[17;90H│[18;68H│[21X[18;90H│[19;68H│[21X[19;90H│[20;68H│[21X[20;90H│[21;68H│[21X[21;90H│[22;68H│[21X[22;90H│[23;68H│[21X[23;90H│[24;68H│[21X[24;90H│[25;68H│[21X[25;90H│[26;68H│[21X[26;90H│[27;68H│[21X[27;90H│[28;68H│[21X[28;90H│[29;68H│[21X[29;90H│[30;68H│[21X[30;90H│[31;68H│[21X[31;90H│[32;68H│[21X[32;90H│[33;68H│[21X[33;90H│[34;68H└[34;69H─[34;70H─[34;71H─[34;72H─[34;73H─[34;74H─[34;75H─[34;76H─[34;77H─[34;78H─[34;79H─[34;80H─[34;81H─[34;82H─[34;83H─[34;84H─[34;85H─[34;86H─[34;87H─[34;88H─[34;89H─[34;90H┘[m[7;73HYoutube Query
+[37;60H[37mRun Youtube query from history or [0m[0;1;37;100m(q)uit[m
+[35;48H([37mr[m)umble list, ([37my[m)outube list, ([37mc[m)ustom list, ([37md[m)elete favorite
+[11;69H[27mBad Faith
+[12;69H[27mBlan Colirio
+[13;69H[27mBreakthrough News
+[14;69H[27mChris Hedges Report
+[15;69H[27mColonial Outcasts
+[16;69H[27mCounter Currents
+[17;69H[27mDialogue Works
+[18;69H[27mGarland Nixon
+[19;69H[27mHIOW George Galloway
+[20;69H[27mJoe Rogan
+[21;69H[27mJudging Freedom
+[22;69H[27mKatie Halper
+[23;69H[27mMentour Now
+[24;69H[27mMentour Pilot
+[25;69H[27mMissionary Bush Pilot
+[26;69H[27mPiano Groove
+[27;69H[27mPilot Debrief
+[28;69H[27mRick Beato
+[29;69H[27mScheer Post
+[30;69H[27mSyriana Analysis
+[31;69H[27mThe Duran
+[32;69H[27mThe Grayzone
+[33;69H[27mTim Dillon
+[11;69H[7mBad Faith
+[27m[27m[31m[10;46H┌[10;47H─[10;48H─[10;49H─[10;50H─[10;51H─[10;52H─[10;53H─[10;54H─[10;55H─[10;56H─[10;57H─[10;58H─[10;59H─[10;60H─[10;61H─[10;62H─[10;63H─[10;64H─[10;65H─[10;66H─[10;67H─[10;68H─[10;69H─[10;70H─[10;71H─[10;72H─[10;73H─[10;74H─[10;75H─[10;76H─[10;77H─[10;78H─[10;79H─[10;80H─[10;81H─[10;82H─[10;83H─[10;84H─[10;85H─[10;86H─[10;87H─[10;88H─[10;89H─[10;90H─[10;91H─[10;92H─[10;93H─[10;94H─[10;95H─[10;96H─[10;97H─[10;98H─[10;99H─[10;100H─[10;101H─[10;102H─[10;103H─[10;104H─[10;105H─[10;106H─[10;107H─[10;108H─[10;109H─[10;110H─[10;111H─┐[11;46H│[65X[11;112H│[12;46H└[12;47H─[12;48H─[12;49H─[12;50H─[12;51H─[12;52H─[12;53H─[12;54H─[12;55H─[12;56H─[12;57H─[12;58H─[12;59H─[12;60H─[12;61H─[12;62H─[12;63H─[12;64H─[12;65H─[12;66H─[12;67H─[12;68H─[12;69H─[12;70H─[12;71H─[12;72H─[12;73H─[12;74H─[12;75H─[12;76H─[12;77H─[12;78H─[12;79H─[12;80H─[12;81H─[12;82H─[12;83H─[12;84H─[12;85H─[12;86H─[12;87H─[12;88H─[12;89H─[12;90H─[12;91H─[12;92H─[12;93H─[12;94H─[12;95H─[12;96H─[12;97H─[12;98H─[12;99H─[12;100H─[12;101H─[12;102H─[12;103H─[12;104H─[12;105H─[12;106H─[12;107H─[12;108H─[12;109H─[12;110H─[12;111H─[12;112H┘[m[11;47H[25X                     Quit application (y/n)                    8[40;159H[37mDEBUG Level 5[m: [1m[35mHIGH[m
+-- msgs --
+yts:1427 [3m[37mcalled[m set_exit_callback:2: ARGC:1
+-- msgs --
+yts:1445 [3m[37mcalled[m path_get_raw:15: ARGC:0
+-- msgs --
+path_get_raw: [36mRAW_CMD_LINE:yts -DDDDD >x[m
+-- msgs --
+path_get_raw: Stripped command name: RAW_CMD_LINE:-DDDDD >x
+-- msgs --
+path_get_raw:30 [3m[37mcalled[m path_strip_options:3: ARGC:2
+-- msgs --
+path_get_raw: Stripped options: RAW_CMD_LINE:-DDDDD >x
+-- msgs --
+path_get_raw:36 [3m[37mcalled[m is_glob:3: ARGC:1
+-- msgs --
+path_get_raw:48 [3m[37mcalled[m path_read_raw:6: ARGC:1
+-- msgs --
+path_read_raw:8 [3m[37mcalled[m path_split_fn:3: ARGC:1
+-- msgs --
+path_get_raw: Tokenized: TOKENIZED:>x
+-- msgs --
+path_get_raw:54 [3m[37mcalled[m is_bare_word:3: ARGC:1
+-- msgs --
+path_get_raw: [37mRAW_CMD_LINE[m:-DDDDD >x
+-- msgs --
+path_get_raw: [37m1[m plain words eliminated from command line
+-- msgs --
+path_get_raw: [37m0[m remaining tokens
+-- msgs --
+path_get_raw: [31mRAW_PATH STRIPPED[m:[[37m.[m]
+-- msgs --
+path_get_raw:71 [3m[37mcalled[m path_expand:5: ARG:.
+-- msgs --
+path_expand: Expanding tilde or dot
+-- msgs --
+path_get_raw: [32mPATH_HEAD[m:[37m/home/kmiller/Code/LOCAL/yts[m is set
+-- msgs --
+path_get_raw: [35mParsing TAIL[m:.
+-- msgs --
+path_get_raw: [37mTAIL is DOT:.[m
+-- msgs --
+path_get_raw: [36mPATH_HEAD:/home/kmiller/Code/LOCAL/yts PATH_TAIL:-name '*'[m
+-- msgs --
+yts:1448 [3m[37mcalled[m path_get_label:8: ARGC:1
+-- msgs --
+path_get_label:10 [3m[37mcalled[m path_get_raw_path:7: ARGC:0
+-- msgs --
+path_get_raw_path: [36mRAW_CMD_LINE:yts -DDDDD >x[m
+-- msgs --
+path_get_raw_path:16 [3m[37mcalled[m path_strip_options:3: ARGC:2
+-- msgs --
+path_get_raw_path: [36mRAW_PATH:>x (removed script name & options)[m
+-- msgs --
+path_get_raw_path:19 [3m[37mcalled[m path_read_raw:6: ARGC:1
+-- msgs --
+path_read_raw:8 [3m[37mcalled[m path_split_fn:3: ARGC:1
+-- msgs --
+path_get_raw_path:22 [3m[37mcalled[m is_bare_word:3: ARGC:1
+-- msgs --
+path_get_label: calling path_expand with: .
+-- msgs --
+path_get_label:15 [3m[37mcalled[m path_expand:5: ARG:.
+-- msgs --
+path_expand: Expanding tilde or dot
+-- msgs --
+path_get_label: path_expand returned: /home/kmiller/Code/LOCAL/yts
+-- msgs --
+path_get_label:20 [3m[37mcalled[m path_abbv:8: ARGC:1
+-- msgs --
+path_get_label: Abbreviated /home/kmiller/Code/LOCAL/yts added to label
+-- msgs --
+path_get_label: TAIL is symbolic path - omitted from label
+-- msgs --
+last_code_update:10 [3m[37mcalled[m date_since_today:5: ARGC:1
+-- msgs --
+yts:1479 [3m[37mcalled[m path_get_raw_cmdline:1: ARGC:0
+-- msgs --
+yts:1512 [3m[37mcalled[m do_smcup:1: ARGC:0
+-- msgs --
+yts:1513 [3m[37mcalled[m fav_get:14: ARGC:0
+-- msgs --
+fav_get:48 [3m[37mcalled[m sel_set_list:3: ARGC:23
+-- msgs --
+fav_get:49 [3m[37mcalled[m sel_set_app_keys:1: _APP_KEYS:
+-- msgs --
+fav_get:59 [3m[37mcalled[m sel_list:63: ARGC:6
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Bad Faith"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Bad Faith"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Bad Faith"
+-- msgs --
+str_trim: TEXT_OUT:"Bad Faith"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Blan Colirio"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Blan Colirio"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Blan Colirio"
+-- msgs --
+str_trim: TEXT_OUT:"Blan Colirio"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Breakthrough News"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Breakthrough News"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Breakthrough News"
+-- msgs --
+str_trim: TEXT_OUT:"Breakthrough News"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Chris Hedges Report"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Chris Hedges Report"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Chris Hedges Report"
+-- msgs --
+str_trim: TEXT_OUT:"Chris Hedges Report"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Colonial Outcasts"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Colonial Outcasts"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Colonial Outcasts"
+-- msgs --
+str_trim: TEXT_OUT:"Colonial Outcasts"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Counter Currents"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Counter Currents"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Counter Currents"
+-- msgs --
+str_trim: TEXT_OUT:"Counter Currents"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Dialogue Works"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Dialogue Works"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Dialogue Works"
+-- msgs --
+str_trim: TEXT_OUT:"Dialogue Works"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Garland Nixon"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Garland Nixon"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Garland Nixon"
+-- msgs --
+str_trim: TEXT_OUT:"Garland Nixon"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"HIOW George Galloway"
+-- msgs --
+str_strip_ansi: LINE_OUT:"HIOW George Galloway"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"HIOW George Galloway"
+-- msgs --
+str_trim: TEXT_OUT:"HIOW George Galloway"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Joe Rogan"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Joe Rogan"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Joe Rogan"
+-- msgs --
+str_trim: TEXT_OUT:"Joe Rogan"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Judging Freedom"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Judging Freedom"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Judging Freedom"
+-- msgs --
+str_trim: TEXT_OUT:"Judging Freedom"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Katie Halper"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Katie Halper"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Katie Halper"
+-- msgs --
+str_trim: TEXT_OUT:"Katie Halper"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Mentour Now"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Mentour Now"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Mentour Now"
+-- msgs --
+str_trim: TEXT_OUT:"Mentour Now"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Mentour Pilot"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Mentour Pilot"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Mentour Pilot"
+-- msgs --
+str_trim: TEXT_OUT:"Mentour Pilot"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Missionary Bush Pilot"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Missionary Bush Pilot"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Missionary Bush Pilot"
+-- msgs --
+str_trim: TEXT_OUT:"Missionary Bush Pilot"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Piano Groove"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Piano Groove"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Piano Groove"
+-- msgs --
+str_trim: TEXT_OUT:"Piano Groove"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Pilot Debrief"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Pilot Debrief"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Pilot Debrief"
+-- msgs --
+str_trim: TEXT_OUT:"Pilot Debrief"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Rick Beato"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Rick Beato"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Rick Beato"
+-- msgs --
+str_trim: TEXT_OUT:"Rick Beato"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Scheer Post"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Scheer Post"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Scheer Post"
+-- msgs --
+str_trim: TEXT_OUT:"Scheer Post"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Syriana Analysis"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Syriana Analysis"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Syriana Analysis"
+-- msgs --
+str_trim: TEXT_OUT:"Syriana Analysis"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"The Duran"
+-- msgs --
+str_strip_ansi: LINE_OUT:"The Duran"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"The Duran"
+-- msgs --
+str_trim: TEXT_OUT:"The Duran"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"The Grayzone"
+-- msgs --
+str_strip_ansi: LINE_OUT:"The Grayzone"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"The Grayzone"
+-- msgs --
+str_trim: TEXT_OUT:"The Grayzone"
+-- msgs --
+arr_long_elem_len:7 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem_len:8 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Tim Dillon"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Tim Dillon"
+-- msgs --
+arr_long_elem_len:9 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Tim Dillon"
+-- msgs --
+str_trim: TEXT_OUT:"Tim Dillon"
+-- msgs --
+sel_list:92 [3m[37mcalled[m arr_long_elem_len:13: LONGEST ELEMENT LEN:21
+-- msgs --
+sel_list: arr_long_elem_len returned: 21
+-- msgs --
+sel_list: LIST_W:21 LIST_H:23
+-- msgs --
+sel_list: INNER BOX SET: BOX_W:23 BOX_H:25
+-- msgs --
+sel_list:108 [3m[37mcalled[m coord_center:8: ARGC:2
+-- msgs --
+sel_list:109 [3m[37mcalled[m coord_center:8: ARGC:2
+-- msgs --
+sel_list:131 [3m[37mcalled[m sel_set_pages:10: ARGC:2
+-- msgs --
+sel_set_pages: MAX_PAGE:1 PAGE:1
+-- msgs --
+sel_set_pages: _PAGE_TOPS:1 1
+-- msgs --
+sel_list:136 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+sel_list:137 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+sel_list:138 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+sel_list:139 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+sel_list:151 [3m[37mcalled[m max:5: ARGC:6
+-- msgs --
+sel_list: MAX:69 BOX_W:23 LIST_HDR:13 LIST_FTR:40 LIST_MAP:69 PAGE_HDR:0 _EXIT_BOX:32
+-- msgs --
+sel_list: Setting OUTER BOX coords
+-- msgs --
+sel_list:167 [3m[37mcalled[m min:5: ARGC:4
+-- msgs --
+sel_list: OUTER_BOX coords: MIN:7 OB_X:7  OB_Y:44 OB_W:69 OB_H:29
+-- msgs --
+sel_list:176 [3m[37mcalled[m box_coords_set:5: ARGC:13 TAG:OUTER_BOX
+-- msgs --
+sel_list:183 [3m[37mcalled[m sel_box_center:10: ARGC:1
+-- msgs --
+sel_box_center:12 [3m[37mcalled[m validate_is_integer:4: ARGC:1
+-- msgs --
+sel_box_center: GOT STRING FOR TXT_LEN
+-- msgs --
+sel_box_center: ARGC:1 TXT:Youtube Query TXT_LEN:13
+-- msgs --
+sel_box_center: CTR='6 && REM=0':6 && REM:0
+-- msgs --
+sel_box_center: CTR='55 && REM=1':55 && REM=1
+-- msgs --
+sel_box_center: CTR='72': 72
+-- msgs --
+sel_box_center: BOX_LEFT:23 BOX_CTR:56 TXT_CTR:7
+-- msgs --
+sel_list:185 [3m[37mcalled[m sel_box_center:10: ARGC:1
+-- msgs --
+sel_box_center:12 [3m[37mcalled[m validate_is_integer:4: ARGC:1
+-- msgs --
+sel_box_center: GOT STRING FOR TXT_LEN
+-- msgs --
+sel_box_center: ARGC:1 TXT:(r)umble list, (y)outube list, (c)ustom list, (d)elete favorite TXT_LEN:63
+-- msgs --
+sel_box_center: CTR='31 && REM=1':31 && REM:1
+-- msgs --
+sel_box_center: CTR='55 && REM=1':55 && REM=1
+-- msgs --
+sel_box_center: CTR='47': 47
+-- msgs --
+sel_box_center: BOX_LEFT:23 BOX_CTR:56 TXT_CTR:32
+-- msgs --
+sel_list:187 [3m[37mcalled[m sel_box_center:10: ARGC:1
+-- msgs --
+sel_box_center:12 [3m[37mcalled[m validate_is_integer:4: ARGC:1
+-- msgs --
+sel_box_center: GOT STRING FOR TXT_LEN
+-- msgs --
+sel_box_center: ARGC:1 TXT:Run Youtube query from history or (q)uit TXT_LEN:40
+-- msgs --
+sel_box_center: CTR='20 && REM=0':20 && REM:0
+-- msgs --
+sel_box_center: CTR='55 && REM=1':55 && REM=1
+-- msgs --
+sel_box_center: CTR='59': 59
+-- msgs --
+sel_box_center: BOX_LEFT:23 BOX_CTR:56 TXT_CTR:20
+-- msgs --
+sel_list:189 [3m[37mcalled[m sel_box_center:10: ARGC:1
+-- msgs --
+sel_box_center:12 [3m[37mcalled[m validate_is_integer:4: ARGC:1
+-- msgs --
+sel_box_center: GOT STRING FOR TXT_LEN
+-- msgs --
+sel_box_center: ARGC:1 TXT:Page 1 of 1 ◈ (N)ext (P)rev TXT_LEN:27
+-- msgs --
+sel_box_center: CTR='13 && REM=1':13 && REM:1
+-- msgs --
+sel_box_center: CTR='55 && REM=1':55 && REM=1
+-- msgs --
+sel_box_center: CTR='65': 65
+-- msgs --
+sel_box_center: BOX_LEFT:23 BOX_CTR:56 TXT_CTR:14
+-- msgs --
+sel_list:202 [3m[37mcalled[m box_coords_set:5: ARGC:19 TAG:DECOR
+-- msgs --
+sel_list:205 [3m[37mcalled[m max:5: ARGC:4
+-- msgs --
+sel_list:206 [3m[37mcalled[m min:5: ARGC:5
+-- msgs --
+sel_list:207 [3m[37mcalled[m max:5: ARGC:5
+-- msgs --
+sel_list:210 [3m[37mcalled[m box_coords_set:5: ARGC:13 TAG:REGION
+-- msgs --
+sel_list:213 [3m[37mcalled[m box_coords_set:5: ARGC:15 TAG:INNER_BOX
+-- msgs --
+sel_list:233 [3m[37mcalled[m msg_box_clear:9 PARAMS:0 TAG:
+-- msgs --
+msg_box_clear:33 [3m[37mcalled[m box_coords_get:3: ARGC:0 TAG:
+-- msgs --
+msg_box_clear: TAG: BOX_COORDS:
+-- msgs --
+sel_scroll:2 [3m[37mcalled[m box_coords_get:3: ARGC:1 TAG:DECOR
+-- msgs --
+sel_scroll:3 [3m[37mcalled[m box_coords_get:3: ARGC:1 TAG:INNER_BOX
+-- msgs --
+sel_scroll:4 [3m[37mcalled[m box_coords_get:3: ARGC:1 TAG:OUTER_BOX
+-- msgs --
+sel_list:235 [3m[37mcalled[m sel_scroll:18: ARGC:1
+-- msgs --
+sel_scroll:20 [3m[37mcalled[m cursor_off:1: ARGC:0
+-- msgs --
+sel_scroll:30 [3m[37mcalled[m msg_unicode_box:27: ARGC:5
+-- msgs --
+msg_unicode_box: TOP LEFT: BOX_X_COORD:7 BOX_Y_COORD:44
+-- msgs --
+msg_unicode_box: BOX_WIDTH:67
+-- msgs --
+msg_unicode_box: BOX_HEIGHT:27
+-- msgs --
+msg_unicode_box: BOTTOM RIGHT: BOX_X_COORD:35 BOX_Y_COORD:112
+-- msgs --
+msg_unicode_box: BOX DIMENSIONS:29 x 69
+-- msgs --
+sel_scroll:31 [3m[37mcalled[m msg_unicode_box:27: ARGC:5
+-- msgs --
+msg_unicode_box: TOP LEFT: BOX_X_COORD:9 BOX_Y_COORD:67
+-- msgs --
+msg_unicode_box: BOX_WIDTH:21
+-- msgs --
+msg_unicode_box: BOX_HEIGHT:23
+-- msgs --
+msg_unicode_box: BOTTOM RIGHT: BOX_X_COORD:33 BOX_Y_COORD:89
+-- msgs --
+msg_unicode_box: BOX DIMENSIONS:25 x 23
+-- msgs --
+sel_scroll:35 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_scroll:35 [3m[37mcalled[m msg_markup:3: ARGC:1
+-- msgs --
+sel_scroll:39 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_scroll:39 [3m[37mcalled[m msg_markup:3: ARGC:1
+-- msgs --
+sel_scroll:43 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_scroll:43 [3m[37mcalled[m msg_markup:3: ARGC:1
+-- msgs --
+sel_scroll:47 [3m[37mcalled[m sel_get_position:4: ARGC:0 ARGV:
+-- msgs --
+sel_scroll:69 [3m[37mcalled[m sel_load_page:5: ARGC:1 ARGV:1
+-- msgs --
+sel_load_page: TOP_ROW:1
+-- msgs --
+sel_load_page: ADDED NDX ROWS
+-- msgs --
+sel_load_page: _LIST ROWS:23 _PAGE ROWS:23 PAGE:1
+-- msgs --
+sel_scroll:77 [3m[37mcalled[m sel_disp_page:3
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:10 Y:68 TEXT:Bad Faith
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:11 Y:68 TEXT:Blan Colirio
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:12 Y:68 TEXT:Breakthrough News
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:13 Y:68 TEXT:Chris Hedges Report
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:14 Y:68 TEXT:Colonial Outcasts
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:15 Y:68 TEXT:Counter Currents
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:16 Y:68 TEXT:Dialogue Works
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:17 Y:68 TEXT:Garland Nixon
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:18 Y:68 TEXT:HIOW George Galloway
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:19 Y:68 TEXT:Joe Rogan
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:20 Y:68 TEXT:Judging Freedom
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:21 Y:68 TEXT:Katie Halper
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:22 Y:68 TEXT:Mentour Now
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:23 Y:68 TEXT:Mentour Pilot
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:24 Y:68 TEXT:Missionary Bush Pilot
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:25 Y:68 TEXT:Piano Groove
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:26 Y:68 TEXT:Pilot Debrief
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:27 Y:68 TEXT:Rick Beato
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:28 Y:68 TEXT:Scheer Post
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:29 Y:68 TEXT:Syriana Analysis
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:30 Y:68 TEXT:The Duran
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:31 Y:68 TEXT:The Grayzone
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_disp_page:6 [3m[37mcalled[m sel_norm:6: X:32 Y:68 TEXT:Tim Dillon
+-- msgs --
+sel_norm:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_norm:9 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_scroll:81 [3m[37mcalled[m sel_hilite:6: X:10 Y:68 TEXT:Bad Faith
+-- msgs --
+sel_hilite:8 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_hilite:10 [3m[37mcalled[m do_smso:1: ARGC:0
+-- msgs --
+sel_hilite:19 [3m[37mcalled[m do_rmso:1: ARGC:0
+-- msgs --
+sel_scroll:85 [3m[37mcalled[m get_keys:12: ARGC:0
+-- msgs --
+get_keys:14 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+sel_scroll:102 [3m[37mcalled[m sel_set_ebox:8: ARGC:0
+-- msgs --
+sel_set_ebox:11 [3m[37mcalled[m box_coords_get:3: ARGC:1 TAG:INNER_BOX
+-- msgs --
+sel_scroll:102 [3m[37mcalled[m exit_request:10: ARGC:3
+-- msgs --
+exit_request:17 [3m[37mcalled[m box_coords_set:5: ARGC:9 TAG:EXR_BOX
+-- msgs --
+exit_request:18 [3m[37mcalled[m msg_box:105: ARGC:1
+-- msgs --
+msg_box: HAS [31mNO[m HEADERS
+-- msgs --
+msg_box: BODY CONTAINS 1 lines
+-- msgs --
+msg_box: MSG_BODY FOLLOW:
+---
+Quit application (y/n)
+---
+
+-- msgs --
+msg_box: MSG_FOOTER: null
+-- msgs --
+msg_box: FOOTER CONTAINS 0 lines
+-- msgs --
+msg_box: TOTAL LINES:1
+-- msgs --
+msg_box:  --- DISPLAY LIMITS ---
+-- msgs --
+msg_box:     MAX ROWS:[37m39[m MAX COLS:[37m158[m
+-- msgs --
+msg_box:  USABLE_ROWS:[37m30[m USABLE_COLS:[37m138[m
+-- msgs --
+msg_box: MIN_XY_COORD:[37m(X:4,Y:10)[m
+-- msgs --
+msg_box: MAX_XY_COORD:[37m(X:34,Y:148)[m
+-- msgs --
+msg_box:210 [3m[37mcalled[m arr_long_elem:7: ARGC:0
+-- msgs --
+arr_long_elem: LONGEST ELEMENT:0 STR:
+-- msgs --
+msg_box:211 [3m[37mcalled[m arr_long_elem:7: ARGC:1
+-- msgs --
+arr_long_elem:10 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+arr_long_elem:11 [3m[37mcalled[m str_strip_ansi:10: ARGC:0
+-- msgs --
+str_strip_ansi: LINE_IN:"Quit application (y/n)"
+-- msgs --
+str_strip_ansi: LINE_OUT:"Quit application (y/n)"
+-- msgs --
+arr_long_elem:12 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Quit application (y/n)"
+-- msgs --
+str_trim: TEXT_OUT:"Quit application (y/n)"
+-- msgs --
+arr_long_elem: LONGEST ELEMENT:22 STR:Quit application (y/n)
+-- msgs --
+msg_box:212 [3m[37mcalled[m arr_long_elem:7: ARGC:0
+-- msgs --
+arr_long_elem: LONGEST ELEMENT:0 STR:
+-- msgs --
+msg_box:214 [3m[37mcalled[m max:5: ARGC:2
+-- msgs --
+msg_box:215 [3m[37mcalled[m max:5: ARGC:2
+-- msgs --
+msg_box: FINAL MSG_COLS:25
+-- msgs --
+msg_box: CATCHING ANY DISPLAY OVERRUNS
+-- msgs --
+msg_box: MSG_X_COORD:4 MSG_Y_COORD:10
+-- msgs --
+msg_box: FRAME COMPENSATION: BOX_X_COORD:9 BOX_Y_COORD:45
+-- msgs --
+TAG:EXR_BOX FUNCSTACK:fav_get
+TAG:EXR_BOX FUNCSTACK:sel_list
+TAG:EXR_BOX FUNCSTACK:sel_scroll
+TAG:EXR_BOX FUNCSTACK:exit_request
+TAG:EXR_BOX FUNCSTACK:msg_box
+-- msgs --
+msg_box:286 [3m[37mcalled[m box_coords_set:5: ARGC:11 TAG:EXR_BOX
+-- msgs --
+msg_box:287 [3m[37mcalled[m box_coords_get:3: ARGC:1 TAG:EXR_BOX
+-- msgs --
+msg_box: SAVED TAG:EXR_BOX _BOX_COORDS: X 9 Y 45 H 3 W 67 S c
+-- msgs --
+msg_box: --- BOX COORDS ---
+-- msgs --
+msg_box: TAG:EXR_BOX
+-- msgs --
+msg_box: BOX_X,Y:[37m(9,45)[m
+-- msgs --
+msg_box: BOX_HEIGHT:[37m3[m
+-- msgs --
+msg_box: BOX_WIDTH:[37m67[m
+-- msgs --
+msg_box:313 [3m[37mcalled[m msg_unicode_box:27: ARGC:5
+-- msgs --
+msg_unicode_box: TOP LEFT: BOX_X_COORD:9 BOX_Y_COORD:45
+-- msgs --
+msg_unicode_box: BOX_WIDTH:65
+-- msgs --
+msg_unicode_box: BOX_HEIGHT:1
+-- msgs --
+msg_unicode_box: BOTTOM RIGHT: BOX_X_COORD:11 BOX_Y_COORD:111
+-- msgs --
+msg_unicode_box: BOX DIMENSIONS:3 x 67
+-- msgs --
+msg_box:314 [3m[37mcalled[m box_coords_get:3: ARGC:1 TAG:EXR_BOX
+-- msgs --
+msg_box: CREATED BOX FOR TAG:EXR_BOX _BOX_COORDS: X 9 Y 45 H 3 W 67 S c
+-- msgs --
+msg_box: [36mGENERATING BODY[m
+-- msgs --
+msg_box_align:3 [3m[37mcalled[m box_coords_get:3: ARGC:1 TAG:EXR_BOX
+-- msgs --
+msg_box:388 [3m[37mcalled[m msg_box_align:13 TAG:EXR_BOX COORDS:67 9 3 45 c MSG LEN:22
+-- msgs --
+msg_box_align:53 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+msg_box_align:54 [3m[37mcalled[m str_trim:4: ARGC:1
+-- msgs --
+str_trim: TEXT_IN:"Quit application (y/n)"
+-- msgs --
+str_trim: TEXT_OUT:"Quit application (y/n)"
+-- msgs --
+msg_box_align:55 [3m[37mcalled[m msg_nomarkup:4
+-- msgs --
+msg_box_align:55 [3m[37mcalled[m str_center_pad:9: ARGC:4
+-- msgs --
+str_center_pad: WIDTH:65 TEXT_WIDTH:22 TEXT:Quit application (y/n)
+-- msgs --
+str_center_pad: WIDTH-TEXT_WIDTH:43 REM:43
+-- msgs --
+str_center_pad: REM:43
+-- msgs --
+str_center_pad: PAD:21
+-- msgs --
+str_center_pad: BORDER:21:[                     ] WIDTH-(PAD+TEXT_WIDTH+2):20
+-- msgs --
+msg_box_align:56 [3m[37mcalled[m str_rep_char:6: ARGC:2
+-- msgs --
+msg_box_align: Left justifed text
+-- msgs --
+msg_box_align: Centered text
+-- msgs --
+msg_box_align:65 [3m[37mcalled[m msg_markup:3: ARGC:1
+-- msgs --
+msg_box_align: PADDING: |                     Quit application (y/n)                    |
+-- msgs --
+msg_box: [36mGENERATING FOOTER[m SCR_NDX:10
+-- msgs --
+msg_box:435 [3m[37mcalled[m get_keys:12: ARGC:0
+-- msgs --
+get_keys:14 [3m[37mcalled[m tcup:4: ARGC:2
+-- msgs --
+exit_request:27 [3m[37mcalled[m exit_leave:5: ARGC:0
+-- msgs --
+[31mexit_leave[m: CALLER:exit_request:27
+-- msgs --
+[31mexit_leave[m: #_MSGS:0
+-- msgs --
+[31mexit_leave[m: RET_9:false
+
+Func File
+---------
+       /usr/local/lib/EXIT.zsh called: exit_leave on line 111
+     /usr/local/lib/SELECT.zsh called: sel_scroll 1 # Display list page 1 and handle user inputs on line 406
+     /usr/local/lib/SELECT.zsh called: q exit_request $sel_set_ebox;break;; on line 560
+/home/kmiller/Code/LOCAL/yts/yts called: sel_list -S -T$TAG -O$O_COLOR -H"$HDR" -M$MAP -F$FTR on line 549
+/home/kmiller/Code/LOCAL/yts/yts called: fav_get on line 1513
+
+Func Stack
+----------
+fav_get
+sel_list
+sel_scroll
+exit_request
+exit_leave
+
+Func Trace
+----------
+yts:1513
+fav_get:59
+sel_list:235
+sel_scroll:102
+exit_request:27
+exit_leave:18
+[?1049l[23;0;0t[31mexit_pre_exit[m:EXECUTING CALLBACKS:clear_tmp
+[31mexit_pre_exit[m: CALLER:exit_leave:34, #_EXIT_MSGS:0
+exit_pre_exit: reset key rate:r rate 500 33
+exit_pre_exit: activated keyboard
+exit_pre_exit: reset tabstops
+exit_pre_exit: _EXIT_VALUE:0

@@ -1,0 +1,61 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+do_app () {
+	local APP=${1};shift
+	local -a ARGS=(${@})
+
+	cp /usr/local/bin/${APP} ./tst_${APP}
+	sed -i 's#${_LIB_DIR}/LIST.zsh#\./LIST.zsh#' ./tst_${APP}
+	sed -i 's/list_set_searchable false/#list_set_searchable/' ./tst_${APP}
+	./tst_${APP} -H
+	./tst_${APP} -DDDD ${ARGS}
+}
+ 
+typeset -a APPS=()
+
+while read APP;do
+	APPS+=${APP}
+done < ./applist
+
+clear
+{
+/bin/rm -f ./tst_* 
+}>/dev/null 2>&1
+
+sel_set_list ${APPS}
+sel_list -H"Apps to Test" ${APPS}
+[[ ${?} -ne 0 ]] && exit_leave "Operation Cancelled"
+
+echo -n "Enter args:"
+read -A ARGS
+do_app ${_SEL_VAL} ${ARGS}
+
+{
+/bin/rm -f ./tst_* 
+}>/dev/null 2>&1

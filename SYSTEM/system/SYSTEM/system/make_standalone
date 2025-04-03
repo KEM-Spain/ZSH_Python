@@ -1,0 +1,221 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+# Declarations
+typeset -A _BLACKLIST=()
+typeset -A _FUNC_MAP=()
+typeset -A _SEEN=()
+typeset -a _EXTRA_FUNCS=()
+typeset -a _NEEDED_FUNCS=()
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Constants
+_BLACKLIST+=(usage 1 parse_opts 1 opt_type 1 opt_exists 1 dbg 1 dbg_msg 1 dbg_set_level 1)
+_LIB_FUNCS=${PWD}/lib.sorted.functions
+_LIB_LIST=(${_LIB_DIR}/*zsh)
+_SCRIPT=${0:t}
+_FUNC_REGEX='^.* () {$'
+_FUNC_TAG='^# Functions'
+
+# Functions
+clear_work_files () {
+	local FN=${1}
+
+	[[ -e ${FN}.standalone.1 ]] && /bin/rm -f ${FN}.standalone.1
+	[[ -e ${LOCAL_FUNC_LIST} ]] && /bin/rm -f ${LOCAL_FUNC_LIST}
+	[[ -e ${_LIB_FUNCS} ]] && /bin/rm -f ${_LIB_FUNCS}
+}
+
+#--Begin GetOpts--
+typeset -a OPTIONS
+
+read -r -d '' DESC<<EOF
+Attempt to identify and gather all references
+\tto external functions and incorporate them
+\tinto the script body to create portable scripts
+\tTwo passes are needed to capture calls made by
+\tfunctions that were added in the first pass
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		e) echo "<FUNCTION>";;
+		f) echo "<FILE>";;
+	esac
+}
+
+usage () {
+	tabs 5
+
+	local -a PENDING_MSGS=(${@})
+
+	(
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTSTR}${WHITE_FG}]${RESET} $(opt_type f)\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-b $(opt_type e)${RESET} add to blacklist"
+	echo -e "${WHITE_FG}-e $(opt_type e)${RESET} one or more extra functions to be extracted"
+	echo -e "${WHITE_FG}-r${RESET} retain intermediate files after run"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave $(msg_exit E ${PENDING_MSGS})
+}
+
+OPTSTR=":Hb:e:r"
+OPTIND=0
+
+KEEP_FILES=false
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+	  b) _BLACKLIST[${=OPTARG}]=1;;
+	  e) _EXTRA_FUNCS+=(${=OPTARG});;
+	  r) KEEP_FILES=true;;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+[[ ${#} -eq 1 ]] && FN=${1} || usage "Missing argument:$(opt_type f)"
+
+[[ -e ${_LIB_FUNCS} ]] && /bin/rm -f ${_LIB_FUNCS}
+LOCAL_FUNC_LIST=FUNCS_FOR_${(U)FN:t}
+
+# Initialize workspace
+[[ -e ${_LIB_FUNCS} ]] && /bin/rm -f ${_LIB_FUNCS}
+clear_work_files ${FN}
+
+# Show blacklisted
+echo "${WHITE_FG}Blacklisted Functions${RESET}:"
+for B in ${(k)_BLACKLIST};do
+	echo "${RED_FG}${B}${RESET}"
+done | sort
+echo
+
+# Extract library functions
+for L in ${_LIB_LIST};do
+	LIST=("${(f)$(grep ${_FUNC_REGEX} ${L} | sed 's/ *.[(][)] {$//')}")
+	for F in ${LIST};do
+		_FUNC_MAP[${F}]=${L}
+	done
+done
+
+for K in ${(ok)_FUNC_MAP};do
+	func_print ${_FUNC_MAP[${K}]} ${K} >> ${_LIB_FUNCS}
+done
+
+# 1st pass
+_NEEDED_FUNCS=("${(f)$(
+	for L in ${(k)_FUNC_MAP};do
+		[[ ${_BLACKLIST[${L}]} -eq 1 ]] && continue
+		grep --color=never -o ${L} ${FN}
+	done | sort -u
+)}")
+echo "${WHITE_FG}1st pass${RESET}: ${#_NEEDED_FUNCS} library functions identified in ${FN}"
+
+# Extra funcs
+if [[ -n ${_EXTRA_FUNCS} ]];then
+	echo "${WHITE_FG}1st pass${RESET}: including ${#_EXTRA_FUNCS} additional functions:${_EXTRA_FUNCS}"
+	_NEEDED_FUNCS+=(${_EXTRA_FUNCS})
+fi
+
+echo "${WHITE_FG}1st pass${RESET}: Adding functions..."
+for L in ${_NEEDED_FUNCS};do
+	[[ ${_SEEN[${L}]} -eq 1 ]] && continue
+	[[ ${_BLACKLIST[${L}]} -eq 1 ]] && continue
+	func_print ${_LIB_FUNCS} ${L}
+	[[ ${?} -eq 0 ]] && echo "${GREEN_FG}Added${RESET}:${L}" >&2 || echo "Error:print_func :${L}"
+	_SEEN[${L}]=1
+done > ${LOCAL_FUNC_LIST}
+
+# Insert sorted funcs
+grep -q ${_FUNC_TAG} ${FN}
+[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "Missing tag: [# Functions] in ${FN}.standalone.1 - sed insert will fail")
+sed "/${_FUNC_TAG}/r ${LOCAL_FUNC_LIST}" ${FN} >${FN}.standalone.1
+
+_NEEDED_FUNCS=() # Reset
+
+# 2nd pass
+_NEEDED_FUNCS=("${(f)$(
+	for L in ${(k)_FUNC_MAP};do
+		[[ ${_BLACKLIST[${L}]} -eq 1 ]] && continue
+		[[ ${_SEEN[${L}]} -eq 1 ]] && continue
+		grep --color=never -o ${L} ${FN}.standalone.1
+		_SEEN[${L}]=1
+	done | sort -u
+)}")
+
+echo "${WHITE_FG}2nd pass${RESET}: ${#_NEEDED_FUNCS} library functions identified in ${FN}.standalone.1"
+if arr_is_populated "${_NEEDED_FUNCS}";then
+	echo "${WHITE_FG}2nd pass${RESET}: Adding functions..."
+	for L in ${_NEEDED_FUNCS};do
+		func_print ${_LIB_FUNCS} ${L}
+		[[ ${?} -eq 0 ]] && echo "${GREEN_FG}Added${RESET}:${L}" >&2 || echo "Error:print_func :${L}"
+	done > ${LOCAL_FUNC_LIST}
+else
+	echo "${WHITE_FG}2nd pass${RESET}: completed"
+fi
+
+# Insert sorted funcs
+grep -q ${_FUNC_TAG} ${FN}.standalone.1 
+[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "Missing tag: [# Functions] in ${FN}.standalone.1 - sed insert will fail")
+sed "/${_FUNC_TAG}/r ${LOCAL_FUNC_LIST}" ${FN}.standalone.1 >${FN}.standalone
+[[ -e ${FN:t}.standalone ]] && echo "${WHITE_FG}${FN}.standalone${RESET} created" && chmod 775 ${FN}.standalone
+
+
+# Any customization
+if [[ -e ./pre_release ]];then
+	echo "Executing pre_release..."
+	./pre_release # Apply any modifications to production
+fi
+
+# Remove intermediate work files
+if [[ ${KEEP_FILES} == 'false' ]];then
+	clear_work_files ${FN}
+fi

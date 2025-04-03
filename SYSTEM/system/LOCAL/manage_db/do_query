@@ -1,0 +1,27 @@
+#!/usr/bin/zsh
+
+RESET="\033[m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+BLUE_FG="\033[34m"
+MAGENTA_FG="\033[35m"
+CYAN_FG="\033[36m"
+WHITE_FG="\033[37m"
+BOLD="\033[1m"
+
+DB=.spanish.db
+
+query () {
+	local SQL=(${@})
+
+	sqlite3 -separator ' ' ${DB} <<____END_SQL
+
+${SQL}
+
+____END_SQL
+
+}
+
+#echo "${GREEN_FG}Entered ${0} with ${WHITE_FG}${@}${RESET}" >&2
+query ${@}

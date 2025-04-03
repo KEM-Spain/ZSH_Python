@@ -1,0 +1,39 @@
+#!/usr/bin/zsh
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+
+typeset -A C_TAB=()
+
+# Load LS_COLORS into table
+IFS='='
+while read OBJ CODE;do
+	C_TAB[${OBJ}]=${CODE}
+done<<<$(sed -e 's/:/\n/g' -e 's/\*\.//g'<<<${LS_COLORS})
+IFS=''
+
+{
+printf "${WHITE_FG}%10s %s${RESET}\n" "Ext/Type" "Color"
+for K in ${(ok)C_TAB};do
+	F1=$(cut -d';' -f1 <<<${C_TAB[$K]})
+	F2=$(cut -d';' -f2 <<<${C_TAB[$K]})
+	printf "%10s \033[%s;%smTEST${RESET} \n" ${K} ${F1} ${F2}
+done
+} | mypager

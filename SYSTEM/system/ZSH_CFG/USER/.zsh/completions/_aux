@@ -1,0 +1,8 @@
+#compdef aux
+
+_files -W ${PWD} 
+
+_arguments \
+'-H[help]' \
+'-D[debug]' \
+'-a[All user processes]'

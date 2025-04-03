@@ -1,0 +1,292 @@
+: 1645024073:0;myperms 2>x
+: 1645024133:0;r x
+: 1645034888:0;journalctl -b 0
+: 1645105837:0;kbd-toggle 
+: 1645522228:0;strings ~/.zsh_history
+: 1645696637:0;avahi-browse 
+: 1645699496:0;nmap -sP 192.168.0.0/24
+: 1645906983:0;psensor 
+: 1645907280:0;sensors-detect --help
+: 1645966196:0;id3 A-Ha - Take on Me.mp3
+: 1645966282:0;id3tool -l A-Ha - Take on Me.mp3
+: 1645966357:0;id3v2 
+: 1646045582:0;sensors 
+: 1646076394:0;jdraw 
+: 1646092874:0;ts-gui 
+: 1646122302:0;perldoc ./perl_mods
+: 1646514413:0;pacmd 
+: 1646514882:0;bt-device 
+: 1646515437:0;play glass.ogg
+: 1646666908:0;ip_geo | txt_unquote
+: 1646703169:0;e 
+: 1646762246:0;pdfsearch 
+: 1646842319:0;flatpak install org.gnome.NetworkDisplays.flatpakref
+: 1646932843:0;iptables list
+: 1646940602:0;nord_whitelist 
+: 1647098522:0;mscore_keys >x
+: 1647253694:0;xset r on
+: 1647280046:0;mount | grep -v lib
+: 1647280428:0;udevadm info '--query=all' -n /dev/sda
+: 1647338263:0;todo 2>x
+: 1647642502:0;terms | cut ' ' -f1
+: 1647689455:0;iwconfig 
+: 1647689821:0;nmcli connection show
+: 1647706391:0;config_data 
+: 1647715180:0;get_host_mac 
+: 1647728820:0;timeout --help
+: 1647781164:0;inode_rm -H
+: 1647821139:0;ule 
+: 1647992162:0;net_info | mypager
+: 1648168638:0;vol 50
+: 1648247275:0;time stat .
+: 1648554554:0;printf "%d" 0x03000007
+: 1648561136:0;xdg-open /usr/share/applications/gnome-network-panel.desktop
+: 1648561259:0;xdg-desktop-icon 
+: 1648681335:0;zopts login
+: 1648823635:0;ssh ASUS
+: 1648837073:0;minidlnad 
+: 1648839190:0;mon -H
+: 1648895672:0;gdisk 
+: 1648895709:0;fdisk -l
+: 1648917225:0;systemctl list-units
+: 1649078425:0;stat -s apps
+: 1649413207:0;font-manager 
+: 1649715895:0;xps 
+: 1649715970:0;firefox www.chaturbate.com 2>/dev/null &
+: 1649767130:0;m2k 43660
+: 1649783961:0;set 
+: 1649785718:0;tac 
+: 1649927536:0;google linux record tv
+: 1649979579:0;exec l | less
+: 1650033376:0;anki 
+: 1650292153:0;pa_reload 
+: 1650292168:0;pa_sound_tst 
+: 1650292187:0;pa_setsource 
+: 1650292223:0;pa_sinks 
+: 1650292240:0;pa_setsink 
+: 1650310289:0;sys_clearcups -H
+: 1650311557:0;sys_test_cron_job 
+: 1650323188:0;sys_tstumask 
+: 1650356668:0;swapon --show
+: 1650360195:0;sys_install_hist 
+: 1650360217:0;sys_updates 
+: 1650360230:0;sys_usbdisks 
+: 1650375173:0;readlink -f .fm
+: 1652518761:0;usb_stick_path 
+: 1652722694:0;gdrive_link 
+: 1652868474:0;users 
+: 1652971580:0;cv_m4a2mp3 "O Melhor de Tom Jobim.m4a"
+: 1653173492:0;xeyes 
+: 1653261042:0;make isntall
+: 1653407198:0;f_comments /etc/default/grub
+: 1653414878:0;pwd 
+: 1653415242:0;groupadd minidlna
+: 1653484945:0;aspell < notes
+: 1653486062:0;groups 
+: 1661036837:0;spot 
+: 1661086985:0;usa 
+: 1661087114:0;grep -i xset *
+: 1661087929:0;man vconsole
+: 1661087948:0;apropos vconsole
+: 1661087994:0;fc-list 
+: 1661203704:0;paste /tmp/hist2.ts /tmp/hist3.ts
+: 1661203913:0;join /tmp/hist2.ts /tmp/hist3.ts
+: 1661345157:0;cut -d';' -f1 < ${HIST_FILE} | sed 's/$/;/g' | nl -ba -w4 -nrz -s' '
+: 1661349578:0;find_music upper
+: 1661349684:0;m 
+: 1661431137:0;sqlitebrowser 
+: 1661439829:0;gal goog
+: 1661441973:0;uls 
+: 1661442083:0;cmake 
+: 1661602981:0;hist 
+: 1661603271:0;route 
+: 1661676544:0;clp 
+: 1661676581:0;pyinstaller --onefile ts.py
+: 1661676665:0;pip install pyinstaller
+: 1661677111:0;python ts.py
+: 1661678991:0;google-drive 
+: 1661679064:0;zip ts
+: 1661692857:0;crontab 
+: 1661692893:0;c 
+: 1661693347:0;sys_log 
+: 1661693372:0;flog 
+: 1661693654:0;lsattr 
+: 1661693911:0;locate timestamp
+: 1661713337:0;M 
+: 1661714102:0;rsync -r ~/Downloads/Torrents/Completed/The Ahmad Jamal Trio Eight Classic Albums (4CD Box Set) (2012) [FLAC][WwW.LoKoTorrents.CoM] .
+: 1661714274:0;n 
+: 1661722180:0;playit 
+: 1661725800:0;export CAM_DEFAULT=on
+: 1661778125:0;c2f 105
+: 1661781638:0;l. 
+: 1661781668:0;s 
+: 1661852808:0;sys_journal 
+: 1661872894:0;inotifywait -e create /tmp
+: 1661873234:0;auditctl -w /tmp/debug.out
+: 1661873557:0;file audit.log
+: 1661873784:0;aureport 
+: 1661873827:0;ausearch debug.out
+: 1661876485:0;uvcdynctrl 
+: 1661877890:0;vlc 2022-08-29-002604.webm
+: 1661937189:0;sys_lscolors 
+: 1661937727:0;cat /tmp/debug.out
+: 1661937858:0;sudo dcontrol
+: 1661937925:0;lsc audit
+: 1661938344:0;kill 
+: 1661951856:0;.. 
+: 1661951858:0;. 
+: 1661951864:0;.... 
+: 1662104182:0;wless 
+: 1662123253:0;L 
+: 1662123965:0;f 
+: 1662123970:0;l 
+: 1662124908:0;ll. 
+: 1662158505:0;tz 
+: 1662199878:0;xpad 
+: 1662199946:0;x_lswin 
+: 1662199968:0;x_mousecoords 
+: 1662199986:0;x_screen_brightness 
+: 1662200005:0;x_send_key 
+: 1662200068:0;x_superkey 
+: 1662200074:0;x_wid 
+: 1662204884:0;do_mvex 
+: 1662297699:0;uninstall h264enc
+: 1662300857:0;P 
+: 1662303606:0;convert IMG_1830.MOV IMG_1830.mkv
+: 1662303707:0;ffmpeg -i "IMG_1830.MOV" -c:v copy -c:a copy "output.mkv"
+: 1662303801:0;v 
+: 1662361725:0;stty 
+: 1662363584:0;f_gen 40
+: 1662363711:0;apps 
+: 1662374528:0;tip_zsh 
+: 1662400608:0;ext gnome-network-displays-master.
+: 1662400852:0;meson build
+: 1662400913:0;mdless README.md
+: 1662400978:0;gnome-network-displays 
+: 1662401358:0;ifconfig 
+: 1662414863:0;lsd 
+: 1662414878:0;fsub 
+: 1662414885:0;f_today 
+: 1662415009:0;hist_no_dups 
+: 1662450735:0;b 
+: 1662451420:0;D 
+: 1662451438:0;o 
+: 1662453343:0;p 
+: 1662453460:0;g unicode
+: 1662453603:0;dsk_external -m
+: 1662453608:0;backup 
+: 1662457452:0;env G_MESSAGES_DEBUG=all gnome-network-displays --help
+: 1662458118:0;gdbus call --system --dest fi.w1.wpa_supplicant1 --object-path /fi/w1/wpa_supplicant1 --method org.freedesktop.DBus.Properties.Get fi.w1.wpa_supplicant1 Capabilities: 1662458547:0;clear
+: 1662464994:0;pyts the to do list
+: 1662469141:0;md "The White Lotus"
+: 1662497504:0;sys restart minidlna
+: 1662507014:0;tip_regex 
+: 1662592880:0;chkupd 
+: 1662592921:0;installed 
+: 1662661665:0;h 
+: 1662661671:0;perlsh --help
+: 1662717548:0;hostname 
+: 1662749908:0;d 
+: 1662749997:0;V 
+: 1662750025:0;llr 
+: 1662766294:0;tc 
+: 1662767786:0;zsortfuncs zopts
+: 1662842303:0;office 
+: 1662843058:0;lp_opts 
+: 1662843314:0;genv 
+: 1662844611:0;killall kodi
+: 1662844654:0;mkvtoolnix-gui 
+: 1662879036:0;lsfuncs /usr/local/lib/common.zsh
+: 1662900463:0;sys_cam off
+: 1662910654:0;toe 
+: 1662910937:0;term_256_colors 
+: 1662935148:0;top 
+: 1662935367:0;htop -F ffmpeg
+: 1662972227:0;mkvinfo Side Effects 2013 1080p.mkv
+: 1662973467:0;aptfix 
+: 1662973760:0;mrb 
+: 1662974063:0;MP4Box 
+: 1662975711:0;handbrake 
+: 1663231526:0;perl_modules 
+: 1663291228:0;vpn 
+: 1663334228:0;: 
+: 1663334920:0;install deluge-console
+: 1663334938:0;deluge --help
+: 1663455320:0;lst 
+: 1663486442:0;bt 
+: 1663486613:0;bt_command_run devices
+: 1663493133:0;for X in *torrent;do echo $X;done
+: 1663493246:0;find .
+: 1663505312:0;yt -a 'https://www.youtube.com/watch?v=86oD0kbeFSM'
+: 1663532559:0;T 
+: 1663532626:0;C 
+: 1663532627:0;I 
+: 1663599398:0;ts pearl
+: 1663602177:0;watch recode.mp4
+: 1663603886:0;vid_length Kalifornia 1993 720p.mp4
+: 1663604409:0;media-ctl 
+: 1663604474:0;MP4Client 
+: 1663605028:0;ffprobe --help
+: 1663676676:0;fakebook foolish
+: 1663677250:0;B 
+: 1663677521:0;pdf2txt AdvancedScriptingGuide.txt
+: 1663677937:0;enscript ~/Code/ARCHIVE/AdvancedScriptingGuide.txt
+: 1663678317:0;ps2pdf output.ps output.pdf
+: 1663678518:0;cv_txt2pdf ~/Code/ARCHIVE/AdvancedScriptingGuide.txt
+: 1663690755:0;node tst.js
+: 1663712622:0;mkchromecast ./2022-09-20 23-35-27.mkv
+: 1663781070:0;lan_devices 
+: 1663803040:0;loadstick 
+: 1663863438:0;lossless 
+: 1663925196:0;mypager README.md
+: 1663946952:0;vid_merge v2.mkv v3.mkv
+: 1664044814:0;test 
+: 1664046205:0;ps -p 10608
+: 1664202172:0;wayland_list_devices 
+: 1664208825:0;lft 
+: 1664299872:0;gimp 
+: 1664303104:0;ip_int 
+: 1664305015:0;ip_ext 
+: 1664310013:0;snap 
+: 1664357051:0;aux indic
+: 1664368371:0;whoami 
+: 1664369683:0;zsh --version
+: 1664380397:0;me doit
+: 1664381590:0;cfg 
+: 1664393454:0;fe 
+: 1664398314:0;vid_info Knowing 2009 720p.mp4
+: 1664459394:0;gsub _THIS_FILE _SCRIPT_FILE_NAME
+: 1664460986:0;ln /usr/local/bin/find_music ./.find_music
+: 1664461030:0;unlink ./.find_music
+: 1664461161:0;apt list --upgradable
+: 1664540218:0;ninja 
+: 1664540932:0;git clone "https://github.com/Rafostar/gnome-shell-extension-cast-to-tv.git"
+: 1664541167:0;hash -r
+: 1664541261:0;sys_info 
+: 1664542364:0;dpkg -i deskreen_2.0.3_amd64.deb
+: 1664542461:0;purge deskreen
+: 1664557292:0;zcat changelog.gz
+: 1664559798:0;strace 
+: 1664617107:0;f_finder bak
+: 1664617408:0;diff bak bak.copy
+: 1664631997:0;wl-copy "XYZ"
+: 1664632002:0;wl-paste "XYZ"
+: 1664633516:0;source find_music -n bossa
+: 1664634175:0;history 
+: 1664634707:0;fc --help
+: 1664702863:0;tip_tput 
+: 1664918420:0;vid_rescale Gomorra 2008.mkv
+: 1664925468:0;clear 
+: 1664965018:0;cl 
+: 1664965044:0;unset X
+: 1664965071:0;type unset
+: 1664965188:0;which unset
+: 1664970362:0;echo ${TC/#*/}
+: 1664970479:0;ll 
+: 1664970971:0;bak -c hist_no_dups
+: 1664970977:0;exit 
+: 1664971013:3;vi ~/.zsh_history
+: 1664971025:0;fc -R
+: 1664973650:0;cl
+: 1664973659:0;bak hist_no_dups
+: 1664973665:166;vi hist_no_dups

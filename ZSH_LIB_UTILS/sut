@@ -2114,10 +2114,10 @@ ___EOF
 		umask $1
 		echo
 		echo "File creation:"
-		touch x;ls -la x;rm -f x
+		touch x && ls -la x && rm -f x
 		echo
 		echo "Directory creation:"
-		mkdir xx;ls -lad xx;rm -rf xx
+		mkdir xx && ls -lad xx && rm -rf xx
 		echo
 	}
 

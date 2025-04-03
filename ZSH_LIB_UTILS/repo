@@ -28,15 +28,17 @@ _VIM_CFG=${_REPO}/VIM_CFG
 _VIM_CFG_USER=${_REPO}/VIM_CFG/USER
 _ZSH_CFG=${_REPO}/ZSH_CFG
 _ZSH_CFG_USER=${_REPO}/ZSH_CFG/USER
-_ZSH_LIB=${_REPO}/ZSH_LIB
+_ZSH_LIB_MODULES=${_REPO}/ZSH_LIB
 _ZSH_LIB_UTILS=${_REPO}/ZSH_LIB_UTILS
 _ZSH_NON_LIB_UTILS=${_REPO}/ZSH_NON_LIB_UTILS
+_NON_ZSH_UTILS=${_REPO}/NON_ZSH_UTILS
 
 _DEV_DIR=${HOME}/Code/LOCAL
 _PYTHON_DIR=${HOME}/Code/LANG/Python/PROJECTS
 _UL_BIN_DIR=/usr/local/bin
 _UL_BIN_SYS_DIR=/usr/local/bin/system
 _UL_BIN_CONV_DIR=/usr/local/bin/conversion
+_UL_BIN_PY_DIR=/usr/local/bin/__pyscripts__
 _UL_ETC_DIR=/usr/local/etc
 _UL_LIB_DIR=/usr/local/lib
 _VIM_DIR=${HOME}/.vim
@@ -44,13 +46,17 @@ _ZSH_DIR=${HOME}/.zsh
 _ZSH_CFG_DIR=/etc/zsh
 
 # Declarations
-typeset -a _DEVELOPMENT
-typeset -a _UL_BIN_ZSH_FILES
-typeset -a _UL_LIB_ZSH_FILES
-typeset -a _UL_ETC_FILES
-typeset -a _ZSH_CFG_FILES
-typeset -a _PYTHON_FILES
-typeset -a _USER_FILES
+typeset -a _DEVELOPMENT=()
+typeset -a _NON_ZSH=()
+typeset -a _PYTHON_FILES=()
+typeset -a _ULB=()
+typeset -a _UL_ETC_FILES=()
+typeset -a _UL_LIB_ZSH_FILES=()
+typeset -a _USER_FILES=()
+typeset -a _ZSH=()
+typeset -a _ZSH_CFG_FILES=()
+typeset -a _ZSH_LIB=()
+typeset -a _ZSH_NON_LIB=()
 
 # Functions
 copy_dev_files () {
@@ -78,37 +84,46 @@ copy_dev_files () {
 
 copy_zsh_lib_utils () {
 	echo "${WHITE_FG}ZSH LIB UTILS${RESET}" >&2
-	for L in ${_UL_BIN_ZSH_FILES};do
-		grep -q LIB_INIT ${L}
-		[[ ${?} -eq 0 ]] && cp "${L}" ${_ZSH_LIB_UTILS}
+	for L in ${_ZSH_LIB};do
+		cp "${L}" ${_ZSH_LIB_UTILS}
 	done
 }
 
 copy_non_lib_utils () {
 	echo "${WHITE_FG}ZSH NON LIB UTILS${RESET}" >&2
-	for L in ${_UL_BIN_ZSH_FILES};do
-		grep -q LIB_INIT ${L}
-		[[ ${?} -ne 0 ]] && cp "${L}" ${_ZSH_NON_LIB_UTILS}
+	for L in ${_ZSH_NON_LIB};do
+		cp "${L}" ${_ZSH_NON_LIB_UTILS}
 	done
+}
+
+copy_non_zsh_utils () {
+	echo "${WHITE_FG}NON ZSH UTILS${RESET}" >&2
+	for L in ${_NON_ZSH};do
+		cp "${L}" ${_NON_ZSH_UTILS}
+	done
+}
+
+copy_conv_files () {
+	echo "${WHITE_FG}ULB CONVERSION FILES${RESET}" >&2
+	rsync -a ${_UL_BIN_CONV_DIR} ${_ZSH_LIB_UTILS}
+}
+
+copy_py_files () {
+	echo "${WHITE_FG}ULB PYTHON SCRIPT FILES${RESET}" >&2
+	rsync -a ${_UL_BIN_PY_DIR} ${_ZSH_LIB_UTILS}
 }
 
 copy_zsh_libs () {
 	echo "${WHITE_FG}ZSH LIBS${RESET}" >&2
-	LIBS=("${(f)$(find ${_UL_LIB_DIR} -maxdepth 1 -type f)}")
-	for L in ${LIBS};do
-		cp "${L}" ${_ZSH_LIB}
+	ZSH_LIBS=("${(f)$(find ${_UL_LIB_DIR} -maxdepth 1 -type f)}")
+	for L in ${ZSH_LIBS};do
+		cp "${L}" ${_ZSH_LIB_MODULES}
 	done
 }
 
 copy_sys_files () {
 	echo "${WHITE_FG}SYSTEM FILES${RESET}" >&2
 	rsync -a --no-links ${_UL_BIN_SYS_DIR} ${_SYSTEM}
-	cp /usr/local/bin/yt-dlp ${_SYSTEM}
-}
-
-copy_conv_files () {
-	echo "${WHITE_FG}CONVERSION FILES${RESET}" >&2
-	rsync -a --no-links ${_UL_BIN_CONV_DIR} ${_SYSTEM}
 }
 
 copy_etc_files () {
@@ -167,9 +182,10 @@ pushd ~/Code
 [[ ! -e ${_VIM_CFG_USER} ]] && mkdir -p ${_VIM_CFG_USER}
 [[ ! -e ${_ZSH_CFG} ]] && mkdir -p ${_ZSH_CFG}
 [[ ! -e ${_ZSH_CFG_USER} ]] && mkdir -p ${_ZSH_CFG_USER}
-[[ ! -e ${_ZSH_LIB} ]] && mkdir -p ${_ZSH_LIB}
+[[ ! -e ${_ZSH_LIB_MODULES} ]] && mkdir -p ${_ZSH_LIB_MODULES}
 [[ ! -e ${_ZSH_LIB_UTILS} ]] && mkdir -p ${_ZSH_LIB_UTILS}
 [[ ! -e ${_ZSH_NON_LIB_UTILS} ]] && mkdir -p ${_ZSH_NON_LIB_UTILS}
+[[ ! -e ${_NON_ZSH_UTILS} ]] && mkdir -p ${_NON_ZSH_UTILS}
 
 # Readme
 cp ./README.md ${_REPO}
@@ -177,23 +193,47 @@ cp ./README.md ${_REPO}
 # Updater
 cp ./do_commit ${_REPO}
 
-# zsh scripts  
-_UL_BIN_ZSH_FILES=("${(f)$(grep -d skip -l '/usr/bin/zsh' ${_UL_BIN_DIR}/*)}")
+# Organize /usr/local/bin
+_ULB=("${(f)$(file $(find ${_UL_BIN_DIR} -maxdepth 1 -type f))}")
 
-# zsh libs
+for L in ${_ULB};do
+	FN=$(cut -d: -f1 <<<${L})
+	SIG=$(cut -d: -f2- <<<${L})
+	[[ ${SIG} =~ 'zsh' ]] && _ZSH+=${FN} || _NON_ZSH+=${FN}
+done
+
+# zsh scripts  
+for L in ${_ZSH};do
+	if grep -q "ZSH_LIB_DIR" ${L};then
+		# zsh lib utils
+		_ZSH_LIB+=${L}
+	else
+		# zsh non lib utils
+		_ZSH_NON_LIB+=${L}
+	fi
+done
+
 LIST=("${(f)$(find ${_UL_LIB_DIR} -maxdepth 1 -type f)}")
 for L in ${LIST};do
 	[[ $(file ${L}) =~ 'zsh' ]] && _UL_LIB_ZSH_FILES+=${L} || continue
 done
+
+echo "Total lib utils:${#_ZSH_LIB}"
+echo "Total non lib utils:${#_NON_ZSH}"
+echo "Total non zsh utils:${#_ZSH_NON_LIB}"
 echo "Total library files:${#_UL_LIB_ZSH_FILES}"
+
+# Copy /usr/local/bin
 copy_zsh_lib_utils
 copy_non_lib_utils
+copy_non_zsh_utils
 copy_zsh_libs
+copy_conv_files # Copy /usr/local/bin/conversion
+copy_py_files # Copy /usr/local/bin/__pyscripts__
 
 # system
-copy_sys_files # Clone /usr/local/bin/system
-copy_user_files # Clone ${HOME}
-copy_conv_files # Clone /usr/local/bin/conversion
+copy_sys_files # Copy /usr/local/bin/system
+copy_user_files # Copy ${HOME}
 
 # dev
 copy_dev_files
