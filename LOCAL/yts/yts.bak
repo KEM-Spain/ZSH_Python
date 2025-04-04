@@ -359,7 +359,6 @@ action_warn () {
 	msg_box -H1 -x${_COORDS[X]} -p -PG "<w><I>Please respond<N>|<Z>|${#_MARKED} $(str_pluralize ${_OBJECT} ${#_MARKED}) selected"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_MSG_KEY:${_MSG_KEY}"
 		for M in ${_MARKED};do
 			_MARKED[${M}]=0
 			list_set_selected ${M} ${_AVAIL_ROW}
@@ -465,7 +464,6 @@ fav_delete () {
 	echo "${0}: deleting ${FAV} decoded to ${FAV}" >> ${_YTS_DBG_LOG}
 
 	if [[ ${_MSG_KEY} == 'y' ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_MSG_KEY:${_MSG_KEY}"
 		if [[ -s ${_YTS_FAVORITES} ]];then
 			[[ -e /tmp/favlist.new ]] && /bin/rm -f /tmp/favlist.new
 			while read LINE;do
@@ -597,8 +595,7 @@ fav_set () {
 	[[ ${_DEBUG} -ge 1 ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE} g_LIVE:${g_LIVE}"
 
 	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${FAV} to favorites?"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_MSG_KEY:${_MSG_KEY}"
-	[[ ${_MSG_KEY} == 'n' ]] && return
+	[[ ${_MSG_KEY} != 'y' ]] && return
 
 	# R    - Rumble  - general query
 	# RL   - Rumble  - livestream query
@@ -1234,7 +1231,6 @@ select_download () {
 		if [[ $(list_get_selected_count) -ne 0 ]];then
 			action_warn
 			if [[ ${_MSG_KEY} == "y" ]];then
-				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_MSG_KEY:${_MSG_KEY}"
 				action_do
 			fi
 			_LIST_SELECTED=()
@@ -1298,9 +1294,9 @@ start_job () {
 	g_YTS_LOG=$(mktemp /tmp/yt.log.XXXXXX)
 
 	if [[ ${g_FIX_AUDIO} == 'true' ]];then
-		CMD="nohup yt -N4 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
+		CMD="nohup yt -N2 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
 	else
-		CMD="nohup yt -N4 -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
+		CMD="nohup yt -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
 	fi
 
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} # Log command
