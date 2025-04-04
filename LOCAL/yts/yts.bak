@@ -130,6 +130,7 @@ action_do () {
 	local SCAN_LIMIT=0
 	local TITLE=''
 	local URL=''
+	local WAIT=0
 	local L M S 
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -306,7 +307,7 @@ action_do () {
 				ERROR_CNT=0 
 				show_down ${ETA}
 				case ${ETA:l} in
-					*'100% of'*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;;; # Prevent doubling complete line
+					*'download completed'*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;;; # Prevent doubling complete line
 					*mib/s*) LINE_COLOR='<w>';;
 					*kib/s*) LINE_COLOR='<B><y>';;
 					*) continue;; # Skip other
@@ -807,9 +808,13 @@ last_code_update () {
 }
 
 last_file () {
-	local ST=$(stat -c"%W|%i|%n" ${_DOWNLOAD_DIR}/* | sort -t'|' -k1 -r | head -1) # Sort by birth date; grab most recent
-	local FN=$(cut -d'|' -f3 <<<${ST}) # Filename
-	local IN=$(cut -d'|' -f2 <<<${ST}) # Inode
+	local ST=''
+	local FN=''
+	local IN=''
+
+	ST=$(stat -c"%W|%i|%n" ${_DOWNLOAD_DIR}/* | sort -t'|' -k1 -r | head -1) # Sort by birth date; grab most recent
+	FN=$(cut -d'|' -f3 <<<${ST}) # Filename
+	IN=$(cut -d'|' -f2 <<<${ST}) # Inode
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN} INODE:${IN}"
 
@@ -917,50 +922,65 @@ log_to_file () {
 }
 
 post_process () {
-	local LF=$(last_file) # Filename|Inode
-	local FN=$(cut -d'|' -f1 <<<${LF}) # Filename
-	local IN=$(cut -d'|' -f2 <<<${LF}) # Inode
+	local LF=''
+	local FN=''
+	local IN=''
 	local -a KEYWORDS=("judge napolitano - " "official" "^the " " show" "have it out with galloway \- " "youtube channel")
 	local -a LIST
 	local MSG="Post Processing"
 	local NEW_FN=''
-	local K D
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN}"
+	local F K D
+	local -a TEMP_FILES=()
 
 	msg_box -x$(( _COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
 
-	{
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaning:${FN:t}"
-		NEW_FN=$(echo ${FN} | fsub -y '_s_' '\x27s_')     # Apostrophes
-		NEW_FN=$(echo ${NEW_FN} | fsub -y '_' ' ')        # Spaces
-		NEW_FN=$(echo ${NEW_FN} | fsub -y '\\.\\.' '\\.') # Multi dot
-		NEW_FN=$(echo ${NEW_FN} | fsub -y ' \\.' '\\.')   # Dangling file extensions
-		NEW_FN=$(echo ${NEW_FN} | fsub -y -P)             # Proper case
-		NEW_FN=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' -e 's/(I)(i+)/\1\U\2/g' <<<${NEW_FN}) # Misc fixups
+	sleep 3 # wait for processing to finish
 
-		if [[ ${#NEW_FN} -gt ${_MAX_FLEN} ]];then
-			NEW_FN=$(echo ${NEW_FN} | fsub -y -t${_MAX_FLEN}) # Truncate length
-		fi
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Removing any temp.mp4 files"
 
-		FN=$(realpath ${FN})
-		if [[ ${FN} != ${NEW_FN} ]];then
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${NEW_FN}"
-			mv -f ${FN} ${NEW_FN} # Write any changes
-			FN=${NEW_FN} # Update FN
-		fi
+	TEMP_FILES=("${(f)$(find ${_DOWNLOAD_DIR} -name '*temp.mp4')}")
+	for F in ${TEMP_FILES};do
+		/bin/rm -f ${F} >/dev/null 2>&1
+		[[ ${?} -eq 0 ]] && echo "${0}: deleted ${F}" >> ${_YTS_DBG_LOG}
+	done
 
-		if [[ -e ${FN} ]];then
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Scrubbing keywords"
-			for K in ${KEYWORDS};do # Scrub keywords
-				NEW_FN=$(echo ${NEW_FN} | fsub -yi ${K})
-			done
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
-			mv -f ${FN} ${NEW_FN} # Write any changes
-		else
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: File:${FN} not found - unable to filter keywords"
-		fi
-	} >>${_ERROR_LOG} 2>/dev/null
+	LF=$(last_file) # Filename and Inode
+	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
+	IN=$(cut -d'|' -f2 <<<${LF}) # Inode
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}, INODE:${IN}"
+
+	NEW_FN=$(echo ${FN} | fsub -y '_s_' '\x27s_')     # Apostrophes
+	NEW_FN=$(echo ${NEW_FN} | fsub -y '_' ' ')        # Spaces
+	NEW_FN=$(echo ${NEW_FN} | fsub -y '\\.\\.' '\\.') # Multi dot
+	NEW_FN=$(echo ${NEW_FN} | fsub -y ' \\.' '\\.')   # Dangling file extensions
+	NEW_FN=$(echo ${NEW_FN} | fsub -y -P)             # Proper case
+	NEW_FN=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' -e 's/(I)(i+)/\1\U\2/g' <<<${NEW_FN}) # Misc fixups
+
+	if [[ ${#NEW_FN} -gt ${_MAX_FLEN} ]];then
+		NEW_FN=$(echo ${NEW_FN} | fsub -y -t${_MAX_FLEN}) # Truncate length
+	fi
+
+	if [[ ${FN} != ${NEW_FN} ]];then
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
+		mv -f ${FN} ${NEW_FN} # Write any changes
+		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
+		FN=${NEW_FN} # Update FN
+	fi
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Scrubbing keywords"
+	for K in ${KEYWORDS};do # Scrub keywords
+		NEW_FN=$(echo ${NEW_FN} | fsub -yi ${K})
+	done
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
+
+	if [[ ${FN} != ${NEW_FN} ]];then
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
+		mv -f ${FN} ${NEW_FN} # Write any changes
+		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
+		FN=${NEW_FN} # Update FN
+	fi
 }
 
 query_rumble () {

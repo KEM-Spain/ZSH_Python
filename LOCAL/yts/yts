@@ -802,8 +802,6 @@ last_code_update () {
 		LAST_UPD=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
 		[[ -e ${MARKER_ARG} ]] && LAST_TIME=$(stat -c"%x" ${MARKER_ARG} | cut -d. -f1 | cut -d' ' -f2 | cut -d: -f1,2) 
 		echo "$(date_since_today ${_TODAY} ${LAST_UPD}) at ${LAST_TIME}"
-	else
-		echo "${MARKER_ARG} not found"
 	fi
 }
 
@@ -929,20 +927,27 @@ post_process () {
 	local -a LIST
 	local MSG="Post Processing"
 	local NEW_FN=''
-	local K D
+	local F K D
+	local -a TEMP_FILES=()
+
+	msg_box -x$(( _COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
+
+	sleep 3 # wait for processing to finish
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Removing any temp.mp4 files"
-	/bin/rm -f ${_DOWNLOAD_DIR}/*.temp.mp4 >/dev/null 2>&1
+
+	TEMP_FILES=("${(f)$(find ${_DOWNLOAD_DIR} -name '*temp.mp4')}")
+	for F in ${TEMP_FILES};do
+		/bin/rm -f ${F} >/dev/null 2>&1
+		[[ ${?} -eq 0 ]] && echo "${0}: deleted ${F}" >> ${_YTS_DBG_LOG}
+	done
 
 	LF=$(last_file) # Filename and Inode
 	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
 	IN=$(cut -d'|' -f2 <<<${LF}) # Inode
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}, INODE:${IN}"
 
-	msg_box -x$(( _COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaning:${FN:t}"
 	NEW_FN=$(echo ${FN} | fsub -y '_s_' '\x27s_')     # Apostrophes
 	NEW_FN=$(echo ${NEW_FN} | fsub -y '_' ' ')        # Spaces
 	NEW_FN=$(echo ${NEW_FN} | fsub -y '\\.\\.' '\\.') # Multi dot
@@ -1459,15 +1464,17 @@ PATHLBL=$(path_get_label 40)
 g_LAST_CODE_UPD=$(last_code_update ${_UPD_MARKER})
 if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 'today')) ]];then
 	clear
-	msg_box -t1 "Updating yt-dlp..."
+	msg_box "Checking for yt-dlp updates..."
+
 	{
 		CUR_VER=$(yt-dlp --version)
 		yt-dlp -U
 		touch ${_UPD_MARKER}
 		UPD_VER=$(yt-dlp --version)
 	} >/dev/null 2>&1
-	[[ ${CUR_VER} == ${UPD_VER} ]] && MSG="yt-dlp version:<r>${CUR_VER}<N>" || MSG="yt-dlp was updated from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
-	msg_box -t1 ${MSG}
+	[[ ${CUR_VER} == ${UPD_VER} ]] && MSG="yt-dlp is <g>current<N> at version:<r>${CUR_VER}<N>" || MSG="yt-dlp was <w>updated<N> from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
+
+	msg_box -c -t2 ${MSG}
 fi
 
 clear
