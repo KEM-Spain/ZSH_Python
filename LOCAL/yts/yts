@@ -261,6 +261,12 @@ action_do () {
 
 			LOG_LINE=$(sed -e 's//\n/g' -e '/./!d' ${g_YTS_LOG} | tail -1 | str_trim) 
 
+			if grep -qi 'chunklist' <<<${LOG_LINE} 2>/dev/null;then # Block live braodcasts
+				msg_box -p -PK "<r>Warning<N>This is an ongoing live broadcast|Not suitable for download"
+				kill_job
+				break
+			fi
+			
 			ETA='' && ERR='' && OTH=''
 			if grep -qi 'eta.*error' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
 				ETA=$(sed -E 's/([0-9])(\[.*)/\1\n\2/g' <<<${LOG_LINE} | head -1 | str_trim)
