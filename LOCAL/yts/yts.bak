@@ -68,6 +68,7 @@ _MAX_FLEN=75
 _OBJECT=video
 _PAUSE_TM=2
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
+_TITLE_STR_MAX=75
 _YTS_FAVORITES=${_YTS_DIR}/yts_favorites
 _YTS_URL_LOG=/tmp/yts.url.log
 _YTS_DBG_LOG=/tmp/yt.dbg.log
@@ -147,7 +148,6 @@ action_do () {
 
 		AUTHOR=$(get_field author ${M})
 		TITLE=$(get_field title ${M})
-		TITLE=${TITLE}
 		URL=$(get_field url ${M})
 
 		echo ${AUTHOR}:${TITLE}:${URL} >> ${_YTS_URL_LOG} # Log the url
@@ -246,7 +246,7 @@ action_do () {
 				DEST_1=$(cut -d'|' -f1 <<<${DEST})
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST} | sed 's/_/ /g')
-				HDR1_TXT=$(clean_line ${HDR1_TXT})
+				#HDR1_TXT=$(clean_line ${HDR1_TXT}) # Too aggressive
 				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,69]}<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
@@ -261,6 +261,12 @@ action_do () {
 
 			LOG_LINE=$(sed -e 's//\n/g' -e '/./!d' ${g_YTS_LOG} | tail -1 | str_trim) 
 
+			if grep -qi 'chunklist' <<<${LOG_LINE} 2>/dev/null;then # Block live braodcasts
+				msg_box -p -PK "<r>Warning<N>This is an ongoing live broadcast|Not suitable for download"
+				kill_job
+				break
+			fi
+			
 			ETA='' && ERR='' && OTH=''
 			if grep -qi 'eta.*error' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
 				ETA=$(sed -E 's/([0-9])(\[.*)/\1\n\2/g' <<<${LOG_LINE} | head -1 | str_trim)
@@ -688,7 +694,6 @@ get_field () {
 	local NDX=${2}
 	local STR=''
 	local TSTR=''
-	local STR_MAX=75
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGS:FIELD:${FIELD}, NDX:${NDX}"
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}:${LINENO} _LIST[NDX]:${_LIST[${NDX}]}"
@@ -726,15 +731,15 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'title' ]];then
-		STR=${STR[1,${STR_MAX}]} # Limit length
+		STR=${STR[1,${_TITLE_STR_MAX}]} # Limit length
 		STR=$(sed -E 's/^\s+?\?*?\s+?//' <<<${STR}) # Strip leading space 
-		STR=$(html2text -ascii <<<${STR}) # HTML
+		STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
 		STR=${(C)STR} # Proper case
 		STR=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' -e 's/(I)(i+)/\1\U\2/g' <<<${STR}) # Misc fixups
 	fi
 
 	#STR=$(iconv -f utf-8 -t ascii//translit <<<${STR}) # Scrub non ascii
-	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}:${LINENO} Returning:STR[1,${STR_MAX}]:${STR[1,${STR_MAX}]}"
+	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}:${LINENO} Returning:STR[1,${_TITLE_STR_MAX}]:${STR[1,${_TITLE_STR_MAX}]}"
 
 	echo -n ${STR}
 }
@@ -1176,7 +1181,7 @@ query_youtube () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
-	[[ ${_SMCUP} == 'false' ]] && do_smcup
+	#[[ ${_SMCUP} == 'false' ]] && do_smcup
 
 	# Return search status
 	if ! arr_is_populated "${_LOCAL_LIST}";then
@@ -1525,7 +1530,7 @@ fi
 # Run Query
 if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
 	while true;do
-		do_smcup
+		#do_smcup
 		fav_get
 		if [[ -n ${g_QUERY_KEY} ]];then
 			msg_box "Requesting videos for <B><I>${g_DISPLAY_KEY}<N>..."
