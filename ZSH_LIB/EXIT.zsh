@@ -111,7 +111,7 @@ exit_request () {
 			exit_leave
 		fi
 	else
-		[[ ${#} -ne 0 ]] && msg_box_clear ${TAG} 
+		msg_box_clear ${TAG} 
 	fi
 }
 
