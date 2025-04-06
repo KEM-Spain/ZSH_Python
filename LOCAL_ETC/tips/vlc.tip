@@ -1,0 +1,3 @@
+local VLC_HELP=$(vlc --longhelp --advanced 2>/dev/null)
+echo "${E_CYAN_FG}Vlc Advanced Help${E_RESET}"
+echo ${VLC_HELP}

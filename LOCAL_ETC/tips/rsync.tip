@@ -1,0 +1,64 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_rsync_EOF
+
+Rsync – To Slash or Not To Slash?
+
+Without a slash, copy the hierarchy ${E_WHITE_FG}including${E_RESET} top level directory
+With a slash, copy the hierarchy ${E_WHITE_FG}below${E_RESET} the top level directory
+
+If we take the following as the source directory:
+
+$ tree testing
+
+testing
+|-- another
+|   |-- wilma
+|-- betty
+|-- fred
+|-- nested
+    |-- barney
+
+The destination is an empty directory named test_backup.
+
+${E_WHITE_FG}No Slashes${E_RESET}
+The first test has no slashes on any of the directories.
+
+$ rsync --archive --recursive testing ${E_CYAN_FG}test_backup${E_RESET}
+$ tree test_backup
+
+test_backup
+|${E_WHITE_FG}--testing${E_RESET}
+   |-- another
+   |   |-- wilma
+   |-- betty
+   |-- fred
+   |-- nested
+       |-- barney
+
+You can see that the ${E_WHITE_FG}whole hierarchy${E_RESET} of the testing directory has been
+recreated within the destination directory.
+
+${E_WHITE_FG}Slash on Source${E_RESET}
+$ rsync --archive --recursive ${E_CYAN_FG}testing/${E_RESET} test_backup
+$ tree test_backup
+
+test_backup
+|${E_WHITE_FG}-- another${E_RESET}
+|   |-- wilma
+|-- betty
+|-- fred
+|-- nested
+    |-- barney
+
+This is different. The contents of the source directory have been duplicated into the destination
+directory.
+
+As to slashes following the destination, if the source is a file ${E_WHITE_FG}and destination doesn't exist${E_RESET}
+— this will make a copy of SRC called DEST:
+
+rsync SRC DEST
+
+, whereas, with a slash, this will create directory DEST and copy the SRC file into it:
+
+rsync SRC DEST/
+tip_rsync_EOF

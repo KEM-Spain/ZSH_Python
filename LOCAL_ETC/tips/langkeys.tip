@@ -1,0 +1,43 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+
+cat << tip_lang_EOF
+Key combos: Right-Alt + '${E_WHITE_FG}< > / : " +${E_RESET}' keys
+
+Examples:
+
+Different variants of the 'a' key:
+
+Right-Alt + ${E_WHITE_FG} < ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ą ${E_RESET}
+Right-Alt + ${E_WHITE_FG} > ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ȧ ${E_RESET}
+Right-Alt + ${E_WHITE_FG} : ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ą ${E_RESET}
+Right-Alt + ${E_WHITE_FG} " ${E_RESET} = ${E_BOLD}${E_CYAN_FG} á ${E_RESET}
+
+Different variants of the 'e' key:
+
+Right-Alt + ${E_WHITE_FG} < ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ę ${E_RESET}
+Right-Alt + ${E_WHITE_FG} > ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ė ${E_RESET}
+Right-Alt + ${E_WHITE_FG} : ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ę ${E_RESET}
+Right-Alt + ${E_WHITE_FG} " ${E_RESET} = ${E_BOLD}${E_CYAN_FG} é ${E_RESET}
+
+Different variants of the 'c' key:
+
+Right-Alt + ${E_WHITE_FG} < ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ç ${E_RESET}
+Right-Alt + ${E_WHITE_FG} > ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ċ ${E_RESET}
+Right-Alt + ${E_WHITE_FG} / ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ¢ ${E_RESET}
+Right-Alt + ${E_WHITE_FG} " ${E_RESET} = ${E_BOLD}${E_CYAN_FG} ć ${E_RESET}
+
+Different symbols using the Right-Alt and the '+' key:
+
+${E_WHITE_FG} c ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} € ${E_RESET}
+${E_WHITE_FG} d ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} ₫ ${E_RESET}
+${E_WHITE_FG} e ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} € ${E_RESET}
+${E_WHITE_FG} o ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} ő ${E_RESET}
+${E_WHITE_FG} p ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} ₽ ${E_RESET}
+${E_WHITE_FG} r ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} ₹ ${E_RESET}
+${E_WHITE_FG} u ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} ű ${E_RESET}
+${E_WHITE_FG} v ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} ⇓ ${E_RESET}
+${E_WHITE_FG} y ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} ¥ ${E_RESET}
+
+
+
+tip_lang_EOF

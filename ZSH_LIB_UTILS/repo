@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+ 
 # Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -17,247 +18,263 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Imports
+[[ -z ${ZSH_LIB} ]] && _LIB=/usr/local/lib || _LIB=${ZSH_LIB}
+source ${_LIB}/LIB_INIT.zsh # Must be first
+source ${_LIB}/UTILS.zsh
+source ${_LIB}/STR.zsh
+source ${_LIB}/LIB_DEPS.zsh # Must be last
+
 # Constants
 _REPO=~/Code/REPO
-_USER_DIR=${_REPO}/USER_DIR
-_ETC_SUPPORT=${_REPO}/ETC_SUPPORT
-_PYTHON=${_REPO}/PYTHON
-_SYSTEM=${_REPO}/SYSTEM
-_DEV=${_REPO}/LOCAL
-_VIM_CFG=${_REPO}/VIM_CFG
-_VIM_CFG_USER=${_REPO}/VIM_CFG/USER
-_ZSH_CFG=${_REPO}/ZSH_CFG
-_ZSH_CFG_USER=${_REPO}/ZSH_CFG/USER
-_ZSH_LIB_MODULES=${_REPO}/ZSH_LIB
-_ZSH_LIB_UTILS=${_REPO}/ZSH_LIB_UTILS
-_ZSH_NON_LIB_UTILS=${_REPO}/ZSH_NON_LIB_UTILS
-_NON_ZSH_UTILS=${_REPO}/NON_ZSH_UTILS
+_REPO_LOCAL_ETC=${_REPO}/LOCAL_ETC
+_REPO_LOCAL=${_REPO}/LOCAL
+_REPO_NON_ZSH_UTILS=${_REPO}/NON_ZSH_UTILS
+_REPO_PYTHON=${_REPO}/PYTHON
+_REPO_SYSTEM=${_REPO}/SYSTEM
+_REPO_USER=${_REPO}/USER
+_REPO_VIM_CFG=${_REPO}/VIM_CFG
+_REPO_VIM_CFG_USER=${_REPO}/VIM_CFG/USER
+_REPO_ZSH_CFG=${_REPO}/ZSH_CFG
+_REPO_ZSH_CFG_USER=${_REPO}/ZSH_CFG/USER
+_REPO_ZSH_LIB=${_REPO}/ZSH_LIB
+_REPO_ZSH_LIB_UTILS=${_REPO}/ZSH_LIB_UTILS
+_REPO_ZSH_NON_LIB_UTILS=${_REPO}/ZSH_NON_LIB_UTILS
 
-_DEV_DIR=${HOME}/Code/LOCAL
-_PYTHON_DIR=${HOME}/Code/LANG/Python/PROJECTS
-_UL_BIN_DIR=/usr/local/bin
-_UL_BIN_SYS_DIR=/usr/local/bin/system
-_UL_BIN_CONV_DIR=/usr/local/bin/conversion
-_UL_BIN_PY_DIR=/usr/local/bin/__pyscripts__
-_UL_ETC_DIR=/usr/local/etc
-_UL_LIB_DIR=/usr/local/lib
-_VIM_DIR=${HOME}/.vim
-_ZSH_DIR=${HOME}/.zsh
-_ZSH_CFG_DIR=/etc/zsh
+_SRC_BIN=/usr/local/bin
+_SRC_BIN_CONV=${_SRC_BIN}/conversion
+_SRC_BIN_PYSCRIPTS=${_SRC_BIN}/__pyscripts__
+_SRC_BIN_SYS=${_SRC_BIN}/system
+_SRC_CODE=${HOME}/Code/LOCAL
+_SRC_LOCAL_ETC=/usr/local/etc
+_SRC_LIB=/usr/local/lib
+_SRC_PYTHON=${HOME}/Code/LANG/Python/PROJECTS/ts
+_SRC_VIM_CFG=${HOME}/.vim
+_SRC_ZSH_CFG_USER=${HOME}/.zsh
+_SRC_ZSH_CFG=/etc/zsh
 
 # Declarations
-typeset -a _DEVELOPMENT=()
-typeset -a _NON_ZSH=()
-typeset -a _PYTHON_FILES=()
-typeset -a _ULB=()
-typeset -a _UL_ETC_FILES=()
-typeset -a _UL_LIB_ZSH_FILES=()
-typeset -a _USER_FILES=()
-typeset -a _ZSH=()
-typeset -a _ZSH_CFG_FILES=()
-typeset -a _ZSH_LIB=()
-typeset -a _ZSH_NON_LIB=()
+typeset -a _BIN=()
+typeset -a _ETC=()
+typeset -a _LOCAL=()
+typeset -a _PYTHON=()
+typeset -a _USER=()
+typeset -a _ZSH_UTILS=()
+typeset -a _NON_ZSH_UTILS=()
+typeset -a _ZSH_CFG=()
+typeset -a _ZSH_LIB_UTILS=()
+typeset -a _ZSH_NON_LIB_UTILS=()
 
 # Functions
+copy_conv_files () {
+	echo "${WHITE_FG}CONVERSION UTILITY FILES${RESET}" >&2
+	rsync -a ${_SRC_BIN_CONV} ${_REPO_ZSH_LIB_UTILS}
+}
+
 copy_dev_files () {
-	typeset -A DEV_LIST
+	local -A DEV_LIST=()
+	local -a DEV_DIRS=()
+	local -a BIN_LIST=()
+	local D
 
-	/bin/rm -rf ${_DEV}/* >/dev/null 2>&1
+	echo "${WHITE_FG}DEVELOPMENT FILES${RESET}" >&2
 
-	echo "${WHITE_FG}DEVELOPMENT${RESET}" >&2
 	BIN_LIST=("${(f)$(find /usr/local/bin -type f ! -path /usr/local/bin)}")
-	LIST=("${(f)$(find ~/Code/LOCAL -maxdepth 1 -type d)}")
+	DEV_DIRS=("${(f)$(find ${_SRC_CODE} -maxdepth 1 -type d)}")
 
-	for L in ${LIST};do
-		DEV_LIST[${L:t}]=1
+	for D in ${DEV_DIRS};do
+		DEV_LIST[${D:t}]=1
 	done
 
 	for D in ${BIN_LIST};do
-		[[ ${DEV_LIST[${D:t}]} -eq 1 ]] && cp -r ${_DEV_DIR}/${D:t} ${_DEV}
+		[[ ${DEV_LIST[${D:t}]} -eq 1 ]] && cp -r ${_SRC_CODE}/${D:t} ${_REPO_LOCAL} # Copy source for active development
 	done
-
-	cp -r ${_DEV_DIR}/LIBS/scratch ${_DEV}
-	cp -r ${_DEV_DIR}/spanish_quiz ${_DEV}
-	cp -r ${_DEV_DIR}/takeout ${_DEV}
-	cp -r ${_DEV_DIR}/manage_db ${_DEV}
+ 
+	cp -r ${_SRC_CODE}/LIBS/scratch ${_REPO_LOCAL}
+	cp -r ${_SRC_CODE}/spanish_quiz ${_REPO_LOCAL}
+	cp -r ${_SRC_CODE}/takeout ${_REPO_LOCAL}
+	cp -r ${_SRC_CODE}/manage_db ${_REPO_LOCAL}
 }
 
-copy_zsh_lib_utils () {
-	echo "${WHITE_FG}ZSH LIB UTILS${RESET}" >&2
-	for L in ${_ZSH_LIB};do
-		cp "${L}" ${_ZSH_LIB_UTILS}
-	done
-}
+copy_etc_files () {
+	local -a LOCAL_ETC_FILES=("${(f)$(find ${_SRC_LOCAL_ETC} -maxdepth 1 -type f)}")
+	local L
 
-copy_non_lib_utils () {
-	echo "${WHITE_FG}ZSH NON LIB UTILS${RESET}" >&2
-	for L in ${_ZSH_NON_LIB};do
-		cp "${L}" ${_ZSH_NON_LIB_UTILS}
+	echo "${WHITE_FG}ETC SUPPORT FILES${RESET}" >&2
+
+	for L in ${LOCAL_ETC_FILES};do
+		cp "${L}" ${_REPO_LOCAL_ETC}
 	done
+
+	cp -r ${_SRC_LOCAL_ETC}/tips ${_REPO_LOCAL_ETC}
 }
 
 copy_non_zsh_utils () {
 	echo "${WHITE_FG}NON ZSH UTILS${RESET}" >&2
-	for L in ${_NON_ZSH};do
-		cp "${L}" ${_NON_ZSH_UTILS}
+	for L in ${_NON_ZSH_UTILS};do
+		cp "${L}" ${_REPO_NON_ZSH_UTILS}
 	done
 }
 
-copy_conv_files () {
-	echo "${WHITE_FG}ULB CONVERSION FILES${RESET}" >&2
-	rsync -a ${_UL_BIN_CONV_DIR} ${_ZSH_LIB_UTILS}
+copy_pyscript_files () {
+	echo "${WHITE_FG}PYTHON SCRIPT FILES${RESET}" >&2
+	rsync -a ${_SRC_BIN_PYSCRIPTS} ${_REPO_ZSH_LIB_UTILS}
 }
 
-copy_py_files () {
-	echo "${WHITE_FG}ULB PYTHON SCRIPT FILES${RESET}" >&2
-	rsync -a ${_UL_BIN_PY_DIR} ${_ZSH_LIB_UTILS}
-}
+copy_python_dev_files () {
+	local -a RS_EXCL=()
 
-copy_zsh_libs () {
-	echo "${WHITE_FG}ZSH LIBS${RESET}" >&2
-	ZSH_LIBS=("${(f)$(find ${_UL_LIB_DIR} -maxdepth 1 -type f)}")
-	for L in ${ZSH_LIBS};do
-		cp "${L}" ${_ZSH_LIB_MODULES}
-	done
+	RS_EXCL+=(--exclude='lib')
+	RS_EXCL+=(--exclude='bin')
+	RS_EXCL+=(--exclude='.git')
+	RS_EXCL+=(--exclude='.idea')
+
+	echo "${WHITE_FG}PYTHON PROJECT FILES${RESET}" >&2
+	rsync -a --no-links --exclude 'lib' ${RS_EXCL} /home/kmiller/Code/LANG/Python/PROJECTS/ts /home/kmiller/Code/REPO/PYTHON
 }
 
 copy_sys_files () {
 	echo "${WHITE_FG}SYSTEM FILES${RESET}" >&2
-	rsync -a --no-links ${_UL_BIN_SYS_DIR} ${_SYSTEM}
-}
-
-copy_etc_files () {
-	echo "${WHITE_FG}ETC SUPPORT FILES${RESET}" >&2
-	for L in ${_UL_ETC_FILES};do
-		cp "${L}" ${_ETC_SUPPORT}
-	done
-}
-
-copy_zsh_cfg_files () {
-	echo "${WHITE_FG}ZSH CONFIG FILES${RESET}" >&2
-	for L in ${_ZSH_CFG_FILES};do
-		cp "${L}" ${_ZSH_CFG}
-	done
-	sudo rsync -a --no-links ${_ZSH_DIR} ${_ZSH_CFG_USER}
-	cp ${HOME}/.zshrc ${_ZSH_CFG_USER}
-	cp ${HOME}/.zsh_history ${_ZSH_CFG_USER}
-}
-
-copy_vim_cfg_files () {
-	echo "${WHITE_FG}VIM CONFIG FILES${RESET}" >&2
-	sudo rsync -a --no-links --exclude='undo' ${_VIM_DIR} ${_VIM_CFG}
-	cp ~/.vimrc ${_VIM_CFG_USER}
-}
-
-copy_python_files () {
-	echo "${WHITE_FG}PYTHON PROJECT FILES${RESET}" >&2
-	rsync -a ${_PYTHON_DIR} ${_PYTHON}
-	/bin/rm -f ${_PYTHON}/PROJECTS/ts/venv/.gitignore
-	/bin/rm -f ${_PYTHON}/PROJECTS/ts/.idea/.gitignore
-	/bin/rm -f ${_PYTHON}/PROJECTS/st/venv/.gitignore
-	/bin/rm -f ${_PYTHON}/PROJECTS/st/.idea/.gitignore
+	rsync -a --no-links ${_SRC_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
 }
 
 copy_user_files () {
 	echo "${WHITE_FG}USER FILES${RESET}" >&2
-	cp -R ${HOME}/.mvq ${_USER_DIR} 2>/dev/null
-	cp -R ${HOME}/.yts ${_USER_DIR} 2>/dev/null
-	cp -R ${HOME}/.openvpn3 ${_USER_DIR} 2>/dev/null
-	cp -R ${HOME}/Code/LOCAL/ovpn/ovpn ${_USER_DIR} 2>/dev/null
+	cp -R ${HOME}/.mvq ${_REPO_USER} 2>/dev/null
+	cp -R ${HOME}/.yts ${_REPO_USER} 2>/dev/null
+	cp -R ${HOME}/.openvpn3 ${_REPO_USER} 2>/dev/null
+	cp -R ${HOME}/Code/LOCAL/ovpn/ovpn ${_REPO_USER} 2>/dev/null
+}
+
+copy_vim_cfg_files () {
+	echo "${WHITE_FG}VIM CONFIG FILES${RESET}" >&2
+	sudo rsync -a --no-links --exclude='undo' ${_SRC_VIM_CFG} ${_REPO_VIM_CFG}
+	cp ~/.vimrc ${_REPO_VIM_CFG_USER}
+}
+
+copy_zsh_cfg_files () {
+	local -a REPO_ZSH_CFG_FILES=("${(f)$(find ${_SRC_ZSH_CFG} -maxdepth 1 -type f)}")
+	local L
+
+	echo "${WHITE_FG}ZSH CONFIG FILES${RESET}" >&2
+
+	for L in ${REPO_ZSH_CFG_FILES};do
+		cp "${L}" ${_REPO_ZSH_CFG}
+	done
+
+	sudo rsync -a --no-links ${_SRC_ZSH_CFG_USER} ${_REPO_ZSH_CFG_USER}
+	cp ${HOME}/.zshrc ${_REPO_ZSH_CFG_USER}
+	cp ${HOME}/.zsh_history ${_REPO_ZSH_CFG_USER}
+}
+
+copy_zsh_libs () {
+	local -a ZSH_LIBS=()
+	local L
+
+	echo "${WHITE_FG}ZSH LIBS${RESET}" >&2
+	ZSH_LIBS=("${(f)$(find ${_SRC_LIB} -maxdepth 1 -name '*zsh' -type f)}")
+	for L in ${ZSH_LIBS};do
+		cp "${L}" ${_REPO_ZSH_LIB}
+	done
+}
+
+copy_zsh_lib_utils () {
+	echo "${WHITE_FG}ZSH LIB UTILS${RESET}" >&2
+	for L in ${_ZSH_LIB_UTILS};do
+		cp "${L}" ${_REPO_ZSH_LIB_UTILS}
+	done
+}
+
+copy_zsh_non_lib_utils () {
+	echo "${WHITE_FG}ZSH NON LIB UTILS${RESET}" >&2
+	for L in ${_ZSH_NON_LIB_UTILS};do
+		cp "${L}" ${_REPO_ZSH_NON_LIB_UTILS}
+	done
 }
 
 # Execution
 
-pushd ~/Code
+# Build repo
+echo -n "${GREEN_FG}Building repo${RESET}..."
+if [[ -e ${_REPO} ]];then
+	if [[ -e ${_REPO}/.git ]];then
+		/bin/rm -rf ${_SRC_BIN_SYS}/repo_utils/.git
+		mv ${_REPO}/.git ${_SRC_BIN_SYS}/repo_utils # Set aside .git repo
+	fi
+	/bin/rm -rf ${_REPO} && mkdir -p ${_REPO}
+	cp ${_SRC_BIN_SYS}/repo_utils/* ${_REPO} # Git support files
+	cp -r ${_SRC_BIN_SYS}/repo_utils/.* ${_REPO} # Git repo
+fi
+echo "${GREEN_FG}built${RESET}\n"
 
-# Build tree
-#[[ -e ${_REPO} ]] && /bin/rm -rf ${_REPO}
-#[[ ! -e ${_REPO} ]] && mkdir -p ${_REPO}
-[[ ! -e ${_USER_DIR} ]] && mkdir -p ${_USER_DIR}
-[[ ! -e ${_DEV} ]] && mkdir -p ${_DEV}
-[[ ! -e ${_ETC_SUPPORT} ]] && mkdir -p ${_ETC_SUPPORT}
-[[ ! -e ${_PYTHON} ]] && mkdir -p ${_PYTHON}
-[[ ! -e ${_SYSTEM} ]] && mkdir -p ${_SYSTEM}
-[[ ! -e ${_VIM_CFG} ]] && mkdir -p ${_VIM_CFG}
-[[ ! -e ${_VIM_CFG_USER} ]] && mkdir -p ${_VIM_CFG_USER}
-[[ ! -e ${_ZSH_CFG} ]] && mkdir -p ${_ZSH_CFG}
-[[ ! -e ${_ZSH_CFG_USER} ]] && mkdir -p ${_ZSH_CFG_USER}
-[[ ! -e ${_ZSH_LIB_MODULES} ]] && mkdir -p ${_ZSH_LIB_MODULES}
-[[ ! -e ${_ZSH_LIB_UTILS} ]] && mkdir -p ${_ZSH_LIB_UTILS}
-[[ ! -e ${_ZSH_NON_LIB_UTILS} ]] && mkdir -p ${_ZSH_NON_LIB_UTILS}
-[[ ! -e ${_NON_ZSH_UTILS} ]] && mkdir -p ${_NON_ZSH_UTILS}
-
-# Readme
-cp ./README.md ${_REPO}
-
-# Updater
-cp ./do_commit ${_REPO}
+[[ ! -e ${_REPO_USER} ]] && mkdir -p ${_REPO_USER}
+[[ ! -e ${_REPO_LOCAL} ]] && mkdir -p ${_REPO_LOCAL}
+[[ ! -e ${_REPO_LOCAL_ETC} ]] && mkdir -p ${_REPO_LOCAL_ETC}
+[[ ! -e ${_REPO_PYTHON} ]] && mkdir -p ${_REPO_PYTHON}
+[[ ! -e ${_REPO_SYSTEM} ]] && mkdir -p ${_REPO_SYSTEM}
+[[ ! -e ${_REPO_VIM_CFG} ]] && mkdir -p ${_REPO_VIM_CFG}
+[[ ! -e ${_REPO_VIM_CFG_USER} ]] && mkdir -p ${_REPO_VIM_CFG_USER}
+[[ ! -e ${_REPO_ZSH_CFG} ]] && mkdir -p ${_REPO_ZSH_CFG}
+[[ ! -e ${_REPO_ZSH_CFG_USER} ]] && mkdir -p ${_REPO_ZSH_CFG_USER}
+[[ ! -e ${_REPO_ZSH_LIB} ]] && mkdir -p ${_REPO_ZSH_LIB}
+[[ ! -e ${_REPO_ZSH_LIB_UTILS} ]] && mkdir -p ${_REPO_ZSH_LIB_UTILS}
+[[ ! -e ${_REPO_ZSH_NON_LIB_UTILS} ]] && mkdir -p ${_REPO_ZSH_NON_LIB_UTILS}
+[[ ! -e ${_REPO_NON_ZSH_UTILS} ]] && mkdir -p ${_REPO_NON_ZSH_UTILS}
 
 # Organize /usr/local/bin
-_ULB=("${(f)$(file $(find ${_UL_BIN_DIR} -maxdepth 1 -type f))}")
+UTILS=("${(f)$(file $(find ${_SRC_BIN} -maxdepth 1 -type f))}")
 
-for L in ${_ULB};do
+for L in ${UTILS};do
 	FN=$(cut -d: -f1 <<<${L})
 	SIG=$(cut -d: -f2- <<<${L})
-	[[ ${SIG} =~ 'zsh' ]] && _ZSH+=${FN} || _NON_ZSH+=${FN}
+	[[ ${SIG} =~ 'zsh' ]] && _ZSH_UTILS+=${FN} || _NON_ZSH_UTILS+=${FN}
 done
 
-# zsh scripts  
-for L in ${_ZSH};do
-	if grep -q "ZSH_LIB_DIR" ${L};then
+# Divide zsh scripts  
+for L in ${_ZSH_UTILS};do
+	if grep -q "ZSH_LIB" ${L};then
 		# zsh lib utils
-		_ZSH_LIB+=${L}
+		_ZSH_LIB_UTILS+=${L}
 	else
 		# zsh non lib utils
-		_ZSH_NON_LIB+=${L}
+		_ZSH_NON_LIB_UTILS+=${L}
 	fi
 done
 
-LIST=("${(f)$(find ${_UL_LIB_DIR} -maxdepth 1 -type f)}")
-for L in ${LIST};do
-	[[ $(file ${L}) =~ 'zsh' ]] && _UL_LIB_ZSH_FILES+=${L} || continue
-done
-
-echo "Total lib utils:${#_ZSH_LIB}"
-echo "Total non lib utils:${#_NON_ZSH}"
-echo "Total non zsh utils:${#_ZSH_NON_LIB}"
-echo "Total library files:${#_UL_LIB_ZSH_FILES}"
-
-# Copy /usr/local/bin
+echo "${GREEN_FG}Copying files${RESET}..."
 copy_zsh_lib_utils
-copy_non_lib_utils
+copy_zsh_non_lib_utils
 copy_non_zsh_utils
 copy_zsh_libs
-copy_conv_files # Copy /usr/local/bin/conversion
-copy_py_files # Copy /usr/local/bin/__pyscripts__
-
-# system
-copy_sys_files # Copy /usr/local/bin/system
-copy_user_files # Copy ${HOME}
-
-# dev
+copy_conv_files
+copy_pyscript_files
+copy_sys_files 
+copy_user_files
 copy_dev_files
-echo "Total development directories:$(find ${_DEV} -maxdepth 1 -type d | wc -l)"
-echo "Total development files:$(find ${_DEV} -type f | wc -l)"
-
-# etc
-_UL_ETC_FILES=("${(f)$(find ${_UL_ETC_DIR} -maxdepth 1 -type f)}")
-echo "Total etc support files:${#_UL_ETC_FILES}"
 copy_etc_files
-
-# zsh
-_ZSH_CFG_FILES=("${(f)$(find ${_ZSH_CFG_DIR} -maxdepth 1 -type f)}")
-echo "Total zsh config files:${#_ZSH_CFG_FILES}"
-
 copy_zsh_cfg_files
-
-# vim
 copy_vim_cfg_files
-
-# python project files
-_PYTHON_FILES=("${(f)$(find ${_PYTHON_DIR} -maxdepth 3 -type f -name '*py')}")
-echo "Total python projects:${#_PYTHON_FILES}"
-copy_python_files
-
+copy_python_dev_files
+ 
+echo "\n${GREEN_FG}Summary${RESET}"
+echo $(str_unicode_line 36)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total development files" $(find ${_REPO_LOCAL} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total etc support files" $(find ${_REPO_LOCAL_ETC} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh library files" $(find ${_REPO_ZSH_LIB} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh lib util files" $(find ${_REPO_ZSH_LIB_UTILS} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh non lib files" $(find ${_REPO_ZSH_NON_LIB_UTILS} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total non zsh files" $(find ${_REPO_NON_ZSH_UTILS} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total python project files" $(find ${_REPO_PYTHON} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total system files" $(find ${_REPO_SYSTEM} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total vim config files" $(find ${_REPO_VIM_CFG} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total vim config user files" $(find ${_REPO_VIM_CFG_USER} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config files" $(find ${_REPO_ZSH_CFG} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config user files" $(find ${_REPO_ZSH_CFG_USER} -type f | wc -l)
+echo $(str_unicode_line 36)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
+echo
+  
 pushd ~/Code/REPO
 ./do_commit

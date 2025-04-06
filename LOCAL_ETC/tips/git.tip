@@ -1,0 +1,741 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat<<tip_git_EOF
+
+To reset repo to state of <COMMIT>
+	git reset --hard <COMMIT>
+If commit was pushed:
+	git push origin HEAD --force
+
+${E_CYAN_FG}Setup${E_RESET}
+${E_CYAN_FG}-----${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} clone <repo>
+  clone the repository specified by <repo>; this is similar to "checkout" in
+  some other version control systems such as Subversion and CVS
+
+Add colors to your ~/.${E_WHITE_FG}git${E_RESET}config file:
+
+  [color]
+    ui = auto
+  [color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+  [color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+  [color "status"]
+    added = yellow
+    changed = green
+    untracked = cyan
+
+Highlight whitespace in diffs
+
+  [color]
+    ui = true
+  [color "diff"]
+    whitespace = red reverse
+  [core]
+    whitespace=fix,-indent-with-non-tab,trailing-space,cr-at-eol
+
+Add aliases to your ~/.${E_WHITE_FG}git${E_RESET}config file:
+
+  [alias]
+    st = status
+    ci = commit
+    br = branch
+    co = checkout
+    df = diff
+    dc = diff --cached
+    lg = log -p
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+    ls = ls-files
+
+    # Show files ignored by ${E_WHITE_FG}git${E_RESET}:
+    ign = ls-files -o -i --exclude-standard
+
+
+${E_CYAN_FG}Configuration${E_RESET}
+${E_CYAN_FG}-------------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} config -e [--global]
+  edit the .${E_WHITE_FG}git${E_RESET}/config [or ~/.${E_WHITE_FG}git${E_RESET}config] file in your \${EDITOR}
+
+${E_WHITE_FG}git${E_RESET} config --global user.name 'John Doe'
+${E_WHITE_FG}git${E_RESET} config --global user.email johndoe@example.com
+  sets your name and email for commit messages
+
+${E_WHITE_FG}git${E_RESET} config branch.autosetupmerge true
+  tells ${E_WHITE_FG}git${E_RESET}-branch and ${E_WHITE_FG}git${E_RESET}-checkout to setup new branches so that ${E_WHITE_FG}git${E_RESET}-pull(1)
+  will appropriately merge from that remote branch.  Recommended.  Without this,
+  you will have to add --track to your branch command or manually merge remote
+  tracking branches with "fetch" and then "merge".
+
+${E_WHITE_FG}git${E_RESET} config core.autocrlf true
+  This setting tells ${E_WHITE_FG}git${E_RESET} to convert the newlines to the system's standard
+  when checking out files, and to LF newlines when committing in
+
+${E_WHITE_FG}git${E_RESET} config --list
+  To view all options
+
+${E_WHITE_FG}git${E_RESET} config apply.whitespace nowarn
+  To ignore whitespace
+
+You can add "--global" after "${E_WHITE_FG}git${E_RESET} config" to any of these commands to make it
+apply to all ${E_WHITE_FG}git${E_RESET} repos (writes to ~/.${E_WHITE_FG}git${E_RESET}config).
+
+
+${E_CYAN_FG}Info
+${E_CYAN_FG}----${E_RESET}
+${E_WHITE_FG}git${E_RESET} reflog
+  Use this to recover from *major* mess ups! It's basically a log of the
+  last few actions and you might have luck and find old commits that
+  have been lost by doing a complex merge.
+
+${E_WHITE_FG}git${E_RESET} diff
+  show a diff of the changes made since your last commit
+  to diff one file: "${E_WHITE_FG}git${E_RESET} diff -- <filename>"
+  to show a diff between staging area and HEAD: '${E_WHITE_FG}git${E_RESET} diff --cached'
+
+${E_WHITE_FG}git${E_RESET} status
+  show files added to the staging area, files with changes, and untracked files
+
+${E_WHITE_FG}git${E_RESET} log
+  show recent commits, most recent on top. Useful options:
+  --color       with color
+  --graph       with an ASCII-art commit graph on the left
+  --decorate    with branch and tag names on appropriate commits
+  --stat        with stats (files changed, insertions, and deletions)
+  -p            with full diffs
+  --author=foo  only by a certain author
+  --after="MMM DD YYYY" ex. ("Jun 20 2008") only commits after a certain date
+  --before="MMM DD YYYY" only commits that occur before a certain date
+  --merge       only the commits involved in the current merge conflicts
+
+${E_WHITE_FG}git${E_RESET} log <ref>..<ref>
+  show commits between the specified range. Useful for seeing changes from
+  remotes:
+  ${E_WHITE_FG}git${E_RESET} log HEAD..origin/master # After ${E_WHITE_FG}git${E_RESET} remote update
+
+${E_WHITE_FG}git${E_RESET} show <rev>
+  show the changeset (diff) of a commit specified by <rev>, which can be any
+  SHA1 commit ID, branch name, or tag (shows the last commit (HEAD) by default)
+
+  also to show the contents of a file at a specific revision, use 
+     ${E_WHITE_FG}git${E_RESET} show <rev>:<filename>
+  this is similar to cat-file but much simpler syntax.
+
+${E_WHITE_FG}git${E_RESET} show --name-only <rev>
+  show only the names of the files that changed, no diff information.
+
+${E_WHITE_FG}git${E_RESET} blame <file>
+  show who authored each line in <file>
+
+${E_WHITE_FG}git${E_RESET} blame <file> <rev>
+  show who authored each line in <file> as of <rev> (allows blame to go back in
+  time)
+
+${E_WHITE_FG}git${E_RESET} gui blame
+  really nice GUI interface to ${E_WHITE_FG}git${E_RESET} blame
+
+${E_WHITE_FG}git${E_RESET} whatchanged <file>
+  show only the commits which affected <file> listing the most recent first
+  E.g. view all changes made to a file on a branch:
+    ${E_WHITE_FG}git${E_RESET} whatchanged <branch> <file>  | grep commit | 
+         colrm 1 7 | xargs -I % ${E_WHITE_FG}git${E_RESET} show % <file>
+  this could be combined with ${E_WHITE_FG}git${E_RESET} remote show <remote> to find all changes on
+  all branches to a particular file.
+
+${E_WHITE_FG}git${E_RESET} diff <commit> head path/to/fubar
+  show the diff between a file on the current branch and potentially another
+  branch
+
+${E_WHITE_FG}git${E_RESET} diff --cached [<file>]
+  shows diff for staged (${E_WHITE_FG}git${E_RESET}-add'ed) files (which includes uncommitted ${E_WHITE_FG}git${E_RESET}
+  cherry-pick'ed files)
+
+${E_WHITE_FG}git${E_RESET} ls-files
+  list all files in the index and under version control.
+
+${E_WHITE_FG}git${E_RESET} ls-remote <remote> [HEAD]
+  show the current version on the remote repo. This can be used to check whether
+  a local is required by comparing the local head revision.
+
+${E_CYAN_FG}Adding / Deleting${E_RESET}
+${E_CYAN_FG}-----------------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} add <file1> <file2> ...
+  add <file1>, <file2>, etc... to the project
+
+${E_WHITE_FG}git${E_RESET} add <dir>
+  add all files under directory <dir> to the project, including subdirectories
+
+${E_WHITE_FG}git${E_RESET} add .
+  add all files under the current directory to the project
+  *WARNING*: including untracked files.
+
+${E_WHITE_FG}git${E_RESET} rm <file1> <file2> ...
+  remove <file1>, <file2>, etc... from the project
+
+${E_WHITE_FG}git${E_RESET} rm \$(${E_WHITE_FG}git${E_RESET} ls-files --deleted)
+  remove all deleted files from the project
+
+${E_WHITE_FG}git${E_RESET} rm --cached <file1> <file2> ...
+  commits absence of <file1>, <file2>, etc... from the project
+
+${E_CYAN_FG}Ignoring${E_RESET}
+${E_CYAN_FG}---------${E_RESET}
+
+Option 1:
+
+Edit \${GIT_DIR}/info/exclude. See Environment Variables below for explanation on
+\${GIT_DIR}.
+
+Option 2:
+
+Add a file .${E_WHITE_FG}git${E_RESET}ignore to the root of your project. This file will be checked in.
+
+Either way you need to add patterns to exclude to these files.
+
+${E_CYAN_FG}Staging${E_RESET}
+${E_CYAN_FG}-------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} add <file1> <file2> ...
+${E_WHITE_FG}git${E_RESET} stage <file1> <file2> ...
+  add changes in <file1>, <file2> ... to the staging area (to be included in
+  the next commit
+
+${E_WHITE_FG}git${E_RESET} add -p
+${E_WHITE_FG}git${E_RESET} stage --patch
+  interactively walk through the current changes (hunks) in the working
+  tree, and decide which changes to add to the staging area.
+
+${E_WHITE_FG}git${E_RESET} add -i
+${E_WHITE_FG}git${E_RESET} stage --interactive
+  interactively add files/changes to the staging area. For a simpler
+  mode (no menu), try '${E_WHITE_FG}git${E_RESET} add --patch' (above)
+
+${E_CYAN_FG}Unstaging${E_RESET}
+${E_CYAN_FG}---------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} reset HEAD <file1> <file2> ...
+  remove the specified files from the next commit
+
+
+${E_CYAN_FG}Committing${E_RESET}
+${E_CYAN_FG}----------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} commit <file1> <file2> ... [-m <msg>]
+  commit <file1>, <file2>, etc..., optionally using commit message <msg>,
+  otherwise opening your editor to let you type a commit message
+
+${E_WHITE_FG}git${E_RESET} commit -a
+  commit all files changed since your last commit
+  (does not include new (untracked) files)
+
+${E_WHITE_FG}git${E_RESET} commit -v
+  commit verbosely, i.e. includes the diff of the contents being committed in
+  the commit message screen
+
+${E_WHITE_FG}git${E_RESET} commit --amend
+  edit the commit message of the most recent commit
+
+${E_WHITE_FG}git${E_RESET} commit --amend <file1> <file2> ...
+  redo previous commit, including changes made to <file1>, <file2>, etc...
+
+
+${E_CYAN_FG}Branching${E_RESET}
+${E_CYAN_FG}---------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} branch
+  list all local branches
+
+${E_WHITE_FG}git${E_RESET} branch -r
+  list all remote branches
+
+${E_WHITE_FG}git${E_RESET} branch -a
+  list all local and remote branches
+
+${E_WHITE_FG}git${E_RESET} branch <branch>
+  create a new branch named <branch>, referencing the same point in history as
+  the current branch
+
+${E_WHITE_FG}git${E_RESET} branch <branch> <start-point>
+  create a new branch named <branch>, referencing <start-point>, which may be
+  specified any way you like, including using a branch name or a tag name
+
+${E_WHITE_FG}git${E_RESET} push <repo> <start-point>:refs/heads/<branch>
+  create a new remote branch named <branch>, referencing <start-point> on the
+  remote. Repo is the name of the remote.
+  Example: ${E_WHITE_FG}git${E_RESET} push origin origin:refs/heads/branch-1
+  Example: ${E_WHITE_FG}git${E_RESET} push origin origin/branch-1:refs/heads/branch-2
+  Example: ${E_WHITE_FG}git${E_RESET} push origin branch-1 ## shortcut
+
+${E_WHITE_FG}git${E_RESET} branch --track <branch> <remote-branch>
+  create a tracking branch. Will push/pull changes to/from another repository.
+  Example: ${E_WHITE_FG}git${E_RESET} branch --track experimental origin/experimental
+
+${E_WHITE_FG}git${E_RESET} branch --set-upstream <branch> <remote-branch> (As of Git 1.7.0)
+  Make an existing branch track a remote branch
+  Example: ${E_WHITE_FG}git${E_RESET} branch --set-upstream foo origin/foo
+
+${E_WHITE_FG}git${E_RESET} branch -d <branch>
+  delete the branch <branch>; if the branch you are deleting points to a
+  commit which is not reachable from the current branch, this command
+  will fail with a warning.
+
+${E_WHITE_FG}git${E_RESET} branch -r -d <remote-branch>
+  delete a remote-tracking branch.
+  Example: ${E_WHITE_FG}git${E_RESET} branch -r -d wycats/master
+
+${E_WHITE_FG}git${E_RESET} branch -D <branch>
+  even if the branch points to a commit not reachable from the current branch,
+  you may know that that commit is still reachable from some other branch or
+  tag. In that case it is safe to use this command to force ${E_WHITE_FG}git${E_RESET} to delete the
+  branch.
+
+${E_WHITE_FG}git${E_RESET} checkout <branch>
+  make the current branch <branch>, updating the working directory to reflect
+  the version referenced by <branch>
+
+${E_WHITE_FG}git${E_RESET} checkout -b <new> <start-point>
+  create a new branch <new> referencing <start-point>, and check it out.
+
+${E_WHITE_FG}git${E_RESET} push <repository> :<branch>
+  removes a branch from a remote repository.
+  Example: ${E_WHITE_FG}git${E_RESET} push origin :old_branch_to_be_deleted
+
+${E_WHITE_FG}git${E_RESET} co <branch> <path to new file>
+  Checkout a file from another branch and add it to this branch. File
+  will still need to be added to the ${E_WHITE_FG}git${E_RESET} branch, but it's present.
+  Eg. ${E_WHITE_FG}git${E_RESET} co remote_at_origin__tick702_antifraud_blocking
+  ..../...nt_elements_for_iframe_blocked_page.rb
+
+${E_WHITE_FG}git${E_RESET} show <branch> -- <path to file that does not exist>
+  Eg. ${E_WHITE_FG}git${E_RESET} show remote_tick702 -- path/to/fubar.txt
+  show the contents of a file that was created on another branch and that
+  does not exist on the current branch.
+
+${E_WHITE_FG}git${E_RESET} show <rev>:<repo path to file>
+  Show the contents of a file at the specific revision. Note: path has to be
+  absolute within the repo.
+
+${E_CYAN_FG}Merging${E_RESET}
+${E_CYAN_FG}-------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} merge <branch>
+  merge branch <branch> into the current branch; this command is idempotent
+  and can be run as many times as needed to keep the current branch
+  up-to-date with changes in <branch>
+
+${E_WHITE_FG}git${E_RESET} merge <branch> --no-commit
+  merge branch <branch> into the current branch, but do not autocommit the
+  result; allows you to make further tweaks
+
+${E_WHITE_FG}git${E_RESET} merge <branch> -s ours
+  merge branch <branch> into the current branch, but drops any changes in
+  <branch>, using the current tree as the new tree
+
+
+${E_CYAN_FG}Cherry-Picking${E_RESET}
+${E_CYAN_FG}--------------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} cherry-pick [--edit] [-n] [-m parent-number] [-s] [-x] <commit>
+  selectively merge a single commit from another local branch
+  Example: ${E_WHITE_FG}git${E_RESET} cherry-pick 7300a6130d9447e18a931e898b64eefedea19544
+
+
+${E_CYAN_FG}Squashing${E_RESET}
+${E_CYAN_FG}---------${E_RESET}
+WARNING: "${E_WHITE_FG}git${E_RESET} rebase" changes history. Be careful. Google it.
+
+${E_WHITE_FG}git${E_RESET} rebase --interactive HEAD~10
+  (then change all but the first "pick" to "squash")
+  squash the last 10 commits into one big commit
+
+
+${E_CYAN_FG}Conflicts${E_RESET}
+${E_CYAN_FG}---------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} mergetool
+  work through conflicted files by opening them in your mergetool (opendiff,
+  kdiff3, etc.) and choosing left/right chunks. The merged result is staged for
+  commit.
+
+For binary files or if mergetool won't do, resolve the conflict(s) manually
+and then do:
+
+  ${E_WHITE_FG}git${E_RESET} add <file1> [<file2> ...]
+
+Once all conflicts are resolved and staged, commit the pending merge with:
+
+  ${E_WHITE_FG}git${E_RESET} commit
+
+
+${E_CYAN_FG}Sharing${E_RESET}
+${E_CYAN_FG}-------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} fetch <remote>
+  update the remote-tracking branches for <remote> (defaults to "origin").
+  Does not initiate a merge into the current branch (see "${E_WHITE_FG}git${E_RESET} pull" below).
+
+${E_WHITE_FG}git${E_RESET} pull
+  fetch changes from the server, and merge them into the current branch.
+  Note: .${E_WHITE_FG}git${E_RESET}/config must have a [branch "some_name"] section for the current
+  branch, to know which remote-tracking branch to merge into the current
+  branch.  Git 1.5.3 and above adds this automatically.
+
+${E_WHITE_FG}git${E_RESET} push
+  update the server with your commits across all branches that are *COMMON*
+  between your local copy and the server.  Local branches that were never
+  pushed to the server in the first place are not shared.
+
+${E_WHITE_FG}git${E_RESET} push origin <branch>
+  update the server with your commits made to <branch> since your last push.
+  This is always *required* for new branches that you wish to share. After
+  the first explicit push, "${E_WHITE_FG}git${E_RESET} push" by itself is sufficient.
+
+${E_WHITE_FG}git${E_RESET} push origin <branch>:refs/heads/<branch>
+  E.g. ${E_WHITE_FG}git${E_RESET} push origin twitter-experiment:refs/heads/twitter-experiment
+  Which, in fact, is the same as ${E_WHITE_FG}git${E_RESET} push origin <branch> but a little
+  more obvious what is happening.
+
+${E_CYAN_FG}Reverting${E_RESET}
+${E_CYAN_FG}---------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} revert <rev>
+  reverse commit specified by <rev> and commit the result.  This does *not* do
+  the same thing as similarly named commands in other VCS's such as "svn
+  revert" or "bzr revert", see below
+
+${E_WHITE_FG}git${E_RESET} checkout <file>
+  re-checkout <file>, overwriting any local changes
+
+${E_WHITE_FG}git${E_RESET} checkout .
+  re-checkout all files, overwriting any local changes.  This is most similar
+  to "svn revert" if you're used to Subversion commands
+
+
+${E_CYAN_FG}Fix mistakes / Undo${E_RESET}
+${E_CYAN_FG}-------------------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} reset --hard
+  abandon everything since your last commit; this command can be DANGEROUS.
+  If merging has resulted in conflicts and you'd like to just forget about
+  the merge, this command will do that.
+
+${E_WHITE_FG}git${E_RESET} reset --hard ORIG_HEAD or ${E_WHITE_FG}git${E_RESET} reset --hard origin/master 
+  undo your most recent *successful* merge *and* any changes that occurred
+  after.  Useful for forgetting about the merge you just did.  If there are
+  conflicts (the merge was not successful), use "${E_WHITE_FG}git${E_RESET} reset --hard" (above)
+  instead.
+
+${E_WHITE_FG}git${E_RESET} reset --soft HEAD^
+  forgot something in your last commit? That's easy to fix. Undo your last
+  commit, but keep the changes in the staging area for editing.
+
+${E_WHITE_FG}git${E_RESET} commit --amend
+  redo previous commit, including changes you've staged in the meantime.
+  Also used to edit commit message of previous commit.
+
+
+${E_CYAN_FG}Plumbing${E_RESET}
+${E_CYAN_FG}--------${E_RESET}
+
+test <sha1-A> = \$(${E_WHITE_FG}git${E_RESET} merge-base <sha1-A> <sha1-B>)
+  determine if merging sha1-B into sha1-A is achievable as a fast forward;
+  non-zero exit status is false.
+
+
+${E_CYAN_FG}Stashing${E_RESET}
+${E_CYAN_FG}--------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} stash
+${E_WHITE_FG}git${E_RESET} stash save <optional-name>
+  save your local modifications to a new stash (so you can for example
+  "${E_WHITE_FG}git${E_RESET} svn rebase" or "${E_WHITE_FG}git${E_RESET} pull")
+
+${E_WHITE_FG}git${E_RESET} stash apply
+  restore the changes recorded in the stash on top of the current working tree
+  state
+
+${E_WHITE_FG}git${E_RESET} stash pop
+  restore the changes from the most recent stash, and remove it from the stack
+  of stashed changes
+
+${E_WHITE_FG}git${E_RESET} stash list
+  list all current stashes
+
+${E_WHITE_FG}git${E_RESET} stash show <stash-name> -p
+  show the contents of a stash - accepts all diff args
+
+${E_WHITE_FG}git${E_RESET} stash drop [<stash-name>]
+  delete the stash
+
+${E_WHITE_FG}git${E_RESET} stash clear
+  delete all current stashes
+
+
+${E_CYAN_FG}Remotes${E_RESET}
+${E_CYAN_FG}-------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} remote add <remote> <remote_URL>
+  adds a remote repository to your ${E_WHITE_FG}git${E_RESET} config.  Can be then fetched locally.
+  Example:
+    ${E_WHITE_FG}git${E_RESET} remote add coreteam ${E_WHITE_FG}git${E_RESET}://${E_WHITE_FG}git${E_RESET}hub.com/wycats/merb-plugins.${E_WHITE_FG}git${E_RESET}
+    ${E_WHITE_FG}git${E_RESET} fetch coreteam
+
+${E_WHITE_FG}git${E_RESET} push <remote> :refs/heads/<branch>
+  delete a branch in a remote repository
+
+${E_WHITE_FG}git${E_RESET} push <remote> <remote>:refs/heads/<remote_branch>
+  create a branch on a remote repository
+  Example: ${E_WHITE_FG}git${E_RESET} push origin origin:refs/heads/new_feature_name
+
+${E_WHITE_FG}git${E_RESET} push <repository> +<remote>:<new_remote>
+  replace a <remote> branch with <new_remote>
+  think twice before do this
+  Example: ${E_WHITE_FG}git${E_RESET} push origin +master:my_branch
+
+${E_WHITE_FG}git${E_RESET} remote prune <remote>
+  prune deleted remote-tracking branches from "${E_WHITE_FG}git${E_RESET} branch -r" listing
+
+${E_WHITE_FG}git${E_RESET} remote add -t master -m master origin ${E_WHITE_FG}git${E_RESET}://example.com/${E_WHITE_FG}git${E_RESET}.${E_WHITE_FG}git${E_RESET}/
+  add a remote and track its master
+
+${E_WHITE_FG}git${E_RESET} remote show <remote>
+  show information about the remote server.
+
+${E_WHITE_FG}git${E_RESET} checkout -b <local branch> <remote>/<remote branch>
+  Eg ${E_WHITE_FG}git${E_RESET} checkout -b myfeature origin/myfeature
+  Track a remote branch as a local branch.
+
+${E_WHITE_FG}git${E_RESET} pull <remote> <branch>
+${E_WHITE_FG}git${E_RESET} push
+  For branches that are remotely tracked (via ${E_WHITE_FG}git${E_RESET} push) but
+  that complain about non-fast forward commits when doing a
+  ${E_WHITE_FG}git${E_RESET} push. The pull synchronizes local and remote, and if
+  all goes well, the result is pushable.
+
+${E_WHITE_FG}git${E_RESET} fetch <remote>
+  Retrieves all branches from the remote repository. After
+  this '${E_WHITE_FG}git${E_RESET} branch --track ...' can be used to track a branch
+  from the new remote.
+
+${E_CYAN_FG}Submodules${E_RESET}
+${E_CYAN_FG}----------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} submodule add <remote_repository> <path/to/submodule>
+  add the given repository at the given path. The addition will be part of the
+  next commit.
+
+${E_WHITE_FG}git${E_RESET} submodule update [--init]
+  Update the registered submodules (clone missing submodules, and checkout
+  the commit specified by the super-repo). --init is needed the first time.
+
+${E_WHITE_FG}git${E_RESET} submodule foreach <command>
+  Executes the given command within each checked out submodule.
+
+Removing submodules
+
+   1. Delete the relevant line from the .${E_WHITE_FG}git${E_RESET}modules file.
+   2. Delete the relevant section from .${E_WHITE_FG}git${E_RESET}/config.
+   3. Run ${E_WHITE_FG}git${E_RESET} rm --cached path_to_submodule (no trailing slash).
+   4. Commit and delete the now untracked submodule files.
+
+Updating submodules
+  To update a submodule to a new commit:
+    1. update submodule:
+        cd <path to submodule>
+        ${E_WHITE_FG}git${E_RESET} pull
+    2. commit the new version of submodule:
+        cd <path to toplevel>
+        ${E_WHITE_FG}git${E_RESET} commit -m "update submodule version"
+    3. check that the submodule has the correct version
+        ${E_WHITE_FG}git${E_RESET} submodule status
+  If the update in the submodule is not committed in the
+  main repository, it is lost and doing ${E_WHITE_FG}git${E_RESET} submodule
+  update will revert to the previous version.
+
+${E_CYAN_FG}Patches${E_RESET}
+${E_CYAN_FG}-------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} format-patch HEAD^
+  Generate the last commit as a patch that can be applied on another
+  clone (or branch) using '${E_WHITE_FG}git${E_RESET} am'. Format patch can also generate a
+  patch for all commits using '${E_WHITE_FG}git${E_RESET} format-patch HEAD^ HEAD'
+  All page files will be enumerated with a prefix, e.g. 0001 is the
+  first patch.
+
+${E_WHITE_FG}git${E_RESET} format-patch <Revision>^..<Revision>
+  Generate a patch for a single commit. E.g.
+    ${E_WHITE_FG}git${E_RESET} format-patch d8efce43099^..d8efce43099
+  Revision does not need to be fully specified.
+
+${E_WHITE_FG}git${E_RESET} am <patch file>
+  Applies the patch file generated by format-patch.
+
+${E_WHITE_FG}git${E_RESET} diff --no-prefix > patchfile
+  Generates a patch file that can be applied using patch:
+    patch -p0 < patchfile
+  Useful for sharing changes without generating a ${E_WHITE_FG}git${E_RESET} commit.
+
+${E_CYAN_FG}Tags
+${E_CYAN_FG}----${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} tag -l
+  Will list all tags defined in the repository.
+
+${E_WHITE_FG}git${E_RESET} co <tag_name>
+  Will checkout the code for a particular tag. After this you'll
+  probably want to do: '${E_WHITE_FG}git${E_RESET} co -b <some branch name>' to define
+  a branch. Any changes you now make can be committed to that
+  branch and later merged.
+
+${E_CYAN_FG}Archive${E_RESET}
+${E_CYAN_FG}-------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} archive master | tar -x -C /somewhere/else
+  Will export expanded tree as tar archive at given path
+
+${E_WHITE_FG}git${E_RESET} archive master | bzip2 > source-tree.tar.bz2
+  Will export archive as bz2
+
+${E_WHITE_FG}git${E_RESET} archive --format zip --output /full/path master
+  Will export as zip
+
+${E_CYAN_FG}Git Instaweb${E_RESET}
+${E_CYAN_FG}------------${E_RESET}
+
+${E_WHITE_FG}git${E_RESET} instaweb --httpd=webrick [--start | --stop | --restart]
+
+
+${E_CYAN_FG}Environment Variables${E_RESET}
+${E_CYAN_FG}---------------------${E_RESET}
+
+GIT_AUTHOR_NAME, GIT_COMMITTER_NAME
+  Your full name to be recorded in any newly created commits.  Overrides
+  user.name in .${E_WHITE_FG}git${E_RESET}/config
+
+GIT_AUTHOR_EMAIL, GIT_COMMITTER_EMAIL
+  Your email address to be recorded in any newly created commits.  Overrides
+  user.email in .${E_WHITE_FG}git${E_RESET}/config
+
+GIT_DIR
+  Location of the repository to use (for out of working directory repositories)
+
+GIT_WORKING_TREE
+  Location of the Working Directory - use with GIT_DIR to specifiy the working
+  directory root
+  or to work without being in the working directory at all.
+
+${E_CYAN_FG}Merge vs Rebase${E_RESET}
+${E_CYAN_FG}---------------${E_RESET}
+ Merge: take all the changes in one branch and merge them into another branch in one big commit
+Rebase: move the point at which I branched to a new starting point; the current state of master
+
+When do you use either one?
+
+Assuming you have created a branch for the purpose of developing a single feature,
+and you want to incorporate those changes into master, you probably want MERGE
+(you don't care about maintaining all of the interim commits).
+
+A second scenario would be if you started doing some development and then another
+developer made an unrelated change. You probably want REBASE to base your changes
+on the current version in the repo while still retaining your individual commits.
+
+${E_CYAN_FG}Feature Development${E_RESET}
+${E_CYAN_FG}-------------------${E_RESET}
+Git feature development workflow consists of these steps:
+1. Pull to update your local master
+2. Check out a feature branch
+3. Do work in your feature branch, committing early and often
+4. Rebase frequently to incorporate upstream changes
+5. Interactive rebase (squash) your commits
+6. Merge your changes with master
+7. Push your changes to the upstream repo
+
+While in your master branch (${E_WHITE_FG}git${E_RESET} checkout master), pull in the most recent changes.
+Then, update your master to reflect the current state ot the upstream repo:
+
+> ${E_WHITE_FG}git${E_RESET} pull origin master
+
+Check out a feature branch to begin working:
+
+> ${E_WHITE_FG}git${E_RESET} checkout -b <some-branch>
+
+${E_CYAN_FG}Sync with upstream:${E_RESET}
+${E_CYAN_FG}------------------------------------------------------------------------------------------${E_RESET}
+(rebase frequently to prevent your branch from diverging significantly with upstream)
+
+Method 1)
+
+> ${E_WHITE_FG}git${E_RESET} fetch origin master
+> ${E_WHITE_FG}git${E_RESET} rebase origin/master
+
+An alternative method is to checkout master and pull but this method requires extra steps:
+
+Method 2)
+
+> ${E_WHITE_FG}git${E_RESET} checkout master
+> ${E_WHITE_FG}git${E_RESET} pull
+> ${E_WHITE_FG}git${E_RESET} checkout <some-branch>
+> ${E_WHITE_FG}git${E_RESET} rebase master
+${E_CYAN_FG}------------------------------------------------------------------------------------------${E_RESET}
+
+Once work on the feature is complete, you will have a branch with a lot of small commits like:
+
+- “adding a model and a migration”,
+- “adding a controller and some views”,
+- “oh crap - adding tests” and so on.
+
+This is useful while developing but larger, incremental commits are easier to maintain.
+We will use an interactive rebase to squash them together.
+Also, squashing these commits together will allow us to pretend that we wrote the tests first :-)
+
+We want the rebase to affect only the commits we’ve made to this branch,
+not the commits that exist on the upstream.
+
+To ensure that we only deal with the “local” commits...
+
+> ${E_WHITE_FG}git${E_RESET} rebase -i origin/master
+
+Git will display an editor window with a list of the commits to be modified, something like:
+
+pick 3dcd585 Adding Comment model, migrations, spec
+pick 9f5c362 Adding Comment controller, helper, spec
+pick dcd4813 Adding Comment relationship with Post
+pick 977a754 Comment belongs to a User
+pick 9ea48e3 Comment form on Post show page
+
+Now we tell ${E_WHITE_FG}git${E_RESET} what we to do. Change these lines to:
+
+pick 3dcd585 Adding Comment model, migrations, spec
+squash 9f5c362 Adding Comment controller, helper, spec
+squash dcd4813 Adding Comment relationship with Post
+squash 977a754 Comment belongs to a User
+squash 9ea48e3 Comment form on Post show page
+
+Save and close the file. This will squash these commits together into one commit
+and present us with a new editor window where we can give the new commit a message.
+
+We’ll enter a synopsis:
+
+[<some-branch>] Summary of branch purpose
+
+
+Now, save and close your editor. This commit is now ready to be merged back into master.
+First rebase against any recent changes in the upstream.
+Then merge your changes back into master:
+
+> ${E_WHITE_FG}git${E_RESET} checkout master
+> ${E_WHITE_FG}git${E_RESET} merge 3275-add-commenting
+
+And finally, push your changes to the upstream:
+
+> ${E_WHITE_FG}git${E_RESET} push origin master
+
+tip_git_EOF

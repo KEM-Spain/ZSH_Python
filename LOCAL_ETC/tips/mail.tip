@@ -1,0 +1,54 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_mail_EOF
+Basic postfix installation steps
+
+install bind9
+
+create: /var/cache/bind/db.test
+
+$ORIGIN kem-as.com.
+$TTL 1D
+@       IN SOA     ns1 root(
+                1 ;serial
+                1D ;refresh
+                2H ;retry
+                2W ;expire
+                5H ;minimum
+);
+@       IN        NS ns1
+ns1     IN        A 192.168.18.100
+mail    IN        A 192.168.18.100
+@       IN        MX 5 mail
+
+# Add zone:
+sudo named-checkzone test.com. /var/cache/bind/db.test
+
+# Edit:
+/etc/bind/named.conf.default-zones
+
+izone "kem-as.com." {
+       type master;
+       file "db.test";
+};
+
+# Edit:
+/etc/bind/named.conf.options
+
+Uncomment forwaders
+Modify to 8.8.8.8
+
+# Restart:
+sudo systemctl restart bind9
+
+# Add user:
+sudo usermod -aG mail $(whoami)
+
+# Install postfix
+Select Internet Site
+Server: kem-as.com
+
+# Install mailutils
+
+# Test:
+mail kmiller@kem-as.com
+tip_mail_EOF

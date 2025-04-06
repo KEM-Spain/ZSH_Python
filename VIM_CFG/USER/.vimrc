@@ -43,7 +43,7 @@ if !has("gui_running")
 	iabbrev ZI if [[ ${VAR} IS COND ]];then<CR>else<CR>fi<CR><ESC>
 	iabbrev ZC case ${VAR} in<CR>pattern) action;;<CR>esac<CR><ESC>
 	iabbrev ZD set -xv<CR>set +xv;read<ESC>
-	iabbrev ZV for L in ${LIST};do<CR>printf "L:%s\n" ${L}<CR>done<ESC>
+	iabbrev ZV for L in ${LIST};do<CR>printf "%s\n" ${L}<CR>done<ESC>
 	iabbrev ZKV for K in ${(k)X};do<CR>printf "KEY:%s VAL:%s\n" ${K} ${X[${K}]}<CR>done<ESC>
 	iabbrev ZDB [[ ${_DEBUG} -gt 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"<ESC>
 	iabbrev MW $(msg_warn <ESC>

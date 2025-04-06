@@ -1,0 +1,154 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_printf_EOF
+
+
+A ‘printf’ cheat sheet
+ 
+${E_WHITE_FG}Format Specifiers${E_RESET}
+${E_GREEN_FG}-----------------${E_RESET}
+   %c character
+   %d decimal (integer) number (base 10)
+   %e exponential floating-point number
+   %f floating-point number
+   %i integer (base 10)
+   %o octal number (base 8)
+   %s a string of characters
+   %u unsigned decimal (integer) number
+   %x number in hexadecimal (base 16)
+   %% print a percent sign
+   \% print a percent sign
+
+${E_WHITE_FG}Integer Width${E_RESET}
+${E_GREEN_FG}-------------${E_RESET}
+   The width specifier is used with integers. Default: right-justified.
+
+   printf("%3d", 0);          0
+   printf("%3d", 123456789);  123456789
+   printf("%3d", -10);        -10
+   printf("%3d", -123456789); -123456789
+
+${E_WHITE_FG}Integer Left-Justifying${E_RESET}
+${E_GREEN_FG}-----------------------${E_RESET}
+   Left-justify integer, add minus sign (-) after the % symbol.
+
+   printf("%-3d", 0);          0
+   printf("%-3d", 123456789);  123456789
+   printf("%-3d", -10);        -10
+   printf("%-3d", -123456789); -123456789
+
+${E_WHITE_FG}Integer Zero-Fill${E_RESET}
+${E_GREEN_FG}-----------------${E_RESET}
+   Zero-Fill integer output, add zero (0) after the % symbol.
+
+   printf("%03d", 0);          000
+   printf("%03d", 1);          001
+   printf("%03d", 123456789);  123456789
+   printf("%03d", -10);        -10
+   printf("%03d", -123456789); -123456789
+
+${E_WHITE_FG}Integer Formatting${E_RESET}
+${E_GREEN_FG}------------------${E_RESET}
+   Collection of integer formatting examples. Minimum width, left-justified, zero-filled, plus sign for positive numbers.
+
+   Description                          Code                   Result
+   ------------------------------------------------------------------
+   At least five wide                   printf("'%5d'", 10);   '   10'
+   At least five-wide, left-justified   printf("'%-5d'", 10);  '10   '
+   At least five-wide, zero-filled      printf("'%05d'", 10);  '00010'
+   At least five-wide, with a plus sign printf("'%+5d'", 10);  '  +10'
+   Five-wide, plus sign, left-justified printf("'%-+5d'", 10); '+10  '
+
+${E_WHITE_FG}Floating Point Formatting${E_RESET}
+${E_GREEN_FG}-------------------------${E_RESET}
+   Format Floating-point numbers.
+
+   Description                                                 Code                                Result
+   ------------------------------------------------------------------------------------------------------
+   Print one position after the decimal                        printf("'%.1f'", 10.3456);          '10.3'
+   Two positions after the decimal                             printf("'%.2f'", 10.3456);          '10.35'
+   Eight-wide, two positions after the decimal                 printf("'%8.2f'", 10.3456);         '   10.35'
+   Eight-wide, four positions after the decimal                printf("'%8.4f'", 10.3456);         ' 10.3456'
+   Eight-wide, two positions after the decimal, zero-filled    printf("'%08.2f'", 10.3456);        '00010.35'
+   Eight-wide, two positions after the decimal, left-justified printf("'%-8.2f'", 10.3456);        '10.35   '
+   Printing a much larger number with that same format         printf("'%-8.2f'", 101234567.3456); '101234567.35'
+
+${E_WHITE_FG}String Formatting${E_RESET}
+${E_GREEN_FG}-----------------${E_RESET}
+   To right justify text:
+   1) Assign value to var with spaces embedded: LBL1="     Title", VAL="value"
+   2) Quote the value to printf: printf "%s: %s\n" \${LBL1:q} \${VAL}
+   3) Result:      Title: value
+
+   Otherwise, printf will ignore leading space regardless of width specified...
+
+   Format String Output.    
+
+   Description                    Code                        Result
+   -----------------------------------------------------------------
+   A simple string                printf("'%s'", "Hello");    'Hello'
+   A string with a minimum length printf("'%10s'", "Hello");  '     Hello'
+   Minimum length, left-justified printf("'%-10s'", "Hello"); 'Hello     '
+   Truncate: add a '.' after '%': %.25 will truncate past 25 chars...
+   ${E_WHITE_FG}NOTE${E_RESET}: You can use printf "%-4.4s" for getting both truncate and justified in output
+
+${E_WHITE_FG}Special Characters${E_RESET}
+${E_GREEN_FG}------------------${E_RESET}
+   The following character sequences used as printf format specifiers:
+
+   \a audible alert
+   \b backspace
+   \f form feed
+   \n newline, or linefeed
+   \r carriage return
+   \t tab
+   \v vertical tab
+   \\ backslash 
+
+${E_WHITE_FG}Printf Tricks${E_RESET}
+${E_GREEN_FG}-------------${E_RESET}
+${E_WHITE_FG}Runtime Width Specifier${E_RESET}
+To calculate the width at runtime, use %*.  This says the next argument is the ${E_WHITE_FG}WIDTH${E_RESET}, followed by ${E_WHITE_FG}VALUE${E_RESET}.
+Ex:${E_WHITE_FG}printf "%*d\n" 5 10 ${E_RESET}-> prints a "10" with a width of 5
+
+${E_WHITE_FG}Leading Substrings${E_RESET}
+%.*s  -> print a substring
+With a variable precision, you can print a substring, or print a non-NUL-terminated string, if you
+know its length. printf("%.*s\n", sublen, str) prints the first sublen characters of str.
+
+Syntax: A '.' (period) in a printf format specification is FOLLOWED BY THE PRECISION
+For STRINGS, the precision specificies HOW MANY CHARACTERS will be printed
+A precision of '*' indicates that the precision is the next argument. 
+If the precision is zero, nothing is printed. If a string has a precision specification, its length is ignored.
+
+${E_WHITE_FG}HEX${E_RESET}
+%04x -> 4-digit hex number with leading zeroes
+%x   -> prints an int in hexadecimal
+%4x  -> prints a hex int, right-justified to 4 places; less than 4 digits -> preceded by spaces 
+%04x -> prints a hex int, right-justified to 4 places; less than 4 digits -> preceded by zeroes
+
+${E_WHITE_FG}Integer to Decimal${E_RESET}
+%d   -> prints signed int in decimal
+%u   -> prints unsigned int in decimal
+
+${E_WHITE_FG}Characters and Strings${E_RESET}
+%c   -> prints a character
+%s   -> prints a string; for wide (Unicode) strings, prefix with l (ell, or w): %lc and %ls.
+
+${E_WHITE_FG}Note${E_RESET}: For the Unicode variants, such as wprintf and friends, %c and %s print wide strings. To force
+a narrow string, no matter which variant, use the %h size prefix, and to force a wide string, use
+the %l size prefix; e.g., %hs and %lc.
+
+${E_WHITE_FG}64 Bit${E_RESET}
+%I64d, %I64u, %I64x -> 64-bit integers
+To print 64-bit numbers (__int64), use the I64 size prefix.
+
+${E_WHITE_FG}Zero Suppresion${E_RESET}
+%.0d -> print nothing for zero
+Suppress output when a number is zero. A non-zero number will be printed. 
+Similarly, %.0s swallows a string
+
+${E_WHITE_FG}Leading Hex Zero${E_RESET}
+%#x  -> print a leading 0x
+If you want printf to automatically generate 0x before hex numbers, use %#x instead of %x.
+
+tip_printf_EOF

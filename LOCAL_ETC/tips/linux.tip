@@ -1,0 +1,121 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_linux_EOF
+
+SSH setup
+
+TO CHANGE LISTENING PORT USING SOCKET
+
+ mkdir -p /etc/systemd/system/ssh.socket.d
+ cat >/etc/systemd/system/ssh.socket.d/listen.conf <<EOF
+ [Socket]
+ ListenStream=2222
+ EOF
+
+ * This makes sshd listen on port 2222 AND port 22.
+ 
+ -- For sshd to listen to ONLY 2222 you need to do this --
+ mkdir -p /etc/systemd/system/ssh.socket.d
+ cat >/etc/systemd/system/ssh.socket.d/listen.conf <<EOF
+ [Socket]
+ ListenStream=
+ ListenStream=2222
+ EOF
+ 
+TO DISABLE SOCKET AND REVERT TO LEGACY
+
+ IF IT EXISTS - DELETE /etc/systemd/system/ssh.service.d/00-socket.conf
+ FOLLOW WITH: systemctl daemon-reload
+
+ Then the /etc/ssh/sshd_config works again with Ports and Addresses settings (sshd_config)
+
+ PERHAPS NEEDED:
+ systemctl disable --now ssh.socket
+ systemctl enable --now ssh.service
+
+ KEYS and PERMISSIONS
+ 1) HOME directory: 750 user:user
+ 2) ~/.ssh 700 user:user
+ 3) ssh-keygen -t rsa -b 4096 -f ~/.ssh/KEM-AS_rsa.key -C "KEM-AS rsa key"
+ 4) cat KEM-AS_rsa.key.pub >> authorized_keys
+
+File perms:
+-rw-r--r--  1 kmiller kmiller  740 07-27-23 16:20 authorized_keys (644)
+-rw-r--r--  1 kmiller kmiller  740 07-27-23 15:56 KEM-AS_rsa.key.pub (644)
+-rw-------  1 kmiller kmiller 3381 07-27-23 15:56 KEM-AS_rsa.key (600)
+-rw-------  1 kmiller kmiller  978 07-27-23 16:05 known_hosts (600)
+
+Add/Modify sshd_config
+----------------------
+Port 64000
+PermitRootLogin no
+
+Add to ssh_config
+-----------------
+Host KEM-AS
+HostName 192.168.18.100
+User kmiller
+IdentityFile=~/.ssh/KEM-AS_rsa.key
+Port 64000
+
+Decode Interface Names
+----------------------
+Short form example
+wlo1
+wl     -- wireless
+o      -- onboard
+1      -- slot 1
+
+eno1
+en     -- ethernet
+o      -- onboard
+1      -- slot 1
+
+Long form example:
+enp3s0:
+
+en     -- ethernet
+  p3   -- bus number  (3)
+    s0 -- slot number (0)
+
+wlp2s0:
+
+wl     -- wireless
+  p2   -- bus number  (2)
+    s0 -- slot number (0)
+
+
+auto login config
+-----------------
+To enable auto-login from the command line:
+
+edit: /etc/gdm3/custom.conf
+
+Get the last field with cut:
+i.e. /usr/local/bin
+	echo \${PWD} | rev | cut -d'/' -f1 | rev
+yields: bin
+
+Skip N first lines in file
+--------------------------
+tail -n +N
+
+Skip N last lines in file
+-------------------------
+head -n -N
+
+Extract N middle lines in file
+------------------------------
+Use the head and the tail together
+
+Show 51st to the 55th line
+
+$ tail -n +51 numbers_en.txt | head -n 5
+fifty-one     : 51
+fifty-two     : 52
+fifty-three   : 53
+fifty-four    : 54
+fifty-five    : 55
+
+alternate method:
+head -n 55 numbers_en.txt | tail -n 5
+tip_linux_EOF

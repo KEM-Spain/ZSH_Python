@@ -1,0 +1,48 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_sed_EOF
+
+=====================
+advanced sed examples
+=====================
+${E_WHITE_FG}Example 1${E_RESET}
+
+sed '/PATTERN_1/,/PATTERN_2/d' FILE # Pattern inclusive
+sed '/PATTERN_1/,/PATTERN_2/-1d' FILE # First pattern inclusive - leave last pattern
+
+sed -i "/PATTERN_1/,/PATTERN_2/{PATTERN_1/!{PATTERN_2/!d}}" FILE # Pattern non inclusive (between)
+
+Explanation:
+
+/PATTERN_1/,/PATTERN_2/ will match all the text between lines starting with PATTERN_1 to PATTERN_2
+/PATTERN_1/! means do following if start of line is not PATTERN_1
+/PATTERN_2/! means do following if start of line is not PATTERN_2
+
+So overall it is first matching all the lines from PATTERN_1 to PATTERN_2 
+then from those matched lines, finding lines that don't match PATTERN_1 and don't match PATTERN_2 and deleting
+
+${E_WHITE_FG}Example 2${E_RESET}
+
+sed ':a; N; \$!ba; s/\n/ /g'
+
+This command will progess through entire file, removing all newlines while stringing all lines
+together on a single line of output
+
+1) ${E_WHITE_FG}Create${E_RESET} label ${E_CYAN_FG}:a${E_RESET}
+2) ${E_WHITE_FG}Append${E_RESET} the current and next line to the pattern space via ${E_CYAN_FG}N${E_RESET}
+3) If we are ${E_WHITE_FG}NOT LAST LINE${E_RESET} ${E_CYAN_FG}\$!${E_RESET}, branch to the created label ${E_CYAN_FG}ba${E_RESET}
+4) Finally, the substitution ${E_WHITE_FG}replaces every newline with a space${E_RESET} on the pattern space
+tip_sed_EOF
+
+local RESPONSE
+
+echo -n "\n${E_WHITE_FG}Further in-depth reading${E_RESET}"
+echo -n "\n${E_MAGENTA_FG}---------------------------------------------${E_RESET}"
+echo -n "\nPress (${E_WHITE_FG}a${E_RESET}) to read sed basic commands tutorial"
+echo -n "\nPress (${E_WHITE_FG}b${E_RESET}) to read sed advanced tutorial"
+echo -n "\nEnter (a/b):"
+read -k1 RESPONSE
+
+case ${RESPONSE} in
+	a) { run_okular --page 1 ${_EXTERNAL_FILES[sed_a]} 2>/dev/null & };;
+	b) { run_okular --page 1 ${_EXTERNAL_FILES[sed_b]} 2>/dev/null & };;
+esac

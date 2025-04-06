@@ -1,0 +1,33 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_mime_EOF
+
+${E_BOLD}
+STEPS TO CREATE A NEW FILE ASSOCIATION
+--------------------------------------${E_RESET}
+1) create xml file: ${E_WHITE_FG}/usr/share/mime/application/sh3d.xml${E_RESET}
+${E_CYAN_FG}
+<?xml version="1.0"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="application/sh3d">
+    <comment>SweetHome3D Files</comment>
+    <generic-icon name="text-html"/>
+    <glob pattern="*.sh3d"/>
+  </mime-type>
+</mime-info>${E_RESET}
+
+${E_BOLD}
+2) register mime type${E_RESET}
+${E_WHITE_FG}
+sudo xdg-mime install --novendor --mode system /usr/share/mime/application/sh3d.xml${E_RESET}
+
+${E_BOLD}
+3) associate mime type with app${E_RESET}
+${E_WHITE_FG}
+sudo xdg-mime default SweetHome3D.desktop application/sh3d${E_RESET}
+
+${E_BOLD}
+4) update mime database${E_RESET}
+${E_WHITE_FG}
+update-mime-database /usr/share/mime${E_RESET}
+
+tip_mime_EOF

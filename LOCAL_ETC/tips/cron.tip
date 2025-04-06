@@ -1,0 +1,71 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_cron_EOF
+
+The ${E_WHITE_FG}cron${E_RESET} command
+
+   ${E_WHITE_FG}When             Setting${E_RESET}
+   ${E_WHITE_FG}----             -------${E_RESET}
+   Every 1 minute   ${E_WHITE_FG}*${E_RESET} ${E_GREEN_FG}*${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}*${E_RESET}
+   Every 15 minutes ${E_WHITE_FG}*/15${E_RESET} ${E_GREEN_FG}*${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}*${E_RESET}
+   Every 30 minutes ${E_WHITE_FG}*/30${E_RESET} ${E_GREEN_FG}*${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}*${E_RESET}
+   Every 1 hour     ${E_WHITE_FG}0${E_RESET} ${E_GREEN_FG}*${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}*${E_RESET}
+   Every 6 hours    ${E_WHITE_FG}0${E_RESET} ${E_GREEN_FG}*/6${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}*${E_RESET}
+   Every 12 hours   ${E_WHITE_FG}0${E_RESET} ${E_GREEN_FG}*/12${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}*${E_RESET}
+   Once a day       ${E_WHITE_FG}0${E_RESET} ${E_GREEN_FG}0${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}*${E_RESET}
+   Once a week(SAT) ${E_WHITE_FG}0${E_RESET} ${E_GREEN_FG}0${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}SAT${E_RESET}
+   Once a month     ${E_WHITE_FG}0${E_RESET} ${E_GREEN_FG}0${E_RESET} ${E_MAGENTA_FG}1${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}*${E_RESET}
+   Weekdays 6pm     ${E_WHITE_FG}0${E_RESET} ${E_GREEN_FG}18${E_RESET} ${E_MAGENTA_FG}*${E_RESET} ${E_RED_FG}*${E_RESET} ${E_CYAN_FG}1-5${E_RESET}
+
+   Here is a diagram of the general ${E_WHITE_FG}cron${E_RESET} syntax, for illustration:
+   +---------------- ${E_WHITE_FG}minute (0-59)${E_RESET}
+   |  +------------- ${E_GREEN_FG}hour (0-23)${E_RESET}
+   |  |  +---------- ${E_MAGENTA_FG}day of month (1-31)${E_RESET}
+   |  |  |  +------- ${E_RED_FG}month (1-12)${E_RESET}
+   |  |  |  |  +---- ${E_CYAN_FG}day of week (0-6) (Sunday=0)${E_RESET}
+   |  |  |  |  |
+   ${E_WHITE_FG}*${E_RESET}  ${E_GREEN_FG}*${E_RESET}  ${E_MAGENTA_FG}*${E_RESET}  ${E_RED_FG}*${E_RESET}  ${E_CYAN_FG}*${E_RESET}  command to be executed
+
+   In the following example, the ${E_WHITE_FG}cron${E_RESET} command shown below will activate the ${E_WHITE_FG}cron${E_RESET} tasks automatically on the hour:
+
+   ${E_WHITE_FG}0 * * * * ping http://www.example.com${E_RESET}
+
+   In the above sample, the ${E_WHITE_FG}0 * * * *${E_RESET} represents when the task should happen
+   The first figure represents minutes i.e. on the "zero" minute, or top of the hour
+   The other figures represent, respectively, hour, day, month and day of the week
+   A * is a wildcard, meaning "every time" 
+   The minimum is every one minute ${E_WHITE_FG}* * * * *${E_RESET}
+
+   Thus, the ${E_WHITE_FG}cron${E_RESET} command example above means "ping http://www.example.com at the zero minute on every hour of every day
+   of every month of every day of the week."
+   
+   Legend
+   ------
+   ${E_WHITE_FG}*${E_RESET}         Expands to all values for the field
+   ${E_WHITE_FG},${E_RESET}         List separator
+   ${E_WHITE_FG}-${E_RESET}         Range separator
+   ${E_WHITE_FG}/${E_RESET}         Specifies step for ranges
+   ${E_WHITE_FG}@hourly${E_RESET}   Run at the start of each hour
+   ${E_WHITE_FG}@daily${E_RESET}    Run every day at midnight UTC
+   ${E_WHITE_FG}@weekly${E_RESET}   Run at every Sunday at midnight UTC
+   ${E_WHITE_FG}@monthly${E_RESET}  Run on the 1st of each month at midnight UTC
+   ${E_WHITE_FG}@yearly${E_RESET}   Run on Jan 1st at midnight UTC
+   ${E_WHITE_FG}@annually${E_RESET} Same as @yearly
+   
+   
+   Every Minute                ${E_WHITE_FG}* * * * *${E_RESET}
+   Every Five Minutes          ${E_WHITE_FG}*/5 * * * *${E_RESET}
+   Every 10 Minutes            ${E_WHITE_FG}*/10 * * * *${E_RESET}
+   Every 15 Minutes            ${E_WHITE_FG}*/15 * * * *${E_RESET}
+   Every 30 Minutes            ${E_WHITE_FG}*/30 * * * *${E_RESET}
+   Every Hour                  ${E_WHITE_FG}0 * * * *${E_RESET}
+   Every Two Hours             ${E_WHITE_FG}0 */2 * * *${E_RESET}
+   Every Six Hours             ${E_WHITE_FG}0 */6 * * *${E_RESET}
+   Every 12 Hours              ${E_WHITE_FG}0 */12 * * *${E_RESET}
+   During the Work Day         ${E_WHITE_FG}*/5 9-17 * * *${E_RESET}
+   Every day at Midnight       ${E_WHITE_FG}0 0 * * *${E_RESET}
+   Every Two Weeks             ${E_WHITE_FG}0 0 * * Sun [ \$(expr \$(date +%W) % 2) -eq 1 ] && /path/to/command${E_RESET}
+   At the Start of Every Month ${E_WHITE_FG}0 0 1 * *${E_RESET}
+   On January 1st at Midnight  ${E_WHITE_FG}0 0 1 1 * ${E_RESET}
+   Weekends only               ${E_WHITE_FG}0 0 * * 6,0${E_RESET}
+   
+tip_cron_EOF

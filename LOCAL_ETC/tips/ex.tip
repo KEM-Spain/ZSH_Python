@@ -1,0 +1,69 @@
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_ex_EOF
+
+EX Command Line Examples
+------------------------
+insert new top line in file
+${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-sc${E_RESET} '1i${E_WHITE_FG}|${E_RESET}text goes here' ${E_WHITE_FG}-cx${E_RESET} <file>
+
+Simple standard input and output using pipes can be achieved by this shell syntax:
+$ ${E_WHITE_FG}ex${E_RESET} -sc'%p${E_WHITE_FG}|${E_RESET}q!' <(echo Example)
+$ echo Example ${E_WHITE_FG}|${E_RESET} ${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-sc${E_RESET} '%p${E_WHITE_FG}|${E_RESET}q!' /dev/stdin
+
+Here is simple example how to print the file after substitution:
+$ ${E_WHITE_FG}ex${E_RESET} /etc/hosts +%s/127/128/ge ${E_WHITE_FG}-sc${E_RESET} '%p${E_WHITE_FG}|${E_RESET}q!'
+
+More examples for editing files in-place:
+$ ${E_WHITE_FG}ex${E_RESET} +'%s/127/128/g' -cswq file
+$ ${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-sc${E_RESET} '%s/olddomain\.com/newdomain.com/g${E_WHITE_FG}|${E_RESET}x' file
+$ printf '%s\n' 'g/olddomain\.com/s//newdomain.com/g' w q ${E_WHITE_FG}|${E_RESET} ${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-s${E_RESET} file
+$ ${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-s${E_RESET} "${file}" <<< $'g/old/s//new/g\nw\nq'
+$ ${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-sc${E_RESET} 'argdo %s/old/new/ge${E_WHITE_FG}|${E_RESET}x' ./**
+$ find . -type f -exec ${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-sc${E_RESET} '%s/old/new/g${E_WHITE_FG}|${E_RESET}x' {} \;
+
+You can also use ${E_WHITE_FG}-s${E_RESET} {scriptin} so the commands are loaded from the file, in example:
+$ printf "%s\n" '%s/foo/test/ge' 'wq' > cmds.vim
+$ vim ${E_WHITE_FG}-s${E_RESET} cmds.vim ${E_WHITE_FG}-es${E_RESET} file
+
+or using I/O redirection:
+$ vim file < cmds.vim
+
+To edit one file and save the changes to another, check the following examples:
+$ ${E_WHITE_FG}ex${E_RESET} +%s/127/128/g ${E_WHITE_FG}-sc${E_RESET} 'wq! new_file' /etc/hosts
+$ cat /etc/hosts /etc/fstab ${E_WHITE_FG}|${E_RESET} vim - ${E_WHITE_FG}-es${E_RESET} '+:%s/foo/test/g' '+:wq! file3'
+
+More practical examples.
+Real live example from the RPM specification:
+
+vim ${E_WHITE_FG}-E${E_RESET} ${E_WHITE_FG}-s${E_RESET} Makefile <<-EOF
+   :%substitute/CFLAGS = -g$/CFLAGS =-fPIC -DPIC -g/
+   :%substitute/CFLAGS =$/CFLAGS =-fPIC -DPIC/
+   :%substitute/ADAFLAGS =$/ADAFLAGS =-fPIC -DPIC/
+   :update
+   :quit
+EOF
+
+Extracting html tags:
+${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-s${E_RESET} +'bufdo!/<div.*id=.the_div_id/norm nvatdggdG"2p' +'bufdo!%p' -cqa! *.html
+
+Removing XML tags:
+${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-s${E_RESET} +'%s/<[^>].\{-}>//ge' +%p +q! file.txt
+
+Removing style tag from the header and print the parsed output:
+curl ${E_WHITE_FG}-s${E_RESET} http://example.com/ ${E_WHITE_FG}|${E_RESET} ${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-s${E_RESET} +'/<style.*/norm nvatd' +%p -cq! /dev/stdin
+
+Parse html with multiple complex rules:
+${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-V1${E_RESET} ${PAGE} <<-EOF
+  " Correcting missing protocol, see: https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2359 "
+  %s,'//,'http://,ge
+  %s,"//,"http://,ge
+  " Correcting relative paths, see: https://github.com/wkhtmltopdf/wkhtmltopdf/issues/2359 "
+  %s,[^,]\zs'/\ze[^>],'http://www.example.com/,ge
+  %s,[^,]\zs"/\ze[^>],"http://www.example.com/,ge
+  " Remove the margin on the left of the main block. "
+  %s/id="doc_container"/id="doc_container" style="min-width:0px;margin-left : 0px;"/g
+  %s/<div class="outer_page/<div style="margin: 0px;" class="outer_page/g
+  " Remove useless html elements. "
+  /<div.*id="global_header"/norm nvatd
+  wq " Update changes and quit.
+tip_ex_EOF
