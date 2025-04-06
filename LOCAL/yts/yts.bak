@@ -62,6 +62,7 @@ _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
 _FIELD_LEN[title]=80
+_HDR_TEXT_LEN=69
 _JS_SCRIPT=/usr/local/etc/yts.js
 _MAX_ERRORS=10
 _MAX_FLEN=75
@@ -242,12 +243,12 @@ action_do () {
 			# Process headers
 			LOG_LINE=$(grep -m1 -i "destination" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 && ${HDRS_OUT} == 'false' ]];then
-				DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${LOG_LINE})}")
+				DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${LOG_LINE})}") # Strip path
 				DEST_1=$(cut -d'|' -f1 <<<${DEST})
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
-				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST} | sed 's/_/ /g')
+				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
 				#HDR1_TXT=$(clean_line ${HDR1_TXT}) # Too aggressive
-				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,69]}<N>"
+				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,${_HDR_TEXT_LEN}]}<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
@@ -1181,7 +1182,7 @@ query_youtube () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
-	#[[ ${_SMCUP} == 'false' ]] && do_smcup
+	[[ ${_SMCUP} == 'false' ]] && do_smcup
 
 	# Return search status
 	if ! arr_is_populated "${_LOCAL_LIST}";then
@@ -1530,7 +1531,7 @@ fi
 # Run Query
 if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
 	while true;do
-		#do_smcup
+		do_smcup
 		fav_get
 		if [[ -n ${g_QUERY_KEY} ]];then
 			msg_box "Requesting videos for <B><I>${g_DISPLAY_KEY}<N>..."

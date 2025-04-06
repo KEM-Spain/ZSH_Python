@@ -314,7 +314,7 @@ action_do () {
 				ERROR_CNT=0 
 				show_down ${ETA}
 				case ${ETA:l} in
-					*'download completed'*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;;; # Prevent doubling complete line
+					*100*%*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;;; # Stop parsing ETA
 					*mib/s*) LINE_COLOR='<w>';;
 					*kib/s*) LINE_COLOR='<B><y>';;
 					*) continue;; # Skip other
