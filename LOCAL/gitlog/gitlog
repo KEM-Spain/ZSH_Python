@@ -42,6 +42,9 @@ action_do () {
 	local V_PATH=''
 	local FN_OUT=''
 	local VIEW=false
+	local -a MSG_LIST=()
+	local TAG=''
+	local BOX_LIMIT=20
 
 	for M in ${_MARKED};do
 		COMMIT=$(get_field 1 ${M})
@@ -53,7 +56,9 @@ action_do () {
 		tput ed
 		if [[ -z ${_FN_ARG} ]];then
 			FLIST=("${(f)$(git diff-tree --no-commit-id --name-only ${COMMIT} -r)}")
-			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list_bullet ${FLIST})"
+			MSG_LIST=("${(f)$(msg_list_bullet ${FLIST})}")
+			[[ ${#MSG_LIST} -gt 20 ]] && TAG="And <I><B><w>$((${#MSG_LIST} - ${BOX_LIMIT}))<N> more..."
+			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |${MSG_LIST[1,${BOX_LIMIT}]}| |${TAG}"
 			[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
 			git show -P ${COMMIT}
 		else

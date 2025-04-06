@@ -168,14 +168,16 @@ usage () {
 	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
-OPTSTR=":HDp"
+OPTSTR=":HDCp"
 OPTIND=0
 PRINT_FILE=false
+CWD=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     C) CWD=true;;
      p) PRINT_FILE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -187,6 +189,8 @@ shift $((OPTIND -1))
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+[[ ${CWD} == 'true' ]] && _GIT_REPO=${PWD}
 
 [[ ${#} -ne 0 ]] && _FN_ARG=${1} || _FN_ARG=''
 [[ -z ${_FN_ARG} && ${PRINT_FILE} == 'true' ]] && exit_leave $(msg_exit W "Print file option requires a <FILE> argument")
@@ -221,7 +225,7 @@ FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
 pushd ${_GIT_REPO}
-RAW_LIST=("${(f)$(git log -g --pretty=reference ${FN_ARG})}")
+RAW_LIST=("${(f)$(git log --pretty=reference ${FN_ARG})}")
 if [[ ${?} -ne 0 ]];then
 	dbg "${0}:${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path . 2>/dev/null" 
 else
