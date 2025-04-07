@@ -25,7 +25,7 @@ _BAK_DATE=$(stat -c'%w' ${_HIST_FILE}.bak | cut -d' ' -f1)
 _TODAY=$(date +'%F')
 
 # Imports
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
@@ -108,6 +108,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
  
 # Execution
+# TODO: when isolating unique command args choose most recent command
 [[ ${_BAK_DATE} != ${_TODAY} ]] && cp ${_HIST_FILE} ${_HIST_FILE}.bak
 
 set_exit_callback _cleanup
@@ -139,7 +140,7 @@ done  | sort -n > ${_HIST_FILE_NEW}
 HIST_UNIQ=${#HIST}
 
 DUPLICATE_CNT=$(( HIST_CNT-HIST_UNIQ ))
-printf "History (${WHITE_FG}%d${RESET}) | ${WHITE_FG}%d${RESET} unique lines\n" ${HIST_CNT} ${HIST_UNIQ}
+printf "History (${WHITE_FG}%d${RESET}) | ${WHITE_FG}%d${RESET} unique command/arg combinations\n" ${HIST_CNT} ${HIST_UNIQ}
 
 [[ -e ${_HIST_FILE_NEW} && -s ${_HIST_FILE_NEW} ]] && mv -f ${_HIST_FILE_NEW} ${_HIST_FILE}
 

@@ -276,5 +276,9 @@ echo $(str_unicode_line 36)
 printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
 echo
   
-pushd ~/Code/REPO
-./do_commit
+echo -n "Commit these changes? (y/n):"
+read -q RESPONSE
+if [[ ${RESPONSE} == 'y' ]];then
+	pushd ~/Code/REPO
+	./do_commit
+fi

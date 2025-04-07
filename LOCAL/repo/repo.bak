@@ -137,7 +137,7 @@ copy_python_dev_files () {
 
 copy_sys_files () {
 	echo "${WHITE_FG}SYSTEM FILES${RESET}" >&2
-	rsync -a --no-links ${_SRC_BIN_SYS} ${_REPO_SYSTEM}
+	rsync -a --no-links ${_SRC_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
 }
 
 copy_user_files () {
@@ -197,6 +197,7 @@ copy_zsh_non_lib_utils () {
 # Execution
 
 # Build repo
+echo -n "${GREEN_FG}Building repo${RESET}..."
 if [[ -e ${_REPO} ]];then
 	if [[ -e ${_REPO}/.git ]];then
 		/bin/rm -rf ${_SRC_BIN_SYS}/repo_utils/.git
@@ -206,6 +207,7 @@ if [[ -e ${_REPO} ]];then
 	cp ${_SRC_BIN_SYS}/repo_utils/* ${_REPO} # Git support files
 	cp -r ${_SRC_BIN_SYS}/repo_utils/.* ${_REPO} # Git repo
 fi
+echo "${GREEN_FG}built${RESET}\n"
 
 [[ ! -e ${_REPO_USER} ]] && mkdir -p ${_REPO_USER}
 [[ ! -e ${_REPO_LOCAL} ]] && mkdir -p ${_REPO_LOCAL}
@@ -241,13 +243,14 @@ for L in ${_ZSH_UTILS};do
 	fi
 done
 
+echo "${GREEN_FG}Copying files${RESET}..."
 copy_zsh_lib_utils
 copy_zsh_non_lib_utils
 copy_non_zsh_utils
 copy_zsh_libs
 copy_conv_files
 copy_pyscript_files
-copy_sys_files
+copy_sys_files 
 copy_user_files
 copy_dev_files
 copy_etc_files
@@ -255,22 +258,23 @@ copy_zsh_cfg_files
 copy_vim_cfg_files
 copy_python_dev_files
  
-echo $(str_unicode_line 35)
-printf "%-30s %4d\n" "Total development directories" $(find ${_REPO_LOCAL} -maxdepth 1 -type d | wc -l)
-printf "%-30s %4d\n" "Total development files" $(find ${_REPO_LOCAL} -type f | wc -l)
-printf "%-30s %4d\n" "Total etc support files" $(find ${_REPO_LOCAL_ETC} | wc -l)
-printf "%-30s %4d\n" "Total zsh library modules" $(find ${_REPO_ZSH_LIB} | wc -l)
-printf "%-30s %4d\n" "Total zsh library utils" $(find ${_REPO_ZSH_LIB_UTILS} | wc -l)
-printf "%-30s %4d\n" "Total non zsh library utils" $(find ${_REPO_ZSH_NON_LIB_UTILS} | wc -l)
-printf "%-30s %4d\n" "Total non zsh utils" $(find ${_REPO_NON_ZSH_UTILS} | wc -l)
-printf "%-30s %4d\n" "Total python project files" $(find ${_REPO_PYTHON} | wc -l)
-printf "%-30s %4d\n" "Total system files" $(find ${_REPO_SYSTEM} | wc -l)
-printf "%-30s %4d\n" "Total vim config files" $(find ${_REPO_VIM_CFG} | wc -l)
-printf "%-30s %4d\n" "Total vim config user files" $(find ${_REPO_VIM_CFG_USER} | wc -l)
-printf "%-30s %4d\n" "Total zsh config files" $(find ${_REPO_ZSH_CFG} | wc -l)
-printf "%-30s %4d\n" "Total zsh config user files" $(find ${_REPO_ZSH_CFG_USER} | wc -l)
-echo $(str_unicode_line 35)
-printf "%-30s %4d\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
+echo "\n${GREEN_FG}Summary${RESET}"
+echo $(str_unicode_line 36)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total development files" $(find ${_REPO_LOCAL} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total etc support files" $(find ${_REPO_LOCAL_ETC} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh library files" $(find ${_REPO_ZSH_LIB} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh lib util files" $(find ${_REPO_ZSH_LIB_UTILS} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh non lib files" $(find ${_REPO_ZSH_NON_LIB_UTILS} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total non zsh files" $(find ${_REPO_NON_ZSH_UTILS} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total python project files" $(find ${_REPO_PYTHON} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total system files" $(find ${_REPO_SYSTEM} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total vim config files" $(find ${_REPO_VIM_CFG} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total vim config user files" $(find ${_REPO_VIM_CFG_USER} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config files" $(find ${_REPO_ZSH_CFG} -type f | wc -l)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config user files" $(find ${_REPO_ZSH_CFG_USER} -type f | wc -l)
+echo $(str_unicode_line 36)
+printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
+echo
   
 pushd ~/Code/REPO
 ./do_commit

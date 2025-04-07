@@ -108,6 +108,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
  
 # Execution
+# TODO: when isolating unique command args choose most recent command
 [[ ${_BAK_DATE} != ${_TODAY} ]] && cp ${_HIST_FILE} ${_HIST_FILE}.bak
 
 set_exit_callback _cleanup

@@ -494,22 +494,22 @@ msg_box_align () {
 
 	# Handle embed: <L> List item
 	elif [[ ${MSG} =~ '<L>' ]];then # Bullet list?
-		MSG=$(sed -e 's/<L>/\\u2022 /' <<<${MSG}) # Swap marker with bullet and space
+		MSG=$(sed -e 's/^.*<L>/\\u2022 /' <<<${MSG}) # Swap marker with bullet and space
 		TEXT=${MSG}
 		TEXT=$(msg_nomarkup ${TEXT})
 		TEXT=$(str_trim ${TEXT})
 		TEXT_PAD_L=' '
 		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - ( ${#TEXT_PAD_L}+${#TEXT} ) - OFFSET -1 ))) # compensate for bullet/space
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item text"
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item bullets"
 
 	elif [[ ${MSG} =~ '<X>' ]];then # Numbered List?
-		MSG=$(sed -e 's/<X>//' <<<${MSG}) # Remove markup
+		MSG=$(sed -e 's/^.*<X>//' <<<${MSG}) # Remove markup
 		TEXT=${MSG}
 		TEXT=$(msg_nomarkup ${TEXT})
 		TEXT=$(str_trim ${TEXT})
 		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - ( ${#TEXT_PAD_L}+${#TEXT} ) - OFFSET -1 ))) # compensate for bullet/space
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item text"
+		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - ( ${#TEXT_PAD_L}+${#TEXT} ) - OFFSET -1 ))) # compensate for number/space
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item numbers"
 
 	elif [[ ${BOX_STYLE:l} == 'l' ]];then # Justification: Left
 		TEXT=$(msg_nomarkup ${MSG})
