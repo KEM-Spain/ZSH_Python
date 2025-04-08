@@ -16,7 +16,7 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Declarations
-typeset -A HIST
+typeset -A _HIST
 
 # Constants
 _HIST_FILE=~/.zsh_history
@@ -129,16 +129,15 @@ while read LINE;do
 		[[ $(( X % 2 )) -ne 0 ]] && continue # skip unbalanced quotes
 	fi
 
-	HIST[${CMDSTR}]=${STAMP}
+	_HIST[${CMDSTR}]=${STAMP}
 done < ${_HIST_FILE} 
 
-for K in ${(k)HIST};do
-	printf "%s;%s\n" ${HIST[${K}]} ${K}
+for K in ${(k)_HIST};do
+	printf "%s;%s\n" ${_HIST[${K}]} ${K}
 done  | sort -n > ${_HIST_FILE_NEW}
 
-HIST_UNIQ=${#HIST}
-
-DUPLICATE_CNT=$(( HIST_CNT-HIST_UNIQ ))
+HIST_UNIQ=${#_HIST}
+#DUPLICATE_CNT=$(( HIST_CNT-HIST_UNIQ ))
 printf "History (${WHITE_FG}%d${RESET}) | ${WHITE_FG}%d${RESET} unique command/arg combinations\n" ${HIST_CNT} ${HIST_UNIQ}
 
 [[ -e ${_HIST_FILE_NEW} && -s ${_HIST_FILE_NEW} ]] && mv -f ${_HIST_FILE_NEW} ${_HIST_FILE}

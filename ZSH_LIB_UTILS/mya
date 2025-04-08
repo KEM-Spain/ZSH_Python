@@ -38,11 +38,13 @@ SEARCHTERM=''
 DIRCHANGE=false
 CMDS=false
 OPTS=false
+QUIET=false
 
-# Executions
+# Execution
 [[ ${1} == '-H' ]] && echo ${HELP} && exit
 [[ ${1} == '-d' ]] && DIRCHANGE=true && OPTS=true && shift
 [[ ${1} == '-c' ]] && CMDS=true && OPTS=true && shift
+[[ ${1} == '-q' ]] && QUIET=true && shift
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1}
 [[ -n ${SEARCHTERM} ]] && TAG="${WHITE_FG}(${RESET}FILTER = \"${WHITE_FG}${SEARCHTERM}${RESET}\"${WHITE_FG})${RESET}" || TAG="${WHITE_FG}(${RESET}UNFILTERED${WHITE_FG})${RESET}"
 
@@ -54,6 +56,10 @@ while read LINE;do
 	CMD=$(cut -d'=' -f2 <<<${LINE} | sed -e "s/'//g" -e 's/"//g')
 	ALIASES[${ALIAS}]=${CMD}
 done < ${FN}
+
+if [[ ${QUIET} == 'true' ]];then
+	[[ -n ${ALIASES[${SEARCHTERM}]} ]] && return 0 || return 1
+fi
 
 {
 	printf "\n${BOLD}${WHITE_FG}Registered Aliases${RESET} ${TAG}${RESET}\n\n"

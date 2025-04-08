@@ -328,7 +328,7 @@ action_do () {
 			echo "${0}: ${LINE_COLOR}${ETA}" >> ${_YTS_DBG_LOG}
 			msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>" # Show progress
 
-			if [[ ${ETA} =~ '100% of' ]];then
+			if [[ ${ETA} =~ '100% of' || ${ETA_COMPLETE} == 'true'  ]];then
 				if [[ ${#_MARKED} -gt 1 ]];then
 					msg_box -C -jc "<m>$(str_unicode_line 10)<N>"
 					if [[ $((${#_MARKED}-DL_CNT)) -gt 0 ]];then

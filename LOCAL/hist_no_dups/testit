@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+# TODO: successive runs reduce the history to almost nothing
 
 #Inline ansi
 BOLD="\033[1m"
@@ -19,19 +20,123 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
-typeset -A HIST
+
+typeset -a HIST=()
+typeset -a HIST_BUILD=()
+typeset -a RAW_HIST=()
+typeset -aU RAW_CMDS=()
+typeset -aU CMDS=()
+typeset -a DUPLICATES=()
+
+#HIST_DIR=~
+#HIST_TMP=/tmp
+HIST_DIR=./testing
+HIST_TMP=./testing
+HIST_FILE=${HIST_DIR}/.zsh_history
+HIST_TAB=$(mktemp ${HIST_TMP}/hist.table.XXXXXX)
+HIST_NEW=$(mktemp ${HIST_TMP}/hist.new.XXXXXX)
+HIST_REJECTS=$(mktemp ${HIST_TMP}/hist.rejects.XXXXXX)
+
+# Execution
+[[ ${1} == '-p' ]] && _PROD=true || _PROD=false
+
+[[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
+cp ${HIST_FILE} ${HIST_FILE}.$(date +"%s")
+
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Updating locate db${RESET}"
+upd_locate -I >/dev/null 2>&1
+
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Reading history...${RESET}"
 
 while read LINE;do
-	STAMP=$(cut -d';' -f1 <<<${LINE})
-	CMD=$(cut -d';' -f2 <<<${LINE})
-	HIST[${CMD}]=${STAMP}
-done < .zsh_history
+	TS=$(cut -d';' -f1 <<<${LINE} | cut -d':' -f2)
+	CMD=$(cut -d';' -f2 <<<${LINE} | cut -d' ' -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
+	ARGS=$(cut -d';' -f2 <<<${LINE} | cut -s -d' ' -f2-)
+	RAW_HIST+="${TS}|${CMD}|${ARGS}"
+	DUPLICATES=("${(f)$(grep -I ";${CMD:q}" ~/.zsh_history)}")
+	[[ ${#DUPLICATES} -gt 1 ]] && CMDS+=${CMD}
+done < ${HIST_FILE}
 
-for K in ${(k)HIST};do
-	CMD=$(cut -d ' ' -f1 <<<${K})
-	COLOR=${GREEN_FG}
-	WHICH=$(which ${CMD} 2>/dev/null)
-	#[[ ${?} -ne 0 ]] && WHICH="COMMAND NOT FOUND:${CMD}" && COLOR=${RED_FG}
-	[[ ${?} -ne 0 ]] && continue
-	printf "%s|%s|%s|${COLOR}%s${RESET}\n" ${HIST[${K}]} ${K[1,40]} ${CMD} ${WHICH}
-done | sort -t'|' -k3
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Current History:${WHITE_FG}${#RAW_HIST}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo " ${MAGENTA_FG}Duplicate cmds:${WHITE_FG}${#DUPLICATES}${RESET}"
+
+RAW_CMDS=(${(o)CMDS}) # Sorted, unique commands
+
+[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Filtering garbage...${RESET}"
+
+# Filter typos and bogus
+VALID=false
+WHICH=0
+LOCATE=0
+MYA=0
+for L in ${RAW_CMDS};do
+	#echo -n "Seeking:${L}:"
+	which -s ${L} >/dev/null
+	if [[ ${?} -eq 0 ]];then
+		VALID=true
+		((WHICH++))
+	else
+		VALID=false
+	fi
+	if [[ ${VALID} == 'false' ]];then
+		mya -q ${L}
+		[[ ${?} -eq 0 ]] && VALID=true && ((MYA++))
+	fi
+	if [[ ${VALID} == 'false' ]];then
+		run_locate -e ${L} >/dev/null
+		[[ ${?} -eq 0 ]] && VALID=true && ((LOCATE++))
+	fi
+	if [[ ${VALID} == 'false' ]];then
+		#echo ${L} ${RED_FG}invalid${RESET}
+		echo ${L}>>${HIST_REJECTS}
+	else
+		#echo ${L} ${GREEN_FG}valid${RESET}
+		CMDS+=${L}
+	fi
+done
+[[ ${_PROD} == 'false' ]] && echo " WHICH found:${WHITE_FG}${WHICH}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "   MYA found:${WHITE_FG}${MYA}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "LOCATE found:${WHITE_FG}${LOCATE}${RESET}"
+
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history:${WHITE_FG}${#CMDS}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "        ${MAGENTA_FG}Rejects:${WHITE_FG}${#HIST_REJECTS}${RESET}"
+
+[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Finding last unique command/arg combination...${RESET}"
+
+# Sort history placing most recent first
+for L in ${RAW_HIST};do
+	printf "%s\n" ${L}
+done | sort -t'|' -k1rn -k2 >${HIST_TAB}
+
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history sorted:${WHITE_FG}${#HIST_TAB}${RESET}"
+
+[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Building history file...${RESET}"
+for L in ${CMDS};do
+	LINE=$(grep -m1 -I "|${L:q}|" ${HIST_TAB})
+	TS=$(cut -d '|' -f1 <<<${LINE})
+	CMD=$(cut -d '|' -f2 <<<${LINE})
+	ARGS=$(cut -s -d '|' -f3 <<<${LINE})
+	if [[ -n ${TS} ]];then
+		HIST_BUILD+=":${TS}:0;${CMD} ${ARGS}"
+	fi
+done
+
+# Create file
+for L in ${HIST_BUILD};do
+	echo ${L}
+done | uniq | sort -nr -o ${HIST_NEW}
+HIST_CNT=$(wc -l ${HIST_NEW} | cut -d' ' -f1)
+
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${HIST_CNT}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Done.${RESET}\n"
+
+[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Original:" $(wc -l ${HIST_FILE} | cut -d' ' -f1)
+[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" " Unique:" ${#CMDS}
+[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Rejects:" ${#HIST_REJECTS}
+[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Cleaned:" ${HIST_CNT}
+
+if [[ ${_PROD} == 'true' ]];then
+	cp ${HIST_NEW} ${HIST_FILE}
+	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${HIST_CNT}
+	#fc -R # Refresh history
+fi

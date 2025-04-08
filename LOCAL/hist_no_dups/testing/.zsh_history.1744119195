@@ -40,6 +40,7 @@
 : 1728310846:0;npm ls
 : 1729342885:0;man gold
 : 1729343186:0;type xpad
+: 1729503497:0;bak hist_no_dups
 : 1729510852:0;l. zsh
 : 1729511129:0;llr .
 : 1729511327:0;find . -name 'KEM'
@@ -467,6 +468,7 @@
 : 1735837336:0;git log UTILS.zsh
 : 1735857262:0;google zsh variable reference assoc array
 : 1735997883:0;man rsync
+: 1736001699:0;bak
 : 1736024518:0;vi osd
 : 1736036975:0;make_standalone fsub
 : 1736036994:0;vi fsub.standalone
@@ -582,6 +584,7 @@
 : 1738141267:0;apps gitk
 : 1738141299:0;google gitk
 : 1738141317:0;install gitk
+: 1738150572:0;vi hist_no_dups
 : 1738155975:0;cfg git
 : 1738156020:0;desktop
 : 1738156397:0;fe
@@ -670,6 +673,7 @@
 : 1739817028:0;sudo chown kmiller:kmiller test-yaml
 : 1739837528:0;locate pipewire
 : 1739867688:0;apps easyeffects
+: 1739868105:0;hist_no_dups
 : 1739882221:0;apps
 : 1739912029:0;lsc snap
 : 1739912416:0;lst .
@@ -792,6 +796,7 @@
 : 1742470771:0;google identify interescting cartesian coordinates
 : 1742483490:0;google git pull copy of code for commit
 : 1742483516:0;google git pull file for commit
+: 1742483849:0;bak gitlog
 : 1742489389:0;git git pager options
 : 1742489632:0;man less
 : 1742491100:0;cl gsub
@@ -816,6 +821,7 @@
 : 1742669046:0;/usr/lib/git-core/git-gui .
 : 1742669262:0;genv f
 : 1742669265:0;genv g
+: 1742669442:0;git log -g --pretty=reference
 : 1742679512:0;cl mvq
 : 1742679524:0;bak mvq
 : 1742679545:0;vi mvq
@@ -845,6 +851,7 @@
 : 1743022892:0;google yt-dlp nsig frag audio
 : 1743022982:0;google yt-dlp youtube frag audio
 : 1743023001:0;google yt-dlp fragmented no  audio
+: 1743067674:0;remind
 : 1743069449:0;/opt/enpass/Enpass
 : 1743071902:0;locate export
 : 1743071917:0;locate export | grep enpass
@@ -937,6 +944,7 @@
 : 1743372515:0;vi o
 : 1743372557:0;vi playit
 : 1743372751:0;vi todo
+: 1743372768:0;todo
 : 1743372778:0;vi tvi
 : 1743372929:0;vi lib_func_sorted_tst
 : 1743373260:0;google systemd service files user name
@@ -949,6 +957,8 @@
 : 1743374421:0;vi upd_locate
 : 1743374559:0;vi make_app_runner
 : 1743409470:0;genv
+: 1743413195:0;cl gitlog
+: 1743413248:0;vi gitlog
 : 1743413352:0;google git filter git show
 : 1743414232:0;sudo rsync -a '--exclude=undo' /home/kmiller/.vim /home/kmiller/Code/REPO/VIM_CFG
 : 1743414245:0;sudo rsync -a /home/kmiller/.vim /home/kmiller/Code/REPO/VIM_CFG
@@ -957,6 +967,7 @@
 : 1743414363:0;sudo rsync -vva --exclude='undo' /home/kmiller/.vim /home/kmiller/Code/REPO/VIM_CFG
 : 1743448786:0;unlink functions
 : 1743451325:0;	tvi repo
+: 1743457880:0;cl
 : 1743457950:0;typ cl
 : 1743457952:0;type cl
 : 1743492173:0;mya
@@ -967,6 +978,7 @@
 : 1743501497:0;git init --help
 : 1743501542:0;git init .
 : 1743502064:0;man git
+: 1743502331:0;git log
 : 1743530872:0;host
 : 1743530877:0;hostname
 : 1743581065:0;nut
@@ -1027,17 +1039,25 @@
 : 1743846173:0;clear
 : 1743851563:0;tc
 : 1743870422:0;tz
+: 1743898315:0;yts
 : 1743898665:0;bak yts
+: 1743898681:0;backup
+: 1743899786:0;tip git
 : 1743901600:0;bak repo
 : 1743902279:0;vi yts
+: 1743902719:0;repo
 : 1743902736:0;cl yts
+: 1743938856:0;lsd
 : 1743946473:0;google rsync test
 : 1743949806:0;git reset --hard 528f993
+: 1743949863:0;vi repo
 : 1743950116:0;r
 : 1743951400:0;git info
 : 1743951845:0;llr
 : 1743953051:0;sudo cp -r /tmp/ZSH_Python/.git .
+: 1743953127:0;l
 : 1743953225:0;ll.
+: 1743953673:0;l.
 : 1743953726:0;chkupd
 : 1743953779:0;upd_locate
 : 1743953944:0;sut info
@@ -1046,102 +1066,248 @@
 : 1743954188:0;sut info -vvvv | grep print
 : 1743954202:0;sut info -vvvv | grep fing
 : 1743954235:0;sut info -vvvv >x
+: 1743954303:0;cl repo
+: 1743954389:0;gitlog
+: 1743954668:0;ll
 : 1743954828:0;genv git
+: 1743954951:0;remind -e
 : 1743954971:0;remind
+: 1743955034:0;gitlog
 : 1743955064:0;google sync local commits with github
+: 1743955172:0;c
+: 1743955181:0;git -n pull
+: 1743955204:0;git --dry-run  pull
+: 1743955216:0;l.
+: 1743955225:0;cat .gitignore
+: 1743955228:0;ll
+: 1743955245:0;git pull
+: 1743955270:0;google sysnv github with local
+: 1743955431:0;gitlog
+: 1743955472:0;git fetch upstream
+: 1743955630:0;git fetch 'https://github.com/KEM-Spain/ZSH_Python'
+: 1743955637:0;gitlog
+: 1743955700:0;google download all github commits to local repo
+: 1743955929:0;git clone 'https://github.com/KEM-Spain/ZSH_Python'
+: 1743955943:0;gitlog -C 
 : 1743956009:0;google git clone not showing all commits
 : 1743956049:0;git log --decorate --graph --oneline --all
+: 1743956200:0;git show --decorate --graph --oneline --all
+: 1743956210:0;git show  --all
 : 1743956261:0;google local repo and github are out of sunc
 : 1743956266:0;google local repo and github are out of sync
+: 1743956372:0;..
+: 1743956382:0;,
+: 1743956404:0;c
+: 1743956420:0;git checkout 
+: 1743956434:0;git checkout development
+: 1743956444:0;git checkout main
+: 1743956463:0;git fetch origin
+: 1743956468:0;gitlog
+: 1743956523:0;cat git_config
+: 1743956602:0;git log main
+: 1743956616:0;gitlog
+: 1743956625:0;vi gitlog
+: 1743956708:0;git log -g --pretty=reference
 : 1743956804:0;git log -g --pretty=reference main
+: 1743956810:0;git log -g --pretty=reference origin
+: 1743956826:0;git log origin
 : 1743956834:0;git log origin
 : 1743956844:0;git log -g origin
 : 1743956855:0;git log main
 : 1743956879:0;git log -g --pretty=reference origin
-: 1743956883:0;git log -g --pretty=reference
+: 1743956883:0;git log -g --pretty=reference 
+: 1743956891:0;git log 
+: 1743956911:0;git log -g 
 : 1743956922:0;git log --help
-: 1743956950:0;git log -g
-: 1743956954:0;git log
-: 1743956964:0;git log --pretty=reference
+: 1743956950:0;git log -g 
+: 1743956954:0;git log 
+: 1743956964:0;git log --pretty=reference 
+: 1743956997:0;gitlog
+: 1743957048:0;./do_commit
+: 1743957063:0;cl repo
+: 1743957070:0;repo2
+: 1743957095:0;ll
+: 1743957100:0;bak -r repo
+: 1743957109:0;h
+: 1743957110:0;b
+: 1743957112:0;vi repo
+: 1743958406:0;lsd
+: 1743958416:0;Lw
+: 1743958417:0;lsd
+: 1743958425:0;ll
 : 1743963433:0;yts
+: 1743967948:0;cl repo
+: 1743967951:0;vi repo
+: 1743968206:0;repo
+: 1743968251:0;c
+: 1743968267:0;ll
+: 1743968270:0;ll
+: 1743968272:0;l.
+: 1743968290:0;cl repo
+: 1743968294:0;vi repo
+: 1743968353:0;repo
+: 1743968410:0;vi repo
+: 1743968456:0;repo
+: 1743968477:0;vi repo
+: 1743968550:0;repo
+: 1743968563:0;vi repo
+: 1743968572:0;repo
+: 1743968585:0;vi repo
+: 1743968598:0;repo
+: 1743968625:0;vi repo
+: 1743968667:0;vi repo
+: 1743968677:0;repo
+: 1743968710:0;vi repo
+: 1743968779:0;repo
+: 1743968821:0;vi repo
+: 1743968832:0;repo
+: 1743968878:0;vi repo
+: 1743968952:0;repo
+: 1743968998:0;vi repo
+: 1743969018:0;repo
+: 1743969054:0;vi repo
+: 1743969093:0;repo
+: 1743969108:0;vi repo
+: 1743969140:0;repo
+: 1743969193:0;vi repo
+: 1743969208:0;repo
+: 1743969286:0;vi repo
+: 1743969295:0;bak -r repo
+: 1743979095:0;google sic semper tyrannus
+: 1743979301:0;gitlog
+: 1743979371:0;cl gitlog
 : 1743979374:0;bak gitlog
+: 1743979379:0;vi gitlog
+: 1743979460:0;git diff-tree --no-commit-id --name-only 
+: 1743979470:0;gitlog
+: 1743979502:0;git diff-tree --no-commit-id --name-only 8914d66
+: 1743979587:0;vi gitlog
+: 1743979703:0;git diff-tree --no-commit-id --name-only 8914d66
+: 1743979872:0;git diff-tree --no-commit-id --name-only 8914d66
+: 1743979893:0;vi gitlog
+: 1743979945:0;git show -P 8914d66
+: 1743979956:0;vi gitlog
+: 1743979973:0;gitlog
+: 1743979989:0;vi gitlog
+: 1743980033:0;gitlog
+: 1743980074:0;gitlog
+: 1743980090:0;gitlog
+: 1743980227:0;vi gitlog
+: 1743980307:0;gitlog
+: 1743980428:0;vi gitlog
+: 1743980470:0;gitlog
+: 1743980496:0;vi x
+: 1743980639:0;vi gitlog
+: 1743980724:0;gitlog
+: 1743980750:0;ll
+: 1743980801:0;vi gitlog
+: 1743980838:0;gitlog
+: 1743980854:0;ll
+: 1743980874:0;vi gitlog
+: 1743980916:0;gitlog
+: 1743980939:0;c
+: 1743980943:0;ll
+: 1743980946:0;vi x
+: 1743980973:0;ll
+: 1743980975:0;,
+: 1743980981:0;cl gitlog
+: 1743980986:0;vi gitlog
+: 1743981293:0;ll
 : 1743981300:0;tip git
+: 1743981324:0;l
+: 1743981327:0;ll
+: 1743981336:0;lsd
+: 1743981339:0;ll
+: 1743981347:0;vi -e git_reset
+: 1743981512:0;git_reset 528f993
+: 1743981522:0;gitlog
+: 1743981539:0;repo
+: 1743981588:0;git_reset 528f993
+: 1743981602:0;ll
+: 1743981616:0;lsd -d
+: 1743981621:0;ll
 : 1743981627:0;lsd
+: 1743981636:0;ll
+: 1743981674:0;cl repo
+: 1743981675:0;ll
+: 1743981684:0;c
+: 1743981689:0;l.
+: 1743981690:0;ll
+: 1743981725:0;cl repo
+: 1743981728:0;vi repo
+: 1743981823:0;repo
+: 1743981841:0;vi repo
+: 1743981863:0;repo
+: 1743981889:0;vi repo
+: 1743981914:0;ll
+: 1743981920:0;ll
+: 1743981934:0;vi do_commit
+: 1743982112:0;s
+: 1743982115:0;ll
+: 1743982118:0;l.
+: 1743982120:0;vi do_commit
+: 1743982130:0;cl repo
+: 1743982132:0;repo
+: 1743982163:0;ll
+: 1743982169:0;cl gitlog
+: 1743982170:0;ll
+: 1743982174:0;gitlog
+: 1743982469:0;gitlog
+: 1743982510:0;gitlog
+: 1743982573:0;gitlog
+: 1743982615:0;vi gitlog
+: 1743982654:0;gitlog
+: 1743982679:0;vi gitlog
+: 1743982709:0;gitlog
+: 1743982743:0;vi gitlog
+: 1743982844:0;gitlog
+: 1743982894:0;vi gitlog
+: 1743983005:0;gitlog
+: 1743983070:0;vi gitlog
+: 1743983155:0;gitlog
+: 1743983195:0;bak -r gitlog
+: 1743983204:0;backup
+: 1743983264:0;repo
+: 1743983280:0;h
+: 1743983282:0;gitlog
+: 1743983364:0;vl LI
+: 1743983367:0;cl LIBS
+: 1743983500:0;imdb the morning show
 : 1743983784:0;cl
 : 1743983851:0;bak
+: 1743983858:0;bak hist_no_dups
+: 1743983862:0;ll
+: 1743983868:0;cl hist_no_dups
 : 1743983872:0;bak hist_no_dups
+: 1743983876:0;vi hist_no_dups
+: 1743983943:0;todo
+: 1743983952:0;todo -d
+: 1743983963:0;bak -r hist_no_dups
+: 1743983965:0;h
 : 1743983967:0;todo
+: 1743985206:0;cl repo
+: 1743985215:0;bak -P repo
+: 1743985223:0;bak -r repo
 : 1743985247:0;vi repo
+: 1744009794:0;gitlog
+: 1744010452:0;gitlog
+: 1744010552:0;gitlog
+: 1744010652:0;gitlog
+: 1744010765:0;gitlog
+: 1744010810:0;gitlog
+: 1744010823:0;vi gitlog
+: 1744010830:0;cl gitlog
+: 1744010833:0;vi gitlog
 : 1744010850:0;gitlog
 : 1744010894:0;vi gitlog
 : 1744010904:0;cl gitlog
+: 1744010907:0;,
 : 1744010911:0;cl repo
+: 1744010912:0;ll
+: 1744010919:0;cl LIBS
+: 1744010924:0;bak MSG.zsh
 : 1744010927:0;backup
 : 1744010978:0;repo
 : 1744110232:0;cl hist_no_dups
-: 1744112688:0;l
-: 1744112706:0;vi hist_no_dups
-: 1744112712:0;hist_no_dups
-: 1744112745:0;l.
-: 1744112792:0;ll
-: 1744112834:0;chkupd
-: 1744112925:0;cl hist_no_dups
-: 1744112926:0;ll
-: 1744112938:0;ll
-: 1744112946:0;bak hist_no_dups.bak
-: 1744112948:0;bak hist_no_dups
-: 1744112953:0;ll
-: 1744112956:0;vi hist_no_dups
-: 1744112960:0;ll
-: 1744112978:0;ll
-: 1744112982:0;Lw
-: 1744112983:0;ll
-: 1744117735:0;cl hist_no_dups
-: 1744117739:0;vi testit
-: 1744117786:0;todo
-: 1744117792:0;todo -d
-: 1744117941:0;vi testit
-: 1744118112:0;testing
-: 1744118117:0;ll
-: 1744118122:0;vi testit
-: 1744118146:0;testing
-: 1744118161:0;ll. testing
-: 1744118170:0;vi testit
-: 1744118215:0;testing
-: 1744118226:0;testit
-: 1744118264:0;ll ./testing
-: 1744118281:0;vi testit
-: 1744118368:0;testit
-: 1744118397:0;vi testit
-: 1744118415:0;testit
-: 1744118462:0;ll
-: 1744118480:0;vi hist.rejects.IE4a2b
-: 1744118487:0;vi hist.rejects.nOXWqy
-: 1744118504:0;vi hist.rejects.OUu5Xs
-: 1744118519:0;..
-: 1744118525:0;testit
-: 1744118575:0;vi testit
-: 1744118768:0;testit
-: 1744118814:0;vi testit
-: 1744118947:0;testit
-: 1744118999:0;vi testit
-: 1744119087:0;testit
-: 1744119165:0;vi testit
-: 1744119195:0;testit -p
-: 1744119227:0;testit 
-: 1744119281:0;vi hist.rej*
-: 1744119300:0;g git_reset
-: 1744120126:0;h
-: 1744120127:0;ll
-: 1744120149:0;c
-: 1744120153:0;ll
-: 1744120157:0;h
-: 1744120168:0;locate "LOCAL_ETC"
-: 1744120210:0;type locate
-: 1744120221:0;h
-: 1744120225:0;backup
-: 1744120291:0;ll
-: 1744120296:0;locate "LOCAL_ETC"
-: 1744120308:0;repo
-: 1744120318:0;locate "LOCAL_ETC"
-: 1744120326:0;repo
+: 1744110238:0;ll
+: 1744110240:0;l.
