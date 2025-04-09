@@ -1135,6 +1135,8 @@ query_youtube () {
 		PROXY_CMD="${g_PROXY_CMD}"
 	fi
 
+	#msg_box -p -PK "PROXY_CMD:${PROXY_CMD}"
+
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}: g_QUERY_KEY:${g_QUERY_KEY}"
 		dbg "${0}: g_ENGINE_KEY:${g_ENGINE_KEY}"

@@ -262,7 +262,8 @@ if [[ ${_TERMS} -eq 1 ]];then
 
 		tput sc
 		echo "Cleaning history..." 
-		HIST=$(hist_no_dups)
+		HIST=$(hist_no_dups -p)
+		tput el1
 		tput rc
 		echo ${HIST}
 

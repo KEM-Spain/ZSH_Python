@@ -20,16 +20,14 @@ ARGS=${@}
 echo "locate ${ARGS}"
 if [[ ${EXEC_ONLY} == 'false' ]];then
 	/usr/bin/locate ${ARGS} 
-	[[ ${?} -ne 0 ]] && echo "Nothing located..."
+	[[ ${?} -ne 0 ]] && echo "Nothing located..." && return 1
 else
 	HIT=false
 	while read LINE;do
 		[[ ${LINE:t} =~ "^${ARGS}$" ]] && which -s ${LINE} >/dev/null
 		[[ ${?} -eq 0 ]] && echo ${LINE} && HIT=true
 	done < <(/usr/bin/locate ${ARGS})
-	if [[ ${HIT} == 'true' ]];then
-		return 0
-	fi
+	[[ ${HIT} == 'true' ]] && return 0
 	echo "Nothing located..."
 	return 1
 fi

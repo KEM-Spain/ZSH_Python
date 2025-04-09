@@ -92,21 +92,27 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-LIST=("${(f)$(env | grep -i "^${1}" | sort)}") 
+typeset -A ENV_LIST=()
+VAL_LIMIT=80
+while read LINE;do
+	VAR=$(cut -d= -f1 <<<${LINE})
+	VAL=$(cut -d= -f2- <<<${LINE})
+	[[ ${#VAR} -gt ${VAR_LEN} ]] && VAR_LEN=${#VAR}
+	[[ ${#VAL} -gt ${VAL_LEN} ]] && VAL_LEN=${#VAL}
+	ENV_LIST[${VAR}]=${VAL[1,${VAL_LIMIT}]}
+done < <(env | grep -i "^${1}" | sort)
+[[ ${VAL_LEN} -gt ${VAL_LIMIT} ]] && VAL_LEN=${VAL_LIMIT}
 
-[[ -z ${LIST} ]] && exit_leave $(msg_exit W "No environment variables match:${1}")
+[[ -z ${ENV_LIST} ]] && exit_leave $(msg_exit W "No environment variables match:${1}")
 
 tput cup 0 0
 {
 echo "Environment Variables\n"
-printf "${WHITE_FG}%35s    %-50s${RESET}\n" "Variable" "Value"
-printf "${CYAN_FG}%35s    %-50s${RESET}\n" $(str_unicode_line 8) $(str_unicode_line 5)
-for L in ${LIST};do
-	VAR=$(echo ${L} | cut -d= -f1)
-	VAL=$(echo ${L} | cut -d= -f2-)
-	printf "${GREEN_FG}%35s${RESET} -> ${WHITE_FG}%-.100s${RESET}\n" ${VAR} ${VAL}
-done | sort
-} | mypager
-[[ ${?} -ne 0 ]] && echo -n "Press any key..." && read -sk1
+printf "${WHITE_FG}%*s %-*s${RESET}\n" ${VAR_LEN} "Variable" ${VAL_LEN} "Value"
+printf "${CYAN_FG}%-*s %-*s${RESET}\n" ${VAR_LEN} "$(str_unicode_line ${VAR_LEN})" ${VAL_LEN} "$(str_unicode_line ${VAL_LEN})"
+for K in ${(ok)ENV_LIST};do
+	printf "${GREEN_FG}%*s${RESET} ${WHITE_FG}%-*s${RESET}\n" ${VAR_LEN} ${K} ${VAL_LEN} ${ENV_LIST[${K}]}
+done
+} | mypager wait
 
 exit_leave

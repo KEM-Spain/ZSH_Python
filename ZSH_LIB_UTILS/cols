@@ -155,7 +155,7 @@ fi
 
 # Format into columns
 NDX=0
-for L in ${(o)LINES_IN};do
+for L in ${LINES_IN};do
 	((NDX++))
 	PF_VALS+=${(qqq)L}
 	if [[ ${NDX} -eq ${NUM_COLS} ]];then
