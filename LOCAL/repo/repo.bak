@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+# TODO impose limits on cp commands to modified files only
  
 # Inline ansi
 BOLD="\033[1m"
@@ -276,5 +277,21 @@ echo $(str_unicode_line 36)
 printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
 echo
   
-pushd ~/Code/REPO
-./do_commit
+pushd ${_REPO}
+REMOTE_SHA=$(git rev-parse --short origin/main)
+git pull origin main
+# Overwrite repo 
+# git push -u origin main --force
+git push --set-upstream origin main
+LOCAL_SHA=$(git rev-parse --short HEAD)
+
+echo "${WHITE_ON_GREY}Changed files...${RESET}"
+git diff --name-only ${REMOTE_SHA}..${LOCAL_SHA}
+popd
+
+echo -n "Commit these changes? (y/n):"
+read -q RESPONSE
+if [[ ${RESPONSE} == 'y' ]];then
+	pushd ~/Code/REPO
+	./do_commit
+fi

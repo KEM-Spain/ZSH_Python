@@ -25,7 +25,7 @@ typeset -a HIST=()
 typeset -a HIST_BUILD=()
 typeset -a RAW_HIST=()
 typeset -aU RAW_CMDS=()
-typeset -aU CMDS=()
+typeset -a CMDS=()
 typeset -a LOCATE_OPTS=()
 
 #HIST_DIR=./testing
@@ -71,7 +71,7 @@ LOC=0
 MYA=0
 WCH=0
 NDX=0
-for L in ${RAW_CMDS};do
+for L in ${(o)RAW_CMDS};do
 	((NDX++))
 	printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#RAW_CMDS} $(( NDX * 100. / ${#RAW_CMDS} )) >&2
 	VALID='false'

@@ -159,6 +159,6 @@ while read DATE TM CMD;do
 	D="${DATE} ${TM}"
 	U=$(date -d ${D} +%s)
 	echo "${U}#${D}#${CMD}"
-done < <(fc -nrli 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r | cut -d'#' -f2,3 | print_hist
+done < <(fc -nrlt'%Y-%m-%d  %H:%M:%S' 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r | cut -d'#' -f2,3 | print_hist
 
 exit_leave

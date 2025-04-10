@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+# TODO impose limits on cp commands to modified files only
  
 # Inline ansi
 BOLD="\033[1m"
@@ -200,28 +201,42 @@ copy_zsh_non_lib_utils () {
 echo -n "${GREEN_FG}Building repo${RESET}..."
 if [[ -e ${_REPO} ]];then
 	if [[ -e ${_REPO}/.git ]];then
-		/bin/rm -rf ${_SRC_BIN_SYS}/repo_utils/.git
-		mv ${_REPO}/.git ${_SRC_BIN_SYS}/repo_utils # Set aside .git repo
+		cp -r ${_REPO}/.git ${_SRC_BIN_SYS}/repo_utils # Set aside .git repo
+		echo "${GREEN_FG}Backed up git repo to ${_SRC_BIN_SYS}/repo_utils${RESET}"
 	fi
-	/bin/rm -rf ${_REPO} && mkdir -p ${_REPO}
-	cp ${_SRC_BIN_SYS}/repo_utils/* ${_REPO} # Git support files
-	cp -r ${_SRC_BIN_SYS}/repo_utils/.* ${_REPO} # Git repo
+
+	/bin/rm -rf ${_REPO} && mkdir -p ${_REPO} # Rebuild tree
+	echo "${GREEN_FG}Rebuilt ${_REPO}${RESET}"
+
+	if [[ -e ${_SRC_BIN_SYS}/.git ]];then
+		cp ${_SRC_BIN_SYS}/repo_utils/.git ${_REPO} # Git repository
+		echo "${GREEN_FG}Copied git repo to ${_REPO}${RESET}"
+		cp ${_SRC_BIN_SYS}/repo_utils/gitconfig ${_REPO}/.git/config # Git config
+		echo "${GREEN_FG}Copied git config to ${_REPO}/.git${RESET}"
+	fi
+
+	cp ${_SRC_BIN_SYS}/repo_utils/do_commit ${_REPO} # Git commit script
+	echo "${GREEN_FG}Copied git commit script ${_REPO}${RESET}"
+	cp ${_SRC_BIN_SYS}/repo_utils/gitignore ${_REPO}/.gitignore # Git ignore
+	echo "${GREEN_FG}Copied git ignore ${_REPO}/.gitignore${RESET}"
+	cp ${_SRC_BIN_SYS}/repo_utils/README.MD ${_REPO} # Git readme
+	echo "${GREEN_FG}Copied README.MD ${_REPO}${RESET}"
+
+	[[ ! -e ${_REPO_USER} ]] && mkdir -p ${_REPO_USER}
+	[[ ! -e ${_REPO_LOCAL} ]] && mkdir -p ${_REPO_LOCAL}
+	[[ ! -e ${_REPO_LOCAL_ETC} ]] && mkdir -p ${_REPO_LOCAL_ETC}
+	[[ ! -e ${_REPO_PYTHON} ]] && mkdir -p ${_REPO_PYTHON}
+	[[ ! -e ${_REPO_SYSTEM} ]] && mkdir -p ${_REPO_SYSTEM}
+	[[ ! -e ${_REPO_VIM_CFG} ]] && mkdir -p ${_REPO_VIM_CFG}
+	[[ ! -e ${_REPO_VIM_CFG_USER} ]] && mkdir -p ${_REPO_VIM_CFG_USER}
+	[[ ! -e ${_REPO_ZSH_CFG} ]] && mkdir -p ${_REPO_ZSH_CFG}
+	[[ ! -e ${_REPO_ZSH_CFG_USER} ]] && mkdir -p ${_REPO_ZSH_CFG_USER}
+	[[ ! -e ${_REPO_ZSH_LIB} ]] && mkdir -p ${_REPO_ZSH_LIB}
+	[[ ! -e ${_REPO_ZSH_LIB_UTILS} ]] && mkdir -p ${_REPO_ZSH_LIB_UTILS}
+	[[ ! -e ${_REPO_ZSH_NON_LIB_UTILS} ]] && mkdir -p ${_REPO_ZSH_NON_LIB_UTILS}
+	[[ ! -e ${_REPO_NON_ZSH_UTILS} ]] && mkdir -p ${_REPO_NON_ZSH_UTILS}
 fi
 echo "${GREEN_FG}built${RESET}\n"
-
-[[ ! -e ${_REPO_USER} ]] && mkdir -p ${_REPO_USER}
-[[ ! -e ${_REPO_LOCAL} ]] && mkdir -p ${_REPO_LOCAL}
-[[ ! -e ${_REPO_LOCAL_ETC} ]] && mkdir -p ${_REPO_LOCAL_ETC}
-[[ ! -e ${_REPO_PYTHON} ]] && mkdir -p ${_REPO_PYTHON}
-[[ ! -e ${_REPO_SYSTEM} ]] && mkdir -p ${_REPO_SYSTEM}
-[[ ! -e ${_REPO_VIM_CFG} ]] && mkdir -p ${_REPO_VIM_CFG}
-[[ ! -e ${_REPO_VIM_CFG_USER} ]] && mkdir -p ${_REPO_VIM_CFG_USER}
-[[ ! -e ${_REPO_ZSH_CFG} ]] && mkdir -p ${_REPO_ZSH_CFG}
-[[ ! -e ${_REPO_ZSH_CFG_USER} ]] && mkdir -p ${_REPO_ZSH_CFG_USER}
-[[ ! -e ${_REPO_ZSH_LIB} ]] && mkdir -p ${_REPO_ZSH_LIB}
-[[ ! -e ${_REPO_ZSH_LIB_UTILS} ]] && mkdir -p ${_REPO_ZSH_LIB_UTILS}
-[[ ! -e ${_REPO_ZSH_NON_LIB_UTILS} ]] && mkdir -p ${_REPO_ZSH_NON_LIB_UTILS}
-[[ ! -e ${_REPO_NON_ZSH_UTILS} ]] && mkdir -p ${_REPO_NON_ZSH_UTILS}
 
 # Organize /usr/local/bin
 UTILS=("${(f)$(file $(find ${_SRC_BIN} -maxdepth 1 -type f))}")
@@ -280,5 +295,7 @@ echo -n "Commit these changes? (y/n):"
 read -q RESPONSE
 if [[ ${RESPONSE} == 'y' ]];then
 	pushd ~/Code/REPO
-	./do_commit
+	sudo chown -R kmiller:kmiller *
+	do_commit
+	popd
 fi

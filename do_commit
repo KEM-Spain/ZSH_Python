@@ -1,5 +1,7 @@
 #!/usr/bin/zsh
 
+#TODO: add development
+ 
 #Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -23,11 +25,8 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 DATE=$(date +"%m-%d-%Y-%T")
 [[ -z ${@} ]] && MSG="${DATE} commit" || MSG=${@}
 
-sudo chown -R kmiller:kmiller *
+[[ ! -e .git ]] && git init # Initialize
 
-[[ ! -e .git ]] && git init
-cp ../git_config .git/config
-cp ../gitignore .gitignore
 git add *
 git commit -m ${DATE}
 git branch -M main
@@ -36,8 +35,7 @@ git branch -M main
 
 REMOTE_SHA=$(git rev-parse --short origin/main)
 git pull origin main
-# Overwrite repo 
-# git push -u origin main --force
+# git push -u origin main --force # Overwrite remote repo 
 git push --set-upstream origin main
 LOCAL_SHA=$(git rev-parse --short HEAD)
 

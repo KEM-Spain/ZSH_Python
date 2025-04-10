@@ -37,7 +37,7 @@ print_hist () {
 	local -a LIST=()
 	local NDX=0
 
-	msg_box -x1 -y1 "<w>Collecting history...<N>"
+	msg_box "<w>Collecting history...<N>"
 
 	while read LINE;do
 		if [[ ${_ALL} == 'false' ]];then
