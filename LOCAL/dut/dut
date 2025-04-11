@@ -44,7 +44,7 @@ g_USAGE=false
 g_UTIL=''
 
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/SELECT.zsh
@@ -52,16 +52,13 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 external () {
-	# TODO: migrate from passing values to indexes to enable assoc sort compatability
 	# Constants
-	local	PARTITION
-	local ACTION
-	local DEVICES=0
-	local L
-	local MOUNTED=0
-	local MOUNT_ROOT=/media/kmiller
+	local MOUNT_ROOT=/media/${_USER_NAME}
+
+	#App Vars
 	local -a MSG_OUT
-	local UNMOUNTED=0
+	local	PARTITION=''
+	local L
 
 	# Declarations
 	local -A _SORT_TABLE=(1 _PARTITIONS 2 _TYPES 3 _MOUNT_POINTS 4 _LABELS)
@@ -73,7 +70,7 @@ external () {
 	local -a _LOCAL_LIST
 	local -a MARKED
 	local -a RAW_DISK_STATUS
-	local -A _ERR_CODES=(
+	local -A _MOUNT_CODES=(
 	0 "0 - success"
 	1 "1 - incorrect invocation or permissions"
 	2 "2 - system error (out of memory, cannot fork, no more loop devices)"
@@ -104,32 +101,40 @@ external () {
 		local M
 		local -a MLIST
 		local STATE
+		local NDX=0
+
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+
+		msg_box "Working..."
 
 		for M in ${MARKED};do
-			if is_mounted ${M};then
+			NDX=${_LIST[${M}]}
+			if is_mounted ${NDX};then
 				ACTION=unmount
 			else
 				ACTION=mount
 			fi
 
-			do_${ACTION} ${_PARTITIONS[${M}]}
+			do_${ACTION} ${NDX}
 
 			if [[ ${?} -ne 0 ]];then
-				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${M}]}<N>| |${_ERR_CODES[${g_MOUNT_ERROR}]}"
+				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
 			else
 				get_disk_info
 			fi
 		done
 
 		for M in ${MARKED};do
-			if is_mounted ${M};then
+			NDX=${_LIST[${M}]}
+			if is_mounted ${NDX};then
 				STATE=mounted
 			else
 				STATE=unmounted
+				remove_orphan ${NDX} true
 			fi
-			MLIST+="${_PARTITIONS[${M}]} is ${STATE}"
+			MLIST+="${_PARTITIONS[${NDX}]} is ${STATE}"
 		done
-		msg_box -p -PK "Mount Status| |$(msg_list ${MLIST})"
+		msg_box -p -PK "Mount Status| |$(msg_list_bullet ${MLIST})"
 
 		for M in ${MARKED};do
 			MARKED[${M}]=0
@@ -141,7 +146,7 @@ external () {
 		local NDX=${1}
 		local RC=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${NDX}]}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
 
 		is_mounted ${NDX}
 		RC=${?}
@@ -175,7 +180,7 @@ external () {
 		local NDX=${1}
 		local RC=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${NDX}]}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
 
 		is_mounted ${NDX}
 		RC=${?}
@@ -209,6 +214,8 @@ external () {
 	do_query () {
 		local P
 
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+
 		local TITLE="Current status for external drives"
 		echo "\n${TITLE}"
 		echo $(str_unicode_line ${#TITLE})
@@ -226,7 +233,7 @@ external () {
 		local -a LIST
 		local L
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${PART}]}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
 
 		LIST=("${(f)$(lsof 2>/dev/null | grep --color=never ${_MOUNT_POINTS[${NDX}]})}")
 
@@ -241,7 +248,7 @@ external () {
 	is_mounted () {
 		local NDX=${1}
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${PART}]}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
 
 		[[ ${_MOUNT_POINTS[${NDX}]} == "unmounted" ]] && return 1 || return 0
 	}
@@ -253,6 +260,8 @@ external () {
 		local TYPE
 		local D
 
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+
 		RAW_DISK_STATUS=("${(f)$(sudo lsblk -P -o NAME,FSTYPE,MOUNTPOINT,LABEL | grep 'sd.[0-9]' | sed -e 's/=/|/g' -e 's/ /|/g' -e 's/\"//g')}")
 
 		for (( D=1; D<=${#RAW_DISK_STATUS}; D++ ));do
@@ -262,7 +271,7 @@ external () {
 			LBL=$(cut -d'|' -f8 <<<${RAW_DISK_STATUS[${D}]})
 
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART} TYPE:${TYPE} MP:${MP} LBL:${LBL}"
-			[[ -e ${MOUNT_ROOT}/${LBL} ]] && _MOUNT_DIRS[${PART}]="${MOUNT_ROOT}/${LBL}"
+			[[ -e ${MOUNT_ROOT}/${LBL} ]] && _MOUNT_DIRS[${D}]="${MOUNT_ROOT}/${LBL}"
 
 			_PARTITIONS[${D}]=${PART:=null}
 			_TYPES[${D}]=${TYPE:=null}
@@ -289,7 +298,7 @@ external () {
 			fi
 		done
 
-		[[ ${g_MOUNT_ERROR} -ne 0 && ${g_VERBOSE} == 'true' ]] && printf "${BOLD}${RED_FG}%s${RESET}:${WHITE_FG}%s${RESET}\n" "Mount error" "${_ERR_CODES[${g_MOUNT_ERROR}]}"
+		[[ ${g_MOUNT_ERROR} -ne 0 && ${g_VERBOSE} == 'true' ]] && printf "${BOLD}${RED_FG}%s${RESET}:${WHITE_FG}%s${RESET}\n" "Mount error" "${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
 		echo
 	}
 
@@ -304,6 +313,34 @@ external () {
 		return 0
 	}
 
+	remove_orphan () {
+		local NDX=${1}
+		local MSG=${2}
+		local MSG_TEXT=''
+
+		if ! is_mounted ${NDX};then
+			if [[ -n ${_MOUNT_DIRS[${NDX}]} && -e ${_MOUNT_DIRS[${NDX}]} ]];then
+				if [[ ${MSG} == 'true' ]];then
+					if [[ -e ${_MOUNT_DIRS[${NDX}]} ]];then
+						MSG_TEXT+="|Detected orphaned mount - <r>deleting<N>:<w>${_MOUNT_DIRS[${NDX}]}<N>"
+						g_FCNT=$(find ${_MOUNT_DIRS[${NDX}]} -maxdepth 1 ! -path ${_MOUNT_DIRS[${NDX}]} | wc -l)
+						[[ ${g_FCNT} -eq 0 ]] && sudo /bin/rm -rf ${_MOUNT_DIRS[${NDX}]} || MSG_TEXT+="|<r>Warning<N>: Orphan mount Not deleted:${g_FCNT} files found"
+					fi
+					msg_box -t2 ${MSG_TEXT}
+				else
+					(
+					echo "${WHITE_FG}${_MOUNT_DIRS[${NDX}]}${RESET} is unmounted"
+					if [[ -e ${_MOUNT_DIRS[${NDX}]} ]];then
+						echo "Detected orphaned mount - ${RED_FG}deleting${RESET}:${WHITE_FG}${_MOUNT_DIRS[${NDX}]}${RESET}"
+						g_FCNT=$(find ${_MOUNT_DIRS[${NDX}]} -maxdepth 1 ! -path ${_MOUNT_DIRS[${NDX}]} | wc -l)
+						[[ ${g_FCNT} -eq 0 ]] && sudo /bin/rm -rf ${_MOUNT_DIRS[${NDX}]} || echo "${RED_FG}Warning${RESET}: Orphan mount Not deleted:${g_FCNT} files found"
+					fi
+					) >&2
+				fi
+			fi
+		fi
+	}
+
 	#--Begin GetOpts--
 	RESET="\033[m"
 	RED_FG="\033[31m"
@@ -312,6 +349,8 @@ external () {
 	read -r -d '' DESC<<___EOF
 Utility to mount/unmount external disks
 \tDefault is to toggle disk mounts
+\tIf a <PARTITION> is passed an attempt will 
+\tbe made to toggle its state.
 ___EOF
 
 	parse_opts () {
@@ -401,10 +440,21 @@ ___EOF
 	fi
 
 	if [[ -n ${PARTITION} ]];then # Arg was passed
+		local NDX=0
+		for P in ${(k)_PARTITIONS};do
+			if [[ ${_PARTITIONS[${P}]} == ${PARTITION} ]];then
+				NDX=${P}
+				break
+			fi
+		done
+
+		[[ ${NDX} -eq 0 ]] && exit_leave $(msg_err "Unknown partition:${PARTITION}")
+
 		if [[ ${_MOUNT_POINTS[${PARTITION:t}]} == 'unmounted' ]];then
-			do_mount ${PARTITION:t}
+			do_mount ${NDX}
 		else
-			do_unmount ${PARTITION:t}
+			do_unmount ${NDX}
+			remove_orphan ${NDX}
 		fi
 	elif [[ ${g_FORCE_ALL_MOUNT} == 'true' ]];then # -m option
 		for L in ${(on)_LOCAL_LIST};do
@@ -413,18 +463,7 @@ ___EOF
 	elif [[ ${g_FORCE_ALL_UNMOUNT} == 'true' ]];then # -u option
 		for L in ${(on)_LOCAL_LIST};do
 			do_unmount ${L}
-			if ! is_mounted ${L};then
-				if [[ -n ${_MOUNT_DIRS[${L}]} && -e ${_MOUNT_DIRS[${L}]} ]];then
-					(
-					echo "${WHITE_FG}${_MOUNT_DIRS[${L}]}${RESET} is unmounted"
-					if [[ -e ${_MOUNT_DIRS[${L}]} ]];then
-						echo "Detected orphaned mount - ${RED_FG}deleting${RESET}:${WHITE_FG}${_MOUNT_DIRS[${L}]}${RESET}"
-						g_FCNT=$(find ${_MOUNT_DIRS[${L}]} -maxdepth 1 ! -path ${_MOUNT_DIRS[${L}]} | wc -l)
-						[[ ${g_FCNT} -eq 0 ]] && sudo /bin/rm -rf ${_MOUNT_DIRS[${L}]} || echo "Orphan mount Not deleted:${g_FCNT} files found"
-					fi
-					) >&2
-				fi
-			fi
+			remove_orphan ${L}
 		done
 	elif [[ ${g_BRIEF} == 'true' ]];then # -b option
 		g_VERBOSE=false
@@ -458,7 +497,7 @@ ___EOF
 		list_set_prompt_msg '
 		printf "Press ${WHITE_FG}Home End PgUp PgDn${RESET}, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 		'
-		list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select partition(s) then <${GREEN_FG}ENTER${RESET}> to mount/unmount ${ITALIC}or exit if none selected${RESET}"
+		list_set_select_action "mount/unmount"
 		list_set_barlines true
 		list_set_reuse_stale true
 		list_set_searchable false

@@ -52,6 +52,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 external () {
+	# TODO: migrate from passing values to indexes to enable assoc sort compatability
 	# Constants
 	local	PARTITION
 	local ACTION
@@ -101,63 +102,60 @@ external () {
 	action_do () {
 		local ACTION
 		local M
-		local PNDX
 		local -a MLIST
 		local STATE
 
 		for M in ${MARKED};do
-			PNDX=${_LIST[${M}]}
-			if is_mounted ${PNDX};then
+			if is_mounted ${M};then
 				ACTION=unmount
 			else
 				ACTION=mount
 			fi
 
-			do_${ACTION} ${_PARTITIONS[${PNDX}]}
+			do_${ACTION} ${_PARTITIONS[${M}]}
 
 			if [[ ${?} -ne 0 ]];then
-				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${PNDX}]}<N>| |${_ERR_CODES[${g_MOUNT_ERROR}]}"
+				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${M}]}<N>| |${_ERR_CODES[${g_MOUNT_ERROR}]}"
 			else
 				get_disk_info
 			fi
 		done
 
 		for M in ${MARKED};do
-			PNDX=${_LIST[${M}]}
-			if is_mounted ${PNDX};then
+			if is_mounted ${M};then
 				STATE=mounted
 			else
 				STATE=unmounted
 			fi
-			MLIST+="${_PARTITIONS[${PNDX}]} is ${STATE}"
+			MLIST+="${_PARTITIONS[${M}]} is ${STATE}"
 		done
 		msg_box -p -PK "Mount Status| |$(msg_list ${MLIST})"
 
 		for M in ${MARKED};do
 			MARKED[${M}]=0
-			list_set_selected ${M} ${_STALE_ROW}
+			list_set_selected ${M} ${_AVAIL_ROW}
 		done
 	}
 
 	do_mount () {
-		local PART=${1}
+		local NDX=${1}
 		local RC=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${NDX}]}"
 
-		is_mounted ${PART}
+		is_mounted ${NDX}
 		RC=${?}
 		[[ ${RC} -eq 0 && ${g_VERBOSE} == 'true' ]] && g_MOUNT_ERROR=35 && set_exit_value 35 && return 35 # Already mounted
 
 		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x16 -t.3 "Mounting..."
 		if [[ ${RC} -ne 0 ]];then # Not mounted
-			grep -q ${MOUNT_ROOT}/${_LABELS[${PART}]} <<<$(fut comments /etc/fstab)
+			grep -q ${MOUNT_ROOT}/${_LABELS[${NDX}]} <<<$(fut comments /etc/fstab)
 			if [[ ${?} -eq 0 ]];then
-				sudo mount /dev/${PART} 2>/dev/null
+				sudo mount /dev/${_PARTITIONS[${NDX}]} 2>/dev/null
 				RC=${?}
 			else
-				[[ ! -e ${MOUNT_ROOT}/${_LABELS[${PART}]} ]] && sudo mkdir ${MOUNT_ROOT}/${_LABELS[${PART}]}
-				sudo mount -t ${_TYPES[${PART}]} /dev/${PART} ${MOUNT_ROOT}/${_LABELS[${PART}]} 2>/dev/null
+				[[ ! -e ${MOUNT_ROOT}/${_LABELS[${NDX}]} ]] && sudo mkdir ${MOUNT_ROOT}/${_LABELS[${NDX}]}
+				sudo mount -t ${_TYPES[${NDX}]} /dev/${_PARTITIONS[${NDX}]} ${MOUNT_ROOT}/${_LABELS[${NDX}]} 2>/dev/null
 				RC=${?}
 			fi
 		fi
@@ -168,30 +166,30 @@ external () {
 			set_exit_value ${RC}
 		fi
 
-		_MOUNT_POINTS[${PART}]=mounted
+		_MOUNT_POINTS[${NDX}]=mounted
 
 		return ${RC}
 	}
 
 	do_unmount () {
-		local PART=${1}
+		local NDX=${1}
 		local RC=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${NDX}]}"
 
-		is_mounted ${PART}
+		is_mounted ${NDX}
 		RC=${?}
 		[[ ${RC} -ne 0 ]] && g_MOUNT_ERROR=25 && set_exit_value 25 && return 25 # Not mounted
 
 		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x16 -t.3 "Unmounting..."
 		if [[ ${RC} -eq 0 ]];then
-			is_partition_free ${PART}
+			is_partition_free ${NDX}
 			RC=${?}
 			[[ ${RC} -ne 0 && ${g_VERBOSE} == 'true' ]] && g_MOUNT_ERROR=${RC} && set_exit_value ${RC} && return ${RC}
 		fi
 
 		if [[ ${RC} -eq 0 ]];then
-			sudo umount /dev/${PART} 2>/dev/null
+			sudo umount /dev/${_PARTITIONS[${NDX}]} 2>/dev/null
 			RC=${?}
 		fi
 
@@ -203,7 +201,7 @@ external () {
 			set_exit_value ${RC}
 		fi
 
-		_MOUNT_POINTS[${PART}]=unmounted
+		_MOUNT_POINTS[${NDX}]=unmounted
 
 		return ${RC}
 	}
@@ -214,7 +212,7 @@ external () {
 		local TITLE="Current status for external drives"
 		echo "\n${TITLE}"
 		echo $(str_unicode_line ${#TITLE})
-		for P in ${_PARTITIONS};do
+		for P in ${(k)_PARTITIONS};do
 			if is_mounted ${P};then
 				printf "%s ${GREEN_FG}mounted${RESET} on: %s\n" "/dev/${P}" ${_MOUNT_POINTS[${P}]}
 			else
@@ -224,13 +222,13 @@ external () {
 	}
 
 	is_partition_free () {
-		local PART=${1}
+		local NDX=${1}
 		local -a LIST
 		local L
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${PART}]}"
 
-		LIST=("${(f)$(lsof 2>/dev/null | grep --color=never ${_MOUNT_POINTS[${PART}]})}")
+		LIST=("${(f)$(lsof 2>/dev/null | grep --color=never ${_MOUNT_POINTS[${NDX}]})}")
 
 		for L in ${LIST};do
 			[[ ${L} =~ 'DIR' ]] && return 20
@@ -241,11 +239,11 @@ external () {
 	}
 
 	is_mounted () {
-		local PART=${1}
+		local NDX=${1}
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${_PARTITIONS[${PART}]}"
 
-		[[ ${_MOUNT_POINTS[${PART}]} == "unmounted" ]] && return 1 || return 0
+		[[ ${_MOUNT_POINTS[${NDX}]} == "unmounted" ]] && return 1 || return 0
 	}
 
 	get_disk_info () {
@@ -257,19 +255,19 @@ external () {
 
 		RAW_DISK_STATUS=("${(f)$(sudo lsblk -P -o NAME,FSTYPE,MOUNTPOINT,LABEL | grep 'sd.[0-9]' | sed -e 's/=/|/g' -e 's/ /|/g' -e 's/\"//g')}")
 
-		for D in ${RAW_DISK_STATUS};do
-			PART=$(cut -d'|' -f2 <<<${D})
-			TYPE=$(cut -d'|' -f4 <<<${D})
-			MP=$(cut -d'|' -f6 <<<${D})
-			LBL=$(cut -d'|' -f8 <<<${D})
+		for (( D=1; D<=${#RAW_DISK_STATUS}; D++ ));do
+			PART=$(cut -d'|' -f2 <<<${RAW_DISK_STATUS[${D}]})
+			TYPE=$(cut -d'|' -f4 <<<${RAW_DISK_STATUS[${D}]})
+			MP=$(cut -d'|' -f6 <<<${RAW_DISK_STATUS[${D}]})
+			LBL=$(cut -d'|' -f8 <<<${RAW_DISK_STATUS[${D}]})
 
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART} TYPE:${TYPE} MP:${MP} LBL:${LBL}"
 			[[ -e ${MOUNT_ROOT}/${LBL} ]] && _MOUNT_DIRS[${PART}]="${MOUNT_ROOT}/${LBL}"
 
-			_PARTITIONS[${PART}]=${PART:=null}
-			_TYPES[${PART}]=${TYPE:=null}
-			_MOUNT_POINTS[${PART}]=${MP:=unmounted}
-			_LABELS[${PART}]=${LBL:=unlabeled}
+			_PARTITIONS[${D}]=${PART:=null}
+			_TYPES[${D}]=${TYPE:=null}
+			_MOUNT_POINTS[${D}]=${MP:=unmounted}
+			_LABELS[${D}]=${LBL:=unlabeled}
 		done
 
 		_LOCAL_LIST=(${(k)_PARTITIONS})
@@ -452,9 +450,9 @@ ___EOF
 
 		# Set line item
 		list_set_line_item ' 
-		local PNDX=${_LIST[${_LIST_NDX}]};
-		[[ ${_MOUNT_POINTS[${PNDX}]} == 'unmounted' ]] && local MOUNT_COLOR=${RED_FG} || local MOUNT_COLOR=${GREEN_FG};
-		printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}%12s %12s ${MOUNT_COLOR}%30s${RESET} %15s${RESET}\n" ${_LIST_NDX} ${_PARTITIONS[${PNDX}]} ${_TYPES[${PNDX}]} ${_MOUNT_POINTS[${PNDX}]} ${_LABELS[${PNDX}]}
+		local NDX=${_LIST[${_LIST_NDX}]};
+		[[ ${_MOUNT_POINTS[${NDX}]} == 'unmounted' ]] && local MOUNT_COLOR=${RED_FG} || local MOUNT_COLOR=${GREEN_FG};
+		printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}%12s %12s ${MOUNT_COLOR}%30s${RESET} %15s${RESET}\n" ${_LIST_NDX} ${_PARTITIONS[${NDX}]} ${_TYPES[${NDX}]} ${_MOUNT_POINTS[${NDX}]} ${_LABELS[${NDX}]}
 		'
 
 		list_set_prompt_msg '
@@ -464,30 +462,8 @@ ___EOF
 		list_set_barlines true
 		list_set_reuse_stale true
 		list_set_searchable false
-		# TODO make list sortable
-
-		local L
-		echo "_LOCAL_LIST" >>x
-		for L in ${_LOCAL_LIST};do
-			echo ${L}
-		done >>x
-		echo "_PARTITIONS" >>x
-		for K in ${(k)_PARTITIONS};do
-			printf "KEY:%s VAL:%s\n" ${K} ${_PARTITIONS[${K}]}
-		done >>x
-		echo "_TYPES" >>x
-		for K in ${(k)_TYPES};do
-			printf "KEY:%s VAL:%s\n" ${K} ${_TYPES[${K}]}
-		done >>x
-		echo "_MOUNT_POINTS" >>x
-		for K in ${(k)_TYPES};do
-			printf "KEY:%s VAL:%s\n" ${K} ${_MOUNT_POINTS[${K}]}
-		done >>x
-		echo "_LABELS" >>x
-		for K in ${(k)_TYPES};do
-			printf "KEY:%s VAL:%s\n" ${K} ${_LABELS[${K}]}
-		done >>x
-
+		list_set_sortable true
+		list_set_sort_defaults MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 DELIM ${_LIST_DELIM} TABLE "${(kv)_SORT_TABLE}" 
 
 		while true;do
 			# Get selection

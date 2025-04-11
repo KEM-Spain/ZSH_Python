@@ -29,7 +29,7 @@ g_TO_TEXT=?
 g_SIMULATE=false
 
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -71,7 +71,7 @@ action_do () {
 		else
 			if [[ ${APPROVE_ALL} == 'false' ]];then
 				[[ ${#_MARKED} -gt 1 ]] && PROMPT=N || PROMPT=C
-				msg_box -H1 -p -P${PROMPT} "Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|Lines:|$(msg_list ${MATCHES})|<Z>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
+				msg_box -H1 -p -P${PROMPT} "Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|Lines:|$(msg_list_bullet ${MATCHES})|<Z>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
 				case ${_MSG_KEY} in
 					a|y) APPROVE_ALL=true;;
 					s) list_clear_selected ${M};continue;;
@@ -238,7 +238,7 @@ list_add_header_break
 list_set_line_item ' 
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 '
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) <${GREEN_FG}ENTER${RESET}> to process ${ITALIC}or exit if none selected${RESET}"
+list_set_select_action "process"
 list_set_searchable true
 
 while true;do
