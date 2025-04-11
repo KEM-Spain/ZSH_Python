@@ -208,7 +208,7 @@ action_do () {
 			if [[ ${?} -eq 0 ]];then
 				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Not yet available<N>|<g>${LOG_LINE}<N>"
-				g_WHEN=$(sed 's/\(.* in \)\(.*\)\.$/\2/' <<<${LOG_LINE})
+				g_WHEN=$(perl -pe 's/^(.*)( in \d+.*)$/starts\2/g' <<<${LOG_LINE})
 				msg_box -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FUTURE[${M}]=true
 				_DOWNLOADS[${M}]=false

@@ -56,6 +56,8 @@ _SRC_VIM_CFG=${HOME}/.vim
 _SRC_ZSH_CFG_USER=${HOME}/.zsh
 _SRC_ZSH_CFG=/etc/zsh
 
+_REPO_UTILS=${_SRC_BIN}/system/repo_utils
+
 # Declarations
 typeset -a _BIN=()
 typeset -a _ETC=()
@@ -70,7 +72,7 @@ typeset -a _ZSH_NON_LIB_UTILS=()
 
 # Functions
 copy_conv_files () {
-	echo "${WHITE_FG}CONVERSION UTILITY FILES${RESET}" >&2
+	echo "${GREEN_FG}CONVERSION UTILITY FILES${RESET}" >&2
 	rsync -a ${_SRC_BIN_CONV} ${_REPO_ZSH_LIB_UTILS}
 }
 
@@ -80,7 +82,7 @@ copy_dev_files () {
 	local -a BIN_LIST=()
 	local D
 
-	echo "${WHITE_FG}DEVELOPMENT FILES${RESET}" >&2
+	echo "${GREEN_FG}DEVELOPMENT FILES${RESET}" >&2
 
 	BIN_LIST=("${(f)$(find /usr/local/bin -type f ! -path /usr/local/bin)}")
 	DEV_DIRS=("${(f)$(find ${_SRC_CODE} -maxdepth 1 -type d)}")
@@ -103,7 +105,7 @@ copy_etc_files () {
 	local -a LOCAL_ETC_FILES=("${(f)$(find ${_SRC_LOCAL_ETC} -maxdepth 1 -type f)}")
 	local L
 
-	echo "${WHITE_FG}ETC SUPPORT FILES${RESET}" >&2
+	echo "${GREEN_FG}ETC SUPPORT FILES${RESET}" >&2
 
 	for L in ${LOCAL_ETC_FILES};do
 		cp "${L}" ${_REPO_LOCAL_ETC}
@@ -113,14 +115,14 @@ copy_etc_files () {
 }
 
 copy_non_zsh_utils () {
-	echo "${WHITE_FG}NON ZSH UTILS${RESET}" >&2
+	echo "${GREEN_FG}NON ZSH UTILS${RESET}" >&2
 	for L in ${_NON_ZSH_UTILS};do
 		cp "${L}" ${_REPO_NON_ZSH_UTILS}
 	done
 }
 
 copy_pyscript_files () {
-	echo "${WHITE_FG}PYTHON SCRIPT FILES${RESET}" >&2
+	echo "${GREEN_FG}PYTHON SCRIPT FILES${RESET}" >&2
 	rsync -a ${_SRC_BIN_PYSCRIPTS} ${_REPO_ZSH_LIB_UTILS}
 }
 
@@ -132,17 +134,17 @@ copy_python_dev_files () {
 	RS_EXCL+=(--exclude='.git')
 	RS_EXCL+=(--exclude='.idea')
 
-	echo "${WHITE_FG}PYTHON PROJECT FILES${RESET}" >&2
+	echo "${GREEN_FG}PYTHON PROJECT FILES${RESET}" >&2
 	rsync -a --no-links --exclude 'lib' ${RS_EXCL} /home/kmiller/Code/LANG/Python/PROJECTS/ts /home/kmiller/Code/REPO/PYTHON
 }
 
 copy_sys_files () {
-	echo "${WHITE_FG}SYSTEM FILES${RESET}" >&2
+	echo "${GREEN_FG}SYSTEM FILES${RESET}" >&2
 	rsync -a --no-links ${_SRC_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
 }
 
 copy_user_files () {
-	echo "${WHITE_FG}USER FILES${RESET}" >&2
+	echo "${GREEN_FG}USER FILES${RESET}" >&2
 	cp -R ${HOME}/.mvq ${_REPO_USER} 2>/dev/null
 	cp -R ${HOME}/.yts ${_REPO_USER} 2>/dev/null
 	cp -R ${HOME}/.openvpn3 ${_REPO_USER} 2>/dev/null
@@ -150,7 +152,7 @@ copy_user_files () {
 }
 
 copy_vim_cfg_files () {
-	echo "${WHITE_FG}VIM CONFIG FILES${RESET}" >&2
+	echo "${GREEN_FG}VIM CONFIG FILES${RESET}" >&2
 	sudo rsync -a --no-links --exclude='undo' ${_SRC_VIM_CFG} ${_REPO_VIM_CFG}
 	cp ~/.vimrc ${_REPO_VIM_CFG_USER}
 }
@@ -159,7 +161,7 @@ copy_zsh_cfg_files () {
 	local -a REPO_ZSH_CFG_FILES=("${(f)$(find ${_SRC_ZSH_CFG} -maxdepth 1 -type f)}")
 	local L
 
-	echo "${WHITE_FG}ZSH CONFIG FILES${RESET}" >&2
+	echo "${GREEN_FG}ZSH CONFIG FILES${RESET}" >&2
 
 	for L in ${REPO_ZSH_CFG_FILES};do
 		cp "${L}" ${_REPO_ZSH_CFG}
@@ -174,7 +176,7 @@ copy_zsh_libs () {
 	local -a ZSH_LIBS=()
 	local L
 
-	echo "${WHITE_FG}ZSH LIBS${RESET}" >&2
+	echo "${GREEN_FG}ZSH LIBS${RESET}" >&2
 	ZSH_LIBS=("${(f)$(find ${_SRC_LIB} -maxdepth 1 -name '*zsh' -type f)}")
 	for L in ${ZSH_LIBS};do
 		cp "${L}" ${_REPO_ZSH_LIB}
@@ -182,14 +184,14 @@ copy_zsh_libs () {
 }
 
 copy_zsh_lib_utils () {
-	echo "${WHITE_FG}ZSH LIB UTILS${RESET}" >&2
+	echo "${GREEN_FG}ZSH LIB UTILS${RESET}" >&2
 	for L in ${_ZSH_LIB_UTILS};do
 		cp "${L}" ${_REPO_ZSH_LIB_UTILS}
 	done
 }
 
 copy_zsh_non_lib_utils () {
-	echo "${WHITE_FG}ZSH NON LIB UTILS${RESET}" >&2
+	echo "${GREEN_FG}ZSH NON LIB UTILS${RESET}" >&2
 	for L in ${_ZSH_NON_LIB_UTILS};do
 		cp "${L}" ${_REPO_ZSH_NON_LIB_UTILS}
 	done
@@ -198,29 +200,29 @@ copy_zsh_non_lib_utils () {
 # Execution
 
 # Build repo
-echo -n "${GREEN_FG}Building repo${RESET}..."
+echo "${WHITE_FG}Building repo${RESET}..."
 if [[ -e ${_REPO} ]];then
 	if [[ -e ${_REPO}/.git ]];then
-		cp -r ${_REPO}/.git ${_SRC_BIN_SYS}/repo_utils # Set aside .git repo
-		echo "${GREEN_FG}Backed up git repo to ${_SRC_BIN_SYS}/repo_utils${RESET}"
+		sudo cp -r ${_REPO}/.git ${_REPO_UTILS} # Set aside .git repo
+		echo "${GREEN_FG}Backed up git repo to:${WHITE_FG}${_REPO_UTILS}${RESET}"
 	fi
 
-	/bin/rm -rf ${_REPO} && mkdir -p ${_REPO} # Rebuild tree
-	echo "${GREEN_FG}Rebuilt ${_REPO}${RESET}"
+	sudo /bin/rm -rf ${_REPO} && mkdir -p ${_REPO} # Rebuild tree
+	echo "\n${WHITE_FG}Rebuilding...${WHITE_FG}${RESET}"
 
-	if [[ -e ${_SRC_BIN_SYS}/.git ]];then
-		cp ${_SRC_BIN_SYS}/repo_utils/.git ${_REPO} # Git repository
-		echo "${GREEN_FG}Copied git repo to ${_REPO}${RESET}"
-		cp ${_SRC_BIN_SYS}/repo_utils/gitconfig ${_REPO}/.git/config # Git config
-		echo "${GREEN_FG}Copied git config to ${_REPO}/.git${RESET}"
+	if [[ -e ${_REPO_UTILS}/.git ]];then
+		sudo cp -r ${_REPO_UTILS}/.git ${_REPO} # Git repository
+		echo "${GREEN_FG}Copied git repo to:${WHITE_FG}${_REPO}${RESET}"
+		sudo cp ${_REPO_UTILS}/gitconfig ${_REPO}/.git/config # Git config
+		echo "${GREEN_FG}Copied git config to:${WHITE_FG}${_REPO}/.git${RESET}"
 	fi
 
-	cp ${_SRC_BIN_SYS}/repo_utils/do_commit ${_REPO} # Git commit script
-	echo "${GREEN_FG}Copied git commit script ${_REPO}${RESET}"
-	cp ${_SRC_BIN_SYS}/repo_utils/gitignore ${_REPO}/.gitignore # Git ignore
-	echo "${GREEN_FG}Copied git ignore ${_REPO}/.gitignore${RESET}"
-	cp ${_SRC_BIN_SYS}/repo_utils/README.MD ${_REPO} # Git readme
-	echo "${GREEN_FG}Copied README.MD ${_REPO}${RESET}"
+	cp ${_REPO_UTILS}/do_commit ${_REPO} # Git commit script
+	echo "${GREEN_FG}Copied git commit script to:${WHITE_FG}${_REPO}${RESET}"
+	cp ${_REPO_UTILS}/gitignore ${_REPO}/.gitignore # Git ignore
+	echo "${GREEN_FG}Copied git ignore to:${WHITE_FG}${_REPO}/.gitignore${RESET}"
+	cp ${_REPO_UTILS}/README.md ${_REPO} # Git readme
+	echo "${GREEN_FG}Copied README.MD to:${WHITE_FG}${_REPO}${RESET}"
 
 	[[ ! -e ${_REPO_USER} ]] && mkdir -p ${_REPO_USER}
 	[[ ! -e ${_REPO_LOCAL} ]] && mkdir -p ${_REPO_LOCAL}
@@ -236,7 +238,6 @@ if [[ -e ${_REPO} ]];then
 	[[ ! -e ${_REPO_ZSH_NON_LIB_UTILS} ]] && mkdir -p ${_REPO_ZSH_NON_LIB_UTILS}
 	[[ ! -e ${_REPO_NON_ZSH_UTILS} ]] && mkdir -p ${_REPO_NON_ZSH_UTILS}
 fi
-echo "${GREEN_FG}built${RESET}\n"
 
 # Organize /usr/local/bin
 UTILS=("${(f)$(file $(find ${_SRC_BIN} -maxdepth 1 -type f))}")
@@ -258,7 +259,7 @@ for L in ${_ZSH_UTILS};do
 	fi
 done
 
-echo "${GREEN_FG}Copying files${RESET}..."
+echo "\n${WHITE_FG}Populating repo${RESET}..."
 copy_zsh_lib_utils
 copy_zsh_non_lib_utils
 copy_non_zsh_utils
@@ -288,14 +289,15 @@ printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total vim config user files" $(find ${_
 printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config files" $(find ${_REPO_ZSH_CFG} -type f | wc -l)
 printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config user files" $(find ${_REPO_ZSH_CFG_USER} -type f | wc -l)
 echo $(str_unicode_line 36)
-printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
+printf "${GREEN_FG}%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
 echo
   
-echo -n "Commit these changes? (y/n):"
+echo -n "Commit repo? (y/n):"
 read -q RESPONSE
 if [[ ${RESPONSE} == 'y' ]];then
 	pushd ~/Code/REPO
 	sudo chown -R kmiller:kmiller *
+	sudo chown -R kmiller:kmiller .*
 	do_commit
 	popd
 fi

@@ -129,7 +129,7 @@ for L in ${CMDS};do
 	fi
 done
 
-# Create file
+# Create new history file
 for L in ${HIST_BUILD};do
 	echo ${L}
 done | uniq | sort -nr -o ${HIST_NEW}
