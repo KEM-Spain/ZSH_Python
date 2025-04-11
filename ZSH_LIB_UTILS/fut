@@ -1105,6 +1105,7 @@ ______EOF
 			echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 			echo -e "${WHITE_FG}-c${RESET} increase CTIME (repeatable)"
 			echo -e "${WHITE_FG}-d${RESET} increase depth of scan (repeatable)"
+			echo -e "${WHITE_FG}-n${RESET} suppress headers"
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
@@ -1112,10 +1113,11 @@ ______EOF
 			exit_leave
 		}
 
-		OPTSTR=":HDcd"
+		OPTSTR=":HDcdn"
 		OPTIND=0
 
 		local CTIME=0
+		local NO_HEADERS=false
 
 		while getopts ${OPTSTR} OPTION;do
 			case $OPTION in
@@ -1123,6 +1125,7 @@ ______EOF
 			  D) dbg_set_level;;
 			  c) ((CTIME++));;
 			  d) ((FIND_DEPTH++));;
+			  n) NO_HEADERS=true;;
 			  :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 			 \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 			esac
@@ -1137,7 +1140,7 @@ ______EOF
 		[[ -z ${ARGS} ]] && ARGS=${PWD} # Default to pwd
 		[[ $(is_dir ${ARGS}) -eq 0 ]] && CMD_PATH=${ARGS} || usage "path is invalid:${ARGS}"
 
-		echo "\n[${0}] Scanning:depth level ${WHITE_FG}${FIND_DEPTH}${RESET} of ${WHITE_FG}$(realpath ${CMD_PATH})${RESET} for ${WHITE_FG}${CTIME}${RESET} $(str_pluralize day ${CTIME}) ago\n"
+		[[ ${NO_HEADERS} == 'false' ]] && echo "\n[${0}] Scanning:depth level ${WHITE_FG}${FIND_DEPTH}${RESET} of ${WHITE_FG}$(realpath ${CMD_PATH})${RESET} for ${WHITE_FG}${CTIME}${RESET} $(str_pluralize day ${CTIME}) ago\n"
 
 		local HDR
 		local -a LIST
@@ -1153,13 +1156,13 @@ ______EOF
 			HDR="${#LIST} $(str_pluralize file ${#LIST}) created/${TAG}"
 
 			if [[ -n ${LIST[1]} ]];then
-				echo "\n${WHITE_FG}${HDR}${RESET}"
-				echo "$(str_unicode_line ${#HDR})"
+				[[ ${NO_HEADERS} == 'false' ]] && echo "\n${WHITE_FG}${HDR}${RESET}"
+				[[ ${NO_HEADERS} == 'false' ]] && echo "$(str_unicode_line ${#HDR})"
 				for L in ${LIST};do
 					echo ${L}
 				done
 			else
-				echo "\n${RED_FG}No files modified${RESET} in:${WHITE_FG}${CMD_PATH}${RESET} ${D} $(str_pluralize day ${D}) ago"
+				[[ ${NO_HEADERS} == 'false' ]] && echo "\n${RED_FG}No files modified${RESET} in:${WHITE_FG}${CMD_PATH}${RESET} ${D} $(str_pluralize day ${D}) ago"
 			fi
 			popd
 		done | mypager

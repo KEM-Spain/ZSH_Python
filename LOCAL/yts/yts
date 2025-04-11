@@ -272,6 +272,9 @@ action_do () {
 			if grep -qi 'eta.*error' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
 				ETA=$(sed -E 's/([0-9])(\[.*)/\1\n\2/g' <<<${LOG_LINE} | head -1 | str_trim)
 				ERR=$(sed -E 's/([0-9])(\[.*)/\1\n\2/g' <<<${LOG_LINE} | tail -1 | str_trim)
+			elif grep -qi 'eta.*unknown' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
+				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				continue # Skip
 			elif grep -q 'ETA' <<<${LOG_LINE} 2>/dev/null;then # Uppercase ETA
 				echo "${0}: GOT ETA ${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				ETA=${LOG_LINE}

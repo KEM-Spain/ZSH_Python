@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -19,9 +19,15 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-PAGES=20
 
-tput smcup
-ddgr --url-handler=/usr/local/bin/system/launchers/run_google-chrome --num ${PAGES} ${@} 2>/dev/null
-tput rmcup
+for X in ${@};do
+	case ${1} in
+		-d* ) DEPTH=${1} && shift;;
+		-s) SUM=${1} && shift;;
+	esac
+	ARG=${@}
+done
 
+echo DEPTH:${DEPTH}
+echo SUM:${SUM}
+echo ARG=${ARG}
