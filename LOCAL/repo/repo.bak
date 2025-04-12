@@ -49,12 +49,12 @@ _SRC_BIN_CONV=${_SRC_BIN}/conversion
 _SRC_BIN_PYSCRIPTS=${_SRC_BIN}/__pyscripts__
 _SRC_BIN_SYS=${_SRC_BIN}/system
 _SRC_CODE=${HOME}/Code/LOCAL
-_SRC_LOCAL_ETC=/usr/local/etc
 _SRC_LIB=/usr/local/lib
+_SRC_LOCAL_ETC=/usr/local/etc
 _SRC_PYTHON=${HOME}/Code/LANG/Python/PROJECTS/ts
 _SRC_VIM_CFG=${HOME}/.vim
-_SRC_ZSH_CFG_USER=${HOME}/.zsh
 _SRC_ZSH_CFG=/etc/zsh
+_SRC_ZSH_CFG_USER=${HOME}/.zsh
 
 _REPO_UTILS=${_SRC_BIN}/system/repo_utils
 
@@ -69,6 +69,7 @@ typeset -a _NON_ZSH_UTILS=()
 typeset -a _ZSH_CFG=()
 typeset -a _ZSH_LIB_UTILS=()
 typeset -a _ZSH_NON_LIB_UTILS=()
+typeset -a _MODIFIED=()
 
 # Functions
 copy_conv_files () {
@@ -197,6 +198,27 @@ copy_zsh_non_lib_utils () {
 	done
 }
 
+collect_modifed () {
+	local DEPTH=''
+	local SUM=''
+	local ARG=''
+	local X
+
+	for X in ${@};do
+		case ${1} in
+			-d* ) DEPTH=${1} && shift;;
+			-s) SUM=${1} && shift;;
+		esac
+		ARG=${@}
+	done
+	if [[ -n ${SUM} ]];then
+		SUM="${(f)$(fut modified ${DEPTH} -n ${ARG} | wc -l)}"
+		_MODIFIED+=("${ARG} ${SUM} files")
+	else
+		_MODIFIED+=("${(f)$(fut modified ${DEPTH} -n ${ARG})}")
+	fi
+}
+
 # Execution
 
 # Build repo
@@ -208,7 +230,7 @@ if [[ -e ${_REPO} ]];then
 	fi
 
 	sudo /bin/rm -rf ${_REPO} && mkdir -p ${_REPO} # Rebuild tree
-	echo "\n${WHITE_FG}Rebuilding...${WHITE_FG}${RESET}"
+	echo "\n${WHITE_FG}Rebuilding${RESET}..."
 
 	if [[ -e ${_REPO_UTILS}/.git ]];then
 		sudo cp -r ${_REPO_UTILS}/.git ${_REPO} # Git repository
@@ -290,9 +312,29 @@ printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config files" $(find ${_REPO_
 printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config user files" $(find ${_REPO_ZSH_CFG_USER} -type f | wc -l)
 echo $(str_unicode_line 36)
 printf "${GREEN_FG}%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
-echo
+
+collect_modifed ${_SRC_BIN}
+collect_modifed ${_SRC_BIN_CONV}
+collect_modifed ${_SRC_BIN_SYS}
+collect_modifed -ddd ${_SRC_CODE}
+collect_modifed -ddd ${_SRC_LOCAL_ETC}
+collect_modifed -ddd ${_SRC_LIB}
+collect_modifed -ddd ${_SRC_PYTHON}
+collect_modifed -ddd -s ${_SRC_VIM_CFG}
+collect_modifed -ddd ${_SRC_ZSH_CFG}
+collect_modifed -ddd ${_SRC_ZSH_CFG_USER}
+
+echo "\n${GREEN_FG}File[s] modified today${RESET}"
+echo $(str_unicode_line 36)
+typeset -R3 NDX=0
+for M in ${_MODIFIED};do
+	[[ ${M} =~ '.bak' ]] && continue
+	((NDX++))
+	echo "${NDX}) ${M}"
+done
+echo $(str_unicode_line 36)
   
-echo -n "Commit these changes? (y/n):"
+echo -n "\nCommit repo? (y/n):"
 read -q RESPONSE
 if [[ ${RESPONSE} == 'y' ]];then
 	pushd ~/Code/REPO

@@ -30,8 +30,8 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 typeset -a _LOCAL_LIST=()
 
 # Constants
-_GIT_REPO=~/Code/REPO
-_PWD=${PWD}
+_GIT_DIR_STASH=${GIT_DIR}
+_GIT_REPO_DIR=/home/kmiller/Code/REPO/.git
 
 # Functions
 action_do () {
@@ -42,22 +42,29 @@ action_do () {
 	local V_PATH=''
 	local FN_OUT=''
 	local VIEW=false
+	local -a MSG_LIST=()
+	local TAG=''
+	local BOX_LIMIT=20
 
 	for M in ${_MARKED};do
 		COMMIT=$(get_field 1 ${M})
 		SZ=$(get_field 4 ${M})
-		pushd ${_GIT_REPO}
+
+		pushd ${_GIT_REPO_DIR}
+
 		tcup 0 0
 		tput ed
 		if [[ -z ${_FN_ARG} ]];then
 			FLIST=("${(f)$(git diff-tree --no-commit-id --name-only ${COMMIT} -r)}")
-			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |$(msg_list_bullet ${FLIST})"
+			MSG_LIST=("${(f)$(msg_list_bullet ${FLIST})}")
+			[[ ${#MSG_LIST} -gt 20 ]] && TAG="And <I><B><w>$((${#MSG_LIST} - ${BOX_LIMIT}))<N> more..."
+			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |${MSG_LIST[1,${BOX_LIMIT}]}| |${TAG}"
 			[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
 			git show -P ${COMMIT}
 		else
 			if [[ ${PRINT_FILE} == 'true' ]];then
-				V_PATH=${${_FN_ARG}##${_GIT_REPO}/}
-				FN_OUT=${_PWD}/${COMMIT}_${V_PATH:t}.log.out
+				V_PATH=${${_FN_ARG}##${_GIT_REPO_DIR}/}
+				FN_OUT=${PWD}/${COMMIT}_${V_PATH:t}.log.out
 				VIEW=true
 				msg_box -p -P"(v)iew, (w)rite" "View or write to file:<w>${FN_OUT}<N> ?"
 				[[ ${_MSG_KEY} == 'w' ]] && VIEW=false
@@ -74,7 +81,9 @@ action_do () {
 			fi
 		fi
 		[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
+
 		popd
+
 		list_set_selected ${M} ${_USED_ROW} && continue
 	done
 }
@@ -168,16 +177,16 @@ usage () {
 	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
-OPTSTR=":HDCp"
+OPTSTR=":HDLp"
 OPTIND=0
 PRINT_FILE=false
-CWD=false
+USE_LOCAL_REPO=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     C) CWD=true;;
+     L) USE_LOCAL_REPO=true;;
      p) PRINT_FILE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -190,7 +199,10 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ ${CWD} == 'true' ]] && _GIT_REPO=${PWD}
+if [[ ${USE_LOCAL_REPO} == 'true' ]];then
+	_GIT_REPO_DIR=${PWD}
+	export GIT_DIR=${PWD}/.git
+fi
 
 [[ ${#} -ne 0 ]] && _FN_ARG=${1} || _FN_ARG=''
 [[ -z ${_FN_ARG} && ${PRINT_FILE} == 'true' ]] && exit_leave $(msg_exit W "Print file option requires a <FILE> argument")
@@ -199,7 +211,7 @@ if [[ -n ${_FN_ARG} ]];then
 	typeset -a FLIST=()
 
 	# Resolve file arg path
-	FLIST=("${(f)$(find ${_GIT_REPO} -name ${_FN_ARG} -type f)}")
+	FLIST=("${(f)$(find ${_GIT_REPO_DIR} -name ${_FN_ARG} -type f)}")
 	[[ -z ${FLIST} ]] && exit_leave $(msg_exit E "File:${@} not found")
 
 	NDX=0
@@ -224,7 +236,8 @@ FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 [[ ${?} -ne 0 ]] && exit_leave "${0}: ${RED_FG}no matches found${RESET} ${WHITE_FG}${@}${RESET}"
 PATHLBL=$(path_get_label 40)
 
-pushd ${_GIT_REPO}
+pushd ${_GIT_REPO_DIR}
+msg_box "Working..."
 RAW_LIST=("${(f)$(git log --pretty=reference ${FN_ARG})}")
 if [[ ${?} -ne 0 ]];then
 	dbg "${0}:${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path . 2>/dev/null" 
@@ -240,7 +253,7 @@ fi
 MD=${PWD}
 SIZE=0
 
-pushd ${_GIT_REPO}
+pushd ${_GIT_REPO_DIR}
 for L in ${(u)RAW_LIST};do
 	REF=$(cut -d' ' -f1 <<<${L})
 	SIZE=$(git show ${REF} ${_FN_ARG} | wc -l)
@@ -254,7 +267,7 @@ done
 popd
 
 # Set headings
-list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO} ${_GIT_REPO} ${SELECTED_COUNT}'
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO_DIR} ${_GIT_REPO_DIR} ${SELECTED_COUNT}'
 [[ -n ${_FN_ARG} ]] && list_set_header 'printf "Results limited to FILE:${MAGENTA_FG}${_FN_ARG}${RESET}"'
 list_add_header_break
 

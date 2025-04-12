@@ -211,6 +211,7 @@ collect_modifed () {
 		esac
 		ARG=${@}
 	done
+
 	if [[ -n ${SUM} ]];then
 		SUM="${(f)$(fut modified ${DEPTH} -n ${ARG} | wc -l)}"
 		_MODIFIED+=("${ARG} ${SUM} files")
@@ -230,7 +231,7 @@ if [[ -e ${_REPO} ]];then
 	fi
 
 	sudo /bin/rm -rf ${_REPO} && mkdir -p ${_REPO} # Rebuild tree
-	echo "\n${WHITE_FG}Rebuilding...${WHITE_FG}${RESET}"
+	echo "\n${WHITE_FG}Rebuilding${RESET}..."
 
 	if [[ -e ${_REPO_UTILS}/.git ]];then
 		sudo cp -r ${_REPO_UTILS}/.git ${_REPO} # Git repository
