@@ -196,19 +196,19 @@ ___EOF
 }
 
 length () {
-	local DESC=''
-	local -a FN_ARG=()
-	local DUR=''
-	local LONGEST=0
-	local -a PRELIST=()
-	local -a LIST=()
-	local F=''
-	local DNUM=0
-	local TITLE=''
-	local HDR=''
 	local -a FLIST=()
-	local NDX=0
+	local -a FN_ARG=()
+	local -a LIST=()
+	local -a PRELIST=()
+	local DESC=''
+	local DNUM=0
+	local DUR=''
+	local F=''
+	local HDR=''
 	local HIT=false
+	local LONGEST=0
+	local NDX=0
+	local TITLE=''
 
 	read -r -d '' DESC<<___EOF
 Display video duration
@@ -264,7 +264,7 @@ ___EOF
 	for F in ${(On)LIST};do
 		TITLE=$(cut -d'|' -f3 <<<${F})
 		DUR=$(cut -d'|' -f2 <<<${F})
-		printf "${WHITE_FG}%*s${RESET}:%10s\n" ${LONGEST} ${TITLE} ${DUR}
+		printf "${WHITE_FG}%*s${RESET}:%.9s\n" ${LONGEST} ${TITLE} ${DUR}
 	done
 	echo
 }

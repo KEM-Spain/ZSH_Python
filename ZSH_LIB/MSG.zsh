@@ -583,6 +583,8 @@ msg_box_clear () {
 		tput ech ${BOX_COORDS[W]}
 	done
 
+	box_coords_repaint ${TAG}
+
 	return 0
 }
 

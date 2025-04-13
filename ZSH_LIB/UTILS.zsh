@@ -10,6 +10,7 @@ typeset -A _KWD_ARGS=()
 _EXIT_VALUE=0
 _FUNC_TRAP=false
 _BAREWORD_IS_FILE=false
+_LAST_COORDS_SET="/tmp/LAST_COORDS.$$"
 
 arg_parse () {
 	local KWD=false
@@ -180,22 +181,37 @@ box_coords_relative () {
 
 box_coords_repaint () {
 	local TAG=${1}
-	local ARR_NAME=${2:=_LIST}
 	local -A COORDS=($(box_coords_get ${TAG}))
-	local X_LIMIT
-	local Y_LIMIT
+	local COL_LIMIT=0
+	local ROW_LIMIT=0
+	local SLINE=''
+	local SNDX=0
+	local START_COL=0
+	local START_ROW=0
 	local X Y
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	X_LIMIT=$(( COORDS[H] + COORDS[X] ))
-	Y_LIMIT=$(( COORDS[Y] + COORDS[W] ))
+	[[ -z ${_SCREEN} ]] && return # Screen cache is empty
 
-	for (( X=${COORDS[X]}; X <= X_LIMIT; X++ ));do
-		for (( Y=${COORDS[Y]}; Y <= Y_LIMIT; Y++ ));do
-			tput cup $((X-1)) $((Y-1)); echo -n ${${(P)ARR_NAME}[${X}][${Y}]} # Offset zero based tput
-		done
+	if [[ -z ${TAG} && -e ${LAST_COORDS} ]];then
+		read TAG < ${LAST_COORDS}
+		/bin/rm -f ${LAST_COORDS}
+		[[ -n ${TAG} ]] && COORDS=($(box_coords_get ${TAG}))
+	fi
+
+	START_ROW=$(( COORDS[X] - _LIST_HEADER_LINES + 1 ))
+	START_COL=$(( COORDS[Y] + 1 ))
+	ROW_LIMIT=$(( START_ROW + COORDS[H] - 1 ))
+	COL_LIMIT=$(( COORDS[Y] + COORDS[W] ))
+
+	for (( X=START_ROW; X <= ROW_LIMIT; X++ ));do
+		SLINE=$(tut strip_ansi <<<${_SCREEN[${X}]})
+		tput cup $(( COORDS[X] + SNDX )) ${COORDS[Y]}; echo -n ${SLINE[${START_COL},${COL_LIMIT}]}
+		((SNDX++))
 	done
+
+	_SCREEN=()
 }
 
 box_coords_set () {
@@ -206,6 +222,8 @@ box_coords_set () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} TAG:${TAG}"
 
 	_BOX_COORDS[${TAG}]="${COORDS}"
+
+	echo ${TAG} > ${_LAST_COORDS_SET}
 }
 
 box_coords_upd () {

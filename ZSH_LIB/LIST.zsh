@@ -10,6 +10,7 @@ typeset -A _PAGES=()
 typeset -A _PAGE_DATA=()
 typeset -A _SORT_DATA=()
 typeset -a _LIST=() # Holds the values to be managed by the menu
+typeset -a _SCREEN=() # Holds the displayed content
 typeset -a _LIST_ACTION_MSGS=() # Holds text for contextual prompts
 typeset -a _LIST_HEADER=() # Holds header lines
 typeset -a _MARKED=()
@@ -23,7 +24,7 @@ _CLIENT_WARN=true
 _CURSOR_NDX=0
 _HEADER_CALLBACK_FUNC=''
 _LINE_MARKER=')'
-_HEADER_LINES=0
+_LIST_HEADER_LINES=0
 _KEY_CALLBACK_CONT_FUNC=''
 _KEY_CALLBACK_QUIT_FUNC=''
 _LAST_PAGE=?
@@ -368,6 +369,7 @@ list_item () {
 	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]] && _MARKER=${_USED_MARKER}
 
 	eval ${LINE_ITEM} # Output line
+	[[ ${MODE} == 'init' ]] && _SCREEN+=$(eval ${LINE_ITEM})
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST DATA:${_LIST[${_LIST_NDX}]}"
 
@@ -761,12 +763,11 @@ list_select () {
 	[[ -z ${_LIST_HEADER} ]] && _LIST_HEADER+='printf "List of %-d items\tPage %-d of %-d \tSelected:%-d" ${MAX_ITEM} ${PAGE} ${MAX_PAGE} ${SELECTED_COUNT}' # Default header
 	TOP_OFFSET=${#_LIST_HEADER}
 	[[ ${_LIST_HEADER_BREAK} == 'true' ]] && ((TOP_OFFSET++))
-	_HEADER_LINES=${TOP_OFFSET}
+	_LIST_HEADER_LINES=${TOP_OFFSET}
 
 	# Boundaries
 	_MAX_DISPLAY_ROWS=$(( ROWS - (TOP_OFFSET + BOT_OFFSET) ))
 	_PAGES=($(list_set_pages))
-
 
 	# Assign Defaults for Header, Prompt, and Line_Item formatting
 	[[ -z ${_LIST_LINE_ITEM} ]] && _LIST_LINE_ITEM='printf "${BOLD}${_HILITE_COLOR}%*d${RESET}) ${SHADE}%s${RESET}\n" ${#MAX_ITEM} ${_LIST_NDX} ${${_LIST[${_LIST_NDX}]}[1,${MAX_LINE_WIDTH}]}'
