@@ -107,6 +107,8 @@ list_display_page () {
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}DISPLAYING LIST FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
 
+	_SCREEN=()
+
 	for (( R=1; R <= _MAX_DISPLAY_ROWS; R++ ));do
 		((_LIST_NDX++))
 		X_POS=$(( R + _PAGE_DATA[TOP_OFFSET] - 1 ))
