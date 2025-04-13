@@ -370,8 +370,12 @@ list_item () {
 	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]] && SHADE=${REVERSE} || SHADE=''
 	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]] && _MARKER=${_USED_MARKER}
 
-	eval ${LINE_ITEM} # Output line
-	[[ ${MODE} == 'init' ]] && _SCREEN+=$(eval ${LINE_ITEM})
+	if [[ ${MODE} == 'init' ]];then # Avoid 2nd eval; print from _SCREEN if init
+		_SCREEN+=$(eval ${LINE_ITEM})
+		echo -n ${_SCREEN[${_LIST_NDX}]}
+	else
+		eval ${LINE_ITEM} # Output line
+	fi
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST DATA:${_LIST[${_LIST_NDX}]}"
 
