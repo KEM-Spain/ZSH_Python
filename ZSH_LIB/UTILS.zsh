@@ -182,10 +182,10 @@ box_coords_relative () {
 box_coords_repaint () {
 	local TAG=${1}
 	local -A COORDS=($(box_coords_get ${TAG}))
+	local LIST_ROW=0
+	local LNDX=0
 	local ROW_LIMIT=0
 	local SNDX=0
-	local START_ROW=0
-	local X
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -197,11 +197,11 @@ box_coords_repaint () {
 		[[ -n ${TAG} ]] && COORDS=($(box_coords_get ${TAG}))
 	fi
 
-	START_ROW=$(( COORDS[X] - _LIST_HEADER_LINES + 1 ))
-	ROW_LIMIT=$(( START_ROW + COORDS[H] - 1 ))
+	LIST_ROW=$(( COORDS[X] - _LIST_HEADER_LINES + 1 ))
+	ROW_LIMIT=$(( LIST_ROW + COORDS[H] - 1 ))
 
-	for (( X=START_ROW; X <= ROW_LIMIT; X++ ));do
-		tput cup $(( COORDS[X] + SNDX )) 0; echo -n ${_SCREEN[${X}]}
+	for (( LNDX=LIST_ROW; LNDX <= ROW_LIMIT; LNDX++ ));do
+		[[ -n ${_SCREEN[${LNDX}]} ]] && tput cup $(( COORDS[X] + SNDX )) 0 && echo -n ${_SCREEN[${LNDX}]}
 		((SNDX++))
 	done
 }
