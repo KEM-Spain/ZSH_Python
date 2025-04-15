@@ -62,19 +62,26 @@ action_do () {
 			[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
 			git show -P ${COMMIT}
 		else
-			if [[ ${PRINT_FILE} == 'true' ]];then
+			if [[ ${PRINT_FILE} == 'true' || ${EDIT_FILE} == 'true' ]];then
 				V_PATH=${${_FN_ARG}##${_GIT_REPO_DIR}/}
 				FN_OUT=${PWD}/${COMMIT}_${V_PATH:t}.log.out
 				VIEW=true
-				msg_box -p -P"(v)iew, (w)rite" "View or write to file:<w>${FN_OUT}<N> ?"
-				[[ ${_MSG_KEY} == 'w' ]] && VIEW=false
+				msg_box -p -P"(e)ditor, (v)iew, (w)rite" "Edit, View, or Write to file:<w>${FN_OUT}<N> ?"
+				[[ ${_MSG_KEY} != 'v' ]] && VIEW=false
 				if [[ ${VIEW} == 'true' ]];then
 					git show -P ${COMMIT}:${V_PATH}
 				else
-					if overwrite_file ${FN_OUT};then
-						git show -P ${COMMIT}:${V_PATH} > ${FN_OUT} && msg_box -p -PK "Wrote log to file:<w>${FN_OUT}<N>"
-					fi
-					[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
+					case ${_MSG_KEY} in
+						w) if overwrite_file ${FN_OUT};then
+								git show -P ${COMMIT}:${V_PATH} > ${FN_OUT} && msg_box -p -PK "Wrote log to file:<w>${FN_OUT}<N>"
+							fi
+							[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
+							;;
+						e) FN_OUT=/tmp/${COMMIT}_${V_PATH:t}
+							git show -P ${COMMIT}:${V_PATH} > ${FN_OUT}
+							/bin/vim ${FN_OUT}
+							;;
+					esac
 				fi
 			else
 				git show -P ${COMMIT} ${_FN_ARG}
@@ -171,6 +178,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-L${RESET} use local repository (${GIT_DIR} is default)"
+	echo -e "${WHITE_FG}-e${RESET} option to edit the <FILE> when commit is selected"
 	echo -e "${WHITE_FG}-p${RESET} option to print the <FILE> when commit is selected"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
@@ -178,9 +186,10 @@ usage () {
 	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
-OPTSTR=":HDLp"
+OPTSTR=":HDLep"
 OPTIND=0
 PRINT_FILE=false
+EDIT_FILE=false
 USE_LOCAL_REPO=false
 
 while getopts ${OPTSTR} OPTION;do
@@ -188,6 +197,7 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
      D) dbg_set_level;;
      L) USE_LOCAL_REPO=true;;
+     e) EDIT_FILE=true;;
      p) PRINT_FILE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -204,9 +214,13 @@ if [[ ${USE_LOCAL_REPO} == 'true' ]];then
 	if [[ -e ${PWD}/.git ]];then
 		_GIT_REPO_DIR=${PWD}
 		export GIT_DIR=${PWD}/.git
+		msg_box -t2 "Found repo:${PWD}/.git"
 	else
 		exit_leave $(msg_exit R "Option -L -> No .git repository found in:${PWD}")
 	fi
+else
+	_GIT_REPO_DIR=${GIT_DIR:h}
+	msg_box -t2 "Using repo:${GIT_DIR}"
 fi
 
 [[ ${#} -ne 0 ]] && _FN_ARG=${1} || _FN_ARG=''
