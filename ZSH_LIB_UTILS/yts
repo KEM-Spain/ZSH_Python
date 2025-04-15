@@ -1248,6 +1248,7 @@ select_download () {
 	list_set_barlines true
 	list_set_page_callback log_find 
 	list_set_sort_defaults ARRAY "_LIST" COL 1 ORDER "a" DELIM ${_LIST_DELIM} TYPE "flat" TABLE "${(kv)_SORT_TABLE}" MAXCOL 3
+	list_set_restore_pos true
 
 	while true;do
 	 # Get selection

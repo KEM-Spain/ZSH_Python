@@ -142,5 +142,5 @@ if !has("gui_running")
 	set wmh=0 "minimum window height
 
 	let g:gruvbox_termcolors=16
-	colorscheme darkburn
+	colorscheme retrobox
 endif

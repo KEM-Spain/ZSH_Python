@@ -87,6 +87,8 @@ list_display_page () {
 	local R=0
 	local X_POS=0
 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	[[ ${_LIST_RESTORE_POS} == 'true' ]] && list_get_position
 
 	if [[ ${_PAGE_DATA[RESTORE]} == 'true' ]];then
@@ -96,7 +98,6 @@ list_display_page () {
 
 	[[ ${HILITE} == 'nohilite' ]] && HILITE=false || HILITE=true 
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}GENERATING HEADER FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
 
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}
@@ -369,8 +370,12 @@ list_item () {
 	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]] && SHADE=${REVERSE} || SHADE=''
 	[[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]] && _MARKER=${_USED_MARKER}
 
-	eval ${LINE_ITEM} # Output line
-	[[ ${MODE} == 'init' ]] && _SCREEN+=$(eval ${LINE_ITEM})
+	if [[ ${MODE} == 'init' ]];then # Avoid 2nd eval; print from _SCREEN if init
+		_SCREEN+=$(eval ${LINE_ITEM})
+		echo -n ${_SCREEN[${#_SCREEN}]}
+	else
+		eval ${LINE_ITEM} # Output line
+	fi
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST DATA:${_LIST[${_LIST_NDX}]}"
 
@@ -512,12 +517,6 @@ list_reset () {
 	_LIST_PROMPT=''
 	_LIST_SELECTED=()
 	_MARKED=()
-}
-
-list_restore_position () {
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	_LIST_RESTORE_POS=${1}
 }
 
 list_search () {
@@ -809,6 +808,7 @@ list_select () {
 	tput civis >&2
 	tput clear
 	list_display_page
+
 	#_LIST_NDX=1
 	#_CURSOR_NDX=$(( _LIST_NDX + _PAGE_DATA[TOP_OFFSET] - 1 ))
 
@@ -1038,6 +1038,12 @@ list_set_prompt () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	[[ -n ${@} ]] && _LIST_PROMPT=${@}
+}
+
+list_set_restore_pos () {
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	_LIST_RESTORE_POS=${1}
 }
 
 list_set_prompt_msg () {
