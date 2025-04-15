@@ -49,6 +49,7 @@ _OFF_SCREEN_ROWS_MSG=''
 _PAGE_CALLBACK_FUNC=''
 _PROMPT_KEYS=''
 _LIST_RESTORE_POS=false
+_LIST_RESTORE_POS_RESET=false
 _SEARCH_MARKER="${BOLD}${RED_FG}\u25CF${RESET}"
 _USED_MARKER="${BOLD}${MAGENTA_FG}\u25CA${RESET}"
 _LIST_IS_SELECTABLE=true
@@ -250,7 +251,11 @@ list_get_position () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
-	if [[ -e ${_LIST_TAG_FILE} ]];then
+	if [[ ${_LIST_RESTORE_POS_RESET} == 'true' ]];then
+		_PAGE_DATA[POS_NDX]=''
+		_PAGE_DATA[POS_CUR]=''
+		_LIST_RESTORE_POS_RESET='false'
+	elif [[ -e ${_LIST_TAG_FILE} ]];then
 		IFS='|' read -r NDX CUR < ${_LIST_TAG_FILE} # Retrieve stored position
 		[[ -n ${NDX} ]] && _PAGE_DATA[POS_NDX]=${NDX} || _PAGE_DATA[POS_NDX]=''
 		[[ -n ${CUR} ]] && _PAGE_DATA[POS_CUR]=${CUR} || _PAGE_DATA[POS_CUR]=''
@@ -1044,6 +1049,12 @@ list_set_restore_pos () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_LIST_RESTORE_POS=${1}
+}
+
+list_set_restore_pos_reset () {
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	_LIST_RESTORE_POS_RESET=${1}
 }
 
 list_set_prompt_msg () {

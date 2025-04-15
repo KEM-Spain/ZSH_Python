@@ -1545,6 +1545,7 @@ if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
 			 
 			if [[ ${?} -eq 0 ]];then
 				select_download ${g_QUERY_KEY}
+				list_set_restore_pos_reset true
 			fi
 		fi
 	done
