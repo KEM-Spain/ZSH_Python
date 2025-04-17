@@ -14,6 +14,7 @@ _PROC_BOX_TAG=PROC_BOX
 _CONT_BOX_TAG=CONT_BOX
 _DELIM='|'
 _LAST_MSG_TAG=''
+_REPAINT=true
 
 # LIB Functions
 msg_box () {
@@ -24,17 +25,16 @@ msg_box () {
 	local -a MSG_FOLD=()
 	local -A CONT_COORDS=()
 
-	local MAX_X_COORD=$(( _MAX_ROWS-5 )) # Not including frame 5 up from bottom, 4 with frame
-	local MAX_Y_COORD=$(( _MAX_COLS-10 )) # Not including frame 10 from sides, 9 with frame
-	local MIN_X_COORD=$(( (_MAX_ROWS-MAX_X_COORD)-1 )) # Vertical limit
-	local MIN_Y_COORD=$(( _MAX_COLS-MAX_Y_COORD )) # Horiz limit
-	local USABLE_COLS=$(( MAX_Y_COORD-MIN_Y_COORD )) # Horizontal space boundary
-	local USABLE_ROWS=$(( MAX_X_COORD-MIN_X_COORD )) # Vertical space boundary
-	local MAX_LINE_WIDTH=$(( USABLE_COLS-20 ))
+	local MAX_X_COORD=$(( _MAX_ROWS - 5 )) # Not including frame 5 up from bottom, 4 with frame
+	local MAX_Y_COORD=$(( _MAX_COLS - 10 )) # Not including frame 10 from sides, 9 with frame
+	local MIN_X_COORD=$(( (_MAX_ROWS - MAX_X_COORD)-1 )) # Vertical limit
+	local MIN_Y_COORD=$(( _MAX_COLS - MAX_Y_COORD )) # Horiz limit
+	local USABLE_COLS=$(( MAX_Y_COORD - MIN_Y_COORD )) # Horizontal space boundary
+	local USABLE_ROWS=$(( MAX_X_COORD - MIN_X_COORD )) # Vertical space boundary
+	local MAX_LINE_WIDTH=$(( USABLE_COLS - 20 ))
+
 	local BOX_HEIGHT=0
 	local BOX_WIDTH=0
-	local TAG=''
-
 	local BODY_MAX=0
 	local BOX_X_COORD=0
 	local BOX_Y_COORD=0
@@ -65,6 +65,7 @@ msg_box () {
 	local PARTIAL=0
 	local PG_LINES=0
 	local SCR_NDX=0
+	local TAG=''
 	local H K M T X 
 
 	# OPTIONS
@@ -90,31 +91,32 @@ msg_box () {
 	local TIMEOUT=0
 	local WIDTH_ARG=0
 
-	local OPTSTR=":H:P:O:CIRT:cf:h:j:pqrs:t:uw:x:y:"
+	local OPTSTR=":H:P:O:CIRT:cf:h:j:pqrs:t:uw:x:y:z"
 	OPTIND=0
 
 	while getopts ${OPTSTR} OPTION;do
 		case ${OPTION} in
-			H) HDR_LINES=${OPTARG};; # number of msg lines that comprise header
-			C) CONTINUOUS=true;; # message is added to the existing continuous msg
-			O) FRAME_COLOR=${OPTARG};; # set color for message frame
-			P) PROMPT_ARG=${OPTARG};; # text for message prompt
-			I) _CONT_DATA[BOX]=false;; # trigger initialization of continuous message
-			R) RELATIVE=true;; # use this tag to retreive a alternative placement coord
+			H) HDR_LINES=${OPTARG};; # Number of msg lines that comprise header
+			C) CONTINUOUS=true;; # Message is added to the existing continuous msg
+			O) FRAME_COLOR=${OPTARG};; # Set color for message frame
+			P) PROMPT_ARG=${OPTARG};; # Text for message prompt
+			I) _CONT_DATA[BOX]=false;; # Trigger initialization of continuous message
+			R) RELATIVE=true;; # Use this tag to retreive a alternative placement coord
 			T) TAG_ARG=${OPTARG};; # TAG name to use when saving message coordinates
-			c) CLEAR_MSG=true;; # clear the previous message before displaying the current message
-			f) FOLD_WIDTH=${OPTARG};; # fold the message text using this line width
-			h) HEIGHT_ARG=${OPTARG};; # specify a message box height other than the default
-			j) TEXT_STYLE=${OPTARG};; # specify desired text justification (center, left)
-			p) PROMPT_USER=true;; # request user input following message display
-			q) QUIET=true;; # suppress progress messages
-			r) SO=true;; # request standout mode
-			s) DELIM_ARG="${OPTARG}";; # use this delimiter to break message parts
-			t) TIMEOUT="${OPTARG}";; # display message only for this time limit
-			u) SAFE=false;; # ensure no coordinates violate available screen dimensions
-			w) WIDTH_ARG=${OPTARG};; # specify a message box width other than the default
-			x) MSG_X_COORD_ARG=${OPTARG};; # specify a message display row other than the default
-			y) MSG_Y_COORD_ARG=${OPTARG};; # specify a message display col other than the default
+			c) CLEAR_MSG=true;; # Clear the previous message before displaying the current message
+			f) FOLD_WIDTH=${OPTARG};; # Fold the message text using this line width
+			h) HEIGHT_ARG=${OPTARG};; # Specify a message box height other than the default
+			j) TEXT_STYLE=${OPTARG};; # Specify desired text justification (center, left)
+			p) PROMPT_USER=true;; # Request user input following message display
+			q) QUIET=true;; # Suppress progress messages
+			r) SO=true;; # Request standout mode
+			s) DELIM_ARG="${OPTARG}";; # Use this delimiter to break message parts
+			t) TIMEOUT="${OPTARG}";; # Display message only for this time limit
+			u) SAFE=false;; # Ensure no coordinates violate available screen dimensions
+			w) WIDTH_ARG=${OPTARG};; # Specify a message box width other than the default
+			x) MSG_X_COORD_ARG=${OPTARG};; # Specify a message display row other than the default
+			y) MSG_Y_COORD_ARG=${OPTARG};; # Specify a message display col other than the default
+			z) _REPAINT=false;; # Override repaints
 			:) print -u2 " ${_SCRIPT}: ${0}: option: -${OPTARG} requires an argument" >&2;read ;;
 			\?) print -u2 " ${_SCRIPT}: ${0}: unknown option -${OPTARG}" >&2; read;;
 		esac
@@ -583,7 +585,7 @@ msg_box_clear () {
 		tput ech ${BOX_COORDS[W]}
 	done
 
-	box_coords_repaint ${TAG}
+	[[ ${_REPAINT} == 'true' ]] && box_coords_repaint ${TAG}
 
 	return 0
 }

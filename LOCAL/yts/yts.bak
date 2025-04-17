@@ -187,7 +187,7 @@ action_do () {
 				LOG_STALLS=0 # Log is growing
 			else
 				((LOG_STALLS++))
-				[[ ${LOG_STALLS} -ge ${JOB_STALL} ]] && msg_box -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<r>Job Stalled<N>"
+				[[ ${LOG_STALLS} -ge ${JOB_STALL} ]] && msg_box -z -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<r>Job Stalled<N>"
 				LAST_LOG_SIZE=${LOG_SIZE}
 				sleep 1 # Extra sleep 
 				continue
@@ -198,7 +198,7 @@ action_do () {
 			if [[ ${?} -eq 0 ]];then
 				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				EMSG="<w>${TITLE[1,65]}<N>|<g>Has already been downloaded<N>" 
-				msg_box -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_DOWNLOADS[${M}]=true
 				break # While loop
 			fi
@@ -209,7 +209,7 @@ action_do () {
 				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Not yet available<N>|<g>${LOG_LINE}<N>"
 				g_WHEN=$(perl -pe 's/^(.*)( in \d+.*)$/starts\2/g' <<<${LOG_LINE})
-				msg_box -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FUTURE[${M}]=true
 				_DOWNLOADS[${M}]=false
 				break # While loop
@@ -220,7 +220,7 @@ action_do () {
 			if [[ ${?} -eq 0 ]];then
 				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
-				msg_box -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FAILED[${M}]=true
 				_DOWNLOADS[${M}]=false
 				break # While loop
@@ -292,12 +292,12 @@ action_do () {
 			HAD_ERROR=false
 			if [[ -n ${ERR} ]];then
 				((ERROR_CNT++))
-				msg_box -T ALERT -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<r>Network Errors<N>:<w>${ERROR_CNT}<N>"
+				msg_box -z -T ALERT -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<r>Network Errors<N>:<w>${ERROR_CNT}<N>"
 				HAD_ERROR=true
 				sleep 2
 				if [[ ${ERROR_CNT} -ge ${_MAX_ERRORS} ]];then
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Too many errors - Unable to download<N>"
-					msg_box -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 					kill_job
 					_FAILED[${M}]=true && break
 				fi
@@ -336,7 +336,7 @@ action_do () {
 					msg_box -C -jc "<m>$(str_unicode_line 10)<N>"
 					if [[ $((${#_MARKED}-DL_CNT)) -gt 0 ]];then
 						MSG="Download ${DL_CNT} completed - $((${#_MARKED}-DL_CNT)) remaining"
-						msg_box -t${_PAUSE_TM} -x$(( _COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
+						msg_box -z -t${_PAUSE_TM} -x$(( _COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
 					fi
 				fi
 				_DOWNLOADS[${M}]=true
@@ -1545,6 +1545,7 @@ if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
 			 
 			if [[ ${?} -eq 0 ]];then
 				select_download ${g_QUERY_KEY}
+				list_set_restore_pos_reset true
 			fi
 		fi
 	done

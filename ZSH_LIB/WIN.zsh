@@ -84,7 +84,7 @@ win_list () {
 	return $?
 }
 
-win_xdo_id_fix () {
+win_xdo_id_conv () {
 	local ID=${1}
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"

@@ -22,6 +22,7 @@ _GEO_KEY="key=uMibiyDeEGlYxeK3jx6J"
 _GEO_PROVIDER="https://extreme-ip-lookup.com"
 _MAX_COLS=$(tput -T xterm cols)
 _MAX_ROWS=$(tput -T xterm lines)
+_PID=$$
 _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
 _TERM=xterm
 _USER_NAME=$(id -un)
@@ -60,6 +61,7 @@ _CURSOR_STATE=on
 _DEBUG=0
 _DEBUG_INIT=true
 _EXIT_MSGS=''
+_EXIT_SCRUB=true
 
 # Initialize traps
 unsetopt localtraps

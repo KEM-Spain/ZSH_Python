@@ -107,7 +107,9 @@ close_enpass_window () {
 }
 
 #Execution
-if [[ ${1} == "foreground" ]];then
+if [[ ${1} == "-H" ]];then
+	echo "Usage: ${0:t} [foreground]" && exit
+elif [[ ${1} == "foreground" ]];then
 	start_enpass foreground
 else
 	start_enpass
