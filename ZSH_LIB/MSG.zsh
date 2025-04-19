@@ -587,6 +587,8 @@ msg_box_clear () {
 
 	[[ ${_REPAINT} == 'true' ]] && box_coords_repaint ${TAG}
 
+	_REPAINT=true # Reset until subsequent override
+
 	return 0
 }
 

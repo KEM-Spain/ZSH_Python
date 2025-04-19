@@ -1,13 +1,17 @@
 if !has("gui_running")
 
-	"Install plugins to: ~/.vim/plugged
-	call plug#begin('~/.vim/plugged')
-	Plug 'https://github.com/powerman/vim-plugin-AnsiEsc.git'
+	call plug#begin()
 	Plug 'https://github.com/tpope/vim-sensible.git'
-	Plug 'https://github.com/segeljakt/vim-stealth.git'
-	Plug 'https://github.com/sheerun/vim-polyglot'
-	Plug 'https://github.com/morhetz/gruvbox'
+	Plug 'https://github.com/powerman/vim-plugin-AnsiEsc.git'
+	Plug 'https://github.com/adelarsq/vim-matchit.git'
+	Plug 'https://github.com/frazrepo/vim-rainbow.git'
+	Plug 'https://github.com/preservim/vim-colors-pencil.git'
 	call plug#end()
+
+	" rainbow brackets settings
+	let g:rainbow_active = 1
+	let g:rainbow_guifgs = ['RoyalBlue3', 'DarkOrange3', 'DarkOrchid3', 'FireBrick']
+	let g:rainbow_ctermfgs = ['lightblue', 'lightgreen', 'yellow', 'red', 'magenta']
 
 	"Begin (Keyword Detection) related
 	function! InsertTabWrapper(direction)
@@ -141,6 +145,8 @@ if !has("gui_running")
 	set whichwrap+=<,>,[,] "where to wrap long lines
 	set wmh=0 "minimum window height
 
-	let g:gruvbox_termcolors=16
-	colorscheme retrobox
+	colorscheme pencil
+	let g:pencil_terminal_italics = 1
+	let g:pencil_neutral_code_bg = 1
+	set background=dark
 endif

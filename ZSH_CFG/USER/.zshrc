@@ -56,7 +56,6 @@ export DEFAULT_PLAYER=CLMN
 export PYDEVD_DISABLE_FILE_VALIDATION=1
 export GIT_AUTHOR_NAME="Kurt Miller"
 export GIT_AUTHOR_EMAIL="miller.kurt.e@gmail.com"
-export GIT_DIR="/home/kmiller/Code/REPO/.git"
 
 [[ -o login ]] && LOGIN=login || LOGIN=''
 

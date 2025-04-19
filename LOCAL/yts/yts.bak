@@ -43,6 +43,7 @@ typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
 typeset -A _PARTIALS=()
 typeset -A _REJECTS=()
+typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _LOCAL_LIST=()
@@ -137,6 +138,7 @@ action_do () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	# Why this?
 	for M in ${_MARKED};do
 		list_set_selected ${M} ${_AVAIL_ROW}
 	done
@@ -155,7 +157,7 @@ action_do () {
 
 		HDRS_OUT=false
 
-		unsetopt localtraps # Initialize CTRL-c trap
+		unsetopt localtraps # Initialize CTRL-C trap
 		trap kill_job INT
 
 		ERROR_CNT=0
@@ -200,7 +202,7 @@ action_do () {
 				EMSG="<w>${TITLE[1,65]}<N>|<g>Has already been downloaded<N>" 
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_DOWNLOADS[${M}]=true
-				break # While loop
+				break # Scan cycle
 			fi
 
 			# Scan for 'not yet available'
@@ -212,7 +214,7 @@ action_do () {
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FUTURE[${M}]=true
 				_DOWNLOADS[${M}]=false
-				break # While loop
+				break # Scan cycle
 			fi
 
 			# Scan for 'unable to download'
@@ -223,7 +225,8 @@ action_do () {
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FAILED[${M}]=true
 				_DOWNLOADS[${M}]=false
-				break # While loop
+				_EXIT_SCRUB=false # Trigger log retention
+				break # Scan cycle
 			fi
 
 			# Scan for 'resumed'
@@ -247,7 +250,6 @@ action_do () {
 				DEST_1=$(cut -d'|' -f1 <<<${DEST})
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
-				#HDR1_TXT=$(clean_line ${HDR1_TXT}) # Too aggressive
 				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,${_HDR_TEXT_LEN}]}<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
@@ -265,7 +267,7 @@ action_do () {
 			if grep -qi 'chunklist' <<<${LOG_LINE} 2>/dev/null;then # Block live braodcasts
 				msg_box -p -PK "<r>Warning<N>This is an ongoing live broadcast|Not suitable for download"
 				kill_job
-				break
+				break # Scan cycle
 			fi
 			
 			ETA='' && ERR='' && OTH=''
@@ -299,7 +301,7 @@ action_do () {
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Too many errors - Unable to download<N>"
 					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 					kill_job
-					_FAILED[${M}]=true && break
+					_FAILED[${M}]=true && break # Scan cycle
 				fi
 			fi
 
@@ -335,14 +337,14 @@ action_do () {
 				if [[ ${#_MARKED} -gt 1 ]];then
 					msg_box -C -jc "<m>$(str_unicode_line 10)<N>"
 					if [[ $((${#_MARKED}-DL_CNT)) -gt 0 ]];then
-						MSG="Download ${DL_CNT} completed - $((${#_MARKED}-DL_CNT)) remaining"
-						msg_box -z -t${_PAUSE_TM} -x$(( _COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
+						MSG="Download ${DL_CNT} completed - $(( ${#_MARKED} - DL_CNT )) remaining"
+						msg_box -z -t${_PAUSE_TM} -x$(( _COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
 					fi
 				fi
 				_DOWNLOADS[${M}]=true
 				post_process
 				log_download ${M}
-				break # While loop
+				break # Scan cycle
 			fi # Monitor progress
 			sleep 1 # Log fetch delay
 		done # Log scan complete
@@ -374,10 +376,6 @@ action_warn () {
 			_MARKED[${M}]=0
 			list_set_selected ${M} ${_AVAIL_ROW}
 		done
-	fi
-
-	if [[ ${g_FIX_AUDIO} == 'true' ]];then
-		msg_box -H1 -x${_COORDS[X]} -h${_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
 	fi
 }
 
@@ -425,11 +423,11 @@ clear_log () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} && -e ${g_YTS_LOG} ]];then
-		echo "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Debug is active - retain the log
-	else
+	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
 		rm -f ${g_YTS_LOG}
 		echo "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}" >> ${_YTS_DBG_LOG} # Debug is NOT active - clear the log
+	else
+		echo "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Debug is active - retain the log
 	fi
 }
 
@@ -857,15 +855,14 @@ log_download () {
 }
 
 log_find () { 
-	local TOP=${1} # Page top row
-	local BOT=${2} # Page bot row
+	local TOP=${1} # Page top row supplied by LIST.zsh
+	local BOT=${2} # Page bot row supplied by LIST.zsh
 	local AU='' # Author
 	local FN='' # Filename
 	local TITLE=''
 	local TM=''
 	local LINE=''
 	local R=0
-	local -A SEEN=()
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -887,11 +884,11 @@ log_find () {
 		if [[ -n ${LINE} ]];then 
 			FN=$(cut -d '|' -f3 <<<${LINE})
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: TARGET _DOWNLOAD_DIR/FN:${_DOWNLOAD_DIR}/${FN}"
-			[[ ${SEEN[${FN}]} == 'true' ]] && continue # Only process a filename once
+			[[ ${_SEEN[${FN}]} == 'true' ]] && continue # Only process a filename once
 			if [[ -e ${_DOWNLOAD_DIR}/${FN} ]];then
 				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: FOUND _DOWNLOAD_DIR/FN:${_DOWNLOAD_DIR}/${FN}"
 				[[ ${FN:e} == 'part' ]] && _PARTIALS[${R}]=true || _DOWNLOADS[${R}]=true
-				SEEN[${FN}]=true
+				_SEEN[${FN}]=true
 			fi
 		fi
 	done
@@ -1324,6 +1321,7 @@ start_job () {
 	g_YTS_LOG=$(mktemp /tmp/yt.log.XXXXXX)
 
 	if [[ ${g_FIX_AUDIO} == 'true' ]];then
+		msg_box -H1 -x${_COORDS[X]} -h${_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
 		CMD="nohup yt -N2 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
 	else
 		CMD="nohup yt -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download

@@ -29,6 +29,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 # Declarations
 typeset -a _LOCAL_LIST=()
 
+# TODO: Eliminate all references to GIT_DIR; problamatic
 # Constants
 _GIT_DIR_STASH=${GIT_DIR}
 _GIT_REPO_DIR=/home/kmiller/Code/REPO/.git

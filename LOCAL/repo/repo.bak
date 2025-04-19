@@ -211,6 +211,7 @@ collect_modifed () {
 		esac
 		ARG=${@}
 	done
+
 	if [[ -n ${SUM} ]];then
 		SUM="${(f)$(fut modified ${DEPTH} -n ${ARG} | wc -l)}"
 		_MODIFIED+=("${ARG} ${SUM} files")
