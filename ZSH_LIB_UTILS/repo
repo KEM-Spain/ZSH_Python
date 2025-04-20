@@ -345,6 +345,8 @@ if [[ ${RESPONSE} == 'y' ]];then
 	sudo chown -R kmiller:kmiller .*
 	do_commit
 	popd
+	echo -n "\nPress any key..."
+	read -q RESPONSE
 fi
 
 exit_leave
