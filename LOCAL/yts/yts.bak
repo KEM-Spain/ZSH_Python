@@ -47,6 +47,7 @@ typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _LOCAL_LIST=()
+typeset -a _UCASE_WORDS=()
 
 # Constants
 _YTS_DIR=~/.yts
@@ -555,6 +556,9 @@ fav_get () {
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)g_QRY_ENGINE} query${MSG} from history or <h>(q)uit<N>"
 		TAG=$(tr -d '[:space:]' <<<${HDR})
+
+		# Choose high level list item
+		list_set_restore_pos_reset true # Fresh list - position at top
 		sel_list -S -T${TAG} -O${O_COLOR} -H"${HDR}" -M${MAP} -F${FTR}
 
 		case ${_SEL_KEY} in
@@ -736,8 +740,9 @@ get_field () {
 		STR=${STR[1,${_TITLE_STR_MAX}]} # Limit length
 		STR=$(sed -E 's/^\s+?\?*?\s+?//' <<<${STR}) # Strip leading space 
 		STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
+		_UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-][047]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-][\047])+\b')}")
 		STR=${(C)STR} # Proper case
-		STR=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' -e 's/(I)(i+)/\1\U\2/g' <<<${STR}) # Misc fixups
+		STR=$(retain_ucase ${STR})
 	fi
 
 	#STR=$(iconv -f utf-8 -t ascii//translit <<<${STR}) # Scrub non ascii
@@ -958,8 +963,9 @@ post_process () {
 	NEW_FN=$(echo ${NEW_FN} | fsub -y '_' ' ')        # Spaces
 	NEW_FN=$(echo ${NEW_FN} | fsub -y '\\.\\.' '\\.') # Multi dot
 	NEW_FN=$(echo ${NEW_FN} | fsub -y ' \\.' '\\.')   # Dangling file extensions
+	_UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${NEW_FN} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}")
 	NEW_FN=$(echo ${NEW_FN} | fsub -y -P)             # Proper case
-	NEW_FN=$(sed -E -e 's#W/#w/#g' -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' -e 's/(I)(i+)/\1\U\2/g' <<<${NEW_FN}) # Misc fixups
+	NEW_FN=$(retain_ucase ${NEW_FN})
 
 	if [[ ${#NEW_FN} -gt ${_MAX_FLEN} ]];then
 		NEW_FN=$(echo ${NEW_FN} | fsub -y -t${_MAX_FLEN}) # Truncate length
@@ -1035,7 +1041,6 @@ query_rumble () {
 			[[ ${g_LIVE_OPT} == 'true' ]] && { [[ ${g_LIVE} == 'true' ]] && g_LIVE=false || g_LIVE=true }
 			[[ ${g_LIVE} == 'true' ]] && MSG="Searching livestreams..." || MSG="Searching videos..."
 
-			#TODO Overlay previous message completely with this msg
 			if [[ -n ${INNER_BOX} ]];then
 				_REL_COORDS=($(box_coords_relative INNER_BOX X +6 Y ${REL_Y} H 3 W ${LAST_MSG[W]}))
 				msg_box -T SEARCH -R -c ${MSG}
@@ -1204,6 +1209,24 @@ reset_job () {
 	msg_box -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<m>Job Restarted<N>"
 }
 
+retain_ucase () {
+	local PROPER=${@}
+	local COPY=${PROPER}
+	local U W
+
+	for W in ${=COPY};do
+		W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip any punctuation
+		for U in ${_UCASE_WORDS};do
+			if [[ ${W:l} == ${U:l} ]];then
+				PROPER=$(sed "s/${W}/${U}/" <<<${PROPER})
+			fi
+		done
+	done
+
+	PROPER=$(sed 's/\o047S/\o047s/g' <<<${PROPER}) # Fix proper case anonmaly: 's' following apostrophe
+	echo ${PROPER}
+}
+
 select_download () {
 	local SEARCHTERM=${1}
 	local SEARCHTYPE=''
@@ -1248,11 +1271,10 @@ select_download () {
 	list_set_restore_pos true
 
 	while true;do
-	 # Get selection
+		# Generate list for high level selection
 		list_select ${_LOCAL_LIST}
 		[[ ${?} -eq 0 ]] && break
 
-	 # Get selections
 		_MARKED=($(list_get_selected))
 		
 		if [[ $(list_get_selected_count) -ne 0 ]];then
@@ -1543,7 +1565,6 @@ if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
 			 
 			if [[ ${?} -eq 0 ]];then
 				select_download ${g_QUERY_KEY}
-				list_set_restore_pos_reset true
 			fi
 		fi
 	done

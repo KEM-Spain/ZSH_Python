@@ -221,6 +221,7 @@ collect_modifed () {
 }
 
 # Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 # Build repo
 echo "${WHITE_FG}Building repo${RESET}..."
@@ -345,3 +346,5 @@ if [[ ${RESPONSE} == 'y' ]];then
 	do_commit
 	popd
 fi
+
+exit_leave
