@@ -47,6 +47,7 @@ typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _LOCAL_LIST=()
+typeset -a _UCASE_WORDS=()
 
 # Constants
 _YTS_DIR=~/.yts
@@ -678,28 +679,57 @@ get_box_center () {
 get_field () {
 	local FIELD=${1}
 	local NDX=${2}
-	local -A FIELD_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" 6)
 	local STR=''
 	local TSTR=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGS:FIELD:${FIELD}, NDX:${NDX}"
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}:${LINENO} _LIST[NDX]:${_LIST[${NDX}]}"
 
-	case ${FIELD} in
-		age) STR=$(cut -d'|' -f${FIELD_MAP[age]} <<<${_LIST[${NDX}]});;
-		agetime) STR=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${_LIST[${NDX}]});;
-		author) STR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${_LIST[${NDX}]});;
-		time) STR=$(cut -d'|' -f${FIELD_MAP[time]} <<<${_LIST[${NDX}]});;
-		title) STR=$(cut -d'|' -f${FIELD_MAP[title]} <<<${_LIST[${NDX}]});;
-		url) STR=$(cut -d'|' -f${FIELD_MAP[url]} <<<${_LIST[${NDX}]});;
-	esac
+	if [[ ${g_QRY_ENGINE} == 'rumble' ]];then
+		case ${FIELD} in
+			author) STR=$(cut -d'|' -f2 <<<${_LIST[${NDX}]});STR="${STR[1,${_FIELD_LEN[author]}]}";STR="$(cut -d'(' -f1 <<<${STR})";;
+			title) STR=$(cut -d'|' -f3 <<<${_LIST[${NDX}]});STR="${STR[1,${_FIELD_LEN[title]}]}";;
+			age) STR=$(cut -d'|' -f4 <<<${_LIST[${NDX}]});STR="${STR[1,${_FIELD_LEN[age]}]}";;
+			url) STR=$(cut -d'|' -f5 <<<${_LIST[${NDX}]});STR="http://rumble.com${STR}";;
+			time) STR=$(cut -d'|' -f6 <<<${_LIST[${NDX}]});STR="(${STR})";;
+			agetime) STR=$(cut -d'|' -f4,6 <<<${_LIST[${NDX}]});STR="(${STR:s/|/ /})";;
+		esac
+	else
+		case ${FIELD} in
+			age) STR=$(cut -d'|' -f1 <<<${_LIST[${NDX}]});STR="${STR[1,${_FIELD_LEN[age]}]}";;
+			author) STR=$(cut -d'|' -f2 <<<${_LIST[${NDX}]});STR="${STR[1,${_FIELD_LEN[author]}]}";;
+			title) STR=$(cut -d'|' -f3 <<<${_LIST[${NDX}]});STR="${STR[1,${_FIELD_LEN[title]}]}";;
+			url) STR=$(cut -d'|' -f4 <<<${_LIST[${NDX}]});;
+			time) STR=$(cut -d'|' -f5 <<<${_LIST[${NDX}]});STR="(${STR})";;
+			agetime) STR=$(cut -d'|' -f1,5 <<<${_LIST[${NDX}]});STR="(${STR:s/|/ /})";;
+		esac
+	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
 
-	if [[ ${FIELD} == 'author' && ${g_SEARCH_TYPE} != 'general' ]];then
-		STR=${g_DISPLAY_KEY:gs/_/ /}
-		STR=${(C)STR}
+	if [[ ${FIELD} == 'agetime' ]];then
+		STR=$(perl -pe "s/(.*\s+)(\d{1,}\s+\w+\s+ago.*)/\2/" <<<${STR})
+		[[ ! ${STR} =~ '^\(' ]] && STR="(${STR}" # Prefix a paren if not present
 	fi
+	
+	if [[ ${FIELD} == 'author' ]];then
+		[[ ${g_SEARCH_TYPE} == 'general' ]] && TSTR=${(C)STR} || TSTR=${g_DISPLAY_KEY:gs/_/ /}
+		STR=${TSTR:=${STR}}
+	fi
+
+	if [[ ${FIELD} == 'title' ]];then
+		STR=${STR[1,${_TITLE_STR_MAX}]} # Limit length
+		STR=$(sed -E 's/^\s+?\?*?\s+?//' <<<${STR}) # Strip leading space 
+		STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
+		STR=$(sed -E -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' <<<${STR}) # Not sure what this is doing?
+		_UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
+		STR=${(C)STR} # Proper case
+		STR=$(sed 's/\o047S/\o047s/g' <<<${STR}) # Fix proper case anonmaly: 's' following apostrophe
+		[[ -n ${_UCASE_WORDS} ]] && STR=$(retain_ucase ${STR})
+	fi
+
+	#STR=$(iconv -f utf-8 -t ascii//translit <<<${STR}) # Scrub non ascii
+	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}:${LINENO} Returning:STR[1,${_TITLE_STR_MAX}]:${STR[1,${_TITLE_STR_MAX}]}"
 
 	echo -n ${STR}
 }
@@ -884,23 +914,19 @@ log_to_file () {
 }
 
 post_process () {
+	local LF=''
+	local FN=''
+	local IN=''
 	local -a KEYWORDS=("judge napolitano - " "official" "^the " " show" "have it out with galloway \- " "youtube channel")
 	local -a LIST
-	local -a TEMP_FILES=()
-	local FN=''
-	local LF=''
 	local MSG="Post Processing"
 	local NEW_FN=''
-	local PID=''
-	local F K
+	local F K D
+	local -a TEMP_FILES=()
 
 	msg_box -x$(( _COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
 
-	while true;do
-		PID=$(pgrep -n ffmpeg) # Wait for processing to finish
-		[[ -z ${PID} ]] && break
-		sleep 1
-	done
+	sleep 3 # wait for processing to finish
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Removing any temp.mp4 files"
 
@@ -912,50 +938,59 @@ post_process () {
 
 	LF=$(last_file) # Filename and Inode
 	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
-	echo "${0}: Existing FN:${FN}" >> ${_YTS_DBG_LOG}
+	IN=$(cut -d'|' -f2 <<<${LF}) # Inode
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}, INODE:${IN}"
 
-	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /}) # Clean tail, no extension, no underscores
-	echo "${0}: Clean title:${NEW_FN}" >> ${_YTS_DBG_LOG}
+	# TODO; build filename from internal data and avoid calls to fsub
+	
+	NEW_FN=$(echo ${FN} | fsub -y '_s_' '\x27s_')     # Apostrophes
+	NEW_FN=$(echo ${NEW_FN} | fsub -y '_' ' ')        # Spaces
+	NEW_FN=$(echo ${NEW_FN} | fsub -y '\\.\\.' '\\.') # Multi dot
+	NEW_FN=$(echo ${NEW_FN} | fsub -y ' \\.' '\\.')   # Dangling file extensions
+	NEW_FN=$(sed -E -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' <<<${NEW_FN}) # Not sure what this is doing?
+	_UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${NEW_FN} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
+	NEW_FN=$(echo ${NEW_FN} | fsub -y -P)             # Proper case
+	NEW_FN=$(sed 's/\o047S/\o047s/g' <<<${NEW_FN}) # Fix proper case anonmaly: 's' following apostrophe
+	[[ -n ${_UCASE_WORDS} ]] && NEW_FN=$(retain_ucase ${NEW_FN})
 
 	if [[ ${#NEW_FN} -gt ${_MAX_FLEN} ]];then
-		NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Truncate length
+		NEW_FN=$(echo ${NEW_FN} | fsub -y -t${_MAX_FLEN}) # Truncate length
 	fi
-	echo "${0}: Adjusted length:${NEW_FN}" >> ${_YTS_DBG_LOG}
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Scrubbing keywords"
-	for K in ${KEYWORDS};do # Scrub keywords
-		NEW_FN=$(sed "s/${K}//I" <<<${NEW_FN})
-	done
-	echo "${0}: Scrubbed keywords:${NEW_FN}" >> ${_YTS_DBG_LOG}
-
-	NEW_FN="${FN:h}/${NEW_FN}.${FN:e}" # Add path and extension
-	echo "${0}: Formatted NEW_FN:${NEW_FN}" >> ${_YTS_DBG_LOG}
 
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		echo "${0}: Moving FN:${FN} to NEW_FN:${NEW_FN}" >> ${_YTS_DBG_LOG}
-		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
+		mv -f ${FN} ${NEW_FN} # Write any changes
 		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
+		FN=${NEW_FN} # Update FN
 	fi
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Scrubbing keywords"
+	for K in ${KEYWORDS};do # Scrub keywords
+		NEW_FN=$(echo ${NEW_FN} | fsub -yi ${K})
+	done
+
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
+
+	if [[ ${FN} != ${NEW_FN} ]];then
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
+		mv -f ${FN} ${NEW_FN} # Write any changes
+		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
+		FN=${NEW_FN} # Update FN
+	fi
 }
 
 query_rumble () {
 	local SEARCHTERM=${1}
 	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
 	local -A MSG_BOX=($(box_coords_get "MSG_BOX"))
-	local -A FIELD_MAP=("author" 2 "title" 3 "age" 4 "url" 5 "time" 6 "agetime" "4,6")
-	local -a AGES=()
-	local -a CHANNELS=()
-	local -a DURATIONS=()
-	local -a LINKS=()
-	local -a TITLES=()
-	local -a WORK=()
+	local -a AGES
+	local -a CHANNELS
+	local -a DURATIONS
+	local -a LINKS
+	local -a TITLES
 	local -aU VID_LIST=()
-	local AGE AUTHOR TITLE URL TIME AGETIME
+	local AGE=''
 	local CHANNEL=''
 	local GEN_SEARCH=''
 	local LIVE=''
@@ -965,7 +1000,7 @@ query_rumble () {
 	local REL_W=$(( ${LAST_MSG[W]} +4 ))
 	local REL_Y=$(coord_center $(( _MAX_COLS + 3 )) ${REL_W})
 	local STR=''
-	local F X
+	local X=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -1062,31 +1097,19 @@ query_rumble () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} g_QUERY_KEY:${g_QUERY_KEY} _LOCAL_LIST count: ${#_LOCAL_LIST}, TITLES: ${#TITLES}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} \n$(for L in ${VID_LIST};do echo "VID_LIST:${L}";done)"
 
-	# Return failed search status
+	# Return search status
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		return 1
 	fi
 
-	for F in ${_LOCAL_LIST};do
-		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${F})
-		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
-		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
-		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F}); URL="http://rumble.com${URL}"
-		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
-		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${F});	AGETIME="(${AGETIME:s/|/ /})"
-
-		WORK+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
-	done
-
-	_LOCAL_LIST=(${WORK})
+	# TODO: move get_field logic to initial collection and eliminate from in-loop (decorate) call to smooth display
 
 	return 0
 }
 
 query_youtube () { 
-	local -a WORK=()
-	local -A FIELD_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
-	local AGE AUTHOR TITLE URL TIME AGETIME
+	local -a SORT_LIST
+	local AUTHOR=''
 	local CUSTOM_KEY=false
 	local DATA=false
 	local HIT=false
@@ -1094,7 +1117,8 @@ query_youtube () {
 	local NDX=0
 	local PROXY_CMD=''
 	local STR=''
-	local F
+	local TITLE=''
+	local L
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
@@ -1104,6 +1128,8 @@ query_youtube () {
 	else
 		PROXY_CMD="${g_PROXY_CMD}"
 	fi
+
+	#msg_box -p -PK "PROXY_CMD:${PROXY_CMD}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}: g_QUERY_KEY:${g_QUERY_KEY}"
@@ -1154,25 +1180,13 @@ query_youtube () {
 
 	[[ ${_SMCUP} == 'false' ]] && do_smcup
 
-	# Return failed search status
+	# Return search status
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		g_PROXY_CMD=$(str_trim ${(Q)g_PROXY_CMD})
-		msg_box -H2 -p -PK "<r>No data for query<N>:${g_PROXY_CMD}|${g_STRICT_MSG}|Strict filter option '<w>-S<N>' limits results"
+
+		msg_box -H2 -p -PK "<r>No data for query<N>:${g_PROXY_CMD}|${g_STRICT_MSG}|Omit option '<w>-S<N>' to disable strict filtering"
 		return 1
 	fi
-
-	for F in ${_LOCAL_LIST};do
-		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${F})
-		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
-		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
-		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})
-		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
-		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${F});	AGETIME="(${AGETIME:s/|/ /})"
-
-		WORK+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
-	done
-
-	_LOCAL_LIST=(${WORK})
 
 	return 0
 }
@@ -1184,34 +1198,25 @@ reset_job () {
 	msg_box -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<m>Job Restarted<N>"
 }
 
-clean_title () {
-	local TITLE=${@}
-	local -a UCASE_WORDS=()
-	local COPY=''
+retain_ucase () {
+	local PROPER=${@}
+	local COPY=${PROPER}
 	local U W
+	local SP="aspell -l en -a --dont-suggest --dont-time --dont-guess --ignore-case --size=10"
 
-	STR=${TITLE[1,${_TITLE_STR_MAX}]} # Limit length
-	STR=$(sed -E 's/^\s+?\?*?\s+?//' <<<${STR}) # Strip leading space 
-	STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
-	STR=$(sed -E -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' <<<${STR}) # Not sure what this is doing?
-	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
-	STR=${(C)STR} && COPY=${STR} # Proper case
-	STR=$(sed 's/\(\o047\)\(.\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: letter following apostrophe
-	
-	if [[ -n ${UCASE_WORDS} ]];then
-		for W in ${=COPY};do
-			W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits, and hyphen
-			for U in ${UCASE_WORDS};do
-				if [[ ${W:l} == ${U:l} ]];then
-					if ! spell -f ${W};then # Prettify entries where capitalization is overused
-						STR=$(sed "s/${W}/${U}/" <<<${STR})
-					fi
-				fi
-			done
+	for W in ${=COPY};do
+		W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits, and hyphen
+		for U in ${_UCASE_WORDS};do
+			if [[ ${W:l} == ${U:l} ]];then
+				PROPER=$(sed "s/${W}/${U}/" <<<${PROPER})
+#				if ! spell -f ${W};then # Prettify entries where capitalization is overused (slow)
+#					PROPER=$(sed "s/${W}/${U}/" <<<${PROPER})
+#				fi
+			fi
 		done
-	fi
+	done
 
-	echo ${STR}
+	echo ${PROPER}
 }
 
 select_download () {
@@ -1227,11 +1232,11 @@ select_download () {
 
 	SEARCHTYPE=Videos
 
-	_SORT_TABLE=(1 1 2 2 3 3) # Age, author, title
-
 	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
+		_SORT_TABLE=(1 4 2 2 3 3) # Age, author, title
 		[[ ${g_LIVE} == 'true' ]] && SEARCHTYPE=Live
 	elif [[ ${g_QRY_ENGINE:l} == 'youtube' ]];then
+		_SORT_TABLE=(none none)
 		[[ ${g_STRICT} == 'true' ]] && SEARCHTYPE="Strict (${g_STRICT_MSG})"
 	fi
 

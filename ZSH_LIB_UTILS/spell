@@ -69,6 +69,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type w)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-f${RESET} fast mode"
 	echo -e "${WHITE_FG}-l${RESET} Language code:(es=spanish), etc."
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
@@ -77,16 +78,18 @@ usage () {
 	exit_leave
 }
 
-OPTSTR=":HDl:"
+OPTSTR=":HDl:f"
 OPTIND=0
 
 LANG=en
+FASt=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      l) LANG=${OPTARG};;
+     f) FAST=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -97,7 +100,13 @@ shift $((OPTIND -1))
 # Execution
 [[ -z ${1} ]] && usage "missing argument:<WORD>" || WORD=${@}
 
-OUT=$(echo ${WORD} | aspell -l ${LANG} -a)
+if [[ ${FAST} == 'true' ]];then
+	echo ${WORD} | aspell -l ${LANG} -a --sug-mode=ultra --dont-time --dont-guess --size=10 | grep -q '*'
+	return
+else
+	OUT=$(echo ${WORD} | aspell -l ${LANG} -a)
+fi
+
 grep -q '*' <<<${OUT}
 RC=${?}
 
