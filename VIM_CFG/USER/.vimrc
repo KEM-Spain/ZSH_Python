@@ -56,7 +56,7 @@ if !has("gui_running")
 	"function key mappings
 	nnoremap <F1> :set number!<CR>
 	nnoremap <F2> :set invpaste paste?<CR>
-	nnoremap <F3> :echom expand('%:p')<CR>
+	nnoremap <F3> :echom 'Current file:' expand('%:p')<CR>
 	nnoremap <F7> gg=G<C-o><C-o>
 
 	nm <silent> <F4> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name")
@@ -64,14 +64,17 @@ if !has("gui_running")
     \ . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name")
     \ . ">"<CR>
 
+	"example of mapping with input - could be used to prompt before executing a mapping
+	nnoremap <expr> <c-t> "oHello, " . input("Please give your name: ") . ". You have a very nice name.\<ESC>"
+
 	"activate Ansi plugin
 	nnoremap <c-a> :AnsiEsc<CR>
 
 	"enclose bare vars with braces in zsh
 	nnoremap <c-b> :1,$s/\$\@<=[~A-Z_0-9:a-z@#?]\+/{&}/g
 
-	"delimit all words with colon
-	nnoremap <c-d> 0A<space><Esc>0y$$p<Esc>0:1,$s/ /:/g<CR>0:1,$s/:$//g<CR>:s/\(.*\)_\(.*\):/\1\2:/g<CR>:s/\(.*\)_\(.*\):/\1\2:/g<CR>:s/\(.*\)_\(.*\):/\1\2:/g<CR>
+	"delimit all words
+	nnoremap <silent> <c-d> <Esc>0A<Esc>0y$$<Esc>0:1,$s/ /\|/g<CR>:echo "delimited"<CR>
 
 	"add app shebangs
 	nnoremap <c-e> ggi#!/usr/bin/zsh<CR> <ESC>
@@ -84,8 +87,6 @@ if !has("gui_running")
 	"use range
 	nnoremap <c-n> :'a,'b
 
-	"not sure: nnoremap <c-f> :s/.*:/\L&/g<CR>
-	
 	"wrap long text
 	nnoremap <c-g> :%!fmt -100 -s<CR>
 
@@ -93,24 +94,27 @@ if !has("gui_running")
 	nnoremap <c-i> :'a,'b> <CR>
 	nnoremap <c-o> :'a,'b< <CR>
 
-	"sort marked
+	"marked sort
 	nnoremap <c-s> :'a,'bsort <CR>
 
-	"comment/uncomment marked
+	"marked comment/uncomment
 	nnoremap <c-u> :'a,'bs/^/#/g <CR>
 	nnoremap <c-y> :'a,'bs/^#//g <CR>
+
+	"marked delete/yank
+	nnoremap <c-x> :'a,'bd <CR>
+	nnoremap <c-c> :'a,'by <CR>
+
+	"marked copy/move
+	nnoremap <c-m> :'a,'bmo . <CR>
+	nnoremap <c-n> :'a,'bco . <CR>
+
+	"marked enter cmd
+	nnoremap <c-l> :'a,'b
 
 	"wrap long lines
 	nnoremap <c-w> <esc>gqq
 	
-	"delete/yank marked
-	nnoremap <c-x> :'a,'bd <CR>
-	nnoremap <c-c> :'a,'by <CR>
-
-	"copy/move marked to current pos
-	"nnoremap <C-S-m> :'a,'bm . <CR>
-	"nnoremap <C-S-c> :'a,'bco . <CR>
-
 	set autoindent "automatic code indent
 	set backspace=2 "backspace del all
 	set cindent "C indenting function

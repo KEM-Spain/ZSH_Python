@@ -54,7 +54,6 @@ _SRC_DIR=/usr/local/src
 _ACTION=download
 _ALERT_TM=.2
 _CMD_LINE_ARGS=false
-_UPD_MARKER=${_YTS_DIR}/yts-upd.lastrun
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _DOWNLOAD_LOG=${_YTS_DIR}/yts.downloads
 _ERROR_LIMIT=5
@@ -63,17 +62,18 @@ _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
 _FIELD_LEN[title]=80
-_HDR_TEXT_LEN=69
 _JS_SCRIPT=/usr/local/etc/yts.js
 _MAX_ERRORS=10
-_MAX_FLEN=75
+_MAX_FLEN=85
+_MAX_HDR=69
+_MAX_TITLE=75
 _OBJECT=video
 _PAUSE_TM=2
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
-_TITLE_STR_MAX=75
+_UPD_MARKER=${_YTS_DIR}/yts-upd.lastrun
+_YTS_DBG_LOG=/tmp/yt.dbg.log
 _YTS_FAVORITES=${_YTS_DIR}/yts_favorites
 _YTS_URL_LOG=/tmp/yts.url.log
-_YTS_DBG_LOG=/tmp/yt.dbg.log
 
 # Globals
 g_CUSTOM_LIST=false
@@ -163,6 +163,7 @@ action_do () {
 		ERROR_CNT=0
 		start_job ${URL}
 		msg_box -x${_COORDS[X]} -y${_COORDS[Y]} -h${_COORDS[H]} -w${_COORDS[W]} "Download requested..."
+		sleep 3
 
 		# Detect missing log
 		if [[ ! -e ${g_YTS_LOG} ]];then
@@ -250,7 +251,7 @@ action_do () {
 				DEST_1=$(cut -d'|' -f1 <<<${DEST})
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
-				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,${_HDR_TEXT_LEN}]}<N>"
+				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,${_MAX_HDR}]}<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
@@ -278,16 +279,16 @@ action_do () {
 				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				continue # Skip
 			elif grep -q 'ETA' <<<${LOG_LINE} 2>/dev/null;then # Uppercase ETA
-				echo "${0}: GOT ETA ${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				echo "${0}: GOT ETA:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				ETA=${LOG_LINE}
 			elif grep -qi 'error' <<<${LOG_LINE} 2>/dev/null;then
-				echo "${0}: GOT ERRORS ${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				echo "${0}: GOT ERROR:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				ERR=${LOG_LINE}
 			elif grep -qi 'Fixing MPEG-TS' <<<${LOG_LINE} 2>/dev/null;then
-				echo "${0}: GOT Fragmented completion ${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				echo "${0}: GOT Fragmented completion:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				ETA="100% of download completed"
 			else
-				echo "${0}: GOT OTHER ${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				echo "${0}: GOT OTHER:${LOG_LINE}" >> ${_YTS_DBG_LOG}
 				OTH=${LOG_LINE}
 			fi
 
@@ -696,9 +697,9 @@ get_field () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
 
-	if [[ ${FIELD} == 'author' && ${g_SEARCH_TYPE} != 'general' ]];then
-		STR=${g_DISPLAY_KEY:gs/_/ /}
-		STR=${(C)STR}
+	if [[ ${FIELD} == 'author' ]];then
+		[[ ${g_SEARCH_TYPE} == 'general' ]] && TSTR=${(C)STR} || TSTR=${g_DISPLAY_KEY:gs/_/ /}
+		STR=${TSTR:=${STR}}
 	fi
 
 	echo -n ${STR}
@@ -813,14 +814,18 @@ log_download () {
 }
 
 log_find () { 
-	local TOP=${1} # Page top row supplied by LIST.zsh
-	local BOT=${2} # Page bot row supplied by LIST.zsh
+	local TOP=${1} # Page top row supplied by LIST.zsh line 108
+	local BOT=${2} # Page bot row supplied by LIST.zsh line 108
 	local AU='' # Author
 	local FN='' # Filename
+	local LINE=''
+	local LINE_NUM=''
+	local LOG_AUTHOR=''
+	local LOG_TITLE=''
+	local LOG_TM=''
+	local R=0
 	local TITLE=''
 	local TM=''
-	local LINE=''
-	local R=0
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -830,13 +835,26 @@ log_find () {
 	_PARTIALS=()
 
 	for ((R=${TOP}; R <= ${BOT}; R++));do
+		# TODO: Author is concatenated string of author - fix
 		AU=$(get_field author ${R}) # Author
 		TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R})) # Video length
 		TM=$(tr -d '[()]' <<<${TM} | sed 's/undefined//')
 		TITLE=$(get_field title ${R}) # Title
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: AU:${AU:=null} TM:${TM:=null} TITLE:${TITLE[1,15]}"
 
-		LINE=$(grep -i ${AU:=null 2>/dev/null} ${_DOWNLOAD_LOG} | grep ${TM:=null} 2>/dev/null | grep "${TITLE[1,15]}" 2>/dev/null) # Match on author/time/title
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: AU:${AU:=null} TM:${TM:=null} TITLE:${TITLE}"
+
+		LOG_AUTHOR=$(grep -i -o ${AU} ${_DOWNLOAD_LOG})
+		LOG_TM=$(grep -o -n ${TM} ${_DOWNLOAD_LOG})
+		LOG_TITLE=$(grep -i -o -n "${TITLE}" ${_DOWNLOAD_LOG})
+
+		# TODO: Broken - needs work
+		LINE=''
+		if [[ -n ${LOG_AUTHOR} && -n ${LOG_TM} || -n ${LOG_AUTHOR} && -n ${LOG_TITLE} ]];then # Match on 2
+			[[ -n ${LOG_TM} ]] && LINE_NUM=$(cut -d: -f1 <<<${LOG_TM})
+			[[ -n ${LOG_TITLE} ]] && LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE})
+			LINE=$(sed "${LINE_NUM}q;d" ${_DOWNLOAD_LOG}) # Log line
+		fi
+		
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: GREPPED ${_DOWNLOAD_LOG} for LINE:${LINE:=null}"
 
 		if [[ -n ${LINE} ]];then 
@@ -912,31 +930,25 @@ post_process () {
 
 	LF=$(last_file) # Filename and Inode
 	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
-	echo "${0}: Existing FN:${FN}" >> ${_YTS_DBG_LOG}
+	echo "${0}: Last FN:${FN}" >> ${_YTS_DBG_LOG}
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
 
-	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /}) # Clean tail, no extension, no underscores
-	echo "${0}: Clean title:${NEW_FN}" >> ${_YTS_DBG_LOG}
-
-	if [[ ${#NEW_FN} -gt ${_MAX_FLEN} ]];then
-		NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Truncate length
-	fi
-	echo "${0}: Adjusted length:${NEW_FN}" >> ${_YTS_DBG_LOG}
+	NEW_FN=$(clean_title "file" ${FN:t:r:gs/_/ /}) # Clean tail, no extension, no underscores
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Scrubbing keywords"
 	for K in ${KEYWORDS};do # Scrub keywords
 		NEW_FN=$(sed "s/${K}//I" <<<${NEW_FN})
 	done
-	echo "${0}: Scrubbed keywords:${NEW_FN}" >> ${_YTS_DBG_LOG}
+	echo "${0}: Scrubbed:${NEW_FN}" >> ${_YTS_DBG_LOG}
 
 	NEW_FN="${FN:h}/${NEW_FN}.${FN:e}" # Add path and extension
-	echo "${0}: Formatted NEW_FN:${NEW_FN}" >> ${_YTS_DBG_LOG}
+	echo "${0}: Formatted:${NEW_FN}" >> ${_YTS_DBG_LOG}
 
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		echo "${0}: Moving FN:${FN} to NEW_FN:${NEW_FN}" >> ${_YTS_DBG_LOG}
-		mv -f "${FN}" "${NEW_FN}" &2 >> ${_ERROR_LOG} # Write any changes
+		echo "${0}: Overwriting:${FN}" >> ${_YTS_DBG_LOG}
+		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
 		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
 	fi
 
@@ -1070,7 +1082,7 @@ query_rumble () {
 	for F in ${_LOCAL_LIST};do
 		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${F})
 		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
-		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
+		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title "text" ${TITLE})
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F}); URL="http://rumble.com${URL}"
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${F});	AGETIME="(${AGETIME:s/|/ /})"
@@ -1164,7 +1176,7 @@ query_youtube () {
 	for F in ${_LOCAL_LIST};do
 		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${F})
 		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
-		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
+		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title "text" ${TITLE})
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${F});	AGETIME="(${AGETIME:s/|/ /})"
@@ -1185,32 +1197,75 @@ reset_job () {
 }
 
 clean_title () {
-	local TITLE=${@}
+	local TYPE=${1}
+	local TITLE=${2}
 	local -a UCASE_WORDS=()
+	local -A SEEN=()
 	local COPY=''
+	local UC_NUM=0
 	local U W
 
-	STR=${TITLE[1,${_TITLE_STR_MAX}]} # Limit length
-	STR=$(sed -E 's/^\s+?\?*?\s+?//' <<<${STR}) # Strip leading space 
+	if [[ ${TYPE} == 'file' ]];then
+		STR=${TITLE[1,${_MAX_FLEN}]} # Filename
+		echo "${0}: Trimmed filename:${STR}" >> ${_YTS_DBG_LOG}
+	elif [[ ${TYPE} == 'text' ]];then
+		STR=${TITLE[1,${_MAX_TITLE}]} # Title
+		echo "${0}: Trimmed Title:${STR}" >> ${_YTS_DBG_LOG}
+	fi
+
 	STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
-	STR=$(sed -E -e 's/(\x27[[:alpha:]]+)([[:space:]].*)/\L\1\E\2/' <<<${STR}) # Not sure what this is doing?
+	#echo "${0}: HTML -> ascii:${STR}" >> ${_YTS_DBG_LOG}
+
+	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline
+	#echo "${0}: Strip newline:${STR}" >> ${_YTS_DBG_LOG}
+
+	STR=$(sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${STR}) # Trim
+	#echo "${0}: Trim:${STR}" >> ${_YTS_DBG_LOG}
+	 
+	STR=$(sed 's/[ _]s[ _]/\o047s /g' <<<${STR}) # Fix any yt-dlp apostrophe gaps
+	#echo "${0}: Apostrophe s:${STR}" >> ${_YTS_DBG_LOG}
+	 
+	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp slash gaps
+	#echo "${0}: w/ (with):${STR}" >> ${_YTS_DBG_LOG}
+	 
 	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
+	#echo "UCASE_WORDS:${UCASE_WORDS}" >> ${_YTS_DBG_LOG}
+
+	UC_NUM=0
+	for U in ${UCASE_WORDS};do
+		[[ ${U%%[!0-9]*} ]] && ((UC_NUM++)) # Count numbers
+	done
+
 	STR=${(C)STR} && COPY=${STR} # Proper case
-	STR=$(sed 's/\(\o047\)\(.\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: letter following apostrophe
+	#echo "${0}: Proper case:${STR}" >> ${_YTS_DBG_LOG}
+
+	STR=$(sed 's/\(\o047\)\([DST] \)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
+	#echo "${0}: Apostrophe:${STR}" >> ${_YTS_DBG_LOG}
 	
 	if [[ -n ${UCASE_WORDS} ]];then
 		for W in ${=COPY};do
 			W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits, and hyphen
+			[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 			for U in ${UCASE_WORDS};do
+				[[ ${U%%[!0-9]*} ]] && continue # Skip numbers
 				if [[ ${W:l} == ${U:l} ]];then
-					if ! spell -f ${W};then # Prettify entries where capitalization is overused
+					SEEN[${W}]=1
+					if [[ $(( ${#UCASE_WORDS} - UC_NUM )) -gt 3 ]];then
+						#echo "More than 3 UC" >> ${_YTS_DBG_LOG}
+						if ! spell -f ${W};then # Prettify entries where capitalization is excessive
+							STR=$(sed "s/${W}/${U}/" <<<${STR})
+							echo "${0}: Prettified:${STR}" >> ${_YTS_DBG_LOG}
+						fi
+					else
 						STR=$(sed "s/${W}/${U}/" <<<${STR})
+						echo "${0}: Retained UC:${STR}" >> ${_YTS_DBG_LOG}
 					fi
 				fi
 			done
 		done
 	fi
 
+	echo "${0}: Clean:${STR}" >> ${_YTS_DBG_LOG}
 	echo ${STR}
 }
 

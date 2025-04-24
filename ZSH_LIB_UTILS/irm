@@ -104,6 +104,7 @@ opt_type () {
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
 		t) echo "<FILE_TYPE>";;
+		i) echo "<INODE>";;
 	esac
 }
 
@@ -115,7 +116,7 @@ usage () {
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 	(
-	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type i)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
@@ -139,15 +140,22 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
 FPATH=${FPATH:q}
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
-
-[[ ${?} -ne 0 ]] && exit_leave $(msg_exit W "no matches found for:${@}")
 PATHLBL=$(path_get_label 40)
+
+INODE=''
+if [[ ${#} -ne 0 ]];then
+	if validate_is_integer ${1};then
+		INODE=${1}
+		find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -f {} \;
+		[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "Unable to remove inode:${INODE}") || exit_leave "${WHITE_FG}${INODE}${RESET} was removed"
+	fi
+fi
 
 LOCAL_LIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} -type f ! -path ." 2>/dev/null )}")
 if [[ ${?} -ne 0 ]];then

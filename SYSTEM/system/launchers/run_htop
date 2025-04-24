@@ -1,2 +1,2 @@
 #!/usr/bin/zsh
-htop -t --sort-key=M_RESIDENT
+htop -t --sort-key=M_RESIDENT ${@}
