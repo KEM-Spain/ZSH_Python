@@ -251,7 +251,7 @@ action_do () {
 				DEST_1=$(cut -d'|' -f1 <<<${DEST})
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
-				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT[1,${_MAX_HDR}]}<N>"
+				HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title "text" ${HDR1_TXT[1,${_MAX_HDR}]})<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
@@ -834,7 +834,7 @@ log_find () {
 	_DOWNLOADS=()
 	_PARTIALS=()
 
-#	/bin/rm -f ./x
+#	/bin/rm -f ./${0}.dbg
 	for ((R=${TOP}; R <= ${BOT}; R++));do
 		LIST_AU=$(get_field author ${R}) # Author from list
 		LIST_TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R}) | tr -d '[()]' | sed 's/undefined//') # Video length from list
@@ -844,26 +844,26 @@ log_find () {
 		LOG_TM=$(grep -o -n ${LIST_TM} ${_DOWNLOAD_LOG}) # Match in log
 		LOG_TITLE=$(grep -i -o -n "${LIST_TITLE[1,30]}" ${_DOWNLOAD_LOG} | head -1) # Match snippet in log
 
-#		echo "LIST_AU:${LIST_AU}" >>x
-#		echo "LIST_TM:${LIST_TM}" >>x
-#		echo "LIST_TITLE:${LIST_TITLE}" >>x
-#		echo "LOG_AU:${LOG_AU}" >>x
-#		echo "LOG_TM:${LOG_TM}" >>x
-#		echo "LOG_TITLE:${LOG_TITLE}\n" >>x
+#		echo "LIST_AU:${LIST_AU}" >>${0}.dbg
+#		echo "LIST_TM:${LIST_TM}" >>${0}.dbg
+#		echo "LIST_TITLE:${LIST_TITLE}" >>${0}.dbg
+#		echo "LOG_AU:${LOG_AU}" >>${0}.dbg
+#		echo "LOG_TM:${LOG_TM}" >>${0}.dbg
+#		echo "LOG_TITLE:${LOG_TITLE}\n" >>${0}.dbg
 
-		LOG_LINE=''
 		[[ ${_SEEN[${LOG_FN}]} == 'true' ]] && continue # Only process a filename once
+
+		LINE_NUM=''
 		if [[ -n ${LOG_AU} && -n ${LOG_TM} ]];then
-#			echo "${GREEN_FG}Matched on AUTHOR:${LOG_AU} and TIME:${LOG_TM}${RESET}\n" >>x
-			LINE_NUM=$(cut -d: -f1 <<<${LOG_TM}) # Has match - get line number
-			LOG_LINE=$(sed "${LINE_NUM}q;d" ${_DOWNLOAD_LOG}) # Log line
-			LOG_FN=$(cut -d '|' -f3 <<<${LOG_LINE})
-			_DOWNLOADS[${R}]=true
-			_SEEN[${LOG_FN}]=true
+#			echo "${GREEN_FG}Matched on AUTHOR:${LOG_AU} and TIME:${LOG_TM}${RESET}\n" >>${0}.dbg
+			LINE_NUM=$(cut -d: -f1 <<<${LOG_TM}) # Has match - Fetch line number
 		elif [[ -n ${LOG_AU} && -n ${LOG_TITLE} ]];then
-#			echo "${GREEN_FG}Matched on AUTHOR:${LOG_AU} and TITLE:${LOG_TITLE}${RESET}\n" >>x
-			LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Has match - get line number
-			LOG_LINE=$(sed "${LINE_NUM}q;d" ${_DOWNLOAD_LOG}) # Log line
+#			echo "${GREEN_FG}Matched on AUTHOR:${LOG_AU} and TITLE:${LOG_TITLE}${RESET}\n" >>${0}.dbg
+			LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Has match - Fetch line number
+		fi
+
+		if [[ -n ${LINE_NUM} ]];then	
+			LOG_LINE=$(sed "${LINE_NUM}q;d" ${_DOWNLOAD_LOG}) # Fetch log line
 			LOG_FN=$(cut -d '|' -f3 <<<${LOG_LINE})
 			_DOWNLOADS[${R}]=true
 			_SEEN[${LOG_FN}]=true

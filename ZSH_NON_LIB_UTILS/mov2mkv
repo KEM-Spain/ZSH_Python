@@ -24,10 +24,12 @@ _SCRIPT=${0:t}
 
 usage () {
 	echo "Usage:${_SCRIPT} <MOV FILE>"
+	echo " Desc:Convert .mov file to .mkv"
 	exit 1
 }
 
 [[ ${#} -eq 0 ]] && usage
+[[ ${#} -gt 1 ]] && echo "${RED_FG}Error${RESET}:Too many args" && usage
 [[ ${1:e:l} != 'mov' ]] && echo "${1} is ${RED_FG}NOT${RESET} a MOV file. ${WHITE_FG}MOV${RESET} file required" && usage
 [[ ! -f ${1} ]] && echo "${RED_FG}File not found${RESET}:${WHITE_FG}${1}${RESET}" && usage
 
