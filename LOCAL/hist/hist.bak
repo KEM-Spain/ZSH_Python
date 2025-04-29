@@ -66,8 +66,8 @@ print_hist () {
 	local LINE=''
 	local -a LIST=()
 	local NDX=0
-	local HK
-	local UT
+	local HK=''
+	local UT=''
 	local M1=''
 	local M2=''
 

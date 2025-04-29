@@ -466,11 +466,13 @@ sel_scroll () {
 	local NAV=''
 	local NDX=0
 	local NORM_NDX=0
-	local SCROLL=''
-	local TAG_PAGE=0
-	local TAG_NDX=0
-	local X_OFF=0
+	local NM_P=''
+	local PGH_Y=0
 	local PAGE_CHANGE=false
+	local SCROLL=''
+	local TAG_NDX=0
+	local TAG_PAGE=0
+	local X_OFF=0
 	
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -529,6 +531,11 @@ sel_scroll () {
 		# Add header for paging
 		if [[ ${_LIST_DATA[PAGING]} == 'true' ]];then
 			tcup ${_LIST_DATA[PGH_X]} ${_LIST_DATA[PGH_Y]};echo -n $(msg_markup "Page <w>${PAGE}<N> of <w>${_PAGE_TOPS[MAX]}<N> <m>${_DMD}<N> (<w>N<N>)ext (<w>P<N>)rev")
+		else
+			PAGE_HDR="Showing <w>${#_LIST}<N> Items"
+			NM_P=$(msg_nomarkup ${PAGE_HDR})
+			PGH_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_P})
+			tcup ${_LIST_DATA[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${PAGE_HDR})
 		fi
 
 		sel_disp_page # Display list items

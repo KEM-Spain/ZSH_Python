@@ -205,7 +205,7 @@ if [[ ${_DELETE} == 'true' ]];then
 	HK=${HK:s/ /_/}
 	sed -in "/${_HIST_KEYS[${HK}]}/d" ${_HIST_FILE} # Unix time is key
 	echo "${_SEL_VAL}" > ${_LAST_ACTION}
-	exec ${0}
+	exec ${0} ${@}
 else
 	cut -d'#' -f2 <<<${_SEL_VAL} | tr -d \\n | xclip -i -selection clipboard
 fi
