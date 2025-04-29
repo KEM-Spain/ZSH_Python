@@ -29,9 +29,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 # Declarations
 typeset -a _LOCAL_LIST=()
 
-# TODO: Eliminate all references to GIT_DIR; problamatic
 # Constants
-_GIT_DIR_STASH=${GIT_DIR}
 _GIT_REPO_DIR=/home/kmiller/Code/REPO/.git
 
 # Functions
@@ -178,7 +176,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-L${RESET} use local repository (${GIT_DIR} is default)"
+	echo -e "${WHITE_FG}-L${RESET} use local repository (${_GIT_REPO_DIR} is default)"
 	echo -e "${WHITE_FG}-e${RESET} option to edit the <FILE> when commit is selected"
 	echo -e "${WHITE_FG}-p${RESET} option to print the <FILE> when commit is selected"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -214,14 +212,11 @@ shift $((OPTIND -1))
 if [[ ${USE_LOCAL_REPO} == 'true' ]];then
 	if [[ -e ${PWD}/.git ]];then
 		_GIT_REPO_DIR=${PWD}
-		export GIT_DIR=${PWD}/.git
-		msg_box -t2 "Found repo:${PWD}/.git"
 	else
 		exit_leave $(msg_exit R "Option -L -> No .git repository found in:${PWD}")
 	fi
 else
-	_GIT_REPO_DIR=${GIT_DIR:h}
-	msg_box -t2 "Using repo:${GIT_DIR}"
+	msg_box -t2 "Using repo:${_GIT_REPO_DIR}"
 fi
 
 [[ ${#} -ne 0 ]] && _FN_ARG=${1} || _FN_ARG=''

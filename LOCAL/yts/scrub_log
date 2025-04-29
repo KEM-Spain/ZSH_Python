@@ -37,6 +37,13 @@ for L in ${(on)LIST};do
 	echo "${NDX}) DIRECTORY INODE:${INODE} FN:${FN}"
 done
 LIST_CNT=${#LIST}
+if [[ -z ${LIST} ]];then
+	echo "[${WHITE_FG}${0:t}${RESET}] There are no downloaded files - nothing to do"
+	rm -f ${_DOWNLOAD_LOG} >/dev/null 2>&1  # Ensure no downloads are logged
+	touch ${_DOWNLOAD_LOG}
+	exit
+fi
+
 
 while read LINE;do
 	LOG_INODE=$(cut -d'|' -f1 <<<${LINE})

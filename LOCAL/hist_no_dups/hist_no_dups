@@ -47,10 +47,20 @@ LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 cp ${HIST_FILE} ${HIST_HOLD}
 
 #[[ ${_PROD} == 'false' ]] && echo "${BOLD}${RED_FG}Updating locate db${RESET}"
-echo -n "${BOLD}${GREEN_FG}Updating locate db${RESET}"
+echo -n "${ITALIC}Updating locate...${RESET}" >&2
 sudo updatedb ${LOCATE_OPTS} 2>/dev/null
 
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Reading history...${RESET}"
+
+BLANK_CMDS=("${(f)$(grep -P ';$' ${HIST_FILE})}")
+if [[ -n ${BLANK_CMDS} ]];then
+	for B in ${BLANK_CMDS};do
+		sed -in "/${B}/d" ${HIST_FILE}
+	done
+	[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Removing blank command lines:${WHITE_FG}${#BLANK_CMDS}${RESET}"
+else
+	BLANK_CMDS=()
+fi
 
 while read LINE;do
 	TS=$(cut -d';' -f1 <<<${LINE} | cut -d':' -f2)
@@ -130,6 +140,7 @@ for L in ${CMDS};do
 done
 
 # Create new history file
+# TODO: Keeps cycling through the same statistics - 2nd run should detect no dups.
 for L in ${HIST_BUILD};do
 	echo ${L}
 done | uniq | sort -nr -o ${HIST_NEW}
@@ -139,6 +150,7 @@ HIST_CNT=$(wc -l ${HIST_NEW} | cut -d' ' -f1)
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Done.${RESET}\n"
 
 [[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Original:" $(wc -l ${HIST_FILE} | cut -d' ' -f1)
+[[ ${_PROD} == 'false' && ${#BLANK_CMDS} -ne 0 ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "  Blank:" ${#BLANK_CMDS}
 [[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" " Unique:" ${#CMDS}
 [[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Rejects:" ${#HIST_REJECTS}
 [[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Cleaned:" ${HIST_CNT}

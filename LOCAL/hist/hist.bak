@@ -25,25 +25,61 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
  
+# Constants
+_HIST_FILE=~/.zsh_history
+_LAST_ACTION=/tmp/hist_action
+
+typeset -A _HIST_KEYS=()
+
 # Vars
 _ALL=false
-_HIST_LINES=24
+_HIST_LINES=46
 _SEARCHTERM=''
+_DELETE=false
+_HIST_KEY=''
+_SCRIPT=${0:t}
+_ACTION_MSG=''
 
 # Functions
+collect_hist () {
+	local SEARCHTERM=${1}
+	local DATE TM CMD
+	local D U
+
+	clear
+	fc -R
+	msg_box "<w>Collecting history...<N>"
+
+	while read DATE TM CMD;do
+		[[ ${CMD} =~ "${_SCRIPT}$" ]] && continue
+		if [[ -n ${_SEARCHTERM} ]];then
+			[[ ! ${CMD} =~ ${_SEARCHTERM} ]] && continue
+		fi
+		D="${DATE} ${TM}"
+		U=$(date -d ${D} +%s)
+		echo "${U}#${D}#${CMD}" 
+	done < <(fc -nrlt'%Y-%m-%d  %H:%M:%S' 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r | print_hist
+}
+
 print_hist () {
 	local HDR=''
 	local LINE=''
 	local -a LIST=()
 	local NDX=0
-
-	msg_box -x1 -y1 "<w>Collecting history...<N>"
+	local HK
+	local UT
+	local M1=''
+	local M2=''
 
 	while read LINE;do
 		if [[ ${_ALL} == 'false' ]];then
 			((NDX++))
 			[[ ${NDX} -gt ${_HIST_LINES} ]] && break
 		fi
+		UT=$(cut -d# -f1 <<<${LINE})
+		LINE=$(cut -d# -f2,3 <<<${LINE})
+		HK=$(cut -d# -f1 <<<${LINE})
+		_HIST_KEYS[${HK:s/ /_/}]=${UT} # Stash unix time
 		LIST+=${LINE}
 	done
 
@@ -61,10 +97,21 @@ print_hist () {
 
 	sel_set_list ${LIST}
 
-	sel_list -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard" -M"Use keypad for extended page navigation" -C
+	sel_set_app_keys d
+
+	if [[ -e ${_LAST_ACTION} ]];then
+		read _ACTION_MSG < ${_LAST_ACTION}
+		M1=$(cut -d# -f1 <<<${_ACTION_MSG})
+		M2=$(cut -d# -f2- <<<${_ACTION_MSG})
+		msg_box -p -PK -H1 "<m>History line was deleted<N>|${M1}|\"${M2}\""
+		/bin/rm -f ${_LAST_ACTION}
+	fi
+
+	sel_list -C -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard. Use keypad for extended page navigation" -M"(<w>d<N>)elete"
 	if [[ -n ${_SEL_VAL} ]];then
-		cut -d'#' -f2 <<<${_SEL_VAL} | tr -d \\n | xclip -i -selection clipboard
-		msg_box "Command was copied to clipboard"
+		case ${_SEL_KEY} in
+			d) _DELETE=true;;
+		esac
 	fi
 }
 
@@ -100,9 +147,8 @@ opt_exists () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		d) echo "<DIR>";;
+		n) echo "<LINES>";;
 		f) echo "<FILE>";;
-		t) echo "<FILE_TYPE>";;
 	esac
 }
 
@@ -144,21 +190,24 @@ shift $((OPTIND -1))
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+
 [[ -n ${1} ]] && _SEARCHTERM=${1}
+
 if ! validate_is_integer ${_HIST_LINES};then
-	exit_leave $(msg_exit E "Option <-n> value:${_HIST_LINES} not allowed - integer required")
+	exit_leave $(msg_exit E "Option <-n> invalid - integer required")
 fi
 
-fc -R
+collect_hist ${_SEARCHTERM}
 
-while read DATE TM CMD;do
-	if [[ -n ${_SEARCHTERM} ]];then
-		[[ ${CMD} == "hist ${_SEARCHTERM}" ]] && continue
-		[[ ! ${CMD} =~ ${_SEARCHTERM} ]] && continue
-	fi
-	D="${DATE} ${TM}"
-	U=$(date -d ${D} +%s)
-	echo "${U}#${D}#${CMD}"
-done < <(fc -nrlt'%Y-%m-%d  %H:%M:%S' 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r | cut -d'#' -f2,3 | print_hist
+if [[ ${_DELETE} == 'true' ]];then
+	_DELETE=false
+	HK=$(cut -d# -f1 <<<${_SEL_VAL})
+	HK=${HK:s/ /_/}
+	sed -in "/${_HIST_KEYS[${HK}]}/d" ${_HIST_FILE} # Unix time is key
+	echo "${_SEL_VAL}" > ${_LAST_ACTION}
+	exec ${0}
+else
+	cut -d'#' -f2 <<<${_SEL_VAL} | tr -d \\n | xclip -i -selection clipboard
+fi
 
 exit_leave

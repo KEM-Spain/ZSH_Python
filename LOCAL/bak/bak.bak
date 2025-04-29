@@ -14,6 +14,7 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Constants
 _LIB_DIR=/usr/local/lib
@@ -105,7 +106,7 @@ prod_to_local () {
 		do_copy ${g_LOCAL_VERSION} ${g_BACKUP_VERSION}
 	else
 		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} Found development"
-		echo "\nSOURCE"
+		echo "\nOVERWRITE DEVELOPMENT"
 		echo ${g_LOCAL_EXISTS_PROD}
 
 		diff -b ${g_PROD_VERSION} ${g_LOCAL_VERSION} >/dev/null 2>&1
@@ -116,17 +117,19 @@ prod_to_local () {
 			echo ${g_PROD_DIFFERS_LOCAL}
 
 			NEWEST=$(file_date_diff ${FN} ./${FN:t})
-			[[ ${NEWEST} == ${FN} ]] && echo ${g_PROD_IS_MORE_RECENT} || echo ${g_LOCAL_IS_MORE_RECENT}
+			if [[ ${NEWEST} == ${FN} ]];then
+				echo ${g_PROD_IS_MORE_RECENT}
+			else
+				echo "${WHITE_ON_GREY}DEVELOPMENT CONTAINS THE MOST RECENT CHANGES!${RESET}"
+				echo ${g_LOCAL_IS_MORE_RECENT}
+			fi
 			echo ${g_PROD_WILL_OVERWRITE}
 			
 			get_response "Overwrite the ${_EM}local${RESET} version?\n(the ${_EM}local${RESET} version will be backed up first)"
 			if [[ ${?} -eq 0 ]];then
 				[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} Local backed up; production will overwrite local"
-				echo "\nBACKUP"
 				do_copy ${g_LOCAL_VERSION} ${g_LOCAL_VERSION}.bak no_prompt
 				chmod 666 ${g_LOCAL_VERSION}.bak
-
-				echo "\nSOURCE"
 				echo "Copying production:${WHITE_FG}${g_PROD_NAME}${RESET}..."
 				do_copy ${g_PROD_VERSION} ${g_LOCAL_VERSION} no_prompt
 			else
@@ -150,6 +153,7 @@ do_copy () {
 
 	if [[ ${?} -eq 0 || ${PROMPT} != 'true' ]];then
 		cp ${SOURCE_FN} ${DEST_FN}
+		[[ ${DEST_FN} =~ "\.bak$" ]] && chmod 666 ${DEST_FN}
 		echo "${OP} ${GREEN_FG}complete${RESET}"
 		return 0
 	else
@@ -240,9 +244,10 @@ prod_to_backup () {
 }
 
 local_to_prod () {
+	echo "RELEASE"
 	if [[ ${g_IS_INITIAL_PRODUCTION} == 'false' ]];then
 		# Existing production copy
-		get_response "Overwrite the ${_EM}production${RESET} version: ${WHITE_FG}${g_PROD_NAME}${RESET}\nwith the ${_EM}local${RESET} version: ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
+		get_response "Overwrite the ${_EM}production${RESET} version: ${WHITE_FG}${g_PROD_NAME}${RESET}\nwith the ${_EM}development${RESET} version: ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
 		if [[ ${?} -eq 0 ]];then
 			prod_to_backup no_prompt
 			cp ${g_LOCAL_VERSION} ${g_PROD_VERSION}
@@ -282,16 +287,16 @@ set_messages () {
 
 	g_BACKUP_VERSION_MSG="Making backup of ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET} to ${g_BACKUP_NAME}..."
 
-	g_LOCAL_MATCHES_BACKUP="The ${_EM}local${RESET} version:${g_LOCAL_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}existing${RESET} backup:${g_BACKUP_NAME}"
+	g_LOCAL_MATCHES_BACKUP="The ${_EM}development${RESET} version:${g_LOCAL_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}existing${RESET} backup:${g_BACKUP_NAME}"
 	g_LOCAL_IS_MORE_RECENT="The ${GREEN_FG}${_EM}local${RESET} file:${g_LOCAL_NAME} is ${GREEN_FG}${_EM}more recent${RESET}"
 	g_LOCAL_WILL_OVERWRITE="File:${g_LOCAL_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}existing${RESET} backup:${g_BACKUP_NAME}"
 
 	g_PROD_DIFFERS_LOCAL="${RED_FG}Warning${RESET}:the ${_EM}production${RESET} version ${RED_FG}differs${RESET} from the ${_EM}local${RESET} version"
-	g_PROD_MATCHES_LOCAL="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}local${RESET} version:${g_LOCAL_NAME}"
+	g_PROD_MATCHES_LOCAL="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}development${RESET} version:${g_LOCAL_NAME}"
 	g_PROD_IS_MORE_RECENT="The ${GREEN_FG}${_EM}production${RESET} file:${g_PROD_NAME} is ${GREEN_FG}${_EM}more recent${RESET}"
-	g_PROD_WILL_OVERWRITE="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}local${RESET} version:${g_LOCAL_NAME}"
+	g_PROD_WILL_OVERWRITE="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}development${RESET} version:${g_LOCAL_NAME}"
 	g_PROD_MATCHES_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}backup${RESET} version:${g_BACKUP_NAME}"
-	g_PROD_WILL_OVERWRITE_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}local${RESET} version:${g_BACKUP_NAME}"
+	g_PROD_WILL_OVERWRITE_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}development${RESET} version:${g_BACKUP_NAME}"
 
 	if [[ ${_DEBUG} -gt 0 ]];then
 		dbg "${0}:${LINENO} g_BACKUP_NAME ${g_BACKUP_NAME}"
@@ -461,7 +466,7 @@ else
 		if [[ ${DEV_RELEASE} == 'true' ]];then
 			LIST=('1) Normal Production' '2) Library Module' '3) System Utility')
 			tput sc
-			msg_box -p  -P"Select Type" "<r>No production copy exists<N>|$(str_unicode_line 25)| |<w>What type of module is this?<N>| |$(msg_list ${LIST})"
+			msg_box -p -H1 -P"Select Type" "<r>No production copy exists<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
 			msg_box_clear
 			tput rc
 			case ${_MSG_KEY} in
@@ -471,7 +476,7 @@ else
 				*) echo; exit_leave $(msg_warn "Operation Cancelled");;
 			esac
 		else
-			exit_leave $(msg_err "No production version of file:${FILE_ARG} was found")
+			exit_leave $(msg_err "No production version of file:${FILE_ARG}${RESET} was found")
 		fi
 	fi
 

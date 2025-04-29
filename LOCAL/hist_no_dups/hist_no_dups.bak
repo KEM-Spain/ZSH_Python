@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# TODO: successive runs reduce the history to almost nothing
 
 #Inline ansi
 BOLD="\033[1m"
@@ -47,7 +46,8 @@ LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 cp ${HIST_FILE} ${HIST_HOLD}
 
-[[ ${_PROD} == 'false' ]] && echo "${BOLD}${RED_FG}Updating locate db${RESET}"
+#[[ ${_PROD} == 'false' ]] && echo "${BOLD}${RED_FG}Updating locate db${RESET}"
+echo -n "${BOLD}${GREEN_FG}Updating locate db${RESET}"
 sudo updatedb ${LOCATE_OPTS} 2>/dev/null
 
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Reading history...${RESET}"

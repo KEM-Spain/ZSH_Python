@@ -226,6 +226,7 @@ action_do () {
 			LOG_LINE=$(grep -m1 -i "unable to download video" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
 				if [[ ${RETRIES} -eq 0 ]];then # Try one more time
+					echo "${0}: Got start error - executing retry" >> ${_YTS_DBG_LOG}
 					((RETRIES++))
 					reset_job
 					start_job ${URL}
@@ -373,7 +374,6 @@ action_do () {
 	_MARKED=()
 	
 	trap - INT # Downloads are finished; cancel trap
-
 	return 0
 }
 
@@ -1174,7 +1174,7 @@ query_youtube () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
-	#[[ ${_SMCUP} == 'false' ]] && do_smcup
+	[[ ${_SMCUP} == 'false' ]] && do_smcup
 
 	# Return failed search status
 	if ! arr_is_populated "${_LOCAL_LIST}";then
@@ -1608,7 +1608,7 @@ fi
 # Run Query
 if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
 	while true;do
-		#do_smcup
+		do_smcup
 		fav_get
 		if [[ -n ${g_QUERY_KEY} ]];then
 			msg_box "Requesting videos for <B><I>${g_DISPLAY_KEY}<N>..."

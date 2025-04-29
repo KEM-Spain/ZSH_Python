@@ -182,7 +182,6 @@ sel_list () {
 	local HDR_X=0
 	local HDR_Y=0
 	local LIST_H=0
-	local LIST_NDX=0
 	local LIST_W=0
 	local LIST_X=0
 	local LIST_Y=0
