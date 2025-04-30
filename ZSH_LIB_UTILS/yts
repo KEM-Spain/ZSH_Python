@@ -70,7 +70,7 @@ _MAX_HDR=69
 _MAX_TITLE=75
 _OBJECT=video
 _PAUSE_TM=2
-_RESERVED=(MOATS 1)
+_RESERVED=(MOATS 1 NYC 1)
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _UPD_MARKER=${_YTS_DIR}/yts-upd.lastrun
 _YTS_DBG_LOG=/tmp/yt.dbg.log
@@ -846,34 +846,34 @@ log_find () {
 	_DOWNLOADS=()
 	_PARTIALS=()
 
-	#/bin/rm -f ./${0}.dbg
+	/bin/rm -f ./${0}.dbg
 	for ((R=${TOP}; R <= ${BOT}; R++));do
 		LIST_TITLE=$(get_field title ${R}) # Title from list
 		LIST_AU=$(get_field author ${R}) # Author from list
 		LIST_TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R}) | tr -d '[()]' | sed 's/undefined//') # Video length from list
-#		echo "\nLIST_NDX:${R}" >>${0}.dbg
-#		echo "LIST_TITLE:${LIST_TITLE}" >>${0}.dbg
-#		echo "LIST_AU:${LIST_AU}" >>${0}.dbg
-#		echo "LIST_TM:${LIST_TM}" >>${0}.dbg
+		echo "\nLIST_NDX:${R}" >>${0}.dbg
+		echo "LIST_TITLE:${LIST_TITLE}" >>${0}.dbg
+		echo "LIST_AU:${LIST_AU}" >>${0}.dbg
+		echo "LIST_TM:${LIST_TM}" >>${0}.dbg
 
 		LINE_NUM=''
-#		echo "\nAttempting TITLE match on:${LIST_TITLE[1,50]:q}" >>${0}.dbg # Important to quote possible reserved chars in candidate
-		LOG_TITLE=$(grep -n -m1 -i -- "${LIST_TITLE[1,50]:q}" ${_DOWNLOAD_LOG}) # Match snippet in log # Needs '--'; title can have leading '-'
+		echo "\nAttempting TITLE match on:${LIST_TITLE[1,50]}" >>${0}.dbg 
+		LOG_TITLE=$(grep -E -n -m1 -i -- "${LIST_TITLE[1,50]}" ${_DOWNLOAD_LOG}) # Match log, needs '--'; title can have leading '-'; -E option needed
 		if [[ ${?} -eq 0 ]];then
 			LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Fetch line number
 			LOG_LINE=$(sed "${LINE_NUM}q;d" ${_DOWNLOAD_LOG}) # Fetch log line
 			LOG_AU=$(grep -i -o "${LIST_AU}$" <<<${LOG_LINE}) # Match in log line
 			LOG_TM=$(grep -o ${LIST_TM} <<<${LOG_LINE}) # Match in log line
-#			echo "Matched:TITLE:${LOG_TITLE}" >>${0}.dbg
-#			echo "Log line:${LOG_LINE}" >>${0}.dbg
-#			echo "Need author:${LIST_AU} and time:${LIST_TM}" >>${0}.dbg
+			echo "Matched:TITLE:${LOG_TITLE}" >>${0}.dbg
+			echo "Log line:${LOG_LINE}" >>${0}.dbg
+			echo "Need author:${LIST_AU} and time:${LIST_TM}" >>${0}.dbg
 
 			if [[ -n ${LOG_TM} && -n ${LOG_AU} ]];then
 				LOG_FN=$(cut -d '|' -f3 <<<${LOG_LINE}) # Fetch filename
 				_DOWNLOADS[${R}]=true
-#				echo "Confirmed match: Marking NDX:${R} as downloaded for file:${LOG_FN}\n" >>${0}.dbg
-#				echo "LOG_AU:${LOG_AU}" >>${0}.dbg
-#				echo "LOG_TM:${LOG_TM}" >>${0}.dbg
+				echo "Confirmed match: Marking NDX:${R} as downloaded for file:${LOG_FN}\n" >>${0}.dbg
+				echo "LOG_AU:${LOG_AU}" >>${0}.dbg
+				echo "LOG_TM:${LOG_TM}" >>${0}.dbg
 			fi
 		fi
 	done

@@ -340,11 +340,12 @@ echo -n "\nCommit repo? (y/n):"
 read -q RESPONSE
 echo
 if [[ ${RESPONSE} == 'y' ]];then
-	pushd ~/Code/REPO
-	sudo chown -R kmiller:kmiller *
-	sudo chown -R kmiller:kmiller .*
-	do_commit
-	popd
+	#pushd ${_REPO}
+	#sudo chown -R kmiller:kmiller *
+	#sudo chown -R kmiller:kmiller .*
+	#do_commit
+	#popd
+	echo $(date +'%s') > ${_REPO_UTILS}/.last_run
 	echo -n "\nPress any key..."
 	read -q RESPONSE
 fi

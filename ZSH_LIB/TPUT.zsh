@@ -34,13 +34,15 @@ cursor_restore () {
 }
 
 cursor_row () {
+	local LINE
+
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-  echo -ne "\033[6n" > /dev/tty
-  read -t 1 -s -d 'R' line < /dev/tty
-  line="${line##*\[}"
-  line="${line%;*}"
-  echo $((line - 2))
+	echo -ne "\033[6n" > /dev/tty
+	read -t 1 -s -d 'R' LINE < /dev/tty
+	LINE="${LINE##*\[}"
+	LINE="${LINE%;*}"
+	echo $((LINE - 2))
 }
 
 cursor_save () {

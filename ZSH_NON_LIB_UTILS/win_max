@@ -6,8 +6,8 @@ typeset -A _SINGLE_WIN_APPS=(deluge 1 vlc 1 chrome 1 haruna 1 viber 1 pycharm 1)
 typeset -A _WIN_KEYS
 
 # Constants
-_LOG=/tmp/${_SCRIPT}.log
 _SCRIPT=${0:t}
+_LOG=/tmp/${_SCRIPT}.log
 _MAX_CYCLE=100 # Max wmctrl requests
 _MAX_ITER=500
 _MAX_WMCTRL_CALLS=10

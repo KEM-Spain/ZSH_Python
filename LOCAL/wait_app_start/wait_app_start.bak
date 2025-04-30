@@ -22,6 +22,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 #Constants
 _LOG=/tmp/${0:t}.log
 typeset -a _APPS_TO_SCAN=(deluge okular)
+typeset -A _RUNNING_APPS
 
 #Imports
 _LIB=/usr/local/lib
@@ -74,8 +75,14 @@ while IFS= read -ru3 LINE || [ -n "$LINE" ]; do
 				[[ ${SCANS} -eq 1 ]] && logit "Scanning for ${A}"
 				if [[ ${LINE:l} =~ "${A}" ]];then
 					logit "Scan matched ${A}"
-					win_max ${A}
-					logit "win_max ${A}"
+					PID=$(ps -e | grep deluge | grep -v grep | tr -s '[:space:]' | cut -d' ' -f2)
+					if [[ ! ${_RUNNING_APPS[${PID}]} =~ ${A} ]];then
+						win_max ${A}
+						logit "win_max ${A} ${PID}"
+					else
+						logit "win_max ${A} is already maximized"
+					fi
+					_RUNNING_APPS[${PID}]=${A}
 					NDX=0
 					SCANS=0
 					SSBN=false
