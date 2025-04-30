@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# TODO: page header is incorrect on pages/paging
 RESET="\033[m"
 RED_FG="\033[31m"
 GREEN_FG="\033[32m"
@@ -45,7 +44,7 @@ action_do () {
 			done | less -S -P "Viewing functions within\:$(sed 's/\./\\./' <<<${_LIST[${M}]})" # Less hides dots in prompt - must escape
 		else
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling msg_box with: ${#FUNCTIONS} lines"
-			msg_box -H2 -P"Show function code (y/n)?" -cp "File:<w>${_LIST[${M}]}<N> (<w>${NDX}<N> of <w>${#MARKED}<N>)|Functions:<w>${#FUNCTIONS}<N>|$(msg_list_bullet ${(o)FUNCTIONS})"
+			msg_box -H2 -P"Show function code (y/n)?" -cp "File:<w>${_LIST[${M}]}<N>|Functions:<w>${#FUNCTIONS}<N>|$(msg_list_bullet ${(o)FUNCTIONS})"
 			if [[ ${_MSG_KEY} == 'y' ]];then
 				for F in ${FUNCTIONS};do
 					func_print ${_LIST[${M}]} ${F}

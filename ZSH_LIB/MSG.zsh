@@ -59,11 +59,12 @@ msg_box () {
 	local MSG_STR=''
 	local MSG_X_COORD=0
 	local MSG_Y_COORD=0
-	local NAV_BAR="<c>Navigation keys<N>: <w>t<N>,<w>h<N>=top <w>b<N>,<w>l<N>=bottom <w>p<N>,<w>k<N>=up <w>n<N>,<w>j<N>=down, <w>Esc<N>=close<N> Pages:<w>_MSG_PG<N>"
+	local NAV_BAR="<c>Navigation keys<N>: <w>t<N>,<w>h<N>=top <w>b<N>,<w>l<N>=bottom <w>p<N>,<w>k<N>=up <w>n<N>,<w>j<N>=down, <w>Esc<N>=close<N>"
 	local OPTION=''
 	local PAGING_BOT=0
 	local PARTIAL=0
 	local PG_LINES=0
+	local PG_INIT=''
 	local SCR_NDX=0
 	local TAG=''
 	local H K M T X 
@@ -418,7 +419,8 @@ msg_box () {
 				[[ ${XDG_SESSION_TYPE:l} == 'x11' ]] && eval "xset ${_XSET_MENU_RATE}"
 
 				if [[ $(( DTL_NDX % PG_LINES )) -eq 0 ]];then # Page break - pause
-					MSG_PAGE=$(msg_paging_page ${MSG_PAGE} ${_MSG_KEY})
+					[[ ${MSG_NDX} -le ${PG_LINES} ]] && PG_INIT=true || PG_INIT=false
+					MSG_PAGE=$(msg_paging_page ${MSG_PAGE} ${_MSG_KEY} ${PG_INIT})
 					MSG_OUT=$(msg_box_align ${TAG} "<w>Page ${MSG_PAGE} of ${MSG_PAGES}<N>")
 					PAGING_BOT=${SCR_NDX}
 					(( SCR_NDX+=2 )) # Last row
@@ -839,12 +841,13 @@ msg_paging () {
 msg_paging_page () {
 	local PAGE=${1}
 	local KEY=${2}
+	local INIT=${3}
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	case ${KEY} in
-		j|d) (( PAGE++));;
-		k|u) [[ ${PAGE} -gt 1 ]] && (( PAGE--));;
+		j|d|n) [[ ${PG_INIT} == 'false' ]] && (( PAGE++));;
+		k|u|p) [[ ${PAGE} -gt 1 ]] && (( PAGE--));;
 	esac
 
 	echo ${PAGE}
