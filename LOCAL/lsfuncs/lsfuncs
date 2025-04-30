@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+# TODO: page header is incorrect on pages/paging
 RESET="\033[m"
 RED_FG="\033[31m"
 GREEN_FG="\033[32m"
@@ -10,7 +11,6 @@ WHITE_FG="\033[37m"
 BOLD="\033[1m"
 
 # Constants
-_LIB_DIR=/usr/local/lib
 FUNC_REGEX='^\S*\s() {$\|^function\s*\S*\s{$'
 GREP_BLACKLIST='usage\|parse_opts\|opt_type'
 
@@ -20,7 +20,7 @@ typeset -a _BLACKLIST=(usage\|parse_opts\|opt_type)
 typeset -aU _FUNC_MATCH
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -45,7 +45,7 @@ action_do () {
 			done | less -S -P "Viewing functions within\:$(sed 's/\./\\./' <<<${_LIST[${M}]})" # Less hides dots in prompt - must escape
 		else
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling msg_box with: ${#FUNCTIONS} lines"
-			msg_box -H2 -P"Show function code (y/n)?" -cp "File:<w>${_LIST[${M}]}<N> (<w>${NDX}<N> of <w>${#MARKED}<N>)|Functions:<w>${#FUNCTIONS}<N>|$(msg_list ${(o)FUNCTIONS})"
+			msg_box -H2 -P"Show function code (y/n)?" -cp "File:<w>${_LIST[${M}]}<N> (<w>${NDX}<N> of <w>${#MARKED}<N>)|Functions:<w>${#FUNCTIONS}<N>|$(msg_list_bullet ${(o)FUNCTIONS})"
 			if [[ ${_MSG_KEY} == 'y' ]];then
 				for F in ${FUNCTIONS};do
 					func_print ${_LIST[${M}]} ${F}
@@ -57,7 +57,7 @@ action_do () {
  
 	for M in ${MARKED};do
 		MARKED[${M}]=0
-		list_set_selected ${M} ${_GHOST_ROW} # Mark as complete
+		list_set_selected ${M} ${_STALE_ROW} # Mark as complete
 	done
 }
 
@@ -124,8 +124,8 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-n${RESET} no prompting"
 	echo -e "${WHITE_FG}-a${RESET} no ansi (pertains to print options only)"
-	echo -e "${WHITE_FG}-l${RESET} print list of files/functions (<SEARCHTERM> may apply)"
-	echo -e "${WHITE_FG}-f${RESET} print functions in files (<SEARCHTERM> may apply)"
+	echo -e "${WHITE_FG}-l${RESET} print list of files/functions (<SEARCHTERM> will apply)"
+	echo -e "${WHITE_FG}-f${RESET} print functions in files (<SEARCHTERM> will apply)"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
@@ -319,11 +319,11 @@ list_add_header_break
 
 # set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} ${_LIST[${_LIST_NDX}]}
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} ${_LIST[${_LIST_NDX}]}
 '
 
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to view function(s) ${ITALIC}or exit if none selected${RESET}"
-list_set_clear_ghosts true
+list_set_select_action "view function(s)"
+list_set_reuse_stale true
 list_set_client_warn true
 
 while true;do

@@ -27,8 +27,8 @@ LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
 typeset -a DIR_INODES=()
 typeset -a CURRENT_LOG=()
 typeset -A NEW_LOG=()
+typeset -R3 NDX=0
 
-NDX=0
 for L in ${(on)LIST};do
 	((NDX++))
 	INODE=$(cut -d' ' -f1 <<<${L})
@@ -36,6 +36,7 @@ for L in ${(on)LIST};do
 	DIR_INODES+="${INODE}|${FN}"
 	echo "${NDX}) DIRECTORY INODE:${INODE} FN:${FN}"
 done
+
 LIST_CNT=${#LIST}
 if [[ -z ${LIST} ]];then
 	echo "[${WHITE_FG}${0:t}${RESET}] There are no downloaded files - nothing to do"
@@ -63,19 +64,18 @@ for D in ${DIR_INODES};do
 	done
 done
 
-NDX=0
 for L in ${(on)CURRENT_LOG};do
 	((NDX++))
 	LOG_INODE=$(cut -d'|' -f1 <<<${L})
 	LOG_FN=$(cut -d'|' -f2 <<<${L})
-	printf "%d)       LOG INODE:%s FN:%s\n" ${NDX} ${LOG_INODE} ${LOG_FN}
+	printf "%s)       LOG INODE:%s FN:%s\n" ${NDX} ${LOG_INODE} ${LOG_FN}
 done
 
 if [[ ${LIST_CNT} -ne ${#CURRENT_LOG} ]];then
 	echo "${WHITE_ON_GREY}The exisiting log${RESET}:${WHITE_FG}${_DOWNLOAD_LOG}${RESET} seems ${BOLD}${ITALIC}${RED_FG}INACCURATE${RESET}"
 	echo -n "Overwrite the exisiting log (y/n):"
 	read -q RESPONSE
-	mv -f ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
+	cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
 	if [[ ${RESPONSE} == 'y' ]];then
 		for N in ${(v)NEW_LOG};do
 			echo ${N} >> ${_DOWNLOAD_LOG}

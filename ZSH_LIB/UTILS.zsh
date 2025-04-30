@@ -10,7 +10,7 @@ typeset -A _KWD_ARGS=()
 _EXIT_VALUE=0
 _FUNC_TRAP=false
 _BAREWORD_IS_FILE=false
-_LAST_TAG_SET="/tmp/LAST_TAG.$$"
+_BOX_TAG="/tmp/$$.box_tag"
 
 arg_parse () {
 	local KWD=false
@@ -215,7 +215,7 @@ box_coords_set () {
 
 	_BOX_COORDS[${TAG}]="${COORDS}"
 
-	echo ${TAG} > ${_LAST_TAG_SET}
+	echo ${TAG} > ${_BOX_TAG}
 }
 
 box_coords_upd () {

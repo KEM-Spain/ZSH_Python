@@ -80,7 +80,7 @@ print_hist () {
 		LINE=$(cut -d# -f2,3 <<<${LINE})
 		HK=$(cut -d# -f1 <<<${LINE})
 		_HIST_KEYS[${HK:s/ /_/}]=${UT} # Stash unix time
-		LIST+=${LINE}
+		LIST+=${LINE[1,100]}
 	done
 
 	msg_box_clear
@@ -107,7 +107,7 @@ print_hist () {
 		/bin/rm -f ${_LAST_ACTION}
 	fi
 
-	sel_list -C -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard. Use keypad for extended page navigation" -M"(<w>d<N>)elete"
+	sel_list -S -C -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard. Use keypad for extended page navigation" -M"(<w>d<N>)elete"
 	if [[ -n ${_SEL_VAL} ]];then
 		case ${_SEL_KEY} in
 			d) _DELETE=true;;
@@ -203,7 +203,7 @@ if [[ ${_DELETE} == 'true' ]];then
 	_DELETE=false
 	HK=$(cut -d# -f1 <<<${_SEL_VAL})
 	HK=${HK:s/ /_/}
-	sed -in "/${_HIST_KEYS[${HK}]}/d" ${_HIST_FILE} # Unix time is key
+	sed -in "/${_HIST_KEYS[${HK}]}/d" ${_HIST_FILE} # Key is epoch time
 	echo "${_SEL_VAL}" > ${_LAST_ACTION}
 	exec ${0} ${@}
 else

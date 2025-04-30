@@ -33,7 +33,6 @@ action_do () {
 	local M
 	local NDX=0
 
-	# TODO implement a page hold
 	for M in ${(on)MARKED};do
 		((NDX++))
 		for F in ${_FUNC_MATCH};do
@@ -42,14 +41,14 @@ action_do () {
 		done
 		if [[ ${NO_PROMPTS} == 'true' ]];then
 			for F in ${FUNCTIONS};do
-				print_func ${F} ${_LIST[${M}]}
+				func_print ${_LIST[${M}]} ${F}
 			done | less -S -P "Viewing functions within\:$(sed 's/\./\\./' <<<${_LIST[${M}]})" # Less hides dots in prompt - must escape
 		else
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling msg_box with: ${#FUNCTIONS} lines"
-			msg_box -H3 -P"Show function code (y/n)?" -cp "File:<w>${_LIST[${M}]}<N> (<w>${NDX}<N> of <w>${#MARKED}<N>)||Found: <w>${#FUNCTIONS}<N> Functions\tPages:<w>_MSG_PG<N> | |$(msg_list ${(o)FUNCTIONS})"
+			msg_box -H2 -P"Show function code (y/n)?" -cp "File:<w>${_LIST[${M}]}<N> (<w>${NDX}<N> of <w>${#MARKED}<N>)|Functions:<w>${#FUNCTIONS}<N>|$(msg_list ${(o)FUNCTIONS})"
 			if [[ ${_MSG_KEY} == 'y' ]];then
 				for F in ${FUNCTIONS};do
-					print_func ${F} ${_LIST[${M}]}
+					func_print ${_LIST[${M}]} ${F}
 				done | less -S -P "Viewing functions within\:$(sed 's/\./\\./' <<<${_LIST[${M}]})" # Less hides dots in prompt - must escape
 			fi
 			FUNCTIONS=()
@@ -60,13 +59,6 @@ action_do () {
 		MARKED[${M}]=0
 		list_set_selected ${M} ${_GHOST_ROW} # Mark as complete
 	done
-}
-
-print_func () {
-	local FUNC=${1}
-	local FN=${2}
-	
-	perl -ne "print if /^(function)?(\s)?${FUNC}.*\{$/ .. /^\}$/" ${FN} | perl -pe 's/^}$/}\n/g'
 }
 
 str_rep () {
@@ -137,7 +129,8 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err ${PENDING_MSGS})
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	exit_leave
 }
 
 OPTSTR=":HDanlf"
@@ -226,18 +219,22 @@ if [[ ${_DEBUG} -gt 0 ]];then
 fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Searching FPATH:${FPATH}"
-
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} find ${FPATH} -maxdepth 1 -type f ${FGLOB} ! -path ${FPATH}"
+
+[[ ! -e ${FPATH} ]] && exit_leave $(msg_exit E "PATH:${FPATH} not found")
+
 RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f ${FGLOB} ! -path ${FPATH}")}")
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} RAWLIST:${#RAWLIST}"
 
 if ! arr_is_populated "${RAWLIST}";then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} empty RAWLIST - no files found - exit"
-	exit_leave $(msg_err "File not found: RAWPATH:${RAWPATH} FPATH:${FPATH} FGLOB:${FGLOB}")
+	exit_leave $(msg_exit E "File not found: RAWPATH:${RAWPATH} FPATH:${FPATH} FGLOB:${FGLOB}")
 fi
 
+HIT=false
 for R in ${(o)RAWLIST};do
 	[[ ! $(file ${R}) =~ 'script' && ${R:e} != 'zsh' ]] && continue # Only zsh script files
+	HIT=true
 	[[ ${R:h} == \. ]] && FN=${R:t} || FN=${R} # Cut path for pwd
 
 	FUNC_LIST=("${(f)$(grep -P '^\S*\s\(\) {' ${FN})}")
@@ -257,14 +254,16 @@ for R in ${(o)RAWLIST};do
 	done
 done
 
+[[ ${HIT} == 'false' ]] && usage "No eligible files found"
+
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _LOCAL_LIST:${#_LOCAL_LIST}"
 
 if ! arr_is_populated "${_LOCAL_LIST}";then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} empty _LOCAL_LIST - exit"
 	if [[ -n ${SEARCHTERM} ]];then
-		exit_leave $(msg_warn "No function matches:${SEARCHTERM}")
+		exit_leave $(msg_exit I "No function matches:${SEARCHTERM}")
 	elif [[ -n ${FILE_ARG} ]];then
-		exit_leave $(msg_warn "No functions found in:${FILE_ARG}")
+		exit_leave $(msg_exit I "No functions found in:${FILE_ARG}")
 	fi
 fi
 
@@ -297,7 +296,7 @@ if [[ ${PRINT_FUNCS} == 'true' ]];then
 			grep -q ${M} ${L}
 			if [[ ${?} -eq 0 ]];then
 				FUNC=$(cut -d '(' -f1 <<<${M})
-				print_func ${FUNC} ${L}
+				func_print ${L} ${FUNC}
 			fi
 		done
 	done
@@ -323,7 +322,7 @@ list_set_line_item '
 printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} ${_LIST[${_LIST_NDX}]}
 '
 
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to view function(s) (${ITALIC}or exit if none selected${RESET})."
+list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to view function(s) ${ITALIC}or exit if none selected${RESET}"
 list_set_clear_ghosts true
 list_set_client_warn true
 

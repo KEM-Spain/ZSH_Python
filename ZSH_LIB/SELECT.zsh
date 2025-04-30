@@ -23,7 +23,7 @@ _CURRENT_PAGE=0
 _HAS_CAT=false
 _HILITE_X=0
 _SAVE_MENU_POS=false
-_SELECT_TAG_FILE="/tmp/$$.${0:t}.state"
+_SELECT_TAG_FILE="/tmp/$$.${_SCRIPT}_sel.state"
 _SEL_KEY=''
 _SEL_VAL=''
 _TAG=''
@@ -461,7 +461,7 @@ sel_scroll () {
 	local -A O_COORDS=($(box_coords_get OUTER_BOX))
 	local BOT_X=0
 	local KEY=''
-	local LAST_TAG=?
+	local BOX_TAG=?
 	local LIST_X=0
 	local NAV=''
 	local NDX=0
@@ -505,8 +505,8 @@ sel_scroll () {
 		# Handle stored list position
 		sel_get_position
 		if [[ ${_TAG_DATA[RESTORE]} == 'true'  ]];then
-			LAST_TAG=${_SELECT_TAG_FILE} # Only use position memory for differing menus unless _SAVE_MENU_POS is indicated
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  LAST_TAG:${LAST_TAG}"
+			BOX_TAG=${_SELECT_TAG_FILE} # Only maintain cursor position for differing menus unless _SAVE_MENU_POS is set
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  BOX_TAG:${BOX_TAG}"
 		fi
 
 		NDX=1 # Initialize index
@@ -517,7 +517,7 @@ sel_scroll () {
 					PAGE=${_TAG_DATA[PAGE]} # Restore menu position regardless
 					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:RESTORED POSITION: ${_TAG_DATA[NDX]}"
 				else
-					[[ ${LAST_TAG} != ${_SELECT_TAG_FILE} ]] && NDX=${_TAG_DATA[NDX]} && PAGE=${_TAG_DATA[PAGE]} # Restore menu position only if menu changed
+					[[ ${BOX_TAG} != ${_SELECT_TAG_FILE} ]] && NDX=${_TAG_DATA[NDX]} && PAGE=${_TAG_DATA[PAGE]} # Restore menu position only if menu changed
 					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:MENU CHANGED - RESTORED POSITION: ${_TAG_DATA[NDX]}"
 				fi
 				_TAG_DATA[RESTORE]=false
@@ -556,6 +556,7 @@ sel_scroll () {
 				_SEL_KEY=${KEY} 
 				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}_SEL_KEY:${_SEL_KEY} _SEL_VAL:${_SEL_VAL}"
 
+				sel_set_position ${PAGE} ${NDX}
 				break 2 # Quit navigation
 			fi
 

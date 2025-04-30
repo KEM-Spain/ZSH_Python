@@ -226,6 +226,7 @@ action_do () {
 			LOG_LINE=$(grep -m1 -i "unable to download video" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
 				if [[ ${RETRIES} -eq 0 ]];then # Try one more time
+					echo "${0}: Got start error - executing retry" >> ${_YTS_DBG_LOG}
 					((RETRIES++))
 					reset_job
 					start_job ${URL}
@@ -373,7 +374,6 @@ action_do () {
 	_MARKED=()
 	
 	trap - INT # Downloads are finished; cancel trap
-
 	return 0
 }
 

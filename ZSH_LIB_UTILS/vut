@@ -317,7 +317,7 @@ merge () {
 	local F
 
 	# Constants
-	local _DEFAULT_OUT=vid_merge
+	local _OUT_FILE=vid_merge
 
 	#--Begin GetOpts--
 	local DESC
@@ -387,7 +387,7 @@ ___EOF
 		  D) DEBUG=true;;
 		  m) APP=melt;;
 		  k) APP=mkvmerge;;
-		  o) _DEFAULT_OUT=${OPTARG};;
+		  o) _OUT_FILE=${OPTARG};;
 		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 		esac
@@ -398,23 +398,29 @@ ___EOF
 	#--Execution--
 	[[ ${#} -lt 2 ]] && usage  "missing required arguments"
 
-	FILES_TO_MERGE=(${@})
+	for F in ${@};do
+		grep -q ${_OUT_FILE} <<<${F}
+		[[ ${?} -eq 0 ]] && continue
+		fsub -y -C ${F}
+		FILES_TO_MERGE+=${F}
+	done
+
 	for F in ${FILES_TO_MERGE};do 
 		[[ ! -e ${F} ]] && exit_leave $(msg_exit E "file:${F} not found")
 		file ${F} | grep -qi 'media\|matroska\|video'
 		[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "file:${F} is not of type video")
 	done
 
-	DESTINATION_FILE=${_DEFAULT_OUT}.${1:e}
+	DESTINATION_FILE=${_OUT_FILE}.${1:e}
 
 	if overwrite_file ${DESTINATION_FILE};then
-		rm ${DESTINATION_FILE}
+		/bin/rm -f ${DESTINATION_FILE} >/dev/null 2>&1
 	else
 		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}" || echo
 	fi
 
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
-	echo "Files to merge:${BOLD}${ITALIC}${FILES_TO_MERGE}${RESET}"
+	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
 	echo "Output file:${BOLD}${ITALIC}${DESTINATION_FILE}${RESET}"
 	echo -n "\nPlease review...Continue (y/n):"; read -q RESPONSE
 	echo
@@ -424,7 +430,7 @@ ___EOF
 	echo "Merging:${WHITE_FG}${FILES_TO_MERGE}${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
 	case ${APP} in
 		ffmpeg)		echo "ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}"
-						ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}
+						ffmpeg -loglevel error -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}
 						;;
 		melt)			echo "melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
 						melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress

@@ -1,6 +1,7 @@
 if !has("gui_running")
 
 	call plug#begin()
+	Plug 'https://github.com/liuchengxu/vim-which-key.git'
 	Plug 'https://github.com/tpope/vim-sensible.git'
 	Plug 'https://github.com/powerman/vim-plugin-AnsiEsc.git'
 	Plug 'https://github.com/adelarsq/vim-matchit.git'
@@ -84,33 +85,27 @@ if !has("gui_running")
 	"find left anchored
 	nnoremap <c-f> :/^
 
-	"use range
-	nnoremap <c-n> :'a,'b
+	"marked delete/yank
+	nnoremap <c-x> :'a,'bd <CR>
+	nnoremap <c-c> :'a,'by <CR>
 
-	"wrap long text
-	nnoremap <c-g> :%!fmt -100 -s<CR>
+	"marked copy/move - TODO: interfering with line number goto
+	"nnoremap <c-m> :'a,'b mo . <CR>
+	"nnoremap <c-n> :'a,'b co . <CR>
+
+	"marked enter cmd
+	nnoremap <c-l> :'a,'b
 
 	"indent/outdent
 	nnoremap <c-i> :'a,'b> <CR>
 	nnoremap <c-o> :'a,'b< <CR>
 
 	"marked sort
-	nnoremap <c-s> :'a,'bsort <CR>
+	"nnoremap <c-s> :'a,'bsort <CR>
 
 	"marked comment/uncomment
 	nnoremap <c-u> :'a,'bs/^/#/g <CR>
 	nnoremap <c-y> :'a,'bs/^#//g <CR>
-
-	"marked delete/yank
-	nnoremap <c-x> :'a,'bd <CR>
-	nnoremap <c-c> :'a,'by <CR>
-
-	"marked copy/move
-	nnoremap <c-m> :'a,'bmo . <CR>
-	nnoremap <c-n> :'a,'bco . <CR>
-
-	"marked enter cmd
-	nnoremap <c-l> :'a,'b
 
 	"wrap long lines
 	nnoremap <c-w> <esc>gqq
