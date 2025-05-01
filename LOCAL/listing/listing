@@ -25,6 +25,7 @@ typeset -a _LS_LIST
 typeset -a _LS_OPTS
 typeset _ALL_FILES=false
 typeset _DIRS_ONLY=false
+typeset _FILES_ONLY=false
 typeset _FILTER=''
 typeset _F_TYPE=''
 typeset _GLOB=false
@@ -42,9 +43,8 @@ _LS_FORMAT+='-v'
 _LS_FORMAT+='-N'
 _LS_FORMAT+='-X'
 
-
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -207,6 +207,8 @@ not_found () {
 
 	if [[ ${_HIDDEN_ONLY} == 'true' && ${_DIRS_ONLY} == 'true' ]];then
 		MSG=' hidden dirs ' || MSG=' ' 
+	elif [[ ${_HIDDEN_ONLY} == 'true' && ${_FILES_ONLY} == 'true' ]];then
+		MSG=' hidden files ' || MSG=' ' 
 	elif [[ ${_HIDDEN_ONLY} == 'true' && ${_LINKS_ONLY} == 'true' ]];then
 		MSG=' hidden links ' || MSG=' ' 
 	elif [[ ${_DIRS_ONLY} == 'true' ]];then
@@ -233,6 +235,7 @@ List files
 \tll - long listing
 \tllr - recursive listing
 \t<FILTER> matches the leading portion
+\tDefault sort is by extension
 EOF
 
 parse_opts () {
@@ -276,7 +279,7 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-a${RESET} all files"
 	echo -e "${WHITE_FG}-d [$(opt_type d)]${RESET} directories only"
-	echo -e "${WHITE_FG}-e${RESET} sort by extension"
+	echo -e "${WHITE_FG}-f [$(opt_type f)]${RESET} files only"
 	echo -e "${WHITE_FG}-i${RESET} add inode to listing"
 	echo -e "${WHITE_FG}-l [$(opt_type d)]${RESET} links only"
 	echo -e "${WHITE_FG}-t${RESET} sort by time"
@@ -287,9 +290,10 @@ usage () {
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDadeilrt"
+OPTSTR=":HDadfilrt"
 OPTIND=0
 
+[[ ${_CALLER} =~ 'listing' ]] && _CALLER='l'
 [[ ${_CALLER} =~ 'llr' ]] && RECURSE=true || RECURSE=false
 
 while getopts ${OPTSTR} OPTION;do
@@ -302,7 +306,7 @@ while getopts ${OPTSTR} OPTION;do
 		D) dbg_set_level;;
 		a) _ALL_FILES=true;_LS_OPTS+='-A';;
 		d) _DIRS_ONLY=true;_F_TYPE='d';;
-		e) _LS_FORMAT+='-X';;
+		f) _FILES_ONLY=true;_F_TYPE='f';;
 		i) _LS_FORMAT+='-i';;
 		l) _LINKS_ONLY=true;_F_TYPE='l';;
 		t) _TIME_SORT=true;_LS_OPTS+='-t';;
@@ -317,7 +321,8 @@ shift $((OPTIND -1))
 
 # Execution
 clear
-echo "${WHITE_ON_GREY}${PWD}${RESET}\n"
+
+[[ ${#} -ne 0 ]] && MATCHED=" ${BOLD}matching${RESET}" || MATCHED=''
 
 RECURSE=false
 case ${0:t} in
@@ -331,7 +336,7 @@ esac
 
 RAW_CMD=($(cmd_get_raw | sed -E "s/${_CALLER}\s+?//"))
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Incoming ARGS:${(f)@}, ARGC:${#@}, RAW_CMD:${RAW_CMD}"
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Incoming switches: _ALL_FILES:${_ALL_FILES} _DIRS_ONLY:${_DIRS_ONLY} _LINKS_ONLY:${_LINKS_ONLY} _F_TYPE:${_F_TYPE}"
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Incoming switches: _ALL_FILES:${_ALL_FILES} _FILES_ONLY:${_FILES_ONLY} _DIRS_ONLY:${_DIRS_ONLY} _LINKS_ONLY:${_LINKS_ONLY} _F_TYPE:${_F_TYPE}"
 
 if has_filter ${@};then
 	if [[ ${#} -ge 1 ]];then
@@ -346,7 +351,7 @@ _LS_OPTS=$(get_ls_opts ${_CALLER})
 
 if [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'false' ]];then
 	[[ ${_DEBUG} -lt 2 ]] && _DEBUG=0
-	exec tree -C ${RAW_CMD} | mypager
+	exec tree -C -Ra ${RAW_CMD} | mypager
 	exit_leave
 elif [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'true' ]];then
 	[[ ${_DEBUG} -lt 2 ]] && _DEBUG=0
@@ -355,9 +360,9 @@ elif [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'true' ]];then
 	RC=${?}
 	setopt nomatch
 	if [[ ${RC} -eq 0 ]];then
-		exec tree -a .* 2>/dev/null | mypager
+		exec tree -Ra .* 2>/dev/null | mypager
 	else
-		echo "No hidden files found"
+		echo "No${MATCHED}hidden file(s) found"
 	fi
 	exit_leave
 else
@@ -389,6 +394,8 @@ _LS_ARGS=$(get_filter_glob ${_LS_ARGS}) && [[ ${?} -eq 0 ]] && _GLOB=true
 
 [[ ${_GLOB} == 'true' ]] && _LS_OPTS+=' -d' # No deep listings
 
+[[ -d ${_LS_ARGS} ]] && echo "${WHITE_ON_GREY}$(realpath ${_LS_ARGS})${RESET}\n" || echo "${WHITE_ON_GREY}${PWD}${RESET}\n"
+
 # Set hidden marker
 if [[ ${_ALL_FILES} == 'false' && ${_HIDDEN_ONLY} == 'false' ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}BEGIN${RESET}: Set hidden marker"
@@ -406,8 +413,8 @@ if [[ ${_ALL_FILES} == 'false' && ${_HIDDEN_ONLY} == 'false' ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}END${RESET}: Set hidden marker"
 fi
 
-if [[ ${_DIRS_ONLY} == 'true' || ${_LINKS_ONLY} == 'true' ]];then
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} DIR/LINK SWITCHED, _F_TYPE:${_F_TYPE}"
+if [[ ${_DIRS_ONLY} == 'true' || ${_FILES_ONLY} == 'true' || ${_LINKS_ONLY} == 'true' ]];then
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} DIR/FILES/LINK SWITCHED, _F_TYPE:${_F_TYPE}"
 
 	_LS_ARGS=$(get_glob_prefix ${_LS_ARGS}) && [[ ${?} -eq 0 ]] && _GLOB=true
 	_LS_ARGS=$(get_filter_glob ${_LS_ARGS}) && [[ ${?} -eq 0 ]] && _GLOB=true
@@ -416,6 +423,7 @@ if [[ ${_DIRS_ONLY} == 'true' || ${_LINKS_ONLY} == 'true' ]];then
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}find ${_LS_ARGS:h} -maxdepth 1 -name ${_LS_ARGS:t} -type ${_F_TYPE} ! -path ${_LS_ARGS:h}${RESET}"
 	F_LIST=("${(f)$(find ${_LS_ARGS:h} -maxdepth 1 -name ${_LS_ARGS:t} -type ${_F_TYPE} ! -path ${_LS_ARGS:h} 2>/dev/null)}")
+
 
 	for F in ${F_LIST};do
 		if [[ ${_ALL_FILES} == 'false' ]];then
@@ -427,7 +435,7 @@ if [[ ${_DIRS_ONLY} == 'true' || ${_LINKS_ONLY} == 'true' ]];then
 	done
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST} || echo No matching$(not_found)found${RESET}"
-	[[ -n ${_LS_LIST} ]] && eval "ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST}" || echo "No matching$(not_found)found"
+	[[ -n ${_LS_LIST} ]] && eval "ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST}" || echo "No${MATCHED}$(not_found)found"
 
 	exit_leave
 fi
@@ -436,7 +444,7 @@ fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} 2>/dev/null${RESET}"
 eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS}" 2>/dev/null
-[[ ${?} -ne 0 ]] && echo "No matching$(not_found)found"
+[[ ${?} -ne 0 ]] && echo "No${MATCHED}$(not_found)found"
 [[ -n ${H_MARK} ]] && echo ${H_MARK}
 
 exit_leave

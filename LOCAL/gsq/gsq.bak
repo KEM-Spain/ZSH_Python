@@ -63,6 +63,8 @@ action_do () {
 					gsettings set ${URL} ${KEY} ${NEW_VALUE}
 					_LOCAL_LIST=("${(@f)$(gsettings list-recursively | sort -u | egrep "${SEARCHTERM}" | sed -e 's/: /:/g')}")
 				fi
+			else
+				msg_box -H1 -p -PK "Value remains unchanged"
 			fi
 		fi
 	done

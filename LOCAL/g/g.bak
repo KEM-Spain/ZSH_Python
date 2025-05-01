@@ -73,7 +73,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-B${RESET} allow scanning of .bak files"
-	echo -e "${WHITE_FG}-C${RESET} no ansi color"
+	echo -e "${WHITE_FG}-A${RESET} no ansi color"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-L${RESET} list files on one line"
 	echo -e "${WHITE_FG}-f${RESET} specify file of search patterns"
@@ -81,7 +81,7 @@ usage () {
 	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} max matches to process (default: all)"
 	echo -e "${WHITE_FG}-n${RESET} line numbers"
 	echo -e "${WHITE_FG}-o${RESET} only matched"
-	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} alternate path (pwd is default)"
+	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} alternate path"
 	echo -e "${WHITE_FG}-r${RESET} recurse"
 	echo -e "${WHITE_FG}-v${RESET} inverted search"
 	echo -e "${WHITE_FG}-w${RESET} whole word match"
@@ -115,11 +115,11 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
 	  D) dbg_set_level;;
 	  B) EXCLUDE_BAK='';;
-     C) COLORS=never;;
      I) CASE_SENSE='';;
-     L) LISTFILES_OPT=-l;FILELIST=true;ONE_LINE=true;;
+     C) COLORS=never;;
      f) FN_ARG=${OPTARG};;
      l) LISTFILES_OPT=-l;FILELIST=true;;
+     L) LISTFILES_OPT=-l;FILELIST=true;ONE_LINE=true;;
      m) MAX_MATCHES="-m${OPTARG}";;
      n) LINENUM_OPT=-n;;
      o) ONLY_OPT=-o;;
@@ -161,7 +161,6 @@ RAWLIST=("${(f)$(eval ${CMD})}")
 LONGEST_FN=0
 LONGEST_LN=0
 NDX=0
-
 for L in ${(uo)RAWLIST};do
 	((NDX++))
 	if [[ ${FILELIST} == 'false' ]];then
@@ -173,7 +172,7 @@ for L in ${(uo)RAWLIST};do
 	[[ ${_DEBUG} -gt 0 && (! ${FTYPE} =~ 'text') ]] && dbg "${0}:${LINENO} File:${FN} rejected - not text:${FTYPE}" 
 	[[ ! ${FTYPE} =~ 'text' ]] && continue
 	LN=$(cut -d: -f2- <<<${L})
-	LN=$(echo ${LN} | grep --color=${COLORS} ${CASE_SENSE} ${SEARCHTERM}) # Colorize
+	[[ ${COLORS} == 'always' ]] && LN=$(echo ${LN} | grep --color=${COLORS} ${CASE_SENSE} ${SEARCHTERM}) # Colorize
 	LN=${LN[1,${_COL_MAX}]} # Limit usable line length; some files have no line breaks
 	LN=$(tr -d '\012\015' <<<${LN})
 	LN=$(tr -s '[:space:]' <<<${LN})
@@ -189,9 +188,10 @@ for L in ${(uo)RAWLIST};do
 	[[ ${#LN} -gt ${LONGEST_LN} ]] && LONGEST_LN=${#LN}
 	LIST+="${FNP}|${LN}"
 done
-((LONGEST_FN++)) # Add gutter
+echo "\n" >&2
 
-echo "\n" >&2 # What is this?
+((LONGEST_FN++))
+[[ ${LONGEST_FN} -lt 5 ]] && LONGEST_FN=4
 
 if ! arr_is_populated "${LIST}";then
 	echo "${WHITE_FG}Grep command${RESET}:${CMD}" | tr -s '[:space:]'
@@ -214,8 +214,8 @@ else
 	if [[ ${FILELIST} == 'false' ]];then
 		tput cup 1 0; echo ${CMD} | tr -s '[:space:]'
 		[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
-		[[ -n ${CASE_SENSE} ]] && CASE_MSG=" (case sensitive)" || CASE_MSG=''
-		echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
+		[[ -n ${CASE_SENSE} ]] && CASE_MSG=" (case insensitive)" || CASE_MSG=" (case sensitive)"
+		echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CASE_MSG}${RESET}, Result: ${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
 		if [[ -n ${LINENUM_OPT} ]];then
 			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
 			REM=$(( (_COL_MAX - LONGEST_FN) - 8))
@@ -237,7 +237,6 @@ else
 		[[ $(( NDX % 2 )) -ne 0 ]] && BAR=${BLACK_BG} || BAR=''
 		FN=$(cut -d'|' -f1 <<<${L})
 		LN=$(cut -d'|' -f2- <<<${L})
-		LN=$(str_trim ${LN} | str_strip_ansi)
 		if [[ -n ${LINENUM_OPT} ]];then
 			LNUM=$(cut -d: -f1 <<<${LN})
 			LN=$(cut -d: -f2- <<<${LN})
@@ -248,7 +247,7 @@ else
 			LN=$(str_trim <<<${LN})
 			printf "${BAR}${WHITE_FG}%-*s ${CYAN_FG}%5s ${RESET}%-*.${REM}s\n" ${LONGEST_FN} ${FN} ${LNUM} ${LONGEST_LN} ${LN}
 		else
-			printf "${BAR}${WHITE_FG}%-*s${RESET}%-*.${REM}s\n" ${LONGEST_FN} ${FN} ${LONGEST_LN} ${LN}
+			printf "${BAR}${WHITE_FG}%-*s ${RESET}%-*.${REM}s\n" ${LONGEST_FN} ${FN} ${LONGEST_LN} ${LN}
 		fi
 		echo -n ${RESET}
 	done

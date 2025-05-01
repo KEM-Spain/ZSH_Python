@@ -17,7 +17,9 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-#Declarations
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Declarations
 typeset -a _LS_FORMAT
 typeset -a _LS_LIST
 typeset -a _LS_OPTS
@@ -30,30 +32,24 @@ typeset _HIDDEN_ONLY=false
 typeset _LINKS_ONLY=false
 typeset _LS_ARGS=''
 
-#Constants
+# Constants
 _CALLER=${0:t}
+_LS_FORMAT+='--time=birth'
 _LS_FORMAT+='--color=always'
 _LS_FORMAT+='--group-directories-first'
 _LS_FORMAT+='-h'
 _LS_FORMAT+='-v'
 _LS_FORMAT+='-N'
+_LS_FORMAT+='-X'
 
 
-#Imports
+# Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB_DIR}/${D} ]];then
-		source ${_LIB_DIR}/${D}
-	else
-		echo "Cannot source:${_LIB_DIR}/${D} - not found"
-		exit 1
-	fi
-done
-
-#Functions
+# Functions
 get_ls_opts () {
 	local CALLER=${1}
 
@@ -74,7 +70,7 @@ has_filter () {
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} FILTER scan..."
 	for A in ${ARGS};do
-		[[ ${A} == '-D' ]] && ARGS=("${(@)ARGS:#${A}}") # remove any debug switches
+		[[ ${A} == '-D' ]] && ARGS=("${(@)ARGS:#${A}}") # Remove any debug switches
 	done
 
 	if [[ ${#ARGS} -eq 0 ]];then
@@ -102,7 +98,7 @@ has_filter () {
 	elif [[ ${#ARG_STR} -gt 1 ]];then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ARG_STR -gt 1: scanning for filter:${ARG_STR}"
 		if [[ ${ARG_STR:t} =~ '.\s[A-Za-z0-9]*$' ]];then
-			_FILTER=($(echo ${ARG_STR} | rev| cut -d' ' -f1 | rev)) # bare word
+			_FILTER=($(echo ${ARG_STR} | rev| cut -d' ' -f1 | rev)) # Bare word
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Found filter${RESET}:${_FILTER}"
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Filter detected: ${RED_FG}REMOVING TRAILING ARG${RESET}"
 			return 0
@@ -121,7 +117,7 @@ get_filter_glob () {
 
 	if [[ -z ${_FILTER} ]];then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} no filter - do nothing - return original"
-		ARGS=${ARGS} # do nothing - return original
+		ARGS=${ARGS} # Do nothing - return original
 		RC=1
 	elif [[ ${ARGS} =~ '^\.$' ]];then  # PWD - non hidden
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PWD - add non hidden"
@@ -141,7 +137,7 @@ get_filter_glob () {
 			ARGS="${ARGS:h}/.${_FILTER}*"
 		else
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ARG is bare dir - add filter"
-			[[ ${_HIDDEN_ONLY} == 'true' ]] && ARGS="${ARGS}/.${_FILTER}*" || ARGS="${ARGS}/${_FILTER}*" # hidden/non hidden
+			[[ ${_HIDDEN_ONLY} == 'true' ]] && ARGS="${ARGS}/.${_FILTER}*" || ARGS="${ARGS}/${_FILTER}*" # Hidden/non hidden
 		fi
 	else
 		RC=1
@@ -170,7 +166,7 @@ get_glob_prefix () {
 		ARGS="./.*"
 	elif [[ -d ${ARGS} ]];then 
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ARG is dir - add glob"
-		ARGS+="/*" # dir
+		ARGS+="/*" # Dir
 	else
 		RC=1
 	fi
@@ -195,7 +191,7 @@ get_hidden_glob () {
 		ARGS='.*' # PWD - add hidden glob
 	elif [[ -d ${ARGS} ]];then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ARG is dir - add hidden"
-		ARGS+='/.*' # dir - add hidden glob
+		ARGS+='/.*' # Dir - add hidden glob
 	else
 		RC=1
 	fi
@@ -233,6 +229,9 @@ WHITE_FG="\033[37m"
 
 read -r -d '' DESC<<EOF
 List files
+\tl - simple listing
+\tll - long listing
+\tllr - recursive listing
 \t<FILTER> matches the leading portion
 EOF
 
@@ -278,19 +277,20 @@ usage () {
 	echo -e "${WHITE_FG}-a${RESET} all files"
 	echo -e "${WHITE_FG}-d [$(opt_type d)]${RESET} directories only"
 	echo -e "${WHITE_FG}-e${RESET} sort by extension"
+	echo -e "${WHITE_FG}-i${RESET} add inode to listing"
 	echo -e "${WHITE_FG}-l [$(opt_type d)]${RESET} links only"
-	echo -e "${WHITE_FG}-t sort by time"
+	echo -e "${WHITE_FG}-t${RESET} sort by time"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err ${PENDING_MSGS})
+	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDadelt"
+OPTSTR=":HDadeilrt"
 OPTIND=0
 
-[[ ${_CALLER} == 'llr' ]] && RECURSE=true || RECURSE=false
+[[ ${_CALLER} =~ 'llr' ]] && RECURSE=true || RECURSE=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -303,8 +303,10 @@ while getopts ${OPTSTR} OPTION;do
 		a) _ALL_FILES=true;_LS_OPTS+='-A';;
 		d) _DIRS_ONLY=true;_F_TYPE='d';;
 		e) _LS_FORMAT+='-X';;
+		i) _LS_FORMAT+='-i';;
 		l) _LINKS_ONLY=true;_F_TYPE='l';;
 		t) _TIME_SORT=true;_LS_OPTS+='-t';;
+		r) _REVERSE=true;_LS_OPTS+='-r';;
 		:) [[ ${RECURSE} == 'false' ]] && print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument" && usage;;
 		\?) [[ ${RECURSE} == 'false' ]] && print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}" && usage;;
 	esac
@@ -313,14 +315,18 @@ done
 shift $((OPTIND -1))
 #--End GetOpts--
 
-#Execution
+# Execution
+clear
+echo "${WHITE_ON_GREY}${PWD}${RESET}\n"
+
 RECURSE=false
 case ${0:t} in
 	l) _HIDDEN_ONLY=false;;
 	l.) _HIDDEN_ONLY=true;;
 	ll) _HIDDEN_ONLY=false;;
 	ll.) _HIDDEN_ONLY=true;;
-	llr) RECURSE=true;;
+	llr) RECURSE=true;_HIDDEN_ONLY=false;;
+	llr.) RECURSE=true;_HIDDEN_ONLY=true;;
 esac
 
 RAW_CMD=($(cmd_get_raw | sed -E "s/${_CALLER}\s+?//"))
@@ -338,9 +344,22 @@ _LS_OPTS=$(get_ls_opts ${_CALLER})
 
 [[ ${RAW_CMD} == '~' ]] && ARGS=(${HOME}) || ARGS=(${@})
 
-if [[ ${RECURSE} == 'true' ]];then
-	[[ ${_DEBUG} -lt 2 ]] && RAW_CMD=$(sed 's/\-D//' <<<${RAW_CMD})
+if [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'false' ]];then
+	[[ ${_DEBUG} -lt 2 ]] && _DEBUG=0
 	exec tree -C ${RAW_CMD} | mypager
+	exit_leave
+elif [[ ${RECURSE} == 'true' && ${_HIDDEN_ONLY} == 'true' ]];then
+	[[ ${_DEBUG} -lt 2 ]] && _DEBUG=0
+	setopt nonomatch
+	ls .* >/dev/null 2>&1
+	RC=${?}
+	setopt nomatch
+	if [[ ${RC} -eq 0 ]];then
+		exec tree -a .* 2>/dev/null | mypager
+	else
+		echo "No hidden files found"
+	fi
+	exit_leave
 else
 	RAW_CMD=$(sed -E 's/ \-[A-Za-z]*\s+?//g' <<<${RAW_CMD})
 	RAW_CMD=$(sed "s#\~#${HOME}#" <<<${RAW_CMD})
@@ -407,8 +426,8 @@ if [[ ${_DIRS_ONLY} == 'true' || ${_LINKS_ONLY} == 'true' ]];then
 		_LS_LIST+=${(qqq)F} # Enclose file names w/spaces
 	done
 
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST} || echo No$(not_found)found${RESET}"
-	[[ -n ${_LS_LIST} ]] && eval "ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST}" || echo "No$(not_found)found"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST} || echo No matching$(not_found)found${RESET}"
+	[[ -n ${_LS_LIST} ]] && eval "ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST}" || echo "No matching$(not_found)found"
 
 	exit_leave
 fi
@@ -417,7 +436,7 @@ fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} 2>/dev/null${RESET}"
 eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS}" 2>/dev/null
-[[ ${?} -ne 0 ]] && echo "No$(not_found)found"
+[[ ${?} -ne 0 ]] && echo "No matching$(not_found)found"
 [[ -n ${H_MARK} ]] && echo ${H_MARK}
 
 exit_leave

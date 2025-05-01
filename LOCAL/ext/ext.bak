@@ -82,7 +82,7 @@ opt_exists () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		c) echo "<COMPRESSED_FILE>";;
+		c) echo "<ARCHIVE>";;
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
 		t) echo "<FILE_TYPE>";;
@@ -101,7 +101,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-l${RESET} list supported file extensions"
-	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(msg_err "${PENDING_MSGS}")
@@ -156,8 +156,9 @@ CMD=${_SUPPORTED_TYPES[${FE[2,-1]}]} # skip leading dot
 
 echo "Command:${WHITE_FG}${CMD} ${ARG_SET}${RESET}"
 
-OUT="${RED_FG}Command${RESET}:${WHITE_FG}${CMD} ${ARG_SET} ${RED_FG}had errors${RESET}\n"
-OUT+=$(eval "${CMD} ${ARG_SET}" 2>&1)
-[[ ${?} -ne 0 ]] &&  echo ${OUT} | mypager wait
+eval "${CMD} ${ARG_SET}"
+if [[ ${?} -ne 0 ]];then
+	OUT="${RED_FG}Command${RESET}:${WHITE_FG}${CMD} ${ARG_SET} ${RED_FG}had errors${RESET}\n"
+fi
 
-exit_leave
+exit_leave ${OUT}

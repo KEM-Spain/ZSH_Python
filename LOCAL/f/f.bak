@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-#TODO: find syntax is not correct - arg parsing needs MUCH work
 REVERSE="\033[7m"
 RESET="\033[m"
 BOLD="\033[1m"
@@ -22,6 +21,7 @@ _DEPTH=1
 # Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/ARRAY.zsh
 source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/STR.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -87,7 +87,8 @@ usage () {
 	echo -e "${WHITE_FG}-d${RESET} depth; when repeated increases depth"
 	echo -e "${WHITE_FG}-f${RESET} path (default pwd)"
 	echo -e "${WHITE_FG}-l${RESET} add listing detail"
-	echo -e "${WHITE_FG}-r${RESET} arg is a 'regex'"
+	echo -e "${WHITE_FG}-r${RESET} arg is a 'regex' (PWD)"
+	echo -e "${WHITE_FG}-R${RESET} arg is a 'regex' (ANY)"
 	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} (f)ile|(d)ir  Default:${WHITE_FG}both${RESET}"
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
@@ -98,7 +99,7 @@ usage () {
 typeset -a OPTIONS
 
 LISTING=false
-OBJ_TYPE="-type f"
+TYPE="f"
 OPTIND=0
 REGEX=''
 FIND_PATH=${PWD}
@@ -112,8 +113,8 @@ while getopts ${OPTSTR} OPTION;do
      d) depth_set_level;;
      l) LISTING=true;;
      p) FIND_PATH=${OPTARG};;
-     r) REGEX="-regex ${OPTARG}";;
-     t) OBJ_TYPE="-type ${OPTARG}";;
+     r) REGEX="${OPTARG}";;
+     t) TYPE="${OPTARG}";;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -125,13 +126,18 @@ shift $((OPTIND -1))
 # Execution
 MAXDEPTH=${_DEPTH}
 
+INAME=${1}
+INAME="${INAME}*"
+INAME=${(qqq)INAME}
+REGEX=${REGEX:='.*'}
+REGEX=${(qqq)REGEX}
+
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nOBJ_TYPE:${OBJ_TYPE:-both}"
-[[ -n ${REGEX} ]] && FILTER=${REGEX} || FILTER="-iname ${1}"
-CMD="sudo find ${FIND_PATH} -maxdepth ${MAXDEPTH} ${FILTER} ${OBJ_TYPE}"
+CMD="sudo find ${FIND_PATH} -maxdepth ${MAXDEPTH} -iname ${INAME} -regex ${REGEX} -type ${TYPE}"
+echo "${WHITE_FG}Command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} -iname ${WHITE_FG}${INAME}${RESET} -regex ${WHITE_FG}${REGEX}${RESET} -type ${WHITE_FG}${TYPE}${RESET}"
 
 LIST=("${(f)$(eval ${CMD})}")
 if ! arr_is_populated "${LIST}" ;then
-	echo "\nCommand: ${CMD}"
 	exit_leave $(msg_warn "No results for query")
 fi
 

@@ -21,196 +21,149 @@ typeset -i QPCT
 typeset -F NUMERATOR 
 typeset -F DENOMINATOR 
 typeset -g DEFAULT_SSID=MOVISTAR_134D
-typeset -g CUR_SSID=none
 typeset -a SSIDS
+typeset -A SSID_SIGNAL
 
 #Constants
-TIMEOUT=10
-BEST_SSID=?
-BEST_LINK=0
-NMCLI=/usr/bin/nmcli
 IWCONFIG=/sbin/iwconfig
 IWLIST=/sbin/iwlist
-WLESS_DEV=wlo1
-WIFI_STATE=$(nmcli -t -f WIFI radio)
 LIB=/usr/local/lib
+NMCLI=/usr/bin/nmcli
+TIMEOUT=10
+WIFI_STATE=$(nmcli -t -f WIFI radio)
+WLESS_DEV=wlo1
+
+#Globals
+_BEST_SIGNAL=0
+_ACTIVE_SSID="Not connected"
 
 #Imports
 source ${LIB}/common.zsh
 
 #Functions
-to_int () {
-	local NUM=${1}
-	printf "%.0f\n" ${NUM}
-}
-
 connection_off () {
-	[[ ${WIFI_STATE} != "enabled" ]] && status_print
-	sudo ${NMCLI} con down id $1 > /dev/null 2>&1
-	sleep 2
+	local SSID=${1}
+
+	[[ ${WIFI_STATE} != "enabled" ]] && exit_leave "${_THIS_FILE}: Wifi is not enabled"
+	sudo nmcli con down id ${SSID} > /dev/null 2>&1
+	return $?
 }
 
 connection_on () {
-	[[ ${WIFI_STATE} != "enabled" ]] && status_print
-	sudo ${NMCLI} --wait ${TIMEOUT} con up $1 >/dev/null 2>&1
+	local SSID=${1}
+
+	[[ ${WIFI_STATE} != "enabled" ]] && exit_leave "${_THIS_FILE}: Wifi is not enabled"
+	sudo nmcli --wait ${TIMEOUT} con up ${SSID} >/dev/null 2>&1
 	return $?
 }
 
 connection_try () {
 	local SSID=${1}
-	local RC=0
-	local RETVAL=0
 	local TRYS=3
 	local T
 
+	connection_on ${SSID}
+	set_current_ssid
 
 	for T in {1..${TRYS}};do
-		connection_on ${SSID};RC=$?
-		if [[ ${RC} -eq 0 ]];then
-			QPCT=$(ssid_link_quality)
-			RETVAL=0
-			break
-		else
-			RETVAL=1
+		if [[ "${_ACTIVE_SSID}" == "${SSID}" ]];then
+			return 0
 		fi
+		sleep 1
+		set_current_ssid
 	done
-
-	if [[ ${_DEBUG} -ne 0 ]];then
-		if [[ ${RETVAL} -eq 0 ]];then
-			echo "${GREEN_FG}Connected to:${WHITE_FG}${SSID}${RESET}. Quality:${WHITE_FG}${QPCT}%${RESET}" | dbg
-		else
-			echo "${RED_FG}Connection to ${WHITE_FG}${SSID}${RED_FG} failed${RESET}" | dbg
-		fi
-	fi
-
-	return ${RETVAL}
+	set_current_ssid
+	[[ "${_ACTIVE_SSID}" != "${SSID}" ]] && return 1 || return 0
 }
 
-ssid_link_quality () {
-	local LINK_QUALITY
-
-	[[ ${WIFI_STATE} != "enabled" ]] && status_print
-
-	CUR_SSID=$(ssid_get_current)
-	[[ ${CUR_SSID} == none ]] && echo 0
-
-	LINK_QUALITY=$(${IWCONFIG} ${WLESS_DEV} | grep -i quality | cut -d= -f2 | sed 's/ .*//g')
-	NUMERATOR=$(echo ${LINK_QUALITY} | cut -d/ -f1)
-	DENOMINATOR=$(echo ${LINK_QUALITY} | cut -d/ -f2)
-	QPCT=$((NUMERATOR/DENOMINATOR * 100))
-	echo $(to_int ${QPCT})
-}
-
-ssid_best () { 
-	local BEST_LINK
-	local BEST_SSID
-	local LAST_SSID
+load_ssid_signals () {
+	local -a RAWLIST=("${(f)$(nmcli -c no -t -e yes -f IN-USE,SSID,SIGNAL dev wifi)}")
+	local ACTIVE
 	local S
-	local CUR_SSID=$(ssid_get_current)
+	local SIGNAL
+	local SSID
+	local BEST=0
 
-	if [[ ${CUR_SSID} == "none" ]];then
-		echo "Currently disconected."
-	else
-		echo "Current SSID:${WHITE_FG}${CUR_SSID}${RESET}"
-		BEST_LINK=$(ssid_link_quality)
-
-		BEST_SSID=${CUR_SSID}
-		LAST_SSID=${CUR_SSID}
-		connection_off ${CUR_SSID}
-	fi
-
-	for S in ${SSIDS};do
-		[[ ${CUR_SSID} == ${S} ]] && continue
-		if $(connection_try ${S});then
-			QPCT=$(ssid_link_quality)
-		else
-			QPCT=0
-		fi
-
-		[[ ${QPCT} -ge ${BEST_LINK} ]] && BEST_LINK=${QPCT} && BEST_SSID=${S}
-		[[ ${S} != ${BEST_SSID} ]] && connection_off ${S}
-		LAST_SSID=${SSID}
+	for S in ${RAWLIST};do
+		ACTIVE=$(cut -d: -f1 <<<${S})
+		SSID=$(cut -d: -f2 <<<${S})
+		SIGNAL=$(cut -d: -f3 <<<${S})
+		SSID_SIGNAL[${SSID}]=${SIGNAL}
+		[[ ${ACTIVE} == '*' ]] && _ACTIVE_SSID=${SSID}
 	done
-	
-	if [[ ${BEST_LINK} -ne 0 ]];then
-		echo "Using highest quality link:${WHITE_FG}${BEST_SSID}${RESET} - Quality:${GREEN_FG}${BEST_LINK}%${RESET}"
-		[[ ${LAST_SSID} != ${BEST_SSID} ]] && connection_on ${BEST_SSID} 
-		logger -p local0.notice "$0: chose SSID:${BEST_LINK} - Quality:${GREEN_FG}${BEST_SSID}%${RESET}"
-		if ! $(connection_try ${BEST_SSID});then
-			echo "Unable to connect to ${BEST_SSID}"
-			exit_leave
-		fi
-	else
-		echo "${RED_FG}No wireless connection was successful${RESET}"
-	fi
+
+	for S in ${(k)SSID_SIGNAL};do
+		[[ ${SSID_SIGNAL[${S}]} -gt ${BEST} ]] && BEST=${SSID_SIGNAL[${S}]} && _BEST_SIGNAL=${S}
+	done
 }
 
-ssid_choose () {
-	local RESPONSE
-	local NDX=0
-	local COLOR
-	local MSG
+set_current_ssid () {
+	_ACTIVE_SSID=$(nmcli | grep -i 'connected to' | tr -s '[:space:]' | cut -d' ' -f4-)
+}
+
+ssid_best () {
 	local S
 
-	ssid_set_list
-	[[ -z ${SSIDS[1]} ]] && echo "Unable to find any available SSIDS" && exit_leave
-
-	echo "Found ${#SSIDS} active SSID's"
-	for S in ${SSIDS};do
-		((NDX++))
-		if [[ ${CUR_SSID} == ${S} ]];then
-			QPCT=$(ssid_link_quality)
-			COLOR=${GREEN_FG}
-			MSG="${RESET}${ITALIC}connected${RESET} - quality:${WHITE_FG}${QPCT}%${RESET}"
-		else
-			COLOR=''
-			MSG=''
-		fi
-		echo "${NDX}) ${COLOR}${S} ${RESET}${MSG}${RESET}"
-	done
-
-	echo -n "Select SSID (1-${#SSIDS}):"
-	read RESPONSE
-	[[ -z ${RESPONSE} ]] && return 1
-
-	if ! validate_is_integer ${RESPONSE};then
-		echo "Invalid selection"
-		return 1
-	fi
-
-	if list_is_within_range ${RESPONSE} 1 ${#SSIDS};then
-		if $(connection_try ${SSIDS[${RESPONSE}]});then
-			CUR_SSID=${S}
+	for S in ${(k)SSID_SIGNAL};do
+		[[ "${S}" != "${_BEST_SIGNAL}" ]] && continue
+		if $(connection_try ${S});then 
 			return 0
 		else
 			return 1
 		fi
-	else
-		echo "Invalid selection"
-		return 1
-	fi
+	done
 }
 
-ssid_get_current () {
+is_active () {
+	local NDX=${1}
+
+	set_current_ssid
+	[[ ${_LIST[${NDX}]} == ${_ACTIVE_SSID} ]] && echo 'active' || echo ''
+}
+
+ssid_choose () {
+	local -a LIST
+	local SELECTED
 	local SSID
+	local LONGEST
+	
+	LIST=(${(k)SSID_SIGNAL})
 
-	if [[ ${WIFI_STATE} != "enabled" ]];then
-		echo "none"
-	else
-		SSID=$(${IWCONFIG} ${WLESS_DEV} | grep -i ssid | cut -d: -f2 | sed 's/\"//g' | tr -d '[:blank:]')
-		if $(echo ${SSID} | grep -q off);then
-			echo "none"
-		else
-			echo "${SSID}"
-		fi
+	if ! arr_is_populated ${LIST};then
+		exit_leave "${RED_FG}No SSIDs found"
 	fi
-}
 
-ssid_set_list () {
-	if [[ ${CUR_SSID} == "none" ]];then
-		[[ ${_DEBUG} -ne 0 ]] && echo "Getting SSIDS..."
-		SSIDS=("${(f)$(sudo ${IWLIST} ${WLESS_DEV} scan | grep ESSID | cut -d: -f2 | tr -d '"')}")
-		CUR_SSID=$(ssid_get_current)
+	LONGEST=$(str_longest_len ${LIST})
+
+	list_set_header 'printf "List of %-*d detected SSIDs" ${#${#_LIST}} ${#_LIST}'
+	list_set_header 'printf "\n"'
+	list_set_header 'printf "%5s %-*s %-7s" "" ${LONGEST} "SSID" "Quality"'
+	list_set_header 'printf "%5s ${MAGENTA_FG}%-*s %7s${RESET}" "" ${LONGEST} "$(str_unicode_line ${LONGEST})" "$(str_unicode_line 7)"'
+
+	#set line item
+	list_set_line_item ' 
+	printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%-*s${RESET} ${SHADE}${BAR}%7d${RESET} ${GREEN_FG}%s${RESET}\n" ${ARRAY_NDX} ${LONGEST} ${_LIST[${ARRAY_NDX}]} ${SSID_SIGNAL[${_LIST[${ARRAY_NDX}]}]} $(is_active ${ARRAY_NDX})
+	'
+
+	list_set_prompt "Hit <SPACE> to select SSID then <ENTER> to connect (or exit if none selected)."
+	list_set_action_msgs connect "to SSID"
+	list_set_selection_limit 1
+	list_set_client_warn true
+
+	list_cursor_select ${LIST}
+
+	if [[ ${?} -ne 0 ]];then
+		SELECTED=$(list_get_selected)
+		SSID=${_LIST[${SELECTED}]}
+		msg_box -p -PP "Connect to ${SSID}"
+		if [[ ${_MSG_KEY} == 'y' ]];then
+			msg_box "<w>Connecting...<N>"
+			if $(connection_try ${SSID});then
+				return 0
+			else
+				return 1
+			fi
+		fi
 	fi
 }
 
@@ -218,9 +171,7 @@ ssid_validate () {
 	local SSID=${1}
 	local S
 
-	ssid_set_list
-
-	for S in ${SSIDS};do
+	for S in ${(k)SSID_SIGNAL};do
 		[[ ${SSID} == ${S} ]] && return 0
 	done
 
@@ -229,6 +180,7 @@ ssid_validate () {
 
 status_print () {
 	local STATE_COLOR=${RED_FG}
+
 	[[ ${WIFI_STATE} == 'enabled' ]] && STATE_COLOR=${GREEN_FG}
 	echo "${WHITE_FG}WIFI_STATE${RESET}:${STATE_COLOR}${WIFI_STATE}${RESET}" >&2
 }
@@ -236,9 +188,7 @@ status_print () {
 status_show () {
 	local WIFI_ENABLED=$(nmcli -t -f WIFI radio)
 	local NET_ENABLED=$(nmcli -t -f NETWORKING networking)
-	local WIFI_ENABLED=$(nmcli -t -f WIFI radio)
 	local STATE_COLOR
-	local CUR_SSID=$(ssid_get_current)
 
 	echo "Wifi Status..."
 
@@ -247,54 +197,66 @@ status_show () {
 
 	if [[ ${WIFI_ENABLED} == 'enabled' ]];then
 		STATE_COLOR=${GREEN_FG}
-		echo "${WHITE_FG}Wireless${RESET}:${STATE_COLOR}${WIFI_ENABLED}${RESET}"
+		echo "${WHITE_FG}Wireless${RESET}:${STATE_COLOR}${WIFI_ENABLED}${RESET}\n"
 	else
 		STATE_COLOR=${RED_FG}
-		echo "${WHITE_FG}Wireless${RESET}:${STATE_COLOR}${WIFI_ENABLED}${RESET}"
+		echo "${WHITE_FG}Wireless${RESET}:${STATE_COLOR}${WIFI_ENABLED}${RESET}\n"
 		return 1
 	fi
 
-	nmcli dev wifi
+	nmcli -c yes dev wifi
 
-	if [[ ${CUR_SSID} == "none" ]];then
-		echo "${RED_FG}No connection${RESET}"
+	if [[ ${_ACTIVE_SSID:=null} == "null" ]];then
+		echo "\n${RED_FG}No connection${RESET}"
 	else
-		QPCT=$(ssid_link_quality)
-		echo "\nCurrent connection:${WHITE_FG}${CUR_SSID}${RESET}. Quality is ${GREEN_FG}${QPCT}%${RESET}\n"
+		echo "\nCurrent connection: ${WHITE_FG}${_ACTIVE_SSID}${RESET} Quality: ${GREEN_FG}${SSID_SIGNAL[${_ACTIVE_SSID}]}%${RESET}"
 	fi
 }
 
 wifi_off () {
 	local WIFI_ENABLED=$(nmcli -t -f WIFI radio)
-	[[ ${WIFI_ENABLED} == "enabled" ]] && ${NMCLI} radio wifi off
-	return 0
+
+	if [[ ${WIFI_ENABLED} == "enabled" ]];then
+		nmcli radio wifi off
+		return 0
+	else
+		return 1
+	fi
 }
 
 wifi_on () {
 	local WIFI_ENABLED=$(nmcli -t -f WIFI radio)
-	[[ ${WIFI_ENABLED} != "enabled" ]] && ${NMCLI} radio wifi on 
-	return 0
+
+	if [[ ${WIFI_ENABLED} != "enabled" ]];then
+		nmcli radio wifi on 
+		return 0
+	else
+		return 1
+	fi
 }
 
 #Getopts 
-OPTSTR=":DHbcs"
+OPTSTR=":DHbcsg"
 OPTIND=0
 FIND_BEST=false
 CHOOSE_SSID=false
 DISABLE=false
 ENABLE=false
 SPEEDTEST=false
+GET_CURRENT_SSID=false
 
 SCRIPT=${0:t}
 usage () {
+	local -a PENDING_MSGS=(${@})
    echo -e "\n${WHITE_FG}Usage:${RESET} ${SCRIPT} ${OPTSTR:s/:/-/} [off/on] [SSID]\n"
    echo -e "-H help"
    echo -e "-D Debug"
 	echo -e "-b find best connection based on strength"
 	echo -e "-c choose connection from list"
+	echo -e "-g get current SSID"
 	echo -e "-s do speedtest"
-	echo -e "\n${WHITE_FG}DESC:${RESET}Wireless connection manager.  Default action:current wifi status.\nIf SSID is passed (and wifi on) a connection will be attempted"
-	exit_leave
+	echo -e "\n${WHITE_FG}DESC:${RESET}Wireless connection manager.  Default action:current wifi status.\nIf an SSID is passed (and wifi on) a connection will be attempted"
+	exit_leave ${PENDING_MSGS}
 }
 
 while getopts ${OPTSTR} opts;do
@@ -303,6 +265,7 @@ while getopts ${OPTSTR} opts;do
     D) dbg_set_level;;
 	 b) FIND_BEST=true;;
 	 c) CHOOSE_SSID=true;;
+	 g) GET_CURRENT_SSID=true;;
 	 s) SPEEDTEST=true;;
     :) print -u2 "$0: option: -$OPTARG requires an argument"; usage;;
    \?) print -u2 "$0: unknown option $OPTARG"; usage;;
@@ -311,7 +274,10 @@ done
 shift $(($OPTIND - 1))
 
 #Execution 
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ! -e ${NMCLI} ]] && exit_leave "Required application: ${NMCLI} not found"
+
+load_ssid_signals
+echo "\n${GREEN_FG}Best signal is${RESET}: ${WHITE_FG}${_BEST_SIGNAL}${RESET}\n"
 
 #No arguments, no options
 if [[ ${#} -eq 0 && ${OPTIND} -eq 1 ]];then
@@ -319,32 +285,58 @@ if [[ ${#} -eq 0 && ${OPTIND} -eq 1 ]];then
 	status_show
 	)
 	exit_leave ${MSG}
-fi
-
-if [[ ${VALID_ARG} == 'false' ]];then
-	if ! ssid_validate ${SSID_ARG};then
-		exit_leave "Invalid parameter:${1}"
+else
+	if ssid_validate ${SSID_ARG};then
+		SSID_ARG=${1} #arg was SSID
 	fi
 fi
 
-#Switch wifi on/off and exit_leave
-[[ ${1:l} == "off" ]] && wifi_off && exit_leave "Turning off wireless"
-[[ ${1:l} == "on" ]] && wifi_on && exit_leave "Turning on wireless" 
-
-[[ $# -ne 0 ]] && SSID_ARG=${1} #arg was SSID
-
-if [[ -n ${SSID_ARG} ]];then
-	echo "Connecting to ${SSID_ARG}..."
-	CUR_SSID=$(ssid_get_current)
-	if [[ ${CUR_SSID} == ${SSID_ARG} ]];then
-		connection_off ${CUR_SSID}
+#Execute indicated command
+if [[ ${1:l} == "off" ]];then #switch wifi off
+	if wifi_off;then
+		exit_leave "Turning off wireless"
+	else
+		exit_leave "${RED_FG}Error${RESET}: turning off wireless"
 	fi
-elif [[ ${FIND_BEST} == "true" ]];then
+elif [[ ${1:l} == "on" ]];then #switch wifi on
+	if wifi_off;then
+		exit_leave "Turning on wireless"
+	else
+		exit_leave "${RED_FG}Error${RESET}: turning on wireless"
+	fi
+elif [[ -n ${SSID_ARG} ]];then #connect to SSID
+	echo "Connecting to ${WHITE_FG}${SSID_ARG}${RESET}..."
+	if [[ "${_ACTIVE_SSID}" != "${SSID_ARG}" ]];then
+		connection_off ${_ACTIVE_SSID}
+		if connection_try ${SSID_ARG};then
+			set_current_ssid
+			echo "${GREEN_FG}Connected${RESET} to ${WHITE_FG}${_ACTIVE_SSID}${RESET}"
+		else
+			echo "${RED_FG}Error${RESET}: connecting to ${WHITE_FG}${_ACTIVE_SSID}${RESET}"
+		fi
+	fi
+elif [[ ${GET_CURRENT_SSID} == "true" ]];then #echo current SSID
+	set_current_ssid
+	exit_leave ${_ACTIVE_SSID}
+elif [[ ${FIND_BEST} == "true" ]];then #connect to best signal
 		echo "Finding best SSID..."
-		ssid_best
-elif [[ ${CHOOSE_SSID} == "true" ]];then
+		if ssid_best;then
+			set_current_ssid
+			echo "${GREEN_FG}Connected${RESET} to ${WHITE_FG}${_ACTIVE_SSID}${RESET}"
+		else
+			echo "${RED_FG}Error${RESET}: connecting to ${WHITE_FG}${_ACTIVE_SSID}${RESET}"
+		fi
+elif [[ ${CHOOSE_SSID} == "true" ]];then #choose a connection
 		ssid_choose
-elif [[ ${SPEEDTEST} == "true" ]];then
+		case ${?} in
+			0) set_current_ssid
+				msg_box -c -p -PK "<g>Connected<N> to <w>${_ACTIVE_SSID}<N>"
+				;;
+			1) msg_box -c -p -PK "<r>Error<N>: connecting to <w>${_ACTIVE_SSID}<N>"
+				;;
+		esac
+		tput clear
+elif [[ ${SPEEDTEST} == "true" ]];then #run a speedtest
 	speedtest
 fi
 

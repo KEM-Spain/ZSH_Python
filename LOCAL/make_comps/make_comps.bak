@@ -78,7 +78,7 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-r${RESET} print the raw usage options text"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
-	echo ${MSGS} >&2
+	echo "\n${MSGS}" >&2
 
 	exit
 }
@@ -94,14 +94,14 @@ while getopts ${OPTSTR} OPTION;do
      D) dbg_set_level;;
      r) PRINT_RAW=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
-    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
 shift $((OPTIND -1))
 #--End GetOpts--
 #Execution
-[[ -z ${1} ]] && usage "Missing argument $(opt_type f)"
+[[ -z ${1} ]] && usage "Missing argument:$(opt_type f)"
 FN=${1}
 
 [[ ! -e ${FN} ]] && echo "${RED_FG}File not found${RESET}:${FN}" && exit

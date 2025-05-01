@@ -164,8 +164,8 @@ wm2xdo () {
 	local W
 
 	read -r -d '' DESC<<___EOF
-Convert wmctrl ID to xdotool ID
-\tArguments: win title (partial ok) or WM ID
+Convert wmctrl ID (hex) to xdotool ID (dec)
+\tArguments: win title (partial ok) or WM ID (hex)
 \tPipe: limited to a single WM ID
 
 \tOption:[${WHITE_FG}-l${RESET}] lists current wid's
@@ -290,7 +290,7 @@ while getopts ${OPTSTR} OPTION;do
 		H) usage;;
 		D) dbg_set_level;;
 		:) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
-		\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+		\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
@@ -310,7 +310,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	selection_list_set ${(v)_UTILS_DESC}
-	selection_list -x11 -y32 "<w>Show X Windows Utilites usage or (q)uit<N>"
+	selection_list -x11 -y32 "<w>Show X Windows Utilites usage or <h>(q)uit<N>"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SELECTION_VALUE}]}
 

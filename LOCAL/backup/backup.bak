@@ -56,7 +56,7 @@ BACKUP_DIRS=(/root /home/kmiller /usr/local /etc /opt)
 
 #Constants
 _USER=kmiller
-_TAG=$(hostname)_RSYNC
+_TAG=$(hostname)_RSYNC2
 _DEST_ID=KEM_Backup
 _DEFAULT_MARKER=~/.backup
 _DESTINATION=/media/kmiller/${_DEST_ID}/${_TAG}
@@ -71,7 +71,19 @@ g_LAST_RUN=?
 g_FOUND_EXT=false
 
 #Imports
-source ${_LIB}/common.zsh
+source ${_LIB}/LIB_INIT.zsh
+source ${_LIB}/UTILS.zsh
+source ${_LIB}/TPUT.zsh
+source ${_LIB}/MSG.zsh
+
+for D in ${=_DEPS_};do
+	if [[ -e ${_LIB}/${D} ]];then
+		source ${_LIB}/${D}
+	else
+		echo "Cannot source:${_LIB}/${D} - not found"
+		exit 1
+	fi
+done
 
 #Functions
 datediff () {
@@ -91,7 +103,12 @@ last_backup () {
 	local LB_LAST_TIME
 
 	[[ -z ${MARKER_ARG} ]] && MARKER_ARG=${_DEFAULT_MARKER}
-	[[ -e ${MARKER_ARG} ]] && LB_LAST_RUN=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1) || exit_leave $(msg_warn "${_SCRIPT}: Last backup date is unknown")
+	if [[ -e ${MARKER_ARG} ]];then
+		LB_LAST_RUN=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
+	else
+		touch ${_MARKER}
+		exit_leave $(msg_warn "${_SCRIPT}: Last backup date is unknown")
+	fi
 	[[ -e ${MARKER_ARG} ]] && LB_LAST_TIME=$(stat -c"%x" ${MARKER_ARG} | cut -d. -f1 | cut -d' ' -f2) 
 
 	echo "$(datediff ${_TODAY} ${LB_LAST_RUN}) at ${LB_LAST_TIME}"
@@ -197,7 +214,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 g_LAST_RUN=$(last_backup ${_MARKER})
 
 #Info option

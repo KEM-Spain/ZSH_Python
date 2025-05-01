@@ -112,7 +112,6 @@ opt_type () {
 
 usage () {
 	local OPTS=$(parse_opts ${OPTSTR})
-	exit_visible
 	tabs 6
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [SEARCHTERM]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
@@ -124,14 +123,13 @@ usage () {
 
 OPTSTR=":HDd:"
 
-DEBUG=false
 DAYS_OLD=0
 
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
-     D) DEBUG=true;;
+     D) dbg_set_level;;
      d) DAYS_OLD=${OPTARG};;
      :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
@@ -141,7 +139,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
  
 #Execution
-[[ ${DEBUG} == 'false' ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 SEARCHTERM=${1}
 
 [[ ${DAYS_OLD} -gt 0 ]] && MTIME=-$(($DAYS_OLD +1)) || MTIME=0 #adjust MTIME to go back in time if not 0 (today)

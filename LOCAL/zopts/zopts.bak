@@ -283,21 +283,20 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-i${RESET} Show list of options with man page descriptions"
-	echo -e "\n${WHITE_FG}DESC${RESET}:\tShow set/unset options by default.\n\tOptionally display a list of all options with the ability\n\tto peruse the manual page description for any selected"
+	echo -e "${WHITE_FG}-i${RESET} Display list of options. Selected option will display a description of the option chosen"
+	echo -e "\n${WHITE_FG}DESC${RESET}:\tShow set/unset options by default.\n\tOptionally (${WHITE_FG}-i${RESET}) display a list of all options with the ability\n\tto peruse the manual page description for any selected"
 	tabs -8
 	exit_leave
 }
 
 OPTSTR=":HDi"
 
-DEBUG=false
 SHOW_INFO_LIST=false
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
-     D) DEBUG=true;;
+     D) dbg_set_level;;
      i) SHOW_INFO_LIST=true;;
      :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
@@ -307,7 +306,8 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #Execution
-[[ ${DEBUG} == 'false' ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
 if [[ -n ${1} ]];then
 	#Arg passed; go direct; no list
 	tput cup 0 0
@@ -355,3 +355,4 @@ else
 	fi
 fi
 		
+exit_leave

@@ -15,11 +15,10 @@ ITALIC="\033[3m"
 UNDER="\033[4m"
 
 # Constants
-_LIB_DIR=/usr/local/lib
 _DEPTH=1
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/ARRAY.zsh
 source ${_LIB_DIR}/MSG.zsh
@@ -38,11 +37,8 @@ WHITE_FG="\033[37m"
 
 read -r -d '' DESC<<EOF
 Find files and/or directories in or below the current directory
-\tNOTE: -r is a convenience regex and accepts one or more plain 
-\tchars to find files in the current dir. It can also 
-\tcontain additional regex syntax (quoted) but is still limited 
-\tto files in the current dir. -R is a generic regex and is unlimited.
-\tIf regex -[rR] not passed then <SEARCHTERM> is used to match files
+\tAll <SEARCHTERM> args are find command regex components
+\tA leading and trailing match component '.*/<REGEX>.*' are automatically included
 EOF
 
 parse_opts () {
@@ -84,37 +80,37 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type s)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug; when repeated increases level"
-	echo -e "${WHITE_FG}-d${RESET} depth; when repeated increases depth"
-	echo -e "${WHITE_FG}-f${RESET} path (default pwd)"
-	echo -e "${WHITE_FG}-l${RESET} add listing detail"
-	echo -e "${WHITE_FG}-r${RESET} arg is a 'regex' (PWD)"
-	echo -e "${WHITE_FG}-R${RESET} arg is a 'regex' (ANY)"
-	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} (f)ile|(d)ir  Default:${WHITE_FG}both${RESET}"
+	echo -e "${WHITE_FG}-L${RESET} add listing detail"
+	echo -e "${WHITE_FG}-d${RESET} depth; each repetition increases search depth"
+	echo -e "${WHITE_FG}-p${RESET} search path (default pwd)"
+	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} (any valid type:f,d,l,p,c,s,b)  Default:${WHITE_FG}any${RESET}"
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err ${PENDING_MSGS})
+	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
 
 LISTING=false
-TYPE="f"
+LEADING=false
+TYPE=''
 OPTIND=0
-REGEX=''
+REGEX_ARG=''
 FIND_PATH=${PWD}
+SHOW_CMD=false
 
-OPTSTR=":HDdp:lr:t:"
+OPTSTR=":HDLdp:t:c"
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     L) LISTING=true;;
      d) depth_set_level;;
-     l) LISTING=true;;
      p) FIND_PATH=${OPTARG};;
-     r) REGEX="${OPTARG}";;
      t) TYPE="${OPTARG}";;
+     c) SHOW_CMD=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -124,26 +120,42 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+
+# Marshall find command args
 MAXDEPTH=${_DEPTH}
 
-INAME=${1}
-INAME="${INAME}*"
-INAME=${(qqq)INAME}
-REGEX=${REGEX:='.*'}
-REGEX=${(qqq)REGEX}
+REGEX_ARG=''
+if [[ ${#} -ne 0 ]];then
+	REGEX_ARG=${1}
+	REGEX=".*/${REGEX_ARG}.*"
+	REGEX="-regextype 'posix-extended' -regex ${(qqq)REGEX}"
+fi
 
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nOBJ_TYPE:${OBJ_TYPE:-both}"
-CMD="sudo find ${FIND_PATH} -maxdepth ${MAXDEPTH} -iname ${INAME} -regex ${REGEX} -type ${TYPE}"
-echo "${WHITE_FG}Command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} -iname ${WHITE_FG}${INAME}${RESET} -regex ${WHITE_FG}${REGEX}${RESET} -type ${WHITE_FG}${TYPE}${RESET}"
+case ${TYPE} in
+	f) TYPE='-type f';TDESC='Regular File';;
+	d) TYPE='-type d';TDESC='Directory';;
+	l) TYPE='-type l';TDESC='Symbolic Link';;
+	p) TYPE='-type p';TDESC='Named Pipe';;
+	c) TYPE='-type c';TDESC='Char Special';;
+	s) TYPE='-type s';TDESC='Socket';;
+	b) TYPE='-type b';TDESC='Block Special';;
+	*) TYPE='';TDESC='None';;
+esac
+
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nOBJ_TYPE:${OBJ_TYPE:-any}"
+
+CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE}"
 
 LIST=("${(f)$(eval ${CMD})}")
 if ! arr_is_populated "${LIST}" ;then
-	exit_leave $(msg_warn "No results for query")
+	exit_leave $(msg_exit W "No results for query")
 fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#LIST}"
 
+{
+[[ ${SHOW_CMD} == 'true' ]] && echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
 if [[ ${LISTING} == 'true' ]];then
 	ls -lAdrt ${LIST}
 else
@@ -151,5 +163,6 @@ else
 		echo ${L}
 	done
 fi
+} | mypager
 
 exit_leave

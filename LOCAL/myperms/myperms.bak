@@ -72,24 +72,24 @@ action_do () {
 	POP=${POP_DECODE[${_SEL_VAL:l}]}
 
 	if [[ ${POP} == 'sp' ]];then
-		sel_set_list ${(C)${(k)PTYPE_DECODE}}
-		sel_list -c -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) -H"<w>Set permissions<N>"
+		sel_set_list ${(C)${(ok)PTYPE_DECODE}}
+		sel_list -c -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Set permissions<N>"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		PTYPE=${PTYPE_DECODE[${_SEL_VAL:l}]}
 
 		STITLE="Select permission for "
 		case ${PTYPE} in
-			a) sel_set_list ${COMBO_PERMS};STITLE="<w>Select combo permissions<N>";;
-			s) sel_set_list ${(C)${(k)SPECIAL_DECODE}};STITLE+="Special";;
-			o) sel_set_list ${(C)${(k)PERM_DECODE}};STITLE+="Owner";;
-			g) sel_set_list ${(C)${(k)PERM_DECODE}};STITLE+="Group";;
-			w) sel_set_list ${(C)${(k)PERM_DECODE}};STITLE+="World";;
+			a) sel_set_list ${(ok)COMBO_PERMS};STITLE="<w>Select combo permissions<N>";;
+			s) sel_set_list ${(C)${(ok)SPECIAL_DECODE}};STITLE+="Special";;
+			o) sel_set_list ${(C)${(ok)PERM_DECODE}};STITLE+="Owner";;
+			g) sel_set_list ${(C)${(ok)PERM_DECODE}};STITLE+="Group";;
+			w) sel_set_list ${(C)${(ok)PERM_DECODE}};STITLE+="World";;
 			u) UMASK_PERMS=true;;
 		esac
 
 		if [[ ${UMASK_PERMS} == 'false' ]];then 
-			sel_list -c -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) -H"${STITLE}"
+			sel_list -c -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
 			[[ ${?} -ne 0 ]] && clear_list && return 0
 
 			[[ ${PTYPE} == "a" ]] && PERM_CODE=${_SEL_VAL:l}
@@ -98,11 +98,11 @@ action_do () {
 		fi
 	else
 		case ${POP} in
-			co) sel_set_list ${USER_LIST};STITLE="<w>Select User<N>";;
-		  cog) sel_set_list ${USER_GROUP_LIST};STITLE="<w>Select Owner & Group<N>";;
-			cg) sel_set_list ${GROUP_LIST};STITLE="<w>Select Group<N>";;
+			co) sel_set_list ${(o)USER_LIST};STITLE="<w>Select User<N>";;
+			cog) sel_set_list ${(o)USER_GROUP_LIST};STITLE="<w>Select Owner & Group<N>";;
+			cg) sel_set_list ${(o)GROUP_LIST};STITLE="<w>Select Group<N>";;
 		esac
-		sel_list -c -x$((++TOP_WIN_X)) -y$((++TOP_WIN_Y)) -H"${STITLE}"
+		sel_list -c -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		case ${POP} in

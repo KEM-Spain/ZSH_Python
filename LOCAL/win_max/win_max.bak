@@ -126,6 +126,7 @@ while true;do
 				log_it "${K}:MAXIMIZED"
 			fi
 		done
+		wmctrl -ia ${W_ID}
 		break
 	fi
 

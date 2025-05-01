@@ -66,174 +66,109 @@ for D in ${=_DEPS_};do
 		exit 1
 	fi
 done
+
 #Functions
 findexe () {
-		#Declarations
-		local -A PRIORITY
-		local -a CANDIDATES
-		local -a FILES
-		local -a FLIST_1
-		local -a FLIST_2
-		local -a WI_LIST
-		local	CANDIDATE
-		local	FILE_ARG
-		local	FN
-		local	F_PATH
-		local	HIGHEST
-		local	HIT
-		local	LOCAL_PRIORITY
-		local	TAG
-		local	C F W
+	local -a LIST
+	local -a RAWLINE
+	local L R
+	local FN
+	local LOCAL
 
-		#Functions
-		localize () {
-			local SEARCH_ARG=${1}
-			local WI_ARG=${2}
-
-			#is the file or directory housed in the current directory
-			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t} SEARCH_ARG:${SEARCH_ARG}, WI_ARG:${WI_ARG}" >&2
-			if [[ -f ${WI_ARG} ]];then
-				if [[ ${_DEBUG} -gt 0 ]];then
-					if [[ ${WI_ARG:h} == $(pwd) && ${WI_ARG:t} == ${SEARCH_ARG} ]];then
-						dbg "${0:t} returning: LOCAL_FILE:${WI_ARG}" >&2
-					else
-						dbg "${0:t} returning: NOT_LOCAL_FILE:${WI_ARG}" >&2
-					fi
-				fi
-				[[ ${WI_ARG:h} == $(pwd) && ${WI_ARG:t} == ${SEARCH_ARG} ]] && echo "LOCAL_FILE:${WI_ARG}" || echo "NOT_LOCAL_FILE:${WI_ARG}"
-				return
-			fi
-			if [[ -d ${WI_ARG} ]];then
-				if [[ ${_DEBUG} -gt 0 ]];then
-					if [[ ${WI_ARG:h} == $(pwd) && ${WI_ARG:t} == ${SEARCH_ARG} ]];then
-						dbg "${0:t} returning: LOCAL_DIR:${WI_ARG}" >&2
-					else
-						dbg "${0:t} returning: NOT_LOCAL_DIR:${WI_ARG}" >&2
-					fi
-				fi
-				[[ ${WI_ARG:h} == $(pwd) && ${WI_ARG:t} == ${SEARCH_ARG} ]] && echo "LOCAL_DIR:${WI_ARG}" || echo "NOT_LOCAL_DIR:${WI_ARG}"
-				return
-			fi
-			echo "Not a File or Directory:${WI_ARG}"
-		}
-
-		read -r -d '' DESC<<______EOF
-Find files based on user priorities
+	read -r -d '' DESC<<______EOF
+Find files based on priority
 ______EOF
 
-		#--Begin GetOpts--
-		RESET="\033[m"
-		RED_FG="\033[31m"
-		WHITE_FG="\033[37m"
+	#--Begin GetOpts--
+	RESET="\033[m"
+	RED_FG="\033[31m"
+	WHITE_FG="\033[37m"
 
-		parse_opts () {
-			local OPTS=${@}
-			local -a OPTSTR
-			local LETTER_OPT
-			local O
+	parse_opts () {
+		local OPTS=${@}
+		local -a OPTSTR
+		local LETTER_OPT
+		local O
 
-			for O in {1..${#OPTS}};do
-				[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
-				[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-				[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
-				OPTSTR+="-${OPTS[${O}]}"
-			done
-			echo ${OPTSTR}
-		}
-
-		opt_type () {
-			local OPT=${1}
-			case ${OPT} in
-				d) echo "<DIR>";;
-				f) echo "<FILE>";;
-				t) echo "<FILE_TYPE>";;
-			esac
-		}
-
-		usage () {
-			tabs 5
-			[[ ${_SMCUP} == 'true' ]] && do_rmcup
-
-			local OPTS=$(parse_opts ${OPTSTR})
-			local -a PENDING_MSGS=(${@})
-
-			(
-			echo -e "\n${WHITE_FG}Usage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
-			echo -e "${WHITE_FG}-H${RESET} help"
-			echo -e "${WHITE_FG}-D${RESET} debug"
-			echo -e "${WHITE_FG}-l${RESET} local files have priority"
-			echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
-			) >&2
-
-			exit_leave $(msg_err "${PENDING_MSGS}")
-		}
-
-		OPTSTR=":HDl"
-		LOCAL_PRIORITY=false
-		OPTIND=0
-
-		while getopts ${OPTSTR} OPTION;do
-			case $OPTION in
-			  H) usage;;
-			  D) dbg_set_level;;
-			  l) LOCAL_PRIORITY=true;;
-			  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
-			 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
-			esac
+		for O in {1..${#OPTS}};do
+			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+			OPTSTR+="-${OPTS[${O}]}"
 		done
-		shift $((OPTIND -1))
-		#--End GetOpts--
+		echo ${OPTSTR}
+	}
 
-		#Execution
-		#TODO: code is broken: test on vid_watch
-		[[ -z ${1} ]] && echo "${0:t}:${RED_FG}missing $(opt_type f)${RESET}" && usage
-		FILE_ARG=${1}
+	opt_type () {
+		local OPT=${1}
+		case ${OPT} in
+			d) echo "<DIR>";;
+			f) echo "<FILE>";;
+			t) echo "<FILE_TYPE>";;
+		esac
+	}
 
-		if [[ ${LOCAL_PRIORITY} == 'true' ]];then
-			[[ ${_DEBUG} -gt 0 && ${LOCAL_PRIORITY} == 'true' ]] && dbg "LOCAL_PRIORITY is true"
-			PRIORITY=(LOCAL_FILE 2 NOT_LOCAL_FILE 1 LOCAL_DIR 2 NOT_LOCAL_DIR 1 UNKNOWN 0)
-		else
-			[[ ${_DEBUG} -gt 0 && ${LOCAL_PRIORITY} == 'true' ]] && dbg "LOCAL_PRIORITY is false"
-			PRIORITY=(LOCAL_FILE 1 NOT_LOCAL_FILE 2 LOCAL_DIR 1 NOT_LOCAL_DIR 2 UNKNOWN 0)
-		fi
+	usage () {
+		tabs 5
+		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
-		WI_LIST=("${(f)$(whereis -bsf ${FILE_ARG})}") 
-		for W in ${WI_LIST};do
-			FLIST_1=("${(f)$(echo ${W} | cut -d: -f2- | sed 's/^[ \t]*//g')}") 
-			for F in ${=FLIST_1};do
-				if [[ -f ${F} && -x ${F} ]];then
-					for P in ${F};do
-						CANDIDATES+=$(localize ${FILE_ARG} ${P})
-					done
-				else
-					FLIST_2=("${(f)$(find ${F} -type f -iname ${FILE_ARG})}")
-					for P in ${FLIST_2};do
-						CANDIDATES+=$(localize ${FILE_ARG} ${P})
-					done
-				fi
-			done
+		local OPTS=$(parse_opts ${OPTSTR})
+		local -a PENDING_MSGS=(${@})
+
+		(
+		echo -e "\n${WHITE_FG}Usage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
+		echo -e "${WHITE_FG}-H${RESET} help"
+		echo -e "${WHITE_FG}-D${RESET} debug"
+		echo -e "${WHITE_FG}-l${RESET} local files have priority"
+		echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+		) >&2
+
+		exit_leave $(msg_err "${PENDING_MSGS}")
+	}
+
+	OPTSTR=":HDl"
+	OPTIND=0
+
+	LOCAL=false
+
+	while getopts ${OPTSTR} OPTION;do
+		case $OPTION in
+		  H) usage;;
+		  D) dbg_set_level;;
+		  l) LOCAL=true;;
+		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
+		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+		esac
+	done
+	shift $((OPTIND -1))
+	#--End GetOpts--
+	#Execution
+	[[ ${#} -eq 0 ]] && usage "missing argument:<FILE>" || FN=${1}
+
+	RAWLINE=("${(f)$(whereis -bf ${FN} | cut -d: -f2-)}")
+
+	for R in ${=RAWLINE};do
+		LIST+=${R}
+	done
+
+	if [[ ${#LIST} -gt 1 ]];then
+		for L in ${LIST};do
+			if [[ ${LOCAL} == 'true' ]];then
+				[[ ${L:h} == ${PWD} ]] && echo ${L}
+				return
+			elif [[ ${L:h} != ${PWD} ]];then
+				echo ${L}
+				return
+			else
+				continue
+			fi
 		done
+	else
+		echo ${LIST}
+		return
+	fi
 
-		HIT=false
-		HIGHEST=0
-		for C in ${CANDIDATES};do
-			TAG=$(echo ${C} | cut -d: -f1)
-			FN=$(echo ${C} | cut -d: -f2)
-			[[ ! -f ${FN} || ! -x ${FN} ]] && continue
-			[[ ${FN:t:l} != ${FILE_ARG:l} ]] && continue
-			HIT=true
-			[[ ${PRIORITY[${TAG}]} -gt ${HIGHEST} ]] && HIGHEST=${PRIORITY[${TAG}]} && CANDIDATE=${FN}
-		done
-
-		if [[ ${HIT} == "true" ]];then
-			printf "%s" ${CANDIDATE}
-			set_exit_value 0
-		else
-			echo "${RED_FG}File not found${RESET}"
-			set_exit_value 1
-		fi
-
-		exit_leave
+	exit_leave
 }
 
 surface () {
@@ -1122,14 +1057,14 @@ modified () {
 
 		read -r -d '' DESC<<______EOF
 Show file(s) updated or created today
-\tIncrease CTIME (-c) to view other days
+\tIncrease CTIME (-c) to view previous days
 ______EOF
 
 		parse_opts () {
 			local OPTS=${@}
 			local -a OPTSTR
 			local LETTER_OPT
-			local O
+			local D O
 
 			for O in {1..${#OPTS}};do
 				[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
@@ -1166,7 +1101,7 @@ ______EOF
 			echo -e "${WHITE_FG}-H${RESET} help"
 			echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 			echo -e "${WHITE_FG}-c${RESET} increase CTIME (repeatable)"
-			echo -e "${WHITE_FG}-d${RESET} increase depth of scan (repeats increase level)"
+			echo -e "${WHITE_FG}-d${RESET} increase depth of scan (repeatable)"
 			echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
 			) >&2
 
@@ -1177,13 +1112,12 @@ ______EOF
 		OPTIND=0
 
 		local CTIME=0
-		local TAG="modified today"
 
 		while getopts ${OPTSTR} OPTION;do
 			case $OPTION in
 			  H) usage;;
 			  D) dbg_set_level;;
-			  c) ((CTIME++));TAG="modified ${CTIME} day(s) ago";;
+			  c) ((CTIME++));;
 			  d) ((FIND_DEPTH++));;
 			  :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 			 \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -1192,32 +1126,39 @@ ______EOF
 		done
 		shift $((OPTIND -1))
 		#--End GetOpts--
-		
+
+		#Execution
 		local -a ARGS=(${@})
 
 		[[ -z ${ARGS} ]] && ARGS=${PWD} # default to pwd
 		[[ $(is_dir ${ARGS}) -eq 0 ]] && CMD_PATH=${ARGS} || usage "path is invalid:${ARGS}"
 
-		echo "\n${0} - Scanning:depth level ${WHITE_FG}${FIND_DEPTH}${RESET} of ${WHITE_FG}$(realpath ${CMD_PATH})${RESET}...\n"
+		echo "\n${0} - Scanning:depth level ${WHITE_FG}${FIND_DEPTH}${RESET} of ${WHITE_FG}$(realpath ${CMD_PATH})${RESET}\n"
 
-		local HDR="File(s) created/${TAG}"
+		local HDR
 		local -a LIST
 		local L
+		local TAG="modified today"
 
-		pushd ${CMD_PATH}
+		for ((D=0; D <= ${CTIME}; D++));do
+			[[ ${D} -gt 0 ]] && TAG="modified ${D} $(str_pluralize day ${D}) ago"
 
-		echo "${WHITE_FG}${HDR}${RESET}"
-		echo "$(str_unicode_line ${#HDR})"
+			pushd ${CMD_PATH}
 
-		LIST=("${(f)$(sudo find $(pwd) -maxdepth ${FIND_DEPTH} -type f -daystart -ctime ${CTIME})}")
+			LIST=("${(f)$(sudo find $(pwd) -maxdepth ${FIND_DEPTH} -type f -daystart -ctime ${D})}")
+			HDR="${#LIST} $(str_pluralize file ${#LIST}) created/${TAG}"
 
-		[[ -z ${LIST} ]] && LIST+="No files found"
-
-		for L in ${LIST};do
-			echo ${L}
-		done | mypager
-
-		popd
+			if [[ -n ${LIST[1]} ]];then
+				echo "\n${WHITE_FG}${HDR}${RESET}"
+				echo "$(str_unicode_line ${#HDR})"
+				for L in ${LIST};do
+					echo ${L}
+				done
+			else
+				echo "\n${RED_FG}No files modified${RESET} in:${WHITE_FG}${CMD_PATH}${RESET} ${D} $(str_pluralize day ${D}) ago"
+			fi
+			popd
+		done
 }
 
 inode_del () {

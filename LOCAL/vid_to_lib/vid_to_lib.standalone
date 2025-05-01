@@ -181,9 +181,7 @@ str_unicode_line () {
 
 	[[ ${_DEBUG} -ge ${_STR_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} LENGTH:${LENGTH}"
 
-	echo "CALLING do_rmso"
 	do_rmso
-	echo "CALLED do_rmso"
 	printf "\\u2500%.0s" {1..$((${LENGTH}))}
 }
 
@@ -219,7 +217,7 @@ clean_media () {
 		[[ ${TITLE} != ${LAST_TITLE} ]] && LAST_TITLE=${TITLE}
 	done
 
-	logit "${0} Cleaned titles\n $(tree ${_LIBRARY_DIR})"
+	#logit "${0} Cleaned titles\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
 }
 
 clear_deluge_state () {

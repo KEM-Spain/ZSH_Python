@@ -25,14 +25,14 @@ typeset -A _OWNERS
 typeset -A _PERMS
 typeset -A _WPERMS
 typeset -A _PERM_LABELS=(s Special o Owner g Group w World)
-typeset -A _SORT_TABLE=(1 _FILES 2 _FTYPES 3 _PERMS 4 _OWNERS 5 _GROUPS 6 _EPERMS 7 _OPERMS 8 _GPERMS 9 _WPERMS)
+typeset -A _SORT_TABLE=()
 typeset -a _MARKED
 typeset -a _RAWLIST
 typeset -a _LOCAL_LIST
 typeset -i _FNDX=0
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/SELECT.zsh
@@ -73,7 +73,7 @@ action_do () {
 
 	if [[ ${POP} == 'sp' ]];then
 		sel_set_list ${(C)${(ok)PTYPE_DECODE}}
-		sel_list -c -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Set permissions<N>"
+		sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Set permissions<N>"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		PTYPE=${PTYPE_DECODE[${_SEL_VAL:l}]}
@@ -89,7 +89,7 @@ action_do () {
 		esac
 
 		if [[ ${UMASK_PERMS} == 'false' ]];then 
-			sel_list -c -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
+			sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
 			[[ ${?} -ne 0 ]] && clear_list && return 0
 
 			[[ ${PTYPE} == "a" ]] && PERM_CODE=${_SEL_VAL:l}
@@ -102,7 +102,7 @@ action_do () {
 			cog) sel_set_list ${(o)USER_GROUP_LIST};STITLE="<w>Select Owner & Group<N>";;
 			cg) sel_set_list ${(o)GROUP_LIST};STITLE="<w>Select Group<N>";;
 		esac
-		sel_list -c -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
+		sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		case ${POP} in
@@ -306,7 +306,7 @@ parse_stat () {
 	[[ ${RC} -ne 0 ]] && msg_box -p -PK "stat returned an error (${RC})"
 
 	for L in ${STAT};do
-		_FILES[${NDX}]=$(cut -d'|' -f1 <<<${L})
+		_FILES[${NDX}]=$(cut -d'|' -f1 <<<${L:t})
 		_OWNERS[${NDX}]=$(cut -d'|' -f2 <<<${L})
 		_GROUPS[${NDX}]=$(cut -d'|' -f3 <<<${L})
 		PERM=$(cut -d'|' -f4 <<<${L})
@@ -406,32 +406,32 @@ for L in ${(o)_RAWLIST};do
 	[[ ${#_FILES[${_FNDX}]:t} -gt ${LONGEST} ]] && LONGEST=${#_FILES[${_FNDX}]:t} 
 	_LOCAL_LIST+=${_FNDX}
 done
+[[ ${LONGEST} -gt 50 ]] && LONGEST=50
 
 LBL_WIDTH=8
 
-# TODO: some jagged columns w/ long file names
+_SORT_TABLE=(1 _FILES 2 _FTYPES 3 _PERMS 4 _OWNERS 5 _GROUPS 6 _EPERMS 7 _OPERMS 8 _GPERMS 9 _WPERMS)
+
 # Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET}  Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} "${PATHLBL}" ${SELECTED_COUNT}'
 list_set_header 'printf " "'
 list_set_header 'printf "%*s %*s %4s %4s %10s %10s %-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" 5 "" ${LONGEST} "File" "Type" "Perm" "Owner" "Group" ${_PERM_LABELS[s]} ${_PERM_LABELS[o]} ${_PERM_LABELS[g]} ${_PERM_LABELS[w]}'
-list_set_header 'printf "%*s ${CYAN_FG}%4s${RESET} ${CYAN_FG}%4s${RESET} ${CYAN_FG}%4s${RESET} ${CYAN_FG}%10s${RESET} ${CYAN_FG}%10s${RESET} ${MAGENTA_FG}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s${RESET}" $((LONGEST+1)) "" $(str_unicode_line 4) $(str_unicode_line 4) $(str_unicode_line 4)  $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 12) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH})' 
+list_set_header 'printf "%*s ${SCOL1_CLR}%4s${RESET} ${SCOL2_CLR}%4s${RESET} ${SCOL3_CLR}%4s${RESET} ${SCOL4_CLR}%10s${RESET} ${SCOL5_CLR}%10s${RESET} ${SCOL6_CLR}%-12s${RESET} ${SCOL7_CLR}%${LBL_WIDTH}s${RESET} ${SCOL8_CLR}%${LBL_WIDTH}s${RESET} ${SCOL9_CLR}%${LBL_WIDTH}s${RESET}" $((LONGEST+1)) "" $(str_unicode_line 4) $(str_unicode_line 4) $(str_unicode_line 4)  $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 12) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH})' 
 
 # Set line item
 list_set_line_item ' 
-local FNDX=${_LIST[${_LIST_NDX}]};
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${_FILES[${FNDX}]:t} "(${_FTYPES[${FNDX}]})" ${_PERMS[${FNDX}]} ${_OWNERS[${FNDX}]} ${_GROUPS[${FNDX}]} ${_EPERMS[${FNDX}]} ${_OPERMS[${FNDX}]} ${_GPERMS[${FNDX}]} ${_WPERMS[${FNDX}]}
+local NDX=${_LIST[${_LIST_NDX}]};
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}$(ls_color ${_FILES[${NDX}]:t})%*s${RESET} %-4s ${SHADE}${BAR}%4s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%10s${RESET} ${SHADE}${BAR}%-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s\n" ${_LIST_NDX} ${LONGEST} ${${_FILES[${NDX}]:t}[1,${LONGEST}]} "${_FTYPES[${NDX}]}" ${_PERMS[${NDX}]} ${_OWNERS[${NDX}]} ${_GROUPS[${NDX}]} ${_EPERMS[${NDX}]} ${_OPERMS[${NDX}]} ${_GPERMS[${NDX}]} ${_WPERMS[${NDX}]}
 '
 
-list_set_key_msg '
+list_set_prompt_msg '
 printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
 '
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to reset permissions ${ITALIC}or exit if none selected${RESET}"
-list_set_barlines true
-list_set_clear_ghosts true
-list_set_sortable true
-list_set_max_sort_col ${#_SORT_TABLE}
-list_set_sort_type assoc
+list_set_select_action "reset permissions"
+list_set_barlines false
 list_set_searchable false
+list_set_sortable true
+list_set_sort_defaults MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 DELIM ${_LIST_DELIM} TABLE "${(kv)_SORT_TABLE}" 
 
 while true;do
 	# Get selection

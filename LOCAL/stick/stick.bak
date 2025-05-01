@@ -85,10 +85,10 @@ action_do () {
 		[[ ${_DEBUG} -eq 0 ]] && /bin/rm -f ${_RSYNC_LOG} # Clear log
 		sleep .5
 
-		#rsync -v -r ./Dir_1/  --mkpath "./Dir_2/TopDir" This works to add a dir for files - no target dir other than mkpath
-		#if Dir_2 exists then TopDir gets created under Dir_2, if Dir_2 doesn't exist then both are created "/Dir_2/TopDir"
-		#but with a selection a different dirs it quickly becomes unmanageable
-		#Nonetheless it would be necessary to know if we're in a subdirectory that requires a TopDir to categorize it
+		# rsync -v -r ./Dir_1/  --mkpath "./Dir_2/TopDir" This works to add a dir for files - no target dir other than mkpath
+		# if Dir_2 exists then TopDir gets created under Dir_2, if Dir_2 doesn't exist then both are created "/Dir_2/TopDir"
+		# but with a selection of different dirs it quickly becomes unmanageable
+		# Nonetheless it would be necessary to know if we're in a subdirectory that requires a TopDir to categorize it
 
  		rsync -r -z -h -I -v --info=progress2 --no-R --no-i-r ${(v)PAYLOAD} ${STICK_DATA[PATH]} >>${_RSYNC_LOG} 2>&1 & # Background rsync
 		PID=$!

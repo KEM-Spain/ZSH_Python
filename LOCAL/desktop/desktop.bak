@@ -36,7 +36,7 @@ action_do () {
 	APP=/usr/bin/vim
 	ARGS=$(echo "${APP} $(list_quote_marked_elements ${MARKED})")
 	eval "${ARGS}"
-	[[ ${?} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |Press any key..."
+	[[ ${?} -ne 0 ]] && msg_box -p -PP "<B><I>${0}: ${APP} returned an error<N>"
 
 	for M in ${MARKED};do
 		[[ ${M} -eq 0 ]] && continue
@@ -50,7 +50,7 @@ action_warn () {
 	local CNT=$(list_get_selected_count ${MARKED})
 	local M
 	
-	msg_box -p "<I>Pending Action<N>|==============| |${CNT} $(str_pluralize item $CNT) queued for editing.| |<B>Edit? (y/n)<N>"
+	msg_box -p -PE "<I>Pending Action<N>|==============| |${CNT} $(str_pluralize item $CNT) queued for editing"
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${MARKED};do
 			list_remove_selected ${M}
@@ -62,8 +62,8 @@ item_decorate () {
 	local NDX=$1
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		2) echo -n "${E_STRIKE}${E_RED_FG}${LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
-		*)	tput el;echo -n ${LIST[${NDX}]};;
+		2) echo "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		*)	tput el;echo ${_LIST[${NDX}]};;
 	esac
 }
 
@@ -97,22 +97,21 @@ opt_type () {
 
 usage () {
 	local OPTS=$(parse_opts ${OPTSTR})
-	exit_visible
+	local -a PENDING_MSGS=(${@})
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type s)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "\n${WHITE_FG}DESC${RESET}: Manage desktop files"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"
 
-DEBUG=false
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case ${OPTION} in
      H) usage;;
-     D) DEBUG=true;;
+     D) dbg_set_level;;
      :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -121,7 +120,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #Execution
-[[ ${DEBUG} == 'false' ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ -n ${1} ]] && SEARCHTERM=${1} || SEARCHTERM='None'
 
@@ -134,18 +133,17 @@ LIST=(${LIST}) #remove any empty elements
 [[ ${#LIST} -eq 0 ]] && exit_leave "Nothing found for:${SEARCHTERM}"
 
 #set headings
-list_set_header 'printf "Found:${WHITE_FG}%s${RESET} $(str_pluralize file ${#LIST})${RESET} Filter:${WHITE_FG}%s${RESET}\tPage:${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET}\tSelected:${WHITE_FG}%d${RESET}" ${#LIST} "${SEARCHTERM}" ${PAGE} ${MAX_PAGES} ${SELECTED_COUNT}'
+list_set_header 'printf "Found:${WHITE_FG}%s${RESET} $(str_pluralize file ${#_LIST})${RESET} Filter:${WHITE_FG}%s${RESET}\tPage:${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET}\tSelected:${WHITE_FG}%d${RESET}" ${#_LIST} "${SEARCHTERM}" ${PAGE} ${MAX_PAGES} ${SELECTED_COUNT}'
 list_add_header_break
 
 #set line item
 list_set_line_item ' 
-printf "${BOLD}${GREEN_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${ARRAY_NDX} "$(item_decorate ${ARRAY_NDX})"
+printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%-s${RESET}\n" ${ARRAY_NDX} "$(item_decorate ${ARRAY_NDX})"
 '
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to edit (${ITALIC}or exit if none selected${RESET})."
 list_set_action_msgs edit file
 list_set_client_warn true
 list_set_clear_ghosts true
-list_set_barlines true
 
 while true;do
 	#get selection

@@ -172,16 +172,18 @@ usage () {
 	echo -e "${WHITE_FG}-e${RESET} output command text"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-x${RESET} exact match"
+	echo -e "${WHITE_FG}-q${RESET} quiet"
 	echo -e "${WHITE_FG}\nDESC${RESET}:${DESC}"
 
 	exit_leave $(msg_err ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDaceIx"
+OPTSTR=":HDaceIqx"
 OPTIND=0
 
 EXACT=false
+QUIET=false
 MATCH_MODE=both
 OUTPUT_CMD_ONLY=false
 CASE=false
@@ -195,6 +197,7 @@ while getopts ${OPTSTR} OPTION;do
      a) MATCH_MODE=alias;;
      c) MATCH_MODE=cmd;;
      e) OUTPUT_CMD_ONLY=true;;
+     q) QUIET=true;;
      x) EXACT=true;;
      :) print -u2 "${RED_FG}${SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
@@ -207,8 +210,11 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ -n ${1} ]] && SEARCHTERM=${1} && _SEARCH_MSGS+=${SEARCHTERM}
+
 [[ ${MATCH_MODE} != 'both' && -z ${SEARCHTERM} ]] && exit_leave "Matching requires a <SEARCHTERM>"
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} EXACT=${EXACT} OUTPUT_CMD_ONLY=${OUTPUT_CMD_ONLY} MATCH_MODE=${MATCH_MODE}"
+
+[[ ${QUIET} == 'true' ]] && WAIT='' || WAIT='wait'
 
 #Build list
 ALIASES=("${(@f)$(cat ${_ALIAS_FN} | grep ^alias | sort)}")
@@ -251,18 +257,17 @@ REGEX="${SEARCHTERM}"
 
 #Process list
 {
-	_HIT=false
-	_HEADER_OUT=false
 	durable_set EXV EV 0
-
+	_HIT=false
+	HEADER_OUT=false
 	for A in ${(ko)ALIAS_LIST};do
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} KEY:${A} VALUE:${GREEN_FG}$(strip ${ALIAS_LIST[${A}]})${RESET}"
 		if [[ ${LIST_ALL} == "true" ]];then
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST_ALL:${LIST_ALL}"
 			_HIT=true
-			if [[ ${OUTPUT_CMD_ONLY} == 'false' && ${_HEADER_OUT} == 'false' ]];then
+			if [[ ${OUTPUT_CMD_ONLY} == 'false' && ${HEADER_OUT} == 'false' ]];then
 				do_header
-				_HEADER_OUT=true
+				HEADER_OUT=true
 			fi
 			if [[ ${OUTPUT_CMD_ONLY} == "true" ]];then
 				echo $(strip ${ALIAS_LIST[${A}]})
@@ -282,9 +287,9 @@ REGEX="${SEARCHTERM}"
 					echo $(strip ${ALIAS_LIST[${A}]})
 					[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} OUTPUT_CMD_ONLY:${OUTPUT_CMD_ONLY}"
 				else
-					if [[ ${_HEADER_OUT} == 'false' ]];then
+					if [[ ${HEADER_OUT} == 'false' ]];then
 						do_header ${_SCOPE_MSGS}
-						_HEADER_OUT=true
+						HEADER_OUT=true
 					fi
 					printf "${CYAN_FG}%12s${RESET} -> ${WHITE_FG}%-50s${RESET}\n" ${A} "$(strip ${ALIAS_LIST[${A}]})"
 					LAST_ALIAS=${A}
@@ -300,9 +305,9 @@ REGEX="${SEARCHTERM}"
 					echo $(strip ${ALIAS_LIST[${A}]})
 					[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} OUTPUT_CMD_ONLY:${OUTPUT_CMD_ONLY}"
 				else
-					if [[ ${_HEADER_OUT} == 'false' ]];then
+					if [[ ${HEADER_OUT} == 'false' ]];then
 						do_header ${_SCOPE_MSGS}
-						_HEADER_OUT=true
+						HEADER_OUT=true
 					fi
 					[[ ${A} == ${LAST_ALIAS} ]] && continue #Avoid duplicate output
 					printf "${CYAN_FG}%12s${RESET} -> ${WHITE_FG}%-50s${RESET}\n" ${A} "$(strip ${ALIAS_LIST[${A}]})"
@@ -323,9 +328,8 @@ REGEX="${SEARCHTERM}"
 		fi
 	fi
 
-} | mypager
+} | mypager ${WAIT}
 
 set_exit_value $(durable_get EXV EV)
-
 exit_leave
 

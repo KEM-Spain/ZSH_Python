@@ -18,11 +18,10 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Constants
-_LIB_DIR=/usr/local/lib
 _COL_MAX=140
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/DURABLE.zsh
@@ -151,7 +150,7 @@ else
 	GREP_ARG="${PATH_ARG}/(*|.*)" # No file name was passed - all files in path
 fi
 
-CMD=$(echo "grep -H -r -P -I -d skip -D skip ${MAX_MATCHES} --color=never ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT}'"${SEARCHTERM}"' ${GREP_ARG} ${EXCLUDE_BAK} 2>/dev/null")
+CMD=$(echo "grep -H -r -P -I -d skip -D skip ${MAX_MATCHES} --color=never ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_ARG} ${EXCLUDE_BAK} 2>/dev/null")
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 
 RAWLIST=("${(f)$(eval ${CMD})}")
@@ -251,7 +250,7 @@ else
 		fi
 		echo -n ${RESET}
 	done
-	} | mypager wait
+	} | mypager
 fi
 
 exit_leave

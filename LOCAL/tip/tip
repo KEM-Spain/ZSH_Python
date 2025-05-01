@@ -69,6 +69,7 @@ desktop_files
 dpkg 
 ex 
 git 
+langkeys
 linux 
 mail
 mime 
@@ -94,7 +95,7 @@ zsh_cheatsheet
 )
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -156,6 +157,10 @@ source ${_TIP_DIR}/ex.tip
 
 tip_git () {
 source ${_TIP_DIR}/git.tip
+}
+
+tip_langkeys () {
+source ${_TIP_DIR}/langkeys.tip
 }
 
 tip_linux () {
@@ -375,7 +380,7 @@ if [[ -n ${ARG} ]];then
 else
 	while true;do
 		sel_set_list ${_TIPS}
-		sel_list -O ${CYAN_FG} -M"<w>Select Tip or <h>(q)uit<N>" -H"Collected Tips"
+		sel_list -O ${CYAN_FG} -F"<w>Select Tip or <h>(q)uit<N>" -H"Collected Tips"
 		clear # wipe menu
 		if [[ ${${_TIPS[(i)${_SEL_VAL}]}} -le ${#_TIPS} ]];then
 			if [[ ${_EXTERNAL[${_SEL_VAL}]} -eq 1 ]];then

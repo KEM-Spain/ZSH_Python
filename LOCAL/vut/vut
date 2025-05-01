@@ -43,7 +43,7 @@ volume "AUDIO:Increase volume by 3db"
 _WRAPPER=${0:t}
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/SELECT.zsh
@@ -97,7 +97,7 @@ info () {
 
 		DUR=$(sed 's/[0]+$//' <<<${DUR})
 
-		INFO=("${(C)DUR}" "${(C)VID}" "Resolution:${RES}" "${AUD}" "Subtitiles:${(C)SUB}")
+		INFO=("${DUR}" "${(U)VID}" "Resolution:${RES}" "${(U)AUD}" "Subtitiles:${(C)SUB}")
 
 		HDR="\nVideo Information: ${WHITE_FG}${@:t}${RESET}"
 		echo ${HDR}
@@ -196,19 +196,19 @@ ___EOF
 }
 
 length () {
-	local DESC=''
-	local -a FN_ARG=()
-	local DUR=''
-	local LONGEST=0
-	local -a PRELIST=()
-	local -a LIST=()
-	local F=''
-	local DNUM=0
-	local TITLE=''
-	local HDR=''
 	local -a FLIST=()
-	local NDX=0
+	local -a FN_ARG=()
+	local -a LIST=()
+	local -a PRELIST=()
+	local DESC=''
+	local DNUM=0
+	local DUR=''
+	local F=''
+	local HDR=''
 	local HIT=false
+	local LONGEST=0
+	local NDX=0
+	local TITLE=''
 
 	read -r -d '' DESC<<___EOF
 Display video duration
@@ -264,7 +264,7 @@ ___EOF
 	for F in ${(On)LIST};do
 		TITLE=$(cut -d'|' -f3 <<<${F})
 		DUR=$(cut -d'|' -f2 <<<${F})
-		printf "${WHITE_FG}%*s${RESET}:%10s\n" ${LONGEST} ${TITLE} ${DUR}
+		printf "${WHITE_FG}%*s${RESET}:%.9s\n" ${LONGEST} ${TITLE} ${DUR}
 	done
 	echo
 }
@@ -310,14 +310,14 @@ ___EOF
 merge () {
 	# Declarations
 	local -a FILE_ARGS
-	local -a WORKFILES
+	local -a FILES_TO_MERGE
 	local APP=ffmpeg
 	local DESTINATION_FILE
 	local RESPONSE
 	local F
 
 	# Constants
-	local _DEFAULT_OUT=vid_merge
+	local _OUT_FILE=vid_merge
 
 	#--Begin GetOpts--
 	local DESC
@@ -356,6 +356,7 @@ ___EOF
 		case ${OPT} in
 			d) echo "<DIR>";;
 			f) echo "<FILE>";;
+			l) echo "<LIST>";;
 			t) echo "<FILE_TYPE>";;
 		esac
 	}
@@ -366,7 +367,7 @@ ___EOF
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT}\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} $(opt_type l)\n"
 		echo "${WHITE_FG}-H${RESET} help"
 		echo "${WHITE_FG}-m${RESET} use melt"
 		echo "${WHITE_FG}-k${RESET} use mkvmerge"
@@ -386,7 +387,7 @@ ___EOF
 		  D) DEBUG=true;;
 		  m) APP=melt;;
 		  k) APP=mkvmerge;;
-		  o) _DEFAULT_OUT=${OPTARG};;
+		  o) _OUT_FILE=${OPTARG};;
 		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 		esac
@@ -397,39 +398,45 @@ ___EOF
 	#--Execution--
 	[[ ${#} -lt 2 ]] && usage  "missing required arguments"
 
-	WORKFILES=(${@})
-	for F in ${WORKFILES};do 
+	for F in ${@};do
+		grep -q ${_OUT_FILE} <<<${F}
+		[[ ${?} -eq 0 ]] && continue
+		fsub -y -C ${F}
+		FILES_TO_MERGE+=${F}
+	done
+
+	for F in ${FILES_TO_MERGE};do 
 		[[ ! -e ${F} ]] && exit_leave $(msg_exit E "file:${F} not found")
 		file ${F} | grep -qi 'media\|matroska\|video'
 		[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "file:${F} is not of type video")
 	done
 
-	DESTINATION_FILE=${_DEFAULT_OUT}.${1:e}
+	DESTINATION_FILE=${_OUT_FILE}.${1:e}
 
-	if [[ -e ${DESTINATION_FILE} ]];then
-		echo -n "Overwrite ${DESTINATION_FILE} (y/n):"; read -q RESPONSE
-		[[ ${RESPONSE} == 'n' ]] && exit_leave "Operation cancelled" || echo
-		rm ${DESTINATION_FILE}
+	if overwrite_file ${DESTINATION_FILE};then
+		/bin/rm -f ${DESTINATION_FILE} >/dev/null 2>&1
+	else
+		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}" || echo
 	fi
 
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
-	echo "Files to merge:${BOLD}${ITALIC}${WORKFILES}${RESET}"
+	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
 	echo "Output file:${BOLD}${ITALIC}${DESTINATION_FILE}${RESET}"
 	echo -n "\nPlease review...Continue (y/n):"; read -q RESPONSE
 	echo
 
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(msg_exit W "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave $(msg_exit W "[${WHITE_FG}${0}${RESET}] Operation cancelled")
 
-	echo "Merging:${WHITE_FG}${WORKFILES}${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
+	echo "Merging:${WHITE_FG}${FILES_TO_MERGE}${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
 	case ${APP} in
-		ffmpeg)		echo "ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${WORKFILES}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}"
-						ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${WORKFILES}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}
+		ffmpeg)		echo "ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}"
+						ffmpeg -loglevel error -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}
 						;;
-		melt)			echo "melt ${WORKFILES} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
-						melt ${WORKFILES} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress
+		melt)			echo "melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
+						melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress
 						;;
-		mkvmerge)	FILE_ARGS+="${=WORKFILES[1]}"
-						for W in ${=WORKFILES[2,${#WORKFILES}]};do
+		mkvmerge)	FILE_ARGS+="${=FILES_TO_MERGE[1]}"
+						for W in ${=FILES_TO_MERGE[2,${#FILES_TO_MERGE}]};do
 							FILE_ARGS+="\+ ${W}"
 						done
 						echo "mkvmerge -o ${DESTINATION_FILE} ${FILE_ARGS}"
@@ -519,13 +526,14 @@ ___EOF
 	#--End GetOpts--
 
 	# Execution
+	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 	[[ ${#} -eq 0 ]] && usage "Missing argument $(opt_type v)" || FN=${1}
 
 	[[ ! -e ${FN} ]] && usage "File not found:${FN}"
 
 	sel_set_list ${RESOLUTIONS}
-	sel_list -x5 -y5 -F"<w>Select Resolution<N>" -H"Video Utilities"
-	read
+	sel_list -sa -O${CYAN_FG} -x10 -y30 -F"<w>Select Resolution<N>" -H"Video Utilities"
+	[[ ${?} -ne 0 ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
 	SCALE=${_SEL_VAL}
 
 	FN_OUT="${FN:r} ${SCALE}.mkv"
@@ -651,7 +659,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -O ${CYAN_FG} -C "<w>Show Video Utilities usage or <h>(q)uit<N>"
+	sel_list -sa -O ${CYAN_FG} -C "<w>Show Video Utilities usage or <h>(q)uit<N>"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

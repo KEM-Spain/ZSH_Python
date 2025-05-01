@@ -79,6 +79,19 @@ action_do () {
 	done
 }
 
+action_warn () {
+	local MARKED=(${@})
+	local CNT=$(list_get_selected_count ${MARKED})
+	local M
+	
+	msg_box -p "<I>Please respond<N>|==============| |${CNT} $(str_pluralize item $CNT) queued for editing| |<B>Open? (y/n)<N>"
+	if [[ ${_MSG_KEY} == 'n' ]];then
+		for M in ${MARKED};do
+			list_remove_selected ${M}
+		done
+	fi
+}
+
 item_decorate () {
 	local NDX=$1
 
@@ -104,7 +117,6 @@ parse_opts () {
 
 usage () {
 	local OPTS=$(parse_opts ${OPTSTR})
-	exit_visible
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${THIS_FILE} ${WHITE_FG}[${RESET} ${OPTS} ${WHITE_FG}]${RESET} <SEARCHTERM>\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
@@ -114,13 +126,12 @@ usage () {
 }
 
 OPTSTR=":HDd"
-DEBUG=false
 OPTIND=0
 DEEP=false
 while getopts ${OPTSTR} OPTION;do
 	case ${OPTION} in
      H) usage;;
-     D) DEBUG=true;;
+     D) dbg_set_level;;
      d) DEEP=true;;
      :) exit_leave "${THIS_FILE}: option: -${OPTARG} requires an argument";;
     \?) exit_leave "${THIS_FILE}: unknown option -${OPTARG}";;
@@ -130,7 +141,7 @@ shift $((${OPTIND} - 1))
 #--End GetOpts--
 
 #---Execution---
-[[ ${DEBUG} == 'false' ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 SEARCHTERM=${@}
 [[ -z ${SEARCHTERM} ]] && exit_leave "${RED_FG}Missing arg ${WHITE_FG}<APP>${RESET}: search phrase to locate configuration files for application"
@@ -163,23 +174,23 @@ fi
 RAWLIST=("${(f)$(echo ${RAWLIST})}") #break array on newline
 APP_DIRS=("${(f)$(echo ${APP_DIRS})}") #break array on newline
 
-[[ ${DEBUG} == 'true' ]] && echo "CFGDIRS:${CFGDIRS}" | dbg
+[[ ${_DEBUG} -ne 0 ]] && echo "CFGDIRS:${CFGDIRS}" | dbg
 
 ONCE=true
 for D in ${CFGDIRS};do
 	[[ -n $(arr_in_array ${D} ${APP_DIRS}) ]] && INAME='' || INAME="-iname '*${SEARCHTERM}*'"
 
 	CMD="sudo find ${D} -maxdepth ${DEPTH} \( -type f -o -type l \) ${INAME} ${EXCLUDE}"
-	[[ ${DEBUG} == 'true' && ${ONCE} == 'true' ]] && echo "CMD:${CMD}" | dbg && ONCE=false
+	[[ ${_DEBUG} -ne 0 && ${ONCE} == 'true' ]] && echo "CMD:${CMD}" | dbg && ONCE=false
 
 	LOOP_LIST=("${(f)$(eval "${CMD}" 2>/dev/null)}")
-	[[ ${DEBUG} == 'true' ]] && echo "Searching ${D}..found ${#LOOP_LIST}" | dbg
+	[[ ${_DEBUG} -ne 0 ]] && echo "Searching ${D}..found ${#LOOP_LIST}" | dbg
 
 	[[ -n ${LOOP_LIST} ]] && RAWLIST+=(${LOOP_LIST}) #build LIST
 	unset LOOP_LIST #clear list
 done
 
-[[ ${DEBUG} == 'true' ]] && echo "RAWLIST:${#RAWLIST} ${=RAWLIST[1,20]} ...truncated" | dbg
+[[ ${_DEBUG} -ne 0 ]] && echo "RAWLIST:${#RAWLIST} ${=RAWLIST[1,20]} ...truncated" | dbg
 
 if ! arr_is_populated ${RAWLIST};then
 	exit_leave "No cfg file(s) found for ${SEARCHTERM}"
@@ -201,7 +212,7 @@ for F in ${RAWLIST};do
 	  *pdf*) APP_TO_USE[${F}]="evince";;
 	  *) continue;;
 	esac
-	[[ ${DEBUG} == 'true' ]] && echo "F:${F}" | dbg
+	[[ ${_DEBUG} -ne 0 ]] && echo "F:${F}" | dbg
 	LIST+=${F}
 done
 
@@ -214,7 +225,7 @@ if ! arr_is_populated ${LIST};then
 	exit_leave "No editable cfg file(s) found for ${SEARCHTERM}"
 fi
 
-[[ ${DEBUG} == 'true' ]] && echo "LIST:${#LIST} ${=LIST[1,20]} ...truncated" | dbg
+[[ ${_DEBUG} -ne 0 ]] && echo "LIST:${#LIST} ${=LIST[1,20]} ...truncated" | dbg
 
 #Set headings
 list_set_header 'printf "Found (${WHITE_FG}%s${RESET}) configuration file(s) found for:${WHITE_FG}%s${RESET}\tPage:${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET}" ${#LIST} ${SEARCHTERM} ${PAGE} ${MAX_PAGES}'
@@ -224,9 +235,10 @@ list_add_header_break
 list_set_line_item ' 
 printf "${BOLD}${GREEN_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${ARRAY_NDX} "$(item_decorate ${ARRAY_NDX})"
 '
-list_set_prompt "Select configuration file(s):"
+list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to edit (${ITALIC}or exit if none selected${RESET})."
 list_set_action_msgs edit config
 list_set_clear_ghosts true
+list_set_client_warn true
 
 while true;do
 	#get selection

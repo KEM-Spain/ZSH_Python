@@ -12,21 +12,23 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
 #Constants
-FUNCTIONS=/etc/zsh/system_wide/functions
-EDITOR_CMD=/usr/local/bin/system/launchers/run_vi
-GAL=/usr/local/bin/gal
-CACHE=~/.${0:t}/cached_targets
-SCRIPT=${0:t}
-TARGET=''
-EDITABLE='ascii\|text\|script'
 ADD_PATH=/usr/local/bin/system/launchers
+CACHE=~/.${0:t}/cached_targets
+EDITABLE='ascii\|text\|script'
+EDITOR_CMD=/usr/local/bin/system/launchers/run_vi
+FUNCTIONS=/etc/zsh/system_wide/functions
+GAL=/usr/local/bin/gal
 LIB=/usr/local/lib
+SCRIPT=${0:t}
+
+#Globals
+_TARGET=''
 
 #Declarations
 typeset -a FILES
 typeset -aU CANDIDATES
 typeset -a BLOCKED_DIRS=(snap flatpak)
-typeset -A CACHED_TARGETS=()
+typeset -A CACHED__TARGETS=()
 
 #Imports
 source ${LIB}/common.zsh
@@ -34,8 +36,9 @@ source ${LIB}/common.zsh
 #Functions
 is_blocked_dir () {
 	local DIR=${1}
+	local D
 
-	[[ ${DEBUG} == "true" ]] && dbg "Checking if ${DIR} is blocked"
+	[[ ${_DEBUG} -ne 0 ]] && dbg "Checking if ${DIR} is blocked"
 
 	for D in ${BLOCKED_DIRS};do
 		[[ ${DIR} =~ ".*\/${D}\/.*" ]] && return 0 || return 1
@@ -45,36 +48,36 @@ is_blocked_dir () {
 is_editable () {
 	FILE=${1}
 
-	[[ ${DEBUG} == "true" ]] && dbg "Checking 'file -L ${FILE}' for ${EDITABLE}"
+	[[ ${_DEBUG} -ne 0 ]] && dbg "Checking 'file -L ${FILE}' for ${EDITABLE}"
 	file -L ${FILE} 2>/dev/null | grep -qi ${EDITABLE} #filter editable result
 	[[ $? -eq 0 ]]	&& return 0 || return 1
 }
 
 write_cache () {
 	local FILE_ARG=${1}
-	local TARGET=${2}
+	local _TARGET=${2}
 
 	[[ ! -d ${CACHE:h} ]] && mkdir ${CACHE:h}
 
 	sed -i "/${FILE_ARG}|/d" ${CACHE}
 
-	TARGET=$(realpath ${TARGET})
+	_TARGET=$(realpath ${_TARGET})
 
-	echo "${FILE_ARG}|${TARGET}" >> ${CACHE}
+	echo "${FILE_ARG}|${_TARGET}" >> ${CACHE}
 	sort -t'|' -k1,1 -u -o ${CACHE} ${CACHE} 
 }
 
 read_cache () {
 	local LINE
-	local TARGET
+	local _TARGET
 	local TPATH
 
 	[[ ! -e ${CACHE} ]] && return
 
 	while read LINE;do
-		TARGET=$(cut -d'|' -f1 <<<${LINE})
+		_TARGET=$(cut -d'|' -f1 <<<${LINE})
 		TPATH=$(cut -d'|' -f2 <<<${LINE})
-		CACHED_TARGETS[${TARGET}]=${TPATH}
+		CACHED__TARGETS[${_TARGET}]=${TPATH}
 	done < ${CACHE}
 }
 
@@ -82,30 +85,30 @@ validate_fn () {
 		local FN=${1}
 
 		if [[ ! ${FN:t:l} =~ ${FILE_ARG:l} ]];then
-			[[ ${DEBUG} == "true" ]] && dbg "${RED_FG}${FN}${RESET} no match for cmdline arg"
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${RED_FG}${FN}${RESET} no match for cmdline arg"
 			return 1 #not an arg match
 		fi
 		if is_blocked_dir ${FN};then
-			[[ ${DEBUG} == "true" ]] && dbg "${RED_FG}${FN}${RESET} is blocked..."
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${RED_FG}${FN}${RESET} is blocked..."
 			return 1 #is blocked
 		fi
 		if [[ $(file ${FN}) =~ 'compressed' ]];then
-			[[ ${DEBUG} == "true" ]] && dbg "${RED_FG}Ignoring compressed files...${RESET}"
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${RED_FG}Ignoring compressed files...${RESET}"
 			return 1 #omit compressed
 		fi
 		if [[ ${FN:h} == "." ]];then
-			[[ ${DEBUG} == "true" ]] && dbg "${RED_FG}Ignoring hidden files...${RESET}"
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${RED_FG}Ignoring hidden files...${RESET}"
 			return 1 #omit hidden files
 		fi
 		if [[ ${FN:e} == "bak" ]];then
-			[[ ${DEBUG} == "true" ]] && dbg "${RED_FG}Ignoring if .bak files...${RESET}"
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${RED_FG}Ignoring if .bak files...${RESET}"
 			return 1 #omit bak files
 		fi
 		if ! is_editable ${FN};then
-			[[ ${DEBUG} == "true" ]] && dbg "${RED_FG}${FN} not editable${RESET}"
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${RED_FG}${FN} not editable${RESET}"
 			return 1 #not editable
 		else
-			[[ ${DEBUG} == "true" ]] && dbg "${GREEN_FG}${FN}${RESET} is editable"
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${GREEN_FG}${FN}${RESET} is editable"
 			return 0 #editable
 		fi
 }
@@ -116,12 +119,12 @@ try_whereis () {
 
 	echo "Searching with whereis..."
 
-	[[ ${DEBUG} == "true" ]] && dbg "Invoking whereis..."
+	[[ ${_DEBUG} -ne 0 ]] && dbg "Invoking whereis..."
 
 	LIST=($(whereis ${ARG} | cut -d: -f2 | sed 's/^[ \t]*//g'))
 	LIST+=($(whereis -B ${ADD_PATH} -f ${ARG} | cut -d: -f2 | sed 's/^[ \t]*//g'))
 
-	[[ ${DEBUG} == "true" ]] && dbg "${0} found ${#LIST} possible candidates"
+	[[ ${_DEBUG} -ne 0 ]] && dbg "${0} found ${#LIST} possible candidates"
 
 	for L in ${LIST};do
 		if ! validate_fn ${L};then
@@ -131,7 +134,7 @@ try_whereis () {
 		fi
 	done
 
-	if [[ ${DEBUG} == "true" ]];then
+	if [[ ${_DEBUG} -ne 0 ]];then
 		[[ -z ${CANDIDATES[1]} ]] && dbg "${0} is returning ${RED_FG}0${RESET} valid candidates" || dbg "${0} will return ${GREEN_FG}${#CANDIDATES}${RESET} candidates"
 	fi
 }
@@ -142,13 +145,13 @@ try_locate () {
 
 	echo "Searching with locate..."
 
-	[[ ${DEBUG} == "true" ]] && dbg "Invoking locate..."
+	[[ ${_DEBUG} -ne 0 ]] && dbg "Invoking locate..."
 
 	echo "Updating locate database..."
 	sudo updatedb 2>/dev/null
 	LIST=("${(f)$(sudo locate -r "\/${ARG:q}$")}") 
 
-	[[ ${DEBUG} == "true" ]] && dbg "${0} found ${#LIST} possible candidates"
+	[[ ${_DEBUG} -ne 0 ]] && dbg "${0} found ${#LIST} possible candidates"
 
 	for L in ${LIST};do
 		if ! validate_fn ${L};then
@@ -158,7 +161,7 @@ try_locate () {
 		fi
 	done
 
-	if [[ ${DEBUG} == "true" ]];then
+	if [[ ${_DEBUG} -ne 0 ]];then
 		[[ -z ${CANDIDATES[1]} ]] && dbg "${0} is returning ${RED_FG}0${RESET} valid candidates" || dbg "${0} will return ${GREEN_FG}${#CANDIDATES}${RESET} candidates"
 	fi
 }
@@ -170,16 +173,16 @@ try_alias () {
 
 	echo "Searching aliases..."
 
-	[[ ${DEBUG} == "true" ]] && dbg "Invoking gal..."
+	[[ ${_DEBUG} -ne 0 ]] && dbg "Invoking gal..."
 
 	ALIAS=$(${GAL} -axe ${ARG} 2>/dev/null)
 
-	if [[ ${DEBUG} == 'true' ]];then
+	if [[ ${_DEBUG} -ne 0 ]];then
 		[[ -n ${ALIAS} ]] && dbg "${0}:gal returned:${ALIAS}" || dbg "${0}:gal was null"
 	fi
 
 	if [[ ${ALIAS:l} != 'no matches found' ]];then
-		[[ ${DEBUG} == "true" ]] && dbg "${0}:${WHITE_FG}${1}${RESET} is an alias for:${WHITE_FG}${ALIAS}${RESET}"
+		[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:${WHITE_FG}${1}${RESET} is an alias for:${WHITE_FG}${ALIAS}${RESET}"
 
 		TOKEN=$(echo ${ALIAS} | cut -d' ' -f1) #grab first token
 		if [[ ${TOKEN} =~ "sudo" ]];then #check for sudo
@@ -189,19 +192,19 @@ try_alias () {
 		ALIAS=${TOKEN}
 
 		if [[ -h ${ALIAS} ]];then
-			[[ ${DEBUG} == "true" ]] && dbg "${0}:${ALIAS} is a link. Getting realpath..."
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:${ALIAS} is a link. Getting realpath..."
 			LINK_F=$(realpath ${ALIAS})
 			if is_blocked_dir ${LINK_F};then
 				continue
 			fi
-			[[ ${DEBUG} == "true" ]] && dbg "${0}:realpath returned:${LINK_F}"
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:realpath returned:${LINK_F}"
 			if [[ -e ${LINK_F} ]];then #validate
 				if is_editable ${ALIAS};then
 					CANDIDATES+=${ALIAS}
 					RC=0
-					[[ ${DEBUG} == "true" ]] && dbg "${0}:${WHITE_FG}Found (alias to link)${RESET}:${ALIAS}, ${GREEN_FG}Added to list of candidates${RESET}"
+					[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:${WHITE_FG}Found (alias to link)${RESET}:${ALIAS}, ${GREEN_FG}Added to list of candidates${RESET}"
 				else
-					[[ ${DEBUG} == "true" ]] && dbg "${0}:LINK:${LINK_F} is ${RED_FG}invalid${RESET}"
+					[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:LINK:${LINK_F} is ${RED_FG}invalid${RESET}"
 				fi
 			fi
 		elif [[ -e ${ALIAS} ]];then #validate
@@ -211,14 +214,14 @@ try_alias () {
 			if is_editable ${ALIAS};then
 				CANDIDATES+=${ALIAS}
 				RC=0
-				[[ ${DEBUG} == "true" ]] && dbg "${0}:${WHITE_FG}Found (alias to file)${RESET}:${ALIAS}, ${GREEN_FG}Added to list of candidates${RESET}"
+				[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:${WHITE_FG}Found (alias to file)${RESET}:${ALIAS}, ${GREEN_FG}Added to list of candidates${RESET}"
 			else
-				[[ ${DEBUG} == "true" ]] && dbg "${0}:ALIAS:${ALIAS} does NOT exist"
+				[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:ALIAS:${ALIAS} does NOT exist"
 			fi
 		fi
 	fi
 
-	[[ ${DEBUG} == "true" && -z ${CANDIDATES[1]} ]] && dbg "${0}:gal returned no valid candidates"
+	[[ ${_DEBUG} -ne 0 && -z ${CANDIDATES[1]} ]] && dbg "${0}:gal returned no valid candidates"
 	return ${RC}
 }
 
@@ -232,7 +235,6 @@ set_target () {
 	local NDX
 	local FN
 
-
 	MATCHES=0
 	try_alias ${ARG}
 	MATCHES=${#CANDIDATES}
@@ -245,36 +247,36 @@ set_target () {
 	try_locate ${ARG}
 	echo "$((${#CANDIDATES}-${MATCHES})) locate matches"
 
-	TARGET=''
+	_TARGET=''
 
 	#Process candidates
 	if [[ -n ${CANDIDATES} ]];then
 		echo "${MAGENTA_FG}Evaluating candidates...${RESET}" >&2
 
-		[[ ${DEBUG} == "true" ]] && dbg "Prioritizing candidates..." >&2
+		[[ ${_DEBUG} -ne 0 ]] && dbg "Prioritizing candidates..." >&2
 
 		local -a PRIORITIZE
 		local -a PFILES
 
 		for C in ${CANDIDATES};do
 			if [[ -e ${C} && ${C} == $(realpath ${C:t}) ]];then
-				[[ ${DEBUG} == "true" ]] && dbg "${0}:LOCAL CANDIDATE:${WHITE_FG}${C}${RESET} added"
+				[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:LOCAL CANDIDATE:${WHITE_FG}${C}${RESET} added"
 				PRIORITIZE+="1|${C}"
 			elif [[ -e ${C} && ${C} =~ '/usr/local/bin' ]];then
-				[[ ${DEBUG} == "true" ]] && dbg "${0}:PRIORITY CANDIDATE:${WHITE_FG}${C}${RESET} added"
+				[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:PRIORITY CANDIDATE:${WHITE_FG}${C}${RESET} added"
 				PRIORITIZE+="2|${C}"
 			elif [[ -e ${C} && ${C} =~ 'bin' ]];then
-				[[ ${DEBUG} == "true" ]] && dbg "${0}:MEDIUM CANDIDATE:${WHITE_FG}${C}${RESET} added"
+				[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:MEDIUM CANDIDATE:${WHITE_FG}${C}${RESET} added"
 				PRIORITIZE+="3|${C}"
 			elif [[ -e ${C} ]];then
-				[[ ${DEBUG} == "true" ]] && dbg "${0}:LOW CANDIDATE:${WHITE_FG}${C}${RESET} added"
+				[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:LOW CANDIDATE:${WHITE_FG}${C}${RESET} added"
 				PRIORITIZE+="4|${C}"
 			fi
 		done
 
 		#Prioritize multiple candidates
 		if [[ ${#PRIORITIZE} -eq 1 ]];then
-			TARGET=$(echo ${PRIORITIZE[1]} | cut -d'|' -f2) #only 1 match; take it
+			_TARGET=$(echo ${PRIORITIZE[1]} | cut -d'|' -f2) #only 1 match; take it
 		else
 			echo "${WHITE_FG}${ARG}${RESET} matched multiple files..." #prompt for selection if multiple hits
 			while true;do
@@ -288,7 +290,7 @@ set_target () {
 				read PFN
 				[[ -z ${PFN} ]] && break
 				if [[ ${PFN} -ge 1 && ${PFN} -le ${#PRIORITIZE} ]];then
-					TARGET=$(echo ${PRIORITIZE[${PFN}]} | cut -d'|' -f2)
+					_TARGET=$(echo ${PRIORITIZE[${PFN}]} | cut -d'|' -f2)
 					break
 				else
 					continue
@@ -343,7 +345,6 @@ usage () {
 
 OPTSTR=":HDadiw"
 
-DEBUG=false
 IGNORE_CACHE=false
 WARN=false
 SEARCH_ALL=false
@@ -351,7 +352,7 @@ OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
-     D) DEBUG=true;;
+     D) dbg_set_level;;
      a) SEARCH_ALL=true;;
      i) IGNORE_CACHE=true;;
      w) WARN=true;;
@@ -368,9 +369,7 @@ RAW_CMD_LINE=($(fc -lnr | head -1)) #unexpanded command line
 
 #Validate editor
 if [[ ! -x ${EDITOR_CMD} ]];then
-	echo "${RED_FG}ERROR${RESET}:${WHITE_FG}Cannot continue${RESET}."
-	echo "${WHITE_FG}EDITOR_CMD${RESET}:${EDITOR_CMD} is not a valid executable${RESET}."
-	exit_leave
+	exit_leave "${WHITE_FG}EDITOR_CMD${RESET}:${EDITOR_CMD} is not a valid executable${RESET}."
 fi
 
 #Catch missing argument
@@ -393,23 +392,23 @@ echo "Searching for ${FILE_ARG}..."
 
 #Local file takes precedence
 if	[[ -e ./${FILE_ARG} && -f ./${FILE_ARG} ]];then
-	[[ ${DEBUG} == "true" ]] && dbg "Found local file:${FILE_ARG}"
+	[[ ${_DEBUG} -ne 0 ]] && dbg "Found local file:${FILE_ARG}"
 	#Set candidate
 	CANDIDATES+=$(realpath ${FILE_ARG})
 fi
 
 #Search for matching cache entries
 if [[ ${IGNORE_CACHE} == "false" ]];then
-	[[ ${DEBUG} == "true" ]] && dbg "Inspecting cached edits..."
+	[[ ${_DEBUG} -ne 0 ]] && dbg "Inspecting cached edits..."
 	read_cache
-	for T in ${(k)CACHED_TARGETS};do
-		[[ ${DEBUG} == "true" && ${FILE_ARG} == ${T} ]] && dbg "Using cached edit: ${CACHED_TARGETS[${T}]}"
-		if [[ ${FILE_ARG} == ${T} && -e ${CACHED_TARGETS[${T}]} ]];then
-			if [[ ${DEBUG} == 'true' ]];then
-				${EDITOR_CMD} ${CACHED_TARGETS[${T}]}
+	for T in ${(k)CACHED__TARGETS};do
+		[[ ${_DEBUG} -ne 0 && ${FILE_ARG} == ${T} ]] && dbg "Using cached edit: ${CACHED__TARGETS[${T}]}"
+		if [[ ${FILE_ARG} == ${T} && -e ${CACHED__TARGETS[${T}]} ]];then
+			if [[ ${_DEBUG} -ne 0 ]];then
+				${EDITOR_CMD} ${CACHED__TARGETS[${T}]}
 				exit_leave
 			else
-				exec ${EDITOR_CMD} ${CACHED_TARGETS[${T}]}
+				exec ${EDITOR_CMD} ${CACHED__TARGETS[${T}]}
 				exit_leave
 			fi
 		fi
@@ -418,27 +417,24 @@ fi
 
 #Find a suitable candidate
 set_target ${FILE_ARG}
-[[ ${DEBUG} == "true" && -n ${TARGET} ]] && dbg "main:set_target returned:${TARGET}"
-FN=${TARGET}
+FN=${_TARGET}
+
+[[ ${_DEBUG} -ne 0 && -n ${_TARGET} ]] && dbg "main:set_target returned:${_TARGET}"
 
 #Verify candidate exists and is editable; reject fail
 if [[ -e ${FN} ]];then
 	if ! is_editable ${FN};then
-		#TODO Convert to msg_box
-		echo "(${WHITE_FG}${SCRIPT}${RESET}) ${GREEN_FG}${FN}${RESET} - ${RED_FG}file not editable${RESET}">&2
-		echo "Info...${WHITE_FG}">&2
-		file ${FN} | fold -s -w120
-		read
+		msg_box -p  "<w>File<N>:${FN}<I><r> not editable<N>|$(file -b ${FN} | fold -s -w50)| |<w>Press any key...<N>"
 		exit_leave
 	fi
 
-	[[ ${DEBUG} == "true" ]] && dbg "FN:${FN} is editable, calling ${FUNCTIONS}/run_vi for editing..."
+	[[ ${_DEBUG} -ne 0 ]] && dbg "FN:${FN} is editable, calling ${FUNCTIONS}/run_vi for editing..."
 
 	#Cache this edit
 	write_cache "${FILE_ARG}" "${FN}"
-	[[ ${DEBUG} == 'true' ]] && ${EDITOR_CMD} ${FN} || exec ${EDITOR_CMD} ${FN}
+	[[ ${_DEBUG} -ne 0 ]] && ${EDITOR_CMD} ${FN} || exec ${EDITOR_CMD} ${FN}
 else
-	echo "${RED_FG}No candidate found${RESET} for:${FILE_ARG}">&2
+	msg_box -p "<r>No candidate found<N> for:<w>${FILE_ARG}<N>"
 fi
 
 exit_leave

@@ -40,9 +40,9 @@ to_lower "CASE:Convert to lower case"
 )
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
@@ -323,9 +323,8 @@ if [[ ${UTIL} != 'none' ]];then
 else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-	sel_list_set ${(v)_UTILS_DESC}
-	# Selection_list -c -O ${CYAN_FG} -x11 -y32 -w10 "<w>Show Text Utilities usage or <h>(q)uit<N>"
-	sel_list -c -O ${CYAN_FG} -w10 "<w>Show Text Utilities usage or <h>(q)uit<N>"
+	sel_set_list ${(v)_UTILS_DESC}
+	sel_list -sa -C -O ${CYAN_FG} -F"<w>Show Text Utilities usage or <h>(q)uit<N>" -H"Text Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

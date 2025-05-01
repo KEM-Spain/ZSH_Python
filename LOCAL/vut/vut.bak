@@ -242,7 +242,6 @@ ___EOF
 		((NDX++))
 		[[ ! -f ${F} ]] && continue
 		file ${F} | grep -qi 'media\|matroska\|video'
-		#[[ ${?} -ne 0 ]] && echo "File:${WHITE_FG}${F}${RESET} not a video file - skipping" && continue
 		[[ ${?} -ne 0 ]] && echo -n "Searching ${NDX}" && continue
 		[[ ${#F:t} -gt ${LONGEST} ]] && LONGEST=${#F:t}
 		PRELIST+=${F}

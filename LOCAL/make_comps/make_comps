@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -15,7 +15,7 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-#Constants
+# Constants
 _SCRIPT=${0:t}
 
 #--Begin GetOpts--
@@ -73,12 +73,14 @@ usage () {
 
 	local OPTS=$(parse_opts ${OPTSTR})
 	local -a PENDING_MSGS=(${@})
+	(
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-r${RESET} print the raw usage options text"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	echo "\n${MSGS}" >&2
+	) >&2
 
 	exit
 }
@@ -100,7 +102,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
-#Execution
+# Execution
 [[ -z ${1} ]] && usage "Missing argument:$(opt_type f)"
 FN=${1}
 
@@ -111,6 +113,7 @@ if [[ ${PRINT_RAW} == 'true' ]];then
 else
 	{
 	echo "#compdef ${FN:t}"
+	echo "_files -W ${PWD}"
 	echo
 	echo "_arguments \\"
 	sed -n '/-H/,/DESC/p' ${FN} \

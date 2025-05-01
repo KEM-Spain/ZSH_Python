@@ -1,57 +1,51 @@
 #!/usr/bin/zsh
-g="\033[m"
-BOLD="\033[1m"
-ITALIC="\033[3m"
-UNDER="\033[4m"
-REVERSE="\033[7m"
-STRIKE="\033[9m"
 
-BLACK_FG="\033[30m"
-="\033[31m"
-GREEN_FG="\033[32m"
-YELLOW_FG="\033[33m"
-BLUE_FG="\033[34m"
-MAGENTA_FG="\033[35m"
-CYAN_FG="\033[36m"
-WHITE_FG="\033[37m"
- 
+#Imports
+_LIB=/usr/local/lib
+source ${_LIB}/LIB_INIT.zsh
+source ${_LIB}/UTILS.zsh
+
+for D in ${=_DEPS_};do
+	if [[ -e ${_LIB}/${D} ]];then
+		source ${_LIB}/${D}
+	else
+		echo "Cannot source:${_LIB}/${D} - not found"
+		exit 1
+	fi
+done
+
 #Constants
-ENP_PW=flappy
-DELAY=1
-LOG=/tmp/${0:t}.log
-ENPASS=/opt/enpass/Enpass 
-ENP_CRASH_WIN='Enpass Crash Reporter'
+_ENP_PW=flappy
+_DELAY=1
+_LOG=/tmp/${0:t}.log
+_ENPASS=/opt/enpass/Enpass 
+
+#Vars
+_ENPASS_INFO=''
 _ENPASS_WDW_ID=''
-
-[[ -e ${LOG} ]] && rm -f ${LOG}
-
-logit () {
-	local MSG=${@}
-	local STAMP=$(date +'%Y-%m-%d:%T')
-	echo "${0} ${STAMP} ${MSG}" >> ${LOG}
-}
+_ENPASS_WDW_TITLE=''
 
 start_enpass () {
-	local ENPASS_PID
+	local _ENPASS_PID
 
-	send-notification ${DELAY} "Looking for running Enpass instance..."
-	ENPASS_PID=($(pgrep -xf ${ENPASS})) #get PID for Enpass
+	send-notification ${_DELAY} "Looking for running Enpass instance..."
+	_ENPASS_PID=($(pgrep -xf ${_ENPASS})) #get PID for Enpass
 
-	if [[ -n ${ENPASS_PID} ]];then
+	if [[ -n ${_ENPASS_PID} ]];then
 		logit "Enpass already running...killing instance"
 		sudo killall -I enpass
 	fi
 
 	#Start Enpass...
 	logit "Starting Enpass..."
-	exec ${ENPASS} 2>/dev/null & 
+	exec ${_ENPASS} 2>/dev/null & 
 
 	logit "Waiting for Enpass to start..."
-	send-notification ${DELAY} "Waiting for Enpass instance..."
+	send-notification ${_DELAY} "Waiting for Enpass instance..."
 
-	ENPASS_PID=?
+	_ENPASS_PID=?
 	while [[ ! -e /proc/${PID} ]];do
-		ENPASS_PID=($(pgrep -xf ${ENPASS})) #get PID for Enpass
+		_ENPASS_PID=($(pgrep -xf ${_ENPASS})) #get PID for Enpass
 		break
 		sleep .2
 	done
@@ -60,18 +54,34 @@ start_enpass () {
 }
 
 pass_login_to_enpass () {
-	_ENPASS_WDW_ID=$(win_id enpass)
-	[[ -z ${_ENPASS_WDW_ID} ]] && logit "ERROR: _ENPASS_WDW_ID not populated" && exit
+	_ENPASS_INFO=$(win_id -t enpass)
+	[[ -z ${_ENPASS_INFO} ]] && logit "ERROR: _ENPASS_INFO not populated" && exit
+
+	_ENPASS_WDW_ID=$(cut -d'|' -f1 <<<${_ENPASS_INFO})
+	_ENPASS_WDW_TITLE=$(cut -d'|' -f2 <<<${_ENPASS_INFO})
+
+	logit "Received ID:${_ENPASS_WDW_ID}"
+	logit "Received Title:${_ENPASS_WDW_TITLE}"
+
+	if [[ ${_ENPASS_WDW_TITLE:l} =~ 'crash' ]];then
+		logit "Detected Enpass Crash Window"
+		logit "Sending Escape Key"
+		xdotool key --window ${_ENPASS_WDW_ID} Escape
+		sleep 2
+		logit "Getting new window ID"
+		_ENPASS_WDW_ID=$(win_id enpass)
+		logit "New window ID:${_ENPASS_WDW_ID}"
+	fi
 
 	logit "Passing credentials to Enpass..."
-	send-notification ${DELAY} "Sending credentials to Enpass..."
+	send-notification ${_DELAY} "Sending credentials to Enpass..."
 
 	/usr/local/bin/system/kbd-toggle off
 	/usr/local/bin/system/kbd-flush
 
 	sleep .2
 	xdotool windowfocus ${_ENPASS_WDW_ID}
-	xdotool type --window ${_ENPASS_WDW_ID} ${ENP_PW}
+	xdotool type --window ${_ENPASS_WDW_ID} ${_ENP_PW}
 	sleep .2
 
 	xdotool key --window ${_ENPASS_WDW_ID} Return

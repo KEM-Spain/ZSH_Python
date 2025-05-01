@@ -123,6 +123,7 @@ opt_type () {
 	local OPT=${1}
 	case ${OPT} in
 		d) echo "<DIR>";;
+		b) echo "<DATABASE>";;
 		f) echo "<FILE>";;
 		s) echo "<SEPARATOR>";;
 		t) echo "<FILE_TYPE>";;
@@ -136,7 +137,7 @@ usage () {
 
 	local OPTS=$(parse_opts ${OPTSTR})
 	local -a PENDING_MSGS=(${@})
-	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type q)]\n"
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type b) $(opt_type q)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-d $(opt_type s)${RESET} separator"
@@ -159,6 +160,7 @@ SHOW_TABS=false
 SHOW_SCHEMA=false
 PRINT_TAB=false
 QUERY_STR=''
+QUERY_DB=''
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -182,6 +184,8 @@ shift $((OPTIND -1))
 _SESSION_DATA[DELIM]='|' # set default delim
 
 [[ ${#} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage $(msg_warn "No operation specified") || QUERY_STR=${@}
+[[ ${#} -ne 0 && ${#} -ne 2 ]] && usage $(msg_err "Query requires 2 arguments:$(opt_type b) $(opt_type q)")
+[[ ${#} -eq 2 ]] && QUERY_DB=${1} && QUERY_STR=${2}
 
 if [[ ${SHOW_DBS} == 'true' ]];then
 	set_db_list
@@ -218,6 +222,12 @@ if [[ ${PRINT_TAB} == 'true' ]];then
 fi
 
 if [[ -n ${QUERY_STR} ]];then
+	[[ ${_SMCUP} ]] && do_rmcup
+	_SESSION_DATA[DB]=${QUERY_DB}
+	echo "${WHITE_FG}DB${RESET}:${_SESSION_DATA[DB]}"
+	STR="QUERY:${QUERY_STR}"
+	echo "${WHITE_FG}QUERY${RESET}:${QUERY_STR}"
+	echo $(str_unicode_line ${#STR})
 	query ${QUERY_STR}
 	RC=${?}
 	[[ ${RC} -ne 0 ]] && exit_leave $(msg_err "sqlite3 returned an error:${RC}")

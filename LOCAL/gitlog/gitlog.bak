@@ -170,7 +170,8 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-p${RESET} print the <FILE> when commit is selected"
+	echo -e "${WHITE_FG}-L${RESET} use local repository (${GIT_DIR} is default)"
+	echo -e "${WHITE_FG}-p${RESET} option to print the <FILE> when commit is selected"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
@@ -200,8 +201,12 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${USE_LOCAL_REPO} == 'true' ]];then
-	_GIT_REPO_DIR=${PWD}
-	export GIT_DIR=${PWD}/.git
+	if [[ -e ${PWD}/.git ]];then
+		_GIT_REPO_DIR=${PWD}
+		export GIT_DIR=${PWD}/.git
+	else
+		exit_leave $(msg_exit R "Option -L -> No .git repository found in:${PWD}")
+	fi
 fi
 
 [[ ${#} -ne 0 ]] && _FN_ARG=${1} || _FN_ARG=''

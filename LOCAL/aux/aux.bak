@@ -16,36 +16,51 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 #Declarations
-typeset -a LIST=()
-typeset -a MARKED=()
-typeset -A OWNER
-typeset -A PID
-typeset -A CMD
+typeset -A _CMD
 typeset -A _HDR_LBL
 typeset -A _LBL_WIDTH=(o 12 p 12 c 12)
+typeset -A _OWNER
+typeset -A _PID
+typeset -a _LOCAL_LIST=()
+typeset -a _MARKED=()
 
 #Constants
-_LIB=/usr/local/lib
+_LIB_DIR=/usr/local/lib
 _HDR_LBL=(o "Owner" p "Process ID" c "Command")
 
 #Imports
-source ${_LIB}/common.zsh
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIST.zsh
+
+for D in ${=_DEPS_};do
+	if [[ -e ${_LIB_DIR}/${D} ]];then
+		source ${_LIB_DIR}/${D}
+	else
+		echo "Cannot source:${_LIB_DIR}/${D} - not found"
+		exit 1
+	fi
+done
 
 #Functions
 action_do () {
 	local M
-	local MPID
+	local M_PID
 
-	for M in ${MARKED};do
-		MPID=$(get_pid ${M})
-		msg_box -p -PX "Process: ${MPID}"
-		[[ ${_MSG_KEY} == 'y' ]] && sudo kill -9 ${MPID}
+	for M in ${_MARKED};do
+		M_PID=$(get_pid ${M})
+		msg_box -p -PX "(<c>$(get_owner ${M})<N>) - <c>$(get_cmd ${M})<N>|<w>Process<N>:${M_PID}"
+		[[ ${_MSG_KEY} == 'y' ]] && sudo kill -9 ${M_PID}
 	done
 
-	for M in ${MARKED};do
-		MARKED[${M}]=0
+	for M in ${_MARKED};do
+		_MARKED[${M}]=0
 		[[ ${_MSG_KEY} == 'y' ]] && list_set_selected ${M} ${_GHOST_ROW} || list_set_selected ${M} 0
 	done
+}
+
+squeeze () {
+	local TEXT=${1}
+	tr -s '[:space:]' <<<${TEXT}
 }
 
 item_decorate () {
@@ -63,19 +78,19 @@ item_decorate () {
 get_owner () {
 	local NDX=$1
 
-	echo ${OWNER[${NDX}]}
+	echo ${_OWNER[${NDX}]}
 }
 
 get_pid () {
 	local NDX=$1
 
-	echo ${PID[${NDX}]}
+	echo ${_PID[${NDX}]}
 }
 
 get_cmd () {
 	local NDX=$1
 
-	echo ${CMD[${NDX}]}
+	echo ${_CMD[${NDX}]}
 }
 
 #--Begin GetOpts--
@@ -85,17 +100,17 @@ WHITE_FG="\033[37m"
 
 parse_opts () {
 	local OPTS=${@}
-	local -a OPTSTRING
+	local -a OPTSTR
 	local LETTER_OPT
 	local O
 
 	for O in {1..${#OPTS}};do
 		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-		OPTSTRING+="-${OPTS[${O}]}"
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
 	done
-	echo ${OPTSTRING}
+	echo ${OPTSTR}
 }
 
 opt_type () {
@@ -120,11 +135,13 @@ usage () {
 	tabs 5
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
+	(
 	echo -e "${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [SEARCHTERM]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-a${RESET} All user processes"
 	echo -e "${WHITE_FG}\nDESC${RESET}:${DESC}"
+	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
@@ -162,28 +179,33 @@ NDX=0
 for R in ${RAWLIST};do
 	[[ ( ${KEYWORD} != '?' ) && ( ! ${R} =~ ${KEYWORD} ) ]] && continue
 	[[ ${R} =~ ${0} ]] && continue
-	LIST+=${R}
-
-	SQUEEZED=$(tr -s '[:space:]' <<<${R})
+	_LOCAL_LIST+=${R}
 
 	((NDX++))
-	OWNER[${NDX}]=$(str_trim $(cut -d' ' -f1  <<<${SQUEEZED}))
-	  PID[${NDX}]=$(str_trim $(cut -d' ' -f2  <<<${SQUEEZED}))
-	  CMD[${NDX}]=$(str_trim $(cut -d' ' -f3- <<<${SQUEEZED}))
+	_OWNER[${NDX}]=$(str_trim $(cut -d' ' -f1 <<<$(squeeze ${R})))
+	_PID[${NDX}]=$(str_trim $(cut -d' ' -f2 <<<$(squeeze ${R})))
+	_CMD[${NDX}]=$(str_trim $(cut -d' ' -f3- <<<$(squeeze ${R})))
 
-	[[ ${#CMD[${NDX}]} -ge $((_MAX_COLS - 40)) ]] && CMD[${NDX}]=${${CMD[${NDX}][1,$((_MAX_COLS - 60))]}} # truncate lines too long
+	[[ ${#_CMD[${NDX}]} -ge $((_MAX_COLS - 40)) ]] && _CMD[${NDX}]=${${_CMD[${NDX}][1,$((_MAX_COLS - 60))]}} # truncate lines too long
 	
-	[[ ${#OWNER[${NDX}]} -gt ${_LBL_WIDTH[o]} ]] && _LBL_WIDTH[o]=${#OWNER[${NDX}]}
-	[[ ${#PID[${NDX}]} -gt ${_LBL_WIDTH[p]} ]] && _LBL_WIDTH[p]=${#PID[${NDX}]}
-	[[ ${#CMD[${NDX}]} -gt ${_LBL_WIDTH[c]} ]] && _LBL_WIDTH[c]=${#CMD[${NDX}]}
+	[[ ${#_OWNER[${NDX}]} -gt ${_LBL_WIDTH[o]} ]] && _LBL_WIDTH[o]=${#_OWNER[${NDX}]}
+	[[ ${#_PID[${NDX}]} -gt ${_LBL_WIDTH[p]} ]] && _LBL_WIDTH[p]=${#_PID[${NDX}]}
+	[[ ${#_CMD[${NDX}]} -gt ${_LBL_WIDTH[c]} ]] && _LBL_WIDTH[c]=${#_CMD[${NDX}]}
 done
 
-if ! arr_is_populated "${LIST}";then
+if ! arr_is_populated "${_LOCAL_LIST}";then
 	if [[ ${KEYWORD} != '?' ]];then
 		exit_leave $(msg_warn "No matches for:${KEYWORD}")
 	else
 		exit_leave
 	fi
+fi
+
+if [[ ${#_LOCAL_LIST} -eq 1 ]];then # process a single pid directly
+	_LIST=(${_LOCAL_LIST})
+	_MARKED=(1)
+	action_do
+	exit_leave
 fi
 
 #set headings
@@ -202,11 +224,11 @@ list_set_action_msgs kill process
 
 while true;do
 	#get selection
-	list_select ${LIST}
+	list_select ${_LOCAL_LIST}
 	[[ ${?} -eq 0 ]] && break
 
 	#get selections
-	MARKED=($(list_get_selected))
+	_MARKED=($(list_get_selected))
 	
 	if [[ $(list_get_selected_count) -ne 0 ]];then
 		action_do

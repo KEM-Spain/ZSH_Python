@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -17,11 +17,11 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-#Declarations
+# Declarations
 typeset -A _UTILS
 typeset -A _UTILS_DESC
 
-#Constants
+# Constants
 _WRAPPER=${0:t}
 _UTILS=(
 conn 1
@@ -49,21 +49,13 @@ tuco "CONN:Display tcp/udp connections"
 geo "GEO:Display geo-location info"
 )
 
-#Imports
-_LIB_DIR=/usr/local/lib
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB_DIR}/${D} ]];then
-		source ${_LIB_DIR}/${D}
-	else
-		echo "Cannot source:${_LIB_DIR}/${D} - not found"
-		exit 1
-	fi
-done
-
-#Functions
+# Functions
 conn () {
 	local -a LIST
 	local DESC
@@ -73,7 +65,7 @@ conn () {
 Display network connections
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
@@ -82,13 +74,14 @@ ___EOF
 
 		(
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
-		echo "${WHITE_FG}DESC${RESET}:${DESC}"
+		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	LIST=("${(f)$(ifconfig | grep -i running | grep -vi lo: | cut -d: -f1)}")
@@ -173,15 +166,16 @@ ___EOF
 
 		tabs 5
 		(
-		echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+		echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 		echo -e "${WHITE_FG}-f${RESET} full mode"
 		echo -e "${WHITE_FG}-t${RESET} test mode"
-		echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
+		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		exit_leave $(msg_err "${PENDING_MSGS}")
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
 	OPTSTR=":HDft"
@@ -200,13 +194,13 @@ ___EOF
 	done
 	shift $((OPTIND -1))
 	#--End GetOpts--
-	#Execution
+	# Execution
 	 
-	#get interface
+	# Get interface
 	ACTIVE_IFACES=($(ifconfig -v | grep 'RUNNING.*MULTICAST' | cut -d: -f1))
 	[[ -z ${ACTIVE_IFACES} ]] && exit_leave "${RED_FG}Unable to detect an active interface${RESET}.\nVerify wifi or cable connection" 
 
-	#get DNS
+	# Get DNS
 	VPN_DNS=false
 	for I in ${ACTIVE_IFACES};do 
 		if [[ ${I} =~ "tun" ]];then
@@ -318,7 +312,7 @@ ip_int () {
 Display internal IP
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
@@ -327,13 +321,14 @@ ___EOF
 
 		(
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
-		echo "${WHITE_FG}DESC${RESET}:${DESC}"
+		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	IP=$(ifconfig | grep 192 | grep -w inet | grep -v 127 | sed 's/\(^ *\)\(.*\)/\2/g' | cut -d\  -f2 | head -1)
@@ -348,7 +343,7 @@ ip_ext () {
 Display external IP
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
@@ -357,13 +352,14 @@ ___EOF
 
 		(
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
-		echo "${WHITE_FG}DESC${RESET}:${DESC}"
+		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	IP=$(wget --timeout=1 -qO- http://ipecho.net/plain)
@@ -371,7 +367,8 @@ ___EOF
 }
 
 lan () {
-	#Declarations
+	# Declarations
+	local SUBNETS=${1:=18}
 	local -a STATIC_IPS
 	local -a ARP
 	local -a FIRST_10_NON_STATIC
@@ -384,13 +381,13 @@ lan () {
 	local IP
 	local MAC
 
-	#Constants
+	# Constants
 	local MY_IP=$(nut ip_int)
-	local MY_MAC=$(get_host_mac)
+	local MY_MAC=$(sut host_mac)
 	local	HW=" 123456789012345678"
 
-	#Imports
-	source ${_LIB_DIR}/mac_table.zsh
+	# Imports
+	source /usr/local/etc/mac_table.zsh
 
 	#--Begin GetOpts--
 	local -a OPTIONS
@@ -421,6 +418,7 @@ ___EOF
 		case ${OPT} in
 			d) echo "<DIR>";;
 			f) echo "<FILE>";;
+			s) echo "<SUB_NET>";;
 			t) echo "<FILE_TYPE>";;
 		esac
 	}
@@ -432,13 +430,14 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		tabs 5
-		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type s)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-i${RESET} run as inline util - no prompting"
-		echo -e "${WHITE_FG}\nDESC${RESET}:Display system information"
+		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 
-		exit_leave ${PENDING_MSGS}
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
 	OPTSTR=":HDi"
@@ -456,33 +455,28 @@ ___EOF
 	shift $((OPTIND -1))
 	#--End GetOpts--
 
-	#Execution
+	# Execution
 	[[ ${_DEBUG} -eq 0 && ${INLINE} == 'false' ]] && do_smcup
 
 	for I in {2..11};do
-		FIRST_10_NON_STATIC+=192.168.18.${I}
+		FIRST_10_NON_STATIC+=192.168.${SUBNETS}.${I}
 	done
 
-	local STATIC_IPS=(192.168.18.100 192.168.18.101 192.168.18.102 192.168.18.103 192.168.18.200 ${FIRST_10_NON_STATIC})
+	local STATIC_IPS=(192.168.${SUBNETS}.100 192.168.${SUBNETS}.101 192.168.${SUBNETS}.102 192.168.${SUBNETS}.103 192.168.${SUBNETS}.200 ${FIRST_10_NON_STATIC})
 
-	if [[ ${SHLVL} -lt 3 ]];then #called from another script
-		tput clear
-		tput cup 0 0
+	echo "Pinging LAN IP's...SUB NET:${SUBNETS}"
 
-		echo "Pinging LAN IP's..."
+	if [[ ${SHLVL} -lt 3 ]];then # Called from another script
 		local NDX=0
 		for K in ${STATIC_IPS};do
 			((NDX++))
-			tput cup 1 0; printf "\nPinging IP ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} addresses ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#STATIC_IPS} $(( NDX * 100. / ${#STATIC_IPS} ))
+			tput cup 1 0; printf "\nPinging IP %s ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} addresses ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${K} ${NDX} ${#STATIC_IPS} $(( NDX * 100. / ${#STATIC_IPS} ))
 			sudo arp -d ${K} >/dev/null 2>&1
 			ping -4 -c1 -W.3 ${K} >/dev/null 2>&1
 		done
-		echo
-	else
-		echo "Pinging LAN IP's..."
 	fi
 
-	echo "Gathering arp list...\n"
+	echo "\nGathering arp list..."
 	ARP=("${(f)$(arp -en | tail -n +2)}")
 
 	if ! ((${ARP[(I)${MY_IP}*]}));then
@@ -498,14 +492,14 @@ ___EOF
 		local MAC=$(cut -c34-53 <<<${A} | str_trim)
 		local FLGMSK=$(cut -c54-75 <<<${A})
 		local IFACE=$(cut -c76-85 <<<${A})
-		#printf "IP:%-20s HW:%-20s MAC:%-20s FLGMSK:%-20s IFACE:%-20s\n" ${IP} ${HW} ${MAC} ${FLGMSK} ${IFACE}
+		# Printf "IP:%-20s HW:%-20s MAC:%-20s FLGMSK:%-20s IFACE:%-20s\n" ${IP} ${HW} ${MAC} ${FLGMSK} ${IFACE}
 		local DESC=${MAC_IDS[${MAC}]}
 		[[ -z ${DESC}  ]] && continue
 		((DEV_CNT++))
 		printf "%-18s %-18s %-20s\n" ${IP} ${MAC:u} ${DESC}
 	done
 
-	printf "${WHITE_FG}${DEV_CNT} devices found\n${RESET}"
+	printf "${WHITE_FG}${DEV_CNT} known devices found\n${RESET}"
 	[[ ${INLINE} == 'false' ]] && echo -n "\nPress any key..." && read -sk1
 
 	exit_leave
@@ -572,10 +566,11 @@ ___EOF
 		echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 		echo -e "${WHITE_FG}-p${RESET} specify port to scan"
 		echo -e "${WHITE_FG}-t${RESET} specify tool to use (lsof, ss, nmap)"
-		echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
+		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		exit_leave $(msg_err "${PENDING_MSGS}")
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
 	OPTSTR=":HDp:t:"
@@ -595,7 +590,7 @@ ___EOF
 	shift $((OPTIND -1))
 	#--End GetOpts--
 	
-	#Execution
+	# Execution
 	INT_IP=$(ip_int)
 	EXT_IP=$(ip_ext)
 
@@ -631,7 +626,7 @@ ___EOF
 		eval ${SS_CMD}
 	fi
 
-	if [[ ${NMAP} == 'true' ]];then #doesn't like eval
+	if [[ ${NMAP} == 'true' ]];then # Doesn't like eval
 		echo "\n${WHITE_FG}nmap\n----------${RESET}"
 		if [[ ${PORT} == 'none' ]];then
 			sudo nmap -sTU -O ${INT_IP}/24 | grep -vi 'host down'
@@ -648,7 +643,7 @@ tuco () {
 Display tcp/udp connections
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
@@ -657,13 +652,14 @@ ___EOF
 
 		(
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
-		echo "${WHITE_FG}DESC${RESET}:${DESC}"
+		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	echo "${WHITE_FG}Listening TCP/UDP${RESET}"
@@ -680,7 +676,7 @@ scan () {
 Scan host
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
@@ -689,13 +685,14 @@ ___EOF
 
 		(
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
-		echo "${WHITE_FG}DESC${RESET}:${DESC}"
+		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	echo "Scanning localhost"
@@ -710,7 +707,7 @@ toggle () {
 	local DESCRIPTION="This will toggle networking on/off"
 	local RESPONSE
 
-	#Functions
+	# Functions
 	show_net_state () {
 		local STATE=$(nmcli -t -f NETWORKING networking)
 		[[ ${STATE} == 'enabled' ]] && echo "${GREEN_FG}${STATE}${RESET}" || echo "${RED_FG}${STATE}${RESET}"
@@ -722,7 +719,7 @@ toggle () {
 Toggle networking
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
@@ -730,12 +727,13 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
-		echo "${WHITE_FG}DESC${RESET}:${DESC}"
+		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	echo -n "\n${RED_FG}${ALERT}!${RESET} ${DESCRIPTION}${WHITE_FG} (y/n)?${RESET}:"
@@ -745,7 +743,7 @@ ___EOF
 	if [[ ${RESPONSE} != "n" ]];then
 		echo "${WHITE_FG}Toggling Network Services${RESET}"
 	else
-		exit_leave $(msg_warn "Operation cancelled")
+		exit_leave $(msg_exit I "Operation cancelled")
 	fi
 
 	echo "Switching networking off..."
@@ -758,17 +756,17 @@ ___EOF
 }
 
 geo () {
-	#Constants
+	# Constants
 	local GEO_PROVIDER="https://extreme-ip-lookup.com"
 	local OUTPUT_FN=/tmp/geo.out
 	local KEY="key=uMibiyDeEGlYxeK3jx6J"
 	local LINEAR=false
 	local K
 
-	#Declarations
+	# Declarations
 	local -A GEO
 
-	#Functions
+	# Functions
 	load_geo_data () {
 		local -a LIST
 		local F1 F2
@@ -852,10 +850,11 @@ ___EOF
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-l${RESET} linear output"
-		echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
 	OPTSTR=":HDl"
@@ -887,7 +886,7 @@ ___EOF
 		[[ ${LINEAR} == "true" ]] && echo -n "\"$K\":\"${GEO[$K]}\" " || echo $K:${GEO[$K]:q}
 	done
 
-	[[ -e ${OUTPUT_FN} ]] && /bin/rm -f ${OUTPUT_FN} #clean any leftover garbage
+	[[ -e ${OUTPUT_FN} ]] && /bin/rm -f ${OUTPUT_FN} # Clean any leftover garbage
 }
 
 #--Begin GetOpts--
@@ -940,10 +939,11 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "\n${WHITE_FG}\nDESC${RESET}:${DESC}"
+	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err "${PENDING_MSGS}")
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	exit_leave
 }
 
 OPTSTR=":HD"
@@ -962,7 +962,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
-#Execution
+# Execution
 
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
@@ -975,12 +975,13 @@ if [[ ${UTIL} != 'none' ]];then
 else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-	selection_list_set ${(v)_UTILS_DESC}
-	selection_list -O ${CYAN_FG} -x11 -y32 -c -w10 "<w>Show Network Utilities usage or <h>(q)uit<N>"
+	sel_set_list ${(v)_UTILS_DESC}
+	sel_list -sa -O ${CYAN_FG} -C -F"<w>Show Network Utilities usage or <h>(q)uit<N>" -H"Network Utilities"
 
-	_SCRIPT=${(k)_UTILS_DESC[(r)${_SELECTION_VALUE}]}
-	echo #clear read
-	${_SCRIPT} -H # call function help
+	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
+	echo # Clear read
+	${_SCRIPT} -H # Call function help
+
+	exit_leave
 fi
 
-exit_leave

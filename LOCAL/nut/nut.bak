@@ -50,15 +50,15 @@ geo "GEO:Display geo-location info"
 )
 
 #Imports
-_LIB=/usr/local/lib
-source ${_LIB}/LIB_INIT.zsh
-source ${_LIB}/SEL_LIST.zsh
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/SEL_LIST.zsh
 
 for D in ${=_DEPS_};do
-	if [[ -e ${_LIB}/${D} ]];then
-		source ${_LIB}/${D}
+	if [[ -e ${_LIB_DIR}/${D} ]];then
+		source ${_LIB_DIR}/${D}
 	else
-		echo "Cannot source:${_LIB}/${D} - not found"
+		echo "Cannot source:${_LIB_DIR}/${D} - not found"
 		exit 1
 	fi
 done
@@ -138,17 +138,17 @@ ___EOF
 
 	parse_opts () {
 		local OPTS=${@}
-		local -a OPTSTRING
+		local -a OPTSTR
 		local LETTER_OPT
 		local O
 
 		for O in {1..${#OPTS}};do
 			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-			OPTSTRING+="-${OPTS[${O}]}"
+			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+			OPTSTR+="-${OPTS[${O}]}"
 		done
-		echo ${OPTSTRING}
+		echo ${OPTSTR}
 	}
 
 	opt_exists () {
@@ -390,7 +390,7 @@ lan () {
 	local	HW=" 123456789012345678"
 
 	#Imports
-	source ${_LIB}/mac_table.zsh
+	source ${_LIB_DIR}/mac_table.zsh
 
 	#--Begin GetOpts--
 	local -a OPTIONS
@@ -403,17 +403,17 @@ ___EOF
 
 	parse_opts () {
 		local OPTS=${@}
-		local -a OPTSTRING
+		local -a OPTSTR
 		local LETTER_OPT
 		local O
 
 		for O in {1..${#OPTS}};do
 			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-			OPTSTRING+="-${OPTS[${O}]}"
+			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+			OPTSTR+="-${OPTS[${O}]}"
 		done
-		echo ${OPTSTRING}
+		echo ${OPTSTR}
 	}
 
 	opt_type () {
@@ -534,17 +534,17 @@ ___EOF
 
 	parse_opts () {
 		local OPTS=${@}
-		local -a OPTSTRING
+		local -a OPTSTR
 		local LETTER_OPT
 		local O
 
 		for O in {1..${#OPTS}};do
 			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-			OPTSTRING+="-${OPTS[${O}]}"
+			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+			OPTSTR+="-${OPTS[${O}]}"
 		done
-		echo ${OPTSTRING}
+		echo ${OPTSTR}
 	}
 
 	opt_exists () {
@@ -818,17 +818,17 @@ ___EOF
 
 	parse_opts () {
 		local OPTS=${@}
-		local -a OPTSTRING
+		local -a OPTSTR
 		local LETTER_OPT
 		local O
 
 		for O in {1..${#OPTS}};do
 			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-			OPTSTRING+="-${OPTS[${O}]}"
+			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+			OPTSTR+="-${OPTS[${O}]}"
 		done
-		echo ${OPTSTRING}
+		echo ${OPTSTR}
 	}
 
 	opt_type () {
@@ -904,17 +904,17 @@ EOF
 
 parse_opts () {
 	local OPTS=${@}
-	local -a OPTSTRING
+	local -a OPTSTR
 	local LETTER_OPT
 	local O
 
 	for O in {1..${#OPTS}};do
 		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-		OPTSTRING+="-${OPTS[${O}]}"
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
 	done
-	echo ${OPTSTRING}
+	echo ${OPTSTR}
 }
 
 opt_exists () {
@@ -976,7 +976,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	selection_list_set ${(v)_UTILS_DESC}
-	selection_list -x11 -y32 -c -w10 "<w>Show Network Utilities usage or <h>(q)uit<N>"
+	selection_list -O ${CYAN_FG} -x11 -y32 -c -w10 "<w>Show Network Utilities usage or <h>(q)uit<N>"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SELECTION_VALUE}]}
 	echo #clear read

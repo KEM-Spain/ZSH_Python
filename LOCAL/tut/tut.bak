@@ -63,7 +63,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [<FILE|PIPE>]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [<FILE|<PIPE>]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
@@ -101,7 +101,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [<FILE|PIPE>]]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [<FILE|<PIPE>]]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
@@ -138,7 +138,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [<FILE|PIPE>]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [<FILE|<PIPE>]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
@@ -176,7 +176,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [<ARG>|<FILE|PIPE>]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [<ARG>|<FILE|<PIPE>]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
@@ -216,7 +216,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [<FILE|PIPE>]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [<FILE|<PIPE>]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 

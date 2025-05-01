@@ -23,6 +23,7 @@ typeset -AU TITLES_PROCESSED
 # Constants
 _LIB=/usr/local/lib
 _VW=/usr/local/bin/system/vid_watch
+_TERM=xterm
 
 #_BASEDIR=${PWD} # Test mode
 _BASEDIR=~/Downloads/Torrents # All target dirs are relative to BASEDIR
@@ -61,6 +62,11 @@ do_rmcup () {
 	[[ ${_SMCUP} == 'false' ]] && return
 	tput -T ${_TERM} rmcup
 	_SMCUP=false
+}
+
+do_rmso () {
+	[[ ${_DEBUG} -ge ${_TPUT_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	tput -T ${_TERM} rmso
 }
 
 exit_pre_exit () {
@@ -175,7 +181,9 @@ str_unicode_line () {
 
 	[[ ${_DEBUG} -ge ${_STR_LIB_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} LENGTH:${LENGTH}"
 
-	tput rmso;
+	echo "CALLING do_rmso"
+	do_rmso
+	echo "CALLED do_rmso"
 	printf "\\u2500%.0s" {1..$((${LENGTH}))}
 }
 

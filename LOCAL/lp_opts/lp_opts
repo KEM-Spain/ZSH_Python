@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#vim: syntax off
+# Vim: syntax off
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -15,7 +15,18 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-echo ${CYAN_FG}Printer${RESET}:${WHITE_FG}${PRINTER}${RESET}
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+HDR="${CYAN_FG}Printer${RESET}:${WHITE_FG}${PRINTER}${RESET}"
+
+echo $(str_unicode_line $(echo ${HDR} | str_strip_ansi -l))
+echo ${HDR}
+echo $(str_unicode_line $(echo ${HDR} | str_strip_ansi -l))
 
 LIST=($(lpoptions -p ${PRINTER} | sed -E -e 's/=/=\n/g' -e 's/ /\n/g'))
 

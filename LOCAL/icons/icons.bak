@@ -19,7 +19,7 @@ YELLOW_FG="\033[33m"
 typeset -a LIST
 typeset -R2 SNDX=0
 typeset -a SUBLIST
-typeset -a _ICO_DIRS=(/opt /home/kmiller/.local/share /usr/share)
+typeset -a _ICO_DIRS=(/opt /home/kmiller/.local/share /usr/share/icons /usr/share/pixmaps)
 
 #Constants
 _LIB=/usr/local/lib
@@ -161,7 +161,6 @@ for D in ${DIRLIST};do
 	((NDX++))
 	[[ ${D} =~ ".*MAC.*" ]] && continue
 	[[ ${D:l} =~ ".*qt.*" ]] && continue
-	echo ${D} >> icon_dirs
 	RAWLIST_FILES=("${(f)$(find -P ${D} -maxdepth 1 -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" 2>/dev/null)}")
 	if [[ ${PRINT_PATHS} == 'false' ]];then
 		tput cup 0 0; printf "\rProcessing directory ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} directories ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#DIRLIST} $(( NDX * 100. / ${#DIRLIST} )) 

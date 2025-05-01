@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -19,7 +19,7 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 
-#Echoed ansi
+# Echoed ansi
 E_BOLD=$(echo -n "\033[1m")
 E_ITALIC=$(echo -n "\033[3m")
 E_RESET=$(echo -n "\033[m")
@@ -44,7 +44,41 @@ E_RED_BG=$(echo -n "\033[41m")
 E_WHITE_BG=$(echo -n "\033[47m")
 E_YELLOW_BG=$(echo -n "\033[43m")
 
+typeset -A SYMTAB=( \
+1 2460 \
+2 2461 \
+3 2462 \
+4 2463 \
+5 2464 \
+6 2465 \
+7 2466 \
+8 2467 \
+9 2468 \
+10 2469 \
+11 246A \
+12 246B \
+13 246C \
+14 246D \
+15 246E \
+16 246F \
+17 2470 \
+18 2471 \
+19 2472 \
+20 2473 \
+21 3251 \
+22 3252 \
+23 3253 \
+24 3254 \
+25 3255 \
+26 3256 \
+27 3257 \
+28 3258 \
+29 3259 \
+30 325A \
+31 325B \
+)
 
+#	 printf "\\u${SYMTAB[${N}]}%.0s\n"
 
 LIST=("${(f)$(ccal)}")
 NDX=0
@@ -55,9 +89,9 @@ for L in ${LIST};do
 		2) printf "${GREEN_FG}%s${RESET}\n" ${L};;
 		*) LINE="${WHITE_FG}${L}${RESET}"
 			if [[ ${LINE} =~ "[<>]" ]];then
-				LINE=$(perl -p -e "s/(.*)(<)(.*)(>)(.*)/${WHITE_FG}\1${BOLD}${MAGENTA_FG}\2${ITALIC}${CYAN_FG}\3${RESET}${BOLD}${MAGENTA_FG}\4${RESET}${WHITE_FG}\5/" <<<${LINE})
+				LINE=$(perl -p -e "s/(.*)(<)(.*)(>)(.*)/${WHITE_FG}\1${BOLD}${MAGENTA_FG}\2${ITALIC}${UNDER}${CYAN_FG}\3${RESET}${BOLD}${MAGENTA_FG}\4${RESET}${WHITE_FG}\5/" <<<${LINE})
 			fi
-			echo ${LINE}
+			printf "${LINE}\n"
 			;;
 	esac
 done
