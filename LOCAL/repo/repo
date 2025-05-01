@@ -209,7 +209,7 @@ collect_modifed () {
 
 	if [[ ${SUM} == 'true' ]];then
 		TOTAL="${(f)$(find ${DIR} -maxdepth ${DEPTH} -type f -newer ${_TSTAMP} | wc -l)}"
-		_MODIFIED+=("${DIR} ${TOTAL} $(str_pluralize file ${TOTAL})")
+		[[ ${TOTAL} -ne 0 ]] && _MODIFIED+=("${DIR} ${TOTAL} $(str_pluralize file ${TOTAL})")
 	else
 		_MODIFIED+=("${(f)$(find ${DIR} -maxdepth ${DEPTH} -type f -newer ${_TSTAMP})}")
 	fi
