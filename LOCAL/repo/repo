@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# TODO impose limits on cp commands to modified files only; would require a total redeisign
  
 # Inline ansi
 BOLD="\033[1m"
@@ -346,7 +345,7 @@ if [[ ${RESPONSE} == 'y' ]];then
 	do_commit
 	popd
 	touch ${_TSTAMP}
-	echo -n "\nPress any key..."
+	echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
 	read -q RESPONSE
 fi
 

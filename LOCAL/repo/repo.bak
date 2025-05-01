@@ -26,6 +26,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 source ${_LIB}/LIB_INIT.zsh # Must be first
 source ${_LIB}/UTILS.zsh
 source ${_LIB}/STR.zsh
+source ${_LIB}/ARRAY.zsh
 source ${_LIB}/LIB_DEPS.zsh # Must be last
 
 # Constants
@@ -57,6 +58,7 @@ _SRC_ZSH_CFG=/etc/zsh
 _SRC_ZSH_CFG_USER=${HOME}/.zsh
 
 _REPO_UTILS=${_SRC_BIN}/system/repo_utils
+_TSTAMP=${_REPO_UTILS}/.last_run
 
 # Declarations
 typeset -a _BIN=()
@@ -199,28 +201,23 @@ copy_zsh_non_lib_utils () {
 }
 
 collect_modifed () {
-	local DEPTH=''
-	local SUM=''
-	local ARG=''
-	local X
+	local DIR=${1}
+	local DEPTH=${2}
+	local SUM=${3}
+	local TOTAL=0
 
-	for X in ${@};do
-		case ${1} in
-			-d* ) DEPTH=${1} && shift;;
-			-s) SUM=${1} && shift;;
-		esac
-		ARG=${@}
-	done
+	[[ -n ${SUM} ]] && SUM=true || SUM=false
 
-	if [[ -n ${SUM} ]];then
-		SUM="${(f)$(fut modified ${DEPTH} -n ${ARG} | wc -l)}"
-		_MODIFIED+=("${ARG} ${SUM} files")
+	if [[ ${SUM} == 'true' ]];then
+		TOTAL="${(f)$(find ${DIR} -maxdepth ${DEPTH} -type f -newer ${_TSTAMP} | wc -l)}"
+		_MODIFIED+=("${DIR} ${TOTAL} $(str_pluralize file ${TOTAL})")
 	else
-		_MODIFIED+=("${(f)$(fut modified ${DEPTH} -n ${ARG})}")
+		_MODIFIED+=("${(f)$(find ${DIR} -maxdepth ${DEPTH} -type f -newer ${_TSTAMP})}")
 	fi
 }
 
 # Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 # Build repo
 echo "${WHITE_FG}Building repo${RESET}..."
@@ -314,34 +311,43 @@ printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config user files" $(find ${_
 echo $(str_unicode_line 36)
 printf "${GREEN_FG}%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
 
-collect_modifed ${_SRC_BIN}
-collect_modifed ${_SRC_BIN_CONV}
-collect_modifed ${_SRC_BIN_SYS}
-collect_modifed -ddd ${_SRC_CODE}
-collect_modifed -ddd ${_SRC_LOCAL_ETC}
-collect_modifed -ddd ${_SRC_LIB}
-collect_modifed -ddd ${_SRC_PYTHON}
-collect_modifed -ddd -s ${_SRC_VIM_CFG}
-collect_modifed -ddd ${_SRC_ZSH_CFG}
-collect_modifed -ddd ${_SRC_ZSH_CFG_USER}
+collect_modifed ${_SRC_BIN} 1
+collect_modifed ${_SRC_BIN_CONV} 1
+collect_modifed ${_SRC_BIN_SYS} 1
+collect_modifed ${_SRC_CODE} 3
+collect_modifed ${_SRC_LOCAL_ETC} 3
+collect_modifed ${_SRC_LIB} 3
+collect_modifed ${_SRC_PYTHON} 3
+collect_modifed ${_SRC_VIM_CFG} 3 sum
+collect_modifed ${_SRC_ZSH_CFG} 3
+collect_modifed ${_SRC_ZSH_CFG_USER} 3
 
-echo "\n${GREEN_FG}File[s] modified today${RESET}"
+echo "\n${GREEN_FG}File[s] modified since last run${RESET}"
 echo $(str_unicode_line 36)
-typeset -R3 NDX=0
-for M in ${_MODIFIED};do
-	[[ ${M} =~ '.bak' ]] && continue
-	((NDX++))
-	echo "${NDX}) ${M}"
-done
+if arr_is_populated "${_MODIFIED}";then
+	typeset -R3 NDX=0
+	for M in ${_MODIFIED};do
+		[[ ${M} =~ '.bak' ]] && continue
+		((NDX++))
+		echo "${NDX}) ${M}"
+	done
+else
+	echo "No modified files"
+fi
 echo $(str_unicode_line 36)
   
 echo -n "\nCommit repo? (y/n):"
 read -q RESPONSE
 echo
 if [[ ${RESPONSE} == 'y' ]];then
-	pushd ~/Code/REPO
+	pushd ${_REPO}
 	sudo chown -R kmiller:kmiller *
 	sudo chown -R kmiller:kmiller .*
 	do_commit
 	popd
+	touch ${_TSTAMP}
+	echo -n "\nPress any key..."
+	read -q RESPONSE
 fi
+
+exit_leave
