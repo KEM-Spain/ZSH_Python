@@ -100,7 +100,6 @@ copy_dev_files () {
 	cp -r ${_SRC_CODE}/LIBS/scratch ${_REPO_LOCAL}
 	cp -r ${_SRC_CODE}/spanish_quiz ${_REPO_LOCAL}
 	cp -r ${_SRC_CODE}/takeout ${_REPO_LOCAL}
-	cp -r ${_SRC_CODE}/manage_db ${_REPO_LOCAL}
 }
 
 copy_etc_files () {
@@ -329,7 +328,7 @@ if arr_is_populated "${_MODIFIED}";then
 		[[ ${M} =~ '.bak' ]] && continue
 		((NDX++))
 		echo "${NDX}) ${M}"
-	done
+	done | mypager
 else
 	echo "No modified files"
 fi

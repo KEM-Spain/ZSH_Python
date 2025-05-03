@@ -15,6 +15,13 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
 # Declarations
 typeset -a LIST
 typeset -a SUBLIST
@@ -30,12 +37,6 @@ _ICO_REGEX='.*(ico|png|svg)$'
 
 # Globals
 g_LIMIT=200
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/SELECT.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 is_valid_int () {
@@ -140,7 +141,7 @@ if [[ ${GET_SIZE} == 'true' ]];then
 	for D in ${_ICO_DIRS};do
 		SIZES+=("${(f)$(find ${D} -type d -regex ".*[0-9]x[0-9].*" | grep -oE '[0-9]?[0-9]?[0-9]x[0-9][0-9]?[0-9]?' 2>/dev/null)}")
 	done
-	sel_set_list ${SIZES}
+	sel_set_list ${(on)SIZES}
 	sel_list -x11 -y32 -M"<w>Select icon size<N>"
 	[[ ${?} -ne 0 ]] && echo "${BOLD}${RED_FG}Cancelled...${RESET}" && exit_leave
 	SIZE=${_SEL_VAL}
@@ -181,17 +182,34 @@ for F in ${RAWLIST};do
 	fi
 done
 
+VIEW=false
+WRITE=false
+FN=icon_list.out
 if [[ ${PRINT_PATHS} == 'true' ]];then
-	do_rmcup
-	for L in ${LIST};do
-		RANK=3
-		[[ ${L:t:l} =~ "${SEARCHTERM:l}" ]] && RANK=1
-		[[ ${L:t:l} =~ "[0-9]x[0-9]" ]] && RANK=2
-		echo ${RANK}${L}
-	done | sort -u | sed 's/^[0-9]//' | mypager
+	msg_box -p -H1 "<m>Icon List Options<N>|<w>View icon list in pager <I>or<N> <w>write to file?<N>|Enter: (<w>f<N>)ile or (<w>v<N>)iew"
+	case ${_MSG_KEY} in
+		v) VIEW=true;;
+		f) WRITE=true;;
+		*) exit_leave "${RED_FG}Operation Canceled${RESET}";;
+	esac
+	if [[ ${VIEW} == 'true' ]];then
+		do_rmcup
+		for L in ${LIST};do
+			RANK=3
+			[[ ${L:t:l} =~ "${SEARCHTERM:l}" ]] && RANK=1
+			[[ ${L:t:l} =~ "[0-9]x[0-9]" ]] && RANK=2
+			echo ${RANK}${L}
+		done | sort -u | sed 's/^[0-9]//' | mypager
+	elif [[ ${WRITE} == 'true' ]];then
+		[[ -e ${FN} ]] && /bin/rm -f ${FN} >/dev/null 2>&1
+		for L in ${LIST};do
+			echo ${L} >> ${FN}
+		done
+		do_rmcup
+		echo "Wrote icon list to file:${FN}"
+	fi
 	exit_leave
 else
-
 	MSG="\nFound:${WHITE_FG}${#LIST}${RESET} icon file(s)"
 	[[ -n ${SIZE} ]] && MSG+=" of size:${WHITE_FG}${SIZE}${RESET}"
 	[[ -n ${SEARCHTERM} ]] && MSG+=" matching SEARCH:${WHITE_FG}${SEARCHTERM}${RESET}"
@@ -204,7 +222,7 @@ else
 
 	echo -n "Continue (y/n)?"
 	read -sq RESPONSE
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(msg_exit I "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave "${RED_FG}Operation Canceled${RESET}"
 
 	SHOWN=0
 	NDX=0
@@ -213,8 +231,7 @@ else
 		((NDX++))
 		SUBLIST+=${L}
 		if [[ ${#LIST} -gt ${g_LIMIT} && $(( NDX % g_LIMIT )) -eq 0 ]];then
-			viewnior ${SUBLIST}
-			SUBLIST=()
+			geeqie --geometry=800x400+600+280  +t SUBLIST=()
 			SHOWN=$(( SHOWN + g_LIMIT ))
 			echo -n "Continue viewing icons (y/n)?"
 			read -sq RESPONSE
@@ -222,7 +239,7 @@ else
 			echo
 		fi
 		if [[ $(( ${#LIST} - SHOWN )) -le ${g_LIMIT} ]];then
-			viewnior ${LIST[$(( SHOWN+1 )),-1]} &
+			geeqie --geometry=800x400+600+280  +t ${LIST[$(( SHOWN+1 )),-1]}
 			break
 		fi
 	done

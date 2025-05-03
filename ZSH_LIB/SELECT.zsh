@@ -486,8 +486,11 @@ sel_scroll () {
 
 	while true;do
 		# Display decorations
-		[[ ${O_COORDS[HAS_OUTER]} == 'true' ]] && msg_unicode_box ${O_COORDS[X]} ${O_COORDS[Y]} ${O_COORDS[W]} ${O_COORDS[H]} ${O_COORDS[COLOR]}
-		msg_unicode_box ${I_COORDS[X]} ${I_COORDS[Y]} ${I_COORDS[W]} ${I_COORDS[H]} ${I_COORDS[COLOR]}
+		if [[ ${O_COORDS[HAS_OUTER]} == 'true' ]];then
+			msg_unicode_box ${O_COORDS[X]} ${O_COORDS[Y]} ${O_COORDS[W]} ${O_COORDS[H]} ${O_COORDS[COLOR]} # Outer box
+		fi
+
+		msg_unicode_box ${I_COORDS[X]} ${I_COORDS[Y]} ${I_COORDS[W]} ${I_COORDS[H]} ${I_COORDS[COLOR]} # Inner box
 
 		# Display list decorations
 		if [[ ${D_COORDS[HAS_HDR]} == 'true' ]];then

@@ -980,6 +980,7 @@ log_update () {
 
 	{
 		[[ -e /tmp/log.new ]] && /bin/rm -f ${NEW_LOG}
+		echo "${0}: _DOWNLOAD_LOG lines:$(wc -l ${_DOWNLOAD_LOG})" >> ${_YTS_DBG_LOG}
 
 		while read LINE;do
 			INODE=$(cut -d'|' -f1 <<<${LINE})
@@ -987,11 +988,15 @@ log_update () {
 			if [[ -n ${FN_HIT} ]];then
 				grep ${INODE} ${_DOWNLOAD_LOG} 2>/dev/null >> ${NEW_LOG}
 			else
-				echo "${0}: An INODE:${INODE} is logged but no matching file could be found" >> ${_YTS_DBG_LOG}
+				echo "${0}: Removing expired inode:${INODE}" >> ${_YTS_DBG_LOG}
 			fi
 		done < ${_DOWNLOAD_LOG}
 
-		[[ -e ${NEW_LOG} ]] && sort -u -o ${NEW_LOG} ${NEW_LOG} && mv -f ${NEW_LOG} ${_DOWNLOAD_LOG}
+		if [[ -e ${NEW_LOG} ]];then
+			echo "${0}: NEW_LOG lines:$(wc -l ${NEW_LOG})" >> ${_YTS_DBG_LOG}
+			cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
+			mv -f ${NEW_LOG} ${_DOWNLOAD_LOG}
+		fi
 	} 2>/dev/null
 }
 
