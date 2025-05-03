@@ -7,9 +7,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -17,7 +15,6 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
-
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Imports
@@ -357,13 +354,13 @@ action_do () {
 				fi
 				_DOWNLOADS[${M}]=true
 				post_process
-				log_download ${M}
+				log_add ${M}
 				break # Scan cycle
 			fi # Monitor progress
 			sleep 1 # Log fetch delay
 		done # Log scan complete
 		NDX=0
-		clear_log "action_do"
+		log_clear "action_do"
 		sleep 1 # Job request delay
 	done # List complete
 
@@ -412,41 +409,80 @@ box_center () {
 	echo $(( BOX_LEFT + BOX_CTR - TXT_CTR ))
 }
 
-clear_log () {
-	local FROM=${1}
+clean_title () {
+	local TYPE=${1}
+	local TITLE=${2}
+	local -a UCASE_WORDS=()
+	local -A SEEN=()
+	local COPY=''
+	local UC_NUM=0
+	local UC_LIMIT=3
+	local U W
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
-		rm -f ${g_YTS_LOG}
-		echo "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}" >> ${_YTS_DBG_LOG} # Debug is NOT active - clear the log
-	else
-		echo "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Debug is active - retain the log
+	if [[ ${TYPE} == 'file' ]];then
+		STR=${TITLE[1,${_MAX_FLEN}]} # Filename
+		echo "\n${0}: Max length filename:${STR}" >> ${_YTS_DBG_LOG}
+	elif [[ ${TYPE} == 'text' ]];then
+		STR=${TITLE[1,${_MAX_TITLE}]} # Title
+		echo "\n${0}: Max length title:${STR}" >> ${_YTS_DBG_LOG}
 	fi
+
+	STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
+	# echo "${0}: HTML -> ascii:${STR}" >> ${_YTS_DBG_LOG}
+
+	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline
+	# echo "${0}: Strip newline:${STR}" >> ${_YTS_DBG_LOG}
+
+	STR=$(sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${STR}) # Trim
+	# echo "${0}: Trim:${STR}" >> ${_YTS_DBG_LOG}
+	 
+	STR=$(sed 's/[ _]s[ _]/\o047s /g' <<<${STR}) # Fix any yt-dlp apostrophe gaps
+	# echo "${0}: Apostrophe:${STR}" >> ${_YTS_DBG_LOG}
+	 
+	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
+	# echo "${0}: w/ (with):${STR}" >> ${_YTS_DBG_LOG}
+	 
+	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
+	# echo "${0}: UCASE_WORDS:${UCASE_WORDS}" >> ${_YTS_DBG_LOG}
+
+	UC_NUM=0
+	for U in ${UCASE_WORDS};do
+		[[ ${U%%[!0-9]*} ]] && ((UC_NUM++)) # Count numbers
+	done
+
+	STR=${(C)STR} && COPY=${STR} # Proper case
+	# echo "${0}: Proper case:${STR}" >> ${_YTS_DBG_LOG}
+
+	STR=$(sed 's/\(\o047\)\([DST] \)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
+	# echo "${0}: UC letter following apostrophe:${STR}" >> ${_YTS_DBG_LOG}
+	
+	SEEN=()
+	if [[ -n ${UCASE_WORDS} ]];then
+		for W in ${=COPY};do
+			W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits, and hyphen
+			[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
+			for U in ${UCASE_WORDS};do
+				[[ ${U%%[!0-9]*} ]] && continue # Skip numbers
+				if [[ ${W:l} == ${U:l} ]];then
+					SEEN[${W}]=1
+					if [[ $(( ${#UCASE_WORDS} - UC_NUM )) -gt ${UC_LIMIT} ]];then
+						if ! spell -f ${W};then # Prettify entries where capitalization is excessive
+							STR=$(sed "s/${W}/${U}/" <<<${STR})
+							echo "${0}: Prettified:${STR}" >> ${_YTS_DBG_LOG}
+						fi
+					fi
+					[[ ${_RESERVED[${U}]} -eq 1 ]] && STR=$(sed "s/${W}/${U}/" <<<${STR}) # Valid words that are always UC
+				fi
+			done
+		done
+	fi
+
+	echo "${0}: Final:${STR}" >> ${_YTS_DBG_LOG}
+	echo ${STR}
 }
 
 clear_tmp () {
 	[[ -e /tmp/*$$*state ]] && rm -rf /tmp/*$$*state
-}
-
-download_log_update () {
-	local FN_HIT=''
-	local IN=''
-	local LINE=''
-	local NEW_LOG=/tmp/log.new
-	local L
-
-	{
-		[[ -e /tmp/log.new ]] && /bin/rm -f ${NEW_LOG}
-
-		while read LINE;do
-			IN=$(cut -d'|' -f1 <<<${LINE})
-			FN_HIT=$(find ${_DOWNLOAD_DIR} -maxdepth 1 -inum ${IN})
-			[[ -n ${FN_HIT} ]] && grep ${IN} ${_DOWNLOAD_LOG} 2>/dev/null >> ${NEW_LOG}
-		done < ${_DOWNLOAD_LOG}
-
-		[[ -e ${NEW_LOG} ]] && sort -u -o ${NEW_LOG} ${NEW_LOG} && mv -f ${NEW_LOG} ${_DOWNLOAD_LOG}
-	} 2>/dev/null
 }
 
 fav_delete () {
@@ -714,7 +750,11 @@ get_field () {
 		STR=${TSTR:=${STR}}
 	fi
 
-	echo -n ${STR}
+	if [[ -n ${_FIELD_LEN[${FIELD}]} ]];then
+		echo -n ${STR[1,${_FIELD_LEN[${FIELD}]}]}
+	else
+		echo -n ${STR}
+	fi
 }
 
 item_decorate () {
@@ -764,7 +804,7 @@ kill_job () {
 
 	if [[ ! ${functrace[1]} =~ "reset_job" ]];then
 		trap - INT # Disable trap
-		clear_log "kill_job"
+		log_clear "kill_job"
 		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job${RESET}:${JOB} ${WHITE_FG}was ${RED_FG}killed${RESET}"
 	fi
 }
@@ -810,7 +850,20 @@ list_reset () {
 	_SELECTION_LIST=()
 }
 
-log_download () {
+log_clear () {
+	local FROM=${1}
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
+		rm -f ${g_YTS_LOG}
+		echo "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}" >> ${_YTS_DBG_LOG} # Debug is NOT active - clear the log
+	else
+		echo "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Debug is active - retain the log
+	fi
+}
+
+log_add () {
 	local NDX=${1}
 	local LF=$(last_file) # Filename|Inode
 	local FN=$(cut -d'|' -f1 <<<${LF}) # Filename
@@ -821,6 +874,8 @@ log_download () {
 	local TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<${AT}) # Video length
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN} INODE:${IN}"
+
+	[[ ${FN:e} == 'part' || ${FN:e} == 'temp' ]] && return # No partials in log
 
 	echo "${IN}|${TL}|${FN:t}|${TM}|${AU}" >> ${_DOWNLOAD_LOG}
 }
@@ -838,6 +893,7 @@ log_find () {
 	local LOG_TITLE=''
 	local LOG_TM=''
 	local R=0
+	local DBG=false
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -846,7 +902,8 @@ log_find () {
 	_DOWNLOADS=()
 	_PARTIALS=()
 
-#	/bin/rm -f ./${0}.dbg
+	[[ ${DBG} == 'true' ]] && /bin/rm -f ${0}.dbg
+
 	for ((R=${TOP}; R <= ${BOT}; R++));do
 		LINE_NUM=''
 
@@ -854,28 +911,32 @@ log_find () {
 		LIST_AU=$(get_field author ${R}) # Author from list
 		LIST_TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R}) | tr -d '[()]' | sed 's/undefined//') # Video length from list
 
-#		echo "\nLIST_NDX:${R}" >>${0}.dbg
-#		echo "LIST_TITLE:${LIST_TITLE}" >>${0}.dbg
-#		echo "LIST_AU:${LIST_AU}" >>${0}.dbg
-#		echo "LIST_TM:${LIST_TM}" >>${0}.dbg
+		[[ ${DBG} == 'true' ]] && echo "\nLIST_NDX:${R}" >>${0}.dbg
+		[[ ${DBG} == 'true' ]] && echo "LIST_TITLE:${LIST_TITLE}" >>${0}.dbg
+		[[ ${DBG} == 'true' ]] && echo "LIST_AU:${LIST_AU}" >>${0}.dbg
+		[[ ${DBG} == 'true' ]] && echo "LIST_TM:${LIST_TM}" >>${0}.dbg
+		[[ ${DBG} == 'true' ]] && echo "\nAttempting TITLE match on:${LIST_TITLE[1,50]}" >>${0}.dbg 
 
-#		echo "\nAttempting TITLE match on:${CLEAN_STR}" >>${0}.dbg 
-		LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE} ${_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
+		LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE[1,50]} ${_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
 		if [[ ${?} -eq 0 ]];then
 			LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Fetch line number
 			LOG_LINE=$(sed -n "${LINE_NUM}p" ${_DOWNLOAD_LOG}) # Fetch log line
-			LOG_AU=$(grep -i -o "${LIST_AU}$" <<<${LOG_LINE}) # Match author in log line
+			LOG_AU=$(grep -i -o -m1 "${LIST_AU}$" <<<${LOG_LINE}) # Match author in log line
 			LOG_TM=$(grep -o ${LIST_TM} <<<${LOG_LINE}) # Match time in log line
-#			echo "Matched:TITLE:${LOG_TITLE}" >>${0}.dbg
-#			echo "Log line:${LOG_LINE}" >>${0}.dbg
-#			echo "Need author:${LIST_AU} and time:${LIST_TM}" >>${0}.dbg
+
+			[[ ${DBG} == 'true' ]] && echo "Matched:TITLE:${LOG_TITLE}" >>${0}.dbg
+			[[ ${DBG} == 'true' ]] && echo "Log line:${LOG_LINE}" >>${0}.dbg
+			[[ ${DBG} == 'true' ]] && echo "Need author:${LIST_AU} and time:${LIST_TM}" >>${0}.dbg
 
 			if [[ -n ${LOG_TM} && -n ${LOG_AU} ]];then
 				LOG_FN=$(cut -d '|' -f3 <<<${LOG_LINE}) # Fetch filename
 				_DOWNLOADS[${R}]=true
-#				echo "Confirmed match: Marking NDX:${R} as downloaded for file:${LOG_FN}\n" >>${0}.dbg
-#				echo "LOG_AU:${LOG_AU}" >>${0}.dbg
-#				echo "LOG_TM:${LOG_TM}" >>${0}.dbg
+
+				[[ ${DBG} == 'true' ]] && echo "Confirmed match: Marking NDX:${R} as downloaded for file:${LOG_FN}\n" >>${0}.dbg
+				[[ ${DBG} == 'true' ]] && echo "LOG_AU:${LOG_AU}" >>${0}.dbg
+				[[ ${DBG} == 'true' ]] && echo "LOG_TM:${LOG_TM}" >>${0}.dbg
+			else
+				[[ ${DBG} == 'true' ]] && echo "Failed to confirm download" >>${0}.dbg
 			fi
 		fi
 	done
@@ -910,6 +971,30 @@ log_to_file () {
 	echo ${FN}
 }
 
+log_update () {
+	local FN_HIT=''
+	local INODE=''
+	local LINE=''
+	local NEW_LOG=/tmp/log.new
+	local L
+
+	{
+		[[ -e /tmp/log.new ]] && /bin/rm -f ${NEW_LOG}
+
+		while read LINE;do
+			INODE=$(cut -d'|' -f1 <<<${LINE})
+			FN_HIT=$(find ${_DOWNLOAD_DIR} -maxdepth 1 -inum ${INODE})
+			if [[ -n ${FN_HIT} ]];then
+				grep ${INODE} ${_DOWNLOAD_LOG} 2>/dev/null >> ${NEW_LOG}
+			else
+				echo "${0}: An INODE:${INODE} is logged but no matching file could be found" >> ${_YTS_DBG_LOG}
+			fi
+		done < ${_DOWNLOAD_LOG}
+
+		[[ -e ${NEW_LOG} ]] && sort -u -o ${NEW_LOG} ${NEW_LOG} && mv -f ${NEW_LOG} ${_DOWNLOAD_LOG}
+	} 2>/dev/null
+}
+
 post_process () {
 	local -a KEYWORDS=("judge napolitano - " "official" "^the " " show" "have it out with galloway \- " "youtube channel")
 	local -a LIST
@@ -928,7 +1013,7 @@ post_process () {
 	while true;do
 		((NDX++))
 		PID=$(pgrep -n ffmpeg) # Wait for processing to finish
-		[[ -z ${PID} ]] && break
+		[[ -z ${PID} ]] && sleep 2 && break
 		msg_box "(<w>${NDX}<N>) <r>Waiting for <w>ffmpeg<r> to finish<N>..."
 		sleep 1
 	done
@@ -1193,7 +1278,6 @@ query_youtube () {
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${F});	AGETIME="(${AGETIME:s/|/ /})"
-
 		WORK+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done
 
@@ -1207,78 +1291,6 @@ reset_job () {
 
 	kill_job
 	msg_box -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<m>Job Restarted<N>"
-}
-
-clean_title () {
-	local TYPE=${1}
-	local TITLE=${2}
-	local -a UCASE_WORDS=()
-	local -A SEEN=()
-	local COPY=''
-	local UC_NUM=0
-	local UC_LIMIT=3
-	local U W
-
-	if [[ ${TYPE} == 'file' ]];then
-		STR=${TITLE[1,${_MAX_FLEN}]} # Filename
-		echo "\n${0}: Max length filename:${STR}" >> ${_YTS_DBG_LOG}
-	elif [[ ${TYPE} == 'text' ]];then
-		STR=${TITLE[1,${_MAX_TITLE}]} # Title
-		echo "\n${0}: Max length title:${STR}" >> ${_YTS_DBG_LOG}
-	fi
-
-	STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
-	# echo "${0}: HTML -> ascii:${STR}" >> ${_YTS_DBG_LOG}
-
-	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline
-	# echo "${0}: Strip newline:${STR}" >> ${_YTS_DBG_LOG}
-
-	STR=$(sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${STR}) # Trim
-	# echo "${0}: Trim:${STR}" >> ${_YTS_DBG_LOG}
-	 
-	STR=$(sed 's/[ _]s[ _]/\o047s /g' <<<${STR}) # Fix any yt-dlp apostrophe gaps
-	# echo "${0}: Apostrophe:${STR}" >> ${_YTS_DBG_LOG}
-	 
-	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
-	# echo "${0}: w/ (with):${STR}" >> ${_YTS_DBG_LOG}
-	 
-	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
-	# echo "${0}: UCASE_WORDS:${UCASE_WORDS}" >> ${_YTS_DBG_LOG}
-
-	UC_NUM=0
-	for U in ${UCASE_WORDS};do
-		[[ ${U%%[!0-9]*} ]] && ((UC_NUM++)) # Count numbers
-	done
-
-	STR=${(C)STR} && COPY=${STR} # Proper case
-	# echo "${0}: Proper case:${STR}" >> ${_YTS_DBG_LOG}
-
-	STR=$(sed 's/\(\o047\)\([DST] \)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
-	# echo "${0}: UC letter following apostrophe:${STR}" >> ${_YTS_DBG_LOG}
-	
-	SEEN=()
-	if [[ -n ${UCASE_WORDS} ]];then
-		for W in ${=COPY};do
-			W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits, and hyphen
-			[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-			for U in ${UCASE_WORDS};do
-				[[ ${U%%[!0-9]*} ]] && continue # Skip numbers
-				if [[ ${W:l} == ${U:l} ]];then
-					SEEN[${W}]=1
-					if [[ $(( ${#UCASE_WORDS} - UC_NUM )) -gt ${UC_LIMIT} ]];then
-						if ! spell -f ${W};then # Prettify entries where capitalization is excessive
-							STR=$(sed "s/${W}/${U}/" <<<${STR})
-							echo "${0}: Prettified:${STR}" >> ${_YTS_DBG_LOG}
-						fi
-					fi
-					[[ ${_RESERVED[${U}]} -eq 1 ]] && STR=$(sed "s/${W}/${U}/" <<<${STR}) # Valid words that are always UC
-				fi
-			done
-		done
-	fi
-
-	echo "${0}: Final:${STR}" >> ${_YTS_DBG_LOG}
-	echo ${STR}
 }
 
 select_download () {
@@ -1325,7 +1337,7 @@ select_download () {
 	list_set_restore_pos true
 
 	while true;do
-		# Generate list for high level selection
+		# Generate list for selected title
 		list_select ${_LOCAL_LIST}
 		[[ ${?} -eq 0 ]] && break
 
@@ -1524,8 +1536,6 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-set_exit_callback clear_tmp
-
 [[ ${g_FIX_AUDIO} == 'true' && ${g_QRY_ENGINE} == 'rumble' ]] && g_FIX_AUDIO=false && msg_box -p -PK "FIX AUDIO not supported for Rumble| FIX AUDIO ignored"
 
 g_GOT_URL=false
@@ -1539,8 +1549,6 @@ for A in ${@};do
 	fi
 done
 
-
-download_log_update
 
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
@@ -1563,6 +1571,8 @@ if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 
 	msg_box -c -t2 ${MSG}
 fi
 
+set_exit_callback clear_tmp # Clear temp files on exit
+log_update # Update the log
 clear
 
 fav_load ${_FAV_TAB}
@@ -1637,6 +1647,6 @@ else # Args passed
 	fi
 fi
 
-clear_log "normal exit"
+log_clear "normal exit"
 
 exit_leave

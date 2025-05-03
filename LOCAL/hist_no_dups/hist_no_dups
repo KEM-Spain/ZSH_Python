@@ -139,7 +139,6 @@ for L in ${CMDS};do
 done
 
 # Create new history file
-# TODO: Keeps cycling through the same statistics - 2nd run should detect no dups.
 for L in ${HIST_BUILD};do
 	echo ${L}
 done | uniq | sort -nr -o ${HIST_NEW}

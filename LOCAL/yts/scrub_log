@@ -19,15 +19,17 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-_YTS_DIR=~/.yts
-_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_DOWNLOAD_LOG=${_YTS_DIR}/yts.downloads
-
-LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
 typeset -a DIR_INODES=()
 typeset -a CURRENT_LOG=()
 typeset -A NEW_LOG=()
 typeset -R3 NDX=0
+
+_YTS_DIR=~/.yts
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_DOWNLOAD_LOG=${_YTS_DIR}/yts.downloads
+
+# Execution
+LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
 
 for L in ${(on)LIST};do
 	((NDX++))
@@ -44,7 +46,6 @@ if [[ -z ${LIST} ]];then
 	touch ${_DOWNLOAD_LOG}
 	exit
 fi
-
 
 while read LINE;do
 	LOG_INODE=$(cut -d'|' -f1 <<<${LINE})

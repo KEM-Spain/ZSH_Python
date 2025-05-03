@@ -204,18 +204,22 @@ opt_type () {
 }
 
 usage () {
-	tabs 5
 	local OPTS=$(parse_opts ${OPTSTR})
 	local -a PENDING_MSGS=(${@})
+	
+	tabs 5
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type s)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-a $(opt_type a)${RESET} search by artist"
-	echo -e "${WHITE_FG}-e $(opt_type e)${RESET} choose file type: mp3, flac, etc."
+	echo -e "${WHITE_FG}-a$(opt_type a)${RESET} search by artist"
+	echo -e "${WHITE_FG}-e$(opt_type e)${RESET} choose file type: mp3, flac, etc."
 	echo -e "${WHITE_FG}-l${RESET} search in current directory only"
-	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} search by title"
+	echo -e "${WHITE_FG}-t$(opt_type t)${RESET} search by title"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
-	exit_leave "\n${PENDING_MSGS}\n"
+
+	exit_leave $(msg_err ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
@@ -234,7 +238,7 @@ while getopts ${OPTSTR} OPTION;do
      l) LOCAL_ONLY=true;;
      t) g_TITLE=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
-    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
@@ -246,36 +250,40 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 RAWPATH=$(path_get_raw)
-[[ ${?} -ne 0 ]] && exit_leave "${0}: ${RED_FG}path_get_raw had errors${RESET} ${WHITE_FG}${@}${RESET}"
+[[ ${?} -ne 0 ]] && exit_leave $(msg_warn "path_get_raw had errors:${@}")
 
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
 #Arg check
-[[ ${#} -gt 1 ]] && usage "[${RED_FG}Err${RESET}]:Only one argument accepted. Surround multi word search in quotes"
+[[ ${#} -gt 1 ]] && usage "Only one argument accepted. Surround multi word search in quotes"
 [[ ${#} -eq 1 ]] && SEARCHTERM=${1}
-[[ (-n ${g_ARTIST} || -n ${g_TITLE}) && ${#} -ne 0 ]] && usage "[${RED_FG}Err${RESET}]:Specify a search using either options or a <SEARCHTERM>; not both"
+[[ (-n ${g_ARTIST} || -n ${g_TITLE}) && ${#} -ne 0 ]] && usage "Specify a search using either options or a <SEARCHTERM>; not both"
 
 #Build list from all available music dirs
 [[ ${LOCAL_ONLY} == 'true' ]] && _MUSIC_DIRS=${PWD}
+
+msg_box "Searching..."
 
 for D in ${_MUSIC_DIRS};do
 	_RAW_LIST+=("${(f)$(find ${D} -type f -iregex ".*${SEARCHTERM}.*${_AUDIO_FILES}")}")
 done
 
+msg_box_clear
+
 if [[ ${?} -ne 0 ]];then
-	dbg "${0}:${RED_FG}find command failed${RESET}: find \${D} -type f -iregex \".*${SEARCHTERM}.*${_AUDIO_FILES}\""
+	dbg "${0}:${LINENO} ${RED_FG}find command failed${RESET}: find \${D} -type f -iregex \".*${SEARCHTERM}.*${_AUDIO_FILES}\""
 else
-	dbg "${0}:${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
+	dbg "${0}:${LINENO} ${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 fi
 
 #Early exit on no results
 if ! arr_is_populated "${_RAW_LIST}";then
 	if [[ -n ${SEARCHTERM} ]];then
-		exit_leave "${BOLD}${RED_FG}No audio files matching${RESET}:${WHITE_FG}${SEARCHTERM} ${BOLD}${RED_FG}were found${RESET}"
+		exit_leave $(msg_warn "No audio files matching:${SEARCHTERM} were found")
 	else
-		exit_leave "${BOLD}${RED_FG}No audio files were found${RESET}"
+		exit_leave $(msg_warn "No audio files were found")
 	fi
 fi
 
@@ -285,10 +293,10 @@ tput cup 0 0
 for R in ${(o)_RAW_LIST};do
 	((NDX++))
 
-	[[ ${#_RAW_LIST} -ge 20 ]] && printf "\rProcessing:${WHITE_FG}%s${RESET} of ${#_RAW_LIST}" ${NDX} >&2
-	[[ ${R:l} =~ 'iphone' ]] && dbg "skipping iphone" && continue #skip
-	[[ ${R:l} =~ 'flashcards' ]] && dbg "skipping flashcards" && continue #skip
-	[[ ! -s ${R} ]] && dbg "skipping zero length file" && continue #skip
+	[[ ${#_RAW_LIST} -ge 20 ]] && printf "\r${WHITE_FG}[${RESET}${_SCRIPT}${WHITE_FG}]${RESET} Processing titles:${WHITE_FG}%s${RESET} of ${#_RAW_LIST}" ${NDX} >&2
+	[[ ${R:l} =~ 'iphone' ]] && dbg "${0}:${LINENO} skipping iphone" && continue #skip
+	[[ ${R:l} =~ 'flashcards' ]] && dbg "${0}:${LINENO} skipping flashcards" && continue #skip
+	[[ ! -s ${R} ]] && dbg "${0}:${LINENO} skipping zero length file" && continue #skip
 
 	if [[ -n ${g_ARTIST} ]];then
 		_ARTISTS+=$(path_segment "${R}" n2l3)
@@ -306,13 +314,13 @@ if [[ -n ${g_ARTIST} ]];then
 	done
 
 	if [[ ${?} -ne 0 ]];then
-		dbg "${0}:${RED_FG}find command failed${RESET}"
+		dbg "${0}:${LINENO} ${RED_FG}find command failed${RESET}"
 	else
-		dbg "${0}:${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
+		dbg "${0}:${LINENO} ${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 	fi
 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
-		exit_leave "${BOLD}${RED_FG}No artists matching${RESET}:${WHITE_FG}${g_ARTIST} ${BOLD}${RED_FG}found${RESET}"
+		exit_leave $(msg_warn "No artists matching:${g_ARTIST} found")
 	fi
 fi
 
@@ -325,24 +333,22 @@ if [[ -n ${g_TITLE} ]];then
 	_LOCAL_LIST=(${T_LIST})
 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
-		exit_leave "${BOLD}${RED_FG}No titles matching${RESET}:${WHITE_FG}${g_TITLE} ${BOLD}${RED_FG}found${RESET}"
+		exit_leave $(msg_warn "No titles matching:${g_TITLE} found")
 	fi
 fi
 
 #Sort the list
 _LOCAL_LIST=(${(o)_LOCAL_LIST})
 
-#TODO: select all leaves skid marks
- 
 #set headings
 [[ ${LOCAL_ONLY} == 'true' ]] && SMSG="(Local)" || SMSG='None'
 [[ -n ${SEARCHTERM} ]] && SMSG="(General):${SEARCHTERM}"
 [[ -n ${g_TITLE} ]] && SMSG="(Title):${g_TITLE}"
 [[ -n ${g_ARTIST} ]] && SMSG="(Artist):${g_ARTIST}"
 tabs 2
-list_set_header 'printf "Found:${WHITE_FG}%-d${RESET}\tSearch ${WHITE_FG}%-s${RESET}\tPath:${WHITE_FG}%-*s${RESET}\tPage ${WHITE_FG}%-d${RESET} of ${WHITE_FG}%-d${RESET}  Selected:${WHITE_FG}%-d${RESET}" ${#_LIST} ${SMSG} ${#PATHLBL} "${PATHLBL}" ${PAGE} ${MAX_PAGES} ${SELECTED_COUNT}'
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET}  Search ${WHITE_FG}%-s${RESET}  Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${SMSG} ${#PATHLBL} "${PATHLBL}" ${SELECTED_COUNT}'
 list_add_header_break 
-list_set_header_break_offset 2
+list_set_header_break_offset 0
 list_set_header_break_color ${MAGENTA_FG}
 
 #set line item
@@ -350,14 +356,13 @@ list_set_line_item '
 printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${ARRAY_NDX} "$(item_decorate ${ARRAY_NDX})" 
 '
 
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> [to do some action] (${ITALIC}or exit if none selected${RESET})."
-list_set_client_warn true
+list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to queue track (${ITALIC}or exit if none selected${RESET})"
 list_set_clear_ghosts true
 list_set_barlines true
 
 while true;do
 	#get selection
-	list_cursor_select ${_LOCAL_LIST}
+	list_select ${_LOCAL_LIST}
 	[[ ${?} -eq 0 ]] && break
 
 	#get selections

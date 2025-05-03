@@ -1,33 +1,25 @@
 #!/usr/bin/zsh
-ARGS=${@}
-EXEC_ONLY=false
+typeset -A OPTS=()
+typeset -A ARGS=()
 
-if [[ ${#} -eq 0 ]];then
-	echo "${0:t} Missing argument"
-	return
-elif [[ ${1} == '--help' || ${1} == '-H' ]];then
-	locate --help
-	return
-elif [[ ${1} == '-u' ]];then
-	shift
+parse () {
+	local LIMIT=${1}
+	local NDX
+
+	for (( NDX=1; NDX<=LIMIT; NDX++ ));do
+		[[ -n ${OPTS[${NDX}]} ]] && printf '%s ' ${OPTS[${NDX}]}
+		[[ -n ${ARGS[${NDX}]} ]] && printf '%s ' ${(qq)ARGS[${NDX}]}
+	done
+}
+
+if [[ ${1} == '-u' ]];then
 	echo "Updating locate db" && sudo updatedb --prunepaths='/media/kmiller' >/dev/null 2>&1 
-elif [[ ${1} == '-e' ]];then
-	EXEC_ONLY=true
-	shift
-fi
-ARGS=${@}
-
-echo "locate ${ARGS}"
-if [[ ${EXEC_ONLY} == 'false' ]];then
-	/usr/bin/locate ${ARGS} 
-	[[ ${?} -ne 0 ]] && echo "Nothing located..." && return 1
 else
-	HIT=false
-	while read LINE;do
-		[[ ${LINE:t} =~ "^${ARGS}$" ]] && which -s ${LINE} >/dev/null
-		[[ ${?} -eq 0 ]] && echo ${LINE} && HIT=true
-	done < <(/usr/bin/locate ${ARGS})
-	[[ ${HIT} == 'true' ]] && return 0
-	echo "Nothing located..."
-	return 1
+	NDX=0
+	for A in ${@};do
+		((NDX++))
+		[[ ${A} =~ '-' ]] && OPTS[${NDX}]="${A}"
+		[[ ! ${A} =~ '-' ]] && ARGS[${NDX}]=${A}
+	done
+	eval /usr/bin/locate $(parse ${#})
 fi

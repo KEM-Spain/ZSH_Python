@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -19,23 +19,15 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-#Declarations
-typeset -a _VID_EXT=(avi mkv mp4 webm)
-typeset -a _AUD_EXT=(mp3 flac wav)
+# Declarations
+typeset -a _VID_EXT=(mov avi mkv mp4 webm)
+typeset -a _AUD_EXT=(mp3 flac wav m4a)
 
-#Imports
-_LIB_DIR=/usr/local/lib
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/UTILS.zsh
-
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB_DIR}/${D} ]];then
-		source ${_LIB_DIR}/${D}
-	else
-		echo "Cannot source:${_LIB_DIR}/${D} - not found"
-		exit 1
-	fi
-done
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 #--Begin GetOpts--
 local -a OPTIONS
@@ -44,6 +36,7 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Convert audio and video files to different formats
+\tbased on file extension
 EOF
 
 parse_opts () {
@@ -87,10 +80,11 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f) $(opt_type e)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err "${PENDING_MSGS}")
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	exit_leave
 }
 
 OPTSTR=":HD"
@@ -107,31 +101,42 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
-#Execution
-[[ -z ${1} ]] && usage "missing $(opt_type f)" || FN=${1}
-[[ -z ${2} ]] && usage "missing $(opt_type e)" || EXT=${2}
+# Execution
+[[ -z ${1} ]] && usage "missing argument:$(opt_type f)" || FN=${1}
+[[ -z ${2} ]] && usage "missing argument:$(opt_type e)" || EXT=${2}
 
-[[ ! -e ${FN} ]] && exit_leave $(msg_err "file not found:${1}")
+[[ ! -e ${FN} ]] && exit_leave $(msg_exit E "file not found:${1}")
 
 FN_EXT=${FN:e}
+
+# Capture file extension if complete file name was entered
+for E in ${_VID_EXT};do
+	if [[ ${EXT} == ${E} ]];then
+		break
+	elif [[ ${EXT:e} == ${E} ]];then
+		EXT=${EXT:e}
+		echo "Captured extension:${WHITE_FG}${EXT}${RESET}"
+		break
+	fi
+done
 
 FTYPE=false
 [[ ${_VID_EXT[(i)${FN_EXT}]} -le ${#_VID_EXT} ]] && FTYPE=video
 [[ ${_AUD_EXT[(i)${FN_EXT}]} -le ${#_AUD_EXT} ]] && FTYPE=audio
-[[ ${FTYPE} == 'false' ]] && exit_leave $(msg_err "unsupported file type:${FN:e}")
+[[ ${FTYPE} == 'false' ]] && exit_leave $(msg_exit E "unsupported file type:${FN:e}")
 
 ETYPE=false
 [[ ${_VID_EXT[(i)${EXT}]} -le ${#_VID_EXT} ]] && ETYPE=video
 [[ ${_AUD_EXT[(i)${EXT}]} -le ${#_AUD_EXT} ]] && ETYPE=audio
-[[ ${ETYPE} == 'false' ]] && exit_leave $(msg_err "unsupported extension:${EXT}")
+[[ ${ETYPE} == 'false' ]] && exit_leave $(msg_exit E "unsupported extension:${EXT}")
 
-[[ ${FTYPE} != ${ETYPE} ]] && exit_leave $(msg_err "${WHITE_FG}${FTYPE}${RESET}${ITALIC} not convertable to${RESET} ${WHITE_FG}${ETYPE}${RESET}")
+[[ ${FTYPE} != ${ETYPE} ]] && exit_leave $(msg_exit E "${WHITE_FG}${FTYPE}${RESET}${ITALIC} not convertable to${RESET} ${WHITE_FG}${ETYPE}${RESET}")
 
-[[ ${FTYPE} == 'video' && ! $(file -i ${FN}) =~ 'video' ]] && exit_leave $(msg_err "not a video file:${FN}")
-[[ ${FTYPE} == 'audio' && ! $(file -i ${FN}) =~ 'audio' ]] && exit_leave $(msg_err "not an audio file:${FN}")
+[[ ${FTYPE} == 'video' && ! $(file -i ${FN}) =~ 'video' ]] && exit_leave $(msg_exit E "not a video file:${FN}")
+[[ ${FTYPE} == 'audio' && ! $(file -i ${FN}) =~ 'audio' ]] && exit_leave $(msg_exit E "not an audio file:${FN}")
 
 echo "Processing ${FTYPE} file:${FN}"
 
-ffmpeg -i ${FN} ${FN:r}.${EXT}
+ffmpeg -y -i ${FN} ${FN:r}.${EXT}
 
 exit_leave

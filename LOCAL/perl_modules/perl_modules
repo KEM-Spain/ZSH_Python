@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#vim: syntax off
+ 
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -15,13 +15,14 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-#Constants
-LIB=/usr/local/lib
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
-#Includes
-source ${LIB}/common.zsh
-
-#Declarations
+# Declarations
 typeset -a LIST
 
 #--Begin GetOpts--
@@ -33,8 +34,8 @@ SCRIPT=${0:t}
 
 read -r -d '' DESC<<EOF
 Search the system for perl modules. 
-If a <SEARCHTERM> is specified, returns any matching path
-or module. Without a <SEARCHTERM>, all modules are listed.
+\tIf a <SEARCHTERM> is specified, returns any matching path
+\tor module. Without a <SEARCHTERM>, all modules are listed.
 EOF
 
 parse_opts () {
@@ -75,7 +76,7 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-I${RESET} manage installed modules"
 	echo -e "${WHITE_FG}-i${RESET} case insensitive search"
-	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	exit_leave "\n${PENDING_MSGS}\n"
 }
 
@@ -102,27 +103,28 @@ shift $((OPTIND -1))
 # Execution
 [[ ${INSTALLED} == 'true' ]] && /usr/local/lib/perl_mods && exit_leave
  
-#Set case sensitivity
+# Set case sensitivity
 [[ ${CASE} == 'false' ]] && CASE_OPT='-i' || CASE_OPT=''
 
-#Set SEARCHTERM
+# Set SEARCHTERM
 [[ -n ${1} ]] && SEARCHTERM=${1}
 
-#Search for modules, prepend depth of path, sort by depth and path, remove depth
+# Search for modules, prepend depth of path, sort by depth and path, remove depth
 [[ ${CASE} == 'true' ]] && MSG="(case sensitive search)" || MSG='(case insensitive)'
 if [[ -n ${SEARCHTERM} ]];then
-	echo "Searching for paths or modules matching:${WHITE_FG}${1}${RESET}..."
+	echo "Searching for paths or modules matching:${WHITE_FG}<${SEARCHTERM}>${RESET}"
 	[[ -n ${MSG} ]] && echo ${MSG}
 else
 	echo "Searching for ALL perl modules..."
 fi
 
 LIST=("${(f)$(
-/usr/bin/locate ${CASE_OPT} -r ".*${SEARCHTERM}.*\.pm$" |
+/usr/bin/locate ${CASE_OPT} -r ".*\b${SEARCHTERM}.*\.pm$" |
 while read LINE;do
-	[[ ${LINE:l} =~ "/build/" ]] && continue #ignore
-	[[ ${LINE:l} =~ "/test/" ]] && continue #ignore
-	[[ ${LINE:l} =~ "/work/" ]] && continue #ignore
+	[[ ${LINE:l} =~ "/build/" ]] && continue # Ignore
+	[[ ${LINE:l} =~ "/test/" ]] && continue # Ignore
+	[[ ${LINE:l} =~ "/work/" ]] && continue # Ignore
+	[[ ${LINE:l} =~ "/snap/" ]] && continue # Ignore
 	DEPTH=$(awk '{print gsub(/[/]/,"")}' <<<${LINE})
 	echo "${DEPTH}|${LINE}"
 done | sort -n -t'_' -k2 -k1 | cut -d'|' -f2
@@ -134,7 +136,7 @@ if ! arr_is_populated "${LIST}";then
 	exit_leave "No matches for:${WHITE_FG}${SEARCHTERM}${RESET} ${MSG}"
 fi
 
-#Output list as path followed by modules
+# Output list as path followed by modules
 LAST_HEAD=?
 for L in ${LIST};do
 	HEAD=${L:h}
@@ -144,3 +146,4 @@ for L in ${LIST};do
 	LAST_HEAD=${HEAD}
 done | mypager
 
+exit_leave

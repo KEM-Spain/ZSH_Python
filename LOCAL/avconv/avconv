@@ -101,15 +101,22 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
+
 # Execution
 [[ -z ${1} ]] && usage "missing argument:$(opt_type f)" || FN=${1}
-[[ -z ${2} ]] && usage "missing argument:$(opt_type e)" || EXT=${2}
+if [[ ${FN:e:l} == 'mov' ]];then
+	EXT=mkv
+elif [[ -z ${2} ]];then
+	usage "missing argument:$(opt_type e)"
+else
+	EXT=${2}
+fi
 
 [[ ! -e ${FN} ]] && exit_leave $(msg_exit E "file not found:${1}")
 
 FN_EXT=${FN:e}
 
-# Capture file extension if complete file name was entered
+# Capture file extension if complete file name was entered instead of bare extension
 for E in ${_VID_EXT};do
 	if [[ ${EXT} == ${E} ]];then
 		break
@@ -137,6 +144,10 @@ ETYPE=false
 
 echo "Processing ${FTYPE} file:${FN}"
 
-ffmpeg -y -i ${FN} ${FN:r}.${EXT}
+if [[ ${FN:e:l} == 'mov' ]];then
+	ffmpeg -hide_banner -loglevel error -y -i ${FN} -c copy -f matroska ${FN:r}.mkv
+else
+	ffmpeg -hide_banner -loglevel error -y -i ${FN} ${FN:r}.${EXT}
+fi
 
 exit_leave

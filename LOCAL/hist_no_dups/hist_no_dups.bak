@@ -37,14 +37,14 @@ HIST_BAK=${HIST_DIR}/.zsh_history.bak
 HIST_TAB=$(mktemp ${HIST_TMP}/hist.table.XXXXXX)
 HIST_NEW=$(mktemp ${HIST_TMP}/hist.new.XXXXXX)
 HIST_REJECTS=$(mktemp ${HIST_TMP}/hist.rejects.XXXXXX)
-HIST_HOLD=${HIST_FILE}.$(date +"%s")
+HIST_SAVE=${HIST_FILE}.$(date +"%s")
 LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
 # Execution
 [[ ${1} == '-p' ]] && _PROD=true || _PROD=false
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
-cp ${HIST_FILE} ${HIST_HOLD}
+cp ${HIST_FILE} ${HIST_SAVE}
 
 #[[ ${_PROD} == 'false' ]] && echo "${BOLD}${RED_FG}Updating locate db${RESET}"
 echo -n "${ITALIC}Updating locate...${RESET}" >&2
@@ -74,8 +74,6 @@ done < ${HIST_FILE}
 
 RAW_CMDS=(${(o)RAW_CMDS}) # Sorted, unique commands
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Unique History Lines:${WHITE_FG}${#RAW_CMDS}${RESET}"
-
-[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Filtering garbage...${RESET}"
 
 # Filter typos and bogus
 LOC=0
@@ -156,11 +154,9 @@ HIST_CNT=$(wc -l ${HIST_NEW} | cut -d' ' -f1)
 [[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Rejects:" ${#HIST_REJECTS}
 [[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Cleaned:" ${HIST_CNT}
 
-if [[ ${_PROD} == 'true' ]];then
-	cp ${HIST_HOLD} ${HIST_BAK}
-	cp ${HIST_NEW} ${HIST_FILE}
-	/bin/rm -f ${HIST_HOLD}
-	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${HIST_CNT}
-	fc -R # Refresh history
-	/bin/rm -f ${HIST_TAB} ${HIST_NEW} ${HIST_REJECTS}
-fi
+cp ${HIST_SAVE} ${HIST_BAK}
+cp ${HIST_NEW} ${HIST_FILE}
+fc -R # Refresh history
+/bin/rm -f ${HIST_TAB} ${HIST_NEW} ${HIST_REJECTS} ${HIST_SAVE}
+
+[[ ${_PROD} == 'true' ]] && printf "Clean History (${WHITE_FG}%d${RESET})\n" ${HIST_CNT}
