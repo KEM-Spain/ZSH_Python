@@ -22,13 +22,14 @@ source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
-typeset -a _LIST
-typeset -a _SUB_LIST
+typeset -A _SZ_FN=()
+typeset -a _DIR_LIST=()
+typeset -a _FLIST=()
 typeset -a _ICO_DIRS=(/opt ${HOME}/.local/share /usr/share/icons /usr/share/pixmaps)
-typeset -a _DIR_LIST
-typeset -a _FLIST
-typeset -a _SIZES
-typeset -a _SZ_LIST
+typeset -a _LIST=()
+typeset -a _SIZES=()
+typeset -a _SUB_LIST=()
+typeset -aU _SZ_LIST=()
 
 # Constants
 _ICO_REGEX='.*(ico|png|svg)$'
@@ -142,7 +143,7 @@ if [[ ${GET_DIR} == 'true' ]];then
 	ICON_DIR=''
 
 	sel_set_list ${(on)_ICO_DIRS}
-	sel_list -O ${MAGENTA_FG} -x10 -y32 -M"<w>Select icon directory<N>"
+	sel_list -O ${MAGENTA_FG} -x5 -y11 -M"<w>Select icon directory<N>"
 
 	[[ ${?} -ne 0 ]] && echo "${BOLD}${RED_FG}Cancelled...${RESET}" && exit_leave
 
@@ -189,32 +190,31 @@ fi
 if [[ ${GET_SIZE} == 'true' ]];then
 	ICON_SIZE=''
 
-	msg_box -x14 -y92 "<w>Building size list...<N>"
+	MSG="<w>Building size list...<N>"
+	[[ ${#_FLIST} -gt 1000 ]] && MSG+="|Processing a large number of files (${#_FLIST}) - please wait..."
+	msg_box -x5 -y11 ${MSG}
 
-	_SIZES+=("${(f)$(
 	for F in ${_FLIST};do
-		file ${F} | grep -Po '\d+ x \d+'
-	done | sort -u
-	)}")
+		_SZ_FN[${F}]=$(file ${F} | grep -Po '\d+ x \d+')
+		_SZ_LIST+=${_SZ_FN[${F}]}
+	done
 
-	sel_set_list ${(on)_SIZES}
-	sel_list -O ${CYAN_FG} -x10 -y92 -M"<w>Select icon size<N>"
+	sel_set_list ${(on)_SZ_LIST}
+	sel_list -O ${CYAN_FG} -x5 -y11 -M"<w>Select icon size<N>"
 
 	[[ ${?} -ne 0 ]] && echo "${BOLD}${RED_FG}Cancelled...${RESET}" && exit_leave
+	msg_box_clear OUTER_BOX
 
 	ICON_SIZE=${_SEL_VAL}
 
-	for F in ${_FLIST};do
-		if file ${F} | grep -qi ${ICON_SIZE};then
-			_SZ_LIST+=${F}
-		fi
+	_FLIST=()
+	for K in ${(k)_SZ_FN};do
+		[[ ${_SZ_FN[${K}]} == ${ICON_SIZE} ]] && _FLIST+=${K} # Narrow _FLIST
 	done
-	_FLIST=(${_SZ_LIST})
-	msg_box_clear OUTER_BOX
 fi
 
 if [[ ${PRINT_PATHS} == 'true' ]];then # View or save a list of icon paths
-	FN=icon_list.out
+	FN_OUT=icon_list.out
 	VIEW=false
 	WRITE=false
 
@@ -234,12 +234,12 @@ if [[ ${PRINT_PATHS} == 'true' ]];then # View or save a list of icon paths
 			echo ${RANK}${L}
 		done | sort -u | sed 's/^[0-9]//' | mypager
 	elif [[ ${WRITE} == 'true' ]];then
-		[[ -e ${FN} ]] && /bin/rm -f ${FN} >/dev/null 2>&1
+		[[ -e ${FN_OUT} ]] && /bin/rm -f ${FN_OUT} >/dev/null 2>&1
 		for L in ${_FLIST};do
-			echo ${L} >> ${FN}
+			echo ${L} >> ${FN_OUT}
 		done
 		do_rmcup
-		echo "Wrote ${#_FLIST} icon paths to file:${WHITE_FG}${FN}${RESET}"
+		echo "Wrote ${#_FLIST} icon paths to file:${WHITE_FG}${FN_OUT}${RESET}"
 	fi
 
 	exit_leave
@@ -274,6 +274,7 @@ read -sq RESPONSE
 
 SHOWN=0
 NDX=0
-geeqie --geometry=800x400+600+280 +t ${_FLIST}
+clear
+geeqie --geometry=800x400+600+280 +t ${_FLIST} 2>/dev/null
 
 exit_leave

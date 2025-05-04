@@ -976,6 +976,7 @@ log_update () {
 	local INODE=''
 	local LINE=''
 	local NEW_LOG=/tmp/log.new
+	local HIT=false
 	local L
 
 	{
@@ -986,6 +987,7 @@ log_update () {
 			INODE=$(cut -d'|' -f1 <<<${LINE})
 			FN_HIT=$(find ${_DOWNLOAD_DIR} -maxdepth 1 -inum ${INODE})
 			if [[ -n ${FN_HIT} ]];then
+				HIT=true
 				grep ${INODE} ${_DOWNLOAD_LOG} 2>/dev/null >> ${NEW_LOG}
 			else
 				echo "${0}: Removing expired inode:${INODE}" >> ${_YTS_DBG_LOG}
@@ -994,8 +996,10 @@ log_update () {
 
 		if [[ -e ${NEW_LOG} ]];then
 			echo "${0}: NEW_LOG lines:$(wc -l ${NEW_LOG})" >> ${_YTS_DBG_LOG}
-			cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG:r}.bak
+			cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
 			mv -f ${NEW_LOG} ${_DOWNLOAD_LOG}
+		else
+			[[ ${HIT} == 'false' ]] && /bin/rm -f ${_DOWNLOAD_LOG} && touch ${_DOWNLOAD_LOG} # No files present - kill log
 		fi
 	} 2>/dev/null
 }
