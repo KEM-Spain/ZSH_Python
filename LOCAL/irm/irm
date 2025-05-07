@@ -19,6 +19,7 @@ YELLOW_FG="\033[33m"
 typeset -a LOCAL_LIST
 typeset -a MARKED
 typeset -A NAME_INODE
+typeset -a _INODES
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -35,7 +36,7 @@ action_do () {
 
 	for M in ${(on)MARKED};do
 		INODE=${NAME_INODE[${_LIST[${M}]}]}
-		[[ -z $INODE ]] && exit_leave $(msg_exit W "Missing inode")
+		[[ -z $INODE ]] && exit_leave $(msg_exit E "Missing inode")
 
 		FILE=$(find ${FPATH} -maxdepth 1 -inum ${INODE} )
 		if [[ -n ${FILE} ]];then
@@ -140,7 +141,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
@@ -150,10 +151,24 @@ PATHLBL=$(path_get_label 40)
 
 INODE=''
 if [[ ${#} -ne 0 ]];then
+	clear
 	if validate_is_integer ${1};then
 		INODE=${1}
-		find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -f {} \;
-		[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "Unable to remove inode:${INODE}") || exit_leave "${WHITE_FG}${INODE}${RESET} was removed"
+		_INODES=("${(f)$(ls -i | cut -d' ' -f1)}")
+		if [[ ${_INODES[(i)${INODE}]} -le ${#_INODES} ]];then
+			echo -n "Inode located. Remove inode:${INODE}? (y/n):"
+			read -q RESPONSE
+			if [[ ${RESPONSE} == 'y' ]];then
+				find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -f {} \;
+				exit_leave $(msg_exit I "Removed inode:${INODE}")
+			else
+				exit_leave "${RED_FG}Operation Cancelled${RESET}"
+			fi
+		else
+			exit_leave $(msg_exit E "Inode:${INODE} not found")
+		fi
+	else
+		exit_leave $(msg_exit E "Invalid inode:${INODE}")
 	fi
 fi
 

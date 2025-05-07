@@ -27,7 +27,7 @@ source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Execution
-[[ ${#} -eq 0 ]] && exit_leave $(msg_exit W "Missing argument:<FORMULA>")
+[[ ${#} -eq 0 ]] && exit_leave $(msg_exit E "Missing argument:<FORMULA>")
 
 if [[ ${1} == '-H' ]];then
 	tabs 5

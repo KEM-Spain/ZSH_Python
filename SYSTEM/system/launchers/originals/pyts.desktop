@@ -2,8 +2,9 @@
 Version=1.0
 Name=Pyts
 Comment=Torrent Search
-TryExec=/usr/local/bin/pyts
-Exec=/usr/local/bin/pyts %U
-Icon=/usr/local/bin/__pyscripts__/pyts/pyts.svg
+Exec=/usr/local/bin/system/launchers/run_pyts
+Exec=/usr/local/bin/system/launchers/run_pyts %U
+#Icon=/usr/local/bin/__pyscripts__/pyts/pyts.svg
+Icon=/usr/share/icons/Yaru/32x32@2x/mimetypes/application-x-bittorrent.png
 Type=Application
 Categories=torrent

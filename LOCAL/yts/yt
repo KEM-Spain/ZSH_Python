@@ -41,7 +41,7 @@ fi
 LIST=("${(f)$(ls -1 --color=never)}")
 for L in ${LIST};do
 	grep -q -P '\-\[' <<<${L}
-	[[ ${?} -eq 0 ]] && fsub -y -Y ${L}
+	[[ ${?} -eq 0 ]] && fsub -y -Y ${L} && fsub -y '_' ' ' ${L} && fsub -y ' [st] ' '\x27s ' ${L}
 done
 
 echo "yt download:${@}" >> /tmp/yts.url.log

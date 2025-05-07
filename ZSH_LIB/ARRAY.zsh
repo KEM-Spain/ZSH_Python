@@ -84,20 +84,14 @@ arr_long_elem_len () {
 }
 
 in_array () {
-	local ELEMENT=${1};shift
-	local -a ALIST=($(tr '\x0a' ' ' <<<${@}))
-	local L
-
-	[[ -z ${ALIST} ]] && return 1
+	local ARRAY_NAME=${1}
+	local ELEMENT=${2}
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ARRAY_NAME:${ARRAY_NAME}"
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ELEMENT:${ELEMENT}"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ALIST:${ALIST}"
 
-	for L in ${ALIST};do
-		[[ ${L} == ${ELEMENT} ]] && return 0
-	done
-
+	[[ ${${(P)ARRAY_NAME}[(i)${ELEMENT}]} -le ${#${(P)ARRAY_NAME}} ]] && return 0
 	return 1
 }
 

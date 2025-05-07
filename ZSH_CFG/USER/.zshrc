@@ -44,7 +44,6 @@ source ${_SYS_ALIASES}
 source ${_SYS_ZSHRC}
 source ${_USR_LOCAL_SRC}/fast-syntax-highlighting/F-Sy-H.plugin.zsh # fast-syntax-highlighting.plugin
 source ${_USR_LOCAL_SRC}/zhooks/zhooks.plugin.zsh # add zhooks command to display active hooks
-TERM=xterm-256color
 
 # Exports
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=97:ln=32:bn=32:se=36' # https://askubuntu.com/questions/1042234/modifying-the-color-of-grep
@@ -215,23 +214,13 @@ umask 002 # Standard
 alias sudo='sudo ' # Sudo tweak
 
 # Completions
-# /bin/rm -rf ~/.zcompdump # remove cache
 fpath=(/home/kmiller/.zsh/completions ${fpath})
 autoload -Uz compinit && compinit
 
 # Hooks
-add-zsh-hook precmd _reload_funcs # HOOK: Automatically reload any modified functions
-add-zsh-hook precmd _reload_aliases # HOOK: Automatically reload any modified aliases
-#add-zsh-hook precmd _chrome_restore_tweak # HOOK: Tweak chrome to prevent restore prompt
+add-zsh-hook precmd _reload_funcs # Reload modified functions
+add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
-
-# Misc Cleanup
-# typeset -a CLEAN
-# CLEAN+=$(find ~ -maxdepth 1 -name 'jdraw*')
-# CLEAN+=$(find ~ -maxdepth 1 -name 'kazam*')
-# CLEAN+=$(find ~ -maxdepth 1 -name 'kodi*')
-# CLEAN+=$(find ~ -maxdepth 1 -name 'core*')
-# [[ -n ${CLEAN} ]] && for C in ${CLEAN};do rm -f ${C};done
 
 # Execution
 if [[ ${_TERMS} -eq 1 ]];then

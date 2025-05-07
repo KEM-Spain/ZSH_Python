@@ -709,3 +709,16 @@ parse_get_last_field () {
 reset_rate () {
 	eval "xset ${_XSET_DEFAULT_RATE}"
 }
+
+respond () {
+	local _QUESTION=${@}
+	local RESPONSE
+
+	echo -n "${_QUESTION}${WHITE_FG}?${RESET} ${WHITE_FG}(${RESET}${BOLD}${ITALIC}y${BOLD}${WHITE_FG}/${RESET}${BOLD}${ITALIC}n${RESET}${WHITE_FG})${RESET}:"
+	read -q RESPONSE;echo
+	if [[ ${RESPONSE} == 'y' ]];then
+		return 0
+	else
+		return 1
+	fi
+}

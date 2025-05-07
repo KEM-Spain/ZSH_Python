@@ -43,10 +43,11 @@ typeset -A _REJECTS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
-typeset -A _RESERVED=()
+typeset -a _ACRONYMS=()
 typeset -a _LOCAL_LIST=()
 
 # Constants
+_ACRONYMS_FN=/usr/local/etc/acronyms.txt
 _YTS_DIR=~/.yts
 _SRC_DIR=/usr/local/src
 _ACTION=download
@@ -67,7 +68,6 @@ _MAX_HDR=65
 _MAX_TITLE=75
 _OBJECT=video
 _PAUSE_TM=2
-_RESERVED=(MOATS 1 NYC 1 CIA 1)
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _UPD_MARKER=${_YTS_DIR}/yts-upd.lastrun
 _YTS_DBG_LOG=/tmp/yt.dbg.log
@@ -471,7 +471,7 @@ clean_title () {
 							echo "${0}: Prettified:${STR}" >> ${_YTS_DBG_LOG}
 						fi
 					fi
-					[[ ${_RESERVED[${U}]} -eq 1 ]] && STR=$(sed "s/${W}/${U}/" <<<${STR}) # Valid words that are always UC
+					[[ ${_ACRONYMS[(i)${U}]} -le ${#_ACRONYMS} ]] && STR=$(sed "s/${W}/${U}/" <<<${STR}) # Acromyns
 				fi
 			done
 		done
@@ -1021,9 +1021,9 @@ post_process () {
 	NDX=0
 	while true;do
 		((NDX++))
-		PID=$(pgrep -n ffmpeg) # Wait for processing to finish
+		PID=$(pgrep -n "yt-dlp") # Wait for processing to finish
 		[[ -z ${PID} ]] && sleep 2 && break
-		msg_box "(<w>${NDX}<N>) <r>Waiting for <w>ffmpeg<r> to finish<N>..."
+		msg_box "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish..."
 		sleep 1
 	done
 
@@ -1558,7 +1558,6 @@ for A in ${@};do
 	fi
 done
 
-
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
@@ -1585,6 +1584,10 @@ log_update # Update the log
 clear
 
 fav_load ${_FAV_TAB}
+
+while read LINE;do
+	_ACRONYMS+=${LINE}
+done < ${_ACRONYMS_FN}
 
 # Arg handling for yts.js
 if [[ ${g_QRY_ENGINE} == 'youtube' ]];then

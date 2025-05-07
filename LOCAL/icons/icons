@@ -33,9 +33,12 @@ typeset -aU _SZ_LIST=()
 
 # Constants
 _ICO_REGEX='.*(ico|png|svg)$'
+_ICO_STASH=/tmp/icon_stash
 
 # Globals
 g_LIMIT=200
+g_ICON_DIR=''
+g_ICON_SIZE=''
 
 # Functions
 is_valid_int () {
@@ -140,24 +143,24 @@ shift $((OPTIND -1))
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1}
 
 if [[ ${GET_DIR} == 'true' ]];then
-	ICON_DIR=''
+	g_ICON_DIR=''
 
 	sel_set_list ${(on)_ICO_DIRS}
 	sel_list -O ${MAGENTA_FG} -x5 -y11 -M"<w>Select icon directory<N>"
 
 	[[ ${?} -ne 0 ]] && echo "${BOLD}${RED_FG}Cancelled...${RESET}" && exit_leave
 
-	ICON_DIR=${_SEL_VAL}
+	g_ICON_DIR=${_SEL_VAL}
 	msg_box_clear OUTER_BOX
 fi
 
 # Build file list of icons
-if [[ -n ${ICON_DIR} ]];then
-	tput cup 0 0; printf "Processing directory ${WHITE_FG}%s${RESET}" ${ICON_DIR}
+if [[ -n ${g_ICON_DIR} ]];then
+	tput cup 0 0; printf "Processing directory ${WHITE_FG}%s${RESET}" ${g_ICON_DIR}
 	if [[ -n ${SEARCHTERM} ]];then
-		_FLIST=("${(f)$(find -P ${ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" | grep -i ${SEARCHTERM} 2>/dev/null)}")
+		_FLIST=("${(f)$(find -P ${g_ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" | grep -i ${SEARCHTERM} 2>/dev/null)}")
 	else
-		_FLIST=("${(f)$(find -P ${ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" 2>/dev/null)}")
+		_FLIST=("${(f)$(find -P ${g_ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" 2>/dev/null)}")
 	fi
 else
 	NDX=0
@@ -188,7 +191,7 @@ if [[ -n ${SEARCHTERM} ]];then
 fi
 
 if [[ ${GET_SIZE} == 'true' ]];then
-	ICON_SIZE=''
+	g_ICON_SIZE=''
 
 	MSG="<w>Building size list...<N>"
 	[[ ${#_FLIST} -gt 1000 ]] && MSG+="|Processing a large number of files (${#_FLIST}) - please wait..."
@@ -205,11 +208,11 @@ if [[ ${GET_SIZE} == 'true' ]];then
 	[[ ${?} -ne 0 ]] && echo "${BOLD}${RED_FG}Cancelled...${RESET}" && exit_leave
 	msg_box_clear OUTER_BOX
 
-	ICON_SIZE=${_SEL_VAL}
+	g_ICON_SIZE=${_SEL_VAL}
 
 	_FLIST=()
 	for K in ${(k)_SZ_FN};do
-		[[ ${_SZ_FN[${K}]} == ${ICON_SIZE} ]] && _FLIST+=${K} # Narrow _FLIST
+		[[ ${_SZ_FN[${K}]} == ${g_ICON_SIZE} ]] && _FLIST+=${K} # Narrow _FLIST
 	done
 fi
 
@@ -248,8 +251,8 @@ fi
 # Display icons in viewer
 ROW=1
 tput cup ${ROW} 0; tput el; echo -n "Found:${WHITE_FG}${#_FLIST}${RESET} icon file(s)"
-if [[ -n ${ICON_DIR} ]];then
-	echo -n " in ${WHITE_FG}${ICON_DIR}${RESET}"
+if [[ -n ${g_ICON_DIR} ]];then
+	echo -n " in ${WHITE_FG}${g_ICON_DIR}${RESET}"
 else
 	echo -n " in ${WHITE_FG}${#_ICO_DIRS}${RESET} directories"
 fi
@@ -260,21 +263,30 @@ if [[ -n ${SEARCHTERM} ]];then
 	echo -n "Matching SEARCH:${WHITE_FG}${SEARCHTERM}${RESET}"
 fi
 
-if [[ -n ${ICON_SIZE} ]];then
+if [[ -n ${g_ICON_SIZE} ]];then
 	((ROW++))
 	tput cup ${ROW} 0
-	echo -n "Size:${WHITE_FG}${ICON_SIZE}${RESET}"
+	echo -n "Size:${WHITE_FG}${g_ICON_SIZE}${RESET}"
 fi
 
 ((ROW++))
-tput cup ${ROW} 0
+tput cup ${ROW} 0; tput el
 echo -n "Continue (y/n)?"
 read -sq RESPONSE
 [[ ${RESPONSE} == 'n' ]] && exit_leave "${RED_FG}Operation Canceled${RESET}"
 
-SHOWN=0
-NDX=0
+# Create links to selected files in ${_ICO_STASH}
+[[ ! -e ${_ICO_STASH} ]] && md ${_ICO_STASH} || /bin/rm -f ${_ICO_STASH}/*
 clear
-geeqie --geometry=800x400+600+280 +t ${_FLIST} 2>/dev/null
+NDX=0
+[[ -n ${g_ICON_DIR} ]] && DIR_LBL=${g_ICON_DIR} || DIR_LBL="${#_ICO_DIRS} directories"
+for F in ${_FLIST};do
+	((NDX++))
+	tput cup 0 0; tput el; printf "\rProcessing ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} in ${WHITE_FG}%s${RESET} ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_FLIST} ${DIR_LBL} $(( NDX * 100. / ${#_FLIST} )) 
+	ln -s ${F} ${_ICO_STASH} 2>/dev/null
+done
+
+clear
+geeqie --geometry=1200x400+350+280 +t ${_ICO_STASH} 2>/dev/null &
 
 exit_leave

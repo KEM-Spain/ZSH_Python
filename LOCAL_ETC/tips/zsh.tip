@@ -347,8 +347,8 @@ typeset -a TEST
 TEST=("one" "two" "three times") # Assignment
 
 ${E_WHITE_FG}To get index:${E_RESET}
-for i in \${arr}; do
-	echo "index \${arr[(ie)\${i}]}";
+for I in \${arr}; do
+	echo "index \${arr[(ie)\${I}]}";
 done
 
 ${E_WHITE_FG}To delete an element from a regular array: ${E_RESET}

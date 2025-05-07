@@ -214,7 +214,7 @@ do_list () {
 			sel_list -S -T"SUBLIST" -sa -F"<w>Select ${(C)g_LIST_TYPE} or <h>(q)uit<N>"
 			[[ ${?} -ne 0 ]] && exit_leave
 
-			if [[ ${g_LIST_TYPE} =~ 'actor\|director' ]];then
+			if [[ ${LIST_TYPE} =~ 'actor\|director' ]];then
 				_SEL_F2=$(cut -d: -f2 <<<${_SEL_VAL})
 				L_NAME=$(cut -d',' -f1 <<<${_SEL_F2})
 				F_NAME=$(cut -d',' -f2 <<<${_SEL_F2} | sed 's/^ //')
@@ -266,7 +266,7 @@ format_list () {
 		fi
 	done
 
-	_SLIST=(${(on)_SLIST}) # Sort
+	_SLIST=(${(o)_SLIST}) # Sort
 }
 
 get_field () {
@@ -364,6 +364,8 @@ key_callback () {
 }
 
 list_selection () {
+	local -a TMP=()
+
 	# Set headings
 	list_clear_header
 	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Selected:${WHITE_FG}%-3d %s ${CYAN_FG}%s ${BLACK_FG}${_PAD}${WHITE_FG}${_PG}${RESET}" ${#_SLIST} ${SELECTED_COUNT} ${HEADER} ${SEARCHTERM}'
@@ -384,7 +386,17 @@ list_selection () {
 
 	while true;do
 		g_UPDATE=false
-		list_select ${(on)_SLIST} # Display list
+
+		if [[ ${_SEL_VAL:l} =~ 'year' ]];then
+			TMP=("${(f)$(
+			for L in ${_SLIST};do
+				echo ${L}
+			done | sort -t'|' -k2
+			)}")		
+			_SLIST=(${TMP})
+		fi
+
+		list_select ${_SLIST} # Display list
 
 		if [[ $(list_get_selected_count) -ne 0 ]];then
 			_MARKED=($(list_get_selected)) # Get user selections

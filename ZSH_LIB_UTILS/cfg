@@ -193,7 +193,11 @@ _APP_DIRS=("${(f)$(echo ${_APP_DIRS})}") # Break array on newline
 
 ONCE=true
 for D in ${CFGDIRS};do
-	[[ -n $(in_array ${D} ${_APP_DIRS}) ]] && INAME='' || INAME="-name '*${SEARCHTERM}*'"
+	if in_array _APP_DIRS ${D};then
+		INAME=''
+	else
+		INAME="-name '*${SEARCHTERM}*'"
+	fi
 
 	CMD="sudo find ${D} -maxdepth ${DEPTH} \( -type f -o -type l \) ${INAME} ${_EXCLUDE}"
 	[[ ${_DEBUG} -gt 0 && ${ONCE} == 'true' ]] && dbg "${0}:${LINENO} CMD:${CMD}" && ONCE=false
@@ -210,10 +214,9 @@ done
 if arr_is_populated "${_GNOME_LIST}";then
 	echo "Found ${WHITE_FG}gnome extension${RESET} for '${SEARCHTERM}' in:${WHITE_FG}${_GNOME_LIST}${RESET}"
 
-	echo -n "Continue search?"
-	read -q RESPONSE
-	echo
-	if [[ ${RESPONSE} != "y" ]];then
+	respond "Continue search"
+	if [[ ${?} -ne 0 ]];then
+		do_rmcup
 		echo "${RED_FG}Operation cancelled${RESET}..."
 		exit_leave
 	fi
