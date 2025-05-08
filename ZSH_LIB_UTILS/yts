@@ -309,9 +309,9 @@ action_do () {
 				HAD_ERROR=true
 				sleep 2
 				if [[ ${ERROR_CNT} -ge ${_MAX_ERRORS} ]];then
-					EMSG="<w>${TITLE[1,65]}<N>|<r>Too many errors - Unable to download<N>"
+					EMSG="<w>${TITLE[1,65]}<N>|<r>Hard error - Unable to download<N>"
 					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
-					kill_job
+					reset_job
 					_FAILED[${M}]=true && break # Scan cycle
 				fi
 			fi
@@ -419,12 +419,14 @@ clean_title () {
 	local UC_LIMIT=3
 	local U W
 
+	# echo "\n${0}: TYPE:${TYPE}" >> ${_YTS_DBG_LOG}
+
 	if [[ ${TYPE} == 'file' ]];then
 		STR=${TITLE[1,${_MAX_FLEN}]} # Filename
-		echo "\n${0}: Max length filename:${STR}" >> ${_YTS_DBG_LOG}
+		# echo "\n${0}: Max length filename:${STR}" >> ${_YTS_DBG_LOG}
 	elif [[ ${TYPE} == 'text' ]];then
 		STR=${TITLE[1,${_MAX_TITLE}]} # Title
-		echo "\n${0}: Max length title:${STR}" >> ${_YTS_DBG_LOG}
+		# echo "\n${0}: Max length title:${STR}" >> ${_YTS_DBG_LOG}
 	fi
 
 	STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
@@ -436,8 +438,8 @@ clean_title () {
 	STR=$(sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${STR}) # Trim
 	# echo "${0}: Trim:${STR}" >> ${_YTS_DBG_LOG}
 	 
-	STR=$(sed 's/[ _]s[ _]/\o047s /g' <<<${STR}) # Fix any yt-dlp apostrophe gaps
-	# echo "${0}: Apostrophe:${STR}" >> ${_YTS_DBG_LOG}
+	STR=$(sed 's/[ _]\(d\|s\|re\|ve\|ll\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
+	# echo "${0}: Apostrophe gap:${STR}" >> ${_YTS_DBG_LOG}
 	 
 	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
 	# echo "${0}: w/ (with):${STR}" >> ${_YTS_DBG_LOG}
@@ -453,7 +455,7 @@ clean_title () {
 	STR=${(C)STR} && COPY=${STR} # Proper case
 	# echo "${0}: Proper case:${STR}" >> ${_YTS_DBG_LOG}
 
-	STR=$(sed 's/\(\o047\)\([DST] \)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
+	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
 	# echo "${0}: UC letter following apostrophe:${STR}" >> ${_YTS_DBG_LOG}
 	
 	SEEN=()

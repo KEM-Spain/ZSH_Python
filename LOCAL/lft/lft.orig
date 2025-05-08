@@ -61,25 +61,16 @@ get_stat () {
 	echo ${STAT}
 }
 
-#item_decorate () {
-#	local NDX=${1}
-#	local FN=$(cut -d'|' -f1 <<<"${_LIST[${NDX}]:t}")
-#	local FN_TAG=''
-#
-#	[[ -d ${FN} ]] && FN_TAG=' (d)' || FN_TAG=''
-#
-#	echo -n "${FN}${FN_TAG}"
-#}
- 
 item_decorate () {
 	local NDX=${1}
 	local FN=$(cut -d'|' -f1 <<<"${_LIST[${NDX}]:t}")
 	local TAG
 
-	[[ -d ${FN} ]] && TAG=" (d)" || TAG=''
+	[[ -d ${FN} ]] && TAG="${WHITE_FG}(${CYAN_FG}d${WHITE_FG})${RESET}" || TAG=''
 
-	echo -n "${FN}${TAG}"
+	echo -n "${FN} ${TAG}"
 }
+
 
 #--Begin GetOpts--
 RESET="\033[m"

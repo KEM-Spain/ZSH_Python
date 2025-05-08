@@ -89,8 +89,14 @@ action_warn () {
 item_decorate () {
 	local NDX=${1}
 	local _MAX=$(( _MAX_COLS - 10 ))
+	local TAG
 
-	[[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]] && echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}][1,${_MAX}]}${E_RESET} ${E_ITALIC}deleted${E_RESET}" || echo -n ${_LIST[${NDX}][1,${_MAX}]}
+	[[ -d ${_LIST[${_LIST_NDX}]} ]] && TAG="${WHITE_FG}(${CYAN_FG}d${WHITE_FG})${RESET}" || TAG=''
+
+	case ${_LIST_SELECTED[${NDX}]} in
+		2) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}deleted${E_RESET}";;
+		*) tput el;echo -n "${_LIST[${NDX}]:t} ${TAG}";;
+	esac
 }
 
 sort_option () {

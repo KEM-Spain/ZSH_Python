@@ -67,17 +67,22 @@ action_warn () {
 
 item_decorate () {
   local NDX=${1}
+  local TAG
+
+  [[ -d ${_LIST[${_LIST_NDX}]} ]] && TAG="${WHITE_FG}(${CYAN_FG}d${WHITE_FG})${RESET}" || TAG=''
 
   case ${_LIST_SELECTED[${NDX}]} in
-			 2) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}deleted${E_RESET}";;
-			 *)      tput el;echo -n ${_LIST[${NDX}]:t};;
+		2) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}deleted${E_RESET}";;
+		*) tput el;echo -n "${_LIST[${NDX}]:t} ${TAG}";;
   esac
 }
 
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
-Delete selected files by inode
-\tProduces a list of files from which to select
+Delete files or directories by <INODE>.
+\tAn <INODE> may be supplied on the command
+\tline. If none is supplied, a list of files
+\tis produced to select from.
 EOF
 
 RESET="\033[m"
@@ -152,27 +157,28 @@ PATHLBL=$(path_get_label 40)
 INODE=''
 if [[ ${#} -ne 0 ]];then
 	clear
-	if validate_is_integer ${1};then
-		INODE=${1}
+	INODE=${1}
+	if validate_is_integer ${INODE};then
 		_INODES=("${(f)$(ls -i | cut -d' ' -f1)}")
 		if [[ ${_INODES[(i)${INODE}]} -le ${#_INODES} ]];then
-			echo -n "Remove inode: ${INODE}? (y/n)"
-			read -q RESPONSE
-			if [[ ${RESPONSE} == 'y' ]];then
+			I_NAME=$(find . -inum ${INODE})
+			[[ -d ${I_NAME} ]] && I_TYPE="<DIRECTORY>" || I_TYPE="<FILE>"
+			respond "Inode located. Remove ${WHITE_FG}${I_TYPE}${RESET}:${INODE}"
+			if [[ ${?} -eq 0 ]];then
 				find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -f {} \;
 				exit_leave $(msg_exit I "Removed inode:${INODE}")
 			else
 				exit_leave "${RED_FG}Operation Cancelled${RESET}"
 			fi
 		else
-			exit_leave $(msg_exit E "Inode not found:${INODE}")
+			exit_leave $(msg_exit E "Inode:${INODE} not found")
 		fi
 	else
 		exit_leave $(msg_exit E "Invalid inode:${INODE}")
 	fi
 fi
 
-LOCAL_LIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} -type f ! -path ." 2>/dev/null )}")
+LOCAL_LIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} ! -path ${FPATH}" 2>/dev/null )}")
 if [[ ${?} -ne 0 ]];then
 	dbg "${0}:${LINENO} ${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path . 2>/dev/null" 
 else

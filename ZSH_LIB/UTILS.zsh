@@ -711,12 +711,12 @@ reset_rate () {
 }
 
 respond () {
-	local _QUESTION=${@}
+	local PROMPT=${@}
 	local RESPONSE
 
-	echo -n "${_QUESTION}${WHITE_FG}?${RESET} ${WHITE_FG}(${RESET}${BOLD}${ITALIC}y${BOLD}${WHITE_FG}/${RESET}${BOLD}${ITALIC}n${RESET}${WHITE_FG})${RESET}:"
+	echo -n "${PROMPT}${WHITE_FG}?${RESET} ${WHITE_FG}(${RESET}${BOLD}${ITALIC}y${BOLD}${WHITE_FG}/${RESET}${BOLD}${ITALIC}n${RESET}${WHITE_FG})${RESET}:"
 	read -q RESPONSE;echo
-	if [[ ${RESPONSE} == 'y' ]];then
+	if [[ ${RESPONSE:l} == 'y' ]];then # Prompt user for yes or no response
 		return 0
 	else
 		return 1
