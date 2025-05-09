@@ -111,9 +111,9 @@ for L in ${(o)RAW_CMDS};do
 done
 echo
 
-[[ ${_PROD} == 'false' ]] && echo " WHICH found:${WHITE_FG}${WCH}${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "   MYA found:${WHITE_FG}${MYA}${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "LOCATE found:${WHITE_FG}${LOC}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo " WHICH validated:${WHITE_FG}${WCH}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "   MYA validated:${WHITE_FG}${MYA}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "LOCATE validated:${WHITE_FG}${LOC}${RESET}"
 
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history:${WHITE_FG}${#CMDS}${RESET}"
 [[ ${_PROD} == 'false' ]] && echo "        ${MAGENTA_FG}Rejects:${WHITE_FG}${#HIST_REJECTS}${RESET}"
@@ -139,7 +139,6 @@ for L in ${CMDS};do
 done
 
 # Create new history file
-# TODO: Keeps cycling through the same statistics - 2nd run should detect no dups.
 for L in ${HIST_BUILD};do
 	echo ${L}
 done | uniq | sort -nr -o ${HIST_NEW}

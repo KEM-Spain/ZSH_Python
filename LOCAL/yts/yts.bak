@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-
+ 
 # Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -28,9 +28,9 @@ source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
-typeset -A _BREAK_COORDS=(X $((_COORDS[X]+3)) Y $((_COORDS[Y]+3)) W $((_COORDS[W]-6)))
 typeset -A _ALERT_COORDS=(X $(( _COORDS[X] + 5 )) Y $(( _COORDS[Y] + _COORDS[W] -25 )))
+typeset -A _BREAK_COORDS=(X $((_COORDS[X]+3)) Y $((_COORDS[Y]+3)) W $((_COORDS[W]-6)))
+typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
 typeset -A _DISPLAY_KEYS=()
 typeset -A _DOWNLOADS=()
 typeset -A _FAILED=()
@@ -162,7 +162,7 @@ action_do () {
 
 		ERROR_CNT=0
 		RETRIES=0
-		start_job ${URL}
+		job_start ${URL}
 		msg_box -x${_COORDS[X]} -y${_COORDS[Y]} -h${_COORDS[H]} -w${_COORDS[W]} "Download requested..."
 		sleep 3
 
@@ -179,8 +179,8 @@ action_do () {
 			KEY=''
 			read -s -t0.1 -k1 KEY
 			if [[ ${KEY} == 'r' ]];then # Process job reset
-				reset_job
-				start_job ${URL}
+				job_reset
+				job_start ${URL}
 				HAD_ERROR=false
 				ERROR_CNT=0
 			fi
@@ -222,22 +222,12 @@ action_do () {
 			# Scan for 'unable to download'
 			LOG_LINE=$(grep -m1 -i "unable to download video" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				if [[ ${RETRIES} -eq 0 ]];then # Try one more time
-					echo "${0}: Got start error - executing retry" >> ${_YTS_DBG_LOG}
-					((RETRIES++))
-					reset_job
-					start_job ${URL}
-					HAD_ERROR=false
-					ERROR_CNT=0
-				else
-					echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
-					EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
-					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
-					_FAILED[${M}]=true
-					_DOWNLOADS[${M}]=false
-					_EXIT_SCRUB=false # Trigger log retention
-					break # Scan cycle
-				fi
+				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
+				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+				_FAILED[${M}]=true
+				_DOWNLOADS[${M}]=false
+				break # Scan cycle
 			fi
 
 			# Scan for 'resumed'
@@ -311,7 +301,7 @@ action_do () {
 				if [[ ${ERROR_CNT} -ge ${_MAX_ERRORS} ]];then
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Hard error - Unable to download<N>"
 					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
-					reset_job
+					job_reset
 					_FAILED[${M}]=true && break # Scan cycle
 				fi
 			fi
@@ -328,7 +318,7 @@ action_do () {
 			LINE_COLOR=''
 			if [[ -n ${ETA} && ${ETA_COMPLETE} == 'false' ]];then
 				ERROR_CNT=0 
-				show_down ${ETA}
+				#download_indicator ${ETA}
 				case ${ETA:l} in
 					*100*%*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;;; # Stop parsing ETA
 					*mib/s*) LINE_COLOR='<w>';;
@@ -438,7 +428,7 @@ clean_title () {
 	STR=$(sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${STR}) # Trim
 	# echo "${0}: Trim:${STR}" >> ${_YTS_DBG_LOG}
 	 
-	STR=$(sed 's/[ _]\(s\|re\|ve\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp apostrophe gaps
+	STR=$(sed 's/[ _]\(d\|s\|re\|ve\|ll\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
 	# echo "${0}: Apostrophe gap:${STR}" >> ${_YTS_DBG_LOG}
 	 
 	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
@@ -485,6 +475,99 @@ clean_title () {
 
 clear_tmp () {
 	[[ -e /tmp/*$$*state ]] && rm -rf /tmp/*$$*state
+}
+
+download_indicator () {
+	local LINE=${@}
+	local MASK="\\u2B24"
+	local L_A="🡄 "
+	local R_A="🡆"
+	local LINE_COLOR=''
+	local X=$((_ALERT_COORDS[X]-3))
+	local MASK_Y=5
+
+	X=$((X+3))
+	if [[ ${g_LAST_MASK_Y} -eq 2 ]];then
+		MASK_Y=6
+		MASK=${R_A}
+	else
+		MASK_Y=2
+		MASK=${L_A}
+	fi
+
+	case ${ETA:l} in
+		*mib*) LINE_COLOR="${BOLD}${GREEN_FG}";;
+		*kib*) LINE_COLOR="${BOLD}${YELLOW_FG}";;
+	esac
+
+ 	tcup ${X} $((_ALERT_COORDS[Y] + g_LAST_MASK_Y + 6));echo -n "${LINE_COLOR} ${RESET}"
+ 	tcup ${X} $((_ALERT_COORDS[Y] + MASK_Y + 6));echo -n "${LINE_COLOR}${MASK}${RESET}";sleep .06
+
+	g_LAST_MASK_Y=${MASK_Y}
+}
+
+download_select () {
+	local SEARCHTERM=${1}
+	local SEARCHTYPE=''
+	local L F
+	local TITLE
+	local FLST
+	local STR
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
+
+	SEARCHTYPE=Videos
+
+	_SORT_TABLE=(1 1 2 2 3 3) # Age, author, title
+
+	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
+		[[ ${g_LIVE} == 'true' ]] && SEARCHTYPE=Live
+	elif [[ ${g_QRY_ENGINE:l} == 'youtube' ]];then
+		[[ ${g_STRICT} == 'true' ]] && SEARCHTYPE="Strict (${g_STRICT_MSG})"
+	fi
+
+ # Set headings
+	list_set_header_init
+	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${(C)g_QRY_ENGINE} ${(C)SEARCHTERM} ${(C)SEARCHTYPE} $(list_get_selected_count)'
+	list_set_header 'printf " "'
+	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[age]} "Age" ${_FIELD_LEN[author]} "Author" ${_FIELD_LEN[title]} "Title"'
+	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[age]} "$(str_unicode_line ${_FIELD_LEN[age]})" ${_FIELD_LEN[author]} "$(str_unicode_line ${_FIELD_LEN[author]})" ${_FIELD_LEN[title]} "$(str_unicode_line ${_FIELD_LEN[title]})"'
+
+ # Set line item
+	list_set_line_item ' 
+	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
+	'
+
+	list_set_select_action ${_ACTION}
+	list_set_action_msgs video download
+	list_set_sortable true
+	list_set_searchable false
+	list_set_barlines true
+	list_set_page_callback log_find 
+	list_set_sort_defaults ARRAY "_LIST" COL 1 ORDER "a" DELIM ${_LIST_DELIM} TYPE "flat" TABLE "${(kv)_SORT_TABLE}" MAXCOL 3
+	list_set_restore_pos true
+
+	while true;do
+		# Generate list for selected title
+		list_select ${_LOCAL_LIST}
+		[[ ${?} -eq 0 ]] && break
+
+		_MARKED=($(list_get_selected))
+		
+		if [[ $(list_get_selected_count) -ne 0 ]];then
+			action_warn
+			if [[ ${_MSG_KEY} == "y" ]];then
+				action_do
+			fi
+			_LIST_SELECTED=()
+		fi
+	done
+
+	_DOWNLOADS=()
+	_FAILED=()
+	_FUTURE=()
 }
 
 fav_delete () {
@@ -780,6 +863,40 @@ item_decorate () {
 	echo -n ${STR}
 }
 
+job_reset () {
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	kill_job
+	msg_box -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<m>Job Restarted<N>"
+}
+
+job_start () {
+	local URL=${@}
+	local CMD=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	g_YTS_LOG=$(mktemp /tmp/yt.log.XXXXXX)
+
+	if [[ ${g_FIX_AUDIO} == 'true' ]];then
+		msg_box -H1 -x${_COORDS[X]} -h${_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
+		CMD="nohup yt -N2 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
+	else
+		CMD="nohup yt -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
+	fi
+
+	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} # Log command
+	echo "${0} QUERY:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Log command
+	echo "${0} CMD:${CMD}" >> ${_YTS_DBG_LOG} # Log command
+
+	eval "${CMD} >> ${g_YTS_LOG} 2>&1" & # Start background job
+	g_PID=$!
+
+	echo "${0} PID:${g_PID}" >> ${g_YTS_LOG} # Log pid
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: CMD:${CMD}"
+}
+
 kill_job () {
 	local JOB
 	local RC
@@ -804,7 +921,7 @@ kill_job () {
 		echo "No processes found for PID:${g_PID}" >> ${g_YTS_LOG}
 	fi
 
-	if [[ ! ${functrace[1]} =~ "reset_job" ]];then
+	if [[ ! ${functrace[1]} =~ "job_reset" ]];then
 		trap - INT # Disable trap
 		log_clear "kill_job"
 		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job${RESET}:${JOB} ${WHITE_FG}was ${RED_FG}killed${RESET}"
@@ -852,19 +969,6 @@ list_reset () {
 	_SELECTION_LIST=()
 }
 
-log_clear () {
-	local FROM=${1}
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
-		rm -f ${g_YTS_LOG}
-		echo "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}" >> ${_YTS_DBG_LOG} # Debug is NOT active - clear the log
-	else
-		echo "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Debug is active - retain the log
-	fi
-}
-
 log_add () {
 	local NDX=${1}
 	local LF=$(last_file) # Filename|Inode
@@ -880,6 +984,19 @@ log_add () {
 	[[ ${FN:e} == 'part' || ${FN:e} == 'temp' ]] && return # No partials in log
 
 	echo "${IN}|${TL}|${FN:t}|${TM}|${AU}" >> ${_DOWNLOAD_LOG}
+}
+
+log_clear () {
+	local FROM=${1}
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
+		rm -f ${g_YTS_LOG}
+		echo "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}" >> ${_YTS_DBG_LOG} # Debug is NOT active - clear the log
+	else
+		echo "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Debug is active - retain the log
+	fi
 }
 
 log_find () { 
@@ -975,46 +1092,50 @@ log_to_file () {
 
 log_update () {
 	local FN_HIT=''
+	local HAS_NEW_LOG=false
 	local INODE=''
 	local LINE=''
+	local LOG_LINE=''
 	local NEW_LOG=/tmp/log.new
-	local HIT=false
 	local L
 
+	# TODO: runaway log additions
 	{
 		[[ -e /tmp/log.new ]] && /bin/rm -f ${NEW_LOG}
-		echo "${0}: _DOWNLOAD_LOG lines:$(wc -l ${_DOWNLOAD_LOG})" >> ${_YTS_DBG_LOG}
+		echo "${0}: LOG lines BEFORE update:$(wc -l ${_DOWNLOAD_LOG})" >> ${_YTS_DBG_LOG}
 
 		while read LINE;do
+			HAS_NEW_LOG=false
 			INODE=$(cut -d'|' -f1 <<<${LINE})
 			FN_HIT=$(find ${_DOWNLOAD_DIR} -maxdepth 1 -inum ${INODE})
 			if [[ -n ${FN_HIT} ]];then
-				HIT=true
-				grep ${INODE} ${_DOWNLOAD_LOG} 2>/dev/null >> ${NEW_LOG}
+				HAS_NEW_LOG=true
+				LOG_LINE=$(grep ${INODE} ${_DOWNLOAD_LOG} 2>/dev/null)
+				[[ ${?} -eq 0 ]] && echo ${LOG_LINE} >> ${NEW_LOG}
 			else
-				echo "${0}: Removing expired inode:${INODE}" >> ${_YTS_DBG_LOG}
+				echo "${0}: Skipping expired inode:${INODE}" >> ${_YTS_DBG_LOG}
 			fi
 		done < ${_DOWNLOAD_LOG}
 
-		if [[ -e ${NEW_LOG} ]];then
-			echo "${0}: NEW_LOG lines:$(wc -l ${NEW_LOG})" >> ${_YTS_DBG_LOG}
+		if [[ ${HAS_NEW_LOG} == 'true' ]];then
 			cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
 			mv -f ${NEW_LOG} ${_DOWNLOAD_LOG}
+			echo "${0}: LOG lines AFTER update:$(wc -l ${_DOWNLOAD_LOG})" >> ${_YTS_DBG_LOG}
 		else
-			[[ ${HIT} == 'false' ]] && /bin/rm -f ${_DOWNLOAD_LOG} && touch ${_DOWNLOAD_LOG} # No files present - kill log
+			/bin/rm -f ${_DOWNLOAD_LOG} && touch ${_DOWNLOAD_LOG} # No files present - initialize new log
 		fi
 	} 2>/dev/null
 }
 
 post_process () {
 	local -a KEYWORDS=("judge napolitano - " "official" "^the " " show" "have it out with galloway \- " "youtube channel")
-	local -a LIST
+	local -a LIST=()
+	local -a PIDS=()
 	local -a TEMP_FILES=()
 	local FN=''
 	local LF=''
 	local MSG="Post Processing"
 	local NEW_FN=''
-	local PID=''
 	local NDX=0
 	local F K
 
@@ -1023,8 +1144,10 @@ post_process () {
 	NDX=0
 	while true;do
 		((NDX++))
-		PID=$(pgrep -n "yt-dlp") # Wait for processing to finish
-		[[ -z ${PID} ]] && sleep 2 && break
+		PIDS=("${(f)$(pgrep -n "yt-dlp")}")
+		if ! in_array PIDS ${g_PID};then
+			sleep 2 && break
+		fi
 		msg_box "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish..."
 		sleep 1
 	done
@@ -1297,77 +1420,6 @@ query_youtube () {
 	return 0
 }
 
-reset_job () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	kill_job
-	msg_box -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<m>Job Restarted<N>"
-}
-
-select_download () {
-	local SEARCHTERM=${1}
-	local SEARCHTYPE=''
-	local L F
-	local TITLE
-	local FLST
-	local STR
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
-
-	SEARCHTYPE=Videos
-
-	_SORT_TABLE=(1 1 2 2 3 3) # Age, author, title
-
-	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
-		[[ ${g_LIVE} == 'true' ]] && SEARCHTYPE=Live
-	elif [[ ${g_QRY_ENGINE:l} == 'youtube' ]];then
-		[[ ${g_STRICT} == 'true' ]] && SEARCHTYPE="Strict (${g_STRICT_MSG})"
-	fi
-
- # Set headings
-	list_set_header_init
-	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${(C)g_QRY_ENGINE} ${(C)SEARCHTERM} ${(C)SEARCHTYPE} $(list_get_selected_count)'
-	list_set_header 'printf " "'
-	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[age]} "Age" ${_FIELD_LEN[author]} "Author" ${_FIELD_LEN[title]} "Title"'
-	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[age]} "$(str_unicode_line ${_FIELD_LEN[age]})" ${_FIELD_LEN[author]} "$(str_unicode_line ${_FIELD_LEN[author]})" ${_FIELD_LEN[title]} "$(str_unicode_line ${_FIELD_LEN[title]})"'
-
- # Set line item
-	list_set_line_item ' 
-	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
-	'
-
-	list_set_select_action ${_ACTION}
-	list_set_action_msgs video download
-	list_set_sortable true
-	list_set_searchable false
-	list_set_barlines true
-	list_set_page_callback log_find 
-	list_set_sort_defaults ARRAY "_LIST" COL 1 ORDER "a" DELIM ${_LIST_DELIM} TYPE "flat" TABLE "${(kv)_SORT_TABLE}" MAXCOL 3
-	list_set_restore_pos true
-
-	while true;do
-		# Generate list for selected title
-		list_select ${_LOCAL_LIST}
-		[[ ${?} -eq 0 ]] && break
-
-		_MARKED=($(list_get_selected))
-		
-		if [[ $(list_get_selected_count) -ne 0 ]];then
-			action_warn
-			if [[ ${_MSG_KEY} == "y" ]];then
-				action_do
-			fi
-			_LIST_SELECTED=()
-		fi
-	done
-
-	_DOWNLOADS=()
-	_FAILED=()
-	_FUTURE=()
-}
-
 set_item_color () {
 	local ITEM=${1}
 
@@ -1380,62 +1432,6 @@ set_item_color () {
 		partial*) echo ${WHITE_ON_GREY};;
 		*) echo '';;
 	esac
-}
-
-show_down () {
-	local LINE=${@}
-	local MASK="\\u2B24"
-	local L_A="🡄 "
-	local R_A="🡆"
-	local LINE_COLOR=''
-	local X=$((_ALERT_COORDS[X]-3))
-	local MASK_Y=5
-
-	X=$((X+3))
-	if [[ ${g_LAST_MASK_Y} -eq 2 ]];then
-		MASK_Y=6
-		MASK=${R_A}
-	else
-		MASK_Y=2
-		MASK=${L_A}
-	fi
-
-	case ${ETA:l} in
-		*mib*) LINE_COLOR="${BOLD}${GREEN_FG}";;
-		*kib*) LINE_COLOR="${BOLD}${YELLOW_FG}";;
-	esac
-
- 	tcup ${X} $((_ALERT_COORDS[Y] + g_LAST_MASK_Y + 6));echo -n "${LINE_COLOR} ${RESET}"
- 	tcup ${X} $((_ALERT_COORDS[Y] + MASK_Y + 6));echo -n "${LINE_COLOR}${MASK}${RESET}";sleep .06
-
-	g_LAST_MASK_Y=${MASK_Y}
-}
-
-start_job () {
-	local URL=${@}
-	local CMD=''
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	g_YTS_LOG=$(mktemp /tmp/yt.log.XXXXXX)
-
-	if [[ ${g_FIX_AUDIO} == 'true' ]];then
-		msg_box -H1 -x${_COORDS[X]} -h${_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
-		CMD="nohup yt -N2 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
-	else
-		CMD="nohup yt -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
-	fi
-
-	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} # Log command
-	echo "${0} QUERY:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Log command
-	echo "${0} CMD:${CMD}" >> ${_YTS_DBG_LOG} # Log command
-
-	eval "${CMD} >> ${g_YTS_LOG} 2>&1" & # Start background job
-	g_PID=$!
-
-	echo "${0} PID:${g_PID}" >> ${g_YTS_LOG} # Log pid
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: CMD:${CMD}"
 }
 
 total_rejects () {
@@ -1642,7 +1638,7 @@ if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
 			query_${g_QRY_ENGINE} ${g_QUERY_KEY} # Call the extractor
 			 
 			if [[ ${?} -eq 0 ]];then
-				select_download ${g_QUERY_KEY}
+				download_select ${g_QUERY_KEY}
 			fi
 		fi
 	done
@@ -1657,7 +1653,7 @@ else # Args passed
 	fi
 	if [[ ${?} -eq 0 ]];then
 		[[ ${g_GOT_URL} == 'false' ]] && fav_set ${g_QUERY_KEY}
-		select_download ${g_QUERY_KEY}
+		download_select ${g_QUERY_KEY}
 	fi
 fi
 

@@ -711,14 +711,13 @@ reset_rate () {
 }
 
 respond () {
-	local PROMPT=${@}
+	local PROMPT=${1}
+	local TIMEOUT=${2}
 	local RESPONSE
 
+	[[ -n ${TIMEOUT} ]] && TIMEOUT="-t ${TIMEOUT}"
+
 	echo -n "${PROMPT}${WHITE_FG}?${RESET} ${WHITE_FG}(${RESET}${BOLD}${ITALIC}y${BOLD}${WHITE_FG}/${RESET}${BOLD}${ITALIC}n${RESET}${WHITE_FG})${RESET}:"
-	read -q RESPONSE;echo
-	if [[ ${RESPONSE:l} == 'y' ]];then # Prompt user for yes or no response
-		return 0
-	else
-		return 1
-	fi
+	eval "read -q ${TIMEOUT} RESPONSE"
+	return ${?}
 }

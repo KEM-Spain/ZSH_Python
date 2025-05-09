@@ -101,7 +101,7 @@ if !has("gui_running")
 	nnoremap <c-o> :'a,'b< <CR>
 
 	"marked sort
-	"nnoremap <c-s> :'a,'bsort <CR>
+	nnoremap <c-s> :'a,'bsort <CR>
 
 	"marked comment/uncomment
 	nnoremap <c-u> :'a,'bs/^/#/g <CR>

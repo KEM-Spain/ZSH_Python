@@ -287,6 +287,21 @@ for F in ${_FLIST};do
 done
 
 clear
-geeqie --geometry=1200x400+350+280 +t ${_ICO_STASH} 2>/dev/null &
+# TODO: only allow one instance
+geeqie --geometry=1200x400+350+280 ${_ICO_STASH} >/dev/null 2>&1 &
+sleep .5
+wmctrl -r geeqie -b add,above 
+while true;do
+	tcup 0 0;tput el
+	respond "Show current (selected) icon path"
+	if [[ ${?} -eq 0 ]];then
+		FN=$(readlink $(geeqie --remote --tell))
+		tcup 1 0; tput el 
+		echo ${FN}
+	else
+		exit_leave
+	fi
+done
 
+/bin/rm -rf ${_ICO_STASH}
 exit_leave

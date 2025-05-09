@@ -42,11 +42,11 @@ action_do () {
 
 		FILE=$(find ${FPATH} -maxdepth 1 -inum ${INODE} )
 		if [[ -n ${FILE} ]];then
-			I_NAME=$(find . -inum ${INODE})
+			I_NAME=$(sudo find . -inum ${INODE})
 			[[ -d ${I_NAME} ]] && I_TYPE="<DIRECTORY>" || I_TYPE="<FILE>"
 			msg_box -p -PP "Remove ${I_TYPE}:<w>${FILE}<N> [<r>${INODE}<N>]"
 			if [[ ${_MSG_KEY} == 'y' ]];then
-				find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -rf {} \;
+				sudo find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -rf {} \;
 				list_set_selected ${M} ${_STALE_ROW}
 			else
 				list_set_selected ${M} ${_AVAIL_ROW}
@@ -163,13 +163,13 @@ if [[ ${#} -ne 0 ]];then
 	clear
 	INODE=${1}
 	if validate_is_integer ${INODE};then
-		_INODES=("${(f)$(ls -i | cut -d' ' -f1)}")
+		_INODES=("${(f)$(sudo ls -i | cut -d' ' -f1)}")
 		if [[ ${_INODES[(i)${INODE}]} -le ${#_INODES} ]];then
-			I_NAME=$(find . -inum ${INODE})
+			I_NAME=$(sudo find . -inum ${INODE})
 			[[ -d ${I_NAME} ]] && I_TYPE="<DIRECTORY>" || I_TYPE="<FILE>"
 			respond "Inode located. Remove ${WHITE_FG}${I_TYPE}${RESET}:${INODE}"
 			if [[ ${?} -eq 0 ]];then
-				find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -rf {} \;
+				sudo find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -rf {} \;
 				exit_leave $(msg_exit I "Removed inode:${INODE}")
 			else
 				exit_leave "${RED_FG}Operation Cancelled${RESET}"
