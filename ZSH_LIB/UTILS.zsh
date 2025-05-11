@@ -573,12 +573,19 @@ key_wait () {
 }
 
 logit () {
-	local MSG=${@}
-	local STAMP=$(date +'%Y-%m-%d:%T')
+	local LOG
+	local MSG
+	local STAMP=$(date +'%Y-%m-%d_%H:%M:')
+
+	[[ ${#} -gt 1 ]] && LOG=${1} && shift
+	MSG=${@}
+
+	[[ -z ${LOG} ]] && LOG=${_LOG} # _LOG was defined
+	[[ -z ${LOG} ]] && LOG=/tmp/${0}.log} # default
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	echo "${STAMP} ${MSG}" >> ${_LOG:=/tmp/${0}.log}
+	echo "${STAMP} ${MSG}" >> ${LOG}
 }
 
 ls_color () {

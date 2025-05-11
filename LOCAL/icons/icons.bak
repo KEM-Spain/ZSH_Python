@@ -287,7 +287,5 @@ for F in ${_FLIST};do
 done
 
 clear
-geeqie --geometry=1200x400+350+280 +t ${_ICO_STASH}
 
-rd ${_ICO_STASH}
-exit_leave
+exec geeqie --geometry=1200x400+350+280 ${_ICO_STASH}

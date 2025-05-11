@@ -287,10 +287,14 @@ for F in ${_FLIST};do
 done
 
 clear
-# TODO: only allow one instance
-geeqie --geometry=1200x400+350+280 ${_ICO_STASH} >/dev/null 2>&1 &
-sleep .5
-wmctrl -r geeqie -b add,above 
+if ! pgrep geeqie;then
+	geeqie --geometry=1200x400+350+280 ${_ICO_STASH} >/dev/null 2>&1 &
+	sleep 1
+	wmctrl -r geeqie -b add,above 
+else
+	wmctrl -a geeqie
+fi
+
 while true;do
 	tcup 0 0;tput el
 	respond "Show current (selected) icon path"

@@ -28,9 +28,9 @@ source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
+typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
 typeset -A _ALERT_COORDS=(X $(( _COORDS[X] + 5 )) Y $(( _COORDS[Y] + _COORDS[W] -25 )))
 typeset -A _BREAK_COORDS=(X $((_COORDS[X]+3)) Y $((_COORDS[Y]+3)) W $((_COORDS[W]-6)))
-typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
 typeset -A _DISPLAY_KEYS=()
 typeset -A _DOWNLOADS=()
 typeset -A _FAILED=()
@@ -153,12 +153,12 @@ action_do () {
 		TITLE=$(get_field title ${M})
 		URL=$(get_field url ${M})
 
-		echo ${AUTHOR}:${TITLE}:${URL} >> ${_YTS_URL_LOG} # Log the url
+		logit ${_YTS_URL_LOG} ${AUTHOR}:${TITLE}:${URL}
 
 		HDRS_OUT=false
 
 		unsetopt localtraps # Initialize CTRL-C trap
-		trap kill_job INT
+		trap job_kill INT
 
 		ERROR_CNT=0
 		RETRIES=0
@@ -197,10 +197,10 @@ action_do () {
 				continue
 			fi
 
-			# Scan for 'already downloaded'
-			LOG_LINE=$(grep -m1 -i "already been" ${g_YTS_LOG} 2>/dev/null)
+			# Scan for 'already been downloaded'
+			LOG_LINE=$(grep -m1 -i "already been downloaded" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<g>Has already been downloaded<N>" 
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_DOWNLOADS[${M}]=true
@@ -210,7 +210,7 @@ action_do () {
 			# Scan for 'not yet available'
 			LOG_LINE=$(grep -m1 -i "will begin\|premieres\|upcoming" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Not yet available<N>|<g>${LOG_LINE}<N>"
 				g_WHEN=$(perl -pe 's/^(.*)( in \d+.*)$/starts\2/g' <<<${LOG_LINE})
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
@@ -221,12 +221,20 @@ action_do () {
 
 			# Scan for 'unable to download'
 			LOG_LINE=$(grep -m1 -i "unable to download video" ${g_YTS_LOG} 2>/dev/null)
-			if [[ ${?} -eq 0 ]];then
-				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+			if [[ -n ${LOG_LINE} && ${RETRIES} -eq 0 ]];then # Try one more time
+				logit ${_YTS_DBG_LOG} "${0}: Got start error - executing retry"
+				((RETRIES++))
+				job_reset
+				job_start ${URL}
+				HAD_ERROR=false
+				ERROR_CNT=0
+			elif [[ ${RETRIES} -ne 0 ]];then # Error out
+				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FAILED[${M}]=true
 				_DOWNLOADS[${M}]=false
+				_EXIT_SCRUB=false # Trigger log retention
 				break # Scan cycle
 			fi
 
@@ -234,7 +242,7 @@ action_do () {
 			INFO_TAG=''
 			LOG_LINE=$(grep -m1 -i "resuming download" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				INFO_TAG=' (<w>resumed<N>)'
 			fi
 
@@ -267,7 +275,7 @@ action_do () {
 
 			if grep -qi 'chunklist' <<<${LOG_LINE} 2>/dev/null;then # Block live braodcasts
 				msg_box -p -PK "<r>Warning<N>This is an ongoing live broadcast|Not suitable for download"
-				kill_job
+				job_kill
 				break # Scan cycle
 			fi
 			
@@ -276,19 +284,19 @@ action_do () {
 				ETA=$(sed -E 's/([0-9])(\[.*)/\1\n\2/g' <<<${LOG_LINE} | head -1 | str_trim)
 				ERR=$(sed -E 's/([0-9])(\[.*)/\1\n\2/g' <<<${LOG_LINE} | tail -1 | str_trim)
 			elif grep -qi 'eta.*unknown' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
-				echo "${0}: LOG_LINE:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				continue # Skip
 			elif grep -q 'ETA' <<<${LOG_LINE} 2>/dev/null;then # Uppercase ETA
-				echo "${0}: GOT ETA:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: GOT ETA:${LOG_LINE}"
 				ETA=${LOG_LINE}
 			elif grep -qi 'error' <<<${LOG_LINE} 2>/dev/null;then
-				echo "${0}: GOT ERROR:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: GOT ERROR:${LOG_LINE}"
 				ERR=${LOG_LINE}
 			elif grep -qi 'Fixing MPEG-TS' <<<${LOG_LINE} 2>/dev/null;then
-				echo "${0}: GOT Fragmented completion:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: GOT Fragmented completion:${LOG_LINE}"
 				ETA="100% of download completed"
 			else
-				echo "${0}: GOT OTHER:${LOG_LINE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: GOT OTHER:${LOG_LINE}"
 				OTH=${LOG_LINE}
 			fi
 
@@ -318,7 +326,7 @@ action_do () {
 			LINE_COLOR=''
 			if [[ -n ${ETA} && ${ETA_COMPLETE} == 'false' ]];then
 				ERROR_CNT=0 
-				#download_indicator ${ETA}
+				download_indicator ${ETA}
 				case ${ETA:l} in
 					*100*%*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;;; # Stop parsing ETA
 					*mib/s*) LINE_COLOR='<w>';;
@@ -331,7 +339,7 @@ action_do () {
 
 			[[ ${HAD_ERROR} == 'true' ]] && LINE_COLOR='<r>'
 
-			echo "${0}: ${LINE_COLOR}${ETA}" >> ${_YTS_DBG_LOG}
+			logit ${_YTS_DBG_LOG} "${0}: ${LINE_COLOR}${ETA}"
 			msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>" # Show progress
 
 			if [[ ${ETA} =~ '100% of' || ${ETA_COMPLETE} == 'true'  ]];then
@@ -409,33 +417,33 @@ clean_title () {
 	local UC_LIMIT=3
 	local U W
 
-	# echo "\n${0}: TYPE:${TYPE}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: TYPE:${TYPE}"
 
 	if [[ ${TYPE} == 'file' ]];then
 		STR=${TITLE[1,${_MAX_FLEN}]} # Filename
-		# echo "\n${0}: Max length filename:${STR}" >> ${_YTS_DBG_LOG}
+		logit ${_YTS_DBG_LOG} "${0}: Max length filename:${STR}"
 	elif [[ ${TYPE} == 'text' ]];then
 		STR=${TITLE[1,${_MAX_TITLE}]} # Title
-		# echo "\n${0}: Max length title:${STR}" >> ${_YTS_DBG_LOG}
+		logit ${_YTS_DBG_LOG} "${0}: Max length title:${STR}"
 	fi
 
 	STR=$(html2text -ascii <<<${STR}) # Convert any HTML 
-	# echo "${0}: HTML -> ascii:${STR}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
 
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline
-	# echo "${0}: Strip newline:${STR}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
 
 	STR=$(sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${STR}) # Trim
-	# echo "${0}: Trim:${STR}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: Trim:${STR}"
 	 
-	STR=$(sed 's/[ _]\(d\|s\|re\|ve\|ll\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
-	# echo "${0}: Apostrophe gap:${STR}" >> ${_YTS_DBG_LOG}
+	STR=$(sed 's/[ _]\([Dd]\|[Ss]\|[REre]\|[VEve]\|[LLll]\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
+	logit ${_YTS_DBG_LOG} "${0}: Apostrophe gap:${STR}"
 	 
 	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
-	# echo "${0}: w/ (with):${STR}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
 	 
 	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
-	# echo "${0}: UCASE_WORDS:${UCASE_WORDS}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
 	UC_NUM=0
 	for U in ${UCASE_WORDS};do
@@ -443,10 +451,10 @@ clean_title () {
 	done
 
 	STR=${(C)STR} && COPY=${STR} # Proper case
-	# echo "${0}: Proper case:${STR}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
 
 	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
-	# echo "${0}: UC letter following apostrophe:${STR}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
 	
 	SEEN=()
 	if [[ -n ${UCASE_WORDS} ]];then
@@ -460,7 +468,7 @@ clean_title () {
 					if [[ $(( ${#UCASE_WORDS} - UC_NUM )) -gt ${UC_LIMIT} ]];then
 						if ! spell -f ${W};then # Prettify entries where capitalization is excessive
 							STR=$(sed "s/${W}/${U}/" <<<${STR})
-							echo "${0}: Prettified:${STR}" >> ${_YTS_DBG_LOG}
+							logit ${_YTS_DBG_LOG} "${0}: Prettified:${STR}"
 						fi
 					fi
 					[[ ${_ACRONYMS[(i)${U}]} -le ${#_ACRONYMS} ]] && STR=$(sed "s/${W}/${U}/" <<<${STR}) # Acromyns
@@ -469,7 +477,7 @@ clean_title () {
 		done
 	fi
 
-	echo "${0}: Final:${STR}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: Final:${STR}"
 	echo ${STR}
 }
 
@@ -579,13 +587,13 @@ fav_delete () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	cp ${_YTS_FAVORITES} ${_YTS_FAVORITES}.bak
-	echo "${0}: log ${_YTS_FAVORITES} was copied" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was copied"
 
 	[[ ${g_QRY_ENGINE} == 'rumble' ]] && ENG="R" || ENG="Y"
-	echo "${0}: engine:${g_QRY_ENGINE}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: engine:${g_QRY_ENGINE}"
 
 	msg_box -p -PD "Deleting: ${FAV} for ${(C)g_QRY_ENGINE}?"
-	echo "${0}: deleting ${FAV} decoded to ${FAV}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: deleting ${FAV} decoded to ${FAV}"
 
 	if [[ ${_MSG_KEY} == 'y' ]];then
 		if [[ -s ${_YTS_FAVORITES} ]];then
@@ -599,10 +607,10 @@ fav_delete () {
 			done < ${_YTS_FAVORITES}
 			diff -q /tmp/favlist.new ${_YTS_FAVORITES} >/dev/null 2>&1
 			if [[ ${?} -eq 0 ]];then
-				echo "${0}: log ${_YTS_FAVORITES} was NOT updated - ${FAV} not found" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was NOT updated - ${FAV} not found"
 			else
 				mv -f /tmp/favlist.new ${_YTS_FAVORITES}
-				echo "${0}: log ${_YTS_FAVORITES} updated" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: log ${_YTS_FAVORITES} updated"
 				fav_load
 			fi
 		else
@@ -863,10 +871,35 @@ item_decorate () {
 	echo -n ${STR}
 }
 
+job_kill () {
+	local JOB
+	local -a PIDS=()
+	local PID
+	local P
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	PIDS=("${(f)$(pgrep -n "yt-dlp")}")
+	if [[ ${?} -eq 0 ]];then
+		for P in ${PIDS};do
+			kill -9 ${P} >/dev/null 2>&1
+			logit ${_YTS_DBG_LOG} "${0}: Killed ${P}"
+		done
+	else
+		echo "${0}: No processes found" >> ${g_YTS_LOG}
+	fi
+
+	if [[ ! ${functrace[1]} =~ "job_reset" ]];then
+		trap - INT # Disable trap
+		log_clear "job_kill"
+		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job${RESET}:${JOB} ${WHITE_FG}was ${RED_FG}killed${RESET}"
+	fi
+}
+
 job_reset () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	kill_job
+	job_kill
 	msg_box -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<m>Job Restarted<N>"
 }
 
@@ -886,46 +919,15 @@ job_start () {
 	fi
 
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} # Log command
-	echo "${0} QUERY:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Log command
-	echo "${0} CMD:${CMD}" >> ${_YTS_DBG_LOG} # Log command
+	logit ${_YTS_DBG_LOG} "${0}: QUERY:${g_QUERY_KEY}"
+	logit ${_YTS_DBG_LOG} "${0}: CMD:${CMD}"
 
 	eval "${CMD} >> ${g_YTS_LOG} 2>&1" & # Start background job
 	g_PID=$!
 
-	echo "${0} PID:${g_PID}" >> ${g_YTS_LOG} # Log pid
+	echo "${0}: PID:${g_PID}" >> ${g_YTS_LOG} # Log pid
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: CMD:${CMD}"
-}
-
-kill_job () {
-	local JOB
-	local RC
-	local -a PIDS=()
-	local PID
-	local P
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	JOB=$(ps -h -p ${g_PID})
-	RC=$?
-	
-	if [[ ${RC} -eq 0 ]];then
-		PIDS=("${(f)$(ps -aux | grep "${g_PID}\|yt-dlp\|/usr/local/bin/yt" 2>/dev/null)}")
-		for P in ${PIDS};do
-			PID=$(tr -s '[:space:]' <<<${P} | cut -d' ' -f2)
-			[[ ${PID} -eq ${g_PID} ]] && continue # Don't kill ourselves
-			[[ -n ${PID} ]] && kill -9 ${PID} >/dev/null 2>&1
-			echo "${0}: Killed ${PID}" >> ${_YTS_DBG_LOG}
-		done
-	else
-		echo "No processes found for PID:${g_PID}" >> ${g_YTS_LOG}
-	fi
-
-	if [[ ! ${functrace[1]} =~ "job_reset" ]];then
-		trap - INT # Disable trap
-		log_clear "kill_job"
-		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job${RESET}:${JOB} ${WHITE_FG}was ${RED_FG}killed${RESET}"
-	fi
 }
 
 last_code_update () {
@@ -993,9 +995,9 @@ log_clear () {
 
 	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
 		rm -f ${g_YTS_LOG}
-		echo "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}" >> ${_YTS_DBG_LOG} # Debug is NOT active - clear the log
+		logit ${_YTS_DBG_LOG} "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}"
 	else
-		echo "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}" >> ${_YTS_DBG_LOG} # Debug is active - retain the log
+		logit ${_YTS_DBG_LOG} "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}"
 	fi
 }
 
@@ -1091,6 +1093,7 @@ log_to_file () {
 }
 
 log_update () {
+	local -A SEEN=()
 	local FN_HIT=''
 	local HAS_NEW_LOG=false
 	local INODE=''
@@ -1099,30 +1102,37 @@ log_update () {
 	local NEW_LOG=/tmp/log.new
 	local L
 
-	# TODO: runaway log additions
 	{
 		[[ -e /tmp/log.new ]] && /bin/rm -f ${NEW_LOG}
-		echo "${0}: LOG lines BEFORE update:$(wc -l ${_DOWNLOAD_LOG})" >> ${_YTS_DBG_LOG}
+		logit ${_YTS_DBG_LOG} "${0}: LOG lines BEFORE update:$(wc -l ${_DOWNLOAD_LOG})"
 
-		while read LINE;do
-			HAS_NEW_LOG=false
+		HAS_NEW_LOG=false
+		while read -u3 LINE;do
 			INODE=$(cut -d'|' -f1 <<<${LINE})
+			if [[ ${SEEN[${INODE}]} -eq 1 ]];then
+				logit ${_YTS_DBG_LOG} "${0}: ERROR Got duplicate inode:${INODE} - skipping duplicates"
+				continue
+			fi
+			SEEN[${INODE}]=1
 			FN_HIT=$(find ${_DOWNLOAD_DIR} -maxdepth 1 -inum ${INODE})
 			if [[ -n ${FN_HIT} ]];then
 				HAS_NEW_LOG=true
-				LOG_LINE=$(grep ${INODE} ${_DOWNLOAD_LOG} 2>/dev/null)
-				[[ ${?} -eq 0 ]] && echo ${LOG_LINE} >> ${NEW_LOG}
+				LOG_LINE=$(grep -m1 ${INODE} ${_DOWNLOAD_LOG} 2>/dev/null)
+				[[ ${?} -eq 0 ]] && echo ${LOG_LINE} >> ${NEW_LOG} || logit ${_YTS_DBG_LOG} "${0}: ERROR Log line for:${INODE} not found"
 			else
-				echo "${0}: Skipping expired inode:${INODE}" >> ${_YTS_DBG_LOG}
+				logit ${_YTS_DBG_LOG} "${0}: Skipping expired inode:${INODE}"
+				SEEN[${INODE}]=1
+				continue
 			fi
-		done < ${_DOWNLOAD_LOG}
+		done 3< ${_DOWNLOAD_LOG}
 
 		if [[ ${HAS_NEW_LOG} == 'true' ]];then
 			cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
 			mv -f ${NEW_LOG} ${_DOWNLOAD_LOG}
-			echo "${0}: LOG lines AFTER update:$(wc -l ${_DOWNLOAD_LOG})" >> ${_YTS_DBG_LOG}
+			logit ${_YTS_DBG_LOG} "${0}: LOG lines AFTER update:$(wc -l ${_DOWNLOAD_LOG})"
 		else
 			/bin/rm -f ${_DOWNLOAD_LOG} && touch ${_DOWNLOAD_LOG} # No files present - initialize new log
+			logit ${_YTS_DBG_LOG} "${0}: Empty log - initializing new log"
 		fi
 	} 2>/dev/null
 }
@@ -1145,7 +1155,7 @@ post_process () {
 	while true;do
 		((NDX++))
 		PIDS=("${(f)$(pgrep -n "yt-dlp")}")
-		if ! in_array PIDS ${g_PID};then
+		if [[ ${?} -ne 0 ]];then
 			sleep 2 && break
 		fi
 		msg_box "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish..."
@@ -1157,12 +1167,12 @@ post_process () {
 	TEMP_FILES=("${(f)$(find ${_DOWNLOAD_DIR} -name '*temp.mp4')}")
 	for F in ${TEMP_FILES};do
 		/bin/rm -f ${F} >/dev/null 2>&1
-		[[ ${?} -eq 0 ]] && echo "${0}: deleted ${F}" >> ${_YTS_DBG_LOG}
+		[[ ${?} -eq 0 ]] && logit ${_YTS_DBG_LOG} "${0}: deleted ${F}"
 	done
 
 	LF=$(last_file) # Filename and Inode
 	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
-	echo "${0}: Last FN:${FN}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: Last FN:${FN}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
 
@@ -1172,14 +1182,14 @@ post_process () {
 	for K in ${KEYWORDS};do # Scrub keywords
 		NEW_FN=$(sed "s/${K}//I" <<<${NEW_FN})
 	done
-	echo "${0}: Scrubbed:${NEW_FN}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: Scrubbed:${NEW_FN}"
 
 	NEW_FN="${FN:h}/${NEW_FN}.${FN:e}" # Add path and extension
-	echo "${0}: Formatted:${NEW_FN}" >> ${_YTS_DBG_LOG}
+	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
 
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		echo "${0}: Overwriting:${FN}" >> ${_YTS_DBG_LOG}
+		logit ${_YTS_DBG_LOG} "${0}: Overwriting:${FN}"
 		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
 		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
 	fi

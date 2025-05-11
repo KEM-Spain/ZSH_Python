@@ -30,7 +30,8 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 typeset -a _LOCAL_LIST=()
 
 # Constants
-_GIT_REPO_DIR=/home/kmiller/Code/REPO/.git
+_GIT_REPO_DIR=/home/kmiller/Code/REPO
+_GIT_REPO=${_GIT_REPO_DIR}/.git
 
 # Functions
 action_do () {
@@ -216,7 +217,7 @@ if [[ ${USE_LOCAL_REPO} == 'true' ]];then
 		exit_leave $(msg_exit R "Option -L -> No .git repository found in:${PWD}")
 	fi
 else
-	msg_box -t2 "Using repo:${_GIT_REPO_DIR}"
+	msg_box -t2 "Using repo:${_GIT_REPO}"
 fi
 
 [[ ${#} -ne 0 ]] && _FN_ARG=${1} || _FN_ARG=''
@@ -225,22 +226,29 @@ fi
 if [[ -n ${_FN_ARG} ]];then
 	typeset -a FLIST=()
 
+	dbg "${0}: Got FN_ARG:${_FN_ARG}"
+
 	# Resolve file arg path
+	dbg "${0}: Executing find ${_GIT_REPO_DIR} -name ${_FN_ARG} -type f"
 	FLIST=("${(f)$(find ${_GIT_REPO_DIR} -name ${_FN_ARG} -type f)}")
+	dbg "${0}: find returned a list of ${#FLIST} -> FLIST:${FLIST}"
 	[[ -z ${FLIST} ]] && exit_leave $(msg_exit E "File:${@} not found")
 
 	NDX=0
 	if [[ ${#FLIST} -gt 1 ]];then
+		dbg "${0}: FN_ARG requires disambiguation"
 		msg_box -p -P"Select file:1-${#FLIST}" -H1 "Disambiguation Required|Argument:<w>${_FN_ARG}<N> was not unique|<Z>|$(msg_list_number ${FLIST})"
 		if validate_is_integer ${_MSG_KEY};then
 			if [[ ${_MSG_KEY} -ge 1 && ${_MSG_KEY} -le ${#FLIST} ]];then
 				_FN_ARG=${FLIST[${_MSG_KEY}]}
+				dbg "${0}: _FN_ARG set to ${FLIST[1]}"
 			else
 				exit_leave "${RED_FG}Operation Cancelled${RESET}:Invalid selection"
 			fi
 		fi
 	else
 		_FN_ARG=${FLIST[1]}
+		dbg "${0}: _FN_ARG set to ${FLIST[1]}"
 	fi
 fi
 
@@ -253,11 +261,12 @@ PATHLBL=$(path_get_label 40)
 
 pushd ${_GIT_REPO_DIR}
 msg_box "Working..."
+dbg "${0}: Executing: git log --pretty=reference ${FN_ARG}"
 RAW_LIST=("${(f)$(git log --pretty=reference ${FN_ARG})}")
 if [[ ${?} -ne 0 ]];then
-	dbg "${0}:${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path . 2>/dev/null" 
+	dbg "${0}:${RED_FG}git COMMAND FAILED${RESET}"
 else
-	dbg "${0}:${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#LOCAL_LIST}"
+	dbg "${0}:${GREEN_FG}git returned a list: LOCAL_LIST COUNT${RESET}:${#LOCAL_LIST}"
 fi
 popd
 

@@ -35,7 +35,9 @@ start_enpass () {
 	_ENPASS_PID=($(pgrep -xf ${_ENPASS})) #get PID for Enpass
 
 	if [[ -n ${_ENPASS_PID} ]];then
+		set -xv
 		logit "Enpass already running...killing instance"
+		set +xv;read
 		sudo killall -I enpass
 	fi
 

@@ -16,16 +16,16 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Declarations
-typeset -A _CMD
-typeset -A _HDR_LBL
+typeset -A _CMDS=()
+typeset -A _HDR_LBL=()
 typeset -A _LBL_WIDTH=(o 12 p 12 c 12)
-typeset -A _OWNER
-typeset -A _PID
+typeset -A _OWNERS=()
+typeset -A _PIDS=()
 typeset -a _LOCAL_LIST=()
 typeset -a _MARKED=()
 
 # Constants
-_HDR_LBL=(o "Owner" p "Process ID" c "Command")
+_HDR_LBL=(o "Owner" p "PID" c "Command")
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -36,12 +36,12 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 action_do () {
 	local M
-	local M_PID
+	local M_PIDS
 
 	for M in ${_MARKED};do
-		M_PID=$(get_pid ${M})
-		msg_box -H2 -p -PX "(<c>$(get_owner ${M})<N>) - <c>$(get_cmd ${M})<N>|<w>Process<N>:${M_PID}"
-		[[ ${_MSG_KEY} == 'y' ]] && sudo kill -9 ${M_PID} >/dev/null 2>&1
+		M_PIDS=$(get_pid ${M})
+		msg_box -H2 -p -PX "(<c>$(get_owner ${M})<N>) - <c>$(get_cmd ${M})<N>|<w>Process<N>:${M_PIDS}"
+		[[ ${_MSG_KEY} == 'y' ]] && sudo kill -9 ${M_PIDS} >/dev/null 2>&1
 	done
 
 	for M in ${_MARKED};do
@@ -70,19 +70,19 @@ item_decorate () {
 get_owner () {
 	local NDX=$1
 
-	echo ${_OWNER[${NDX}]}
+	echo ${_OWNERS[${NDX}]}
 }
 
 get_pid () {
 	local NDX=$1
 
-	echo ${_PID[${NDX}]}
+	echo ${_PIDS[${NDX}]}
 }
 
 get_cmd () {
 	local NDX=$1
 
-	echo ${_CMD[${NDX}]}
+	echo ${_CMDS[${NDX}]}
 }
 
 #--Begin GetOpts--
@@ -177,17 +177,21 @@ for R in ${RAWLIST};do
 	[[ ${R} =~ ${0} ]] && continue
 
 	((NDX++))
-	_OWNER[${NDX}]=$(str_trim $(cut -d' ' -f1 <<<$(squeeze ${R})))
-	_PID[${NDX}]=$(str_trim $(cut -d' ' -f2 <<<$(squeeze ${R})))
-	_CMD[${NDX}]=$(str_trim $(cut -d' ' -f3- <<<$(squeeze ${R})))
+	if [[ -n ${R} ]];then
+		SQUEEZED=$(squeeze ${R})
 
-	_LOCAL_LIST+=${R}
+		_OWNERS[${NDX}]=$(cut -d' ' -f1 <<<${SQUEEZED})
+		_PIDS[${NDX}]=$(cut -d' ' -f2 <<<${SQUEEZED})
+		_CMDS[${NDX}]=$(cut -d' ' -f3- <<<${SQUEEZED})
 
-	[[ ${#_CMD[${NDX}]} -ge $((_MAX_COLS - 40)) ]] && _CMD[${NDX}]=${${_CMD[${NDX}][1,$((_MAX_COLS - 60))]}} # Truncate lines too long
+		_LOCAL_LIST+=${R}
 
-	[[ ${#_OWNER[${NDX}]} -gt ${_LBL_WIDTH[o]} ]] && _LBL_WIDTH[o]=${#_OWNER[${NDX}]}
-	[[ ${#_PID[${NDX}]} -gt ${_LBL_WIDTH[p]} ]] && _LBL_WIDTH[p]=${#_PID[${NDX}]}
-	[[ ${#_CMD[${NDX}]} -gt ${_LBL_WIDTH[c]} ]] && _LBL_WIDTH[c]=${#_CMD[${NDX}]}
+		[[ ${#_CMDS[${NDX}]} -ge $((_MAX_COLS - 40)) ]] && _CMDS[${NDX}]=${${_CMDS[${NDX}][1,$((_MAX_COLS - 60))]}} # Truncate lines too long
+
+		[[ ${#_OWNERS[${NDX}]} -gt ${_LBL_WIDTH[o]} ]] && _LBL_WIDTH[o]=${#_OWNERS[${NDX}]}
+		[[ ${#_PIDS[${NDX}]} -gt ${_LBL_WIDTH[p]} ]] && _LBL_WIDTH[p]=${#_PIDS[${NDX}]}
+		[[ ${#_CMDS[${NDX}]} -gt ${_LBL_WIDTH[c]} ]] && _LBL_WIDTH[c]=${#_CMDS[${NDX}]}
+	fi
 done
 msg_box_clear
 
