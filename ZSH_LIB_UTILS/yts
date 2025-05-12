@@ -410,24 +410,15 @@ box_center () {
 clean_title () {
 	local TYPE=${1}
 	local TITLE=${2}
-	local -a UCASE_WORDS=()
+	local STR=''
 	local -A SEEN=()
-	local COPY=''
-	local UC_NUM=0
-	local UC_LIMIT=3
-	local U W
+	local -a UCASE_WORDS=()
+	local UCASE_LIMIT=4
+	local W U
 
-	logit ${_YTS_DBG_LOG} "${0}: TYPE:${TYPE}"
+	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}"
 
-	if [[ ${TYPE} == 'file' ]];then
-		STR=${TITLE[1,${_MAX_FLEN}]} # Filename
-		logit ${_YTS_DBG_LOG} "${0}: Max length filename:${STR}"
-	elif [[ ${TYPE} == 'text' ]];then
-		STR=${TITLE[1,${_MAX_TITLE}]} # Title
-		logit ${_YTS_DBG_LOG} "${0}: Max length title:${STR}"
-	fi
-
-	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
+	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 	logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
 
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
@@ -443,39 +434,38 @@ clean_title () {
 	logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
 	 
 	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
+	for U in ${UCASE_WORDS};do
+		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
+	done
 	logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
-	UC_NUM=0
-	for U in ${UCASE_WORDS};do
-		[[ ${U%%[!0-9]*} ]] && ((UC_NUM++)) # Count numbers
-	done
-
-	STR=${(C)STR} && COPY=${STR} # Proper case
+	STR=$(sed -E 's/(^\o047|.\o047[^stvr])/ /g' <<<${STR})
+	STR=${(C)STR} # Proper case
+	STR=$(str_trim <<<${STR}) # Proper case
 	logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
 
 	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
 	logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
-	
-	SEEN=()
-	if [[ -n ${UCASE_WORDS} ]];then
-		for W in ${=COPY};do
-			W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits, and hyphen
-			[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-			for U in ${UCASE_WORDS};do
-				[[ ${U%%[!0-9]*} ]] && continue # Skip numbers
-				if [[ ${W:l} == ${U:l} ]];then
-					SEEN[${W}]=1
-					if [[ $(( ${#UCASE_WORDS} - UC_NUM )) -gt ${UC_LIMIT} ]];then
-						if ! spell -f ${W};then # Prettify entries where capitalization is excessive
-							STR=$(sed "s/${W}/${U}/" <<<${STR})
-							logit ${_YTS_DBG_LOG} "${0}: Prettified:${STR}"
-						fi
-					fi
-					[[ ${_ACRONYMS[(i)${U}]} -le ${#_ACRONYMS} ]] && STR=$(sed "s/${W}/${U}/" <<<${STR}) # Acromyns
-				fi
-			done
-		done
-	fi
+
+	for W in ${=STR};do
+		W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits,single quotes, and hyphen
+		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
+		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
+			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acromyns
+			SEEN[${W}]=1
+		elif [[ ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
+			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
+				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
+				SEEN[${W}]=1
+			fi
+		fi
+	done
+
+	case ${TYPE} in
+		file) STR=${STR[1,${_MAX_FLEN}]};; # Filename
+		text) STR=${STR[1,${_MAX_TITLE}]};; # Title
+	esac
+	logit ${_YTS_DBG_LOG} "${0}: TYPE:${TYPE} STR:${STR}"
 
 	logit ${_YTS_DBG_LOG} "${0}: Final:${STR}"
 	echo ${STR}
@@ -837,6 +827,10 @@ get_field () {
 	esac
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
+
+	if [[ ${FIELD} == 'agetime' ]];then
+		[[ ${STR:l} =~ 'upcoming' ]] && STR='(UPCOMING EPISODE)'
+	fi
 
 	if [[ ${FIELD} == 'author' ]];then
 		[[ ${g_SEARCH_TYPE} == 'general' ]] && TSTR=${(C)STR} || TSTR=${g_DISPLAY_KEY:gs/_/ /}

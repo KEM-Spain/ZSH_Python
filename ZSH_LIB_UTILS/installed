@@ -187,7 +187,7 @@ for I in ${_INSTALLED};do
 	[[ -n ${SEARCHTERM} ]] && [[ ! ${I} =~ "^${SEARCHTERM}" ]] && continue
 	((NDX++))
 	_PKG_KEYS+=$(sed 's/:/-/g' <<< ${I})
-	[[ -n ${_PKG_KEYS[1]} && ${#_PKG_KEYS} -gt 50 ]] && tput cup 0 0 && printf "\rCreating Keys:%s          " ${NDX}
+	[[ -n ${_PKG_KEYS[1]} && ${#_PKG_KEYS} -gt 50 ]] && tput cup 0 0 && printf "\rCreating Keys:${WHITE_FG}%s${RESET}          " ${NDX}
 done
 
 if [[ ${NDX} -eq 0 ]];then
@@ -215,8 +215,10 @@ typeset -A DESC
 LONGEST_PKG=0
 LONGEST_DESC=0
 tput cup 1 0
+NDX=0
 for K in ${_PKG_KEYS};do
-	printf "\rGetting info:%-50s Remaining packages:%-5s        " ${K} ${PNDX}
+	((NDX++))
+	printf "\rGetting info:${CYAN_FG}%-50s${RESET} Remaining packages:${WHITE_FG}%-5s${RESET} Pct:${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${K} ${PNDX} $(( NDX * 100. / ${#_PKG_KEYS} )) 
 	((PNDX--))
 	_LOCAL_LIST+=${K}
 	[[ ${#K} -gt ${LONGEST_PKG} ]] && LONGEST_PKG=${#K}
