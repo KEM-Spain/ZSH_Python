@@ -31,7 +31,8 @@ typeset -a _LOCAL_LIST=()
 
 # Constants
 _GIT_REPO_DIR=/home/kmiller/Code/REPO
-_GIT_REPO=${_GIT_REPO_DIR}/.git
+_GIT_REPO=/home/kmiller/Code/REPO/.git
+_APP_DIR=${PWD}
 
 # Functions
 action_do () {
@@ -50,45 +51,35 @@ action_do () {
 		COMMIT=$(get_field 1 ${M})
 		SZ=$(get_field 4 ${M})
 
-		pushd ${_GIT_REPO_DIR}
-
 		tcup 0 0
 		tput ed
-		if [[ -z ${_FN_ARG} ]];then
+		pushd ${_GIT_REPO_DIR}
+		if [[ -n ${_FN_ARG} ]];then
+			V_PATH=${${_FN_ARG}##${_GIT_REPO_DIR}/}
+			msg_box -p -P"(e)ditor, (v)iew, (w)rite" "Edit, View, or Write to file?"
+			if [[ ${_MSG_KEY} == 'w' ]];then
+				FN_OUT=${_APP_DIR}/${COMMIT}:${V_PATH:t}.log.out
+				if overwrite_file ${FN_OUT};then
+					git show -P ${COMMIT}:${V_PATH} > ${FN_OUT} && msg_box -p -PK "Wrote log to file:<w>${FN_OUT}<N>"
+				fi
+			elif [[ ${_MSG_KEY} == 'e' ]];then
+				git show -P ${COMMIT}:${V_PATH} >/tmp/.gitlog.out
+				vi /tmp/.gitlog.out
+			elif [[ ${_MSG_KEY} == 'v' ]];then
+				git show -P ${COMMIT}:${V_PATH}
+			else
+				msg_box -p -PK "Nothing Selected"
+				list_set_selected ${M} ${_AVAIL_ROW} && continue
+				break
+			fi
+		else
 			FLIST=("${(f)$(git diff-tree --no-commit-id --name-only ${COMMIT} -r)}")
 			MSG_LIST=("${(f)$(msg_list_bullet ${FLIST})}")
 			[[ ${#MSG_LIST} -gt 20 ]] && TAG="And <I><B><w>$((${#MSG_LIST} - ${BOX_LIMIT}))<N> more..."
 			msg_box -p -PC -H1 "File(s) within Commit:<w>${COMMIT}<N>| |${MSG_LIST[1,${BOX_LIMIT}]}| |${TAG}"
 			[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
 			git show -P ${COMMIT}
-		else
-			if [[ ${PRINT_FILE} == 'true' || ${EDIT_FILE} == 'true' ]];then
-				V_PATH=${${_FN_ARG}##${_GIT_REPO_DIR}/}
-				FN_OUT=${PWD}/${COMMIT}_${V_PATH:t}.log.out
-				VIEW=true
-				msg_box -p -P"(e)ditor, (v)iew, (w)rite" "Edit, View, or Write to file:<w>${FN_OUT}<N> ?"
-				[[ ${_MSG_KEY} != 'v' ]] && VIEW=false
-				if [[ ${VIEW} == 'true' ]];then
-					git show -P ${COMMIT}:${V_PATH}
-				else
-					case ${_MSG_KEY} in
-						w) if overwrite_file ${FN_OUT};then
-								git show -P ${COMMIT}:${V_PATH} > ${FN_OUT} && msg_box -p -PK "Wrote log to file:<w>${FN_OUT}<N>"
-							fi
-							[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
-							;;
-						e) FN_OUT=/tmp/${COMMIT}_${V_PATH:t}
-							git show -P ${COMMIT}:${V_PATH} > ${FN_OUT}
-							/bin/vim ${FN_OUT}
-							;;
-					esac
-				fi
-			else
-				git show -P ${COMMIT} ${_FN_ARG}
-			fi
 		fi
-		[[ ${SZ} -le ${_MAX_ROWS} ]] && echo -n "\n${BOLD}Press any key...${RESET}" && read
-
 		popd
 
 		list_set_selected ${M} ${_USED_ROW} && continue
@@ -188,8 +179,6 @@ usage () {
 
 OPTSTR=":HDLep"
 OPTIND=0
-PRINT_FILE=false
-EDIT_FILE=false
 USE_LOCAL_REPO=false
 
 while getopts ${OPTSTR} OPTION;do
@@ -197,7 +186,6 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
      D) dbg_set_level;;
      L) USE_LOCAL_REPO=true;;
-     e) EDIT_FILE=true;;
      p) PRINT_FILE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -243,7 +231,7 @@ if [[ -n ${_FN_ARG} ]];then
 				_FN_ARG=${FLIST[${_MSG_KEY}]}
 				dbg "${0}: _FN_ARG set to ${FLIST[1]}"
 			else
-				exit_leave "${RED_FG}Operation Cancelled${RESET}:Invalid selection"
+				exit_leave "${RED_FG}Operation Cancelled${RESET}:Nothing selected"
 			fi
 		fi
 	else

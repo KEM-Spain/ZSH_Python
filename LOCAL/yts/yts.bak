@@ -28,9 +28,9 @@ source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
-typeset -A _ALERT_COORDS=(X $(( _COORDS[X] + 5 )) Y $(( _COORDS[Y] + _COORDS[W] -25 )))
-typeset -A _BREAK_COORDS=(X $((_COORDS[X]+3)) Y $((_COORDS[Y]+3)) W $((_COORDS[W]-6)))
+typeset -A _CONT_COORDS=()
+typeset -A _ALERT_COORDS=()
+typeset -A _BREAK_COORDS=()
 typeset -A _DISPLAY_KEYS=()
 typeset -A _DOWNLOADS=()
 typeset -A _FAILED=()
@@ -45,6 +45,11 @@ typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _ACRONYMS=()
 typeset -a _LOCAL_LIST=()
+
+# Display Constants
+_CONT_COORDS=(X 10 Y 33 H 10 W 86) # Continuous box coords
+_ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alerts display coords
+_BREAK_COORDS=(X $((_CONT_COORDS[X] + 3 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Break display coords
 
 # Constants
 _ACRONYMS_FN=/usr/local/etc/acronyms.txt
@@ -163,7 +168,7 @@ action_do () {
 		ERROR_CNT=0
 		RETRIES=0
 		job_start ${URL}
-		msg_box -x${_COORDS[X]} -y${_COORDS[Y]} -h${_COORDS[H]} -w${_COORDS[W]} "Download requested..."
+		msg_box -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "Download requested..."
 		sleep 3
 
 		# Detect missing log
@@ -264,10 +269,10 @@ action_do () {
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
 				HRZ_CTR=$(coord_center $((_MAX_COLS-3)) ${HDR_LEN}) # Horiz center
-				[[ ${HDR_LEN} -gt ${_COORDS[W]} ]] && _COORDS[W]=${HDR_LEN} && _COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
-				msg_box -c -C -I -H3 -jl -x${_COORDS[X]} -y${_COORDS[Y]} -h${_COORDS[H]} -w${_COORDS[W]} ${HDR1_TXT}
+				[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
+				msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 				msg_box -C -jl ${HDR2_TXT}
-				msg_box -C -jl "<c>$(str_unicode_line $((_COORDS[W]-4)))<N>" # Divider line
+				msg_box -C -jl "<c>$(str_unicode_line $((_CONT_COORDS[W]-4)))<N>" # Divider line
 				HDRS_OUT=true
 			fi
 
@@ -347,7 +352,7 @@ action_do () {
 					msg_box -C -jc "<m>$(str_unicode_line 10)<N>"
 					if [[ $((${#_MARKED}-DL_CNT)) -gt 0 ]];then
 						MSG="Download ${DL_CNT} completed - $(( ${#_MARKED} - DL_CNT )) remaining"
-						msg_box -z -t${_PAUSE_TM} -x$(( _COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
+						msg_box -z -t${_PAUSE_TM} -x$(( _CONT_COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
 					fi
 				fi
 				_DOWNLOADS[${M}]=true
@@ -377,7 +382,7 @@ action_warn () {
 	
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	msg_box -H1 -x${_COORDS[X]} -p -PG "<w><I>Please respond<N>|<Z>|${#_MARKED} $(str_pluralize ${_OBJECT} ${#_MARKED}) selected"
+	msg_box -H1 -x${_CONT_COORDS[X]} -p -PG "<w><I>Please respond<N>|<Z>|${#_MARKED} $(str_pluralize ${_OBJECT} ${#_MARKED}) selected"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do
@@ -391,8 +396,8 @@ box_center () {
 	local TXT=${@} # Text to center
 	local BOX=4 # Compensate for box border
 	local BOX_CTR=0
-	local BOX_LEFT=${_COORDS[Y]} # Left coord
-	local BOX_WIDTH=${_COORDS[W]} # Width coord
+	local BOX_LEFT=${_CONT_COORDS[Y]} # Left coord
+	local BOX_WIDTH=${_CONT_COORDS[W]} # Width coord
 	local CTR=0
 	local REM=0
 	local TXT_CTR=0
@@ -407,9 +412,11 @@ box_center () {
 	echo $(( BOX_LEFT + BOX_CTR - TXT_CTR ))
 }
 
+# TODO: Possibly move to UTILS or implement a shared LIB param - duplicated in yt
 clean_title () {
 	local TYPE=${1}
 	local TITLE=${2}
+	local STR=''
 	local -A SEEN=()
 	local -a UCASE_WORDS=()
 	local UCASE_LIMIT=4
@@ -417,12 +424,8 @@ clean_title () {
 
 	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}"
 
-	case ${TYPE} in
-		file) STR=${TITLE[1,${_MAX_FLEN}]};; # Filename
-		text) STR=${TITLE[1,${_MAX_TITLE}]};; # Title
-	esac
-
-	logit ${_YTS_DBG_LOG} "${0}: TYPE:${TYPE} STR:${STR}"
+	STR=$(sed 's/_/ /g' <<<${TITLE})
+	logit ${_YTS_DBG_LOG} "${0}: Clear any underscores:${STR}"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
 	logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
@@ -445,12 +448,15 @@ clean_title () {
 	done
 	logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
-	STR=$(tr -d '[\047]' <<<${STR}) && STR=${(C)STR} # Proper case
+	STR=$(sed -E 's/(^\o047|.\o047[^stvr])/ /g' <<<${STR})
+	STR=${(C)STR} # Proper case
+	STR=$(str_trim <<<${STR}) # Proper case
 	logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
 
 	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
 	logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
 
+	# TODO: Investigate acromyn matching: IN is passing as acronym - not in LIST, contains INS INSCOM
 	for W in ${=STR};do
 		W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits,single quotes, and hyphen
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
@@ -464,6 +470,12 @@ clean_title () {
 			fi
 		fi
 	done
+
+	case ${TYPE} in
+		file) STR=${STR[1,${_MAX_FLEN}]};; # Filename
+		text) STR=${STR[1,${_MAX_TITLE}]};; # Title
+	esac
+	logit ${_YTS_DBG_LOG} "${0}: TYPE:${TYPE} STR:${STR}"
 
 	logit ${_YTS_DBG_LOG} "${0}: Final:${STR}"
 	echo ${STR}
@@ -788,7 +800,7 @@ get_av_codes () {
 
 get_box_center () {
 	local OBJ=$(( ${#1} + 4 ))
-	local AREA=$(( _COORDS[Y] + _COORDS[W] ))
+	local AREA=$(( _CONT_COORDS[Y] + _CONT_COORDS[W] ))
 	local CTR
 	local REM
 	local AC
@@ -825,6 +837,10 @@ get_field () {
 	esac
 
 	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
+
+	if [[ ${FIELD} == 'agetime' ]];then
+		[[ ${STR:l} =~ 'upcoming' ]] && STR='(UPCOMING EPISODE)'
+	fi
 
 	if [[ ${FIELD} == 'author' ]];then
 		[[ ${g_SEARCH_TYPE} == 'general' ]] && TSTR=${(C)STR} || TSTR=${g_DISPLAY_KEY:gs/_/ /}
@@ -900,7 +916,7 @@ job_start () {
 	g_YTS_LOG=$(mktemp /tmp/yt.log.XXXXXX)
 
 	if [[ ${g_FIX_AUDIO} == 'true' ]];then
-		msg_box -H1 -x${_COORDS[X]} -h${_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
+		msg_box -H1 -x${_CONT_COORDS[X]} -h${_CONT_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
 		CMD="nohup yt -N2 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
 	else
 		CMD="nohup yt -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
@@ -1137,7 +1153,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -x$(( _COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
+	msg_box -x$(( _CONT_COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
 
 	NDX=0
 	while true;do
