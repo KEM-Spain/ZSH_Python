@@ -217,7 +217,8 @@ action_do () {
 			if [[ ${?} -eq 0 ]];then
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Not yet available<N>|<g>${LOG_LINE}<N>"
-				g_WHEN=$(perl -pe 's/^(.*)( in \d+.*)$/starts\2/g' <<<${LOG_LINE})
+				#[[ ${LOG_LINE} =~ 'will begin' ]] && g_WHEN='going live soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
+				g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FUTURE[${M}]=true
 				_DOWNLOADS[${M}]=false
@@ -226,14 +227,7 @@ action_do () {
 
 			# Scan for 'unable to download'
 			LOG_LINE=$(grep -m1 -i "unable to download video" ${g_YTS_LOG} 2>/dev/null)
-			if [[ -n ${LOG_LINE} && ${RETRIES} -eq 0 ]];then # Try one more time
-				logit ${_YTS_DBG_LOG} "${0}: Got start error - executing retry"
-				((RETRIES++))
-				job_reset
-				job_start ${URL}
-				HAD_ERROR=false
-				ERROR_CNT=0
-			elif [[ ${RETRIES} -ne 0 ]];then # Error out
+			if [[ ${?} -eq 0 ]];then
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
@@ -412,7 +406,6 @@ box_center () {
 	echo $(( BOX_LEFT + BOX_CTR - TXT_CTR ))
 }
 
-# TODO: Possibly move to UTILS or implement a shared LIB param - duplicated in yt
 clean_title () {
 	local TYPE=${1}
 	local TITLE=${2}
@@ -424,58 +417,65 @@ clean_title () {
 
 	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}"
 
-	STR=$(sed 's/_/ /g' <<<${TITLE})
-	logit ${_YTS_DBG_LOG} "${0}: Clear any underscores:${STR}"
+	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
 
-	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
-	logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
-
+	TITLE=${STR}
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
-	logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
 
-	STR=$(sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${STR}) # Trim
-	logit ${_YTS_DBG_LOG} "${0}: Trim:${STR}"
+	TITLE=${STR}
+	STR=$(sed 's/[ _]\([Dd]\|[Ll]\|[Ss]\|[Tt]\|[REre]\|[VEve]\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Contraction gap:${STR}"
 	 
-	STR=$(sed 's/[ _]\([Dd]\|[Ss]\|[REre]\|[VEve]\|[LLll]\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
-	logit ${_YTS_DBG_LOG} "${0}: Apostrophe gap:${STR}"
-	 
+	TITLE=${STR}
 	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
-	logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
 	 
-	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
+	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9])+\b')}") # Allow alpha,digits, and hyphen
 	for U in ${UCASE_WORDS};do
 		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
 	done
-	logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
+	[[ -n ${UCASE_WORDS} ]] && logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
-	STR=$(sed -E 's/(^\o047|.\o047[^stvr])/ /g' <<<${STR})
+	TITLE=${STR}
+	STR=$(perl -pe  's/\o{47}(?![rstv].?\b)//g' <<<${STR}) # Remove any sentence quotes, leave contractions
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Sentence quotes:${STR}"
+
+	TITLE=${STR}
+	STR=$(sed -E -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' -e 's/(\S)([-])(\S)/\1 \3/g' <<<${STR}) # Trim
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Trim and separate hyphenated words:${STR}"
+	 
+	TITLE=${STR}
 	STR=${(C)STR} # Proper case
-	STR=$(str_trim <<<${STR}) # Proper case
-	logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
 
+	TITLE=${STR}
 	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
-	logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
 
-	# TODO: Investigate acromyn matching: IN is passing as acronym - not in LIST, contains INS INSCOM
 	for W in ${=STR};do
-		W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits,single quotes, and hyphen
+		W=$(tr -dc '[:alnum:][\047]' <<<${W}) # Strip other than alpha,digits,single quotes, and hyphen
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
+			logit ${_YTS_DBG_LOG} "${0}: Found acronym:${W:u}"
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acromyns
 			SEEN[${W}]=1
 		elif [[ ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
+				logit ${_YTS_DBG_LOG} "${0}: Found uppercase:${W:u}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
 				SEEN[${W}]=1
 			fi
 		fi
 	done
 
+	TITLE=${STR}
 	case ${TYPE} in
 		file) STR=${STR[1,${_MAX_FLEN}]};; # Filename
 		text) STR=${STR[1,${_MAX_TITLE}]};; # Title
 	esac
-	logit ${_YTS_DBG_LOG} "${0}: TYPE:${TYPE} STR:${STR}"
+	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: TYPE:${TYPE} STR:${STR}"
 
 	logit ${_YTS_DBG_LOG} "${0}: Final:${STR}"
 	echo ${STR}
@@ -876,7 +876,6 @@ item_decorate () {
 }
 
 job_kill () {
-	local JOB
 	local -a PIDS=()
 	local PID
 	local P
@@ -896,7 +895,7 @@ job_kill () {
 	if [[ ! ${functrace[1]} =~ "job_reset" ]];then
 		trap - INT # Disable trap
 		log_clear "job_kill"
-		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job${RESET}:${JOB} ${WHITE_FG}was ${RED_FG}killed${RESET}"
+		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job:${RED_FG}killed${RESET}"
 	fi
 }
 

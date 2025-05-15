@@ -107,7 +107,7 @@ print_hist () {
 		/bin/rm -f ${_LAST_ACTION}
 	fi
 
-	sel_list -S -C -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard. Use keypad for extended page navigation" -M"(<w>d<N>)elete"
+	sel_list -S -C -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard. Use keypad for extended page navigation" -M"Commands:(<w>d<N>)elete"
 	if [[ -n ${_SEL_VAL} ]];then
 		case ${_SEL_KEY} in
 			d) _DELETE=true;;

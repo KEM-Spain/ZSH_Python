@@ -34,6 +34,7 @@ _WIFI_PREF="WiFi_OliveNet-Casa 7_5G"
 _BATT_LIMIT=95
 _CAL_LINES=9
 _TERMS=$(terms -c)
+_THIS_WINDOW=$(xut wid | cut -d' ' -f1)
 
 # Declarations
 typeset -a _MOTD=()
@@ -250,7 +251,7 @@ if [[ ${_TERMS} -eq 1 ]];then
 
 		tput sc
 		echo "Cleaning history..." 
-		HIST=$(hist_no_dups -p)
+		HIST=$(nice -n 25 hist_no_dups -p)
 		tput el1
 		tput rc
 		echo ${HIST}
@@ -276,6 +277,8 @@ if [[ ${_TERMS} -eq 1 ]];then
 		else
 			echo "Enpass:${WHITE_FG}${ITALIC}waiting${RESET}..."
 		fi
+
+		wmctrl -a ${_THIS_WINDOW}
 
 		dut external -b # External drive status
 

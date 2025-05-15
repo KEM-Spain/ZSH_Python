@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# TODO: Experiment with cahing results from which, mya, and locate
 
 #Inline ansi
 BOLD="\033[1m"
@@ -22,19 +21,17 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Declarations
-typeset -a HIST=()
-typeset -a HIST_BUILD=()
-typeset -a RAW_HIST=()
-typeset -aU RAW_CMDS=()
-typeset -a CMDS=()
-typeset -a LOCATE_OPTS=()
-typeset -A SEEN=()
-typeset -a LAST_20=()
+typeset -A _SEEN=()
+typeset -a _HIST_BUILD=()
+typeset -a _LAST_20=()
+typeset -a _LOCATE_OPTS=()
+typeset -a _RAW_HIST=()
+typeset -a _CMDS=()
+typeset -aU _RAW_CMDS=()
 
+# Constants
 #HIST_DIR=./testing
 #HIST_TMP=./testing
- 
-# Constants
 HIST_DIR=~
 HIST_TMP=/tmp
 HIST_FILE=${HIST_DIR}/.zsh_history
@@ -43,19 +40,75 @@ HIST_TAB=$(mktemp ${HIST_TMP}/hist.table.XXXXXX)
 HIST_NEW=$(mktemp ${HIST_TMP}/hist.new.XXXXXX)
 HIST_REJECTS=$(mktemp ${HIST_TMP}/hist.rejects.XXXXXX)
 HIST_SAVE=${HIST_FILE}.$(date +"%s")
-LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+_LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+
+cmd_filter () {
+	local ARRAY=${1}
+	local LOC=0
+	local MYA=0
+	local WCH=0
+	local NDX=0
+	local VALID=false
+	local L
+
+	# TODO: Experiment with caching results from which, mya, and locate
+	 
+	_SEEN=()
+	_CMDS=()
+
+	for L in ${(o)${(P)ARRAY}};do
+		((NDX++))
+		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#${(P)ARRAY}} $(( NDX * 100. / ${#${(P)ARRAY}} )) >&2
+
+		[[ ${_SEEN[${L}]} -eq 1 ]] && _CMDS+=${L} && continue
+
+		VALID='false'
+
+		which -s ${L} >/dev/null
+		if [[ ${?} -eq 0 ]];then
+			VALID='true'
+			((WCH++))
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			mya -q ${L}
+			if [[ ${?} -eq 0 ]];then
+				VALID='true'
+				((MYA++))
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			run_locate -e ${L} >/dev/null
+			if [[ ${?} -eq 0 ]];then
+				VALID='true'
+				((LOC++))
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			echo ${L} >> ${HIST_REJECTS}
+		else
+			_CMDS+=${L}
+			_SEEN[${L}]=1
+		fi
+	done
+}
 
 # Execution
 [[ ${1} == '-p' ]] && _PROD=true || _PROD=false
 
-LAST_20=("${(f)$(tail -40 ~/.zsh_history | sort -t';' -k2 -u | sort | tail -20)}")
+_LAST_20=("${(f)$(tail -40 ~/.zsh_history | sort -t';' -k2 -u | sort | tail -20)}")
+# TODO: cmd_filter expects a list of commands; once filtered, they need to be reassembled into history file format
+#cmd_filter _LAST_20 # Filter typos
+#_LAST_20=(${_CMDS})
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 cp ${HIST_FILE} ${HIST_SAVE}
 
 #[[ ${_PROD} == 'false' ]] && echo "${BOLD}${RED_FG}Updating locate db${RESET}"
 echo -n "${ITALIC}Updating locate...${RESET}" >&2
-sudo updatedb ${LOCATE_OPTS} 2>/dev/null
+sudo updatedb ${_LOCATE_OPTS} 2>/dev/null
 
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Reading history...${RESET}"
 
@@ -69,62 +122,23 @@ else
 	BLANK_CMDS=()
 fi
 
+# TODO: this seems prone to lose the TS/CMD relationship; maybe associtated array(s) to maintain TS/CMD/ARG
+# relationships
 while read LINE;do
 	TS=$(cut -d';' -f1 <<<${LINE} | cut -d':' -f2)
 	CMD=$(cut -d';' -f2 <<<${LINE} | cut -d' ' -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
 	ARGS=$(cut -d';' -f2 <<<${LINE} | cut -s -d' ' -f2-)
-	RAW_HIST+="${TS}|${CMD}|${ARGS}"
-	RAW_CMDS+=${CMD}
+	_RAW_HIST+="${TS}|${CMD}|${ARGS}"
+	_RAW_CMDS+=${CMD}
 done < ${HIST_FILE}
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_RAW_HIST}${RESET}"
 
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Current History Lines:${WHITE_FG}${#RAW_HIST}${RESET}"
+cmd_filter _RAW_CMDS # Filter typos
+_RAW_CMDS=(${_CMDS})
 
-RAW_CMDS=(${(o)RAW_CMDS}) # Sorted, unique commands
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Unique History Lines:${WHITE_FG}${#RAW_CMDS}${RESET}"
+_RAW_CMDS=(${(o)_RAW_CMDS}) # Sorted, unique commands
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Unique History Lines:${WHITE_FG}${#_RAW_CMDS}${RESET}"
 
-# Filter typos and bogus
-LOC=0
-MYA=0
-WCH=0
-NDX=0
-
-for L in ${(o)RAW_CMDS};do
-	((NDX++))
-	printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#RAW_CMDS} $(( NDX * 100. / ${#RAW_CMDS} )) >&2
-
-	[[ ${SEEN[${L}]} -eq 1 ]] && CMDS+=${L} && continue
-
-	VALID='false'
-
-	which -s ${L} >/dev/null
-	if [[ ${?} -eq 0 ]];then
-		VALID='true'
-		((WCH++))
-	fi
-
-	if [[ ${VALID} == 'false' ]];then
-		mya -q ${L}
-		if [[ ${?} -eq 0 ]];then
-			VALID='true'
-			((MYA++))
-		fi
-	fi
-
-	if [[ ${VALID} == 'false' ]];then
-		run_locate -e ${L} >/dev/null
-		if [[ ${?} -eq 0 ]];then
-			VALID='true'
-			((LOC++))
-		fi
-	fi
-
-	if [[ ${VALID} == 'false' ]];then
-		echo ${L} >> ${HIST_REJECTS}
-	else
-		CMDS+=${L}
-		SEEN[${L}]=1
-	fi
-done
 echo
 
 [[ ${_PROD} == 'false' ]] && echo " WHICH validated:${WHITE_FG}${WCH}${RESET}"
@@ -137,13 +151,12 @@ echo
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Finding last unique command/arg combination...${RESET}"
 
 # Sort history placing most recent first
-for L in ${RAW_HIST};do
+for L in ${_RAW_HIST};do
 	printf "%s\n" ${L}
 done | sort -t'|' -k1rn -k2 >${HIST_TAB}
 
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history sorted:${WHITE_FG}${#HIST_TAB}${RESET}"
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
-
 
 for L in ${CMDS};do
 	LINE=$(grep -m1 -I "|${L:q}|" ${HIST_TAB})
@@ -151,13 +164,15 @@ for L in ${CMDS};do
 	CMD=$(cut -d '|' -f2 <<<${LINE})
 	ARGS=$(cut -s -d '|' -f3 <<<${LINE})
 	if [[ -n ${TS} ]];then
-		HIST_BUILD+=":${TS}:0;${CMD} ${ARGS}"
+		_HIST_BUILD+=":${TS}:0;${CMD} ${ARGS}"
 	fi
 done
 
-# TODO: This introduces duplicates.  Eliminate from HIST_BUILD before appending LAST_20
-HIST_BUILD+=(${LAST_20})
-for L in ${HIST_BUILD};do
+# TODO: This introduces duplicates.  Eliminate from _HIST_BUILD before appending _LAST_20
+
+_HIST_BUILD+=(${_LAST_20}) # Tack on last 20 commands
+
+for L in ${_HIST_BUILD};do
 	printf "%s\n" ${L}
 done > ${HIST_NEW}
 

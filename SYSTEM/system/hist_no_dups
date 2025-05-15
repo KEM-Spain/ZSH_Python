@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-# TODO: place the last 20 unique commands at the top of history
+# TODO: Experiment with cahing results from which, mya, and locate
 
 #Inline ansi
 BOLD="\033[1m"
@@ -21,16 +21,19 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+# Declarations
 typeset -a HIST=()
 typeset -a HIST_BUILD=()
 typeset -a RAW_HIST=()
 typeset -aU RAW_CMDS=()
 typeset -a CMDS=()
 typeset -a LOCATE_OPTS=()
+typeset -A SEEN=()
 
 #HIST_DIR=./testing
 #HIST_TMP=./testing
  
+# Constants
 HIST_DIR=~
 HIST_TMP=/tmp
 HIST_FILE=${HIST_DIR}/.zsh_history
@@ -81,15 +84,21 @@ LOC=0
 MYA=0
 WCH=0
 NDX=0
+
 for L in ${(o)RAW_CMDS};do
 	((NDX++))
 	printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#RAW_CMDS} $(( NDX * 100. / ${#RAW_CMDS} )) >&2
+
+	[[ ${SEEN[${L}]} -eq 1 ]] && CMDS+=${L} && continue
+
 	VALID='false'
+
 	which -s ${L} >/dev/null
 	if [[ ${?} -eq 0 ]];then
 		VALID='true'
 		((WCH++))
 	fi
+
 	if [[ ${VALID} == 'false' ]];then
 		mya -q ${L}
 		if [[ ${?} -eq 0 ]];then
@@ -97,6 +106,7 @@ for L in ${(o)RAW_CMDS};do
 			((MYA++))
 		fi
 	fi
+
 	if [[ ${VALID} == 'false' ]];then
 		run_locate -e ${L} >/dev/null
 		if [[ ${?} -eq 0 ]];then
@@ -104,10 +114,12 @@ for L in ${(o)RAW_CMDS};do
 			((LOC++))
 		fi
 	fi
+
 	if [[ ${VALID} == 'false' ]];then
 		echo ${L} >> ${HIST_REJECTS}
 	else
 		CMDS+=${L}
+		SEEN[${L}]=1
 	fi
 done
 echo
@@ -127,8 +139,9 @@ for L in ${RAW_HIST};do
 done | sort -t'|' -k1rn -k2 >${HIST_TAB}
 
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history sorted:${WHITE_FG}${#HIST_TAB}${RESET}"
-
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
+
+
 for L in ${CMDS};do
 	LINE=$(grep -m1 -I "|${L:q}|" ${HIST_TAB})
 	TS=$(cut -d '|' -f1 <<<${LINE})
@@ -139,10 +152,10 @@ for L in ${CMDS};do
 	fi
 done
 
-# Create new history file
 for L in ${HIST_BUILD};do
-	echo ${L}
-done | uniq | sort -nr -o ${HIST_NEW}
+	printf "%s\n" ${L}
+done > ${HIST_NEW}
+
 HIST_CNT=$(wc -l ${HIST_NEW} | cut -d' ' -f1)
 
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${HIST_CNT}${RESET}"
