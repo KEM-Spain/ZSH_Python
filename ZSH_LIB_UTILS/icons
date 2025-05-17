@@ -299,10 +299,12 @@ while true;do
 	tcup 0 0;tput el
 	respond "Show current (selected) icon path"
 	if [[ ${?} -eq 0 ]];then
-		FN=$(readlink $(geeqie --remote --tell))
+		FN=$(readlink $(geeqie --tell))
 		tcup 1 0; tput el 
 		echo ${FN}
 	else
+		PID=$(pgrep geeqie)
+		[[ -n ${PID} ]] && kill -9 ${PID}
 		exit_leave
 	fi
 done

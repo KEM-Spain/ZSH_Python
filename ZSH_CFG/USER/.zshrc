@@ -255,6 +255,7 @@ if [[ ${_TERMS} -eq 1 ]];then
 		HIST=$(nice -n 25 hist_no_dups -p)
 		tput el1
 		tput rc
+		wmctrl -R terminal
 		echo ${HIST}
 
 		setopt >~/.cur_setopts
@@ -279,7 +280,6 @@ if [[ ${_TERMS} -eq 1 ]];then
 			echo "Enpass:${WHITE_FG}${ITALIC}waiting${RESET}..."
 		fi
 
-		wmctrl -a ${_THIS_WINDOW}
 
 		dut external -b # External drive status
 

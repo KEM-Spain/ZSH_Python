@@ -309,15 +309,16 @@ ___EOF
 
 merge () {
 	# Declarations
-	local -a FLIST=()
 	local -a FILES_TO_MERGE=()
+	local -a FLIST=()
 	local APP=ffmpeg
 	local DESTINATION_FILE
-	local RESPONSE
 	local F
+	local RESPONSE
 
 	# Constants
 	local _OUT_FILE=vid_merge
+	local _VID_REGEX_F='.*\.\(mp4\|avi\|mkv\)$'
 
 	#--Begin GetOpts--
 	local DESC
@@ -396,9 +397,11 @@ ___EOF
 	#--End GetOpts--
 
 	#--Execution--
-	[[ ${#} -lt 2 ]] && usage  "missing required arguments"
-
-	FLIST=("${(f)$(find . -type f ! -path .)}")
+	if [[ ${#} -eq 0 ]];then
+		FLIST=("${(f)$(find . -maxdepth 1 -type f -regex "${_VID_REGEX_F}" ! -path ${PWD})}") # Pull list from current dir
+	else
+		FLIST=(${@}) # List was passed
+	fi
 
 	for F in ${FLIST};do
 		[[ ! ${$(file ${F}):l} =~ 'media' ]] && continue
@@ -416,27 +419,27 @@ ___EOF
 
 	DESTINATION_FILE=${_OUT_FILE}.${1:e}
 
-	if overwrite_file ${DESTINATION_FILE};then
-		/bin/rm -f ${DESTINATION_FILE} >/dev/null 2>&1
-	else
-		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}" || echo
-	fi
-
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
 	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
 	echo "Output file:${BOLD}${ITALIC}${DESTINATION_FILE}${RESET}"
 	respond "${CYAN_FG}Continue${RESET}"
 	[[ ${?} -ne 0 ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
 
-	echo "Merging:${WHITE_FG}${FILES_TO_MERGE}${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
+	if overwrite_file ${DESTINATION_FILE};then
+		/bin/rm -f ${DESTINATION_FILE} >/dev/null 2>&1
+	else
+		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}" || echo
+	fi
+
+	echo "\nMerging:${WHITE_FG}${#FILES_TO_MERGE} files ${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
 	case ${APP} in
-		ffmpeg)		echo "ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}"
+		ffmpeg)		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}"
 						ffmpeg -loglevel error -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}
 						;;
-		melt)			echo "melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
+		melt)			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
 						melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress
 						;;
-		mkvmerge)	echo "mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
+		mkvmerge)	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
 						eval "mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
 						;;
 	esac

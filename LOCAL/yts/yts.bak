@@ -424,7 +424,7 @@ clean_title () {
 	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
 
 	TITLE=${STR}
-	STR=$(sed 's/[ _]\([Dd]\|[Ll]\|[Ss]\|[Tt]\|[REre]\|[VEve]\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
+	STR=$(sed 's/[ _]\(d\|l\|s\|t\|re\|ve\)[ _]/\o047\1 /Ig' <<<${STR}) # Fix any yt-dlp contraction gaps
 	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Contraction gap:${STR}"
 	 
 	TITLE=${STR}

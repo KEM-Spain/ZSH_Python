@@ -309,8 +309,8 @@ ___EOF
 
 merge () {
 	# Declarations
-	local -a FILE_ARGS
-	local -a FILES_TO_MERGE
+	local -a FLIST=()
+	local -a FILES_TO_MERGE=()
 	local APP=ffmpeg
 	local DESTINATION_FILE
 	local RESPONSE
@@ -398,8 +398,11 @@ ___EOF
 	#--Execution--
 	[[ ${#} -lt 2 ]] && usage  "missing required arguments"
 
-	for F in ${@};do
-		grep -q ${_OUT_FILE} <<<${F}
+	FLIST=("${(f)$(find . -type f ! -path .)}")
+
+	for F in ${FLIST};do
+		[[ ! ${$(file ${F}):l} =~ 'media' ]] && continue
+		grep -q "${_OUT_FILE}\|vid_merge" <<<${F}
 		[[ ${?} -eq 0 ]] && continue
 		fsub -y -C ${F}
 		FILES_TO_MERGE+=${F}
@@ -422,10 +425,8 @@ ___EOF
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
 	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
 	echo "Output file:${BOLD}${ITALIC}${DESTINATION_FILE}${RESET}"
-	echo -n "\nPlease review...Continue (y/n):"; read -q RESPONSE
-	echo
-
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(msg_exit W "[${WHITE_FG}${0}${RESET}] Operation cancelled")
+	respond "${CYAN_FG}Continue${RESET}"
+	[[ ${?} -ne 0 ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
 
 	echo "Merging:${WHITE_FG}${FILES_TO_MERGE}${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
 	case ${APP} in
@@ -435,12 +436,8 @@ ___EOF
 		melt)			echo "melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
 						melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress
 						;;
-		mkvmerge)	FILE_ARGS+="${=FILES_TO_MERGE[1]}"
-						for W in ${=FILES_TO_MERGE[2,${#FILES_TO_MERGE}]};do
-							FILE_ARGS+="\+ ${W}"
-						done
-						echo "mkvmerge -o ${DESTINATION_FILE} ${FILE_ARGS}"
-						eval "mkvmerge -o ${DESTINATION_FILE} ${FILE_ARGS}"
+		mkvmerge)	echo "mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
+						eval "mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
 						;;
 	esac
 }
