@@ -1,11 +1,15 @@
 #!/usr/bin/zsh
-# Inline ansi
+# TODO: Experiment with caching results from which, mya, and locate
+
+#Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
 
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
@@ -15,131 +19,157 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
 # Declarations
-typeset -A _HIST
+typeset -a HIST=()
+typeset -a HIST_BUILD=()
+typeset -a RAW_HIST=()
+typeset -aU RAW_CMDS=()
+typeset -a CMDS=()
+typeset -a LOCATE_OPTS=()
+typeset -A SEEN=()
 
-# Constants
-_HIST_FILE=~/.zsh_history
-_HIST_FILE_NEW=/tmp/zsh_history.new
-_BAK_DATE=$(stat -c'%w' ${_HIST_FILE}.bak | cut -d' ' -f1)
-_TODAY=$(date +'%F')
-
-# Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
-
-# Functions
-_cleanup () {
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ARGS:${@}"
-
-	[[ -e ${_HIST_FILE_NEW} ]] && rm -f ${_HIST_FILE_NEW}
-}
-
-#--Begin GetOpts--
-local -a OPTIONS
-local OPTION
-local DESC
-
-read -r -d '' DESC<<EOF
-Remove duplicates from command history
-EOF
-
-parse_opts () {
-	local OPTS=${@}
-	local -a OPTSTR
-	local LETTER_OPT
-	local O
-
-	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
-		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
-		OPTSTR+="-${OPTS[${O}]}"
-	done
-	echo ${OPTSTR}
-}
-
-opt_exists () {
-	local OPT=${1}
-	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
-}
-
-opt_type () {
-	local OPT=${1}
-	case ${OPT} in
-		d) echo "<DIR>";;
-		f) echo "<FILE>";;
-		t) echo "<FILE_TYPE>";;
-	esac
-}
-
-usage () {
-	local -a PENDING_MSGS=(${@})
-	local OPTS=$(parse_opts ${OPTSTR})
-
-	[[ ${_SMCUP} == 'true' ]] && do_rmcup
-
-	tabs 5
-	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
-	echo -e "${WHITE_FG}-H${RESET} help"
-	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
-	) >&2
-
-	exit_leave $(msg_exit E "${PENDING_MSGS}")
-}
-
-OPTSTR=":HD"
-OPTIND=0
-
-while getopts ${OPTSTR} OPTION;do
-	case $OPTION in
-     H) usage;;
-     D) dbg_set_level;;
-     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
-    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
-	esac
-	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
-done
-shift $((OPTIND -1))
-#--End GetOpts--
+#HIST_DIR=./testing
+#HIST_TMP=./testing
  
+# Constants
+HIST_DIR=~
+HIST_TMP=/tmp
+HIST_FILE=${HIST_DIR}/.zsh_history
+HIST_BAK=${HIST_DIR}/.zsh_history.bak
+HIST_TAB=$(mktemp ${HIST_TMP}/hist.table.XXXXXX)
+HIST_NEW=$(mktemp ${HIST_TMP}/hist.new.XXXXXX)
+HIST_REJECTS=$(mktemp ${HIST_TMP}/hist.rejects.XXXXXX)
+HIST_SAVE=${HIST_FILE}.$(date +"%s")
+LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+
 # Execution
-[[ ${_BAK_DATE} != ${_TODAY} ]] && cp ${_HIST_FILE} ${_HIST_FILE}.bak
+[[ ${1} == '-p' ]] && _PROD=true || _PROD=false
 
-set_exit_callback _cleanup
+[[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
+cp ${HIST_FILE} ${HIST_SAVE}
 
-HIST_CNT=$(wc -l ${_HIST_FILE} | cut -d' ' -f1)
+#[[ ${_PROD} == 'false' ]] && echo "${BOLD}${RED_FG}Updating locate db${RESET}"
+echo -n "${ITALIC}Updating locate...${RESET}" >&2
+sudo updatedb ${LOCATE_OPTS} 2>/dev/null
+
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Reading history...${RESET}"
+
+BLANK_CMDS=("${(f)$(grep -P ';$' ${HIST_FILE})}")
+if [[ -n ${BLANK_CMDS} ]];then
+	for B in ${BLANK_CMDS};do
+		sed -in "/${B}/d" ${HIST_FILE}
+	done
+	[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Removing blank command lines:${WHITE_FG}${#BLANK_CMDS}${RESET}"
+else
+	BLANK_CMDS=()
+fi
 
 while read LINE;do
-	STAMP=$(cut -d';' -f1 <<<${LINE})
-	CMDSTR=$(cut -d';' -f2- <<<${LINE})
+	TS=$(cut -d';' -f1 <<<${LINE} | cut -d':' -f2)
+	CMD=$(cut -d';' -f2 <<<${LINE} | cut -d' ' -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
+	ARGS=$(cut -d';' -f2 <<<${LINE} | cut -s -d' ' -f2-)
+	RAW_HIST+="${TS}|${CMD}|${ARGS}"
+	RAW_CMDS+=${CMD}
+done < ${HIST_FILE}
 
-	CMD=$(cut -d' ' -f2 <<<${CMDSTR})
-	which ${CMD} >/dev/null 2>&1
-	[[ ${?} -ne 0 ]] && continue
-	 
-	if [[ ! ${CMD} =~ 'grep' ]];then
-		X=$(grep -o \' <<<${CMDSTR} | wc -l)
-		[[ $(( X % 2 )) -ne 0 ]] && continue # skip unbalanced quotes
-		X=$(grep -o \" <<<${CMDSTR} | wc -l)
-		[[ $(( X % 2 )) -ne 0 ]] && continue # skip unbalanced quotes
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Current History Lines:${WHITE_FG}${#RAW_HIST}${RESET}"
+
+RAW_CMDS=(${(o)RAW_CMDS}) # Sorted, unique commands
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Unique History Lines:${WHITE_FG}${#RAW_CMDS}${RESET}"
+
+# Filter typos and bogus
+LOC=0
+MYA=0
+WCH=0
+NDX=0
+
+for L in ${(o)RAW_CMDS};do
+	((NDX++))
+	printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#RAW_CMDS} $(( NDX * 100. / ${#RAW_CMDS} )) >&2
+
+	[[ ${SEEN[${L}]} -eq 1 ]] && CMDS+=${L} && continue
+
+	VALID='false'
+
+	which -s ${L} >/dev/null
+	if [[ ${?} -eq 0 ]];then
+		VALID='true'
+		((WCH++))
 	fi
 
-	_HIST[${CMDSTR}]=${STAMP}
-done < ${_HIST_FILE} 
+	if [[ ${VALID} == 'false' ]];then
+		mya -q ${L}
+		if [[ ${?} -eq 0 ]];then
+			VALID='true'
+			((MYA++))
+		fi
+	fi
 
-for K in ${(k)_HIST};do
-	printf "%s;%s\n" ${_HIST[${K}]} ${K}
-done  | sort -n > ${_HIST_FILE_NEW}
+	if [[ ${VALID} == 'false' ]];then
+		run_locate -e ${L} >/dev/null
+		if [[ ${?} -eq 0 ]];then
+			VALID='true'
+			((LOC++))
+		fi
+	fi
 
-HIST_UNIQ=${#_HIST}
-#DUPLICATE_CNT=$(( HIST_CNT-HIST_UNIQ ))
-printf "History (${WHITE_FG}%d${RESET}) | ${WHITE_FG}%d${RESET} unique command/arg combinations\n" ${HIST_CNT} ${HIST_UNIQ}
+	if [[ ${VALID} == 'false' ]];then
+		echo ${L} >> ${HIST_REJECTS}
+	else
+		CMDS+=${L}
+		SEEN[${L}]=1
+	fi
+done
+echo
 
-[[ -e ${_HIST_FILE_NEW} && -s ${_HIST_FILE_NEW} ]] && mv -f ${_HIST_FILE_NEW} ${_HIST_FILE}
+[[ ${_PROD} == 'false' ]] && echo " WHICH validated:${WHITE_FG}${WCH}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "   MYA validated:${WHITE_FG}${MYA}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "LOCATE validated:${WHITE_FG}${LOC}${RESET}"
 
-exit_leave
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history:${WHITE_FG}${#CMDS}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "        ${MAGENTA_FG}Rejects:${WHITE_FG}${#HIST_REJECTS}${RESET}"
+
+[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Finding last unique command/arg combination...${RESET}"
+
+# Sort history placing most recent first
+for L in ${RAW_HIST};do
+	printf "%s\n" ${L}
+done | sort -t'|' -k1rn -k2 >${HIST_TAB}
+
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history sorted:${WHITE_FG}${#HIST_TAB}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
+
+
+for L in ${CMDS};do
+	LINE=$(grep -m1 -I "|${L:q}|" ${HIST_TAB})
+	TS=$(cut -d '|' -f1 <<<${LINE})
+	CMD=$(cut -d '|' -f2 <<<${LINE})
+	ARGS=$(cut -s -d '|' -f3 <<<${LINE})
+	if [[ -n ${TS} ]];then
+		HIST_BUILD+=":${TS}:0;${CMD} ${ARGS}"
+	fi
+done
+
+for L in ${HIST_BUILD};do
+	printf "%s\n" ${L}
+done > ${HIST_NEW}
+
+HIST_CNT=$(wc -l ${HIST_NEW} | cut -d' ' -f1)
+
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${HIST_CNT}${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Done.${RESET}\n"
+
+[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Original:" $(wc -l ${HIST_FILE} | cut -d' ' -f1)
+[[ ${_PROD} == 'false' && ${#BLANK_CMDS} -ne 0 ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "  Blank:" ${#BLANK_CMDS}
+[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" " Unique:" ${#CMDS}
+[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Rejects:" ${#HIST_REJECTS}
+[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Cleaned:" ${HIST_CNT}
+
+cp ${HIST_SAVE} ${HIST_BAK}
+cp ${HIST_NEW} ${HIST_FILE}
+fc -R # Refresh history
+/bin/rm -f ${HIST_TAB} ${HIST_NEW} ${HIST_REJECTS} ${HIST_SAVE}
+
+[[ ${_PROD} == 'true' ]] && printf "Clean History (${WHITE_FG}%d${RESET})\n" ${HIST_CNT}

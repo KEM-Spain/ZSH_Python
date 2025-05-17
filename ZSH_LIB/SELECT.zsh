@@ -568,6 +568,7 @@ sel_scroll () {
 			case ${KEY} in
 				0) sel_set_position ${PAGE} ${NDX}; break 2;;
 				q) exit_request $(sel_set_ebox);break;;
+				s) show_keys; break;;
 				27) _SEL_KEY=${KEY} && return -1;;
 				1|u|k) SCROLL="U";;
 				2|d|j) SCROLL="D";;
@@ -581,37 +582,37 @@ sel_scroll () {
 			esac
 
 			# Handle navigation
-			if [[ ${SCROLL} == 'U' ]];then
+			if [[ ${SCROLL} == 'U' ]];then # Up
 				NORM_NDX=${NDX} && ((NDX--))
 				[[ ${NDX} -lt 1 ]] && NDX=${#_PAGE}
 				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
 				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
-			elif [[ ${SCROLL} == 'D' ]];then
+			elif [[ ${SCROLL} == 'D' ]];then # Down
 				NORM_NDX=${NDX} && ((NDX++))
 				[[ ${NDX} -gt ${#_PAGE} ]] && NDX=1
 				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
 				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
-			elif [[ ${SCROLL} == 'T' ]];then
+			elif [[ ${SCROLL} == 'T' ]];then # Top
 				NORM_NDX=${NDX} && NDX=1
 				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
 				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
-			elif [[ ${SCROLL} == 'B' ]];then
+			elif [[ ${SCROLL} == 'B' ]];then # Bot
 				NORM_NDX=${NDX} && NDX=${#_PAGE}
 				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
 				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
-			elif [[ ${SCROLL} == 'N' ]];then
+			elif [[ ${SCROLL} == 'N' ]];then # Next Page
 				((PAGE++))
 				PAGE_CHANGE=true
 				break
-			elif [[ ${SCROLL} == 'P' ]];then
+			elif [[ ${SCROLL} == 'P' ]];then # Previous Page
 				[[ ${PAGE} -eq 1 ]] && PAGE=${_PAGE_TOPS[MAX]} || ((PAGE--))
 				PAGE_CHANGE=true
 				break
-			elif [[ ${SCROLL} == 'H' ]];then
+			elif [[ ${SCROLL} == 'H' ]];then # Top
 				PAGE=1
 				PAGE_CHANGE=true
 				break
-			elif [[ ${SCROLL} == 'L' ]];then
+			elif [[ ${SCROLL} == 'L' ]];then # Bot
 				PAGE=${_PAGE_TOPS[MAX]}
 				PAGE_CHANGE=true
 				break
@@ -711,3 +712,21 @@ sel_set_position () {
 	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "_SELECT_TAG_FILE NOT defined"
 }
 
+show_keys () {
+	local -a KEY_LIST=()
+
+	KEY_LIST=(
+		"q   -> Exit"
+		"Esc -> Cancel"
+		"u/k -> Up 1 Line"
+		"d/j -> Down 1 Line"
+		"t/h -> Top of List"
+		"b/l -> Bottom of List"
+		"p   -> Previous Page"
+		"n   -> Next Page"
+		"H   -> First Page"
+		"L   -> Last Page"
+	)
+
+	msg_box -H1 -p -PK "Navigation Keys| |$(msg_list_bullet ${KEY_LIST})|<Z>|<w>Note<N>: NumPad/Arrow keys also function"
+}

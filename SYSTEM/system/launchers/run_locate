@@ -13,7 +13,7 @@ parse () {
 }
 
 if [[ ${1} == '-u' ]];then
-	echo "Updating locate db" && sudo updatedb --prunepaths='/media/kmiller' >/dev/null 2>&1 
+	echo "Updating locate db" && sudo updatedb --prunepaths='/media/${USER}' >/dev/null 2>&1 
 else
 	NDX=0
 	for A in ${@};do

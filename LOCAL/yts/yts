@@ -424,7 +424,7 @@ clean_title () {
 	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
 
 	TITLE=${STR}
-	STR=$(sed 's/[ _]\([Dd]\|[Ll]\|[Ss]\|[Tt]\|[REre]\|[VEve]\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
+	STR=$(sed 's/[ _]\(d\|l\|s\|t\|re\|ve\)[ _]/\o047\1 /Ig' <<<${STR}) # Fix any yt-dlp contraction gaps
 	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Contraction gap:${STR}"
 	 
 	TITLE=${STR}
@@ -839,6 +839,8 @@ get_field () {
 
 	if [[ ${FIELD} == 'agetime' ]];then
 		[[ ${STR:l} =~ 'upcoming' ]] && STR='(UPCOMING EPISODE)'
+		[[ ${STR:l} =~ 'views' ]] && STR=$(sed -E 's/^(.*views )(.*ago)(.*)/(\2)/' <<<${STR})
+		[[ ${STR:l} =~ 'live' ]] && STR=$(sed -E 's/(.*ago)( live)(.*)/\1)/I' <<<${STR})
 	fi
 
 	if [[ ${FIELD} == 'author' ]];then
@@ -1186,7 +1188,7 @@ post_process () {
 	done
 	logit ${_YTS_DBG_LOG} "${0}: Scrubbed:${NEW_FN}"
 
-	NEW_FN="${FN:h}/${NEW_FN}.${FN:e}" # Add path and extension
+	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
 	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
 
 	if [[ ${FN} != ${NEW_FN} ]];then
@@ -1279,6 +1281,7 @@ query_rumble () {
 				AGE=$(sed 's/ago .*/ago/' <<<${AGES[${X}]})
 				[[ -z ${AGE} ]] && continue
 				[[ ! ${AGE} =~ 'ago' ]] && continue # Dump junk listings without age
+				[[ ${AGE} =~ 'views' ]] && continue # Dump junk listings without age
 				VID_LIST+="${g_QUERY_KEY}|${TITLES[${X}]}|${AGE}|${LINKS[${X}]}|${DURATIONS[${X}]}" # Unique rows
 			done
 		else # General search

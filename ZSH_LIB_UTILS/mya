@@ -31,24 +31,103 @@ typeset -A ALIASES=()
 
 # Constants
 FN=/etc/zsh/aliases
-HELP="${WHITE_FG}Usage${RESET}:\t${0:t} [-H] [SEARCHTERM]\n${WHITE_FG} Desc${RESET}:\tshow all or matching aliases separated by type\n\tSEARCHTERM matches leading chars of alias\n"
 
 # Vars
 SEARCHTERM=''
-DIRCHANGE=false
-CMDS=false
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Show alias mappings
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		s) echo "<SEARCHTERM>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type s)]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-c${RESET} show aliases that execute commands"
+	echo -e "${WHITE_FG}-d${RESET} show aliases that execute directory changes"
+	echo -e "${WHITE_FG}-e${RESET} echo alias corresponding to $(opt_type s)"
+	echo -e "${WHITE_FG}-q${RESET} return true/false exit code for $(opt_type s)"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave $(msg_exit W ${PENDING_MSGS})
+}
+
+OPTSTR=":HDcdeq"
+OPTIND=0
+
+DIRCHANGE=true
+CMDS=true
+ECHO=false
 OPTS=false
 QUIET=false
 
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     c) CMDS=true;DIRCHANGE=false;;
+     d) CMDS=false;DIRCHANGE=true;;
+     e) ECHO=true;;
+     q) QUIET=true;;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+ 
 # Execution
-[[ ${1} == '-H' ]] && echo ${HELP} && exit
-[[ ${1} == '-d' ]] && DIRCHANGE=true && OPTS=true && shift
-[[ ${1} == '-c' ]] && CMDS=true && OPTS=true && shift
-[[ ${1} == '-q' ]] && QUIET=true && shift
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1}
-[[ -n ${SEARCHTERM} ]] && TAG="${WHITE_FG}(${RESET}FILTER = \"${WHITE_FG}${SEARCHTERM}${RESET}\"${WHITE_FG})${RESET}" || TAG="${WHITE_FG}(${RESET}UNFILTERED${WHITE_FG})${RESET}"
 
-[[ ${OPTS} == 'false' ]] && DIRCHANGE=true && CMDS=true
+if [[ -n ${SEARCHTERM} ]];then
+	TAG="${WHITE_FG}(${RESET}FILTER = \"${WHITE_FG}${SEARCHTERM}${RESET}\"${WHITE_FG})${RESET}"
+else
+	TAG="${WHITE_FG}(${RESET}UNFILTERED${WHITE_FG})${RESET}"
+fi
 
 while read LINE;do
 	[[ ! ${LINE} =~ '=' ]] && continue
@@ -59,6 +138,13 @@ done < ${FN}
 
 if [[ ${QUIET} == 'true' ]];then
 	[[ -n ${ALIASES[${SEARCHTERM}]} ]] && return 0 || return 1
+fi
+
+if [[ ${ECHO} == 'true' ]];then
+	for K in ${(k)ALIASES};do
+		[[ ${K} == ${SEARCHTERM} ]] && printf "%s|%s\n" ${K} ${ALIASES[${K}]} && return 0
+	done
+	return 1
 fi
 
 {

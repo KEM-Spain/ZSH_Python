@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# TODO: Experiment with cahing results from which, mya, and locate
 
 #Inline ansi
 BOLD="\033[1m"
@@ -22,159 +21,216 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Declarations
-typeset -a HIST=()
-typeset -a HIST_BUILD=()
-typeset -a RAW_HIST=()
-typeset -aU RAW_CMDS=()
-typeset -a CMDS=()
-typeset -a LOCATE_OPTS=()
-typeset -A SEEN=()
-typeset -a LAST_20=()
+typeset -A _ARGS=()
+typeset -A _CMDS=()
+typeset -a _HIST_BUILD=()
+typeset -a _HIST_IN=()
+typeset -a _LOCATE_OPTS=()
 
-#HIST_DIR=./testing
-#HIST_TMP=./testing
- 
 # Constants
-HIST_DIR=~
-HIST_TMP=/tmp
-HIST_FILE=${HIST_DIR}/.zsh_history
-HIST_BAK=${HIST_DIR}/.zsh_history.bak
-HIST_TAB=$(mktemp ${HIST_TMP}/hist.table.XXXXXX)
-HIST_NEW=$(mktemp ${HIST_TMP}/hist.new.XXXXXX)
-HIST_REJECTS=$(mktemp ${HIST_TMP}/hist.rejects.XXXXXX)
-HIST_SAVE=${HIST_FILE}.$(date +"%s")
-LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+#_HIST_DIR=./testing
+#_HIST_TMP=./testing
+_HIST_DIR=~
+_HIST_TMP=/tmp
+_CACHE_DIR=~/.local/share/${0:t:r}
+
+_CACHE_W=${_CACHE_DIR}/.which.cache
+_CACHE_L=${_CACHE_DIR}/.locate.cache
+_CACHE_M=${_CACHE_DIR}/.mya.cache
+_HIST_FILE=${_HIST_DIR}/.zsh_history
+_HIST_BAK=${_HIST_DIR}/.zsh_history.bak
+_HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
+_HIST_SAVE=${_HIST_FILE}.$(date +"%s")
+_LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+
+cmd_filter () {
+	local ARRAY=${1}
+	local VALID=false
+	local WCH=0
+	local LOC=0
+	local MYA=0
+	local RJT=0
+	local NDX=0
+	local ROWS=${#${(P)ARRAY}}
+	local K
+
+	[[ ! -e ${_CACHE_DIR} ]] && md ${_CACHE_DIR}
+	[[ ! -e ${_CACHE_W} ]] && touch ${_CACHE_W}
+	[[ ! -e ${_CACHE_L} ]] && touch ${_CACHE_L}
+	[[ ! -e ${_CACHE_M} ]] && touch ${_CACHE_M}
+
+	for K in ${(k)${(P)ARRAY}};do
+		((NDX++))
+		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
+		VALID=false
+		if grep -Fq ${${(P)ARRAY}[${K}]} ${_CACHE_W};then
+			VALID='true'
+			((WCH++))
+			printf '%s\n' "${K}"
+		else
+			which -s ${${(P)ARRAY}[${K}]} >/dev/null
+			if [[ ${?} -eq 0 ]];then
+				VALID='true'
+				((WCH++))
+				printf '%s\n' "${K}"
+				printf '%s\n' "${${(P)ARRAY}[${K}]}">>${_CACHE_W}
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			if grep -Fq ${${(P)ARRAY}[${K}]} ${_CACHE_M};then
+				VALID='true'
+				((MYA++))
+				printf '%s\n' "${K}"
+			else
+				mya -q ${${(P)ARRAY}[${K}]} >/dev/null
+				if [[ ${?} -eq 0 ]];then
+					VALID='true'
+					((MYA++))
+					printf '%s\n' "${K}"
+					printf '%s\n' "${${(P)ARRAY}[${K}]}">>${_CACHE_M}
+				fi
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			if grep -Fq ${${(P)ARRAY}[${K}]} ${_CACHE_L};then
+					VALID='true'
+					((LOC++))
+					printf '%s\n' "${K}"
+			else
+				run_locate -e ${${(P)ARRAY}[${K}]} >/dev/null
+				if [[ ${?} -eq 0 ]];then
+					VALID='true'
+					((LOC++))
+					printf '%s\n' "${K}"
+					printf '%s\n' "${${(P)ARRAY}[${K}]}">>${_CACHE_L}
+				fi
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			((RJT++))
+		fi
+	done
+	echo "${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
+	echo >&2 # clear progress line
+}
+
+parse_hist () {
+	local ARRAY=${1}
+	local -A SEEN_1=()
+	local -A SEEN_2=()
+	local -A RECENT=()
+	local -a STREAM=()
+	local L
+	local LINE
+
+	for L in ${(on)${(P)ARRAY}};do
+		[[ -z ${L} ]] && continue # Blank hist line
+
+		LINE=$(tr -d '\n' <<<${L})
+		TS=$(cut -d';' -f1 <<<${LINE} | cut -d':' -f2)
+		CMD=$(cut -d';' -f2 <<<${LINE} | cut -d' ' -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
+		ARGS=$(cut -d';' -f2 <<<${LINE} | cut -s -d' ' -f2-)
+
+		#echo "LINE:${LINE}" >&2
+		#echo "TS:${TS}" >&2
+		#echo "CMD:${CMD}" >&2
+		#echo "ARGS:${ARGS}" >&2
+
+		[[ ${CMD} =~ '\[' ]] && continue # eliminate test commands
+
+		if [[ -z ${SEEN_1[${CMD}]} ]];then
+			SEEN_1[${CMD}]=1
+		else
+			SEEN_1[${CMD}]=$(( SEEN_1[${CMD}] + 1 ))
+			RECENT[${CMD}]=${TS}
+		fi
+		STREAM+=("${(f)$(printf '%s\n' "${TS}|${CMD}|${ARGS}")}")
+	done
+
+	for L in ${STREAM};do
+		CMD=$(cut -d'|' -f2 <<<${L})
+		[[ ${SEEN_2[${CMD}]} -eq 1 ]] && continue
+		if [[ ${SEEN_1[${CMD}]} -gt 1 ]];then
+			ARGS=$(cut -d'|' -f3 <<<${L})
+			LINE=$(printf '%s\n' "${RECENT[${CMD}]}|${CMD}|${ARGS}")
+		else
+			LINE=$(printf '%s\n' "${L}")
+		fi
+		printf '%s\n' "${LINE}"
+		SEEN_2[${CMD}]=1
+	done
+}
+
+collate_hist () {
+	local ARRAY=${1}
+
+	_CMDS=()
+	_ARGS=()
+
+	for L in ${(P)ARRAY};do
+		TS=$(cut -d'|' -f1 <<<${L})
+		CMD=$(cut -d'|' -f2 <<<${L})
+		ARGS=$(cut -d'|' -f3 <<<${L})
+		_CMDS[${TS}]=${CMD}
+		_ARGS[${TS}]=${ARGS}
+	done
+}
+
+build_hist () {
+	local ARRAY=${1}
+	local -a _CMD_LIST
+	local -a _VALID_CMD_KEYS
+	local K
+
+	#echo "ARRAY:${ARRAY} ${#${(P)ARRAY}}" >&2
+
+	_CMD_LIST=("${(f)$(parse_hist ${ARRAY})}")
+	#echo "_CMD_LIST:${#_CMD_LIST}" >&2
+
+	collate_hist _CMD_LIST
+	#echo "_CMDS:${#_CMDS}" >&2
+	#echo "_ARGS:${#_ARGS}" >&2
+
+	_VALID_CMD_KEYS=("${(f)$(cmd_filter _CMDS)}")
+	#echo "_VALID_CMD_KEYS:${#_VALID_CMD_KEYS}" >&2
+
+	for K in ${_VALID_CMD_KEYS};do
+		printf "%s\n" ":${K}:0;${_CMDS[${K}]} ${_ARGS[${K}]}"
+	done | sort -n
+}
 
 # Execution
 [[ ${1} == '-p' ]] && _PROD=true || _PROD=false
 
-LAST_20=("${(f)$(tail -40 ~/.zsh_history | sort -t';' -k2 -u | sort | tail -20)}")
-
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
-cp ${HIST_FILE} ${HIST_SAVE}
+cp ${_HIST_FILE} ${_HIST_SAVE}
 
-#[[ ${_PROD} == 'false' ]] && echo "${BOLD}${RED_FG}Updating locate db${RESET}"
 echo -n "${ITALIC}Updating locate...${RESET}" >&2
-sudo updatedb ${LOCATE_OPTS} 2>/dev/null
+sudo updatedb ${_LOCATE_OPTS} 2>/dev/null
 
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Reading history...${RESET}"
+_HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
+[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
-BLANK_CMDS=("${(f)$(grep -P ';$' ${HIST_FILE})}")
-if [[ -n ${BLANK_CMDS} ]];then
-	for B in ${BLANK_CMDS};do
-		sed -in "/${B}/d" ${HIST_FILE}
-	done
-	[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Removing blank command lines:${WHITE_FG}${#BLANK_CMDS}${RESET}"
-else
-	BLANK_CMDS=()
-fi
-
-while read LINE;do
-	TS=$(cut -d';' -f1 <<<${LINE} | cut -d':' -f2)
-	CMD=$(cut -d';' -f2 <<<${LINE} | cut -d' ' -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
-	ARGS=$(cut -d';' -f2 <<<${LINE} | cut -s -d' ' -f2-)
-	RAW_HIST+="${TS}|${CMD}|${ARGS}"
-	RAW_CMDS+=${CMD}
-done < ${HIST_FILE}
-
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Current History Lines:${WHITE_FG}${#RAW_HIST}${RESET}"
-
-RAW_CMDS=(${(o)RAW_CMDS}) # Sorted, unique commands
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Unique History Lines:${WHITE_FG}${#RAW_CMDS}${RESET}"
-
-# Filter typos and bogus
-LOC=0
-MYA=0
-WCH=0
-NDX=0
-
-for L in ${(o)RAW_CMDS};do
-	((NDX++))
-	printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#RAW_CMDS} $(( NDX * 100. / ${#RAW_CMDS} )) >&2
-
-	[[ ${SEEN[${L}]} -eq 1 ]] && CMDS+=${L} && continue
-
-	VALID='false'
-
-	which -s ${L} >/dev/null
-	if [[ ${?} -eq 0 ]];then
-		VALID='true'
-		((WCH++))
-	fi
-
-	if [[ ${VALID} == 'false' ]];then
-		mya -q ${L}
-		if [[ ${?} -eq 0 ]];then
-			VALID='true'
-			((MYA++))
-		fi
-	fi
-
-	if [[ ${VALID} == 'false' ]];then
-		run_locate -e ${L} >/dev/null
-		if [[ ${?} -eq 0 ]];then
-			VALID='true'
-			((LOC++))
-		fi
-	fi
-
-	if [[ ${VALID} == 'false' ]];then
-		echo ${L} >> ${HIST_REJECTS}
-	else
-		CMDS+=${L}
-		SEEN[${L}]=1
-	fi
-done
-echo
-
-[[ ${_PROD} == 'false' ]] && echo " WHICH validated:${WHITE_FG}${WCH}${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "   MYA validated:${WHITE_FG}${MYA}${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "LOCATE validated:${WHITE_FG}${LOC}${RESET}"
-
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history:${WHITE_FG}${#CMDS}${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "        ${MAGENTA_FG}Rejects:${WHITE_FG}${#HIST_REJECTS}${RESET}"
-
-[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Finding last unique command/arg combination...${RESET}"
-
-# Sort history placing most recent first
-for L in ${RAW_HIST};do
-	printf "%s\n" ${L}
-done | sort -t'|' -k1rn -k2 >${HIST_TAB}
-
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Command history sorted:${WHITE_FG}${#HIST_TAB}${RESET}"
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
-
-
-for L in ${CMDS};do
-	LINE=$(grep -m1 -I "|${L:q}|" ${HIST_TAB})
-	TS=$(cut -d '|' -f1 <<<${LINE})
-	CMD=$(cut -d '|' -f2 <<<${LINE})
-	ARGS=$(cut -s -d '|' -f3 <<<${LINE})
-	if [[ -n ${TS} ]];then
-		HIST_BUILD+=":${TS}:0;${CMD} ${ARGS}"
-	fi
-done
-
-# TODO: This introduces duplicates.  Eliminate from HIST_BUILD before appending LAST_20
-HIST_BUILD+=(${LAST_20})
-for L in ${HIST_BUILD};do
-	printf "%s\n" ${L}
-done > ${HIST_NEW}
-
-HIST_CNT=$(wc -l ${HIST_NEW} | cut -d' ' -f1)
-
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${HIST_CNT}${RESET}"
+_VALID_HIST=("${(f)$(build_hist _HIST_IN)}")
+ 
+read ACC <${_CACHE_DIR}/accumulators
+[[ ${_PROD} == 'false' ]] && echo "  WHICH:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo " LOCATE:${WHITE_FG}$(cut -d'|' -f3 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "    MYA:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "REJECTS:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_VALID_HIST}${RESET}"
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Done.${RESET}\n"
 
-[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Original:" $(wc -l ${HIST_FILE} | cut -d' ' -f1)
-[[ ${_PROD} == 'false' && ${#BLANK_CMDS} -ne 0 ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "  Blank:" ${#BLANK_CMDS}
-[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" " Unique:" ${#CMDS}
-[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Rejects:" ${#HIST_REJECTS}
-[[ ${_PROD} == 'false' ]] && printf "%10s ${WHITE_FG}%-4d${RESET}\n" "Cleaned:" ${HIST_CNT}
-
-cp ${HIST_SAVE} ${HIST_BAK}
-cp ${HIST_NEW} ${HIST_FILE}
+NDX=0
+for L in ${_VALID_HIST};do
+	((NDX++))
+	printf "%s\n" "${L}" >> ${_HIST_NEW}
+done
+cp ${_HIST_NEW} ${_HIST_FILE}
 fc -R # Refresh history
-/bin/rm -f ${HIST_TAB} ${HIST_NEW} ${HIST_REJECTS} ${HIST_SAVE}
 
-[[ ${_PROD} == 'true' ]] && printf "Clean History (${WHITE_FG}%d${RESET})\n" ${HIST_CNT}
+[[ ${_PROD} == 'true' ]] && printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}

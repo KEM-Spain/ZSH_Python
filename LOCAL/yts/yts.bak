@@ -217,8 +217,7 @@ action_do () {
 			if [[ ${?} -eq 0 ]];then
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Not yet available<N>|<g>${LOG_LINE}<N>"
-				#[[ ${LOG_LINE} =~ 'will begin' ]] && g_WHEN='going live soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
-				g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
+				[[ ! ${LOG_LINE} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FUTURE[${M}]=true
 				_DOWNLOADS[${M}]=false
@@ -840,6 +839,8 @@ get_field () {
 
 	if [[ ${FIELD} == 'agetime' ]];then
 		[[ ${STR:l} =~ 'upcoming' ]] && STR='(UPCOMING EPISODE)'
+		[[ ${STR:l} =~ 'views' ]] && STR=$(sed -E 's/^(.*views )(.*ago)(.*)/(\2)/' <<<${STR})
+		[[ ${STR:l} =~ 'live' ]] && STR=$(sed -E 's/(.*ago)( live)(.*)/\1)/I' <<<${STR})
 	fi
 
 	if [[ ${FIELD} == 'author' ]];then
@@ -1280,6 +1281,7 @@ query_rumble () {
 				AGE=$(sed 's/ago .*/ago/' <<<${AGES[${X}]})
 				[[ -z ${AGE} ]] && continue
 				[[ ! ${AGE} =~ 'ago' ]] && continue # Dump junk listings without age
+				[[ ${AGE} =~ 'views' ]] && continue # Dump junk listings without age
 				VID_LIST+="${g_QUERY_KEY}|${TITLES[${X}]}|${AGE}|${LINKS[${X}]}|${DURATIONS[${X}]}" # Unique rows
 			done
 		else # General search

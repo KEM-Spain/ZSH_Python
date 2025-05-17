@@ -56,6 +56,7 @@ export DEFAULT_PLAYER=CLMN
 export PYDEVD_DISABLE_FILE_VALIDATION=1
 export GIT_AUTHOR_NAME="Kurt Miller"
 export GIT_AUTHOR_EMAIL="miller.kurt.e@gmail.com"
+export LC_ALL=C
 
 [[ -o login ]] && LOGIN=login || LOGIN=''
 

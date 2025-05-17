@@ -89,7 +89,7 @@ for F in ${_TODO_LIST};do
 		fi
 	done
 	echo "File:${WHITE_FG}${F}${RESET}"
-	_TODO_TEXT=("${(f)$(grep -P '#\s+?TODO' ${F})}")
+	_TODO_TEXT=("${(f)$(grep -nP '#\s+?TODO' ${F})}")
 	for T in ${_TODO_TEXT};do
 		TXT=$(str_trim ${T})
 		TXT=$(echo ${RESET}${TXT} | str_trim | sed "s/TODO/$(echo ${WHITE_FG}${ITALIC})TODO$(echo ${RESET})$(echo ${MAGENTA_FG})/g")

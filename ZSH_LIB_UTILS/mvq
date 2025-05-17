@@ -150,7 +150,7 @@ cache_select () {
 	local LIST=("${(f)$(find ${_MVQ_DIR} -name '_*' -type f)}")
 	local L
 	local TXT
-	local MAP="(<w>d<N>)elete Favorite"
+	local MAP="(<w>d<N>)elete favorite"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
