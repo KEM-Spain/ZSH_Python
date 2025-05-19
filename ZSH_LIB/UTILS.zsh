@@ -725,6 +725,6 @@ respond () {
 	[[ -n ${TIMEOUT} ]] && TIMEOUT="-t ${TIMEOUT}"
 
 	echo -n "${PROMPT}${WHITE_FG}?${RESET} ${WHITE_FG}(${RESET}${BOLD}${ITALIC}y${BOLD}${WHITE_FG}/${RESET}${BOLD}${ITALIC}n${RESET}${WHITE_FG})${RESET}:"
-	eval "read -q ${TIMEOUT} RESPONSE"
-	return ${?}
+	eval "read -q ${TIMEOUT} RESPONSE" && echo >&2
+	[[ ${RESPONSE} == 'y' ]] && return 0 || return 1
 }

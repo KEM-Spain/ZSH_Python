@@ -19,7 +19,7 @@ typeset -a _LOCAL_LIST
 typeset -a _RAWLIST
 
 # Constants
-_BAK_DIR=./.gsub_bak_$(date +%s)
+_BAK_DIR=/tmp/.gsub_bak_$(date +%s)
 _FAILED_ROW=8
 _NOMATCH_ROW=9
 
@@ -29,7 +29,7 @@ g_TO_TEXT=?
 g_SIMULATE=false
 
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -43,6 +43,9 @@ action_do () {
 	local APPROVE_ALL=false
 	local MBOX_OPTS
 	local PROMPT
+	local HIT=false
+	local HCNT=0
+	local FCNT=0
 
 	if [[ ${g_SIMULATE} == 'true' ]];then
 		do_rmcup
@@ -64,6 +67,7 @@ action_do () {
 	[[ ${RC} -ne 0 ]] && exit_leave $(msg_exit W "Unable to create backup directory: ${_BAK_DIR} (RC=${RC})")
 
 	for M in ${(on)_MARKED};do
+		((FCNT++))
 		MATCHES=("${(f)$(perl -ne "if (/${g_FROM_TEXT:q}/) { print }" ${_LOCAL_LIST[${M}]})}")
 		if ! arr_is_populated "${MATCHES}";then
 			msg_box -p -PK "Nothing matches <w>${(qq)g_FROM_TEXT}<N>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
@@ -71,30 +75,40 @@ action_do () {
 		else
 			if [[ ${APPROVE_ALL} == 'false' ]];then
 				[[ ${#_MARKED} -gt 1 ]] && PROMPT=N || PROMPT=C
-				msg_box -H1 -p -P${PROMPT} "Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|Lines:|$(msg_list ${MATCHES})|<Z>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
+				msg_box_clear -TGSUB
+				msg_box -TGSUB -H3 -p -P${PROMPT} "File:${FCNT}|Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|File:<w>${_LOCAL_LIST[${M}]}<N>|Lines:|$(msg_list_bullet ${MATCHES})"
 				case ${_MSG_KEY} in
-					a|y) APPROVE_ALL=true;;
+					a) APPROVE_ALL=true;;
+					y) APPROVE_ALL=false;;
 					s) list_clear_selected ${M};continue;;
-					*) list_clear_selected ${M};continue;;
+					*) msg_box -p -PC "Cancel this operation?"
+						msg_box_clear -TGSUB
+						[[ ${_MSG_KEY} == 'y' ]] && exit_leave "[${WHITE_FG}${_SCRIPT}${RESET}] ${RED_FG}Operation cancelled${RESET}"
+						list_clear_selected ${M};continue
+						continue # Assume skip
+						;;
 				esac
 			fi
 		fi
 
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} perl command: sudo perl -i.bak -pe "s/${g_FROM_TEXT:q}/${g_TO_TEXT:q}/g" ${_LOCAL_LIST[${M}]}"
 
-		sudo perl -i.bak -pe "s/${g_FROM_TEXT:q}/${g_TO_TEXT:q}/g" ${_LOCAL_LIST[${M}]}
-		if [[ ${?} -ne 0 ]];then
+		sudo perl -i.bak -pe "s/${g_FROM_TEXT:q}/${g_TO_TEXT:q}/g" ${_LOCAL_LIST[${M}]} && RC=${?}
+		if [[ ${RC} -ne 0 ]];then
 			msg_box -p -PK "Substitution <r>failed<N> for <w>${(qq)g_FROM_TEXT}<N>|in file:<w>${_LOCAL_LIST[${M}]}<N>"
 			list_set_selected ${M} ${_FAILED_ROW} # Mark as failed
 		else
+			HIT=true
+			((HCNT++))
 			[[ -e ${_LOCAL_LIST[${M}]}.bak ]] && sudo mv ${_LOCAL_LIST[${M}]}.bak ${_BAK_DIR}
-			if [[ ${APPROVE_ALL} == 'false' ]];then
-				msg_box -t1 "Substituted <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|in file:<w>${_LOCAL_LIST[${M}]}<N>|A backup file:${_BAK_DIR}/${_LOCAL_LIST[${M}]:t}.bak was created"
-			fi
 			sudo chmod 664 ${_BAK_DIR}/${_LOCAL_LIST[${M}]:t}.bak
 			list_set_selected ${M} ${_USED_ROW} # Mark as complete
 		fi
 	done
+	if [[ ${RC} -eq 0 && ${HIT} == 'true' ]];then
+		msg_box_clear -TGSUB
+		msg_box -p -PK "Substituted <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT} in ${HCNT} file(s)<N>|Backup files are in:<w>${_BAK_DIR}<N>"
+	fi
 }
 
 action_warn () {
@@ -238,7 +252,7 @@ list_add_header_break
 list_set_line_item ' 
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 '
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) <${GREEN_FG}ENTER${RESET}> to process ${ITALIC}or exit if none selected${RESET}"
+list_set_select_action "process"
 list_set_searchable true
 
 while true;do

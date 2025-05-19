@@ -19,8 +19,11 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-
+# Declarations
 typeset -A C_TAB=()
+
+# Execution
+[[ ${1} == '-H' ]] && echo "${WHITE_FG}Usage${RESET}: ${0:t}\n${WHITE_FG} Desc${RESET}: Display ls file colors by file extension" && exit
 
 # Load LS_COLORS into table
 IFS='='

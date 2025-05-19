@@ -42,7 +42,7 @@ action_do () {
 	local -a FLIST=()
 	local V_PATH=''
 	local FN_OUT=''
-	local VIEW=false
+	local VIEW=''
 	local -a MSG_LIST=()
 	local TAG=''
 	local BOX_LIMIT=20
@@ -53,10 +53,10 @@ action_do () {
 
 		tcup 0 0
 		tput ed
-		pushd ${_GIT_REPO_DIR}
+		pushd ${_GIT_REPO_DIR} # --- PUSHD ---
 		if [[ -n ${_FN_ARG} ]];then
 			V_PATH=${${_FN_ARG}##${_GIT_REPO_DIR}/}
-			msg_box -p -P"(e)ditor, (v)iew, (w)rite" "Edit, View, or Write to file?"
+			msg_box -p -P"(d)iff, (e)dit, (w)rite" "View diff of latest changes, Edit, or Write to file?"
 			if [[ ${_MSG_KEY} == 'w' ]];then
 				FN_OUT=${_APP_DIR}/${COMMIT}:${V_PATH:t}.log.out
 				if overwrite_file ${FN_OUT};then
@@ -65,10 +65,14 @@ action_do () {
 			elif [[ ${_MSG_KEY} == 'e' ]];then
 				git show -P ${COMMIT}:${V_PATH} >/tmp/.gitlog.out
 				vi /tmp/.gitlog.out
-			elif [[ ${_MSG_KEY} == 'v' ]];then
-				git show -P ${COMMIT}:${V_PATH}
+			elif [[ ${_MSG_KEY} == 'd' ]];then
+				VIEW=$(git diff ${COMMIT} HEAD^^ ${V_PATH})
+				if [[ -z ${VIEW} ]];then
+					msg_box -p -PK "No references to file ${V_PATH} in this commit:${COMMIT}"
+				else
+					git -p diff ${COMMIT} HEAD^^ ${V_PATH}
+				fi
 			else
-				msg_box -p -PK "Nothing Selected"
 				list_set_selected ${M} ${_AVAIL_ROW} && continue
 				break
 			fi
@@ -80,7 +84,7 @@ action_do () {
 			[[ ${_MSG_KEY} != 'y' ]] && list_set_selected ${M} ${_AVAIL_ROW} && continue
 			git show -P ${COMMIT}
 		fi
-		popd
+		popd # --- POPD ---
 
 		list_set_selected ${M} ${_USED_ROW} && continue
 	done
@@ -123,9 +127,10 @@ read -r -d '' DESC<<EOF
 Show diffs for selected commits
 \tIf a filename is passed, results
 \tare limited to the file specified.
-\tIf a <FILE> arg is passed and the -p option is applied,
-\tone is given the choice to either ${BOLD}${ITALIC}view the diff${RESET} or 
-\t${BOLD}${ITALIC}write the file${RESET} as it existed at commit time
+\tIf a <FILE> arg is passed one is 
+\tgiven the choice to either
+\t${BOLD}${ITALIC}diff${RESET}, ${BOLD}${ITALIC}edit${RESET}, or ${BOLD}${ITALIC}write${RESET} the file
+\tas it exists in the reposotory commit
 EOF
 
 parse_opts () {
@@ -177,7 +182,7 @@ usage () {
 	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
-OPTSTR=":HDLep"
+OPTSTR=":HDLe"
 OPTIND=0
 USE_LOCAL_REPO=false
 
@@ -186,7 +191,6 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
      D) dbg_set_level;;
      L) USE_LOCAL_REPO=true;;
-     p) PRINT_FILE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -209,7 +213,6 @@ else
 fi
 
 [[ ${#} -ne 0 ]] && _FN_ARG=${1} || _FN_ARG=''
-[[ -z ${_FN_ARG} && ${PRINT_FILE} == 'true' ]] && exit_leave $(msg_exit W "Print file option requires a <FILE> argument")
 
 if [[ -n ${_FN_ARG} ]];then
 	typeset -a FLIST=()
@@ -231,7 +234,7 @@ if [[ -n ${_FN_ARG} ]];then
 				_FN_ARG=${FLIST[${_MSG_KEY}]}
 				dbg "${0}: _FN_ARG set to ${FLIST[1]}"
 			else
-				exit_leave "${RED_FG}Operation Cancelled${RESET}:Nothing selected"
+				exit_leave "${_SCRIPT_TAG} ${RED_FG}Operation Cancelled${RESET}"
 			fi
 		fi
 	else
@@ -244,28 +247,28 @@ RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 
-[[ ${?} -ne 0 ]] && exit_leave "${0}: ${RED_FG}no matches found${RESET} ${WHITE_FG}${@}${RESET}"
+[[ ${?} -ne 0 ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}no matches found${RESET} ${WHITE_FG}${@}${RESET}"
 PATHLBL=$(path_get_label 40)
 
-pushd ${_GIT_REPO_DIR}
 msg_box "Working..."
-dbg "${0}: Executing: git log --pretty=reference ${FN_ARG}"
+pushd ${_GIT_REPO_DIR} # ---  PUSHD ---
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: Executing: git log --pretty=reference ${FN_ARG}"
 RAW_LIST=("${(f)$(git log --pretty=reference ${FN_ARG})}")
 if [[ ${?} -ne 0 ]];then
-	dbg "${0}:${RED_FG}git COMMAND FAILED${RESET}"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${RED_FG}git COMMAND FAILED${RESET}"
 else
-	dbg "${0}:${GREEN_FG}git returned a list: LOCAL_LIST COUNT${RESET}:${#LOCAL_LIST}"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${GREEN_FG}git returned a list: LOCAL_LIST COUNT${RESET}:${#LOCAL_LIST}"
 fi
-popd
+popd # ---  POPD ---
 
 if ! arr_is_populated "${RAW_LIST}";then
-	[[ ${?} -ne 0 ]] && exit_leave "${0}: ${RED_FG}no commits found for${RESET}:${WHITE_FG}${FN_ARG}${RESET}"
+	exit_leave "${0}: ${RED_FG}no commits found for${RESET}:${WHITE_FG}${FN_ARG}${RESET}"
 fi
 
 MD=${PWD}
 SIZE=0
 
-pushd ${_GIT_REPO_DIR}
+pushd ${_GIT_REPO_DIR} # -- PUSHD ---
 for L in ${(u)RAW_LIST};do
 	REF=$(cut -d' ' -f1 <<<${L})
 	SIZE=$(git show ${REF} ${_FN_ARG} | wc -l)
@@ -276,7 +279,7 @@ for L in ${(u)RAW_LIST};do
 	TM=$(cut -d'-' -f4 <<<${DTM})
 	_LOCAL_LIST+="${REF}|${DT}|${TM}|${SIZE}"
 done
-popd
+popd # -- POPD ---
 
 # Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO_DIR} ${_GIT_REPO_DIR} ${SELECTED_COUNT}'
@@ -306,3 +309,5 @@ while true;do
 		fi
 	fi
 done
+
+exit_leave 

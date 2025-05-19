@@ -217,8 +217,10 @@ if arr_is_populated "${_GNOME_LIST}";then
 	respond "Continue search"
 	if [[ ${?} -ne 0 ]];then
 		do_rmcup
-		echo "${RED_FG}Operation cancelled${RESET}..."
+		echo "${_SCRIPT_TAG} ${RED_FG}Operation Cancelled${RESET}..."
 		exit_leave
+	else
+		msg_box "Continuing search...."
 	fi
 fi
 
@@ -258,7 +260,7 @@ fi
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _LOCAL_LIST:${#_LOCAL_LIST} ${=_LOCAL_LIST[1,20]} ...truncated"
 
 # Set headings
-list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} configuration file(s) for:${WHITE_FG}%s${RESET}  ${_PG}" ${#_LIST} ${SEARCHTERM}'
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} configuration $(str_pluralize file ${#_LIST}) for:${WHITE_FG}%s${RESET}  ${_PG}" ${#_LIST} ${SEARCHTERM}'
 list_add_header_break
 
 # Set line item
@@ -269,6 +271,7 @@ list_set_select_action "edit"
 list_set_action_msgs edit config
 list_set_reuse_stale true
 list_set_searchable true
+list_set_restore_pos true
 
 while true;do
 	# Get selection

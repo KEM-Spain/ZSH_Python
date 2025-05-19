@@ -172,7 +172,7 @@ if [[ ${#} -ne 0 ]];then
 				sudo find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -rf {} \;
 				exit_leave $(msg_exit I "Removed inode:${INODE}")
 			else
-				exit_leave "${RED_FG}Operation Cancelled${RESET}"
+				exit_leave "${_SCRIPT_TAG} ${RED_FG}Operation Cancelled${RESET}"
 			fi
 		else
 			exit_leave $(msg_exit E "Inode:${INODE} not found")

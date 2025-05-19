@@ -72,7 +72,7 @@ action_do () {
 	msg_box_clear
 
 	if [[ ${g_INFO_OPTION} == 'true' || ${PKG_STATE:l} =~ "^[sf].*" ]];then
-		msg_box -x10 "Retrieving info..."
+		msg_box -x18 "Retrieving info..."
 		if [[ ${PKG_STATE:l} == "snap" && ${_SNAP_INSTALLED} == 'true' ]];then
 			UPD_PKG_LIST=false
 			msg_stream "snap info ${PKG_NAME} 2>/dev/null | tr -s '[:space:]'"
@@ -251,7 +251,7 @@ set_package_list () {
 	# Retrieve data from aptitude
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} aptitude search ${PATTERN}"
 
-	msg_box -x10 "Retrieving data from aptitude..."
+	msg_box -x18 "<w>Retrieving data from<N>: <c><I>aptitude<N>..."
 
 	if [[ ${MATCH_DESC} == "true" ]];then
 		RAWLIST=("${(@f)$(aptitude search ${PATTERN} -F '%c|%p|%d' | grep -i ${SEARCHTERM})}")
@@ -274,7 +274,7 @@ set_package_list () {
 
 		if [[ ${SHOW_ALL_PKGS} == "true" || ${SHOW_INST} == "true" ]];then
 			if [[ ${_SNAP_INSTALLED} == 'true' ]];then
-				msg_box -x10 "Retrieving data from snap and flatpak..."
+				msg_box -x18 "<w>Retrieving data from<N>: <c><I>snap<N> and <c><I>flatpak<N>..."
 				SHOW_SNAP=true
 				SNAPLIST=("${(f)$(snap list | tail +2)}")
 
@@ -309,7 +309,7 @@ set_package_list () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} row count < 10000"
 
 	if [[ ${#RAWLIST} -ge 10000 ]];then
-		msg_box -p -PP "${BOLD}${#RAWLIST} is a lot of rows.${RESET} This could take $(printf "%.2f" ${ROWTIME}) minutes. HINT:add a search term to limit rows"
+		msg_box -x15 -p -PP "Need to scan ${BOLD}<w>${#RAWLIST}<N> rows<N>.${RESET} Estimated search time <w>$(printf "%.2f" ${ROWTIME})<N> minutes.|<w>HINT<N>:add a <c><SEARCHTERM><N> to narrow search"
 		if [[ ${_MSG_KEY} != 'y' ]];then
 			exit_leave $(msg_exit I "Operation cancelled")
 		fi
@@ -575,7 +575,8 @@ if [[ ${DO_APT_UPDATE} == true ]];then
 	stat -c '%Y' ${_SOURCES} >${_LAST_APT_UPD}
 fi
 
-msg_box "Searching for:${SEARCHTERM}..."
+[[ -z ${SEARCHTERM} ]] && MSG="available applications" || MSG=${SEARCHTERM}
+msg_box -x15 "<w>Searching for<N>:<c><I>${MSG}<N>..."
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PATTERN:${PATTERN}"
 
 # Get data

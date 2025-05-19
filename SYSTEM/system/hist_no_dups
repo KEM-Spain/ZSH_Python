@@ -179,6 +179,7 @@ collate_hist () {
 	done
 }
 
+# TODO: Investigate why commands are not being placed in their original chronological order 
 build_hist () {
 	local ARRAY=${1}
 	local -a _CMD_LIST

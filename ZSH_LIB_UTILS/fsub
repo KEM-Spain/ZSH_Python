@@ -290,7 +290,7 @@ do_finalize () {
 
 		echo -n "\nSave Changes:(y/n)?" >&2
 		read -sq RESPONSE
-		[[ ${RESPONSE} == "y" ]] && echo && save_changes || echo "\n${RED_FG}Operation cancelled${RESET}"
+		[[ ${RESPONSE} == "y" ]] && echo && save_changes || echo "\n${_SCRIPT_TAG} ${RED_FG}Operation cancelled${RESET}"
 	fi
 }
 

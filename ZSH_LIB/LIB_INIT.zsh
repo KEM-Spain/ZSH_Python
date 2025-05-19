@@ -24,6 +24,7 @@ _MAX_COLS=$(tput -T xterm cols)
 _MAX_ROWS=$(tput -T xterm lines)
 _PID=$$
 _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
+_SCRIPT_TAG="[${WHITE_FG}${_SCRIPT}${RESET}]:"
 _TERM=xterm
 _USER_NAME=$(id -un)
 _USER_HOME=/home/${_USER_NAME}

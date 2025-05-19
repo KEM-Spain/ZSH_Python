@@ -114,7 +114,7 @@ cmd_filter () {
 		fi
 	done
 	echo "${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
-	echo >&2 # clear progress line
+	[[ ${_PROD} == 'false' ]] && echo >&2 # Clear progress
 }
 
 parse_hist () {

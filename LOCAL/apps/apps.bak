@@ -33,10 +33,10 @@ E_STRIKE=$(echo "\033[9m")
 [[ -e /usr/bin/snap ]] && _SNAP_INSTALLED=true || _SNAP_INSTALLED=false
 _HDR_BAR=$'\u2501' # Header character
 _LAST_APT_UPD=~/.last_apt_upd
-_LIB_DIR=/usr/local/lib
 _SOURCES=/etc/apt/sources.list.d
 
 # Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -104,7 +104,7 @@ action_do () {
 
 	[[ ${UPD_PKG_LIST} == 'true' ]] && upd_package_list ${PKG_NAME} ${_MARKED}
 
-	list_set_selected ${_MARKED} 0
+	list_set_selected ${_MARKED} ${_AVAIL_ROW}
 }
 
 action_warn () {
@@ -161,7 +161,7 @@ action_warn () {
 		v) g_INFO_OPTION=true;;
 	esac
 
-	list_set_selected ${_MARKED} 0
+	list_set_selected ${_MARKED} ${_AVAIL_ROW}
 
 	return ${RC}
 }
@@ -575,6 +575,7 @@ if [[ ${DO_APT_UPDATE} == true ]];then
 	stat -c '%Y' ${_SOURCES} >${_LAST_APT_UPD}
 fi
 
+msg_box "Searching for:${SEARCHTERM}..."
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PATTERN:${PATTERN}"
 
 # Get data
@@ -601,12 +602,13 @@ local PKG_STATE=$(get_package_state ${_LIST[${_LIST_NDX}]});
 local PKG_NAME=$(get_package_name ${_LIST[${_LIST_NDX}]});
 local PKG_DESC=$(get_package_desc ${_LIST[${_LIST_NDX}]});
 local ST_COLOR=$(set_state_color ${PKG_STATE});
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}${ST_COLOR}%-12s${RESET}${BOLD}${SHADE}${BAR} %-*s${RESET}${SHADE}${BAR} %-.*s${RESET}\n" ${_LIST_NDX} ${PKG_STATE} ${_LONGEST[NAME]} ${PKG_NAME} ${_LONGEST[DESC]} ${PKG_DESC}
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ST_COLOR}%-12s${RESET}${BOLD}${SHADE}${BAR} %-*s${RESET}${SHADE}${BAR} %-.*s${RESET}\n" ${_LIST_NDX} ${PKG_STATE} ${_LONGEST[NAME]} ${PKG_NAME} ${_LONGEST[DESC]} ${PKG_DESC}
 '
 list_set_action_msgs 'install-uninstall app / view app info:'  app
 list_user_prompt_style msg_box
 list_set_no_top_offset # Place the first detail line immediately after heading
 list_set_barlines true
+list_set_searchable true
 
 while true;do
 	# Get selection
