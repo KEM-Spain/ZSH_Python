@@ -1188,7 +1188,7 @@ post_process () {
 	done
 	logit ${_YTS_DBG_LOG} "${0}: Scrubbed:${NEW_FN}"
 
-	NEW_FN="${FN:h}/${NEW_FN}.${FN:e}" # Add path and extension
+	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
 	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
 
 	if [[ ${FN} != ${NEW_FN} ]];then

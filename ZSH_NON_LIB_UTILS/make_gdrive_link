@@ -33,7 +33,7 @@ usage () {
 	exit
 }
 
-[[ -z ${1} ]] && usage "Missing arg:<SHARED_URL>" || URL=${1}
+[[ -z ${1} ]] && usage "${RED_FG}Missing argument${RESET}:<SHARED_URL>" || URL=${1}
 
 FILE_ID=$(echo ${URL} | perl -pe 's/(^.*\/d\/)(.*)(\/view.*$)/$2/g')
 

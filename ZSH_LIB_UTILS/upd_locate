@@ -55,7 +55,7 @@ last_locate () {
 	local LB_LAST_RUN
 	local LB_LAST_TIME
 
-	[[ -z ${MARKER_ARG} ]] && exit_leave "${0:t} Missing arument: MARKER"
+	[[ -z ${MARKER_ARG} ]] && exit_leave "${0:t} ${RED_FG}Missing arument${RESET}:<MARKER>"
 
 	if [[ -e ${MARKER_ARG} ]];then
 		LB_LAST_RUN=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
@@ -116,7 +116,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:Backup selected directories"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDIfis"

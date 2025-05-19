@@ -1525,6 +1525,8 @@ usage () {
 	echo -e "${WHITE_FG}-u${RESET} export the video URL"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
+
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDARSVLla:s"

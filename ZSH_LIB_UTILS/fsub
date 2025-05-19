@@ -87,7 +87,7 @@ clean_show_fn () {
 	local K L N S D R Y
 	local FN
 
-	[[ -z ${TITLE} ]] && echo "${0}: Missing TITLE argument" >&2 && return 1
+	[[ -z ${TITLE} ]] && echo "${0}: ${RED_FG}Missing argument${RESET}:<TITLE>" >&2 && return 1
 
 	GREP_REGEX=$(csf_set_search ${TITLE})
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} GREP_REGEX:${GREP_REGEX}"
@@ -900,7 +900,7 @@ usage () {
 	echo -e "${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HCDINPSTYabe:irscdm:p:nt:uxyv"

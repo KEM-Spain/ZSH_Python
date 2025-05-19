@@ -71,14 +71,14 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} mathematical precision"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDp:"
@@ -101,7 +101,7 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ ${#} -eq 0 ]] && exit_leave $(msg_exit E "Missing argument:$(opt_type f)") || FORMULA=${1}
+[[ ${#} -eq 0 ]] && usage "${RED_FG}Missing argument${RESET}:$(opt_type f)" || FORMULA=${1}
 
 if ! validate_is_integer ${PRECISION};then
 	exit_leave $(msg_exit E "$(opt_type p) must be an integer")

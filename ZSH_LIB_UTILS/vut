@@ -158,8 +158,7 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HD"
@@ -527,7 +526,7 @@ ___EOF
 
 	# Execution
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
-	[[ ${#} -eq 0 ]] && usage "Missing argument $(opt_type v)" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)" || FN=${1}
 
 	[[ ! -e ${FN} ]] && usage "File not found:${FN}"
 

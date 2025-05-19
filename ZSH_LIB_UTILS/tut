@@ -67,8 +67,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -79,7 +78,7 @@ ___EOF
 			echo ${LINE} | perl -pe 's/\$([0-9A-Za-z?#@_:]*)(\b|$|")/\${$1}$2/g'
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "missing required argument or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "${RED_FG}Missing arguments or piped input${RESET}"
 		perl -pe 's/\$([0-9A-Za-z?#@_:]*)(\b|$|")/\${$1}$2/g' <${FN}
 	fi
 }

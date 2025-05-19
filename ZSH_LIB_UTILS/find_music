@@ -130,8 +130,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS
@@ -162,7 +161,7 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
  
 SEARCHTERM=${@}
-[[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
+[[ -z ${SEARCHTERM} ]] && usage "${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
 
 SEARCH_REGEX=".*${SEARCHTERM}.*"
 

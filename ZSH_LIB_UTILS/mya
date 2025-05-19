@@ -92,7 +92,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDcdeq"

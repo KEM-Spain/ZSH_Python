@@ -86,10 +86,10 @@ usage () {
 	echo -e "${WHITE_FG}-w${RESET} whole word match"
 	echo -e "\n${WHITE_FG}Desc${RESET}:find files containing <SEARCHTERM> in or below the current directory\n"
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDBCILf:lLm:nop:rvw"
+OPTSTR=":HDBCILFf:lLm:nop:rvw"
 
 CASE_SENSE='-i'
 COLORS=always
@@ -107,6 +107,7 @@ RECURSE=false
 RECURSE_OPT=''
 SCAN_BAK=false
 WORD_OPT=''
+LITERAL=''
 
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
@@ -114,11 +115,12 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
 	  D) dbg_set_level;;
 	  B) EXCLUDE_BAK='';;
-     I) CASE_SENSE='';;
      C) COLORS=never;;
+     F) LITERAL=-F;;
+     I) CASE_SENSE='';;
+     L) LISTFILES_OPT=-l;FILELIST=true;ONE_LINE=true;;
      f) FN_ARG=${OPTARG};;
      l) LISTFILES_OPT=-l;FILELIST=true;;
-     L) LISTFILES_OPT=-l;FILELIST=true;ONE_LINE=true;;
      m) MAX_MATCHES="-m${OPTARG}";;
      n) LINENUM_OPT=-n;;
      o) ONLY_OPT=-o;;
@@ -137,7 +139,7 @@ SEARCHTERM=${@}
 # Execution
 [[ ${_DEBUG} -eq 0 && FILELIST == 'false' ]] && do_smcup
 
-[[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
+[[ -z ${SEARCHTERM} ]] && usage "${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
 [[ ! -t 0 ]] && exit_leave $(msg_exit W "Unable to accept piped input")
 
 if [[ -n ${FN_ARG} ]];then # If file was passed
@@ -150,7 +152,7 @@ else
 	GREP_ARG="${PATH_ARG}/(*|.*)" # No file name was passed - all files in path
 fi
 
-CMD=$(echo "grep -H -r -P -I -d skip -D skip ${MAX_MATCHES} --color=never ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_ARG} ${EXCLUDE_BAK} 2>/dev/null")
+CMD=$(echo "grep -H -r -P -I -d skip -D skip ${MAX_MATCHES} --color=never ${LITERAL} ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_ARG} ${EXCLUDE_BAK} 2>/dev/null")
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 
 RAWLIST=("${(f)$(eval ${CMD})}")

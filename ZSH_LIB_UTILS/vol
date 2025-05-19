@@ -97,6 +97,8 @@ function parse_opts {
 
 function usage {
 	local OPTS=$(parse_opts $OPTSTR)
+	local -a PENDING_MSGS=(${@})
+
 	(
 	echo -e "\n${WHITE_FG}Usage${RESET}: $SCRIPT $OPTS\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
@@ -107,7 +109,8 @@ function usage {
 	echo -e "${WHITE_FG}-f${RESET} full volume"
 	echo -e "\n${WHITE_FG}Desc${RESET}:change volume I/O levels or mute state\n"
 	) >&2
-	exit_leave
+
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDmutf"

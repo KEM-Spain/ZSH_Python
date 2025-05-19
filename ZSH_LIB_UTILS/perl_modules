@@ -71,13 +71,15 @@ usage () {
 	tabs 5
 	local OPTS=$(parse_opts ${OPTSTR})
 	local -a PENDING_MSGS=(${@})
+
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}] [<SEARCHTERM>]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-I${RESET} manage installed modules"
 	echo -e "${WHITE_FG}-i${RESET} case insensitive search"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
-	exit_leave "\n${PENDING_MSGS}\n"
+
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS

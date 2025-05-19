@@ -97,6 +97,8 @@ parse_opts () {
 
 usage () {
 	local OPTS=$(parse_opts $OPTSTR)
+	local -a PENDING_MSGS=(${@})
+
 	(
 	echo -e "\n${WHITE_FG}Usage${RESET}: $SCRIPT ${WHITE_FG}[${RESET} $OPTS ${WHITE_FG}]${RESET} <TZ>\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
@@ -104,7 +106,8 @@ usage () {
 	echo -e "${WHITE_FG}-l${RESET} list zones"
 	echo -e "\n${WHITE_FG}Desc${RESET}:Show times in other zones. Accepts TZ id as an argument.  Default is USA\n"
 	) >&2
-	exit_leave
+
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDl"

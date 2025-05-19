@@ -74,8 +74,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDl:f"
@@ -98,7 +97,7 @@ done
 shift $((OPTIND -1))
 #--End GetOpts--
 # Execution
-[[ -z ${1} ]] && usage "missing argument:<WORD>" || WORD=${@}
+[[ -z ${1} ]] && usage "${RED_FG}Missing argument${RESET}:<WORD>" || WORD=${@}
 
 if [[ ${FAST} == 'true' ]];then
 	echo ${WORD} | aspell -l ${LANG} -a --sug-mode=ultra --dont-time --dont-guess --size=10 | grep -q '*'

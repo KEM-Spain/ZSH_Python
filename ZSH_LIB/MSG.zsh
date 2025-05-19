@@ -680,14 +680,14 @@ msg_err () {
 }
 
 msg_exit () {
-	local LEVEL=${1:=W}
+	local LEVEL=${1}
 	local MSG=${2}
 	local LABEL=''
 	local LCOLOR=''
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ -z ${MSG} ]] && return
+	[[ -z ${@} ]] && return
 
 	case ${LEVEL} in 
 		W) LABEL="Warning";LCOLOR=${ITALIC}${BOLD}${MAGENTA_FG};;

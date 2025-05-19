@@ -28,7 +28,6 @@ usage () {
 	exit
 }
 
-
 # Execution
 [[ ${1} == "-H" ]] && usage
 

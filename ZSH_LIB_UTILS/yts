@@ -939,7 +939,7 @@ last_code_update () {
 	local LAST_UPD=0
 	local LAST_TIME=0
 
-	[[ -z ${MARKER_ARG} ]] && exit_leave "${0:t} Missing argument: MARKER"
+	[[ -z ${MARKER_ARG} ]] && exit_leave "${0:t} ${RED_FG}Missing argument${RESET}:<MARKER>"
 
 	if [[ -e ${MARKER_ARG} ]];then
 		LAST_UPD=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
@@ -1525,6 +1525,8 @@ usage () {
 	echo -e "${WHITE_FG}-u${RESET} export the video URL"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
+
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDARSVLla:s"

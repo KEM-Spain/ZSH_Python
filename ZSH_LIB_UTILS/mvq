@@ -548,8 +548,7 @@ usage () {
 	echo -e "${WHITE_FG}-y${RESET} year (4 digits) [${WHITE_ON_GREY}default${RESET}]"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 
-	echo "\n$(msg_warn ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDCa:d:e:liuy:"

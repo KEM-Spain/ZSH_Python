@@ -213,7 +213,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:Lookup/Set values in the gsettings database"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDl"
@@ -235,7 +235,7 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ -z ${1} ]] && usage "Argument:missing search string for a gsettings url"
+[[ -z ${1} ]] && usage "${RED_FG}Missing argument${RESET}:<SEARCHTERM> for a gsettings url"
 SEARCHTERM=${@}
 
 _LOCAL_LIST=("${(@f)$(gsettings list-recursively | sort -u | egrep "${SEARCHTERM}" | sed -e 's/: /:/g')}")

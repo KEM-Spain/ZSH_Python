@@ -29,7 +29,7 @@ typeset -aU _REFERENCED
 LOG=/tmp/${0:t}_explode
 [[ -e ${LOG} ]] && /bin/rm ${LOG}
 
-[[ -z ${1} ]] && echo "Missing argument:<ZSH_SCRIPT>" && exit
+[[ -z ${1} ]] && echo "${RED_FG}Missing argument${RESET}:<ZSH_SCRIPT>" && exit
 SCRIPT=${1}
 
 EXPLODE=$(sed -e 's/\$/\n\$/g' -e 's/:.*}/}/' -e 's/{[#=]/{/' ${1}) 

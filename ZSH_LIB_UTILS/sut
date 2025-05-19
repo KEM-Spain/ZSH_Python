@@ -189,8 +189,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HD"
@@ -1643,7 +1642,7 @@ ___EOF
 	done
 	shift $((${OPTIND} - 1))
 
-	[[ ${#} -ne 0 ]] && APP=${1} || usage "Missing package name"
+	[[ ${#} -ne 0 ]] && APP=${1} || usage "${RED_FG}Missing argument${RESET}:<PACKAGE>"
 	[[ ${ACTION} == none ]] && usage "No action specified"
 
 	PACKAGES=($(dpkg --get-selections | cut -f1))
