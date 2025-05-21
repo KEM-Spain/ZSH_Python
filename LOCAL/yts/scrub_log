@@ -6,9 +6,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -16,74 +14,100 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
-
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-typeset -a DIR_INODES=()
-typeset -a CURRENT_LOG=()
-typeset -A NEW_LOG=()
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+typeset -A DIR_INODES=()
+typeset -A LOG_LINES=()
+typeset -a LOG_INODES=()
+typeset -a ERR_INODES=()
 typeset -R3 NDX=0
 
-_YTS_DIR=~/.yts
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_DOWNLOAD_LOG=${_YTS_DIR}/yts.downloads
+_YTS_DIR=~/.yts
+_LOG=yts.downloads
+_DOWNLOAD_LOG=${_YTS_DIR}/${_LOG}
+_NEW_LOG=/tmp/_LOG.new
 
 # Execution
+clear
+
 LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
-
-for L in ${(on)LIST};do
-	((NDX++))
-	INODE=$(cut -d' ' -f1 <<<${L})
-	FN=$(cut -d' ' -f2- <<<${L})
-	DIR_INODES+="${INODE}|${FN}"
-	echo "${NDX}) DIRECTORY INODE:${INODE} FN:${FN}"
-done
-
-LIST_CNT=${#LIST}
 if [[ -z ${LIST} ]];then
-	echo "[${WHITE_FG}${0:t}${RESET}] There are no downloaded files - nothing to do"
+	echo "[${WHITE_FG}${0:t}${RESET}] There are no downloaded files - log is clear"
 	rm -f ${_DOWNLOAD_LOG} >/dev/null 2>&1  # Ensure no downloads are logged
 	touch ${_DOWNLOAD_LOG}
 	exit
 fi
 
+LIST_CNT=${#LIST}
+
+echo
+LBL="DIR CONTENTS"
+echo "${WHITE_FG}${LBL}${RESET}"
+echo "${MAGENTA_FG}$(str_unicode_line ${#LBL})${RESET}"
+for L in ${(on)LIST};do
+	DIR_INODE=$(cut -d' ' -f1 <<<${L})
+	DIR_FN=$(cut -d' ' -f2- <<<${L})
+	[[ ${DIR_FN:e} == 'part' ]] && continue
+	DIR_INODES[${DIR_INODE}]=${DIR_FN}
+	echo "${DIR_INODE}:${DIR_FN}"
+done
+
+[[ -e ${_NEW_LOG} ]] && /bin/rm -f ${_NEW_LOG}
+for K in ${(onk)DIR_INODES};do
+	LOG_LINE=$(grep ${K} ${_DOWNLOAD_LOG})
+	if [[ ${?} -eq 0 ]];then
+		LOG_LINES[${K}]=${LOG_LINE}
+	fi
+done
+
+ERR_CNT=0
+LBL="LOG CONTENTS"
+echo "\n${WHITE_FG}${LBL}${RESET}"
+echo "${MAGENTA_FG}$(str_unicode_line ${#LBL})${RESET}"
 while read LINE;do
 	LOG_INODE=$(cut -d'|' -f1 <<<${LINE})
 	LOG_FN=$(cut -d'|' -f3 <<<${LINE})
-	LOG_LINE=${LINE}
-	CURRENT_LOG+="${LOG_INODE}|${LOG_FN}|${LOG_LINE}"
-done < ${_DOWNLOAD_LOG}
-
-for D in ${DIR_INODES};do
-	DIR_INODE=$(cut -d'|' -f1 <<<${D})
-	DIR_FN=$(cut -d'|' -f2 <<<${D})
-	for C in ${CURRENT_LOG};do
-		LOG_INODE=$(cut -d'|' -f1 <<<${C})
-		LOG_FN=$(cut -d'|' -f2 <<<${C})
-		LOG_LINE=$(cut -d'|' -f3- <<<${C})
-		[[ ${DIR_INODE} == ${LOG_INODE} && ${DIR_FN} == ${LOG_FN} ]] && NEW_LOG[${LOG_INODE}]="${LOG_LINE}"
-	done
-done
-
-for L in ${(on)CURRENT_LOG};do
-	((NDX++))
-	LOG_INODE=$(cut -d'|' -f1 <<<${L})
-	LOG_FN=$(cut -d'|' -f2 <<<${L})
-	printf "%s)       LOG INODE:%s FN:%s\n" ${NDX} ${LOG_INODE} ${LOG_FN}
-done
-
-if [[ ${LIST_CNT} -ne ${#CURRENT_LOG} ]];then
-	echo "${WHITE_ON_GREY}The exisiting log${RESET}:${WHITE_FG}${_DOWNLOAD_LOG}${RESET} seems ${BOLD}${ITALIC}${RED_FG}INACCURATE${RESET}"
-	echo -n "Overwrite the exisiting log (y/n):"
-	read -q RESPONSE
-	cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
-	if [[ ${RESPONSE} == 'y' ]];then
-		for N in ${(v)NEW_LOG};do
-			echo ${N} >> ${_DOWNLOAD_LOG}
-		done
+	if [[ -z "${DIR_INODES[${LOG_INODE}]}" ]];then
+		echo " ${RED_FG}Missing file${RESET}: ${LOG_INODE}:${LOG_FN}"
+		((ERR_CNT++))
+		ERR_INODES+=${LOG_INODE}
 	else
-		echo "\n${RED_FG}Operation cancelled${RESET}"
+		if [[ "${DIR_INODES[${LOG_INODE}]}" != "${LOG_FN}" ]];then
+			echo " ${RED_FG}Log Filename${RESET}: ${STRIKE}${LOG_INODE}${RESET}:${LOG_FN}"
+			echo " ${RED_FG}Dir Filename${RESET}: ${STRIKE}${LOG_INODE}${RESET}:${DIR_INODES[${LOG_INODE}]}"
+			((ERR_CNT++))
+			ERR_INODES+=${LOG_INODE}
+		else
+			echo "${GREEN_FG}Verified${RESET} ${LOG_INODE}:${LOG_FN}"
+			echo ${LOG_LINES[${LOG_INODE}]} >> ${_NEW_LOG}
+		fi
+	fi
+done < <(sort -n <${_DOWNLOAD_LOG})
+
+
+if [[ ${ERR_CNT} -ne 0 ]];then
+	echo
+	echo "${WHITE_FG}New log containing only verified inodes${RESET}"
+	echo "${WHITE_FG}=======================================${RESET}"
+	while read LINE;do
+		echo "${LINE[1,140]} (truncated)"
+	done < ${_NEW_LOG}
+	echo -n "\n${WHITE_ON_GREY}Save log${RESET}? (y/n}?:"
+	read -q RESPONSE
+	if [[ ${RESPONSE} == 'y' ]];then
+		cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.$(date +"%s")
+		mv -f ${_NEW_LOG} ${_DOWNLOAD_LOG}
+	else
+		echo "${RED_FG}Operation Cancelled${RESET}"
 	fi
 else
-	echo "${GREEN_FG}The exisiting log${RESET}:${WHITE_FG}${_DOWNLOAD_LOG}${RESET} seems accurate"
+	echo "\n${WHITE_ON_GREY}Log is correct${RESET}"
 fi

@@ -609,6 +609,7 @@ list_user_prompt_style msg_box
 list_set_no_top_offset # Place the first detail line immediately after heading
 list_set_barlines true
 list_set_searchable true
+list_set_restore_pos true
 
 while true;do
 	# Get selection

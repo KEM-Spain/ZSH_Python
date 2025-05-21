@@ -9,24 +9,47 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 BOLD="\033[1m"
 
+tabs 6
+
 read -r -d '' DESC<<EOF
 Compile C lang source file
+\tVery basic compilation
 EOF
 
-if [[ $# -ne 1 ]];then
+usage () {
+	echo "${WHITE_FG}Usage${RESET}:${0} <C_SOURCE>"
+	echo "${WHITE_FG} Desc${RESET}:${DESC}"
+	exit
+}
+
+if [[ ${1} == '-H' ]];then
 	echo "Usage: ${0} <FILE>.c"
 	echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	exit
 fi
 
-C_SOURCE=${1}
-OUT_FN=${C_SOURCE:t:r}
+if [[ ${#} -eq 0 ]];then
+	usage
+else
+	if [[ ! ${1:e} == 'c' ]];then
+		echo -n "${RED_FG}Invalid file type${RESET}"
+		[[ -n ${1:e} ]] && echo ":${1:e}" || echo
+		usage
+	fi
+fi
 
+C_SOURCE=${1}
+C_EXE=${C_SOURCE:t:r}
+
+echo " Compiling:${WHITE_FG}${C_SOURCE}${RESET}"
+echo "Executable:${WHITE_FG}${C_EXE}${RESET}"
+
+[[ -e a.out ]] && /bim/rm -f a.out
 gcc ${C_SOURCE}
 
 if [[ -e a.out ]];then
-	mv a.out ${OUT_FN}
-	echo "Created ${WHITE_FG}${OUT_FN}${RESET} from ${C_SOURCE}"
+	mv a.out ${C_EXE}
+	echo "   Created:${WHITE_FG}${C_EXE}${RESET} from ${C_SOURCE}"
 else
 	echo "${RED_FG}Problem compiling ${WHITE_FG}${C_SOURCE}${RESET}"
 fi

@@ -149,7 +149,7 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ ${#} -eq 0 ]] && usage "${RED_FG}Missing arument${RESET}:<SEARCHTERM>"
+[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing arument${RESET}:<SEARCHTERM>"
 
 SEARCHTERM=${@}
 

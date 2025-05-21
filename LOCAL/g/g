@@ -6,9 +6,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -44,7 +42,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -55,6 +53,7 @@ parse_opts () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
+		O) echo "<FILE>";;
 		s) echo "<SEARCHTERM>";;
 		m) echo "<MATCHES>";;
 		p) echo "<PATH>";;
@@ -75,34 +74,37 @@ usage () {
 	echo -e "${WHITE_FG}-A${RESET} no ansi color"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-L${RESET} list files on one line"
-	echo -e "${WHITE_FG}-f${RESET} specify file of search patterns"
+	echo -e "${WHITE_FG}-O $(opt_type O)${RESET} redirect output to $(opt_type O)"
+	echo -e "${WHITE_FG}-h${RESET} suppress file name in output (only for use with option O)"
 	echo -e "${WHITE_FG}-l${RESET} list files"
 	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} max matches to process (default: all)"
 	echo -e "${WHITE_FG}-n${RESET} line numbers"
 	echo -e "${WHITE_FG}-o${RESET} only matched"
-	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} alternate path"
+	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} alternate path (default is PWD)"
 	echo -e "${WHITE_FG}-r${RESET} recurse"
 	echo -e "${WHITE_FG}-v${RESET} inverted search"
 	echo -e "${WHITE_FG}-w${RESET} whole word match"
 	echo -e "\n${WHITE_FG}Desc${RESET}:find files containing <SEARCHTERM> in or below the current directory\n"
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDBCILf:lLm:nop:rvw"
+OPTSTR=":HDABILFO:lLhm:nop:rvw"
 
 CASE_SENSE='-i'
 COLORS=always
-INVERT_OPT=''
 EXCLUDE_BAK='--exclude=\*bak'
 FILELIST=false
+FILE_OUT=''
+INVERT_OPT=''
 LINENUM_OPT=''
 LISTFILES_OPT=''
+LITERAL=''
 MAX_MATCHES=''
-FN_ARG=''
-PATH_ARG=${PWD}
+NO_FN=false
 ONE_LINE=false
 ONLY_OPT=''
+PATH_ARG=${PWD}
 RECURSE=false
 RECURSE_OPT=''
 SCAN_BAK=false
@@ -113,12 +115,14 @@ while getopts ${OPTSTR} OPTION;do
 	case ${OPTION} in
      H) usage;;
 	  D) dbg_set_level;;
+     A) COLORS=never;;
 	  B) EXCLUDE_BAK='';;
+     F) LITERAL=-F;;
      I) CASE_SENSE='';;
-     C) COLORS=never;;
-     f) FN_ARG=${OPTARG};;
-     l) LISTFILES_OPT=-l;FILELIST=true;;
      L) LISTFILES_OPT=-l;FILELIST=true;ONE_LINE=true;;
+     O) FILE_OUT=${OPTARG};;
+     h) NO_FN=true;;
+     l) LISTFILES_OPT=-l;FILELIST=true;;
      m) MAX_MATCHES="-m${OPTARG}";;
      n) LINENUM_OPT=-n;;
      o) ONLY_OPT=-o;;
@@ -137,20 +141,28 @@ SEARCHTERM=${@}
 # Execution
 [[ ${_DEBUG} -eq 0 && FILELIST == 'false' ]] && do_smcup
 
-[[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
+GREP_TARGETS="${PATH_ARG}/(*|.*)"
+
+[[ -z ${SEARCHTERM} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
 [[ ! -t 0 ]] && exit_leave $(msg_exit W "Unable to accept piped input")
 
-if [[ -n ${FN_ARG} ]];then # If file was passed
-	if [[ ! -e ${PATH_ARG}/${FN_ARG} ]];then # And not found
-		exit_leave $(msg_exit W "file not found:${PATH_ARG}/${FN_ARG}") # Exit not found
+[[ ${NO_FN} == 'true' && -z ${FILE_OUT} ]] && exit_leave "${_SCRIPT_TAG} Option:-h is only valid while using option:-O"
+
+if [[ -n ${FILE_OUT} ]];then
+	[[ -e ${FILE_OUT} ]] && /bin/rm -f ${FILE_OUT}
+	CMD="grep -h -P -I -r -d skip -D skip ${MAX_MATCHES} --color=never ${LITERAL} ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_TARGETS} ${EXCLUDE_BAK} 2>/dev/null"
+	OUT=("${(f)$(eval ${CMD})}")
+	if arr_is_populated "${OUT}";then
+		for L in ${OUT};do
+			echo ${L} >>${FILE_OUT}
+		done
+		exit_leave "Output saved in:${FILE_OUT}"
 	else
-		GREP_ARG="${PATH_ARG}/${FN_ARG}" # Limit to file name
+		exit_leave "No results for $(opt_type s):${WHITE_FG}${SEARCHTERM}${RESET}"
 	fi
-else
-	GREP_ARG="${PATH_ARG}/(*|.*)" # No file name was passed - all files in path
 fi
 
-CMD=$(echo "grep -H -r -P -I -d skip -D skip ${MAX_MATCHES} --color=never ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_ARG} ${EXCLUDE_BAK} 2>/dev/null")
+CMD="grep -H -P -I -r -d skip -D skip ${MAX_MATCHES} --color=never ${LITERAL} ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_TARGETS} ${EXCLUDE_BAK} 2>/dev/null"
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 
 RAWLIST=("${(f)$(eval ${CMD})}")
@@ -171,7 +183,7 @@ for L in ${(uo)RAWLIST};do
 	[[ ${_DEBUG} -gt 0 && (! ${FTYPE} =~ 'text') ]] && dbg "${0}:${LINENO} File:${FN} rejected - not text:${FTYPE}" 
 	[[ ! ${FTYPE} =~ 'text' ]] && continue
 	LN=$(cut -d: -f2- <<<${L})
-	[[ ${COLORS} == 'always' ]] && LN=$(echo ${LN} | grep --color=${COLORS} ${CASE_SENSE} ${SEARCHTERM}) # Colorize
+	[[ ${COLORS} == 'always' ]] && LN=$(echo ${LN} | grep -I --color=${COLORS} ${CASE_SENSE} ${SEARCHTERM}) # Colorize
 	LN=${LN[1,${_COL_MAX}]} # Limit usable line length; some files have no line breaks
 	LN=$(tr -d '\012\015' <<<${LN})
 	LN=$(tr -s '[:space:]' <<<${LN})

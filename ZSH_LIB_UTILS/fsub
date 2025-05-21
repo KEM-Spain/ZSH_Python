@@ -999,7 +999,7 @@ fi
 } >> ${_LOG}
 
 # Validate args and options
-[[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "Insufficient args"
+[[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing minimum arguments or options${RESET}"
 [[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
 [[ $(( $OPTIONS[(Ie)r] )) -ne 0 && ${MEDIA_FILE} == 'false' ]] && usage "Option: -r only valid for media files"
 

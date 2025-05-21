@@ -1642,7 +1642,7 @@ ___EOF
 	done
 	shift $((${OPTIND} - 1))
 
-	[[ ${#} -ne 0 ]] && APP=${1} || usage "${RED_FG}Missing argument${RESET}:<PACKAGE>"
+	[[ ${#} -ne 0 ]] && APP=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<PACKAGE>"
 	[[ ${ACTION} == none ]] && usage "No action specified"
 
 	PACKAGES=($(dpkg --get-selections | cut -f1))

@@ -235,7 +235,7 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ -z ${1} ]] && usage "${RED_FG}Missing argument${RESET}:<SEARCHTERM> for a gsettings url"
+[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
 SEARCHTERM=${@}
 
 _LOCAL_LIST=("${(@f)$(gsettings list-recursively | sort -u | egrep "${SEARCHTERM}" | sed -e 's/: /:/g')}")

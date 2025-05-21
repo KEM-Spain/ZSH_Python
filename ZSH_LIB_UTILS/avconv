@@ -102,11 +102,11 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ -z ${1} ]] && usage "${RED_FG}Missing argument${RESET}:$(opt_type f)" || FN=${1}
+[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type f)" || FN=${1}
 if [[ ${FN:e:l} == 'mov' ]];then
 	EXT=mkv
 elif [[ -z ${2} ]];then
-	usage "${RED_FG}Missing argument${RESET}:$(opt_type e)"
+	usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type e)"
 else
 	EXT=${2}
 fi

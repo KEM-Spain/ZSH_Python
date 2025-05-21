@@ -25,7 +25,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 typeset -A _SZ_FN=()
 typeset -a _DIR_LIST=()
 typeset -a _FLIST=()
-typeset -a _ICO_DIRS=(/opt ${HOME}/.local/share /usr/share/icons /usr/share/pixmaps)
+typeset -a _ICO_DIRS=(/opt ${HOME}/.local/share/icons /usr/share/icons /usr/share/pixmaps)
 typeset -a _LIST=()
 typeset -a _SIZES=()
 typeset -a _SUB_LIST=()

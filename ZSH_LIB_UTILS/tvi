@@ -402,7 +402,7 @@ if [[ ! -x ${_EDITOR_CMD} ]];then
 fi
 
 # Catch missing argument
-[[ $# -eq 0 ]] && usage "${RED_FG}Missing argument${RESET}:$(opt_type f)"
+[[ $# -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type f)"
 
 # Catch excessive arguments
 if [[ $# -gt 1 ]];then

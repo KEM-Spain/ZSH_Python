@@ -208,9 +208,11 @@ length () {
 	local LONGEST=0
 	local NDX=0
 	local TITLE=''
+	local NO_HDR=false
 
 	read -r -d '' DESC<<___EOF
 Display video duration
+\tOptions: -h No header
 ___EOF
 
 	# Functions
@@ -229,6 +231,12 @@ ___EOF
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
+	if [[ ${1} == '-h' ]];then
+		NO_HDR=true
+		shift
+	else
+		NO_HDR=false
+	fi
 	[[ ${#} -eq 0 ]] && FN_ARG=${PWD} || FN_ARG=(${@})
 	
 	if [[ ${FN_ARG} == ${PWD} ]];then
@@ -257,15 +265,16 @@ ___EOF
 		LIST+="${DNUM}|${DUR}|${F:t}"
 	done
 
-	[[ ${#F} -gt 1 ]] && HDR="Titles in Descending Length"
-	[[ -n ${HDR} ]] && echo "\n${MAGENTA_FG}${HDR}${CYAN_FG}" && echo $(str_unicode_line ${#HDR}) && echo -n "${RESET}"
+	if [[ ${NO_HDR} == 'false' ]];then
+		[[ ${#F} -gt 1 ]] && HDR="Titles in Descending Length"
+		[[ -n ${HDR} ]] && echo "\n${MAGENTA_FG}${HDR}${CYAN_FG}" && echo $(str_unicode_line ${#HDR}) && echo -n "${RESET}"
+	fi
 
 	for F in ${(On)LIST};do
 		TITLE=$(cut -d'|' -f3 <<<${F})
 		DUR=$(cut -d'|' -f2 <<<${F})
 		printf "${WHITE_FG}%*s${RESET}:%.9s\n" ${LONGEST} ${TITLE} ${DUR}
 	done
-	echo
 }
 
 volume () {
@@ -526,7 +535,7 @@ ___EOF
 
 	# Execution
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
-	[[ ${#} -eq 0 ]] && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type v)" || FN=${1}
 
 	[[ ! -e ${FN} ]] && usage "File not found:${FN}"
 

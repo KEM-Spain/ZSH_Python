@@ -77,7 +77,7 @@ action_warn () {
 
 	[[ -n ${_OFFSCREEN_ROWS_MSG} ]] && ((HDRS++))
 
-	msg_box -O${RED_FG} -H${HDRS} -c -p -PD "<I><w>Please respond...<N>|$(str_pluralize ${OBJTYPE} ${CNT} true) queued for deletion|${_OFFSCREEN_ROWS_MSG}|$(msg_list ${(o)DLIST})"
+	msg_box -O${RED_FG} -H${HDRS} -c -p -PD "<I><w>Please respond...<N>|$(str_pluralize ${OBJTYPE} ${CNT} true) queued for deletion|${_OFFSCREEN_ROWS_MSG}|$(msg_list_bullet ${(o)DLIST})"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do
@@ -89,8 +89,14 @@ action_warn () {
 item_decorate () {
 	local NDX=${1}
 	local _MAX=$(( _MAX_COLS - 10 ))
+	local TAG
 
-	[[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]] && echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}][1,${_MAX}]}${E_RESET} ${E_ITALIC}deleted${E_RESET}" || echo -n ${_LIST[${NDX}][1,${_MAX}]}
+	[[ -d ${_LIST[${_LIST_NDX}]} ]] && TAG="${WHITE_FG}(${CYAN_FG}d${WHITE_FG})${RESET}" || TAG=''
+
+	case ${_LIST_SELECTED[${NDX}]} in
+		2) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:t}${E_RESET} ${E_ITALIC}deleted${E_RESET}";;
+		*) tput el;echo -n "${_LIST[${NDX}]:t} ${TAG}";;
+	esac
 }
 
 sort_option () {
@@ -149,7 +155,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDEd"
@@ -173,7 +179,7 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -ne 0 ]] && SEARCHTERM=(${@}) || SEARCHTERM=''
 
-# Set content
+# Set content type
 [[ ${DIRS} == "true" ]] && OBJTYPE="directory" || OBJTYPE="file"
 
 RAWPATH=$(path_get_raw)
@@ -182,13 +188,12 @@ FPATH=${FPATH:q}
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
-if [[ ${DIRS} == 'true' ]];then
-	RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH}" 2>/dev/null)}") # Double quote surrounding command
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${_SCRIPT}:${LINENO} FIND CMD: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH}"
-else
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${_SCRIPT}:${LINENO} FIND CMD: find ${FPATH} -maxdepth 1 ${FGLOB} -type f ! -path ${FPATH}"
-	RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} -type f,l ! -path ${FPATH}" 2>/dev/null)}") # Double quote surrounding command
-fi
+[[ ${DIRS} == 'true' ]] && TYPE=d || TYPE=f,l
+[[ -n ${SEARCHTERM} ]] && FNAME="-name '*${SEARCHTERM}*'" || FNAME=''
+
+CMD="find ${FPATH} -maxdepth 1 ${FGLOB} -type ${TYPE} ${FNAME} ! -path ${FPATH}"
+RAWLIST=("${(f)$(eval "${CMD}" 2>/dev/null)}")
+[[ ${_DEBUG} -gt ${_LOW_DETAIL_DBG} ]] && dbg "FIND:${CMD}"
 
 for R in ${(on)RAWLIST};do
 	[[ ${R:h} == ${PWD} ]] && FN=${R:t} || FN=${R}
@@ -198,11 +203,11 @@ done
 
 if ! arr_is_populated "${_LOCAL_LIST}";then
 	[[ ${NOEXEC} == 'true' ]] && MSG1="non executable " || MSG1=''
-	[[ ${#} -ne 0 ]] && MSG2=" matching ${RESET}\"${WHITE_FG}${SEARCHTERM}${RESET}\"" || MSG2=''
+	[[ -n ${SEARCHTERM} ]] && MSG2=" matching ${RESET}\"${WHITE_FG}${SEARCHTERM}${RESET}\"" || MSG2=''
 	exit_leave $(msg_exit W "No regular ${MSG1}${RESET}${BOLD}${ITALIC}$(str_pluralize ${OBJTYPE})${RESET} found${MSG2}")
 fi
 
-[[ ${_DEBUG} -gt ${_LOW_DETAIL_DBG} ]] && dbg "${_SCRIPT}: LOCAL_LIST:\n$(for L in ${_LOCAL_LIST};do echo ${L};done)"
+[[ ${_DEBUG} -gt ${_LOW_DETAIL_DBG} ]] && dbg "LOCAL_LIST:\n$(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
 if [[ ${DIRS} == 'true' ]];then
 	_FILTER+='Dirs Only'
@@ -222,7 +227,7 @@ list_set_line_item '
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 '
 
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to delete ${ITALIC}or exit if none selected${RESET}"
+list_set_select_action "delete"
 list_set_action_msgs delete file
 list_set_searchable true
 

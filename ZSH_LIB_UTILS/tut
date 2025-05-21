@@ -78,7 +78,7 @@ ___EOF
 			echo ${LINE} | perl -pe 's/\$([0-9A-Za-z?#@_:]*)(\b|$|")/\${$1}$2/g'
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "${RED_FG}Missing arguments or piped input${RESET}"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing arguments or piped input${RESET}"
 		perl -pe 's/\$([0-9A-Za-z?#@_:]*)(\b|$|")/\${$1}$2/g' <${FN}
 	fi
 }

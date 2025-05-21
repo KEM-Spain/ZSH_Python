@@ -130,6 +130,7 @@ action_do () {
 	local LOG_STALLS=0
 	local MSG=''
 	local NDX=0
+	local OPENING=0
 	local OTH=''
 	local PID=0
 	local RETRIES=0
@@ -281,6 +282,9 @@ action_do () {
 			if grep -qi 'eta.*error' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
 				ETA=$(sed -E 's/([0-9])(\[.*)/\1\n\2/g' <<<${LOG_LINE} | head -1 | str_trim)
 				ERR=$(sed -E 's/([0-9])(\[.*)/\1\n\2/g' <<<${LOG_LINE} | tail -1 | str_trim)
+			elif grep -qi 'opening' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
+				((OPENING++))
+				[[ ${OPENING} -gt 4 ]] && ERR="hung connection" && OPENING=0
 			elif grep -qi 'eta.*unknown' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				continue # Skip
@@ -887,6 +891,7 @@ job_kill () {
 	if [[ ${?} -eq 0 ]];then
 		for P in ${PIDS};do
 			kill -9 ${P} >/dev/null 2>&1
+			find ${_DOWNLOAD_DIR} -maxdepth 1 -name '*part' -exec rm -rf {} \;
 			logit ${_YTS_DBG_LOG} "${0}: Killed ${P}"
 		done
 	else
@@ -919,7 +924,7 @@ job_start () {
 		msg_box -H1 -x${_CONT_COORDS[X]} -h${_CONT_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
 		CMD="nohup yt -N2 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
 	else
-		CMD="nohup yt -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
+		CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
 	fi
 
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} # Log command
@@ -1162,7 +1167,7 @@ post_process () {
 		if [[ ${?} -ne 0 ]];then
 			sleep 2 && break
 		fi
-		msg_box "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish..."
+		msg_box -x14 "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish..."
 		sleep 1
 	done
 

@@ -179,7 +179,7 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -ne 0 ]] && SEARCHTERM=(${@}) || SEARCHTERM=''
 
-# Set content
+# Set content type
 [[ ${DIRS} == "true" ]] && OBJTYPE="directory" || OBJTYPE="file"
 
 RAWPATH=$(path_get_raw)
@@ -188,13 +188,12 @@ FPATH=${FPATH:q}
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
-if [[ ${DIRS} == 'true' ]];then
-	RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH}" 2>/dev/null)}") # Double quote surrounding command
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${_SCRIPT}:${LINENO} FIND CMD: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH}"
-else
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${_SCRIPT}:${LINENO} FIND CMD: find ${FPATH} -maxdepth 1 ${FGLOB} -type f ! -path ${FPATH}"
-	RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} -type f,l ! -path ${FPATH}" 2>/dev/null)}") # Double quote surrounding command
-fi
+[[ ${DIRS} == 'true' ]] && TYPE=d || TYPE=f,l
+[[ -n ${SEARCHTERM} ]] && FNAME="-name '*${SEARCHTERM}*'" || FNAME=''
+
+CMD="find ${FPATH} -maxdepth 1 ${FGLOB} -type ${TYPE} ${FNAME} ! -path ${FPATH}"
+RAWLIST=("${(f)$(eval "${CMD}" 2>/dev/null)}")
+[[ ${_DEBUG} -gt ${_LOW_DETAIL_DBG} ]] && dbg "FIND:${CMD}"
 
 for R in ${(on)RAWLIST};do
 	[[ ${R:h} == ${PWD} ]] && FN=${R:t} || FN=${R}
@@ -204,11 +203,11 @@ done
 
 if ! arr_is_populated "${_LOCAL_LIST}";then
 	[[ ${NOEXEC} == 'true' ]] && MSG1="non executable " || MSG1=''
-	[[ ${#} -ne 0 ]] && MSG2=" matching ${RESET}\"${WHITE_FG}${SEARCHTERM}${RESET}\"" || MSG2=''
-	exit_leave $(msg_exit W "No regular ${MSG1}${RESET}${BOLD}${ITALIC}$(str_pluralize ${OBJTYPE})${RESET} found${MSG2}")
+	[[ -n ${SEARCHTERM} ]] && MSG2=" matching ${RESET}\"${WHITE_FG}${SEARCHTERM}${RESET}\"" || MSG2=''
+	exit_leave $(msg_exit W "No ${MSG1}${RESET}${BOLD}${ITALIC}$(str_pluralize ${OBJTYPE})${RESET} found${MSG2}")
 fi
 
-[[ ${_DEBUG} -gt ${_LOW_DETAIL_DBG} ]] && dbg "${_SCRIPT}: LOCAL_LIST:\n$(for L in ${_LOCAL_LIST};do echo ${L};done)"
+[[ ${_DEBUG} -gt ${_LOW_DETAIL_DBG} ]] && dbg "LOCAL_LIST:\n$(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
 if [[ ${DIRS} == 'true' ]];then
 	_FILTER+='Dirs Only'
