@@ -30,6 +30,7 @@ typeset -a _LOCATE_OPTS=()
 # Constants
 #_HIST_DIR=./testing
 #_HIST_TMP=./testing
+#_CACHE_DIR=./testing/${0:t:r}
 _HIST_DIR=~
 _HIST_TMP=/tmp
 _CACHE_DIR=~/.local/share/${0:t:r}
@@ -40,14 +41,26 @@ _CACHE_M=${_CACHE_DIR}/.mya.cache
 _HIST_FILE=${_HIST_DIR}/.zsh_history
 _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
-_HIST_SAVE=${_HIST_FILE}.$(date +"%s")
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+
+arr_is_populated () {
+	local ARRAY=${1}
+	local L
+
+	for L in ${(P)ARRAY};do
+		return 0
+	done
+	return 1
+}
 
 cmd_filter () {
 	local ARRAY=${1}
 	local VALID=false
 	local WCH=0
 	local LOC=0
+	local CMD_TGT=''
+	local CMD_MSK=''
+	local CMD_OUT=''
 	local MYA=0
 	local RJT=0
 	local NDX=0
@@ -63,48 +76,52 @@ cmd_filter () {
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
 		VALID=false
-		if grep -Fq ${${(P)ARRAY}[${K}]} ${_CACHE_W};then
+		CMD_TGT=${${(P)ARRAY}[${K}]}
+		if grep -Fq ${CMD_TGT} ${_CACHE_W};then
 			VALID='true'
 			((WCH++))
 			printf '%s\n' "${K}"
 		else
-			which -s ${${(P)ARRAY}[${K}]} >/dev/null
+			which -s ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((WCH++))
 				printf '%s\n' "${K}"
-				printf '%s\n' "${${(P)ARRAY}[${K}]}">>${_CACHE_W}
+				printf '%s\n' "${CMD_TGT}">>${_CACHE_W}
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			if grep -Fq ${${(P)ARRAY}[${K}]} ${_CACHE_M};then
+			if grep -Fq ${CMD_TGT} ${_CACHE_M};then
 				VALID='true'
 				((MYA++))
 				printf '%s\n' "${K}"
 			else
-				mya -q ${${(P)ARRAY}[${K}]} >/dev/null
+				mya -q ${CMD_TGT} >/dev/null
 				if [[ ${?} -eq 0 ]];then
 					VALID='true'
 					((MYA++))
 					printf '%s\n' "${K}"
-					printf '%s\n' "${${(P)ARRAY}[${K}]}">>${_CACHE_M}
+					printf '%s\n' "${CMD_TGT}">>${_CACHE_M}
 				fi
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			if grep -Fq ${${(P)ARRAY}[${K}]} ${_CACHE_L};then
+			if grep -Fq ${CMD_TGT} ${_CACHE_L};then
 					VALID='true'
 					((LOC++))
 					printf '%s\n' "${K}"
 			else
-				run_locate -e ${${(P)ARRAY}[${K}]} >/dev/null
+				CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}"
+				CMD_OUT=$(locate -b -e ${CMD_MSK})
 				if [[ ${?} -eq 0 ]];then
-					VALID='true'
-					((LOC++))
-					printf '%s\n' "${K}"
-					printf '%s\n' "${${(P)ARRAY}[${K}]}">>${_CACHE_L}
+					if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
+						VALID='true'
+						((LOC++))
+						printf '%s\n' "${K}"
+						printf '%s\n' "${${(P)ARRAY}[${K}]}">>${_CACHE_L}
+					fi
 				fi
 			fi
 		fi
@@ -179,7 +196,6 @@ collate_hist () {
 	done
 }
 
-# TODO: Investigate why commands are not being placed in their original chronological order 
 build_hist () {
 	local ARRAY=${1}
 	local -a _CMD_LIST
@@ -207,7 +223,10 @@ build_hist () {
 [[ ${1} == '-p' ]] && _PROD=true || _PROD=false
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
-cp ${_HIST_FILE} ${_HIST_SAVE}
+for F in ${_HIST_BAK}*;do
+	/bin/rm -f ${F}
+done
+cp ${_HIST_FILE} ${_HIST_BAK}.$(date +"%s")
 
 echo -n "${ITALIC}Updating locate...${RESET}" >&2
 sudo updatedb ${_LOCATE_OPTS} 2>/dev/null
@@ -217,6 +236,11 @@ _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
 
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
 _VALID_HIST=("${(f)$(build_hist _HIST_IN)}")
+
+if ! arr_is_populated "_VALID_HIST";then
+	echo "No valid history found"
+	exit
+fi
  
 read ACC <${_CACHE_DIR}/accumulators
 [[ ${_PROD} == 'false' ]] && echo "  WHICH:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"

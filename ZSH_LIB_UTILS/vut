@@ -305,7 +305,7 @@ ___EOF
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
-	[[ ${#} -eq 0 ]] && usage "missing video filename(s)" || FN_ARG=(${@})
+	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO FILE>" || FN_ARG=(${@})
 	[[ ! -f ${FN_ARG} ]] && exit_leave $(msg_exit E "File not found:${FN_ARG}")
 	
 	file ${FN_ARG} | grep -qi 'media\|matroska\|video'
@@ -410,6 +410,8 @@ ___EOF
 	else
 		FLIST=(${@}) # List was passed
 	fi
+
+	[[ -z ${FLIST} ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Missing required arguments${RESET}:<FILES_TO_MERGE>"
 
 	for F in ${FLIST};do
 		[[ ! ${$(file ${F}):l} =~ 'media' ]] && continue
@@ -576,7 +578,7 @@ ___EOF
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 
-	[[ ${#} -eq 0 ]] && usage "missing argument:<VIDEO_FILE>" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO_FILE>" || FN=${1}
 	[[ ! -e ${FN} ]] && exit_leave $(msg_exit E "file not found:${FN}")
 
 	ffmpeg -i ${FN} -map 0 -map 0:a -c copy -c:a:1 ac3 -b:a:1 640k ${FN:r}_ac3.mkv

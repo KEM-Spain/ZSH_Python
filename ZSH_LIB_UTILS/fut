@@ -135,7 +135,7 @@ ______EOF
 	#--End GetOpts--
 	 
 	# Execution
-	[[ ${#} -eq 0 ]] && usage "missing argument:<FILE>" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FILE>" || FN=${1}
 
 	RAWLINE=("${(f)$(whereis -bf ${FN} | cut -d: -f2-)}")
 	RAWLINE+=("${(f)$(whereis -B ~/Code -f ${FN} | cut -d: -f2-)}")
@@ -637,7 +637,7 @@ ______EOF
 		
 		local -a ARGS=(${@})
 
-		[[ -z ${ARGS} ]] && usage "missing required argument"
+		[[ -z ${ARGS} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:$(opt_type f)"
 		[[ $(is_file ${ARGS}) -eq 0 ]] && FN=${ARGS} || usage "file not found:${ARGS}"
 
 		[[ ${HIDE} == 'true' ]] && hide_comments <${FN}
@@ -724,7 +724,7 @@ ______EOF
 		 
 		local -a ARGS=(${@})
 
-		[[ ${#ARGS} -lt 2 ]] &&  usage "missing required (2) arguments"
+		[[ ${#ARGS} -lt 2 ]] &&  usage "${_SCRIPT_TAG} ${RED_FG}Missing required (2) arguments${RESET}:$(opt_type e) $(opt_type e)"
 
 		FROM_EXT=${ARGS[1]}
 		TO_EXT=${ARGS[2]}
@@ -834,7 +834,7 @@ ______EOF
 		
 		local -a ARGS=(${@})
 
-		[[ -z ${ARGS} ]] && usage "missing required argument"
+		[[ -z ${ARGS} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:$(opt_type c)"
 		[[ $(validate_is_number ${ARGS}) -eq 0 ]] && CNT=${ARGS} || usage "count must be a positive integer"
 
 		[[ ${#OPTIONS} -eq 0 ]] && FILE=true # Default
@@ -1183,7 +1183,7 @@ ___EOF
 		exit_leave
 	fi
 
-	[[ -z ${1} ]] && usage "Missing arg:<FN>"
+	[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FN>"
 	[[ $(is_file ${1}) -eq 0 ]] && FN=${1} || usage "file is invalid:${1}"
 
 	INODE=$(cut -d':' -f1 <<<$(inode_get ${FN}))
@@ -1205,7 +1205,7 @@ ___EOF
 		exit_leave
 	fi
 
-	[[ -z ${1} ]] && usage "Missing arg:<FN>"
+	[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FN>"
 	[[ $(is_file ${1}) -eq 0 ]] && FN=${1} || usage "file is invalid:${1}"
 	stat -c "%i:%n" ${FN}
 }

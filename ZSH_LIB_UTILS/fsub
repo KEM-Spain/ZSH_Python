@@ -87,7 +87,7 @@ clean_show_fn () {
 	local K L N S D R Y
 	local FN
 
-	[[ -z ${TITLE} ]] && echo "${0}: ${RED_FG}Missing argument${RESET}:<TITLE>" >&2 && return 1
+	[[ -z ${TITLE} ]] && echo "${_SCRIPT_TAG}: ${RED_FG}Missing argument${RESET}:<TITLE>" >&2 && return 1
 
 	GREP_REGEX=$(csf_set_search ${TITLE})
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} GREP_REGEX:${GREP_REGEX}"

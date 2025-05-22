@@ -33,7 +33,7 @@ INSTANCES=$(pgrep -ci win_max)
 [[ ${INSTANCES} -gt 1 ]] && log_it "win_max instance detected - exiting">>${_LOG} && exit 1
 
 # Args
-[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}Missing argument${RESET}:<APP>">&2 && exit 1
+[[ ${#} -eq 0 ]] && echo "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<APP>">&2 && exit 1
 APP=${1}
 
 log_it "${_SCRIPT}: Waiting for application:${APP}"
