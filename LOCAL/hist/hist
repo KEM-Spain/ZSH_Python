@@ -6,9 +6,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -103,11 +101,11 @@ print_hist () {
 		read _ACTION_MSG < ${_LAST_ACTION}
 		M1=$(cut -d# -f1 <<<${_ACTION_MSG})
 		M2=$(cut -d# -f2- <<<${_ACTION_MSG})
-		msg_box -p -PK -H1 "<m>History line was deleted<N>|${M1}|\"${M2}\""
+		msg_box -t.6 -H1 "<m>History line was deleted<N>|${M1}|\"${M2}\""
 		/bin/rm -f ${_LAST_ACTION}
 	fi
 
-	sel_list -S -C -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard. Use keypad for extended page navigation" -M"Commands:(<w>d<N>)elete"
+	sel_list -S -C -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard. Use keypad for extended page navigation" -M"(<w>d<N>)elete"
 	if [[ -n ${_SEL_VAL} ]];then
 		case ${_SEL_KEY} in
 			d) _DELETE=true;;
@@ -168,7 +166,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDan:"

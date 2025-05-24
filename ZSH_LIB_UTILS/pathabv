@@ -46,7 +46,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type p)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-l${RESET} maximum length allowed before abbreviation happens"
+	echo -e "${WHITE_FG}-l${RESET} maximum length before abbreviation"
 	echo -e "\n${WHITE_FG}Desc${RESET}:Abbreviate paths. If $(opt_type p) is missing ${SCRIPT} will attempt to read from stdin."
 	) >&2
 	exit_leave

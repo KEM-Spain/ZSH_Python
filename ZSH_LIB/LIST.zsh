@@ -1054,7 +1054,7 @@ list_set_restore_pos () {
 list_set_restore_pos_reset () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	_LIST_RESTORE_POS_RESET=${1}
+	_LIST_RESTORE_POS_RESET=true
 }
 
 list_set_prompt_msg () {

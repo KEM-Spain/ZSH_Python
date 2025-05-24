@@ -38,7 +38,7 @@ action_do () {
 
 	APP=/usr/bin/vim
 	ARGS=$(echo "${APP} $(list_quote_marked_elements ${MARKED})")
-	eval "${ARGS}"
+	eval "sudo ${ARGS}"
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "<B><I>${0}: ${APP} returned an error<N>"
 
 	for M in ${MARKED};do

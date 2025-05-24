@@ -683,7 +683,7 @@ fav_get () {
 		TAG=$(tr -d '[:space:]' <<<${HDR})
 
 		# Choose high level list item
-		list_set_restore_pos_reset true # Fresh list - position at top
+		list_set_restore_pos_reset # Fresh list - position at top
 		sel_list -S -T${TAG} -O${O_COLOR} -H"${HDR}" -M${MAP} -F${FTR}
 
 		case ${_SEL_KEY} in

@@ -19,9 +19,9 @@ alias sc='sudo systemctl'
 alias spot='/usr/local/bin/system/launchers/run_spotify >/dev/null 2>&1 &'
 alias templates='ls /usr/local/etc/*template'
 alias wim='mono /usr/local/src/RemoteMouse/RemoteMouse.exe >/dev/null 2>&1 &'
-alias trans='trans -no-pager'
-alias trans_en='trans -no-pager es:en'
-alias trans_es='trans -no-pager en:es'
+alias t='trans -no-pager'
+alias ten='trans -no-pager es:en'
+alias tes='trans -no-pager en:es'
 
 # misc
 alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"
