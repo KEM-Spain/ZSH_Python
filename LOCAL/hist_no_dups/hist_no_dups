@@ -21,19 +21,18 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Declarations
-typeset -A _ARGS=()
 typeset -A _CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _LOCATE_OPTS=()
 
 # Constants
-#_HIST_DIR=./testing
-#_HIST_TMP=./testing
-#_CACHE_DIR=./testing/${0:t:r}
-_HIST_DIR=~
-_HIST_TMP=/tmp
-_CACHE_DIR=~/.local/share/${0:t:r}
+_HIST_DIR=./testing
+_HIST_TMP=./testing
+_CACHE_DIR=./testing/${0:t:r}
+#_HIST_DIR=~
+#_HIST_TMP=/tmp
+#_CACHE_DIR=~/.local/share/${0:t:r}
 
 _CACHE_W=${_CACHE_DIR}/.which.cache
 _CACHE_L=${_CACHE_DIR}/.locate.cache
@@ -53,12 +52,17 @@ arr_is_populated () {
 	return 1
 }
 
+trim () {
+	sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${1}
+}
+
 cmd_filter () {
 	local ARRAY=${1}
 	local VALID=false
 	local WCH=0
 	local LOC=0
 	local CMD_TGT=''
+	local CMD_IN=''
 	local CMD_MSK=''
 	local CMD_OUT=''
 	local MYA=0
@@ -76,7 +80,9 @@ cmd_filter () {
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
 		VALID=false
-		CMD_TGT=${${(P)ARRAY}[${K}]}
+		CMD_IN=$(cut -d';' -f2 <<<${K})
+		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN})
+		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # If args are present strip them off
 		if grep -Fq ${CMD_TGT} ${_CACHE_W};then
 			VALID='true'
 			((WCH++))
@@ -134,89 +140,46 @@ cmd_filter () {
 	[[ ${_PROD} == 'false' ]] && echo >&2 # Clear progress
 }
 
-parse_hist () {
+hist_parse () {
 	local ARRAY=${1}
-	local -A SEEN_1=()
-	local -A SEEN_2=()
 	local -A RECENT=()
-	local -a STREAM=()
 	local L
 	local LINE
+	local TS
+	local TS_NDX
 
 	for L in ${(on)${(P)ARRAY}};do
 		[[ -z ${L} ]] && continue # Blank hist line
+		[[ ${L} =~ ';\[\[' ]] && continue # test commands
 
 		LINE=$(tr -d '\n' <<<${L})
-		TS=$(cut -d';' -f1 <<<${LINE} | cut -d':' -f2)
-		CMD=$(cut -d';' -f2 <<<${LINE} | cut -d' ' -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
-		ARGS=$(cut -d';' -f2 <<<${LINE} | cut -s -d' ' -f2-)
-
-		#echo "LINE:${LINE}" >&2
-		#echo "TS:${TS}" >&2
-		#echo "CMD:${CMD}" >&2
-		#echo "ARGS:${ARGS}" >&2
-
-		[[ ${CMD} =~ '\[' ]] && continue # eliminate test commands
-
-		if [[ -z ${SEEN_1[${CMD}]} ]];then
-			SEEN_1[${CMD}]=1
-		else
-			SEEN_1[${CMD}]=$(( SEEN_1[${CMD}] + 1 ))
-			RECENT[${CMD}]=${TS}
-		fi
-		STREAM+=("${(f)$(printf '%s\n' "${TS}|${CMD}|${ARGS}")}")
+		TS=$(cut -d';' -f1 <<<${LINE})
+		TS_NDX=$(cut -d':' -f2 <<<${TS} | trim)
+		CMD=$(cut -d';' -f2- <<<${LINE})
+		RECENT[${CMD}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time key as they are hit
 	done
 
-	for L in ${STREAM};do
-		CMD=$(cut -d'|' -f2 <<<${L})
-		[[ ${SEEN_2[${CMD}]} -eq 1 ]] && continue
-		if [[ ${SEEN_1[${CMD}]} -gt 1 ]];then
-			ARGS=$(cut -d'|' -f3 <<<${L})
-			LINE=$(printf '%s\n' "${RECENT[${CMD}]}|${CMD}|${ARGS}")
-		else
-			LINE=$(printf '%s\n' "${L}")
-		fi
-		printf '%s\n' "${LINE}"
-		SEEN_2[${CMD}]=1
-	done
-}
-
-collate_hist () {
-	local ARRAY=${1}
-
-	_CMDS=()
-	_ARGS=()
-
-	for L in ${(P)ARRAY};do
-		TS=$(cut -d'|' -f1 <<<${L})
-		CMD=$(cut -d'|' -f2 <<<${L})
-		ARGS=$(cut -d'|' -f3 <<<${L})
-		_CMDS[${TS}]=${CMD}
-		_ARGS[${TS}]=${ARGS}
+	for K in ${(onk)RECENT};do
+		LINE=$(cut -d'|' -f2 <<<${RECENT[${K}]})
+		printf "%s\n" ${LINE}
 	done
 }
 
 build_hist () {
 	local ARRAY=${1}
 	local -a _CMD_LIST
-	local -a _VALID_CMD_KEYS
+	local -a _VALID_CMDS
 	local K
 
 	#echo "ARRAY:${ARRAY} ${#${(P)ARRAY}}" >&2
 
-	_CMD_LIST=("${(f)$(parse_hist ${ARRAY})}")
-	#echo "_CMD_LIST:${#_CMD_LIST}" >&2
+	_CMD_LIST=("${(f)$(hist_parse ${ARRAY})}") # Order unique commands by timestamp
 
-	collate_hist _CMD_LIST
-	#echo "_CMDS:${#_CMDS}" >&2
-	#echo "_ARGS:${#_ARGS}" >&2
+	_VALID_CMDS=("${(f)$(cmd_filter _CMD_LIST)}") # Eliminate nonsense commands
 
-	_VALID_CMD_KEYS=("${(f)$(cmd_filter _CMDS)}")
-	#echo "_VALID_CMD_KEYS:${#_VALID_CMD_KEYS}" >&2
-
-	for K in ${_VALID_CMD_KEYS};do
-		printf "%s\n" ":${K}:0;${_CMDS[${K}]} ${_ARGS[${K}]}"
-	done | sort -n
+	for L in ${_VALID_CMDS};do
+		printf "%s\n" "${L}"
+	done | sort -n # Print valid commands in time order
 }
 
 # Execution

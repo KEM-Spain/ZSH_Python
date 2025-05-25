@@ -464,7 +464,7 @@ clean_title () {
 			logit ${_YTS_DBG_LOG} "${0}: Found acronym:${W:u}"
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acromyns
 			SEEN[${W}]=1
-		elif [[ ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
+		elif [[ -n ${#UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
 				logit ${_YTS_DBG_LOG} "${0}: Found uppercase:${W:u}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
@@ -683,7 +683,7 @@ fav_get () {
 		TAG=$(tr -d '[:space:]' <<<${HDR})
 
 		# Choose high level list item
-		list_set_restore_pos_reset true # Fresh list - position at top
+		list_set_restore_pos_reset # Fresh list - position at top
 		sel_list -S -T${TAG} -O${O_COLOR} -H"${HDR}" -M${MAP} -F${FTR}
 
 		case ${_SEL_KEY} in
@@ -944,7 +944,7 @@ last_code_update () {
 	local LAST_UPD=0
 	local LAST_TIME=0
 
-	[[ -z ${MARKER_ARG} ]] && exit_leave "${0:t} ${RED_FG}Missing argument${RESET}:<MARKER>"
+	[[ -z ${MARKER_ARG} ]] && exit_leave "${_SCRIPT_TAG}} ${RED_FG}Missing argument${RESET}:<MARKER>"
 
 	if [[ -e ${MARKER_ARG} ]];then
 		LAST_UPD=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)

@@ -74,6 +74,7 @@ pass_login_to_enpass () {
 	if [[ ${_ENPASS_WDW_TITLE:l} =~ 'crash' ]];then
 		logit "Detected Enpass Crash Window"
 		logit "Sending Escape Key"
+		xdotool windowfocus ${_ENPASS_WDW_ID}
 		xdotool key --window ${_ENPASS_WDW_ID} Escape
 		sleep 2
 		logit "Getting new window ID"
@@ -89,6 +90,7 @@ pass_login_to_enpass () {
 
 	sleep .2
 
+	xdotool key Escape
 	xdotool windowfocus ${_ENPASS_WDW_ID}
 	xdotool type --window ${_ENPASS_WDW_ID} ${_ENP_PW}
 	sleep .5

@@ -21,7 +21,6 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Declarations
-typeset -A _ARGS=()
 typeset -A _CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
@@ -41,7 +40,6 @@ _CACHE_M=${_CACHE_DIR}/.mya.cache
 _HIST_FILE=${_HIST_DIR}/.zsh_history
 _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
-_HIST_SAVE=${_HIST_FILE}.$(date +"%s")
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
 arr_is_populated () {
@@ -77,7 +75,8 @@ cmd_filter () {
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
 		VALID=false
-		CMD_TGT=${${(P)ARRAY}[${K}]}
+		CMD_TGT=$(cut -d';' -f2 <<<${K})
+		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_TGT} | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//') # No args
 		if grep -Fq ${CMD_TGT} ${_CACHE_W};then
 			VALID='true'
 			((WCH++))
@@ -135,7 +134,7 @@ cmd_filter () {
 	[[ ${_PROD} == 'false' ]] && echo >&2 # Clear progress
 }
 
-parse_hist () {
+hist_parse () {
 	local ARRAY=${1}
 	local -A SEEN_1=()
 	local -A SEEN_2=()
@@ -143,88 +142,54 @@ parse_hist () {
 	local -a STREAM=()
 	local L
 	local LINE
+	local CMD_TGT=''
+	local TS
+	local TS_NDX
 
 	for L in ${(on)${(P)ARRAY}};do
 		[[ -z ${L} ]] && continue # Blank hist line
+		[[ ${L} =~ ';\[\[' ]] && continue # test commands
 
 		LINE=$(tr -d '\n' <<<${L})
-		TS=$(cut -d';' -f1 <<<${LINE} | cut -d':' -f2)
-		CMD=$(cut -d';' -f2 <<<${LINE} | cut -d' ' -f1 | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
-		ARGS=$(cut -d';' -f2 <<<${LINE} | cut -s -d' ' -f2-)
-
-		#echo "LINE:${LINE}" >&2
-		#echo "TS:${TS}" >&2
-		#echo "CMD:${CMD}" >&2
-		#echo "ARGS:${ARGS}" >&2
-
-		[[ ${CMD} =~ '\[' ]] && continue # eliminate test commands
-
-		if [[ -z ${SEEN_1[${CMD}]} ]];then
-			SEEN_1[${CMD}]=1
-		else
-			SEEN_1[${CMD}]=$(( SEEN_1[${CMD}] + 1 ))
-			RECENT[${CMD}]=${TS}
-		fi
-		STREAM+=("${(f)$(printf '%s\n' "${TS}|${CMD}|${ARGS}")}")
+		TS=$(cut -d';' -f1 <<<${LINE})
+		TS_NDX=$(cut -d':' -f2 <<<${TS} | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
+		CMD=$(cut -d';' -f2- <<<${LINE})
+		CMD_TGT=$(cut -d' ' -f1 <<<${CMD})
+		# TODO: Should the TGT key include args for unique command/arg combinations? Currently only one version of a command is retained
+		RECENT[${CMD_TGT}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time values as they are hit
 	done
 
-	for L in ${STREAM};do
-		CMD=$(cut -d'|' -f2 <<<${L})
-		[[ ${SEEN_2[${CMD}]} -eq 1 ]] && continue
-		if [[ ${SEEN_1[${CMD}]} -gt 1 ]];then
-			ARGS=$(cut -d'|' -f3 <<<${L})
-			LINE=$(printf '%s\n' "${RECENT[${CMD}]}|${CMD}|${ARGS}")
-		else
-			LINE=$(printf '%s\n' "${L}")
-		fi
-		printf '%s\n' "${LINE}"
-		SEEN_2[${CMD}]=1
-	done
-}
-
-collate_hist () {
-	local ARRAY=${1}
-
-	_CMDS=()
-	_ARGS=()
-
-	for L in ${(P)ARRAY};do
-		TS=$(cut -d'|' -f1 <<<${L})
-		CMD=$(cut -d'|' -f2 <<<${L})
-		ARGS=$(cut -d'|' -f3 <<<${L})
-		_CMDS[${TS}]=${CMD}
-		_ARGS[${TS}]=${ARGS}
+	for K in ${(onk)RECENT};do
+		LINE=$(cut -d'|' -f2 <<<${RECENT[${K}]})
+		printf "%s\n" ${LINE}
 	done
 }
 
 build_hist () {
 	local ARRAY=${1}
 	local -a _CMD_LIST
-	local -a _VALID_CMD_KEYS
+	local -a _VALID_CMDS
 	local K
 
 	#echo "ARRAY:${ARRAY} ${#${(P)ARRAY}}" >&2
 
-	_CMD_LIST=("${(f)$(parse_hist ${ARRAY})}")
-	#echo "_CMD_LIST:${#_CMD_LIST}" >&2
+	_CMD_LIST=("${(f)$(hist_parse ${ARRAY})}") # Order unique commands by timestamp
 
-	collate_hist _CMD_LIST
-	#echo "_CMDS:${#_CMDS}" >&2
-	#echo "_ARGS:${#_ARGS}" >&2
+	_VALID_CMDS=("${(f)$(cmd_filter _CMD_LIST)}") # Eliminate nonsense commands
 
-	_VALID_CMD_KEYS=("${(f)$(cmd_filter _CMDS)}")
-	#echo "_VALID_CMD_KEYS:${#_VALID_CMD_KEYS}" >&2
-
-	for K in ${_VALID_CMD_KEYS};do
-		printf "%s\n" ":${K}:0;${_CMDS[${K}]} ${_ARGS[${K}]}"
-	done | sort -n
+	for L in ${_VALID_CMDS};do
+		printf "%s\n" "${L}"
+	done | sort -n # Print valid commands in time order
 }
 
 # Execution
 [[ ${1} == '-p' ]] && _PROD=true || _PROD=false
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
-cp ${_HIST_FILE} ${_HIST_SAVE}
+for F in ${_HIST_BAK}*;do
+	/bin/rm -f ${F}
+done
+cp ${_HIST_FILE} ${_HIST_BAK}.$(date +"%s")
 
 echo -n "${ITALIC}Updating locate...${RESET}" >&2
 sudo updatedb ${_LOCATE_OPTS} 2>/dev/null

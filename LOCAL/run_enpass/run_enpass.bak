@@ -14,18 +14,21 @@ for D in ${=_DEPS_};do
 	fi
 done
 
-#Constants
-_ENP_PW=flappy
-_DELAY=1
-_LOG=/tmp/${0:t}.log
-_ENPASS=/opt/enpass/Enpass 
-
 #Vars
+_ENP_PW=''
+_ENP_CONFIG="/home/kmiller/.enp"
 _ENPASS_INFO=''
 _ENPASS_WDW_ID=''
 _ENPASS_WDW_TITLE=''
 
+#Get PW
+read _ENP_PW < ${_ENP_CONFIG}
+_DELAY=1
+_LOG=/tmp/${0:t}.log
+_ENPASS=/opt/enpass/Enpass 
+
 start_enpass () {
+	local ARG=${1}
 	local _ENPASS_PID
 
 	send-notification ${_DELAY} "Looking for running Enpass instance..."
@@ -38,7 +41,12 @@ start_enpass () {
 
 	#Start Enpass...
 	logit "Starting Enpass..."
-	exec ${_ENPASS} 2>/dev/null & 
+	if [[ ${ARG} == 'foreground' ]];then
+		echo "Control-C to exit..." >&2
+		${_ENPASS} 2>/dev/null
+	else
+		exec ${_ENPASS} 2>/dev/null & 
+	fi
 
 	logit "Waiting for Enpass to start..."
 	send-notification ${_DELAY} "Waiting for Enpass instance..."
@@ -66,6 +74,7 @@ pass_login_to_enpass () {
 	if [[ ${_ENPASS_WDW_TITLE:l} =~ 'crash' ]];then
 		logit "Detected Enpass Crash Window"
 		logit "Sending Escape Key"
+		xdotool windowfocus ${_ENPASS_WDW_ID}
 		xdotool key --window ${_ENPASS_WDW_ID} Escape
 		sleep 2
 		logit "Getting new window ID"
@@ -80,11 +89,12 @@ pass_login_to_enpass () {
 	/usr/local/bin/system/kbd-flush
 
 	sleep .2
+
 	xdotool windowfocus ${_ENPASS_WDW_ID}
 	xdotool type --window ${_ENPASS_WDW_ID} ${_ENP_PW}
-	sleep .2
-
+	sleep .5
 	xdotool key --window ${_ENPASS_WDW_ID} Return
+
 	/usr/local/bin/system/kbd-toggle on
 	/usr/local/bin/system/kbd-flush
 }
@@ -98,6 +108,17 @@ close_enpass_window () {
 }
 
 #Execution
-start_enpass
-pass_login_to_enpass
-close_enpass_window
+if [[ ${1} == "-H" ]];then
+	echo "Usage: ${0:t} [foreground]" && exit
+elif [[ ${1} == "foreground" ]];then
+	start_enpass foreground
+else
+	start_enpass
+fi
+
+if [[ ${1} != "noauto" ]];then
+	pass_login_to_enpass
+	close_enpass_window
+fi
+
+exit_leave
