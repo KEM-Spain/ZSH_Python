@@ -119,7 +119,7 @@ cmd_filter () {
 					((LOC++))
 					printf '%s\n' "${K}"
 			else
-				CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}"
+				CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
 				CMD_OUT=$(locate -b -e ${CMD_MSK})
 				if [[ ${?} -eq 0 ]];then
 					if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
