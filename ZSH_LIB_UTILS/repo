@@ -216,6 +216,7 @@ collect_modifed () {
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+tcup 0 0
 
 # Build repo
 echo "${WHITE_FG}Building repo${RESET}..."
