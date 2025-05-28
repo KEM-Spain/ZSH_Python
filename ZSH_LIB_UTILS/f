@@ -98,9 +98,9 @@ TYPE=''
 OPTIND=0
 REGEX_ARG=''
 FIND_PATH=${PWD}
-SHOW_CMD=false
+VERBOSE=false
 
-OPTSTR=":HDLdp:t:c"
+OPTSTR=":HDLdp:t:v"
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -110,7 +110,7 @@ while getopts ${OPTSTR} OPTION;do
      d) depth_set_level;;
      p) FIND_PATH=${OPTARG};;
      t) TYPE="${OPTARG}";;
-     c) SHOW_CMD=true;;
+     v) VERBOSE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -127,7 +127,7 @@ MAXDEPTH=${_DEPTH}
 REGEX_ARG=''
 if [[ ${#} -ne 0 ]];then
 	REGEX_ARG=${1}
-	REGEX=".*/${REGEX_ARG}.*"
+	REGEX=".*${REGEX_ARG}.*"
 	REGEX="-regextype 'posix-extended' -regex ${(qqq)REGEX}"
 fi
 
@@ -144,6 +144,8 @@ esac
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nOBJ_TYPE:${OBJ_TYPE:-any}"
 
+[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
+
 CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE}"
 
 LIST=("${(f)$(eval ${CMD})}")
@@ -155,7 +157,6 @@ fi
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#LIST}"
 
 {
-[[ ${SHOW_CMD} == 'true' ]] && echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
 if [[ ${LISTING} == 'true' ]];then
 	ls -lAdrt ${LIST}
 else

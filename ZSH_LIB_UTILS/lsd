@@ -189,10 +189,14 @@ FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
 [[ ${DIRS} == 'true' ]] && TYPE=d || TYPE=f,l
-[[ -n ${SEARCHTERM} ]] && FNAME="${FGLOB}" || FNAME=''
 
-CMD="find ${FPATH} -maxdepth 1 ${FGLOB} -type ${TYPE} ${FNAME} ! -path ${FPATH}"
-RAWLIST=("${(f)$(eval "${CMD}" 2>/dev/null)}")
+FNAME=''
+if [[ -n ${SEARCHTERM} ]];then
+	FNAME="-iname '*${SEARCHTERM}*'"
+fi
+
+CMD="find ${FPATH} -maxdepth 1 -type ${TYPE} ${FNAME} ! -path ${FPATH}"
+RAWLIST=("${(f)$(eval "${CMD}")}")
 [[ ${_DEBUG} -gt ${_LOW_DETAIL_DBG} ]] && dbg "FIND:${CMD}"
 
 for R in ${(on)RAWLIST};do
