@@ -19,10 +19,10 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Generate m3u playlist
-Input has 3 forms:
-1) Piped input of fully qualified file names
-2) File containing fully qualified file names
-3) Directory containing files
+\tInput has 3 forms:
+\t1) Piped input of fully qualified file names
+\t2) File containing fully qualified file names
+\t3) Directory containing files
 EOF
 
 parse_opts () {

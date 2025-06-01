@@ -135,6 +135,7 @@ edit_box () {
 
 	# tput smso
 	tput cup $((M_COORDS[X]+4)) $((M_COORDS[Y]+2))
+	tput el
 	cursor_on
 	NEW_VALUE=$(inline_edit ${CUR_VALUE}) # Launch line editor
 	cursor_off
@@ -159,7 +160,7 @@ inline_edit () {
 	my $term = new Term::ReadLine 'gsq';
 	$term->parse_and_bind("set editing-mode vi");
 
-	system('sleep .1;xdotool key Home &');
+	system('sleep .1;xdotool key Home Escape space Left &'); # Trick to set the cursor to beginning in non destructive cursor mode
 	while ( defined ($_ = $term->readline($ARGV[0],$ARGV[1])) ) {
 		print $_;
 		exit;

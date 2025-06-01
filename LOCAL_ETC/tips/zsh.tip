@@ -1,7 +1,7 @@
 cat << tip_zsh_EOF_1
 ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 
-${E_CYAN_FG}Search headers: ARRAYS PARAM TYPESET READ REDIRECTION BUILTIN VI ${E_RESET}
+${E_CYAN_FG}Search headers: STRINGS ARRAYS PARAM TYPESET READ REDIRECTION BUILTIN VI ${E_RESET}
 
 ${E_WHITE_FG}Operators${E_RESET}
 In the native mode of operation, the following operators are supported (listed in decreasing order of precedence):
@@ -340,8 +340,182 @@ readarray -d' ' -t ARR <<< "$(date +'%W %Y %m %d %H %M %S')"
 The default delimiter used by the readarray command is a newline character. 
 Change the delimiter using the -d option.
 
-${E_MAGENTA_FG}ARRAYS${E_RESET}
+${E_MAGENTA_FG}STRINGS${E_RESET}
+${E_WHITE_FG}=======${E_RESET}
+${E_WHITE_FG}LENGTH${E_RESET}
+Get the length of a string with #. This is similar to string length in fish.
 
+str="abcdefghijklmnopqrstuvwxyz"
+echo \${#str}
+26
+
+${E_WHITE_FG}PAD/TRIM${E_RESET}
+Left pad a string with the l expansion flag. Right pad a string with the r expansion flag. This is similar to string pad in fish.
+
+str="abc"
+echo \${(l(10)(-))str}
+-------abc
+echo \${(r(10)(ABC))str}
+abcABCABCA
+
+The docs can be confusing. They show the syntax as l:expr::string1::string2:, which uses colons instead of the more 
+readable parens. Don't be confused by the double colon, which is really just the closing/opening combo )(. 
+If you choose to follow the docs, the syntax looks like this:
+
+str="abc"
+echo \${(r:10::-:)str}
+abc-------
+
+Trim requires the use of sed. This is similar to string trim in fish.
+
+str="   \t\t\t   abc   \t\t\t   "
+echo "\$str" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*\$//'
+abc
+
+Trimming strings other than whitespace can be accomplished with the '#' and '%' parameter expansions.
+
+# removes at the start of the string. # is the shortest match, and ## is the longest.
+
+str="a/b/c/d/e/f/g"
+echo \${str#*/}
+b/c/d/e/f/g
+echo \${str##*/}
+g
+
+% removes at the end of the string. % is the shortest match, and %% is the longest.
+
+str="a/b/c/d/e/f/g"
+echo \${str%/*}
+a/b/c/d/e/f
+echo \${str%%/*}
+a
+
+${E_WHITE_FG}SUBSTRING${E_RESET}
+Get a substing from string with comma indexing [start,end]. This is similar to string sub in fish.
+
+str="abcdefghijklmnopqrstuvwxyz"
+echo \${str[3,6]}
+cdef
+
+You can also use the \${var:offset:length} syntax:
+
+str="abcdefghijklmnopqrstuvwxyz"
+echo \${str:3:6}
+defghi
+echo \${str:(-4)}
+wxyz
+
+${E_WHITE_FG}REPEAT${E_RESET}
+Repeat a string by using printf. This is similar to string repeat in fish.
+
+str="abc"
+abc3=\$(printf "\$str%.0s" {1..3})
+echo \$abc3
+abcabcabc
+
+${E_WHITE_FG}JOIN/SPLIT${E_RESET}
+Join strings with the j expansion flag. This is similar to string join in fish.
+
+words=(abc def ghi)
+sep=:
+echo \${(pj.\$sep.)words}
+abc:def:ghi
+
+A common join seperator is the null character. This is similar to string join0 in fish.
+
+words=(abc def ghi)
+sep="\x00"
+echo \${\${(pj.\$sep.)words}:q}
+abc\x00def\x00ghi
+
+Split strings with the s expansion flag. This is similar to string split in fish.
+
+@: Preserves empty elements. "In double quotes, array elements are put into separate words".
+p: Use print syntax. "Recognize the same escape sequences as the print."
+s: Split. "Force field splitting at the separator string."
+str="a:b::c"
+sep=:
+printf '%s\n' "\${(@ps.\$sep.)str}"
+a
+b
+
+c
+
+A common split seperator is the null character. This is similar to string split0 in fish.
+
+str="abc\x00def\x00ghi"
+sep="\x00"
+arr=(\${(ps.\$sep.)str})
+printf '%s\n' \$arr
+abc
+def
+ghi
+
+${E_WHITE_FG}UPPER/LOWER${E_RESET}
+Convert a string to uppercase with the u modifier. This is similar to string upper in fish.
+
+str="AbCdEfGhIjKlMnOpQrStUvWxYz"
+echo "\${str:u}"
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+
+Convert a string to lowercase with the l modifier. This is similar to string lower in fish.
+
+str="AbCdEfGhIjKlMnOpQrStUvWxYz"
+echo "\${str:l}"
+abcdefghijklmnopqrstuvwxyz
+
+${E_WHITE_FG}MATCH/REPLACE${E_RESET}
+The zsh/pcre module allows you to match strings in Zsh.
+
+zmodload zsh/pcre
+str="The following are zip codes: 78884 90210 99513"
+setopt REMATCH_PCRE
+[[ \$str =~ '\d{5}' ]] && echo "contains zips" || echo "no zips"
+contains zips
+
+zmodload zsh/pcre
+str="https://gist.github.com/mattmc3/110eca74a876154c842423471b8e5cbb"
+pattern='^(ftp|https?)://'
+pcre_compile -smx \$pattern
+pcre_match -b -- \$str
+[[ \$? -eq 0 ]] && echo "match: \$MATCH, position: \$ZPCRE_OP" || echo "no match"
+match: https://, position: 0 8
+
+Replacing leverages the s modifier. 'g' Means globally.
+
+url=https://github.com/zsh-users/zsh-autosuggestions.git
+url=\${url%.git}
+url=\${url:gs/\@/-AT-}
+url=\${url:gs/\:/-COLON-}
+url=\${url:gs/\//-SLASH-}
+echo \$url
+https-COLON--SLASH--SLASH-github.com-SLASH-zsh-users-SLASH-zsh-autosuggestions
+
+${E_WHITE_FG}COLLECT${E_RESET}
+There are lots of different ways strings need collected. Sometimes you have a string with embedded newlines 
+that you need to split into an array, preserving blanks.
+
+str=\$(printf '%s\n' four score '' "&" '' seven years ago)
+echo \${(q-)str}
+'four
+score
+
+&
+
+seven
+years
+ago'
+# remove blanks
+arr=(\${(f@)str})
+echo \$#arr
+6
+# preserve blanks
+arr=("\${(f@)str}")
+echo \$#arr
+8
+
+${E_MAGENTA_FG}ARRAYS${E_RESET}
+${E_WHITE_FG}======${E_RESET}
 ${E_WHITE_FG}Regular arrays${E_RESET}
 typeset -a TEST
 TEST=("one" "two" "three times") # Assignment
@@ -435,8 +609,8 @@ If you assign an element directly: DIR+=\${var}, no splitting takes place
 ${E_WHITE_FG}Reverse Lookups${E_RESET}
 \${(k)ARRAY[(r)\${VALUE}]} reverse lookup
 
-${E_WHITE_FG}zsh${E_RESET}
-to reverse keys <=> values
+${E_WHITE_FG}Reverse Keys${E_RESET}
+To reverse keys <=> values
 In zsh, where the primary syntax for defining a hash is hash=(k1 v1 k2 v2...) like in perl
 
 keys=( "\${(@k)hash}" )

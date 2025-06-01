@@ -175,6 +175,7 @@ msg_box () {
 
 	MSGS=("${(f)$(msg_box_parse ${MAX_LINE_WIDTH} ${MSG})}")
 	[[ -n ${MSG_FOOTER} ]] && MSG_FOOTER=("${(f)$(msg_box_parse ${MAX_LINE_WIDTH} ${MSG_FOOTER})}")
+	dbg "${0}: AFTER msg_box_parse: MSGS FOLLOW:\n---\n$(for M in ${MSGS};do echo ${M};done)\n---\n"
 
 	# Separate headers and footers from body
 	if [[ ${HDR_LINES} -ne 0 ]];then
@@ -184,7 +185,7 @@ msg_box () {
 		if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
 			dbg "${0}: HAS HEADERS"
 			dbg "${0}: HEADER CONTAINS ${#MSG_HEADER} lines"
-			dbg "${0}: MSG_HEADER FOLLOW:\n---\n$(for M in ${MSG_HEADER};do echo ${M};done)\n---\n"
+			dbg "${0}: MSG_HEADER FOLLOWS:\n---\n$(for M in ${MSG_HEADER};do echo ${M};done)\n---\n"
 			dbg "${0}: BODY CONTAINS ${#MSG_BODY} lines"
 			dbg "${0}: MSG_FOOTER: ${MSG_FOOTER:-null}"
 			dbg "${0}: FOOTER CONTAINS ${#MSG_FOOTER} lines"
@@ -196,7 +197,7 @@ msg_box () {
 		if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
 			dbg "${0}: HAS ${RED_FG}NO${RESET} HEADERS"
 			dbg "${0}: BODY CONTAINS ${#MSG_BODY} lines"
-			dbg "${0}: MSG_BODY FOLLOW:\n---\n$(for M in ${MSG_BODY};do echo ${M};done)\n---\n"
+			dbg "${0}: MSG_BODY FOLLOWS:\n---\n$(for M in ${MSG_BODY};do echo ${M};done)\n---\n"
 			dbg "${0}: MSG_FOOTER: ${MSG_FOOTER:-null}"
 			dbg "${0}: FOOTER CONTAINS ${#MSG_FOOTER} lines"
 			dbg "${0}: TOTAL LINES:${MSG_ROWS}"
@@ -481,40 +482,43 @@ msg_box_align () {
 	local OFFSET=3
 	local PADDED=''
 	local TEXT=''
+	local LBL=''
+	local VAL=''
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} TAG:${TAG} COORDS:${BOX_COORDS} MSG LEN:${#MSG}"
 
-	# Handle embed:<Z> Blank line
-	if [[ ${MSG} =~ '<Z>' ]];then # Blank Line?
+	if [[ ${MSG} =~ '<Z>' ]];then # Handle embed:<Z> Blank line
 		MSG=" "
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added blank line"
-
-	# Handle embed:<SEP> Message separator
-	elif [[ ${MSG} =~ '<SEP>' ]];then # Separator?
+	elif [[ ${MSG} =~ '<SEP>' ]];then # Handle embed:<SEP> Message separator
 		MSG=$(str_unicode_line $(( BOX_WIDTH-4 )) )
 		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH+1 )) ${MSG} )
 		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L} - 1 )) )
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added heading separator: SEP:${MSG} BOX_WIDTH:${BOX_WIDTH} TEXT_PAD_L:\"${TEXT_PAD_L}\" TEXT_PAD_R:\"${TEXT_PAD_R}\""
-
-	# Handle embed: <L> List item
-	elif [[ ${MSG} =~ '<L>' ]];then # Bullet list?
+	elif [[ ${MSG} =~ '<L>' ]];then # Handle embed: <L> Bullet List item
 		MSG=$(sed -e 's/^.*<L>/\\u2022 /' <<<${MSG}) # Swap marker with bullet and space
-		TEXT=${MSG}
-		TEXT=$(msg_nomarkup ${TEXT})
+		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		TEXT_PAD_L=' '
 		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - ( ${#TEXT_PAD_L}+${#TEXT} ) - OFFSET -1 ))) # compensate for bullet/space
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item bullets"
-
-	elif [[ ${MSG} =~ '<X>' ]];then # Numbered List?
-		MSG=$(sed -e 's/^.*<X>//' <<<${MSG}) # Remove markup
-		TEXT=${MSG}
-		TEXT=$(msg_nomarkup ${TEXT})
+	elif [[ ${MSG} =~ '<X>' ]];then # Handle embed: <X> Numbered List item
+		MSG=$(sed -e 's/^.*<X>//' <<<${MSG})
+		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		TEXT_PAD_L=' '
 		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - ( ${#TEXT_PAD_L}+${#TEXT} ) - OFFSET -1 ))) # compensate for number/space
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item numbers"
-
+	elif [[ ${MSG} =~ '<D>' ]];then # Handle embed: <D> Data Field List item
+		MSG=$(sed -e 's/^.*<D>//' <<<${MSG})
+		LBL=$(cut -d':' -f1 <<<${MSG})
+		LBL=${LBL:gs/#/ /} # Swap alignment placeholders w/spaces
+		VAL=$(cut -d':' -f2 <<<${MSG})
+		MSG="<c>${LBL}<N>:<w>${VAL}<N>" # Colorize
+		TEXT=$(msg_nomarkup ${MSG})
+		TEXT_PAD_L=' '
+		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L}+${#TEXT}) - OFFSET )) )
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Data item"
 	elif [[ ${BOX_STYLE:l} == 'l' ]];then # Justification: Left
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
@@ -606,11 +610,13 @@ msg_box_ebox_coords () {
 msg_box_parse () {
 	local MAX_WIDTH=${1};shift
 	local MSGS_IN=${@}
-
 	local -a MSGS_OUT=()
 	local DELIM_COUNT=0
 	local MSG=''
 	local K L T 
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	dbg "${0}: MSGS_IN:\n---\n$(for L in ${MSGS_IN};do echo ${L};done)\n---\n"
 
 	MSGS_IN=$(tr -d "\n" <<<${MSGS_IN}) # Convert to string - setup for cut
 	MSGS_IN=$(sed -E "s/[\\\][${_DELIM}]/_DELIM_/g" <<<${MSGS_IN}) # Skip any escaped delimiters
@@ -755,6 +761,42 @@ msg_list_number () {
 		(( NDX++))
 		echo -n "<X>${NDX}) ${L}"
 		[[ ${NDX} -lt ${#MSG} ]] && echo ${DELIM}
+	done
+
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Generated ${NDX} lines"
+}
+
+msg_list_data () {
+	local -a MSG=(${@})
+	local L
+	local DELIM='|'
+	local NDX=0
+	local LINE=''
+	local MAX=0
+	local MARK=0
+	local PAD=0
+	local LBL
+	local VAL
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: MSG COUNT:${#MSG}"
+
+	MAX=0
+
+	for K in ${MSG};do
+		NDX=${K[(i)[:]]} # Find separator
+		[[ ${NDX} -gt ${MAX} ]] && MAX=${NDX}
+	done
+
+	NDX=0
+	for K in ${MSG};do
+		((NDX++))
+		MARK=${K[(i)[:]]}
+		[[ ${MARK} -lt ${MAX} ]] && PAD=$((MAX - MARK)) || PAD=0 # Align fields at separator
+		PAD=$((PAD+${#K}))
+		VAL=$(cut -d':' -f2 <<<${K})
+		LINE="<D> ${(l(${PAD})(#))K}:${VAL}"
+		[[ ${NDX} -lt ${#MSG} ]] && echo -n ${LINE}${DELIM} || echo -n ${LINE}
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ITEM:${LINE}"
 	done
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Generated ${NDX} lines"

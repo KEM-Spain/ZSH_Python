@@ -114,9 +114,10 @@ sort_option () {
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
 Select either files or directories to delete
-\tBy default, only files are shown
-\tDirectories are shown using the -d option
-\t<SEARCHTERM> case sensitive matching of files or dirs
+\tBy default, only regular files are shown
+\tDirectories are accessible using the -d option
+\tExecutables are blocked using the -E option
+\t<SEARCHTERM> is case sensitive
 EOF
 
 opt_type () {
@@ -192,7 +193,7 @@ PATHLBL=$(path_get_label 40)
 
 FNAME=''
 if [[ -n ${SEARCHTERM} ]];then
-	FNAME="-iname '*${SEARCHTERM}*'"
+	FNAME="-name '*${SEARCHTERM}*'"
 fi
 
 CMD="find ${FPATH} -maxdepth 1 -type ${TYPE} ${FNAME} ! -path ${FPATH}"

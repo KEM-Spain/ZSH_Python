@@ -496,6 +496,7 @@ download_indicator () {
 	local LINE_COLOR=''
 	local X=$((_ALERT_COORDS[X]-3))
 	local MASK_Y=5
+	local DELAY=1
 
 	X=$((X+3))
 	if [[ ${g_LAST_MASK_Y} -eq 2 ]];then
@@ -512,7 +513,7 @@ download_indicator () {
 	esac
 
  	tcup ${X} $((_ALERT_COORDS[Y] + g_LAST_MASK_Y + 6));echo -n "${LINE_COLOR} ${RESET}"
- 	tcup ${X} $((_ALERT_COORDS[Y] + MASK_Y + 6));echo -n "${LINE_COLOR}${MASK}${RESET}";sleep .06
+ 	tcup ${X} $((_ALERT_COORDS[Y] + MASK_Y + 6));echo -n "${LINE_COLOR}${MASK}${RESET}";sleep ${DELAY}
 
 	g_LAST_MASK_Y=${MASK_Y}
 }

@@ -115,6 +115,21 @@ fi
 
 FN_EXT=${FN:e}
 
+# Supported conversion of video to audio
+if [[ ${FN_EXT} == 'mp4' && ${EXT} == 'flac' ]];then
+	echo "Processing video file:${FN} - converting video mp4 to audio flac"
+	ffmpeg -i ${FN} -acodec flac -bits_per_raw_sample 16 -ar 44100 ${FN:r}.flac
+	exit_leave
+elif [[ ${FN_EXT} == 'mp4' && ${EXT} == 'mp3' ]];then
+	echo "Processing video file:${FN} - converting video mp4 to audio mp3"
+	ffmpeg -i ${FN} -vn -acodec mp3 -ab 320k -ar 44100 -ac 2 ${FN:r}.mp3
+	exit_leave
+elif [[ ${FN_EXT} == 'mp4' && ${EXT} == 'wav' ]];then
+	echo "Processing video file:${FN} - converting video mp4 to audio wav"
+	ffmpeg -i ${FN} -vn -acodec pcm_s16le -ar 44100 -ac 2 ${FN:r}.wav
+	exit_leave
+fi
+
 # Capture file extension if complete file name was entered instead of bare extension
 for E in ${_VID_EXT};do
 	if [[ ${EXT} == ${E} ]];then

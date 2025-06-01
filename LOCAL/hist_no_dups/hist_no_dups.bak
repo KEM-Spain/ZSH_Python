@@ -27,12 +27,12 @@ typeset -a _HIST_IN=()
 typeset -a _LOCATE_OPTS=()
 
 # Constants
-#_HIST_DIR=./testing
-#_HIST_TMP=./testing
-#_CACHE_DIR=./testing/${0:t:r}
-_HIST_DIR=~
-_HIST_TMP=/tmp
-_CACHE_DIR=~/.local/share/${0:t:r}
+_HIST_DIR=./testing
+_HIST_TMP=./testing
+_CACHE_DIR=./testing/${0:t:r}
+#_HIST_DIR=~
+#_HIST_TMP=/tmp
+#_CACHE_DIR=~/.local/share/${0:t:r}
 
 _CACHE_W=${_CACHE_DIR}/.which.cache
 _CACHE_L=${_CACHE_DIR}/.locate.cache
@@ -52,12 +52,17 @@ arr_is_populated () {
 	return 1
 }
 
+trim () {
+	sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${1}
+}
+
 cmd_filter () {
 	local ARRAY=${1}
 	local VALID=false
 	local WCH=0
 	local LOC=0
 	local CMD_TGT=''
+	local CMD_IN=''
 	local CMD_MSK=''
 	local CMD_OUT=''
 	local MYA=0
@@ -75,8 +80,9 @@ cmd_filter () {
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
 		VALID=false
-		CMD_TGT=$(cut -d';' -f2 <<<${K})
-		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_TGT} | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//') # No args
+		CMD_IN=$(cut -d';' -f2 <<<${K})
+		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN})
+		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # If args are present strip them off
 		if grep -Fq ${CMD_TGT} ${_CACHE_W};then
 			VALID='true'
 			((WCH++))
@@ -136,13 +142,9 @@ cmd_filter () {
 
 hist_parse () {
 	local ARRAY=${1}
-	local -A SEEN_1=()
-	local -A SEEN_2=()
 	local -A RECENT=()
-	local -a STREAM=()
 	local L
 	local LINE
-	local CMD_TGT=''
 	local TS
 	local TS_NDX
 
@@ -152,11 +154,9 @@ hist_parse () {
 
 		LINE=$(tr -d '\n' <<<${L})
 		TS=$(cut -d';' -f1 <<<${LINE})
-		TS_NDX=$(cut -d':' -f2 <<<${TS} | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
+		TS_NDX=$(cut -d':' -f2 <<<${TS} | trim)
 		CMD=$(cut -d';' -f2- <<<${LINE})
-		CMD_TGT=$(cut -d' ' -f1 <<<${CMD})
-		# TODO: Should the TGT key include args for unique command/arg combinations? Currently only one version of a command is retained
-		RECENT[${CMD_TGT}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time values as they are hit
+		RECENT[${CMD}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time key as they are hit
 	done
 
 	for K in ${(onk)RECENT};do

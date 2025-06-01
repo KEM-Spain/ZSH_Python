@@ -1,0 +1,297 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Declarations
+typeset -a _TAG_LIST=()
+typeset -A _EDITS=()
+typeset -A _EDIT_COORDS=()
+typeset -A _FLD_ORDER=(FILE 1 ARTIST 2 TITLE 3 ALBUM 4)
+
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+# Functions
+edit_field () {
+	local LABEL=${1}
+	local VALUE=${2}
+	local FX=${3}
+	local FY=${4}
+	local NEW_VALUE
+
+	{
+	tput cup ${FX} ${FY}
+	tput el
+	cursor_on
+	NEW_VALUE=$(inline_edit "${LABEL}:" ${VALUE}) # Launch line editor
+	cursor_off
+	} >&2
+
+	echo ${NEW_VALUE}
+}
+
+inline_edit () {
+	local PROMPT=${1}
+	local CUR_VALUE=${2}
+	local PERL_SCRIPT
+
+	read -r -d '' PERL_SCRIPT <<'___EOF'
+	use warnings;
+	use strict;
+	use Term::ReadLine;
+
+	my $term = new Term::ReadLine 'data';
+	$term->parse_and_bind("set editing-mode vi");
+
+	system('sleep .1;xdotool key Home Escape space Left &'); # Trick to set the cursor to beginning in non destructive cursor mode
+	while ( defined ($_ = $term->readline($ARGV[0],$ARGV[1])) ) {
+		print $_;
+		exit;
+	}
+___EOF
+
+perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
+}
+
+tags_display () {
+	local -a FIELDS
+	local -a LABELS
+	local NDX
+	local LBL
+	local VAL
+	local NEW_VAL
+	local F K X Y
+
+	# TODO: Display only until prompt for edit indicated 
+	for F in ${(on)_TAG_LIST};do
+		case ${F:e} in
+			flac) tags_flac ${F};;
+			mp3) tags_mp3 ${F};;
+			wav) tags_mp3 ${F};;
+		esac
+
+		for K in ${(k)_EDITS};do
+			FIELDS[${_FLD_ORDER[${K}]}]="${K}:${_EDITS[${K}]}"
+		done
+
+		LABELS=("${(f)$(msg_list_data ${FIELDS})}")
+		msg_box -x14 -y50 -w 60 ${LABELS}
+		_EDIT_COORDS=($(box_coords_get MSG_BOX))
+
+		NDX=0
+		for F in ${FIELDS};do
+			((NDX++))
+			LBL=$(cut -d'|' -f${NDX} <<<${LABELS} | cut -d':' -f1 | sed 's/<D> //') # Derive label from MSG
+			VAL=$(cut -d':' -f2 <<<${F})
+			_EDIT_COORDS=($(box_coords_get MSG_BOX))
+			X=$(( _EDIT_COORDS[X] + NDX ))
+			Y=$(( _EDIT_COORDS[Y] + 3 ))
+			NEW_VAL=$(edit_field "${LBL:gs/#/ /}" "${VAL} " ${X} ${Y}) # Quirky; adding a space after val seems to help coords stick
+			FIELDS[${NDX}]="${LBL}:$(sed 's/ *$//' <<<${NEW_VAL})"
+			msg_box -c -x14 -y50 -w 60 $(msg_list_data ${FIELDS})
+			sleep .1
+		done
+		tags_update ${FIELDS}
+		msg_box_clear
+	done
+}
+
+tags_flac () {
+	local FILE=${1}
+	local ARTIST=''
+	local TITLE=''
+	local ALBUM=''
+	local TEST=''
+
+	TEST=$(metaflac --show-all-tags ${FILE})
+
+	grep -q 'ARTIST\|TITLE\|ALBUM' <<<${TEST}
+	[[ ${?} -ne 0 ]] && msg_box -c -p -PK "No meta tags for ${FILE}" && return
+
+	if grep -q 'ARTIST' <<<${TEST};then
+		ARTIST=$(metaflac --show-tag=ARTIST ${FILE} | cut -d'=' -f2-)
+	fi
+	if grep -q 'TITLE' <<<${TEST};then
+		TITLE=$(metaflac --show-tag=TITLE ${FILE} | cut -d'=' -f2-)
+	fi
+	if grep -q 'ALBUM' <<<${TEST};then
+		ALBUM=$(metaflac --show-tag=ALBUM ${FILE} | cut -d'=' -f2-)
+	fi
+
+	_EDITS[FILE]=${FILE}
+	_EDITS[ARTIST]=${ARTIST:=None}
+	_EDITS[TITLE]=${TITLE:=None}
+	_EDITS[ALBUM]=${ALBUM:=None}
+}
+
+tags_mp3 () {
+	local FILE=${1}
+	local ARTIST=''
+	local TITLE=''
+	local ALBUM=''
+	local TEST=''
+
+# TALB (Album/Movie/Show title): Unplugged (The Official Bootleg)
+# TCON (Content type): Pop (13)
+# TIT2 (Title/songname/content description): I Lost My Little Girl
+# TPE1 (Lead performer(s)/Soloist(s)): Paul McCartney
+# TRCK (Track number/Position in set): 02
+# TYER (Year): 1991
+
+	TEST=$(id3v2 -l ${FILE})
+	[[ ${TEST:l} =~ 'no id3 tag' ]] && msg_box -c -p -PK "No ID3 tags for ${FILE}" && return
+
+	ARTIST=$(id3v2 -l ${FILE} | grep TPE1 | cut -d':' -f2 | str_trim)
+	TITLE=$(id3v2 -l ${FILE} | grep TIT2 | cut -d':' -f2 | str_trim)
+	ALBUM=$(id3v2 -l ${FILE} | grep TALB | cut -d':' -f2 | str_trim)
+
+	_EDITS[FILE]=${FILE}
+	_EDITS[ARTIST]=${ARTIST:=None}
+	_EDITS[TITLE]=${TITLE:=None}
+	_EDITS[ALBUM]=${ALBUM:=None}
+}
+
+tags_update () {
+	local -a FIELDS=(${@})
+	local FN
+	local LBL
+	local VAL
+	local IN_FLAC=false
+	local IN_MP3=false
+	local IN_WAV=false
+
+	IN_FLAC=false
+	IN_MP3=false
+	IN_WAV=false
+	for F in ${FIELDS};do
+		LBL=$(cut -d':' -f1 <<<${F:gs/#//})
+		VAL=$(cut -d':' -f2 <<<${F})
+		if [[ ${LBL} == 'FILE' ]];then
+			case ${VAL:e} in
+				flac) IN_FLAC=true; FN=${VAL};;
+				mp3) IN_MP3=true; FN=${VAL};;
+				wav) IN_WAV=true; FN=${VAL};;
+			esac
+		fi
+
+		if [[ ${IN_FLAC} == 'true' ]];then
+			metaflac --remove-tag ${LBL} ${FN}
+			metaflac --set-tag ${LBL}=${VAL} ${FN}
+		elif [[ ${IN_MP3} == 'true' || ${IN_WAV} == 'true' ]];then
+			[[ ${LBL} == 'ARTIST' ]] && id3v2 -a ${VAL} ${FN}
+			[[ ${LBL} == 'ALBUM' ]] && id3v2 -A ${VAL} ${FN}
+			[[ ${LBL} == 'TITLE' ]] && id3v2 -t ${VAL} ${FN}
+		fi
+	done
+}
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Show tag info for audio files in the current directory
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave ${PENDING_MSGS}
+}
+
+OPTSTR=":HD"
+OPTIND=0
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+ 
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+# Find the tags
+_TAG_LIST=("${(f)$(find . -maxdepth 1 -name '*flac' -type f)}")
+_TAG_LIST+=("${(f)$(find . -maxdepth 1 -name '*mp3' -type f)}")
+_TAG_LIST+=("${(f)$(find . -maxdepth 1 -name '*wav' -type f)}")
+
+HAVE_TAGS=false
+if arr_is_populated "${_TAG_LIST}";then
+	HAVE_TAGS=true
+fi
+
+# No tags found
+if [[ ${HAVE_TAGS} == 'false' ]];then
+	exit_leave "${_SCRIPT_TAG} No audio files found"
+fi
+
+tags_display
+
+exit_leave
