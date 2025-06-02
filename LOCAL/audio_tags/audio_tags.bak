@@ -73,44 +73,57 @@ perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
 }
 
 tags_display () {
-	local -a FIELDS
-	local -a LABELS
-	local NDX
+	local -A TAG_DATA=()
+	local -a FIELDS=()
+	local -a LABELS=()
+	local BOX_X=14
+	local BOX_Y=50
 	local LBL
-	local VAL
+	local MUSIC_DIR="/media/kmiller/KEM_Misc/Music/KEM-B9"
+	local NDX
 	local NEW_VAL
+	local VAL
+	local DATA
 	local F K X Y
 
-	# TODO: Display only until prompt for edit indicated 
 	for F in ${(on)_TAG_LIST};do
 		case ${F:e} in
 			flac) tags_flac ${F};;
 			mp3) tags_mp3 ${F};;
 			wav) tags_mp3 ${F};;
 		esac
-
-		for K in ${(k)_EDITS};do
-			FIELDS[${_FLD_ORDER[${K}]}]="${K}:${_EDITS[${K}]}"
+		
+		TAG_DATA=(${(kv)_EDITS})
+		for K in ${(k)TAG_DATA};do
+			FIELDS[${_FLD_ORDER[${K}]}]="${K}:${TAG_DATA[${K}]}"
 		done
 
 		LABELS=("${(f)$(msg_list_data ${FIELDS})}")
-		msg_box -x14 -y50 -w 60 ${LABELS}
+
+		tcup 10 50
+		echo -n "${WHITE_FG}Displaying tags for${RESET}:${CYAN_FG}${${PWD}##${MUSIC_DIR}}${RESET}"
+		tcup 12 50
+		echo -n "Enter '${WHITE_FG}e${RESET}' to edit, '${WHITE_FG}q${RESET}' to quit, <${WHITE_FG}ENTER${RESET}> for next track"
+		msg_box -q -c -p -x${BOX_X} -y${BOX_Y} -w 60 ${LABELS}
+
 		_EDIT_COORDS=($(box_coords_get MSG_BOX))
 
-		NDX=0
-		for F in ${FIELDS};do
-			((NDX++))
-			LBL=$(cut -d'|' -f${NDX} <<<${LABELS} | cut -d':' -f1 | sed 's/<D> //') # Derive label from MSG
-			VAL=$(cut -d':' -f2 <<<${F})
-			_EDIT_COORDS=($(box_coords_get MSG_BOX))
-			X=$(( _EDIT_COORDS[X] + NDX ))
-			Y=$(( _EDIT_COORDS[Y] + 3 ))
-			NEW_VAL=$(edit_field "${LBL:gs/#/ /}" "${VAL} " ${X} ${Y}) # Quirky; adding a space after val seems to help coords stick
-			FIELDS[${NDX}]="${LBL}:$(sed 's/ *$//' <<<${NEW_VAL})"
-			msg_box -c -x14 -y50 -w 60 $(msg_list_data ${FIELDS})
-			sleep .1
-		done
-		tags_update ${FIELDS}
+		[[ ${_MSG_KEY} == 'q' ]] && exit_request
+		if [[ ${_MSG_KEY} == 'e' ]];then
+			NDX=0
+			for F in ${FIELDS};do
+				((NDX++))
+				LBL=$(cut -d'|' -f${NDX} <<<${LABELS} | cut -d':' -f1 | sed 's/<D> //') # Derive label from MSG
+				VAL=$(cut -d':' -f2 <<<${F})
+				_EDIT_COORDS=($(box_coords_get MSG_BOX))
+				X=$(( _EDIT_COORDS[X] + NDX )) && Y=$(( _EDIT_COORDS[Y] + 3 ))
+				NEW_VAL=$(edit_field "${LBL:gs/#/ /}" "${VAL} " ${X} ${Y}) # Quirky; adding a space after val seems to help coords stick
+				FIELDS[${NDX}]="${LBL}:$(sed 's/ *$//' <<<${NEW_VAL})"
+				msg_box -q -c -x${BOX_X} -y${BOX_Y} -w 60 $(msg_list_data ${FIELDS})
+				sleep .1
+			done
+			tags_update ${FIELDS}
+		fi
 		msg_box_clear
 	done
 }
@@ -125,22 +138,27 @@ tags_flac () {
 	TEST=$(metaflac --show-all-tags ${FILE})
 
 	grep -q 'ARTIST\|TITLE\|ALBUM' <<<${TEST}
-	[[ ${?} -ne 0 ]] && msg_box -c -p -PK "No meta tags for ${FILE}" && return
+	if [[ ${?} -ne 0 ]];then
+		FILE=${FILE}
+		ARTIST=None
+		TITLE=None
+		ALBUM=None
+	else
+		if grep -q 'ARTIST' <<<${TEST};then
+			ARTIST=$(metaflac --show-tag=ARTIST ${FILE} | cut -d'=' -f2-)
+		fi
+		if grep -q 'TITLE' <<<${TEST};then
+			TITLE=$(metaflac --show-tag=TITLE ${FILE} | cut -d'=' -f2-)
+		fi
+		if grep -q 'ALBUM' <<<${TEST};then
+			ALBUM=$(metaflac --show-tag=ALBUM ${FILE} | cut -d'=' -f2-)
+		fi
+	fi
 
-	if grep -q 'ARTIST' <<<${TEST};then
-		ARTIST=$(metaflac --show-tag=ARTIST ${FILE} | cut -d'=' -f2-)
-	fi
-	if grep -q 'TITLE' <<<${TEST};then
-		TITLE=$(metaflac --show-tag=TITLE ${FILE} | cut -d'=' -f2-)
-	fi
-	if grep -q 'ALBUM' <<<${TEST};then
-		ALBUM=$(metaflac --show-tag=ALBUM ${FILE} | cut -d'=' -f2-)
-	fi
-
-	_EDITS[FILE]=${FILE}
-	_EDITS[ARTIST]=${ARTIST:=None}
-	_EDITS[TITLE]=${TITLE:=None}
-	_EDITS[ALBUM]=${ALBUM:=None}
+	_EDITS[FILE]="${FILE}"
+	_EDITS[ARTIST]="${ARTIST:=None}"
+	_EDITS[TITLE]="${TITLE:=None}"
+	_EDITS[ALBUM]="${ALBUM:=None}"
 }
 
 tags_mp3 () {
@@ -150,24 +168,29 @@ tags_mp3 () {
 	local ALBUM=''
 	local TEST=''
 
-# TALB (Album/Movie/Show title): Unplugged (The Official Bootleg)
-# TCON (Content type): Pop (13)
-# TIT2 (Title/songname/content description): I Lost My Little Girl
-# TPE1 (Lead performer(s)/Soloist(s)): Paul McCartney
-# TRCK (Track number/Position in set): 02
-# TYER (Year): 1991
+	# TALB (Album/Movie/Show title): Unplugged (The Official Bootleg)
+	# TCON (Content type): Pop (13)
+	# TIT2 (Title/songname/content description): I Lost My Little Girl
+	# TPE1 (Lead performer(s)/Soloist(s)): Paul McCartney
+	# TRCK (Track number/Position in set): 02
+	# TYER (Year): 1991
 
 	TEST=$(id3v2 -l ${FILE})
-	[[ ${TEST:l} =~ 'no id3 tag' ]] && msg_box -c -p -PK "No ID3 tags for ${FILE}" && return
+	if [[ ${TEST:l} =~ 'no id3 tag' ]];then
+		FILE=${FILE}
+		ARTIST=None
+		TITLE=None
+		ALBUM=None
+	else
+		ARTIST=$(id3v2 -l ${FILE} | grep TPE1 | cut -d':' -f2 | str_trim)
+		TITLE=$(id3v2 -l ${FILE} | grep TIT2 | cut -d':' -f2 | str_trim)
+		ALBUM=$(id3v2 -l ${FILE} | grep TALB | cut -d':' -f2 | str_trim)
 
-	ARTIST=$(id3v2 -l ${FILE} | grep TPE1 | cut -d':' -f2 | str_trim)
-	TITLE=$(id3v2 -l ${FILE} | grep TIT2 | cut -d':' -f2 | str_trim)
-	ALBUM=$(id3v2 -l ${FILE} | grep TALB | cut -d':' -f2 | str_trim)
-
-	_EDITS[FILE]=${FILE}
-	_EDITS[ARTIST]=${ARTIST:=None}
-	_EDITS[TITLE]=${TITLE:=None}
-	_EDITS[ALBUM]=${ALBUM:=None}
+		_EDITS[FILE]="${FILE}"
+		_EDITS[ARTIST]="${ARTIST:=None}"
+		_EDITS[TITLE]="${TITLE:=None}"
+		_EDITS[ALBUM]="${ALBUM:=None}"
+	fi
 }
 
 tags_update () {
@@ -178,6 +201,13 @@ tags_update () {
 	local IN_FLAC=false
 	local IN_MP3=false
 	local IN_WAV=false
+	local -a MSGS
+
+	clear
+	for F in ${FIELDS};do
+		MSGS+=${F}
+	done
+	msg_box -p -H1 -P"Update (y/n)?" "<w>Update Tag<N>|$(msg_list_data ${MSGS})"
 
 	IN_FLAC=false
 	IN_MP3=false
@@ -197,9 +227,11 @@ tags_update () {
 			metaflac --remove-tag ${LBL} ${FN}
 			metaflac --set-tag ${LBL}=${VAL} ${FN}
 		elif [[ ${IN_MP3} == 'true' || ${IN_WAV} == 'true' ]];then
-			[[ ${LBL} == 'ARTIST' ]] && id3v2 -a ${VAL} ${FN}
-			[[ ${LBL} == 'ALBUM' ]] && id3v2 -A ${VAL} ${FN}
-			[[ ${LBL} == 'TITLE' ]] && id3v2 -t ${VAL} ${FN}
+			case ${LBL} in
+				ALBUM) id3v2 -A ${VAL} ${FN};;
+				ARTIST) id3v2 -a ${VAL} ${FN};;
+				TITLE) id3v2 -t ${VAL} ${FN};;
+			esac
 		fi
 	done
 }
@@ -289,7 +321,7 @@ fi
 
 # No tags found
 if [[ ${HAVE_TAGS} == 'false' ]];then
-	exit_leave "${_SCRIPT_TAG} No audio files found"
+	exit_leave "${_SCRIPT_TAG} ${BOLD}${RED_FG}No audio files found${RESET}"
 fi
 
 tags_display

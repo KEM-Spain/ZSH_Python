@@ -175,7 +175,6 @@ msg_box () {
 
 	MSGS=("${(f)$(msg_box_parse ${MAX_LINE_WIDTH} ${MSG})}")
 	[[ -n ${MSG_FOOTER} ]] && MSG_FOOTER=("${(f)$(msg_box_parse ${MAX_LINE_WIDTH} ${MSG_FOOTER})}")
-	dbg "${0}: AFTER msg_box_parse: MSGS FOLLOW:\n---\n$(for M in ${MSGS};do echo ${M};done)\n---\n"
 
 	# Separate headers and footers from body
 	if [[ ${HDR_LINES} -ne 0 ]];then
@@ -616,7 +615,7 @@ msg_box_parse () {
 	local K L T 
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	dbg "${0}: MSGS_IN:\n---\n$(for L in ${MSGS_IN};do echo ${L};done)\n---\n"
+	[[ -n ${MSGS_IN} ]] && dbg "${0}: Incoming messages:\n>>>\n$(for M in ${MSGS_IN};do echo ${M};done)\n<<<\n"
 
 	MSGS_IN=$(tr -d "\n" <<<${MSGS_IN}) # Convert to string - setup for cut
 	MSGS_IN=$(sed -E "s/[\\\][${_DELIM}]/_DELIM_/g" <<<${MSGS_IN}) # Skip any escaped delimiters
@@ -638,6 +637,8 @@ msg_box_parse () {
 			MSGS_OUT+=${MSG}
 		fi
 	done
+
+	[[ -n ${MSGS_OUT} ]] && dbg "${0}: Outgoing messages:\n>>>\n$(for M in ${MSGS_OUT};do echo ${M};done)\n<<<\n"
 
 	for M in ${MSGS_OUT};do
 		echo ${M}
