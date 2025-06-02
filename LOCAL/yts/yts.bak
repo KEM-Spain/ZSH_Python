@@ -1297,7 +1297,7 @@ query_rumble () {
 			done
 		else # User search
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} GENERAL SEARCH"
-			msg_box "Channel search failed.  Performing user livestream search..."
+			msg_box -c "Channel search failed.  Performing user livestream search..."
 			g_SEARCH_TYPE=user
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
 			PG=$(wget -q -O - "https://rumble.com/user/${g_QUERY_KEY}/livestreams'")
@@ -1320,7 +1320,7 @@ query_rumble () {
 				done
 			else # General search
 				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} GENERAL SEARCH"
-				msg_box "Other searches failed.  Performing general search..."
+				msg_box -c "Other searches failed.  Performing general search..."
 				g_SEARCH_TYPE=general
 				GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
 				PG=$(wget -q -O - "https://rumble.com/search/all?q=${GEN_SEARCH}")

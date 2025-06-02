@@ -83,11 +83,9 @@ _YTS_URL_LOG=/tmp/yts.url.log
 g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
 g_ENGINE_KEY=''
-g_GOT_URL=false
+g_URL_ARG=''
 g_LAST_CODE_UPD=?
 g_LAST_MASK_Y=0
-g_LIVE=''
-g_LIVE_OPT=''
 g_PID=?
 g_PROXY_CMD=''
 g_QRY_ENGINE=''
@@ -533,9 +531,7 @@ download_select () {
 
 	_SORT_TABLE=(1 1 2 2 3 3) # Age, author, title
 
-	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
-		[[ ${g_LIVE} == 'true' ]] && SEARCHTYPE=Live
-	elif [[ ${g_QRY_ENGINE:l} == 'youtube' ]];then
+	if [[ ${g_QRY_ENGINE:l} == 'youtube' ]];then
 		[[ ${g_STRICT} == 'true' ]] && SEARCHTYPE="Strict (${g_STRICT_MSG})"
 	fi
 
@@ -672,15 +668,13 @@ fav_get () {
 		done
 
 		sel_set_list ${(o)_DISPLAY_LIST}
-		sel_set_app_keys d l r y c
+		sel_set_app_keys d r y c
 
 		clear
 
-		[[ ${g_QRY_ENGINE} == 'rumble' && ${g_LIVE_OPT} == 'true' ]] && MSG=' (<c>livestreams toggled<w>)' || MSG=''
-
 		HDR="${(C)g_QRY_ENGINE}${C_LIST}Query"
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
-		FTR="<w>Run ${(C)g_QRY_ENGINE} query${MSG} from history or <h>(q)uit<N>"
+		FTR="<w>Run ${(C)g_QRY_ENGINE} query from history or <h>(q)uit<N>"
 		TAG=$(tr -d '[:space:]' <<<${HDR})
 
 		# Choose high level list item
@@ -689,13 +683,6 @@ fav_get () {
 
 		case ${_SEL_KEY} in
 			d) fav_delete ${_SEL_VAL} && continue;;
-			l) if [[ ${g_QRY_ENGINE} == 'rumble' ]];then
-					[[ ${g_LIVE_OPT} == 'true' ]] && g_LIVE_OPT=false || g_LIVE_OPT=true
-				else
-					g_LIVE_OPT=true  # Livestream toggle only applies to Rumble
-				fi
-				continue
-				;;
 			r) g_QRY_ENGINE='rumble' && g_CUSTOM_LIST=false && continue;;
 			y) g_QRY_ENGINE='youtube' && g_CUSTOM_LIST=false && continue;;
 			c) g_QRY_ENGINE='youtube' && g_CUSTOM_LIST=true && continue;;
@@ -731,19 +718,18 @@ fav_set () {
 	local H
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge 1 ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE} g_LIVE:${g_LIVE}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE}"
 
 	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${FAV} to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
 
 	# R    - Rumble  - general query
-	# RL   - Rumble  - livestream query
 	# Y    - YouTube - ID query
 	# YNS  - YouTube - ID no strict
 	# PYNS - YouTube - general query
 	
 	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
-		[[ ${g_LIVE} == 'true' ]] && FAV="${(C)FAV}|${FAV}|RL" || FAV="${(C)FAV}|${FAV}|R"
+		FAV="${(C)FAV}|${FAV}|R"
 	else
 		if [[ ${FAV} =~ ' ' ]];then
 			FAV="${(C)FAV}|${FAV}|PYNS" # Contains spaces
@@ -1007,7 +993,7 @@ log_clear () {
 		rm -f ${g_YTS_LOG}
 		logit ${_YTS_DBG_LOG} "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}"
 	else
-		logit ${_YTS_DBG_LOG} "DEBUG ${_DEBUG} active - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}"
+		logit ${_YTS_DBG_LOG} "DEBUG TRIGGERED - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}"
 	fi
 }
 
@@ -1217,7 +1203,7 @@ query_rumble () {
 	local -a DURATIONS=()
 	local -a LINKS=()
 	local -a TITLES=()
-	local -a WORK=()
+	local -a WORK_LIST=()
 	local -aU VID_LIST=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local CHANNEL=''
@@ -1236,11 +1222,13 @@ query_rumble () {
 
 	[[ -n ${SEARCHTERM} ]] && g_QUERY_KEY=${SEARCHTERM}
 
-	if [[ ${g_GOT_URL} == 'true' ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QUERY based on URL arg:${URL}"
-		PG=("${(f)$(wget -q -O - ${URL})}")
+	if [[ -n ${g_URL_ARG} ]];then
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} URL SEARCH"
+		g_SEARCH_TYPE=url
+
+		PG=("${(f)$(wget -q -O - ${g_URL_ARG})}")
 		TITLES=$(pup --charset utf8 'head' 'title' text{} <<<${PG} | sed 's/|//g')
-		LINKS="/$(cut -d'/' -f4 <<<${URL})"
+		LINKS="/$(cut -d'/' -f4 <<<${g_URL_ARG})"
 		AGES="URL - "
 		DURATIONS=$(pup 'div' .media-description-info-stream-time '[title]' text{} <<<${PG} | tr -d '\n' | tr -s '[:space:]' | str_trim)
 		[[ -z ${DURATIONS} ]] && DURATIONS="Unavailable"
@@ -1248,41 +1236,18 @@ query_rumble () {
 		g_QUERY_KEY=$(pup 'div' ."media-heading-name" text{} <<<${PG} | tr -d '\n' | tr -s '[:space:]'  | str_trim)
 		VID_LIST+="${g_QUERY_KEY}|${TITLES}|${AGES}|${LINKS}|${DURATIONS}" # Unique rows
 	else
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} CHANNEL SEARCH"
+		g_SEARCH_TYPE=channel
+
 		PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}?page=1")
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QUERY based on QUERY_KEY::http://rumble.com/c/${g_QUERY_KEY}?page=1"
-	fi
-
-	if [[ ${g_GOT_URL} == 'false' ]];then
 		if [[ -n ${PG} ]];then # Channel search
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} CHANNEL SEARCH"
-			[[ ${g_ENGINE_KEY:l} == 'r' ]] && g_LIVE=false
-			[[ ${g_ENGINE_KEY:l} == 'rl' ]] && g_LIVE=true
-			[[ ${g_LIVE_OPT} == 'true' ]] && { [[ ${g_LIVE} == 'true' ]] && g_LIVE=false || g_LIVE=true }
-			[[ ${g_LIVE} == 'true' ]] && MSG="Searching livestreams..." || MSG="Searching videos..."
-
 			if [[ -n ${INNER_BOX} ]];then
 				_REL_COORDS=($(box_coords_relative INNER_BOX X +6 Y ${REL_Y} H 3 W ${LAST_MSG[W]}))
 				msg_box -T SEARCH -R -c ${MSG}
 			else
 				msg_box -x $((MSG_BOX[X]+1)) -y ${MSG_BOX[Y]} -w $((MSG_BOX[W]+1)) ${MSG}
 			fi
-
-			LIVE=$(pup '.channel-subheader--menu-item attr{href}' <<<${PG} | grep "livestreams" 2>/dev/null)
-			[[ ${g_LIVE} == 'true' && -n ${LIVE} ]] && PG=$(wget -q -O - "http://rumble.com${LIVE}")
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QUERY based on livestream arg:http://rumble.com${LIVE}"
-
-			if [[ ${PG:l} =~ "no videos found" ]];then
-				if [[ -n ${INNER_BOX} ]];then
-					_REL_COORDS=($(box_coords_relative INNER_BOX X +6 W ${REL_W} Y ${REL_Y} H 4))
-					msg_box -T SEARCH -R -c "<r>Livestream search failed<N> for ${g_QUERY_KEY}|Falling back to defaults..." 
-				else
-					msg_box -T SEARCH "<r>Livestream search failed<N> for ${g_QUERY_KEY}|Falling back to defaults..." 
-				fi
-				PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}?page=1")
-				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QUERY fallback on QUERY_KEY::http://rumble.com/c/${g_QUERY_KEY}?page=1"
-			fi
-
-			g_SEARCH_TYPE=channel
+			PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}?page=1")
 			TITLES=("${(f)$(pup --charset utf8 '.title__link text{}' <<<${PG} | tut blank_lines | iconv -f utf-8 -t ascii//TRANSLIT | sed 's/|//g')}")
 			AGES=("${(f)$(pup --charset utf8 '.videostream__data text{}' <<<${PG} | tut blank_lines | tr '[\012|\015]' '[ ]' | sed -e 's/\(comments\?\) /\1 \n/g')}") # Either plural or singular
 			LINKS=("${(f)$(pup --charset utf8 'a.videostream__link attr{href}' <<<${PG})}")
@@ -1295,13 +1260,13 @@ query_rumble () {
 				[[ ${AGE} =~ 'views' ]] && continue # Dump junk listings without age
 				VID_LIST+="${g_QUERY_KEY}|${TITLES[${X}]}|${AGE}|${LINKS[${X}]}|${DURATIONS[${X}]}" # Unique rows
 			done
-		else # User search
+		else # User livestream search
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} GENERAL SEARCH"
+			g_SEARCH_TYPE="user livestreams"
+
 			msg_box -c "Channel search failed.  Performing user livestream search..."
-			g_SEARCH_TYPE=user
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
 			PG=$(wget -q -O - "https://rumble.com/user/${g_QUERY_KEY}/livestreams'")
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QUERY based on user livestream search:https://rumble.com/user/${g_QUERY_KEY}/livestreams"
 
 			[[ -z ${PG} || ${PG:l} =~ "no videos found" ]] && DO_GENERAL=true || DO_GENERAL=false
 
@@ -1320,11 +1285,12 @@ query_rumble () {
 				done
 			else # General search
 				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} GENERAL SEARCH"
-				msg_box -c "Other searches failed.  Performing general search..."
 				g_SEARCH_TYPE=general
+
+				msg_box -c "Other searches failed.  Performing general search..."
+
 				GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
 				PG=$(wget -q -O - "https://rumble.com/search/all?q=${GEN_SEARCH}")
-				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QUERY based on general search:https://rumble.com/search/all?q=${GEN_SEARCH}"
 
 				TITLES=("${(f)$(pup --charset utf8 '.video-item--title text{}' <<<${PG} | iconv -f utf-8 -t ascii//TRANSLIT | sed 's/|//g')}")
 				AGES=("${(f)$(pup --charset utf8 '.video-item--meta attr{datetime}' <<<${PG})}")
@@ -1354,9 +1320,6 @@ query_rumble () {
 		_LOCAL_LIST=(${VID_LIST})
 	fi
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} g_QUERY_KEY:${g_QUERY_KEY} _LOCAL_LIST count: ${#_LOCAL_LIST}, TITLES: ${#TITLES}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} \n$(for L in ${VID_LIST};do echo "VID_LIST:${L}";done)"
-
 	# Return failed search status
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		return 1
@@ -1370,16 +1333,16 @@ query_rumble () {
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${F});	AGETIME="(${AGETIME:s/|/ /})"
 
-		WORK+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
+		WORK_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done
 
-	_LOCAL_LIST=(${WORK})
+	_LOCAL_LIST=(${WORK_LIST})
 
 	return 0
 }
 
 query_youtube () { 
-	local -a WORK=()
+	local -a WORK_LIST=()
 	local -A FIELD_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local CUSTOM_KEY=false
@@ -1400,12 +1363,7 @@ query_youtube () {
 		PROXY_CMD="${g_PROXY_CMD}"
 	fi
 
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${0}: g_QUERY_KEY:${g_QUERY_KEY}"
-		dbg "${0}: g_ENGINE_KEY:${g_ENGINE_KEY}"
-		dbg "${0}: ${WHITE_FG}STRICT${RESET}:${g_STRICT}"
-		dbg "${0}: ${WHITE_FG}PROXY COMMAND${RESET}:${PROXY_CMD}"
-	fi
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: g_QUERY_KEY:${g_QUERY_KEY}, g_ENGINE_KEY:${g_ENGINE_KEY}, STRICT:${g_STRICT}, PROXY COMMAND:${PROXY_CMD}"
 
 	_LOCAL_LIST=()
 
@@ -1447,7 +1405,7 @@ query_youtube () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
-	[[ ${_SMCUP} == 'false' ]] && do_smcup
+	#[[ ${_SMCUP} == 'false' ]] && do_smcup
 
 	# Return failed search status
 	if ! arr_is_populated "${_LOCAL_LIST}";then
@@ -1463,10 +1421,10 @@ query_youtube () {
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${F});	AGETIME="(${AGETIME:s/|/ /})"
-		WORK+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
+		WORK_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done
 
-	_LOCAL_LIST=(${WORK})
+	_LOCAL_LIST=(${WORK_LIST})
 
 	return 0
 }
@@ -1509,12 +1467,7 @@ total_rejects () {
 read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
 \tQueries provide a selection list of matching videos. 
-\tFollowing selection, items are downloaded via yt-dlp. 
-\tBy default, Rumble queries are for livestreams and general search
-\tif no livestreams are found. The -L option will override this behavior. 
-\tWhen saving favorites, query, platform, and search type are cached.
-\tHidden keys: 'l' during menu selection will toggle livestream search.
-\t             'r' during download will reset the connection.
+\tHidden key: 'r' during download will reset the connection.
 EOF
 
 opt_type () {
@@ -1565,15 +1518,13 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDARSVLla:s"
+OPTSTR=":HDARSVa:s"
 OPTIND=0
 
 HELP_OPT=false
 VERSION_OPT=false
 g_STRICT=false
 g_QRY_ENGINE=youtube
-g_LIVE_OPT=false
-g_LIVE=false
 g_FIX_AUDIO=false
 
 while getopts ${OPTSTR} OPTION;do
@@ -1585,7 +1536,6 @@ while getopts ${OPTSTR} OPTION;do
      R) g_QRY_ENGINE=rumble;;
      S) g_STRICT=true;;
      a) AGE=${OPTARG};;
-     l) g_LIVE=true;;
      s) g_STRICT=true;;
     \?) exit_leave "${RED_FG}Error${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}";;
 	  :) exit_leave "${RED_FG}Error${RESET}: option -${OPTARG} requires an argument${RESET}";;
@@ -1596,18 +1546,21 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${g_FIX_AUDIO} == 'true' && ${g_QRY_ENGINE} == 'rumble' ]] && g_FIX_AUDIO=false && msg_box -p -PK "FIX AUDIO not supported for Rumble| FIX AUDIO ignored"
+if [[ ${g_FIX_AUDIO} == 'true' && ${g_QRY_ENGINE} == 'rumble' ]];then
+	exit_leave "FIX AUDIO not supported for Rumble"
+fi
 
-g_GOT_URL=false
+g_URL_ARG=''
 for A in ${@};do
 	if [[ ${A} =~ 'http' ]];then
-		g_GOT_URL=true
-		URL=${A} 
+		g_URL_ARG=${A}
 		shift
 		[[ ${A} =~ 'youtube' ]] && g_QRY_ENGINE='youtube'
 		[[ ${A} =~ 'rumble' ]] && g_QRY_ENGINE='rumble'
 	fi
 done
+
+[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGS IN:${@}, g_URL_ARG:${g_URL_ARG}, g_QRY_ENGINE:${g_QRY_ENGINE}"
 
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
@@ -1682,9 +1635,9 @@ if [[ ${g_QRY_ENGINE} == 'youtube' ]];then
 fi
 
 # Run Query
-if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
+if [[ ${#} -eq 0 && -z ${g_URL_ARG} ]];then # NO args passed
 	while true;do
-		do_smcup
+		#do_smcup
 		fav_get
 		if [[ -n ${g_QUERY_KEY} ]];then
 			msg_box "Requesting videos for <B><I>${g_DISPLAY_KEY}<N>..."
@@ -1697,15 +1650,15 @@ if [[ ${#} -eq 0 && ${g_GOT_URL} == 'false' ]];then # NO args passed
 	done
 else # Args passed
 	_CMD_LINE_ARGS=true
-	if [[ ${g_GOT_URL} == 'true' ]];then
+	if [[ -n ${g_URL_ARG} ]];then
 		g_QUERY_KEY="URL"
-		query_${g_QRY_ENGINE} ${URL}
+		query_${g_QRY_ENGINE} ${g_URL_ARG}
 	else
 		g_QUERY_KEY="${@}"
 		query_${g_QRY_ENGINE} ${g_QUERY_KEY}
 	fi
 	if [[ ${?} -eq 0 ]];then
-		[[ ${g_GOT_URL} == 'false' ]] && fav_set ${g_QUERY_KEY}
+		[[ -z ${g_URL_ARG} ]] && fav_set ${g_QUERY_KEY}
 		download_select ${g_QUERY_KEY}
 	fi
 fi
