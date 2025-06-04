@@ -181,10 +181,10 @@ msg_box () {
 		MSG_HEADER=(${MSGS[1,$(( HDR_LINES ))]})
 		MSG_BODY=(${MSGS[HDR_LINES+1,-1]})
 		MSG_ROWS=$(( ${#MSG_HEADER} + ${#MSG_BODY} + ${#MSG_FOOTER} ))
-		if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 			dbg "${0}: HAS HEADERS"
 			dbg "${0}: HEADER CONTAINS ${#MSG_HEADER} lines"
-			dbg "${0}: MSG_HEADER FOLLOWS:\n---\n$(for M in ${MSG_HEADER};do echo ${M};done)\n---\n"
+			dbg "${0}: MSG_HEADER FOLLOWS:\n>>>\n$(for M in ${MSG_HEADER};do echo ${M};done)\n<<<\n"
 			dbg "${0}: BODY CONTAINS ${#MSG_BODY} lines"
 			dbg "${0}: MSG_FOOTER: ${MSG_FOOTER:-null}"
 			dbg "${0}: FOOTER CONTAINS ${#MSG_FOOTER} lines"
@@ -193,10 +193,10 @@ msg_box () {
 	else
 		MSG_BODY=(${MSGS})
 		MSG_ROWS=$(( ${#MSG_BODY} + ${#MSG_FOOTER} ))
-		if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 			dbg "${0}: HAS ${RED_FG}NO${RESET} HEADERS"
 			dbg "${0}: BODY CONTAINS ${#MSG_BODY} lines"
-			dbg "${0}: MSG_BODY FOLLOWS:\n---\n$(for M in ${MSG_BODY};do echo ${M};done)\n---\n"
+			dbg "${0}: MSG_BODY FOLLOWS:\n>>>\n$(for M in ${MSG_BODY};do echo ${M};done)\n<<<\n"
 			dbg "${0}: MSG_FOOTER: ${MSG_FOOTER:-null}"
 			dbg "${0}: FOOTER CONTAINS ${#MSG_FOOTER} lines"
 			dbg "${0}: TOTAL LINES:${MSG_ROWS}"
@@ -218,10 +218,10 @@ msg_box () {
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}MESSAGE PAGING TRIGGERED${RESET} PG_LINES:${PG_LINES} USABLE_ROWS:${USABLE_ROWS}"
 	else
 		PG_LINES=${#MSG_BODY}
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}MESSAGE ${RED_FG}NOT ${CYAN_FG}PAGED${RESET} PG_LINES:${PG_LINES}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}MESSAGE ${RED_FG}NOT ${CYAN_FG}PAGED${RESET} PG_LINES:${PG_LINES}"
 	fi
 
-	if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 		dbg "${0}:  --- DISPLAY LIMITS ---"
 		dbg "${0}:     MAX ROWS:${WHITE_FG}${_MAX_ROWS}${RESET} MAX COLS:${WHITE_FG}${_MAX_COLS}${RESET}"
 		dbg "${0}:  USABLE_ROWS:${WHITE_FG}${USABLE_ROWS}${RESET} USABLE_COLS:${WHITE_FG}${USABLE_COLS}${RESET}"
@@ -269,10 +269,10 @@ msg_box () {
 
 	(( MSG_COLS+=2 )) # Add gutter
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: FINAL MSG_COLS:${MSG_COLS}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: FINAL MSG_COLS:${MSG_COLS}"
 
 	if [[ ${SAFE} == 'true' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CATCHING ANY DISPLAY OVERRUNS"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CATCHING ANY DISPLAY OVERRUNS"
 		[[ ${MSG_X_COORD} -lt ${MIN_X_COORD} ]] && MSG_X_COORD=${MIN_X_COORD}
 		[[ ${MSG_X_COORD} -gt ${USABLE_ROWS} ]] && MSG_X_COORD=${USABLE_ROWS}
 		[[ ${MSG_Y_COORD} -lt ${MIN_Y_COORD} ]] && MSG_Y_COORD=${MIN_Y_COORD}
@@ -299,16 +299,16 @@ msg_box () {
 	# Box coords - compensate for frame
 	BOX_X_COORD=${$(( MSG_X_COORD - 1 )):=1}
 	BOX_Y_COORD=${$(( MSG_Y_COORD - 1 )):=1}
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: FRAME COMPENSATION: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: FRAME COMPENSATION: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
 	# --- END COORDS SETUP ---
 
 	# Save box coords
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "$(for L in ${(Oa)funcstack};do echo TAG:${TAG} FUNCSTACK:${L};done)"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "$(for L in ${(Oa)funcstack};do echo TAG:${TAG} FUNCSTACK:${L};done)"
 
 	box_coords_set ${TAG} X ${BOX_X_COORD} Y ${BOX_Y_COORD} H ${BOX_HEIGHT} W ${BOX_WIDTH} S ${TEXT_STYLE}
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SAVED TAG:${TAG} _BOX_COORDS: $(box_coords_get ${TAG})"
 
-	if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 		dbg "${0}: --- BOX COORDS ---"
 		dbg "${0}: TAG:${TAG}"
 		dbg "${0}: BOX_X,Y:${WHITE_FG}(${BOX_X_COORD},${BOX_Y_COORD})${RESET}"
@@ -339,13 +339,13 @@ msg_box () {
 		if [[ ${MSG_PAGING} == 'true' ]];then
 			# Get the amount of padding necessary to break the page on even boundaries
 			GAP=$(msg_calc_gap ${#MSG_BODY} ${PG_LINES})
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LAST PAGE GAP:${WHITE_FG}${GAP}${RESET}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LAST PAGE GAP:${WHITE_FG}${GAP}${RESET}"
 
 			# Pad messages to break evenly across pages
 			for (( GAP_NDX=1;GAP_NDX<=${GAP};GAP_NDX++));do
 				MSG_BODY+=" "
 			done
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ADDED GAP PADDING: MSG_BODY LINES:${#MSG_BODY}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ADDED GAP PADDING: MSG_BODY LINES:${#MSG_BODY}"
 		fi
 	fi
 
@@ -395,7 +395,7 @@ msg_box () {
 				tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
 				tput ech ${MSG_COLS} # Clear line
 				echo -n "${MSG_OUT}"
-				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}HEADER SCR_NDX${RESET}:${SCR_NDX}"
+				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}HEADER SCR_NDX${RESET}:${SCR_NDX}"
 			done
 		fi
 
@@ -415,7 +415,7 @@ msg_box () {
 			[[ ${SO} == 'true' ]] && tput smso # Invoke standout
 
 			if [[ ${MSG_PAGING} == 'true' ]];then
-				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}PAGING${RESET}: SCR_NDX:${SCR_NDX} DTL_NDX:${DTL_NDX} MSG_NDX:${MSG_NDX}"
+				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}PAGING${RESET}: SCR_NDX:${SCR_NDX} DTL_NDX:${DTL_NDX} MSG_NDX:${MSG_NDX}"
 				[[ ${XDG_SESSION_TYPE:l} == 'x11' ]] && eval "xset ${_XSET_MENU_RATE}"
 
 				if [[ $(( DTL_NDX % PG_LINES )) -eq 0 ]];then # Page break - pause
@@ -451,7 +451,7 @@ msg_box () {
 			tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
 			tput ech ${MSG_COLS} # Clear line
 			echo -n "${MSG_OUT}"
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}FOOTER SCR_NDX${RESET}:${SCR_NDX}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}FOOTER SCR_NDX${RESET}:${SCR_NDX}"
 		done
 
 		if [[ ${PROMPT_USER} == "true" ]];then
@@ -493,7 +493,7 @@ msg_box_align () {
 		MSG=$(str_unicode_line $(( BOX_WIDTH-4 )) )
 		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH+1 )) ${MSG} )
 		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L} - 1 )) )
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added heading separator: SEP:${MSG} BOX_WIDTH:${BOX_WIDTH} TEXT_PAD_L:\"${TEXT_PAD_L}\" TEXT_PAD_R:\"${TEXT_PAD_R}\""
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Added heading separator: SEP:${MSG} BOX_WIDTH:${BOX_WIDTH} TEXT_PAD_L:\"${TEXT_PAD_L}\" TEXT_PAD_R:\"${TEXT_PAD_R}\""
 	elif [[ ${MSG} =~ '<L>' ]];then # Handle embed: <L> Bullet List item
 		MSG=$(sed -e 's/^.*<L>/\\u2022 /' <<<${MSG}) # Swap marker with bullet and space
 		TEXT=$(msg_nomarkup ${MSG})
@@ -554,17 +554,17 @@ msg_box_clear () {
 	local W_COORD_ARG=''
 	local X
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} PARAMS:${#} TAG:${TAG}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} PARAMS:${#} TAG:${TAG}"
 
 	# Process arguments
 	if [[ ${#} -eq 1 ]];then
 		TAG=${1}
 		BOX_COORDS=($(box_coords_get ${TAG})) # Tag passed
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
 		[[ -z ${BOX_COORDS} ]] && return 1
 	elif [[ ${#} -eq 4 ]];then
 		BOX_COORDS=($(box_coords_get ${_LAST_MSG_TAG})) # overrides passed - apply to last msg
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
 		[[ -z ${BOX_COORDS} ]] && return 1
 
 		X_COORD_ARG=${1}
@@ -579,11 +579,11 @@ msg_box_clear () {
 		[[ ${W_COORD_ARG} != 'W' ]] && BOX_COORDS[W]=${W_COORD_ARG}
 	else
 		BOX_COORDS=($(box_coords_get ${_LAST_MSG_TAG})) # No args passed - use last msg
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
 		[[ -z ${BOX_COORDS} ]] && return 1
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Starting on ROW ${BOX_COORDS[X]:=null} and clearing from COL ${BOX_COORDS[Y]:=null} for ${BOX_COORDS[W]:=null} COLS for ${BOX_COORDS[H]:=null} LINES"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Starting on ROW ${BOX_COORDS[X]:=null} and clearing from COL ${BOX_COORDS[Y]:=null} for ${BOX_COORDS[W]:=null} COLS for ${BOX_COORDS[H]:=null} LINES"
 
 	for (( X=${BOX_COORDS[X]}; X <= ( ${BOX_COORDS[X]} + ${BOX_COORDS[H]} - 1 ); X++));do
 		tput cup ${X} ${BOX_COORDS[Y]}
@@ -806,7 +806,7 @@ msg_list_data () {
 msg_markup () {
 	local MSG=${@}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Apply markup
 	perl -pe 'BEGIN { 
@@ -835,7 +835,7 @@ msg_nomarkup () {
 	local MSG=${@}
 	local MSG_OUT
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	MSG_OUT=$(perl -pe 's/(<B>|<I>|<L>|<N>|<O>|<R>|<U>|<b>|<c>|<g>|<h>|<m>|<r>|<w>|<y>)//g' <<<${MSG})
 
@@ -1017,7 +1017,7 @@ msg_unicode_box () {
 	T_SPAN=$(( BOX_X_COORD+1 ))
 	B_SPAN=$(( BOX_X_COORD+BOX_HEIGHT ))
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ ${_BOX_LINE_WEIGHT} == 'heavy' ]] && HEAVY=true && shift
 
@@ -1037,7 +1037,7 @@ msg_unicode_box () {
 		VERT_BAR="\\u2503%.0s"
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: TOP LEFT: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TOP LEFT: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
 
 	# Reset standout (if set)
 	tput rmso
@@ -1059,7 +1059,7 @@ msg_unicode_box () {
 	printf ${TOP_RIGHT}
 
 	# Sides
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: BOX_WIDTH:${BOX_WIDTH}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_WIDTH:${BOX_WIDTH}"
 	for (( X=${T_SPAN}; X<=${B_SPAN}; X++ ));do
 		tput cup ${X} ${BOX_Y_COORD}
 		printf ${VERT_BAR}
@@ -1079,14 +1079,14 @@ msg_unicode_box () {
 	done
 
 	# Bottom right corner
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: BOX_HEIGHT:${BOX_HEIGHT}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_HEIGHT:${BOX_HEIGHT}"
 	tput cup ${X} ${Y}
 	printf ${BOT_RIGHT}
 
 	echo -n ${RESET}
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: BOTTOM RIGHT: BOX_X_COORD:${X} BOX_Y_COORD:${Y}"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: BOX DIMENSIONS:$(( X-BOX_X_COORD+1 )) x $(( Y-BOX_Y_COORD+1 ))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOTTOM RIGHT: BOX_X_COORD:${X} BOX_Y_COORD:${Y}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX DIMENSIONS:$(( X-BOX_X_COORD+1 )) x $(( Y-BOX_Y_COORD+1 ))"
 }
 
 msg_warn () {

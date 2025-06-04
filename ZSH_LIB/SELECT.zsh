@@ -39,32 +39,32 @@ sel_box_center () {
 	local TXT_CTR=0
 	local TXT_LEN=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if validate_is_integer ${TXT};then # Accept either strings or integers
 		TXT_LEN=${TXT}
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: GOT INTEGER FOR TXT_LEN"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: GOT INTEGER FOR TXT_LEN"
 	else
 		TXT_LEN=${#TXT}
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: GOT STRING FOR TXT_LEN"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: GOT STRING FOR TXT_LEN"
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ARGC:${#@} TXT:${TXT} TXT_LEN:${TXT_LEN}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ARGC:${#@} TXT:${TXT} TXT_LEN:${TXT_LEN}"
 
 	CTR=$(( TXT_LEN / 2 )) && REM=$((TXT_LEN % 2))
 	[[ ${REM} -ne 0 ]] && TXT_CTR=$((CTR+1)) || TXT_CTR=${CTR}
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CTR='$(( TXT_LEN / 2 )) && REM=$((CTR % 2))':$(( TXT_LEN / 2 )) && REM:$((CTR % 2))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( TXT_LEN / 2 )) && REM=$((CTR % 2))':$(( TXT_LEN / 2 )) && REM:$((CTR % 2))"
 
 	CTR=$(( BOX_WIDTH / 2 )) && REM=$((BOX_WIDTH % 2))
 	[[ ${REM} -ne 0 ]] && BOX_CTR=$((CTR+1)) || BOX_CTR=${CTR}
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CTR='$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))':$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))':$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))"
 
 	CTR=$(( BOX_LEFT + BOX_CTR - TXT_CTR ))
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CTR='$(( BOX_LEFT + BOX_CTR - TXT_CTR ))': $(( BOX_LEFT + BOX_CTR - TXT_CTR ))"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: BOX_LEFT:${BOX_LEFT} BOX_CTR:${BOX_CTR} TXT_CTR:${TXT_CTR}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( BOX_LEFT + BOX_CTR - TXT_CTR ))': $(( BOX_LEFT + BOX_CTR - TXT_CTR ))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_LEFT:${BOX_LEFT} BOX_CTR:${BOX_CTR} TXT_CTR:${TXT_CTR}"
 
 	echo ${CTR}
 }

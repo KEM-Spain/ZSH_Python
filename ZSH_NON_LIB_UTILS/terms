@@ -1,15 +1,73 @@
 #!/usr/bin/zsh
-SHOW_COUNT=false
-[[ ${1} == '-c' ]] && SHOW_COUNT=true
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+read -r -d '' DESC<<EOF
+Display active terminal sessions
+\tOption: -c provides a count only
+\tOption: -p shows pid of term(s)
+EOF
+
+typeset -a _LIST=("${(@f)$(ps aux | grep -v root | grep pts | tr -s '[:space:]' | cut -d\  -f1,7 | sort -u)}")
+
+usage () {
+	tabs 6
+	echo "${WHITE_FG}${(C)0:t}${RESET}: -H -c -p"
+	echo " ${WHITE_FG}Desc${RESET}:${DESC}"
+	exit
+}
+
+term_pids () {
+	local -a PIDS
+
+	PIDS=("${(f)$(ps -exo sess,tty | grep pts | sort -u)}")
+	printf "%-6s %-6s\n" "TERM" "PID"
+	for L in ${PIDS};do
+		PID=$(sed 's/^ *//' <<<${L} | cut -d' ' -f1)
+		TERM=$(sed 's/^ *//' <<<${L} | cut -d' ' -f2)
+		[[ ${PID} == "${TERM_PID}" ]] && MARK='*' || MARK=''
+		printf "%-6s %-6s ${WHITE_FG}%s${RESET}\n" ${TERM} ${PID} ${MARK}
+	done
+	exit
+}
+
+# Execution
+[[ ${#_LIST} -gt 1 ]] && TAG=sessions || TAG=session
+COUNT_ONLY=false
+TERM_PID=$(ps | grep --color=never zsh | head -1 | tr -s ' ' | cut -d' ' -f2)
 THIS_TTY=$(tty)
-LIST=("${(@f)$(ps aux | grep -v root | grep pts | tr -s '[:space:]' | cut -d\  -f1,7 | sort -u)}")
 
-if [[ ${SHOW_COUNT} == 'true' ]];then
-	 echo ${#LIST}
+OPT=${1:=null}
+while true;do
+	[[ ${OPT} == 'null' ]] && break
+	case ${OPT} in
+		-H) usage;;
+		-c) COUNT_ONLY=true;;
+		-p) term_pids;;
+		-*) echo "Unknown option: ${OPT}"; exit
+	esac
+	break
+done
+
+if [[ ${COUNT_ONLY} == 'true' ]];then
+	 echo ${#_LIST}
 else
-	echo "${#LIST} sessions"
-	for T in ${(no)LIST};do
+	echo "${#_LIST} ${TAG}"
+	for T in ${(no)_LIST};do
 		[[ "${THIS_TTY:t}" == "${T:t}" ]] && FLAG='*' || FLAG=''
 		echo ${T} ${FLAG}
 	done

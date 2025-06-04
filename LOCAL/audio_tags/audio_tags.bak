@@ -104,6 +104,9 @@ tags_display () {
 		echo -n "${WHITE_FG}Displaying tags for${RESET}:${CYAN_FG}${${PWD}##${MUSIC_DIR}}${RESET}"
 		tcup 12 50
 		echo -n "Enter '${WHITE_FG}e${RESET}' to edit, '${WHITE_FG}q${RESET}' to quit, <${WHITE_FG}ENTER${RESET}> for next track"
+
+		tcup -x${BOX_X} -y${BOX_Y};echo -n "Working..."
+
 		msg_box -q -c -p -x${BOX_X} -y${BOX_Y} -w 60 ${LABELS}
 
 		_EDIT_COORDS=($(box_coords_get MSG_BOX))
@@ -242,7 +245,8 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-Show tag info for audio files in the current directory
+Show tag info for all audio files in the current directory
+\tor for a file argument
 EOF
 
 parse_opts () {
@@ -282,7 +286,7 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type f)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -309,10 +313,17 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-# Find the tags
-_TAG_LIST=("${(f)$(find . -maxdepth 1 -name '*flac' -type f)}")
-_TAG_LIST+=("${(f)$(find . -maxdepth 1 -name '*mp3' -type f)}")
-_TAG_LIST+=("${(f)$(find . -maxdepth 1 -name '*wav' -type f)}")
+[[ ${#} -ne 0 ]] && FN=${1} || FN=''
+
+if [[ -z ${FN} ]];then
+	# Find the tags
+	_TAG_LIST=("${(f)$(find . -maxdepth 1 -name '*flac' -type f)}")
+	_TAG_LIST+=("${(f)$(find . -maxdepth 1 -name '*mp3' -type f)}")
+	_TAG_LIST+=("${(f)$(find . -maxdepth 1 -name '*wav' -type f)}")
+else
+	[[ ! -e ${FN} ]] && exit_leave "${_SCRIPT_TAG} ${BOLD}${RED_FG}File not found${RESET}:${FN}"
+	_TAG_LIST=(${FN})
+fi
 
 HAVE_TAGS=false
 if arr_is_populated "${_TAG_LIST}";then

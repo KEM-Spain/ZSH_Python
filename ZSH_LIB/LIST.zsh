@@ -159,25 +159,25 @@ list_do_header () {
 		[[ ${#CLEAN_HDR} > ${LONGEST_HDR} ]] && LONGEST_HDR=${#CLEAN_HDR}
 	done
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: HEADER COUNT:${#_LIST_HEADER} PAGE=${PAGE} MAX_PAGE=${MAX_PAGE} SELECTED_COUNT=${SELECTED_COUNT}"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LONGEST_HDR:${LONGEST_HDR} (before any modifications)"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: HEADER COUNT:${#_LIST_HEADER} PAGE=${PAGE} MAX_PAGE=${MAX_PAGE} SELECTED_COUNT=${SELECTED_COUNT}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LONGEST_HDR:${LONGEST_HDR} (before any modifications)"
 
 	# Position cursor
 	tcup 0 0
 	tput el
 
 	for (( L=1; L<=${#_LIST_HEADER}; L++ ));do
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Processing header 1 of ${#_LIST_HEADER}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Processing header 1 of ${#_LIST_HEADER}"
 		if [[ -n ${_LIST_HEADER[${L}]} ]];then
 
 			HDR_LINE=$(eval ${_LIST_HEADER[${L}]})
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: (eval) HEADER LINE:${L} -> ${HDR_LINE}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: (eval) HEADER LINE:${L} -> ${HDR_LINE}"
 
 
 			if [[ ${L} -eq 1 ]];then # Top line
 			 # Prepend script name
 				SCRIPT_TAG=$(eval ${SCRIPT_TAG}) && HDR_LINE="${SCRIPT_TAG} ${HDR_LINE}" && CLEAN_HDR=$(str_strip_ansi <<<${HDR_LINE})
-				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added header name tag:${HDR_LINE}"
+				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Added header name tag:${HDR_LINE}"
 			fi
 
 			[[ ${_LIST_HEADER[${L}]} =~ '_PG' ]] && HDR_PG=true # Do page numbering
@@ -188,13 +188,13 @@ list_do_header () {
 					[[ ${LONGEST_HDR} -gt ${HDR_LEN} ]] && PAD_LEN=$(( LONGEST_HDR - HDR_LEN )) || PAD_LEN=1
 					PG_TAG="$(str_rep_char ' ' ${PAD_LEN})${PG_TAG}"
 
-					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: HDR_LEN:${HDR_LEN}, LONGEST_HDR:${LONGEST_HDR}, PAD_LEN:${PAD_LEN}"
+					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: HDR_LEN:${HDR_LEN}, LONGEST_HDR:${LONGEST_HDR}, PAD_LEN:${PAD_LEN}"
 
 					HDR_LINE="${HDR_LINE}${PG_TAG}"
 					CLEAN_HDR=$(str_strip_ansi <<<${HDR_LINE})
 					LONGEST_HDR=${#CLEAN_HDR} # This header will now be the longest
 
-					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added header page tag:${HDR_LINE}, LONGEST_HDR:${LONGEST_HDR}"
+					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Added header page tag:${HDR_LINE}, LONGEST_HDR:${LONGEST_HDR}"
 
 					HDR_PG=false
 				fi
@@ -208,7 +208,7 @@ list_do_header () {
 
 		if [[ ${_LIST_HEADER_BREAK} == 'true' ]];then
 			tput el && echo -n ${_LIST_HEADER_BREAK_COLOR} && str_unicode_line ${LONGEST_HDR} && echo -n ${RESET}
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Header break length:${LONGEST_HDR}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Header break length:${LONGEST_HDR}"
 		fi
 }
 
@@ -927,14 +927,14 @@ list_set_client_warn () {
 list_set_header () {
 	local HDR_LINE=${1}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} HEADER LINE:${WHITE_FG}${#_LIST_HEADER}${RESET}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} HEADER LINE:${WHITE_FG}${#_LIST_HEADER}${RESET}"
 
 	[[ -z ${HDR_LINE:gs/ //} ]] && HDR_LINE="printf ' '"
 
 	_LIST_HEADER+=${HDR_LINE}
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RAW HEADER:${HDR_LINE}"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ECHO HDR:${WHITE_FG}${#_LIST_HEADER}${RESET}:\"$(eval echo ${HDR_LINE})\""
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: EVAL HDR:${WHITE_FG}${#_LIST_HEADER}${RESET}:\"$(eval ${HDR_LINE})\""
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RAW HEADER:${HDR_LINE}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ECHO HDR:${WHITE_FG}${#_LIST_HEADER}${RESET}:\"$(eval echo ${HDR_LINE})\""
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: EVAL HDR:${WHITE_FG}${#_LIST_HEADER}${RESET}:\"$(eval ${HDR_LINE})\""
 }
 
 list_set_header_break_color () {
@@ -1135,7 +1135,7 @@ list_sort () {
 
 	# Reject non-sortable
 	if [[ ${_LIST_IS_SORTABLE} == 'false' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT DENIED: _LIST_IS_SORTABLE:${_LIST_IS_SORTABLE}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT DENIED: _LIST_IS_SORTABLE:${_LIST_IS_SORTABLE}"
 		return
 	fi
 
@@ -1143,7 +1143,7 @@ list_sort () {
 		for A in ${(k)_LIST_SELECTED};do
 			if [[ ${_LIST_SELECTED[${A}]} -ne ${_AVAIL_ROW} ]];then
 				msg_box -H1 -t2 "<r>Sort Unavailable<N>|Active Selections"
-				if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+				if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 					dbg "${0}: SORT REJECTED: ACTIVE SELECTIONS"
 					dbg "$(for C in ${(k)_LIST_SELECTED};do; echo ${C} - ${_LIST_SELECTED[${C}]};done)"
 					return
@@ -1159,7 +1159,7 @@ list_sort () {
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DEFAULTING MAXCOL TO 1 COL"
 			_SORT_DATA[MAXCOL]=1
 		else
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MAXCOL BASED ON DELIM:${_SORT_DATA[MAXCOL]}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAXCOL BASED ON DELIM:${_SORT_DATA[MAXCOL]}"
 		fi
 	fi
 
