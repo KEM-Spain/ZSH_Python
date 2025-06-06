@@ -229,6 +229,7 @@ action_do () {
 			if [[ ${?} -eq 0 ]];then
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
+				# TODO: attempt to reinitiate download (job_reset)
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FAILED[${M}]=true
 				_DOWNLOADS[${M}]=false
@@ -310,7 +311,6 @@ action_do () {
 				if [[ ${ERROR_CNT} -ge ${_MAX_ERRORS} ]];then
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Too many errors - Unable to download<N>"
 					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
-					job_reset
 					_FAILED[${M}]=true && break # Scan cycle
 				fi
 			fi
@@ -816,8 +816,8 @@ get_field () {
 	local STR=''
 	local TSTR=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGS:FIELD:${FIELD}, NDX:${NDX}"
-	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}:${LINENO} _LIST[NDX]:${_LIST[${NDX}]}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGS:FIELD:${FIELD}, NDX:${NDX}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:${LINENO} _LIST[NDX]:${_LIST[${NDX}]}"
 
 	case ${FIELD} in
 		age) STR=$(cut -d'|' -f${FIELD_MAP[age]} <<<${_LIST[${NDX}]});;
@@ -828,7 +828,7 @@ get_field () {
 		url) STR=$(cut -d'|' -f${FIELD_MAP[url]} <<<${_LIST[${NDX}]});;
 	esac
 
-	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
 
 	if [[ ${FIELD} == 'agetime' ]];then
 		[[ ${STR:l} =~ 'upcoming' ]] && STR='(UPCOMING EPISODE)'
@@ -852,7 +852,7 @@ item_decorate () {
 	local NDX=${1}
 	local STR
 
-	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."
@@ -887,7 +887,7 @@ job_kill () {
 		echo "${0}: No processes found" >> ${g_YTS_LOG}
 	fi
 
-	if [[ ! ${functrace[1]} =~ "job_reset" ]];then
+	if [[ ! ${functrace[1]} =~ "job_reset" ]];then # Exit unless called by reset
 		trap - INT # Disable trap
 		log_clear "job_kill"
 		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job:${RED_FG}killed${RESET}"
@@ -1228,7 +1228,7 @@ query_rumble () {
 	done
 
 	if [[ -n ${g_URL_ARG} ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} URL SEARCH"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}URL SEARCH${RESET}"
 		g_SEARCH_TYPE=url
 
 		PG=("${(f)$(wget -q -O - ${g_URL_ARG})}")
@@ -1242,7 +1242,7 @@ query_rumble () {
 		VID_LIST+="${g_QUERY_KEY}|${TITLES}|${AGES}|${LINKS}|${DURATIONS}" # Unique rows
 	else
 		[[ ${LIVE} == 'true' ]] && STR='LIVESTREAM' || STR=''
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} CHANNEL ${STR} SEARCH"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL ${STR} SEARCH${RESET}"
 
 		g_SEARCH_TYPE=channel
 
@@ -1271,7 +1271,7 @@ query_rumble () {
 				VID_LIST+="${g_QUERY_KEY}|${TITLES[${X}]}|${AGE}|${LINKS[${X}]}|${DURATIONS[${X}]}" # Unique rows
 			done
 		else # User livestream search
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} GENERAL SEARCH"
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 			g_SEARCH_TYPE="user livestreams"
 
 			msg_box -c "Requesting user livestream search..."
@@ -1294,7 +1294,7 @@ query_rumble () {
 					VID_LIST+="${g_QUERY_KEY}|${TITLES[${X}]}|${AGE}|${LINKS[${X}]}|${DURATIONS[${X}]}" # Unique rows
 				done
 			else # General search
-				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} GENERAL SEARCH"
+				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 				g_SEARCH_TYPE=general
 
 				msg_box -c "Requesting general search..."
@@ -1373,9 +1373,21 @@ query_youtube () {
 		PROXY_CMD="${g_PROXY_CMD}"
 	fi
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: g_QUERY_KEY:${g_QUERY_KEY}, g_ENGINE_KEY:${g_ENGINE_KEY}, STRICT:${g_STRICT}, PROXY COMMAND:${PROXY_CMD}"
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+		dbg "${0}: ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, ${CYAN_FG}g_ENGINE_KEY${RESET}:${g_ENGINE_KEY}, ${CYAN_FG}STRICT${RESET}:${g_STRICT}, ${CYAN_FG}PROXY COMMAND${RESET}:${PROXY_CMD}"
+	fi
 
 	_LOCAL_LIST=()
+
+	[[ ${g_ENGINE_KEY:l} =~ 'p' ]] && CUSTOM_KEY=true
+
+	if [[ ${CUSTOM_KEY} == 'false' ]];then
+		g_SEARCH_TYPE='channel'
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL SEARCH${RESET}"
+	else
+		g_SEARCH_TYPE='general'
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
+	fi
 
 	NDX=0
 	while read LINE;do
@@ -1390,21 +1402,16 @@ query_youtube () {
 		STR=$(iconv -f utf-8 -t ascii//translit <<<${LINE}) # Scrub non ascii
 		STR=${STR:s/Streamed //}
 
-		[[ ${g_ENGINE_KEY:l} =~ 'p' ]] && CUSTOM_KEY=true
-
 		# --- BEGIN Experimental filtering
 		if [[ ${CUSTOM_KEY} == 'false' ]];then
-			g_SEARCH_TYPE='channel'
 			HIT=false
 			AUTHOR=$(cut -d'|' -f2 <<<${LINE})
 			[[ ${AUTHOR:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:gs/ //:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
-			[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${0}:${LINENO} EXPERIMENTAL FILTERING AUTHOR:${AUTHOR} HIT:${HIT}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:${LINENO} EXPERIMENTAL FILTERING AUTHOR:${AUTHOR} HIT:${HIT}"
 			[[ ${HIT} == 'false' ]] && continue
 			# --- END Experimental filtering
-		else
-			g_SEARCH_TYPE='general'
 		fi
 		 
 		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}
@@ -1413,7 +1420,7 @@ query_youtube () {
 	[[ ${g_STRICT} == 'true' ]] && g_STRICT_MSG="$(total_rejects ${NDX})" || g_STRICT_MSG=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
 	[[ ${_SMCUP} == 'false' ]] && do_smcup
 
@@ -1442,7 +1449,7 @@ query_youtube () {
 set_item_color () {
 	local ITEM=${1}
 
-	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	case ${ITEM:l} in
 		downloaded*) echo ${GREEN_FG};;
@@ -1476,7 +1483,7 @@ total_rejects () {
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
-\tQueries provide a selection list of matching videos. 
+\tChoose from a list of matching videos. 
 \tHidden key: 'r' during download will reset the connection.
 EOF
 
@@ -1513,14 +1520,14 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${OPTS} [$(opt_type s)] [$(opt_type u)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-A${RESET} fix audio (YouTube only)"
-	echo -e "${WHITE_FG}-L${RESET} prefer livestreams (${MAGENTA_FG}Rumble only${RESET})"
-	echo -e "${WHITE_FG}-R${RESET} Rumble query [default is YouTube]"
-	echo -e "${WHITE_FG}-S${RESET} disable strict filtering (${MAGENTA_FG}YouTube only${RESET})"
-	echo -e "${WHITE_FG}-V${RESET} yt-search version (${MAGENTA_FG}YouTube only${RESET})"
-	echo -e "${WHITE_FG}-l${RESET} search for livestreams (${MAGENTA_FG}Rumble only${RESET})"
-	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) (${MAGENTA_FG}YouTube only${RESET})"
-	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query] (${MAGENTA_FG}YouTube only${RESET})"
+	echo -e "${WHITE_FG}-A${RESET} fix audio (${MAGENTA_FG}YouTube${RESET} only)"
+	echo -e "${WHITE_FG}-L${RESET} prefer livestreams (${MAGENTA_FG}Rumble${RESET} only)"
+	echo -e "${WHITE_FG}-R${RESET} ${MAGENTA_FG}Rumble${RESET} query [${WHITE_FG}default is ${MAGENTA_FG}YouTube${RESET}]"
+	echo -e "${WHITE_FG}-S${RESET} disable strict filtering (${MAGENTA_FG}YouTube${RESET} only)"
+	echo -e "${WHITE_FG}-V${RESET} yt-search version (${MAGENTA_FG}YouTube${RESET} only)"
+	echo -e "${WHITE_FG}-l${RESET} search for livestreams (${MAGENTA_FG}Rumble${RESET} only)"
+	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) (${MAGENTA_FG}YouTube${RESET} only)"
+	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-u${RESET} export the video URL"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2

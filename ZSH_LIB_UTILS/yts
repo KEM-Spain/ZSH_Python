@@ -83,7 +83,7 @@ _YTS_URL_LOG=/tmp/yts.url.log
 g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
 g_ENGINE_KEY=''
-g_URL_ARG=''
+g_FAV_ADD=true
 g_LAST_CODE_UPD=?
 g_LAST_MASK_Y=0
 g_PID=?
@@ -94,8 +94,9 @@ g_QUERY_KEY=''
 g_SEARCH_TYPE=''
 g_STRICT=false
 g_STRICT_MSG=''
-g_YTS_LOG=''
+g_URL_ARG=''
 g_WHEN=''
+g_YTS_LOG=''
 
 # Functions
 action_do () {
@@ -229,6 +230,7 @@ action_do () {
 			if [[ ${?} -eq 0 ]];then
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
+				# TODO: attempt to reinitiate download (job_reset)
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_FAILED[${M}]=true
 				_DOWNLOADS[${M}]=false
@@ -310,7 +312,6 @@ action_do () {
 				if [[ ${ERROR_CNT} -ge ${_MAX_ERRORS} ]];then
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Too many errors - Unable to download<N>"
 					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
-					job_reset
 					_FAILED[${M}]=true && break # Scan cycle
 				fi
 			fi
@@ -574,6 +575,10 @@ download_select () {
 		fi
 	done
 
+	if arr_is_populated "${_DOWNLOADS}";then
+		[[ ${g_FAV_ADD} == 'true' ]] && fav_set ${g_QUERY_KEY}
+	fi
+
 	_DOWNLOADS=()
 	_FAILED=()
 	_FUTURE=()
@@ -721,7 +726,7 @@ fav_set () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE}"
 
-	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${FAV} to favorites?"
+	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
 
 	# R    - Rumble  - channel/user query
@@ -887,7 +892,7 @@ job_kill () {
 		echo "${0}: No processes found" >> ${g_YTS_LOG}
 	fi
 
-	if [[ ! ${functrace[1]} =~ "job_reset" ]];then
+	if [[ ! ${functrace[1]} =~ "job_reset" ]];then # Exit unless called by reset
 		trap - INT # Disable trap
 		log_clear "job_kill"
 		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job:${RED_FG}killed${RESET}"
@@ -1379,6 +1384,16 @@ query_youtube () {
 
 	_LOCAL_LIST=()
 
+	[[ ${g_ENGINE_KEY:l} =~ 'p' ]] && CUSTOM_KEY=true
+
+	if [[ ${CUSTOM_KEY} == 'false' ]];then
+		g_SEARCH_TYPE='channel'
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL SEARCH${RESET}"
+	else
+		g_SEARCH_TYPE='general'
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
+	fi
+
 	NDX=0
 	while read LINE;do
 		[[ ${LINE:l} =~ 'matched' ]] && DATA=true && continue
@@ -1392,11 +1407,8 @@ query_youtube () {
 		STR=$(iconv -f utf-8 -t ascii//translit <<<${LINE}) # Scrub non ascii
 		STR=${STR:s/Streamed //}
 
-		[[ ${g_ENGINE_KEY:l} =~ 'p' ]] && CUSTOM_KEY=true
-
 		# --- BEGIN Experimental filtering
 		if [[ ${CUSTOM_KEY} == 'false' ]];then
-			g_SEARCH_TYPE='channel'
 			HIT=false
 			AUTHOR=$(cut -d'|' -f2 <<<${LINE})
 			[[ ${AUTHOR:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
@@ -1405,8 +1417,6 @@ query_youtube () {
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:${LINENO} EXPERIMENTAL FILTERING AUTHOR:${AUTHOR} HIT:${HIT}"
 			[[ ${HIT} == 'false' ]] && continue
 			# --- END Experimental filtering
-		else
-			g_SEARCH_TYPE='general'
 		fi
 		 
 		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}
@@ -1478,7 +1488,7 @@ total_rejects () {
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
-\tQueries provide a selection list of matching videos. 
+\tChoose from a list of matching videos. 
 \tHidden key: 'r' during download will reset the connection.
 EOF
 
@@ -1515,14 +1525,14 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${OPTS} [$(opt_type s)] [$(opt_type u)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-A${RESET} fix audio (YouTube only)"
-	echo -e "${WHITE_FG}-L${RESET} prefer livestreams (${MAGENTA_FG}Rumble only${RESET})"
-	echo -e "${WHITE_FG}-R${RESET} Rumble query [default is YouTube]"
-	echo -e "${WHITE_FG}-S${RESET} disable strict filtering (${MAGENTA_FG}YouTube only${RESET})"
-	echo -e "${WHITE_FG}-V${RESET} yt-search version (${MAGENTA_FG}YouTube only${RESET})"
-	echo -e "${WHITE_FG}-l${RESET} search for livestreams (${MAGENTA_FG}Rumble only${RESET})"
-	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) (${MAGENTA_FG}YouTube only${RESET})"
-	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query] (${MAGENTA_FG}YouTube only${RESET})"
+	echo -e "${WHITE_FG}-A${RESET} fix audio (${MAGENTA_FG}YouTube${RESET} only)"
+	echo -e "${WHITE_FG}-L${RESET} prefer livestreams (${MAGENTA_FG}Rumble${RESET} only)"
+	echo -e "${WHITE_FG}-R${RESET} ${MAGENTA_FG}Rumble${RESET} query [${WHITE_FG}default is ${MAGENTA_FG}YouTube${RESET}]"
+	echo -e "${WHITE_FG}-S${RESET} disable strict filtering (${MAGENTA_FG}YouTube${RESET} only)"
+	echo -e "${WHITE_FG}-V${RESET} yt-search version (${MAGENTA_FG}YouTube${RESET} only)"
+	echo -e "${WHITE_FG}-l${RESET} search for livestreams (${MAGENTA_FG}Rumble${RESET} only)"
+	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) (${MAGENTA_FG}YouTube${RESET} only)"
+	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-u${RESET} export the video URL"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
@@ -1672,7 +1682,7 @@ else # Args passed
 		query_${g_QRY_ENGINE} ${g_QUERY_KEY}
 	fi
 	if [[ ${?} -eq 0 ]];then
-		[[ -z ${g_URL_ARG} ]] && fav_set ${g_QUERY_KEY}
+		g_FAV_ADD=true
 		download_select ${g_QUERY_KEY}
 	fi
 fi
