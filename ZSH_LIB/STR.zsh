@@ -340,3 +340,33 @@ str_unpipe () {
 	cut --output-delimiter=' ' -d'|' ${CUT_PARAM} <<<${PIPE_DATA}
 }
 
+str_word_clip () {
+	local TEXT=${1}
+	local LEN=${2}
+	local -a BREAKS=()
+	local LAST_BREAK
+	local LINE=''
+	local B P
+
+	[[ ${LEN} -gt ${#TEXT} ]] && echo ${TEXT} && return
+
+	for (( P=1; P <= ${#TEXT}; P++ ));do
+		[[ ${TEXT[${P}]} =~ "[[:space:]]" ]] && BREAKS+=${P}
+	done
+
+	LAST_BREAK=1
+	if [[ ${LEN} -ge ${#TEXT} ]];then
+		LINE="${TEXT}"
+	else
+		for B in ${BREAKS};do
+			[[ ${LEN} -ge ${BREAKS[-1]} ]] && LINE="${TEXT[1,${BREAKS[-1]}]}" && break
+			[[ ${B} -gt ${LEN} ]] && LINE="${TEXT[1,${LAST_BREAK}]}" && break
+			LAST_BREAK=${B}
+		done
+	fi
+
+	LINE=$(sed -E -e 's/[[:punct:]]*\s+?$//' -e 's/ *$//' <<<${LINE})
+
+	echo ${LINE}
+}
+

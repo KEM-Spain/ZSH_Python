@@ -83,7 +83,7 @@ _YTS_URL_LOG=/tmp/yts.url.log
 g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
 g_ENGINE_KEY=''
-g_FAV_ADD=true
+g_FAV_ADD=false
 g_LAST_CODE_UPD=?
 g_LAST_MASK_Y=0
 g_PID=?
@@ -422,6 +422,9 @@ clean_title () {
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
+
+	STR=$(str_word_clip ${STR} ${_MAX_TITLE})
+	logit ${_YTS_DBG_LOG} "${0}: str_word_clip TITLE:${TITLE}"
 
 	TITLE=${STR}
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
@@ -1218,6 +1221,9 @@ query_rumble () {
 	local STR=''
 	local F X
 
+	ping -w1 www.rumble.com >/dev/null
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return
+
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -n ${SEARCHTERM} ]] && g_QUERY_KEY=${SEARCHTERM}
@@ -1368,6 +1374,9 @@ query_youtube () {
 	local PROXY_CMD=''
 	local STR=''
 	local F
+
+	ping -w1 www.youtube.com >/dev/null
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
@@ -1674,15 +1683,16 @@ if [[ ${#} -eq 0 && -z ${g_URL_ARG} ]];then # NO args passed
 	done
 else # Args passed
 	_CMD_LINE_ARGS=true
+	g_FAV_ADD=false
 	if [[ -n ${g_URL_ARG} ]];then
 		g_QUERY_KEY="URL"
 		query_${g_QRY_ENGINE} ${g_URL_ARG}
+		g_FAV_ADD=true
 	else
 		g_QUERY_KEY="${@}"
 		query_${g_QRY_ENGINE} ${g_QUERY_KEY}
 	fi
 	if [[ ${?} -eq 0 ]];then
-		g_FAV_ADD=true
 		download_select ${g_QUERY_KEY}
 	fi
 fi

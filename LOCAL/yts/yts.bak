@@ -83,7 +83,7 @@ _YTS_URL_LOG=/tmp/yts.url.log
 g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
 g_ENGINE_KEY=''
-g_URL_ARG=''
+g_FAV_ADD=false
 g_LAST_CODE_UPD=?
 g_LAST_MASK_Y=0
 g_PID=?
@@ -94,8 +94,9 @@ g_QUERY_KEY=''
 g_SEARCH_TYPE=''
 g_STRICT=false
 g_STRICT_MSG=''
-g_YTS_LOG=''
+g_URL_ARG=''
 g_WHEN=''
+g_YTS_LOG=''
 
 # Functions
 action_do () {
@@ -574,6 +575,10 @@ download_select () {
 		fi
 	done
 
+	if arr_is_populated "${_DOWNLOADS}";then
+		[[ ${g_FAV_ADD} == 'true' ]] && fav_set ${g_QUERY_KEY}
+	fi
+
 	_DOWNLOADS=()
 	_FAILED=()
 	_FUTURE=()
@@ -721,7 +726,7 @@ fav_set () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE}"
 
-	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${FAV} to favorites?"
+	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
 
 	# R    - Rumble  - channel/user query
@@ -1213,6 +1218,9 @@ query_rumble () {
 	local STR=''
 	local F X
 
+	ping -w1 www.rumble.com >/dev/null
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return
+
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -n ${SEARCHTERM} ]] && g_QUERY_KEY=${SEARCHTERM}
@@ -1363,6 +1371,9 @@ query_youtube () {
 	local PROXY_CMD=''
 	local STR=''
 	local F
+
+	ping -w1 www.youtube.com >/dev/null
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
@@ -1669,15 +1680,16 @@ if [[ ${#} -eq 0 && -z ${g_URL_ARG} ]];then # NO args passed
 	done
 else # Args passed
 	_CMD_LINE_ARGS=true
+	g_FAV_ADD=false
 	if [[ -n ${g_URL_ARG} ]];then
 		g_QUERY_KEY="URL"
 		query_${g_QRY_ENGINE} ${g_URL_ARG}
+		g_FAV_ADD=true
 	else
 		g_QUERY_KEY="${@}"
 		query_${g_QRY_ENGINE} ${g_QUERY_KEY}
 	fi
 	if [[ ${?} -eq 0 ]];then
-		[[ -z ${g_URL_ARG} ]] && fav_set ${g_QUERY_KEY}
 		download_select ${g_QUERY_KEY}
 	fi
 fi
