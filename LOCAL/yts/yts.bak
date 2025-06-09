@@ -423,6 +423,9 @@ clean_title () {
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
 
+	STR=$(str_word_clip ${STR} ${_MAX_TITLE})
+	logit ${_YTS_DBG_LOG} "${0}: str_word_clip TITLE:${TITLE}"
+
 	TITLE=${STR}
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
 	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"

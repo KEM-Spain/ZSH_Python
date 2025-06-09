@@ -141,7 +141,7 @@ copy_python_dev_files () {
 
 copy_sys_files () {
 	echo "${GREEN_FG}SYSTEM FILES${RESET}" >&2
-	rsync -a --no-links ${_SRC_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
+	rsync -a --no-links --exclude 'node' ${_SRC_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
 }
 
 copy_user_files () {
@@ -216,6 +216,7 @@ collect_modifed () {
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+tcup 0 0
 
 # Build repo
 echo "${WHITE_FG}Building repo${RESET}..."

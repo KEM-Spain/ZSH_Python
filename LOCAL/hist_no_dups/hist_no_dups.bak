@@ -25,14 +25,15 @@ typeset -A _CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _LOCATE_OPTS=()
+typeset -a _LOW_PRIORITY_CMDS=()
 
 # Constants
-_HIST_DIR=./testing
-_HIST_TMP=./testing
-_CACHE_DIR=./testing/${0:t:r}
-#_HIST_DIR=~
-#_HIST_TMP=/tmp
-#_CACHE_DIR=~/.local/share/${0:t:r}
+#_HIST_DIR=./testing
+#_HIST_TMP=./testing
+#_CACHE_DIR=./testing/${0:t:r}
+_HIST_DIR=~
+_HIST_TMP=/tmp
+_CACHE_DIR=~/.local/share/${0:t:r}
 
 _CACHE_W=${_CACHE_DIR}/.which.cache
 _CACHE_L=${_CACHE_DIR}/.locate.cache
@@ -41,6 +42,45 @@ _HIST_FILE=${_HIST_DIR}/.zsh_history
 _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+
+_LOW_PRIORITY_CMDS=(
+doit
+for
+g
+git
+google
+grep
+peip
+sed
+testit
+while
+)
+
+# Vars
+_PROD=?
+_DEEP=?
+_FREQ=?
+
+got_opt () {
+	local OPT=${1}
+	local -a ARGS=(${@})
+	local A
+
+	for A in ${ARGS};do
+		case ${A} in
+			-${OPT}) echo 0 && return 0;;
+		esac
+	done
+	echo 1 && return 1
+}
+
+in_array () {
+	local ARRAY_NAME=${1}
+	local ELEMENT=${2:gs/ //}
+
+	[[ ${${(P)ARRAY_NAME}[(i)${ELEMENT}]} -le ${#${(P)ARRAY_NAME}} ]] && return 0
+	return 1
+}
 
 arr_is_populated () {
 	local ARRAY=${1}
@@ -119,7 +159,7 @@ cmd_filter () {
 					((LOC++))
 					printf '%s\n' "${K}"
 			else
-				CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}"
+				CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
 				CMD_OUT=$(locate -b -e ${CMD_MSK})
 				if [[ ${?} -eq 0 ]];then
 					if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
@@ -143,6 +183,8 @@ cmd_filter () {
 hist_parse () {
 	local ARRAY=${1}
 	local -A RECENT=()
+	local CMD
+	local CMD_ONLY
 	local L
 	local LINE
 	local TS
@@ -155,7 +197,19 @@ hist_parse () {
 		LINE=$(tr -d '\n' <<<${L})
 		TS=$(cut -d';' -f1 <<<${LINE})
 		TS_NDX=$(cut -d':' -f2 <<<${TS} | trim)
-		CMD=$(cut -d';' -f2- <<<${LINE})
+		if [[ ${_DEEP} == 'true' ]];then
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
+			CMD=${CMD_ONLY}
+		elif [[ ${_FREQ} == 'true' ]];then
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
+			if $(in_array "_LOW_PRIORITY_CMDS" ${CMD_ONLY:gs/ //});then
+				CMD=${CMD_ONLY}
+			fi
+		else
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+		fi
 		RECENT[${CMD}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time key as they are hit
 	done
 
@@ -183,7 +237,9 @@ build_hist () {
 }
 
 # Execution
-[[ ${1} == '-p' ]] && _PROD=true || _PROD=false
+[[ $(got_opt p ${@}) -eq 0 ]] && _PROD=true || _PROD=false
+[[ $(got_opt d ${@}) -eq 0 ]] && _DEEP=true || _DEEP=false
+[[ $(got_opt f ${@}) -eq 0 ]] && _FREQ=true || _FREQ=false
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 for F in ${_HIST_BAK}*;do

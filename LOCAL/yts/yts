@@ -353,6 +353,7 @@ action_do () {
 					fi
 				fi
 				_DOWNLOADS[${M}]=true
+				g_FAV_ADD=true
 				post_process
 				log_add ${M}
 				break # Scan cycle
@@ -1687,7 +1688,6 @@ else # Args passed
 	if [[ -n ${g_URL_ARG} ]];then
 		g_QUERY_KEY="URL"
 		query_${g_QRY_ENGINE} ${g_URL_ARG}
-		g_FAV_ADD=true
 	else
 		g_QUERY_KEY="${@}"
 		query_${g_QRY_ENGINE} ${g_QUERY_KEY}

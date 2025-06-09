@@ -53,6 +53,10 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Display node documentation
+\tTo update node:
+\tsudo npm cache clean -f
+\tsudo npm install -g n
+\tsudo n stable
 EOF
 
 parse_opts () {

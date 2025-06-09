@@ -100,7 +100,6 @@ copy_dev_files () {
 	cp -r ${_SRC_CODE}/LIBS/scratch ${_REPO_LOCAL}
 	cp -r ${_SRC_CODE}/spanish_quiz ${_REPO_LOCAL}
 	cp -r ${_SRC_CODE}/takeout ${_REPO_LOCAL}
-	cp -r ${_SRC_CODE}/manage_db ${_REPO_LOCAL}
 }
 
 copy_etc_files () {
@@ -217,6 +216,7 @@ collect_modifed () {
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+tcup 0 0
 
 # Build repo
 echo "${WHITE_FG}Building repo${RESET}..."
@@ -329,7 +329,7 @@ if arr_is_populated "${_MODIFIED}";then
 		[[ ${M} =~ '.bak' ]] && continue
 		((NDX++))
 		echo "${NDX}) ${M}"
-	done
+	done | mypager
 else
 	echo "No modified files"
 fi

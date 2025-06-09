@@ -348,24 +348,23 @@ str_word_clip () {
 	local LINE=''
 	local B P
 
-	[[ ${LEN} -gt ${#TEXT} ]] && echo ${TEXT} && return
+	[[ ${LEN} -ge ${#TEXT} ]] && LINE=${TEXT} # No length restriction
 
-	for (( P=1; P <= ${#TEXT}; P++ ));do
-		[[ ${TEXT[${P}]} =~ "[[:space:]]" ]] && BREAKS+=${P}
-	done
+	if [[ -z ${LINE} ]];then
+		for (( P=1; P <= ${#TEXT}; P++ ));do # Mark all word boundaries
+			[[ ${TEXT[${P}]} =~ "[[:space:]]" ]] && BREAKS+=${P}
+		done
 
-	LAST_BREAK=1
-	if [[ ${LEN} -ge ${#TEXT} ]];then
-		LINE="${TEXT}"
-	else
+		LINE=${TEXT} # Default is entire line
+		LAST_BREAK=${BREAKS[1]} # First pass has rational length
+
 		for B in ${BREAKS};do
-			[[ ${LEN} -ge ${BREAKS[-1]} ]] && LINE="${TEXT[1,${BREAKS[-1]}]}" && break
-			[[ ${B} -gt ${LEN} ]] && LINE="${TEXT[1,${LAST_BREAK}]}" && break
+			[[ ${B} -gt ${LEN} ]] && LINE="${TEXT[1,${LAST_BREAK}]}" && break # Hit max length
 			LAST_BREAK=${B}
 		done
 	fi
 
-	LINE=$(sed -E -e 's/[[:punct:]]*\s+?$//' -e 's/ *$//' <<<${LINE})
+	LINE=$(sed -E -e 's/[[:punct:]]*\s+?$//' -e 's/ *$//' <<<${LINE}) # Clean the tail of dangling punctuation
 
 	echo ${LINE}
 }

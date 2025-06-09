@@ -1,8 +1,11 @@
 (async function(){
-	const mods = "/home/kmiller/node_modules"
+	const os = require("os")
+	const HOME = os.homedir()
+	const MODS = "/node_modules"
+	const MOD_PATH = HOME+MODS
 	
-	const { Command } = require(mods+'/commander');
-	const app = new Command();
+	const { Command } = require(MOD_PATH+'/commander')
+	const app = new Command()
 
 	app
 		.description('Search YouTube')
@@ -24,7 +27,7 @@
 	console.log("strict:"+strict)
 	*/
 
-	const yts = require(mods+'/yt-search')
+	const yts = require(MOD_PATH+'/yt-search')
 	const r = await yts(searchterm)
 	const videos = r.videos.slice(0,50)
 	

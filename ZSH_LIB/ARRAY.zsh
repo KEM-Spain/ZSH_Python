@@ -83,13 +83,11 @@ arr_long_elem_len () {
 	echo ${LONGEST} # Trimmed/no markup
 }
 
-in_array () {
+arr_in_array () {
 	local ARRAY_NAME=${1}
 	local ELEMENT=${2}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ARRAY_NAME:${ARRAY_NAME}"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ELEMENT:${ELEMENT}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}, ARRAY_NAME:${ARRAY_NAME}, ELEMENT:${ELEMENT}"
 
 	[[ ${${(P)ARRAY_NAME}[(i)${ELEMENT}]} -le ${#${(P)ARRAY_NAME}} ]] && return 0
 	return 1

@@ -1,5 +1,8 @@
 (async function(){
-	const mods = "/home/kmiller/node_modules"
+	const os = require("os");
+	const HOME = os.homedir();
+	console.log(HOME)
+	const mods = HOME.node_modules
 	
 	const { Command } = require(mods+'/commander');
 	const app = new Command();
@@ -8,9 +11,7 @@
 		.description('Search YouTube')
 		.version('1.0')
 		.argument('<searchterm>', 'youtube search term')
-	/*
 		.option('-s, --strict', 'author must match searchterm')
-	*/
 		.option('-a, --age <keyword>', 'all min hour day week mon year', 'all')
 
 	app.parseAsync(process.argv);
@@ -18,10 +19,7 @@
 	const searchterm = app.args[0]
 	const options = app.opts()
 	const age = options['age']
-	/*
 	const strict = options['strict'] ? 1 : false
-	*/
-	const strict = false
 
 	/*
 	console.log("searchterm:"+searchterm)

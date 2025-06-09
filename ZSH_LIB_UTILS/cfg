@@ -193,7 +193,7 @@ _APP_DIRS=("${(f)$(echo ${_APP_DIRS})}") # Break array on newline
 
 ONCE=true
 for D in ${CFGDIRS};do
-	if in_array _APP_DIRS ${D};then
+	if arr_in_array _APP_DIRS ${D};then
 		INAME=''
 	else
 		INAME="-name '*${SEARCHTERM}*'"

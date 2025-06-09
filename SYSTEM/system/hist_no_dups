@@ -20,11 +20,20 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
 # Declarations
 typeset -A _CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _LOCATE_OPTS=()
+typeset -a _LOW_PRIORITY_CMDS=()
 
 # Constants
 #_HIST_DIR=./testing
@@ -42,18 +51,35 @@ _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
-arr_is_populated () {
-	local ARRAY=${1}
-	local L
+_LOW_PRIORITY_CMDS=(
+doit
+for
+g
+git
+google
+grep
+peip
+sed
+testit
+while
+)
 
-	for L in ${(P)ARRAY};do
-		return 0
+# Vars
+_PROD=?
+_DEEP=?
+_FREQ=?
+
+got_opt () {
+	local OPT=${1}
+	local -a ARGS=(${@})
+	local A
+
+	for A in ${ARGS};do
+		case ${A} in
+			-${OPT}) echo 0 && return 0;;
+		esac
 	done
-	return 1
-}
-
-trim () {
-	sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${1}
+	echo 1 && return 1
 }
 
 cmd_filter () {
@@ -143,6 +169,8 @@ cmd_filter () {
 hist_parse () {
 	local ARRAY=${1}
 	local -A RECENT=()
+	local CMD
+	local CMD_ONLY
 	local L
 	local LINE
 	local TS
@@ -154,8 +182,20 @@ hist_parse () {
 
 		LINE=$(tr -d '\n' <<<${L})
 		TS=$(cut -d';' -f1 <<<${LINE})
-		TS_NDX=$(cut -d':' -f2 <<<${TS} | trim)
-		CMD=$(cut -d';' -f2- <<<${LINE})
+		TS_NDX=$(cut -d':' -f2 <<<${TS} | str_trim)
+		if [[ ${_DEEP} == 'true' ]];then
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
+			CMD=${CMD_ONLY}
+		elif [[ ${_FREQ} == 'true' ]];then
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
+			if $(arr_in_array "_LOW_PRIORITY_CMDS" ${CMD_ONLY:gs/ //});then
+				CMD=${CMD_ONLY}
+			fi
+		else
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+		fi
 		RECENT[${CMD}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time key as they are hit
 	done
 
@@ -183,7 +223,9 @@ build_hist () {
 }
 
 # Execution
-[[ ${1} == '-p' ]] && _PROD=true || _PROD=false
+[[ $(got_opt p ${@}) -eq 0 ]] && _PROD=true || _PROD=false
+[[ $(got_opt d ${@}) -eq 0 ]] && _DEEP=true || _DEEP=false
+[[ $(got_opt f ${@}) -eq 0 ]] && _FREQ=true || _FREQ=false
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 for F in ${_HIST_BAK}*;do
@@ -202,7 +244,7 @@ _VALID_HIST=("${(f)$(build_hist _HIST_IN)}")
 
 if ! arr_is_populated "_VALID_HIST";then
 	echo "No valid history found"
-	exit
+	exit_leave
 fi
  
 read ACC <${_CACHE_DIR}/accumulators
@@ -222,3 +264,5 @@ cp ${_HIST_NEW} ${_HIST_FILE}
 fc -R # Refresh history
 
 [[ ${_PROD} == 'true' ]] && printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
+
+exit_leave
