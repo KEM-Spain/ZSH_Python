@@ -49,6 +49,7 @@ _APP_EXE[OFFICE]=/usr/bin/libreoffice
 _APP_EXE[IMAGE]=/usr/local/bin/viewnior
 _APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
 _APP_EXE[HARUNA]=/snap/bin/haruna
+_APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
 
 _APP_TYPE[EBOOK]=GUI
@@ -59,6 +60,7 @@ _APP_TYPE[OFFICE]=GUI
 _APP_TYPE[IMAGE]=GUI
 _APP_TYPE[VLC]=GUI
 _APP_TYPE[HARUNA]=GUI
+_APP_TYPE[MPV]=GUI
 _APP_TYPE[VIM]=TERM
 
 _MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
@@ -136,7 +138,7 @@ get_app () {
 	local APP
 
 	case ${EXT} in
-		avi) APP=${_APP_EXE[HARUNA]};;
+		avi) APP=${_APP_EXE[MPV]};;
 		doc) APP=${_APP_EXE[OFFICE]};;
 		odg) APP=${_APP_EXE[OFFICE]};;
 		epub) APP=${_APP_EXE[EBOOK]};;
@@ -147,11 +149,11 @@ get_app () {
 		log) APP=${_APP_EXE[VIM]};;
 		markdown) APP=${_APP_EXE[MDLESS]};;
 		md) APP=${_APP_EXE[MDLESS]};;
-		mkv) APP=${_APP_EXE[HARUNA]};;
+		mkv) APP=${_APP_EXE[MPV]};;
 		mp3) APP=${_APP_EXE[VLC]};;
-		m4a) APP=${_APP_EXE[HARUNA]};;
-		mp4) APP=${_APP_EXE[HARUNA]};;
-		webm) APP=${_APP_EXE[HARUNA]};;
+		m4a) APP=${_APP_EXE[MPV]};;
+		mp4) APP=${_APP_EXE[MPV]};;
+		webm) APP=${_APP_EXE[MPV]};;
 		mscz) APP=${_APP_EXE[MUSE]};;
 		ods) APP=${_APP_EXE[OFFICE]};;
 		odt) APP=${_APP_EXE[OFFICE]};;

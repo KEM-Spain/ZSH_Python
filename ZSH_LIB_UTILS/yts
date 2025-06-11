@@ -44,7 +44,7 @@ typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _ACRONYMS=()
-typeset -a _LOCAL_LIST=()
+typeset -aU _LOCAL_LIST=()
 
 # Display Constants
 _CONT_COORDS=(X 10 Y 33 H 10 W 86) # Continuous box coords
@@ -83,7 +83,6 @@ _YTS_URL_LOG=/tmp/yts.url.log
 g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
 g_ENGINE_KEY=''
-g_FAV_ADD=false
 g_LAST_CODE_UPD=?
 g_LAST_MASK_Y=0
 g_PID=?
@@ -353,7 +352,6 @@ action_do () {
 					fi
 				fi
 				_DOWNLOADS[${M}]=true
-				g_FAV_ADD=true
 				post_process
 				log_add ${M}
 				break # Scan cycle
@@ -366,11 +364,19 @@ action_do () {
 	done # List complete
 
 	for M in ${_MARKED};do
-		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
+		if [[ ${_DOWNLOADS[${M}]} == 'true' ]];then
+			list_set_selected ${M} ${_STALE_ROW}
+		else
+			list_set_selected ${M} ${_AVAIL_ROW}
+		fi
 	done
 
+	if [[ ${_CMD_LINE_ARGS} == 'true' && ${DL_CNT} -gt 0 ]];then
+		grep -q ${g_QUERY_KEY} ${_YTS_FAVORITES}
+		[[ ${?} -ne 0 ]] && fav_add ${g_QUERY_KEY} # Offer to save query
+	fi
+
 	_MARKED=()
-	
 	trap - INT # Downloads are finished; cancel trap
 	return 0
 }
@@ -579,10 +585,6 @@ download_select () {
 		fi
 	done
 
-	if arr_is_populated "${_DOWNLOADS}";then
-		[[ ${g_FAV_ADD} == 'true' ]] && fav_set ${g_QUERY_KEY}
-	fi
-
 	_DOWNLOADS=()
 	_FAILED=()
 	_FUTURE=()
@@ -621,7 +623,7 @@ fav_delete () {
 			else
 				mv -f /tmp/favlist.new ${_YTS_FAVORITES}
 				logit ${_YTS_DBG_LOG} "${0}: log ${_YTS_FAVORITES} updated"
-				fav_load
+				fav_load_list
 			fi
 		else
 			exit_leave "No favorites have been saved"
@@ -629,7 +631,7 @@ fav_delete () {
 	fi
 }
 
-fav_get () {
+fav_get_selected () {
 	local -a _DISPLAY_LIST=()
 	local DKEY # Display key
 	local EKEY # Engine key
@@ -705,7 +707,7 @@ fav_get () {
 	g_DISPLAY_KEY=${_SEL_VAL}
 }
 
-fav_load () {
+fav_load_list () {
 	local LINE
 	local DKEY
 	local QKEY
@@ -721,7 +723,7 @@ fav_load () {
 	done < ${_YTS_FAVORITES}
 }
 
-fav_set () {
+fav_add () {
 	local FAV=$(str_trim ${1:gs/ /_/})
 	local -aU HISTORY
 	local LINE
@@ -743,7 +745,7 @@ fav_set () {
 		[[ ${g_PREFER_LIVE} == 'true' ]] && FAV="${(C)FAV}|${FAV}|RL" || FAV="${(C)FAV}|${FAV}|R" 
 	else
 		if [[ ${FAV} =~ ' ' ]];then
-			FAV="${(C)FAV}|${FAV}|PYNS" # Contains spaces
+			FAV="${(C)FAV}|${FAV}|PYNS" # In quotes - contains spaces
 		else
 			[[ ${g_STRICT} == 'false' ]] && FAV="${(C)FAV}|${FAV}|YNS" || FAV="${(C)FAV}|${FAV}|Y"
 		fi
@@ -1621,7 +1623,7 @@ set_exit_callback clear_tmp # Clear temp files on exit
 log_update # Update the log
 clear
 
-fav_load ${_FAV_TAB}
+fav_load_list ${_FAV_TAB}
 
 while read LINE;do
 	_ACRONYMS+=${LINE}
@@ -1669,10 +1671,10 @@ if [[ ${g_QRY_ENGINE} == 'youtube' ]];then
 fi
 
 # Run Query
+do_smcup
 if [[ ${#} -eq 0 && -z ${g_URL_ARG} ]];then # NO args passed
 	while true;do
-		do_smcup
-		fav_get
+		fav_get_selected
 		if [[ -n ${g_QUERY_KEY} ]];then
 			msg_box "Querying ${g_QRY_ENGINE} for <B><I>${g_DISPLAY_KEY}<N>..."
 			query_${g_QRY_ENGINE} ${g_QUERY_KEY} # Call the extractor
@@ -1684,7 +1686,6 @@ if [[ ${#} -eq 0 && -z ${g_URL_ARG} ]];then # NO args passed
 	done
 else # Args passed
 	_CMD_LINE_ARGS=true
-	g_FAV_ADD=false
 	if [[ -n ${g_URL_ARG} ]];then
 		g_QUERY_KEY="URL"
 		query_${g_QRY_ENGINE} ${g_URL_ARG}
@@ -1692,7 +1693,7 @@ else # Args passed
 		g_QUERY_KEY="${@}"
 		query_${g_QRY_ENGINE} ${g_QUERY_KEY}
 	fi
-	if [[ ${?} -eq 0 ]];then
+	if [[ ${?} -eq 0 ]];then # Inspect query status
 		download_select ${g_QUERY_KEY}
 	fi
 fi
