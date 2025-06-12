@@ -69,7 +69,7 @@ _FIELD_LEN[title]=80
 _JS_SCRIPT=/usr/local/etc/yts.js
 _MAX_ERRORS=10
 _MAX_FLEN=85
-_MAX_HDR=65
+_MAX_HDR=70
 _MAX_TITLE=75
 _OBJECT=video
 _PAUSE_TM=2
@@ -227,14 +227,22 @@ action_do () {
 			# Scan for 'unable to download'
 			LOG_LINE=$(grep -m1 -i "unable to download video" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
-				EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
-				# TODO: attempt to reinitiate download (job_reset)
-				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
-				_FAILED[${M}]=true
-				_DOWNLOADS[${M}]=false
-				_EXIT_SCRUB=false # Trigger log retention
-				break # Scan cycle
+				if [[ ${ERROR_CNT} -eq 0 ]];then # Attempt recovery
+					((ERROR_CNT++))
+					logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+					EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Retrying...<N>"
+					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+					job_reset
+					job_start ${URL}
+				else
+					logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+					EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
+					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+					_FAILED[${M}]=true
+					_DOWNLOADS[${M}]=false
+					_EXIT_SCRUB=false # Trigger log retention
+					break # Scan cycle
+				fi
 			fi
 
 			# Scan for 'resumed'
@@ -258,7 +266,7 @@ action_do () {
 				DEST_1=$(cut -d'|' -f1 <<<${DEST})
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
-				HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT[1,${_MAX_HDR}]})<N>"
+				HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
@@ -418,6 +426,7 @@ box_center () {
 
 clean_title () {
 	local TITLE=${1}
+	local TITLE_LEN=${2:=${_MAX_TITLE}}
 	local STR=''
 	local -a KEYWORDS=("judge napolitano - " "official" "^the " " show" "have it out with galloway \- " "youtube channel")
 	local -A SEEN=()
@@ -430,7 +439,7 @@ clean_title () {
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
 
-	STR=$(str_word_clip ${STR} ${_MAX_TITLE})
+	STR=$(str_word_clip ${STR} ${TITLE_LEN})
 	logit ${_YTS_DBG_LOG} "${0}: str_word_clip TITLE:${TITLE}"
 
 	TITLE=${STR}
@@ -474,7 +483,7 @@ clean_title () {
 			logit ${_YTS_DBG_LOG} "${0}: Found acronym:${W:u}"
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acromyns
 			SEEN[${W}]=1
-		elif [[ -n ${#UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
+		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
 				logit ${_YTS_DBG_LOG} "${0}: Found uppercase:${W:u}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
@@ -891,11 +900,11 @@ job_kill () {
 	if [[ ${?} -eq 0 ]];then
 		for P in ${PIDS};do
 			kill -9 ${P} >/dev/null 2>&1
-			find ${_DOWNLOAD_DIR} -maxdepth 1 -name '*part' -exec rm -rf {} \;
+			find ${_DOWNLOAD_DIR} -maxdepth 1 \( -name '*part' -or -name '*ytdl' \) -exec rm -rf {} \;
 			logit ${_YTS_DBG_LOG} "${0}: Killed ${P}"
 		done
 	else
-		echo "${0}: No processes found" >> ${g_YTS_LOG}
+		logit ${_YTS_DBG_LOG} "${0}: No processes found"
 	fi
 
 	if [[ ! ${functrace[1]} =~ "job_reset" ]];then # Exit unless called by reset
@@ -909,7 +918,7 @@ job_reset () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	job_kill
-	msg_box -t${_ALERT_TM} -x${_ALERT_COORDS[X]} -y${_ALERT_COORDS[Y]} "<m>Job Restarted<N>"
+	logit ${_YTS_DBG_LOG} "${0}: Killed"
 }
 
 job_start () {
@@ -1184,7 +1193,7 @@ post_process () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
 
-	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /}) # Clean tail, no extension, no underscores
+	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
 	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
 
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
