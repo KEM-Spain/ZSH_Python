@@ -29,6 +29,12 @@ E_CYAN_FG=$(echo "\033[36m")
 E_WHITE_FG=$(echo "\033[37m")
 E_STRIKE=$(echo "\033[9m")
 
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIST.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -a _RAWLIST
 typeset -a _MARKED=()
@@ -49,6 +55,7 @@ _APP_EXE[OFFICE]=/usr/bin/libreoffice
 _APP_EXE[IMAGE]=/usr/local/bin/viewnior
 _APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
 _APP_EXE[HARUNA]=/snap/bin/haruna
+_APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
 
 _APP_TYPE[EBOOK]=GUI
@@ -59,54 +66,47 @@ _APP_TYPE[OFFICE]=GUI
 _APP_TYPE[IMAGE]=GUI
 _APP_TYPE[VLC]=GUI
 _APP_TYPE[HARUNA]=GUI
+_APP_TYPE[MPV]=GUI
 _APP_TYPE[VIM]=TERM
 
-_MD_EXTERNAL="/media/kmiller/KEM_Misc/Music/KEM-B9"
-_MD_LOCAL="/home/kmiller/Documents/Music"
-_MD_MUSE="/home/kmiller/Documents/MuseScore4/Scores"
+_MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MD_LOCAL="${HOME}/Documents/Music"
+_MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
 
-# Imports
-_LIB_DIR=/usr/local/lib
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
+_VIEWED=2
+_UNSUPPORTED=3
 
 # Functions
 action_do () {
 	local -a _MARKED=(${@})
-	local M
-	local APP
+	local -a FLIST=()
 	local APP_EXE_PATH
-	local APP_TYPE
-	local FN
-	local ARGS
 	local CMD
+	local FN
+	local M
 
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	for M in ${_MARKED};do
 		FN=${(k)_FILE_NDX[(r)${M}]}
 		APP_EXE_PATH=${_FILE_APP[${FN}]}
-		CMD="${APP_EXE_PATH} ${FN:q}"
-
-		if [[ ${_DEBUG} -gt 0 ]];then
-			dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-			dbg "FN:${FN}"
-			dbg "APP_EXE_PATH:${APP_EXE_PATH}"
-			dbg "CMD:${CMD}"
-		fi
-
-		msg_box -t3 "Starting ${CMD}..."
-		eval "${CMD} 2>${_APP_LOG}" &
-
-		if [[ ${_DEBUG} -gt 0 ]];then
-			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
-		fi
+		FLIST+=${FN}
 	done
+
+	[[ ${_DEBUG} -gt 0 ]] && dbg "CMD:${CMD}"
+
+	#eval "${CMD} 2>${_APP_LOG} &"
+	eval ${APP_EXE_PATH} "${FLIST}"
+	RC=${?}
+
+	if [[ ${RC} -gt 0 ]];then
+		[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
+	fi
 
 	for M in ${_MARKED};do
 		[[ ${M} -eq 0 ]] && continue
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_GHOST_ROW}
+		list_set_selected ${M} ${_STALE_ROW}
 	done
 }
 
@@ -136,7 +136,7 @@ get_app () {
 	local APP
 
 	case ${EXT} in
-		avi) APP=${_APP_EXE[HARUNA]};;
+		avi) APP=${_APP_EXE[MPV]};;
 		doc) APP=${_APP_EXE[OFFICE]};;
 		odg) APP=${_APP_EXE[OFFICE]};;
 		epub) APP=${_APP_EXE[EBOOK]};;
@@ -147,11 +147,11 @@ get_app () {
 		log) APP=${_APP_EXE[VIM]};;
 		markdown) APP=${_APP_EXE[MDLESS]};;
 		md) APP=${_APP_EXE[MDLESS]};;
-		mkv) APP=${_APP_EXE[HARUNA]};;
+		mkv) APP=${_APP_EXE[MPV]};;
 		mp3) APP=${_APP_EXE[VLC]};;
-		m4a) APP=${_APP_EXE[HARUNA]};;
-		mp4) APP=${_APP_EXE[HARUNA]};;
-		webm) APP=${_APP_EXE[HARUNA]};;
+		m4a) APP=${_APP_EXE[MPV]};;
+		mp4) APP=${_APP_EXE[MPV]};;
+		webm) APP=${_APP_EXE[MPV]};;
 		mscz) APP=${_APP_EXE[MUSE]};;
 		ods) APP=${_APP_EXE[OFFICE]};;
 		odt) APP=${_APP_EXE[OFFICE]};;
@@ -177,8 +177,8 @@ item_decorate () {
 	local NDX=$1
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		2) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
-		3) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
+		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
 		*)	tput el;echo -n ${_LOCAL_LIST[${NDX}]};;
 	esac
 }
@@ -188,7 +188,7 @@ mark_unsupported () {
 	local SUPPORTED
 
 	SUPPORTED=$(get_app ${_LOCAL_LIST[${NDX}]})
-	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=3
+	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
 }
 
 same_extension () {
@@ -277,8 +277,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDam"
@@ -386,13 +385,14 @@ list_add_header_break
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${GREEN_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+printf "${BOLD}${GREEN_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 '
 
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select file(s) then <${GREEN_FG}ENTER${RESET}> to open ${ITALIC}or exit if none selected${RESET}"
+list_set_select_action "open"
 list_set_action_msgs open file
-list_set_clear_ghosts true
+list_set_reuse_stale true
 list_set_client_warn true
+list_set_searchable true
 
 while true;do
 	# Get selection
