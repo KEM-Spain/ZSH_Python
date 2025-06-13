@@ -42,7 +42,6 @@ typeset -a _LOCAL_LIST=()
 typeset -A _FILE_APP
 typeset -A _FILE_NDX
 typeset -A _APP_EXE
-typeset -A _APP_TYPE
 
 # Constants
 _APP_LOG=/tmp/${_SCRIPT}.log
@@ -58,17 +57,6 @@ _APP_EXE[HARUNA]=/snap/bin/haruna
 _APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
 
-_APP_TYPE[EBOOK]=GUI
-_APP_TYPE[OKULAR]=GUI
-_APP_TYPE[MDLESS]=TERM
-_APP_TYPE[MUSE]=GUI
-_APP_TYPE[OFFICE]=GUI
-_APP_TYPE[IMAGE]=GUI
-_APP_TYPE[VLC]=GUI
-_APP_TYPE[HARUNA]=GUI
-_APP_TYPE[MPV]=GUI
-_APP_TYPE[VIM]=TERM
-
 _MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
 _MD_LOCAL="${HOME}/Documents/Music"
 _MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
@@ -79,29 +67,44 @@ _UNSUPPORTED=3
 # Functions
 action_do () {
 	local -a _MARKED=(${@})
+	local -A RUN_LIST=()
+	local -A FILE_APP=()
 	local -a FLIST=()
 	local APP_EXE_PATH
 	local CMD
 	local FN
-	local M
+	local M K
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	for M in ${_MARKED};do
 		FN=${(k)_FILE_NDX[(r)${M}]}
 		APP_EXE_PATH=${_FILE_APP[${FN}]}
-		FLIST+=${FN}
+		FILE_APP[${FN}]=${APP_EXE_PATH}
 	done
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "CMD:${CMD}"
 
-	#eval "${CMD} 2>${_APP_LOG} &"
-	eval ${APP_EXE_PATH} "${FLIST}"
-	RC=${?}
+	local LAST_APP=?
+	local IN_APP=false
+	for K in ${(k)FILE_APP};do # Allow each app to have a unique filelist
+		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
+			LAST_APP=${FILE_APP[${K}]}
+			FLIST=()
+			FLIST+=${K:q}
+		else
+			FLIST+=${K:q}
+		fi
+		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
+	done
 
-	if [[ ${RC} -gt 0 ]];then
-		[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
-	fi
+	for K in ${(k)RUN_LIST};do
+		eval "${K} ${RUN_LIST[${K}]} 2>${_APP_LOG}"
+		RC=${?}
+		if [[ ${RC} -ne 0 ]];then
+			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
+		fi
+	done
 
 	for M in ${_MARKED};do
 		[[ ${M} -eq 0 ]] && continue
@@ -167,7 +170,7 @@ get_app () {
 	esac
 	
 	if [[ ${APP} == '?' ]];then
-		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${VIM}
+		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${_APP_EXE[VIM]} # Editable unknown extensions 
 	fi
 
 	echo ${APP}
@@ -273,26 +276,23 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} show unsupported files"
-	echo -e "${WHITE_FG}-m${RESET} process music files"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDam"
+OPTSTR=":HDa"
 OPTIND=0
 
 FILTER_UNSUPPORTED=true
 FILTER="Supported Only"
-MUSIC_DIRS=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      a) FILTER_UNSUPPORTED=false;FILTER="All Files";;
-     m) MUSIC_DIRS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -333,16 +333,21 @@ else
 fi
 
 if [[ -z ${_RAWLIST} ]];then
-	_RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f ! -path ${PWD}")}")
+	CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
+	_RAWLIST=("${(f)$(eval ${CMD})}")
 fi
 
 NDX=0
 for F in ${_RAWLIST};do
 	((NDX++))
 	FN=$(realpath ${F}) # Add full path
-	[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "realpath error: ${FN}")
 	_RAWLIST[${NDX}]=${FN}
 done
+
+MUSIC_DIRS=false
+[[ -e ${_MD_EXTERNAL} ]] && MUSIC_DIRS=true
+[[ -e ${_MD_LOCAL} ]] && MUSIC_DIRS=true
+[[ -e ${_MD_MUSE} ]] && MUSIC_DIRS=true
 
 NDX=0
 for F in ${(o)_RAWLIST};do

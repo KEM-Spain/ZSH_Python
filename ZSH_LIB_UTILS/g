@@ -70,7 +70,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type s)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-B${RESET} allow scanning of .bak files"
+	echo -e "${WHITE_FG}-B${RESET} allow scanning of .bak files (default: skip)"
 	echo -e "${WHITE_FG}-A${RESET} no ansi color"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-L${RESET} list files on one line"
@@ -80,7 +80,7 @@ usage () {
 	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} max matches to process (default: all)"
 	echo -e "${WHITE_FG}-n${RESET} line numbers"
 	echo -e "${WHITE_FG}-o${RESET} only matched"
-	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} alternate path (default is PWD)"
+	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} alternate path (default: PWD)"
 	echo -e "${WHITE_FG}-r${RESET} recurse"
 	echo -e "${WHITE_FG}-v${RESET} inverted search"
 	echo -e "${WHITE_FG}-w${RESET} whole word match"
@@ -225,8 +225,8 @@ else
 	if [[ ${FILELIST} == 'false' ]];then
 		tput cup 1 0; echo ${CMD} | tr -s '[:space:]'
 		[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
-		[[ -n ${CASE_SENSE} ]] && CASE_MSG=" (case insensitive)" || CASE_MSG=" (case sensitive)"
-		echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CASE_MSG}${RESET}, Result: ${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
+		[[ -n ${CASE_SENSE} ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
+		echo "Path:${CYAN_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${CYAN_FG}${#RAWLIST}${RESET} lines\n\n"
 		if [[ -n ${LINENUM_OPT} ]];then
 			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
 			REM=$(( (_COL_MAX - LONGEST_FN) - 8))

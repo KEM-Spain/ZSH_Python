@@ -53,6 +53,7 @@ _APP_EXE[MUSE]="/usr/local/bin/system/launchers/run_musescore"
 _APP_EXE[OFFICE]=/usr/bin/libreoffice
 _APP_EXE[IMAGE]=/usr/local/bin/viewnior
 _APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
+_APP_EXE[CLEM]="/usr/bin/clementine"
 _APP_EXE[HARUNA]=/snap/bin/haruna
 _APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
@@ -80,7 +81,6 @@ action_do () {
 	for M in ${_MARKED};do
 		FN=${(k)_FILE_NDX[(r)${M}]}
 		APP_EXE_PATH=${_FILE_APP[${FN}]}
-		[[ -z ${APP_EXE_PATH} ]] && msg_box -p -PK -H1 "Missing File Association|File:${FN} has no associated application|Skipping..."
 		FILE_APP[${FN}]=${APP_EXE_PATH}
 	done
 
@@ -88,7 +88,7 @@ action_do () {
 
 	local LAST_APP=?
 	local IN_APP=false
-	for K in ${(k)FILE_APP};do
+	for K in ${(k)FILE_APP};do # Allow each app to have a unique filelist
 		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
 			LAST_APP=${FILE_APP[${K}]}
 			FLIST=()
@@ -96,11 +96,11 @@ action_do () {
 		else
 			FLIST+=${K:q}
 		fi
-		RUN_LIST[${LAST_APP}]=${FLIST}
+		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
 	done
 
 	for K in ${(k)RUN_LIST};do
-		eval "${K} ${RUN_LIST[${K}]}"
+		eval "${K} ${RUN_LIST[${K}]} 2>${_APP_LOG}"
 		RC=${?}
 		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
@@ -152,7 +152,7 @@ get_app () {
 		markdown) APP=${_APP_EXE[MDLESS]};;
 		md) APP=${_APP_EXE[MDLESS]};;
 		mkv) APP=${_APP_EXE[MPV]};;
-		mp3) APP=${_APP_EXE[VLC]};;
+		mp3) APP=${_APP_EXE[CLEM]};;
 		m4a) APP=${_APP_EXE[MPV]};;
 		mp4) APP=${_APP_EXE[MPV]};;
 		webm) APP=${_APP_EXE[MPV]};;
@@ -277,26 +277,23 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} show unsupported files"
-	echo -e "${WHITE_FG}-m${RESET} process music files"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDam"
+OPTSTR=":HDa"
 OPTIND=0
 
 FILTER_UNSUPPORTED=true
 FILTER="Supported Only"
-MUSIC_DIRS=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      a) FILTER_UNSUPPORTED=false;FILTER="All Files";;
-     m) MUSIC_DIRS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -337,16 +334,21 @@ else
 fi
 
 if [[ -z ${_RAWLIST} ]];then
-	_RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f ! -path ${PWD}")}")
+	CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
+	_RAWLIST=("${(f)$(eval ${CMD})}")
 fi
 
 NDX=0
 for F in ${_RAWLIST};do
 	((NDX++))
 	FN=$(realpath ${F}) # Add full path
-	[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "realpath error: ${FN}")
 	_RAWLIST[${NDX}]=${FN}
 done
+
+MUSIC_DIRS=false
+[[ -e ${_MD_EXTERNAL} ]] && MUSIC_DIRS=true
+[[ -e ${_MD_LOCAL} ]] && MUSIC_DIRS=true
+[[ -e ${_MD_MUSE} ]] && MUSIC_DIRS=true
 
 NDX=0
 for F in ${(o)_RAWLIST};do
