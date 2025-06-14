@@ -84,7 +84,7 @@ g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
 g_ENGINE_KEY=''
 g_LAST_CODE_UPD=?
-g_LAST_MASK_Y=0
+g_LAST_MASK=1
 g_PID=?
 g_PREFER_LIVE=''
 g_PROXY_CMD=''
@@ -509,21 +509,21 @@ clear_tmp () {
 
 download_indicator () {
 	local LINE=${@}
-	local MASK="\\u2B24"
-	local L_A="🡄 "
-	local R_A="🡆"
+	local MASK=""
+	local BALL="\\u2B24"
+	local L_A="\\u2770${BALL}  \\u2771"
+	local R_A="\\u2770  ${BALL}\\u2771"
 	local LINE_COLOR=''
-	local X=$((_ALERT_COORDS[X]-3))
-	local MASK_Y=5
+	local X=$((_ALERT_COORDS[X]))
+	local MASK_Y=8
 	local DELAY=1
 
-	X=$((X+3))
-	if [[ ${g_LAST_MASK_Y} -eq 2 ]];then
-		MASK_Y=6
+	if [[ ${g_LAST_MASK} -eq 1 ]];then
 		MASK=${R_A}
+		g_LAST_MASK=2
 	else
-		MASK_Y=2
 		MASK=${L_A}
+		g_LAST_MASK=1
 	fi
 
 	case ${ETA:l} in
@@ -531,10 +531,7 @@ download_indicator () {
 		*kib*) LINE_COLOR="${BOLD}${YELLOW_FG}";;
 	esac
 
- 	tcup ${X} $((_ALERT_COORDS[Y] + g_LAST_MASK_Y + 6));echo -n "${LINE_COLOR} ${RESET}"
- 	tcup ${X} $((_ALERT_COORDS[Y] + MASK_Y + 6));echo -n "${LINE_COLOR}${MASK}${RESET}";sleep ${DELAY}
-
-	g_LAST_MASK_Y=${MASK_Y}
+ 	tcup ${X} $((_ALERT_COORDS[Y] + MASK_Y));echo -n "${LINE_COLOR}${MASK}${RESET}";sleep ${DELAY}
 }
 
 download_select () {

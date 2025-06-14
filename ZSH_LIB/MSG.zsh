@@ -293,7 +293,7 @@ msg_box () {
 		[[ ${WIDTH_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${WIDTH_ARG}
 		[[ ${HEIGHT_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} +2 )) || BOX_HEIGHT=${HEIGHT_ARG}
 		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$((  (_MAX_ROWS-BOX_HEIGHT) / 2 + 1 )) || MSG_X_COORD=${MSG_X_COORD_ARG}
-		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(( _MAX_COLS / 2 - MSG_COLS / 2 )) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
+		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(coord_center $(( _MAX_COLS - 3 )) BOX_WIDTH) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
 	fi
 
 	# Box coords - compensate for frame
@@ -898,7 +898,7 @@ msg_paging_page () {
 msg_proc () {
 	local BOX_W=20
 	local BOX_H=3
-	local H_POS=$(coord_center $(( _MAX_COLS-3 )) 20) # Horiz center
+	local H_POS=$(coord_center $(( _MAX_COLS - 3 )) BOX_W) # Horiz center
 	local V_POS=$(( _MAX_ROWS/2 - BOX_H ))
 	local X R C
 
