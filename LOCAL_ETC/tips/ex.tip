@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_ex_EOF
 
@@ -67,3 +68,4 @@ ${E_WHITE_FG}ex${E_RESET} ${E_WHITE_FG}-V1${E_RESET} ${PAGE} <<-EOF
   /<div.*id="global_header"/norm nvatd
   wq " Update changes and quit.
 tip_ex_EOF
+) | mypager

@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_perl_EOF_1
 
@@ -855,3 +856,4 @@ SYNOPSIS
          The directory, if specified, must appear immediately following the
          -x with no intervening whitespace.
 tip_perl_EOF_2
+) | mypager

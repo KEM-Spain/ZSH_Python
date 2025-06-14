@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_dpkg_EOF
 
@@ -55,3 +56,4 @@ ${E_WHITE_FG}Do${E_RESET}:
 sudo dpkg -i --force-overwrite (SOMEFILE).deb
 Then: sudo apt --fix-broken install
 tip_dpkg_EOF
+) | mypager

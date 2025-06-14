@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_rsync_EOF
 
@@ -62,3 +63,4 @@ rsync SRC DEST
 
 rsync SRC DEST/
 tip_rsync_EOF
+) | mypager

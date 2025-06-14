@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_vim_map_EOF
 
@@ -1964,3 +1965,4 @@ you can use, split in different category (like “Variables” or “Date and Ti
 
 
 tip_vim_map_EOF
+) | mypager

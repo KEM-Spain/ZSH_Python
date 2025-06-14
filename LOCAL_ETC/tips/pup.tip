@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_pup_EOF
 
@@ -1044,3 +1045,4 @@ hxunxmlns    -  replace "global names" by XML Namespace prefixes
 hxwls        -  list links in an HTML file 
 hxxmlns      -  replace XML Namespace prefixes by "global names"
 tip_pup_EOF
+) | mypager
