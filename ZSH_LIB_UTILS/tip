@@ -160,7 +160,7 @@ usage () {
 	echo -e "${WHITE_FG}-I ${RESET} enable keyword case sensitivity (default:case insensitive)"
 	echo -e "${WHITE_FG}-W ${RESET} disable keyword word matches (default:whole words only)"
 	echo -e "${WHITE_FG}-k $(opt_type k)${RESET} search for keyword (do not combine options)"
-	echo -e "${WHITE_FG}-s ${RESET} show availablel tip categories"
+	echo -e "${WHITE_FG}-l ${RESET} list available tips"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 	) >&2
 
@@ -168,7 +168,7 @@ usage () {
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDIWdk:s"
+OPTSTR=":HDIWdk:l"
 OPTIND=0
 
 KEYWORD=''
@@ -185,7 +185,7 @@ while getopts ${OPTSTR} OPTION;do
      W) WHOLE_WORD='';;
      d) KEYWORD_DETAIL='-d';;
      k) KEYWORD=${OPTARG};;
-     s) SHOW_TIPS=true;;
+     l) SHOW_TIPS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac

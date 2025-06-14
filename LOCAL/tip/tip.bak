@@ -223,7 +223,7 @@ else
 	while true;do
 		clear # wipe menu
 		sel_set_list $(for T in ${(o)_TIPS};do echo ${T:t:r};done)
-		sel_list -O ${CYAN_FG} -F"<w>Select Tip or <h>(q)uit<N>" -H"Collected Tips"
+		sel_list -S -O ${CYAN_FG} -F"<w>Select Tip or <h>(q)uit<N>" -H"Collected Tips"
 		clear # wipe menu
 		source ${_TIP_DIR}/${_SEL_VAL}.tip
 	done
