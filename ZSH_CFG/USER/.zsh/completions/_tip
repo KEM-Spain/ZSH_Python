@@ -3,10 +3,10 @@
 _arguments \
 '-H[help]' \
 '-D[debug (repeats increase level)]' \
-'-I[case sensitive keyword search]' \
-'-d[show keyword search line detail]' \
-'-k[search for keyword in tips]' \
-'-w[enforce word boundary keyword search]' \
+'-I[enable keyword case sensitivity (default:case insensitive)]' \
+'-W[disable keyword word matches (default:whole words only)]' \
+'-k[search for keyword (do not combine options)]' \
+'-l[list available tips]' \
 
 _values \
 'Tips:' \
