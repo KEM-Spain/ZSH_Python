@@ -339,14 +339,14 @@ echo -n "\nCommit repo? (y/n):"
 read -q RESPONSE
 echo
 if [[ ${RESPONSE} == 'y' ]];then
+	(
 	pushd ${_REPO}
 	sudo chown -R kmiller:kmiller *
 	sudo chown -R kmiller:kmiller .*
 	do_commit
 	popd
 	touch ${_TSTAMP}
-	echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
-	read -q RESPONSE
+	) | mypager wait
 fi
 
 exit_leave
