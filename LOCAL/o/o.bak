@@ -53,6 +53,7 @@ _APP_EXE[MUSE]="/usr/local/bin/system/launchers/run_musescore"
 _APP_EXE[OFFICE]=/usr/bin/libreoffice
 _APP_EXE[IMAGE]=/usr/local/bin/viewnior
 _APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
+_APP_EXE[CLEM]="/usr/bin/clementine"
 _APP_EXE[HARUNA]=/snap/bin/haruna
 _APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
@@ -151,7 +152,7 @@ get_app () {
 		markdown) APP=${_APP_EXE[MDLESS]};;
 		md) APP=${_APP_EXE[MDLESS]};;
 		mkv) APP=${_APP_EXE[MPV]};;
-		mp3) APP=${_APP_EXE[VLC]};;
+		mp3) APP=${_APP_EXE[CLEM]};;
 		m4a) APP=${_APP_EXE[MPV]};;
 		mp4) APP=${_APP_EXE[MPV]};;
 		webm) APP=${_APP_EXE[MPV]};;
@@ -182,7 +183,7 @@ item_decorate () {
 	case ${_LIST_SELECTED[${NDX}]} in
 		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
 		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
-		*)	tput el;echo -n ${_LOCAL_LIST[${NDX}]};;
+		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
 	esac
 }
 

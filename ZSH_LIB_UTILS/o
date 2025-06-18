@@ -179,11 +179,12 @@ get_app () {
 
 item_decorate () {
 	local NDX=$1
+	local FN=$(pathabv ${_LOCAL_LIST[${NDX}]})
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
-		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
-		*)	tput el;echo -n ${_LOCAL_LIST[${NDX}]};;
+		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
+		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
 	esac
 }
 
