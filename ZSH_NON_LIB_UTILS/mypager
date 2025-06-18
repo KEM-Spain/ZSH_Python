@@ -54,6 +54,10 @@ page () {
 	my $LINES;
 	my $TERM_LINES = `tput lines`;
 	my $WAIT = $ARGV[0] if (defined($ARGV[0]));
+	my $white="\033[0;37m";
+	my $white_on_grey="\\033[0m\033[0;1;37;100m";
+	my $reset="\033[m";
+
 	 
 	for ($LINES=0; $LINES<$TERM_LINES; $LINES++) { 
 		if (defined($LINE=<STDIN>)) { 
@@ -62,7 +66,10 @@ page () {
 			print $BUFFER;
 			print "\n";
 			if (defined $WAIT) { # If WAIT is populated end with msg
-				print "\e[0m\\e[0;1;37;100mPress any key\e[m...";
+				print "$white_on_grey";
+				print "Press any key";
+				print "$reset";
+				print "...";
 			}
 			exit 1;
 		} 
