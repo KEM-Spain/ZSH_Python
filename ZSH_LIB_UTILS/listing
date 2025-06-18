@@ -444,8 +444,12 @@ fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} 2>/dev/null${RESET}"
 eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS}" 2>/dev/null
-CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | wc -l")
-echo "${CNT} lines"
+if [[ ${0} =~ 'll' ]];then
+	CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | grep -P '(^\d{7}|^.{10}\s)' | wc -l") 
+else
+	CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | wc -l")
+fi
+echo "${CNT} items"
 [[ ${?} -ne 0 ]] && echo "No${MATCHED}$(not_found)found"
 [[ -n ${H_MARK} ]] && echo ${H_MARK}
 
