@@ -55,7 +55,7 @@ page () {
 	my $TERM_LINES = `tput lines`;
 	my $WAIT = $ARGV[0] if (defined($ARGV[0]));
 	my $white="\033[0;37m";
-	my $white_on_grey="\\033[0m\033[0;1;37;100m";
+	my $white_on_grey="\033[0m\033[0;1;37;100m";
 	my $reset="\033[m";
 
 	 
