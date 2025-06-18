@@ -365,19 +365,20 @@ msg_box () {
 			_CONT_DATA[SCR]=${_CONT_DATA[TOP]}
 			for M in ${_CONT_BUFFER};do
 				tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
-				tput ech ${_CONT_DATA[COLS]} # Clear line
-				echo -n "${M}" # Output buffer
+				echo -n ${M} # Output buffer
 				(( _CONT_DATA[SCR]++))
 				(( _CONT_DATA[OUT]++))
 			done
 		fi
 		
 		box_coords_upd ${_CONT_BOX_TAG} S ${TEXT_STYLE}
-		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]}) # Apply padding to both sides of msg
+		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]}) # Apply markup, padding 
+		MSG_OUT=$(str_trim ${MSG_OUT})
 
 		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
-		tput ech ${_CONT_DATA[COLS]} # Clear line
+		[[ -n ${_CONT_DATA[MSG_LEN]} ]] && tput ech ${_CONT_DATA[MSG_LEN]} # Clear last line
 		echo -n "${MSG_OUT}" # Output line
+		_CONT_DATA[MSG_LEN]=$(str_strip_ansi -l <<<${MSG_OUT})
 
 		[[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]] && _CONT_BUFFER+=${MSG_OUT}
 		(( _CONT_DATA[SCR]++))

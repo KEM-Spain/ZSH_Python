@@ -337,7 +337,7 @@ action_do () {
 				ERROR_CNT=0 
 				download_indicator ${ETA}
 				case ${ETA:l} in
-					*100*%*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;;; # Stop parsing ETA
+					*100*%*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;; # Stop parsing ETA
 					*mib/s*) LINE_COLOR='<w>';;
 					*kib/s*) LINE_COLOR='<B><y>';;
 					*) continue;; # Skip other
