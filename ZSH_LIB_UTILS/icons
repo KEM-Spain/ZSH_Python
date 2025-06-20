@@ -103,6 +103,7 @@ usage () {
 	echo -e "${WHITE_FG}-d${RESET} select icon directory from list"
 	echo -e "${WHITE_FG}-p print icon paths"
 	echo -e "${WHITE_FG}-s${RESET} select icon size from list"
+	echo -e "${WHITE_FG}-w${RESET} limit searches to whole words only"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
@@ -110,12 +111,13 @@ usage () {
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDl:dps"
+OPTSTR=":HDl:dpsw"
 OPTIND=0
 
 GET_DIR=false
 GET_SIZE=false
 PRINT_PATHS=false
+WHOLE_WORDS=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -129,6 +131,7 @@ while getopts ${OPTSTR} OPTION;do
         fi;;
      p) PRINT_PATHS=true;;
      s) GET_SIZE=true;;
+     w) WHOLE_WORDS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -141,6 +144,7 @@ shift $((OPTIND -1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1}
+[[ ${WHOLE_WORDS} == 'true' ]] && GREP_OPTS="-w -i -q" || GREP_OPTS="-i -q"
 
 if [[ ${GET_DIR} == 'true' ]];then
 	g_ICON_DIR=''
@@ -155,12 +159,19 @@ if [[ ${GET_DIR} == 'true' ]];then
 fi
 
 # Build file list of icons
+[[ ${WHOLE_WORDS} == 'true' ]] && MSG="Whole word matches only" || MSG="Any matching portion"
 if [[ -n ${g_ICON_DIR} ]];then
 	tput cup 0 0; printf "Processing directory ${WHITE_FG}%s${RESET}" ${g_ICON_DIR}
+	LIST=("${(f)$(find -P ${g_ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" 2>/dev/null)}")
 	if [[ -n ${SEARCHTERM} ]];then
-		_FLIST=("${(f)$(find -P ${g_ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" | grep -i ${SEARCHTERM} 2>/dev/null)}")
-	else
-		_FLIST=("${(f)$(find -P ${g_ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" 2>/dev/null)}")
+		msg_box -c -H1 "${MSG}|Searching ${#LIST} files in ${g_ICON_DIR} for \"<w>${SEARCHTERM}<N>\"..."
+		for L in ${LIST};do
+			if ! eval "grep ${GREP_OPTS} ${SEARCHTERM} <<<${L:t}";then
+				continue
+			else
+				_FLIST+=${L}
+			fi
+		done
 	fi
 else
 	NDX=0
@@ -169,10 +180,16 @@ else
 		[[ ${D} =~ ".*MAC.*" ]] && continue
 		[[ ${D:l} =~ ".*qt.*" ]] && continue
 
+		LIST=("${(f)$(find -P ${D} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}")}")
 		if [[ -n ${SEARCHTERM} ]];then
-			_SUB_LIST=("${(f)$(find -P ${D} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" | grep -i ${SEARCHTERM} 2>/dev/null)}")
-		else
-			_SUB_LIST=("${(f)$(find -P ${D} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}")}")
+			msg_box -c -H1 "${MSG}|Searching ${#LIST} files in ${D} for \"<w>${SEARCHTERM}<N>\"..."
+			for L in ${LIST};do
+				if ! eval "grep ${GREP_OPTS} ${SEARCHTERM} <<<${L:t}";then
+					continue
+				else
+					_SUB_LIST+=${L}
+				fi
+			done
 		fi
 
 		tput cup 0 0; printf "\rProcessing directory ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} directories ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_ICO_DIRS} $(( NDX * 100. / ${#_ICO_DIRS} )) 
@@ -181,6 +198,7 @@ else
 			_SUB_LIST=()
 		fi
 	done
+	msg_box_clear
 fi
 
 # Possible early exit
@@ -295,19 +313,23 @@ else
 	wmctrl -a geeqie
 fi
 
+LAST_FN=?
+cursor_off
 while true;do
-	tcup 0 0;tput el
-	respond "Show current (selected) icon path"
-	if [[ ${?} -eq 0 ]];then
-		FN=$(readlink $(geeqie --tell))
-		tcup 1 0; tput el 
-		echo ${FN}
-	else
-		PID=$(pgrep geeqie)
-		[[ -n ${PID} ]] && kill -9 ${PID}
+	if ! pgrep geeqie >/dev/null;then
+		cursor_on
 		exit_leave
+	fi
+	FN=$(readlink $(geeqie --tell))
+	if [[ ${FN} != ${LAST_FN} ]];then
+		tcup 0 0;tput el
+		echo ${FN}
+		LAST_FN=${FN}
+	else
+		sleep 1
 	fi
 done
 
 /bin/rm -rf ${_ICO_STASH}
+# TODO: delete icon_stash upon exit
 exit_leave

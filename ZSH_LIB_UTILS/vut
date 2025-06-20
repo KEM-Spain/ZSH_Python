@@ -449,7 +449,7 @@ ___EOF
 		[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "file:${F} is not of type video")
 	done
 
-	DESTINATION_FILE=${_OUT_FILE}.${1:e}
+	[[ -z ${DESTINATION_FILE} ]] && DESTINATION_FILE=${_OUT_FILE}.${FILES_TO_MERGE[1]:e} || DESTINATION_FILE=${_OUT_FILE}
 
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
 	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
@@ -533,7 +533,7 @@ ___EOF
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
-		echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
+		echo -e "\n${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
@@ -691,7 +691,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -sa -O ${CYAN_FG} -C "<w>Show Video Utilities usage or <h>(q)uit<N>"
+	sel_list -sa -O ${GREEN_FG} -C -F"<w>Show Video Utilities usage or <h>(q)uit<N>" -H"Video Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

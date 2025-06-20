@@ -28,12 +28,19 @@ usage () {
 	exit
 }
 
+toggle () {
+	gnome-extensions disable ubuntu-dock@ubuntu.com
+	gnome-extensions enable ubuntu-dock@ubuntu.com
+}
+
 # Execution
 [[ ${1} == "-H" ]] && usage
+
+DEFAULT=toggle
 
 case ${1} in
 	on) gnome-extensions enable ubuntu-dock@ubuntu.com;;
 	off) gnome-extensions disable ubuntu-dock@ubuntu.com;;
 	toggle) gnome-extensions disable ubuntu-dock@ubuntu.com;gnome-extensions enable ubuntu-dock@ubuntu.com;;
-	*) usage;;
+	*) $(${DEFAULT});;
 esac

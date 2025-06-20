@@ -1356,7 +1356,7 @@ mkinitscript () {
 	function usage {
 		(
 		echo
-		echo "${WHITE_FG}\nUsage${RESET}: ${_WRAPPER} ${_SCRIPT} [${WHITE_FG}-H${RESET} for this help screen]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [${WHITE_FG}-H${RESET} for this help screen]\n"
 		echo -e "\n${WHITE_FG}Required switches${RESET}:"
 		echo "[${WHITE_FG}-n${RESET} init script name] [${WHITE_FG}-f${RESET} controlled program's fully qualified name]"
 		echo -e "\n${WHITE_FG}Optional switches${RESET}:"
@@ -2292,7 +2292,7 @@ ___EOF
 
 		tabs 5
 		(
-		echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [<SEARCHTERM>]"
+		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [<SEARCHTERM>]"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 		echo -e "${WHITE_FG}-a${RESET} show only mimetypes with default apps assigned"

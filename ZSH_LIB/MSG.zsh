@@ -378,9 +378,12 @@ msg_box () {
 		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
 		[[ -n ${_CONT_DATA[MSG_LEN]} ]] && tput ech ${_CONT_DATA[MSG_LEN]} # Clear last line
 		echo -n "${MSG_OUT}" # Output line
-		_CONT_DATA[MSG_LEN]=$(str_strip_ansi -l <<<${MSG_OUT})
 
-		[[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]] && _CONT_BUFFER+=${MSG_OUT}
+		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # Add line to buffer
+			_CONT_BUFFER+=${MSG_OUT}
+			_CONT_DATA[MSG_LEN]=$(str_strip_ansi -l <<<${MSG_OUT})
+		fi
+
 		(( _CONT_DATA[SCR]++))
 		(( _CONT_DATA[OUT]++))
 	else
