@@ -54,8 +54,9 @@ info () {
 	# Declarations
 	local -A FLIST=()
 	local -a LIST
+	local BAR=''
+	local BARLINE=0
 	local HIT
-	local K L
 	local TIT=''
 	local DUR=''
 	local VID=''
@@ -63,6 +64,8 @@ info () {
 	local AUD=''
 	local SUB=''
 	local LONGEST=0
+	local NDX=0
+	local K L
 
 	# Constants
 	local _VID_REGEX_Z='.*\.(mp4|avi|mkv)$'
@@ -200,14 +203,18 @@ ___EOF
 	tcup 0 0
 	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"
 	printf "${MAGENTA_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} $(str_unicode_line ${LONGEST}) $(str_unicode_line 11) $(str_unicode_line 5) $(str_unicode_line 10) $(str_unicode_line 5) $(str_unicode_line 8)
+	NDX=0
 	for K in ${(Onk)FLIST};do
+		((NDX++))
 		TIT=$(cut -d':' -f2 <<<${K})
 		DUR=$(cut -d'|' -f1 <<<${FLIST[${K}]})
 		VID=$(cut -d'|' -f2 <<<${FLIST[${K}]})
 		RES=$(cut -d'|' -f3 <<<${FLIST[${K}]})
 		AUD=$(cut -d'|' -f4 <<<${FLIST[${K}]})
 		SUB=$(cut -d'|' -f5 <<<${FLIST[${K}]})
-		printf "${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
+		BARLINE=$(( NDX % 2 )) # Barlining 
+		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
+		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
 	done | mypager wait
 
 }

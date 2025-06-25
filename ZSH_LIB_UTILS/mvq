@@ -44,12 +44,13 @@ _HLEN=0
 _PAD=0
 
 # Constants
-_MVQ_DIR=~/.mvq
+_MVQ_DIR=~/.local/share/mvq
 _ACTOR_LIST=${_MVQ_DIR}/actor_list.txt
+_DOWNLOAD_LIST=${_MVQ_DIR}/download_list.txt
 _DIRECTOR_LIST=${_MVQ_DIR}/director_list.txt
 _DECADE_LIST=(1960 1970 1980 1990 2000 2010 2020)
 _LIST_OPTIONS=(Actor A Director D Decade E Year Y)
-_LOG=/tmp/mvqry.log
+_LOG=${_MVQ_DIR}/mvqry.log
 _HEADERS=(A "Movies starring:" D "Movies directed by:" E "Movies for the decade:" Y "Movies for the year:")
 _DISP=122
 _REVIEW=7
@@ -585,8 +586,9 @@ shift $((OPTIND -1))
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+
 [[ ${#OPTIONS} -eq 0 && ${#} -eq 0 ]] && usage
-[[ ! -e ${_MVQ_DIR} ]] && mkdir ${_MVQ_DIR}
+[[ ! -e ${_MVQ_DIR} ]] && mkdir -p ${_MVQ_DIR}
 
 CMDLINE_ARGS=false
 [[ -n ${ACTOR_ARG} || -n ${DIRECTOR_ARG}  || -n ${DECADE_ARG} || -n ${YEAR_ARG} ]] && CMDLINE_ARGS=true

@@ -141,6 +141,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+# TODO: Investigate caching icon dirs
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1}
@@ -158,6 +159,7 @@ if [[ ${GET_DIR} == 'true' ]];then
 	msg_box_clear OUTER_BOX
 fi
 
+# TODO: modify search to use recursive find
 # Build file list of icons
 [[ ${WHOLE_WORDS} == 'true' ]] && MSG="Whole word matches only" || MSG="Any matching portion"
 if [[ -n ${g_ICON_DIR} ]];then
@@ -165,7 +167,10 @@ if [[ -n ${g_ICON_DIR} ]];then
 	LIST=("${(f)$(find -P ${g_ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" 2>/dev/null)}")
 	if [[ -n ${SEARCHTERM} ]];then
 		msg_box -c -H1 "${MSG}|Searching ${#LIST} files in ${g_ICON_DIR} for \"<w>${SEARCHTERM}<N>\"..."
+		NDX=0
 		for L in ${LIST};do
+			((NDX++))
+			tput cup 0 0; printf "\rProcessing directory ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} directories ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#LIST} $(( NDX * 100. / ${#LIST} )) 
 			if ! eval "grep ${GREP_OPTS} ${SEARCHTERM} <<<${L:t}";then
 				continue
 			else
@@ -183,7 +188,10 @@ else
 		LIST=("${(f)$(find -P ${D} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}")}")
 		if [[ -n ${SEARCHTERM} ]];then
 			msg_box -c -H1 "${MSG}|Searching ${#LIST} files in ${D} for \"<w>${SEARCHTERM}<N>\"..."
+			NDX=0
 			for L in ${LIST};do
+				((NDX++))
+				tput cup 0 0; printf "\rProcessing directory ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} directories ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#LIST} $(( NDX * 100. / ${#LIST} )) 
 				if ! eval "grep ${GREP_OPTS} ${SEARCHTERM} <<<${L:t}";then
 					continue
 				else

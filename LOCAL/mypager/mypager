@@ -65,7 +65,9 @@ page () {
 			print $BUFFER;
 			print "\n";
 			if (defined $WAIT) { # If WAIT is populated end with msg
+				cursor off
 				print $WHITE_ON_GREY . "Press any key" . $RESET . "...";
+				cursor on
 			}
 			exit 1;
 		} 

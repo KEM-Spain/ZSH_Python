@@ -74,11 +74,13 @@ msg_box () {
 	local CLEAR_MSG=false
 	local CONTINUOUS=false
 	local DELIM_ARG=false
+	local DISPLAY_AREA=60
 	local FOLD_WIDTH=${MAX_LINE_WIDTH}
 	local FRAME_COLOR=''
 	local HDR_LINES=0
 	local HDR_FTR_LINES=0
 	local HEIGHT_ARG=0
+	local LEN=0
 	local MSG_X_COORD_ARG=-1
 	local MSG_Y_COORD_ARG=-1
 	local PROMPT_ARG=''
@@ -352,22 +354,24 @@ msg_box () {
 	# Output MSG lines
 	if [[ ${CONTINUOUS} == 'true' ]];then
 		CONT_COORDS=($(box_coords_get ${_CONT_BOX_TAG}))
-		_CONT_DATA[TOP]=${CONT_COORDS[X]} && (( _CONT_DATA[TOP]++))
-		_CONT_DATA[Y]=${CONT_COORDS[Y]} && (( _CONT_DATA[Y]++))
+		_CONT_DATA[TOP]=${CONT_COORDS[X]} && (( _CONT_DATA[TOP]++ ))
+		_CONT_DATA[Y]=${CONT_COORDS[Y]} && (( _CONT_DATA[Y]++ ))
 		_CONT_DATA[MAX]=${CONT_COORDS[H]} && (( _CONT_DATA[MAX]-=2 ))
 		_CONT_DATA[COLS]=${CONT_COORDS[W]} && (( _CONT_DATA[COLS]-=4 ))
 
-		[[ ${_CONT_DATA[OUT]} -eq 0 ]] && _CONT_DATA[SCR]=${_CONT_DATA[TOP]}
-		[[ ${_CONT_DATA[HEADER]} -gt 0 ]] && (( _CONT_DATA[TOP] += _CONT_DATA[HEADER] ))
+		[[ ${_CONT_DATA[OUT]} -eq 0 ]] && _CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Nothing output - initialize cursor to output region start
+		[[ ${_CONT_DATA[HEADER]} -gt 0 ]] && (( _CONT_DATA[TOP] += _CONT_DATA[HEADER] )) # Set header offset
 
-		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[MAX]} ]];then
-			shift _CONT_BUFFER
-			_CONT_DATA[SCR]=${_CONT_DATA[TOP]}
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:\n_CONT_DATA[OUT]:${_CONT_DATA[OUT]}\n_CONT_DATA[MAX]:${_CONT_DATA[MAX]}\n_CONT_DATA[TOP]:${_CONT_DATA[TOP]}\n#_CONT_BUFFER:${#_CONT_BUFFER}"
+
+		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[MAX]} ]];then # Usable display area consumed - shift data lines up
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:${RED_FG}BUFFER SHIFT${RESET}"
+			shift _CONT_BUFFER # Discard top line
+			_CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Set cursor to header offset
 			for M in ${_CONT_BUFFER};do
 				tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
-				echo -n ${M} # Output buffer
-				(( _CONT_DATA[SCR]++))
-				(( _CONT_DATA[OUT]++))
+				echo -n ${M} # Output buffered line
+				(( _CONT_DATA[SCR]++)) # Increment cursor
 			done
 		fi
 		
@@ -375,13 +379,14 @@ msg_box () {
 		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]}) # Apply markup, padding 
 		MSG_OUT=$(str_trim ${MSG_OUT})
 
-		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
-		[[ -n ${_CONT_DATA[MSG_LEN]} ]] && tput ech ${_CONT_DATA[MSG_LEN]} # Clear last line
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:_CONT_DATA[SCR]:${_CONT_DATA[SCR]}"
+
+		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area or on last line of display area if full
+		tput ech ${DISPLAY_AREA} # Clear the display area
 		echo -n "${MSG_OUT}" # Output line
 
-		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # Add line to buffer
+		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # Header is out - add data line to buffer
 			_CONT_BUFFER+=${MSG_OUT}
-			_CONT_DATA[MSG_LEN]=$(str_strip_ansi -l <<<${MSG_OUT})
 		fi
 
 		(( _CONT_DATA[SCR]++))

@@ -53,7 +53,7 @@ _BREAK_COORDS=(X $((_CONT_COORDS[X] + 3 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CON
 
 # Constants
 _ACRONYMS_FN=/usr/local/etc/acronyms.txt
-_YTS_DIR=~/.yts
+_YTS_DIR=~/.local/share/yts
 _SRC_DIR=/usr/local/src
 _ACTION=download
 _ALERT_TM=.2
@@ -70,7 +70,7 @@ _JS_SCRIPT=/usr/local/etc/yts.js
 _MAX_ERRORS=10
 _MAX_FLEN=85
 _MAX_HDR=70
-_MAX_TITLE=75
+_MAX_TITLE=74
 _OBJECT=video
 _PAUSE_TM=2
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
@@ -305,6 +305,9 @@ action_do () {
 			elif grep -qi 'Fixing MPEG-TS' <<<${LOG_LINE} 2>/dev/null;then
 				logit ${_YTS_DBG_LOG} "${0}: GOT Fragmented completion:${LOG_LINE}"
 				ETA="100% of download completed"
+			elif grep -qi '100%' <<<${LOG_LINE} 2>/dev/null;then
+				logit ${_YTS_DBG_LOG} "${0}: GOT completion:${LOG_LINE}"
+				ETA="100% of download completed"
 			else
 				logit ${_YTS_DBG_LOG} "${0}: GOT OTHER:${LOG_LINE}"
 				OTH=${LOG_LINE}
@@ -327,7 +330,7 @@ action_do () {
 				case ${OTH:l} in
 					*rumbleembed*) continue;;
 					*merging*) continue;; # Audio fix
-					*'deleting original'*) ETA='Audio/Video combined 100%'; LINE_COLOR='<B><g>';; # Audio fix
+					*'deleting original'*) continue;; # Audio fix
 					*100%*) ETA=${OTH};;
 				esac
 			fi
@@ -348,13 +351,13 @@ action_do () {
 
 			[[ ${HAD_ERROR} == 'true' ]] && LINE_COLOR='<r>'
 
-			logit ${_YTS_DBG_LOG} "${0}: ${LINE_COLOR}${ETA}"
+			# TODO: line overlays last line in msg_box if msg_box is full
 			msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>" # Show progress
 
 			if [[ ${ETA} =~ '100% of' || ${ETA_COMPLETE} == 'true'  ]];then
 				if [[ ${#_MARKED} -gt 1 ]];then
-					msg_box -C -jc "<m>$(str_unicode_line 10)<N>"
-					if [[ $((${#_MARKED}-DL_CNT)) -gt 0 ]];then
+					msg_box -C -jc "<m>$(dashed_line)<N>"
+					if [[ $(( ${#_MARKED} - DL_CNT )) -gt 0 ]];then
 						MSG="Download ${DL_CNT} completed - $(( ${#_MARKED} - DL_CNT )) remaining"
 						msg_box -z -t${_PAUSE_TM} -x$(( _CONT_COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
 					fi
@@ -505,6 +508,19 @@ clean_title () {
 
 clear_tmp () {
 	[[ -e /tmp/*$$*state ]] && rm -rf /tmp/*$$*state
+}
+
+dashed_line () {
+	local CNT=10
+	local LEN=5
+	local X=0
+	local STR=''
+
+	for ((X=0; X<=CNT; X++));do
+		STR+="$(str_unicode_line ${LEN}) "
+	done
+	
+	echo "${STR}"
 }
 
 download_indicator () {

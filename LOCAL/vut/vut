@@ -54,8 +54,9 @@ info () {
 	# Declarations
 	local -A FLIST=()
 	local -a LIST
+	local BAR=''
+	local BARLINE=0
 	local HIT
-	local K L
 	local TIT=''
 	local DUR=''
 	local VID=''
@@ -63,6 +64,8 @@ info () {
 	local AUD=''
 	local SUB=''
 	local LONGEST=0
+	local NDX=0
+	local K L
 
 	# Constants
 	local _VID_REGEX_Z='.*\.(mp4|avi|mkv)$'
@@ -200,14 +203,18 @@ ___EOF
 	tcup 0 0
 	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"
 	printf "${MAGENTA_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} $(str_unicode_line ${LONGEST}) $(str_unicode_line 11) $(str_unicode_line 5) $(str_unicode_line 10) $(str_unicode_line 5) $(str_unicode_line 8)
+	NDX=0
 	for K in ${(Onk)FLIST};do
+		((NDX++))
 		TIT=$(cut -d':' -f2 <<<${K})
 		DUR=$(cut -d'|' -f1 <<<${FLIST[${K}]})
 		VID=$(cut -d'|' -f2 <<<${FLIST[${K}]})
 		RES=$(cut -d'|' -f3 <<<${FLIST[${K}]})
 		AUD=$(cut -d'|' -f4 <<<${FLIST[${K}]})
 		SUB=$(cut -d'|' -f5 <<<${FLIST[${K}]})
-		printf "${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
+		BARLINE=$(( NDX % 2 )) # Barlining 
+		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
+		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
 	done | mypager wait
 
 }
@@ -449,7 +456,7 @@ ___EOF
 		[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "file:${F} is not of type video")
 	done
 
-	DESTINATION_FILE=${_OUT_FILE}.${1:e}
+	[[ -z ${DESTINATION_FILE} ]] && DESTINATION_FILE=${_OUT_FILE}.${FILES_TO_MERGE[1]:e} || DESTINATION_FILE=${_OUT_FILE}
 
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
 	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
@@ -533,7 +540,7 @@ ___EOF
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
-		echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
+		echo -e "\n${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
@@ -691,7 +698,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -sa -O ${CYAN_FG} -C "<w>Show Video Utilities usage or <h>(q)uit<N>"
+	sel_list -sa -O ${GREEN_FG} -C -F"<w>Show Video Utilities usage or <h>(q)uit<N>" -H"Video Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

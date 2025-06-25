@@ -449,7 +449,7 @@ if [[ ${0} =~ 'll' ]];then
 else
 	CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | wc -l")
 fi
-echo "${CNT} items"
+echo "${CNT} $(str_pluralize item ${CNT})"
 [[ ${?} -ne 0 ]] && echo "No${MATCHED}$(not_found)found"
 [[ -n ${H_MARK} ]] && echo ${H_MARK}
 
