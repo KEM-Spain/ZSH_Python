@@ -53,6 +53,7 @@ export TIME_STYLE='+%m-%d-%y %R'
 export TZDIR=/usr/share/zoneinfo
 export WEB="/var/www"
 export WWW_HOME="http://www.google.com/ncr" #for lynx
+export XDG_CONFIG_HOME=~/.config
 
 bindkey '^[^[[D' backward-word
 bindkey '^[^[[C' forward-word

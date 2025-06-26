@@ -58,6 +58,7 @@ _SRC_DIR=/usr/local/src
 _ACTION=download
 _ALERT_TM=.2
 _CMD_LINE_ARGS=false
+_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _DOWNLOAD_LOG=${_YTS_DIR}/yts.downloads
 _ERROR_LIMIT=5
@@ -1229,10 +1230,10 @@ query_rumble () {
 	local -a AGES=()
 	local -a CHANNELS=()
 	local -a DURATIONS=()
-	local -a LINKS=()
-	local -a TITLES=()
+	local -aU LINKS=()
+	local -aU TITLES=()
 	local -a WORK_LIST=()
-	local -aU VID_LIST=()
+	local -a VID_LIST=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local CHANNEL=''
 	local DO_GENERAL=false
@@ -1291,7 +1292,6 @@ query_rumble () {
 		fi
 
 		if [[ -n ${PG} ]];then # Channel search
-			#msg_box -c -x $(( LAST_MSG[X] + 1 )) -w $(( ${#MSG} + 4 )) ${MSG}
 			msg_box -c ${MSG}
 
 			TITLES=("${(f)$(pup --charset utf8 '.title__link text{}' <<<${PG} | tut blank_lines | iconv -f utf-8 -t ascii//TRANSLIT | sed 's/|//g')}")

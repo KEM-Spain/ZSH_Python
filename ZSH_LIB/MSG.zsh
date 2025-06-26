@@ -74,7 +74,7 @@ msg_box () {
 	local CLEAR_MSG=false
 	local CONTINUOUS=false
 	local DELIM_ARG=false
-	local DISPLAY_AREA=60
+	local DISPLAY_AREA=0
 	local FOLD_WIDTH=${MAX_LINE_WIDTH}
 	local FRAME_COLOR=''
 	local HDR_LINES=0
@@ -375,11 +375,14 @@ msg_box () {
 			done
 		fi
 		
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:_CONT_DATA[SCR]:${_CONT_DATA[SCR]}"
+		
 		box_coords_upd ${_CONT_BOX_TAG} S ${TEXT_STYLE}
 		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]}) # Apply markup, padding 
 		MSG_OUT=$(str_trim ${MSG_OUT})
 
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:_CONT_DATA[SCR]:${_CONT_DATA[SCR]}"
+		[[ -n ${_MSG_BOX_DISPLAY_AREA} ]] && DISPLAY_AREA=${_MSG_BOX_DISPLAY_AREA} || DISPLAY_AREA=${BOX_WIDTH}
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DISPLAY_AREA:${DISPLAY_AREA}"
 
 		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area or on last line of display area if full
 		tput ech ${DISPLAY_AREA} # Clear the display area
