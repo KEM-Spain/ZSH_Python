@@ -354,13 +354,13 @@ msg_box () {
 	# Output MSG lines
 	if [[ ${CONTINUOUS} == 'true' ]];then
 		CONT_COORDS=($(box_coords_get ${_CONT_BOX_TAG}))
-		_CONT_DATA[TOP]=${CONT_COORDS[X]} && (( _CONT_DATA[TOP]++ ))
-		_CONT_DATA[Y]=${CONT_COORDS[Y]} && (( _CONT_DATA[Y]++ ))
-		_CONT_DATA[MAX]=${CONT_COORDS[H]} && (( _CONT_DATA[MAX]-=2 ))
-		_CONT_DATA[COLS]=${CONT_COORDS[W]} && (( _CONT_DATA[COLS]-=4 ))
+		_CONT_DATA[TOP]=${CONT_COORDS[X]} && (( _CONT_DATA[TOP]++ )) # Initialize TOP and move past border
+		_CONT_DATA[Y]=${CONT_COORDS[Y]} && (( _CONT_DATA[Y]++ )) # Initialize Y and move past border
+		_CONT_DATA[MAX]=${CONT_COORDS[H]} && (( _CONT_DATA[MAX]-=2 )) # Initialize MAX and move past border
+		_CONT_DATA[COLS]=${CONT_COORDS[W]} && (( _CONT_DATA[COLS]-=4 )) # Initialize COLS and compensate for border
 
-		[[ ${_CONT_DATA[OUT]} -eq 0 ]] && _CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Nothing output - initialize cursor to output region start
-		[[ ${_CONT_DATA[HEADER]} -gt 0 ]] && (( _CONT_DATA[TOP] += _CONT_DATA[HEADER] )) # Set header offset
+		[[ ${_CONT_DATA[OUT]} -eq 0 ]] && _CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Nothing yet output - initialize cursor to output region
+		[[ ${_CONT_DATA[HEADER]} -gt 0 ]] && (( _CONT_DATA[TOP] += _CONT_DATA[HEADER] )) # HEADER is printed - set output below header
 
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:\n_CONT_DATA[OUT]:${_CONT_DATA[OUT]}\n_CONT_DATA[MAX]:${_CONT_DATA[MAX]}\n_CONT_DATA[TOP]:${_CONT_DATA[TOP]}\n#_CONT_BUFFER:${#_CONT_BUFFER}"
 
@@ -381,14 +381,14 @@ msg_box () {
 		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]}) # Apply markup, padding 
 		MSG_OUT=$(str_trim ${MSG_OUT})
 
-		[[ -n ${_MSG_BOX_DISPLAY_AREA} ]] && DISPLAY_AREA=${_MSG_BOX_DISPLAY_AREA} || DISPLAY_AREA=${BOX_WIDTH}
+		[[ -n ${_MSG_BOX_DISPLAY_AREA} ]] && DISPLAY_AREA=${_MSG_BOX_DISPLAY_AREA} || DISPLAY_AREA=${BOX_WIDTH} # If value is present limit horiz clearing
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DISPLAY_AREA:${DISPLAY_AREA}"
 
 		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area or on last line of display area if full
 		tput ech ${DISPLAY_AREA} # Clear the display area
 		echo -n "${MSG_OUT}" # Output line
 
-		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # Header is out - add data line to buffer
+		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # If header is out, add data line to buffer
 			_CONT_BUFFER+=${MSG_OUT}
 		fi
 

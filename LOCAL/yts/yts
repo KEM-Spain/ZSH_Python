@@ -352,17 +352,9 @@ action_do () {
 
 			[[ ${HAD_ERROR} == 'true' ]] && LINE_COLOR='<r>'
 
-			# TODO: line overlays last line in msg_box if msg_box is full
 			msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>" # Show progress
 
-			if [[ ${ETA} =~ '100% of' || ${ETA_COMPLETE} == 'true'  ]];then
-				if [[ ${#_MARKED} -gt 1 ]];then
-					msg_box -C -jc "<m>$(dashed_line)<N>"
-					if [[ $(( ${#_MARKED} - DL_CNT )) -gt 0 ]];then
-						MSG="Download ${DL_CNT} completed - $(( ${#_MARKED} - DL_CNT )) remaining"
-						msg_box -z -t${_PAUSE_TM} -x$(( _CONT_COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
-					fi
-				fi
+			if [[ ${ETA_COMPLETE} == 'true'  ]];then
 				_DOWNLOADS[${M}]=true
 				post_process
 				log_add ${M}
@@ -543,7 +535,7 @@ download_indicator () {
 		g_LAST_MASK=1
 	fi
 
-	case ${ETA:l} in
+	case ${LINE:l} in
 		*mib*) LINE_COLOR="${BOLD}${GREEN_FG}";;
 		*kib*) LINE_COLOR="${BOLD}${YELLOW_FG}";;
 	esac
@@ -1209,6 +1201,7 @@ post_process () {
 
 	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
 	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
+	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
 
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
 	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
@@ -1227,7 +1220,7 @@ query_rumble () {
 	local SEARCHTERM=${1}
 	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
 	local -A FIELD_MAP=("author" 2 "title" 3 "age" 4 "url" 5 "time" 6 "agetime" "4,6")
-	local -a AGES=()
+	local -aU AGES=()
 	local -a CHANNELS=()
 	local -a DURATIONS=()
 	local -aU LINKS=()
@@ -1556,7 +1549,7 @@ usage () {
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 	(
-	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${OPTS} [$(opt_type s)] [$(opt_type u)]\n"
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${OPTS} [ $(opt_type s) or $(opt_type u) ]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-A${RESET} fix audio (${MAGENTA_FG}YouTube${RESET} only)"

@@ -1,0 +1,79 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Declarations
+typeset -a FOUND_FILES=()
+typeset -a FLIST=()
+typeset -a OTH_MD=()
+
+# Vars
+NOT_FOUND="[${WHITE_FG}${0:t}${RESET}] ${BOLD}${RED_FG}No readme file found${RESET}"
+
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+OTH_MD=("${(f)$(find . -maxdepth 1 -type f -iname '*md' ! \( -path '*README*' -o -path '*readme*' \))}")
+FOUND_FILES=("${(f)$(find . -maxdepth 1 -type f -iname 'readme*')}")
+
+for F in ${FOUND_FILES};do
+	TYPE=$(file ${F})
+	[[ ! ${TYPE} =~ 'text' || ${TYPE} =~ 'executable' ]] && continue
+	FLIST+=${F}
+done
+
+if arr_is_populated "${FLIST}";then
+	if [[ ${#FLIST} -gt 1 ]];then
+		sel_set_list ${FLIST}
+		sel_list -x10 -y16 -H"Readme Files" -F"<c>Select readme file or (<w>q<c>)uit<N>" -O ${CYAN_FG}
+		FN=${_SEL_VAL}
+	else
+		FN=${FLIST[1]}
+	fi
+
+	[[ ${FN:e} == 'md' ]] && mdless ${FN} || /bin/cat ${FN} | mypager wait
+else
+	exit_leave ${NOT_FOUND}
+fi
+
+if [[ -n ${OTH_MD} ]];then
+	clear
+	msg_box -p "There are other md files available|View (y/n)?"
+	[[ ${_MSG_KEY} == 'n' ]] && exit_leave
+
+	if [[ ${#OTH_MD} -gt 1 ]];then
+		sel_set_list ${OTH_MD}
+		while true;do
+			clear
+			sel_list -x10 -y16 -H"Other md Files" -F"<c>Select md file or (<w>q<c>)uit<N>" -O ${CYAN_FG}
+			FN=${_SEL_VAL}
+			mdless ${FN}
+		done
+	else
+		FN=${OTH_MD[1]}
+		mdless ${FN}
+	fi
+fi

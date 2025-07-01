@@ -48,7 +48,7 @@ date_text () {
 	echo ${TEXT}
 }
 
-file_date_diff () {
+date_file_diff () {
 	local F1=${1}
 	local F2=${2}
 	local F1_EPOCH
@@ -67,7 +67,7 @@ file_date_diff () {
 	return 0
 }
 
-time_diff_mins_fmod () {
+date_diff_mins_fmod () {
 	local FN=${1}
 	local ACC_TM
 	local MOD_TM
@@ -85,5 +85,15 @@ time_diff_mins_fmod () {
 	printf "%.2f\n" ${TIME_DIFF}
 
 	return 0
+}
+
+date_mod_diff () {
+	local FN_1=${1}
+	local FN_2=${2}
+
+	local TM_1=$(stat -c"%Y" ${FN_1})
+	local TM_2=$(stat -c"%Y" ${FN_2})
+
+	echo $(( (TM_2 - TM_1) / 60.00  ))
 }
 

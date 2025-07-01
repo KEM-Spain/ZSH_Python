@@ -50,7 +50,9 @@ _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
 _FREQ_CMDS=(
+bak
 doit
+find
 for
 g
 git
@@ -90,17 +92,18 @@ got_opt () {
 
 cmd_filter () {
 	local ARRAY=${1}
-	local VALID=false
-	local WCH=0
-	local LOC=0
-	local CMD_TGT=''
 	local CMD_IN=''
 	local CMD_MSK=''
 	local CMD_OUT=''
+	local CMD_TGT=''
+	local LOC=0
 	local MYA=0
-	local RJT=0
 	local NDX=0
+	local RJT=0
 	local ROWS=${#${(P)ARRAY}}
+	local VALID=false
+	local WCH=0
+	local CACHE=0
 	local K
 
 	[[ ! -e ${_CACHE_DIR} ]] && md ${_CACHE_DIR}
@@ -116,7 +119,7 @@ cmd_filter () {
 		VALID=false
 		if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
 			VALID='true'
-			((WCH++))
+			((CACHE++))
 			printf '%s\n' "${K}"
 			[[ ${_VERBOSE} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
 		fi
@@ -161,7 +164,7 @@ cmd_filter () {
 			[[ ${_VERBOSE} == 'true' ]] && printf 'Rejected:%s\n' "${CMD_TGT}" >&2
 		fi
 	done
-	echo "${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
+	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
 	[[ ${_PROD} == 'false' ]] && echo >&2 # Clear progress
 }
 
@@ -272,10 +275,11 @@ if ! arr_is_populated "_VALID_HIST";then
 fi
  
 read ACC <${_CACHE_DIR}/accumulators
-[[ ${_PROD} == 'false' ]] && echo "  WHICH:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo " CACHED:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "  WHICH:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
 [[ ${_PROD} == 'false' ]] && echo " LOCATE:${WHITE_FG}$(cut -d'|' -f3 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "    MYA:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "REJECTS:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_VALID_HIST}${RESET}"
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Done.${RESET}\n"
 

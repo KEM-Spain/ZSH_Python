@@ -535,7 +535,7 @@ sel_scroll () {
 		if [[ ${_LIST_DATA[PAGING]} == 'true' ]];then
 			tcup ${_LIST_DATA[PGH_X]} ${_LIST_DATA[PGH_Y]};echo -n $(msg_markup "Page <w>${PAGE}<N> of <w>${_PAGE_TOPS[MAX]}<N> <m>${_DMD}<N> (<w>N<N>)ext (<w>P<N>)rev")
 		else
-			PAGE_HDR="Showing <w>${#_LIST}<N> Items"
+			PAGE_HDR="Showing <w>${#_LIST}<N> ${(C)$(str_pluralize item ${#_LIST})}"
 			NM_P=$(msg_nomarkup ${PAGE_HDR})
 			PGH_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_P})
 			tcup ${_LIST_DATA[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${PAGE_HDR})

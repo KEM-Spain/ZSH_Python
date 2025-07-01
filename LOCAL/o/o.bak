@@ -100,7 +100,7 @@ action_do () {
 	done
 
 	for K in ${(k)RUN_LIST};do
-		eval "${K} ${RUN_LIST[${K}]} 2>${_APP_LOG}"
+		eval "${K} ${RUN_LIST[${K}]} >${_APP_LOG} 2>&1 &"
 		RC=${?}
 		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
@@ -179,10 +179,11 @@ get_app () {
 
 item_decorate () {
 	local NDX=$1
+	local FN=$(pathabv ${_LOCAL_LIST[${NDX}]})
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
-		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
+		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
 		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
 	esac
 }
