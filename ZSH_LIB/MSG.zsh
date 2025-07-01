@@ -353,6 +353,7 @@ msg_box () {
 
 	# Output MSG lines
 	if [[ ${CONTINUOUS} == 'true' ]];then
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:${CYAN_FG}MSG is CONTINUOUS${RESET}"
 		CONT_COORDS=($(box_coords_get ${_CONT_BOX_TAG}))
 		_CONT_DATA[TOP]=${CONT_COORDS[X]} && (( _CONT_DATA[TOP]++ )) # Initialize TOP and move past border
 		_CONT_DATA[Y]=${CONT_COORDS[Y]} && (( _CONT_DATA[Y]++ )) # Initialize Y and move past border
@@ -360,9 +361,14 @@ msg_box () {
 		_CONT_DATA[COLS]=${CONT_COORDS[W]} && (( _CONT_DATA[COLS]-=4 )) # Initialize COLS and compensate for border
 
 		[[ ${_CONT_DATA[OUT]} -eq 0 ]] && _CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Nothing yet output - initialize cursor to output region
-		[[ ${_CONT_DATA[HEADER]} -gt 0 ]] && (( _CONT_DATA[TOP] += _CONT_DATA[HEADER] )) # HEADER is printed - set output below header
+		[[ ${_CONT_DATA[HEADER]} -gt 0 ]] && (( _CONT_DATA[TOP] += _CONT_DATA[HEADER] )) # HEADER is present - cursor through header lines
 
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:\n_CONT_DATA[OUT]:${_CONT_DATA[OUT]}\n_CONT_DATA[MAX]:${_CONT_DATA[MAX]}\n_CONT_DATA[TOP]:${_CONT_DATA[TOP]}\n#_CONT_BUFFER:${#_CONT_BUFFER}"
+
+		if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+			[[ ${_CONT_DATA[OUT]} -lt ${_CONT_DATA[HEADER]} ]] && dbg "${0}:${CYAN_FG}HEADER IS PRINTING${RESET}"
+			[[ ${_CONT_DATA[OUT]} -eq ${_CONT_DATA[HEADER]} ]] && dbg "${0}:${GREEN_FG}HEADER IS COMPLETE${RESET}"
+		fi
 
 		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[MAX]} ]];then # Usable display area consumed - shift data lines up
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:${RED_FG}BUFFER SHIFT${RESET}"
@@ -370,12 +376,12 @@ msg_box () {
 			_CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Set cursor to header offset
 			for M in ${_CONT_BUFFER};do
 				tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
+				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Dumping buffer line:${M}"
 				echo -n ${M} # Output buffered line
 				(( _CONT_DATA[SCR]++)) # Increment cursor
 			done
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:CURSOR value following buffer dump:${_CONT_DATA[SCR]}"
 		fi
-		
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:_CONT_DATA[SCR]:${_CONT_DATA[SCR]}"
 		
 		box_coords_upd ${_CONT_BOX_TAG} S ${TEXT_STYLE}
 		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]}) # Apply markup, padding 
@@ -386,14 +392,17 @@ msg_box () {
 
 		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area or on last line of display area if full
 		tput ech ${DISPLAY_AREA} # Clear the display area
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Printing pending MSG line:${MSG}"
 		echo -n "${MSG_OUT}" # Output line
 
 		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # If header is out, add data line to buffer
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Buffering line:${MSG}"
 			_CONT_BUFFER+=${MSG_OUT}
 		fi
 
 		(( _CONT_DATA[SCR]++))
 		(( _CONT_DATA[OUT]++))
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:\n    CURRENT CURSOR: ${_CONT_DATA[SCR]}\nCURRENT LINES OUT: ${_CONT_DATA[OUT]}"
 	else
 		# Headers
 		if [[ -n ${MSG_HEADER} ]];then
