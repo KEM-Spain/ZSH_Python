@@ -61,31 +61,37 @@ page () {
 	my $TERM_LINES = `tput lines`;
 	my $WAIT = $ARGV[0] if (defined($ARGV[0]));
 	my $WHITE_ON_GREY="\033[0m\033[0;1;37;100m";
+	my $WHITE="\033[37m";
 	my $RESET="\033[m";
 	my $CSROF="\033[?25l";
 	my $CSRON="\033[?25h";
 
-	for ($LINES=0; $LINES<$TERM_LINES; $LINES++) { 
-		if (defined($LINE=<STDIN>)) { 
-			$BUFFER .= $LINE;
-		} else { # Less than a full screen will be printed and exit
-			print $BUFFER;
-			print "\n";
-			if (defined $WAIT) { # If WAIT is populated end with msg
-				print $CSROF . $WHITE_ON_GREY . "Press any key" . $RESET . "...";
-			}
-			exit 1;
+	if ( -t STDIN and not @ARGV ) {
+		print "[" . $WHITE . "mypager" . $RESET ."] no input - exiting";
+		exit 1;
+	} else {
+		for ($LINES=0; $LINES<$TERM_LINES; $LINES++) { 
+			if (defined($LINE=<STDIN>)) { 
+				$BUFFER .= $LINE;
+			} else { # Less than a full screen will be printed and exit
+				print $BUFFER;
+				print "\n";
+				if (defined $WAIT) { # If WAIT is populated end with msg
+					print $CSROF . $WHITE_ON_GREY . "Press any key" . $RESET . "...";
+				}
+				exit 1;
+			} 
+		} # The first screen is bufferred
+
+		open LESS, "| $LESS_CMD"; # Feed the first screen to less
+		print LESS $BUFFER; 
+
+		while (defined($LINE=<STDIN>)) { # Feed any subsequent screens to less
+			print LESS $LINE; 
 		} 
-	} # The first screen is bufferred
 
-	open LESS, "| $LESS_CMD"; # Feed the first screen to less
-	print LESS $BUFFER; 
-
-	while (defined($LINE=<STDIN>)) { # Feed any subsequent screens to less
-		print LESS $LINE; 
-	} 
-
-	close LESS;
+		close LESS;
+	}
 ___EOF
 
 perl -e "$PERL_SCRIPT" ${1}
