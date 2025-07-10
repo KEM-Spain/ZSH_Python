@@ -28,6 +28,7 @@ source ${_LIB}/STR.zsh
 source ${_LIB}/ARRAY.zsh
 source ${_LIB}/LIB_DEPS.zsh # Must be last
 
+# TODO: Add GTK3_Object_Examples
 # Constants
 _REPO=~/Code/REPO
 _REPO_LOCAL_ETC=${_REPO}/LOCAL_ETC
@@ -103,7 +104,8 @@ copy_dev_files () {
 }
 
 copy_etc_files () {
-	local -a LOCAL_ETC_FILES=("${(f)$(find ${_SRC_LOCAL_ETC} -maxdepth 1 -type f)}")
+	local -a LOCAL_ETC_FILES=("${(f)$(find ${_SRC_LOCAL_ETC} -maxdepth 1 -type f ! -path ${_SRC_LOCAL_ETC})}")
+	local -a LOCAL_ETC_DIRS=("${(f)$(find ${_SRC_LOCAL_ETC} -maxdepth 1 -type d ! -path ${_SRC_LOCAL_ETC})}")
 	local L
 
 	echo "${GREEN_FG}ETC SUPPORT FILES${RESET}" >&2
@@ -112,7 +114,9 @@ copy_etc_files () {
 		cp "${L}" ${_REPO_LOCAL_ETC}
 	done
 
-	cp -r ${_SRC_LOCAL_ETC}/tips ${_REPO_LOCAL_ETC}
+	for L in ${LOCAL_ETC_DIRS};do
+		cp -r "${L}" ${_REPO_LOCAL_ETC}
+	done
 }
 
 copy_non_zsh_utils () {
@@ -141,7 +145,7 @@ copy_python_dev_files () {
 
 copy_sys_files () {
 	echo "${GREEN_FG}SYSTEM FILES${RESET}" >&2
-	rsync -a --no-links ${_SRC_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
+	rsync -a --no-links --exclude 'node' ${_SRC_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
 }
 
 copy_user_files () {
@@ -339,14 +343,16 @@ echo -n "\nCommit repo? (y/n):"
 read -q RESPONSE
 echo
 if [[ ${RESPONSE} == 'y' ]];then
+	(
 	pushd ${_REPO}
 	sudo chown -R kmiller:kmiller *
 	sudo chown -R kmiller:kmiller .*
 	do_commit
 	popd
 	touch ${_TSTAMP}
-	echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
-	read -q RESPONSE
+	#echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
+	#read -q RESPONSE
+	) | mypager wait
 fi
 
 exit_leave

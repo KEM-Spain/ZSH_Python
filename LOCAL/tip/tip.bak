@@ -46,13 +46,14 @@ E_WHITE_BG=$(echo -n "\033[47m")
 E_YELLOW_BG=$(echo -n "\033[43m")
 
 # Declarations
-typeset -A _EXTERNAL=(desktop_files 1 sed 1 zsh_comp_official 1 zsh_comp_guide 1)
 typeset -A _EXTERNAL_FILES
 typeset -a _TIPS
 
 # Constants
 _EXT_DIR=/usr/local/etc
 _TIP_DIR=${_EXT_DIR}/tips
+_TIPS=("${(f)$(find ${_TIP_DIR} -type f -name '*tip')}")
+
 _EXTERNAL_FILES=(
 desktop_files "${_EXT_DIR}/Desktop Entry Specification.pdf"
 sed_a "${_EXT_DIR}/StreamEditor-BasicCommands.pdf"
@@ -63,38 +64,9 @@ zsh_cheatsheet "${_EXT_DIR}/zsh-cheatsheet.md"
 )
 
 _SCRIPT_FQFN=${0}
-_TIPS=(
-cron 
-desktop_files 
-dpkg 
-ex 
-git 
-linux 
-mail
-mime 
-nfs 
-perl 
-printf 
-pup 
-regex 
-rsync 
-sed 
-tput 
-vim 
-vimcolors 
-vim_keymap 
-vlc 
-zsh 
-zsh_comp_official 
-zsh_comp_guide
-zshdb 
-zsh_params 
-zsh_primitives 
-zsh_cheatsheet 
-)
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -116,10 +88,8 @@ find_keyword () {
 	[[ -n ${GREP_OPTS} ]] && echo "OPTIONS:${WHITE_FG}${GREP_OPTS}${RESET}"
 	KW=${@[-1]}
 
-	LIST=("${(f)$(find ${_TIP_DIR} -type f ! -path ${_TIP_DIR})}")
-
 	if [[ ${GREP_OPTS} =~ '-n' ]];then
-		for F in ${LIST};do
+		for F in ${_TIPS};do
 			DETAIL=("${(f)$(grep ${GREP_OPTS} ${KW} ${F})}")
 			[[ ${?} -eq 0 ]] && HIT=true
 			for D in ${DETAIL};do
@@ -129,7 +99,7 @@ find_keyword () {
 			done
 		done | mypager
 	else
-		for F in ${LIST};do
+		for F in ${_TIPS};do
 			grep -q ${GREP_OPTS} ${KW} ${F}
 			[[ ${?} -eq 0 ]] && HIT=true && echo "Keyword:\"${CYAN_FG}${KW}${RESET}\" located in:${WHITE_FG}${F}${RESET}"
 		done
@@ -137,115 +107,6 @@ find_keyword () {
 
 	[[ ${HIT} == 'false' ]] && echo "Keyword:\"${CYAN_FG}${KW}${RESET}\" not found"
 }
-
-tip_cron () {
-source ${_TIP_DIR}/cron.tip
-}
-
-tip_desktop_files () {
-source ${_TIP_DIR}/desktop_files.tip
-}
-
-tip_dpkg () {
-source ${_TIP_DIR}/dpkg.tip
-}
-
-tip_ex () {
-source ${_TIP_DIR}/ex.tip
-}
-
-tip_git () {
-source ${_TIP_DIR}/git.tip
-}
-
-tip_linux () {
-source ${_TIP_DIR}/linux.tip
-}
-
-tip_mail () {
-source ${_TIP_DIR}/mail.tip
-}
-
-tip_mime () {
-source ${_TIP_DIR}/mime.tip
-}
-
-tip_nfs () {
-source ${_TIP_DIR}/nfs.tip
-}
-
-tip_perl () {
-source ${_TIP_DIR}/perl.tip
-}
-
-tip_printf () {
-source ${_TIP_DIR}/printf.tip
-}
-
-tip_pup () {
-source ${_TIP_DIR}/pup.tip
-}
-
-tip_regex () {
-source ${_TIP_DIR}/regex.tip
-}
-
-tip_rsync () {
-source ${_TIP_DIR}/rsync.tip
-}
-
-tip_sed () {
-source ${_TIP_DIR}/sed.tip
-}
-
-tip_tput () {
-source ${_TIP_DIR}/tput.tip
-}
-
-tip_vim () {
-source ${_TIP_DIR}/vim.tip
-}
-
-tip_vimcolors () {
-source ${_TIP_DIR}/vimcolors.tip
-}
-
-tip_vim_keymap () {
-source ${_TIP_DIR}/vim_keymap.tip
-}
-
-tip_vlc () {
-source ${_TIP_DIR}/vlc.tip
-}
-
-tip_zsh () {
-source ${_TIP_DIR}/zsh.tip
-}
-
-tip_zsh_comp_official () {
-source ${_TIP_DIR}/zsh_comp_official.tip
-}
-
-tip_zsh_comp_guide () {
-source ${_TIP_DIR}/zsh_comp_guide.tip
-}
-
-tip_zshdb () {
-source ${_TIP_DIR}/zshdb.tip
-}
-
-tip_zsh_params () {
-source ${_TIP_DIR}/zsh_params.tip
-}
-
-tip_zsh_primitives () {
-source ${_TIP_DIR}/zsh_primitives.tip
-}
-
-tip_zsh_cheatsheet () {
-source ${_TIP_DIR}/zsh_cheatsheet.tip
-}
-#--MAX_RANGE_MARKER--
 
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
@@ -296,36 +157,35 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-i ${RESET} keyword search is case insensitive"
+	echo -e "${WHITE_FG}-I ${RESET} enable keyword case sensitivity (default:case insensitive)"
+	echo -e "${WHITE_FG}-W ${RESET} disable keyword word matches (default:whole words only)"
 	echo -e "${WHITE_FG}-k $(opt_type k)${RESET} search for keyword (do not combine options)"
-	echo -e "${WHITE_FG}-s ${RESET} show availablel tip categories"
-	echo -e "${WHITE_FG}-w ${RESET} keyword matches whole word"
+	echo -e "${WHITE_FG}-l ${RESET} list available tips"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDdk:isw"
+OPTSTR=":HDIWdk:l"
 OPTIND=0
 
 KEYWORD=''
 KEYWORD_DETAIL=''
-WORD=''
-CASE=''
+WHOLE_WORD='-w'
+CASE='-i'
 SHOW_TIPS=false
 
 while getopts ${OPTSTR} OPTION;do
 	case ${OPTION} in
      H) usage;;
      D) dbg_set_level;;
-     i) CASE='-i';;
+     I) CASE='';;
+     W) WHOLE_WORD='';;
      d) KEYWORD_DETAIL='-d';;
      k) KEYWORD=${OPTARG};;
-     s) SHOW_TIPS=true;;
-     w) WORD='-w';;
+     l) SHOW_TIPS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -337,25 +197,18 @@ shift $((OPTIND -1))
 # Execution
 [[ ${#} -ne 0 ]] && ARG=${1} || ARG=''
 
-typeset -A KEY_RANGE
-typeset -a PDF_LIST
-typeset -aU HITS
-
-MR=$(grep -n -m1 "MAX_RANGE_MARKER" ${_SCRIPT_FQFN})
-LINE=$(cut -d':' -f1 <<<${MR})
-MAX_RANGE=${LINE}
-
-MIN_RANGE=0
 if [[ -n ${KEYWORD} ]];then
 	echo "Searching for KEYWORD:${WHITE_FG}\"${KEYWORD}\"${RESET}"
-	find_keyword ${CASE} ${WORD} ${KEYWORD_DETAIL} ${KEYWORD}
+	find_keyword ${CASE} ${WHOLE_WORD} ${KEYWORD_DETAIL} ${KEYWORD}
 	exit_leave
 fi
 
 if [[ ${SHOW_TIPS} == 'true' ]];then
 	echo "${WHITE_FG}AVAILABLE TIPS${RESET}"
-	for T in ${_TIPS};do 
-		echo "\t \\u2022 ${T}"
+	for T in ${(o)_TIPS};do 
+		FN=${T:t}
+		FN=${FN:r}
+		echo "\\u2022 ${FN}"
 	done
 	exit_leave
 fi
@@ -363,28 +216,16 @@ fi
 clear
 do_smcup
 if [[ -n ${ARG} ]];then
-	if [[ ${${_TIPS[(i)${ARG}]}} -le ${#_TIPS} ]];then
-		if [[ ${_EXTERNAL[${ARG}]} -eq 1 ]];then
-			tip_${ARG}
-		else
-			tip_${ARG} | mypager wait
-		fi
-	else
-		exit_leave $(msg_exit E "Tip not found:${ARG}")
+	if [[ -e ${_TIP_DIR}/${ARG}.tip ]];then
+		source ${_TIP_DIR}/${ARG}.tip
 	fi
 else
 	while true;do
-		sel_set_list ${_TIPS}
-		sel_list -O ${CYAN_FG} -M"<w>Select Tip or <h>(q)uit<N>" -H"Collected Tips"
 		clear # wipe menu
-		if [[ ${${_TIPS[(i)${_SEL_VAL}]}} -le ${#_TIPS} ]];then
-			if [[ ${_EXTERNAL[${_SEL_VAL}]} -eq 1 ]];then
-				tip_${_SEL_VAL}
-			else
-				tip_${_SEL_VAL} | mypager wait
-			fi
-			clear # wipe tip
-		fi
+		sel_set_list $(for T in ${(o)_TIPS};do echo ${T:t:r};done)
+		sel_list -S -O ${CYAN_FG} -F"<w>Select Tip or <h>(q)uit<N>" -H"Collected Tips"
+		clear # wipe menu
+		source ${_TIP_DIR}/${_SEL_VAL}.tip
 	done
 fi
 do_rmcup

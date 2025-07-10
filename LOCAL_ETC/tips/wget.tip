@@ -1,0 +1,9 @@
+(
+cat << tip_web_EOF_1
+${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+
+Duplicate website:
+wget -mpEk 'url'
+
+tip_web_EOF_1
+) | mypager wait

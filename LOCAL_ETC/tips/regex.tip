@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_regex_EOF_1
 
@@ -1075,7 +1076,7 @@ to turn it off with the Special Start-of-Pattern Modifier ${E_WHITE_FG}(*NO_AUTO
 
 tip_regex_EOF_1
 
-cat << tip_regex_EOF_2
+cat << tip_regex_EOF_2 | mypager
 ${E_WHITE_FG}look-ahead and look-behind Zero-Length Assertions${E_RESET}
 
 look-ahead and look-behind, collectively called “look-around”, are zero-length
@@ -1287,7 +1288,7 @@ If you don’t use capturing groups inside look-around, then all this doesn’t
 matter. Either the look-around condition can be satisfied or it cannot be. In how
 many ways it can be satisfied is irrelevant.
 tip_regex_EOF_2
-cat << tip_regex_EOF_3
+cat << tip_regex_EOF_3 | mypager
 
 ${E_WHITE_FG}Basic topics${E_RESET}
 
@@ -1444,3 +1445,4 @@ in the respective JSON object — replace “;” with “,” make it lowercase
 syntax highlightning, file renaming, packet sniffing and many other applications involving strings 
 (where data need not be textual)
 tip_regex_EOF_3
+) | mypager

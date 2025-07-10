@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_sed_EOF
 
@@ -46,3 +47,4 @@ case ${RESPONSE} in
 	a) { run_okular --page 1 ${_EXTERNAL_FILES[sed_a]} 2>/dev/null & };;
 	b) { run_okular --page 1 ${_EXTERNAL_FILES[sed_b]} 2>/dev/null & };;
 esac
+) | mypager

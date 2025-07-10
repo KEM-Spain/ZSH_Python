@@ -6,6 +6,7 @@ use String::Diff qw( diff_fully diff diff_merge diff_regexp );# export functions
 my $before = $ARGV[0];
 my $after = $ARGV[1];
 my($old, $new) = String::Diff::diff($before, $after);
+
 print "$old|$new";
 
 #my $diff = String::Diff::diff('this is Perl', 'this is Ruby');

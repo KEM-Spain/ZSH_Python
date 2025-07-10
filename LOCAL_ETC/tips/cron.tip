@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_cron_EOF
 
@@ -69,3 +70,4 @@ The ${E_WHITE_FG}cron${E_RESET} command
    Weekends only               ${E_WHITE_FG}0 0 * * 6,0${E_RESET}
    
 tip_cron_EOF
+) | mypager

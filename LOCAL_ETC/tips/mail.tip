@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_mail_EOF
 Basic postfix installation steps
@@ -52,3 +53,4 @@ Server: kem-as.com
 # Test:
 mail kmiller@kem-as.com
 tip_mail_EOF
+) | mypager

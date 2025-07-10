@@ -22,6 +22,7 @@ YELLOW_FG="\033[33m"
 PATH=${PATH}:/usr/local/bin/system # add custom utils
 PATH=${PATH}:/snap/bin # add snaps
 PATH=${PATH}:/usr/local/bin/_perl.local # add local perl
+
 _REL=$(lsb_release -d | cut -d: -f2- | sed 's/^[ \t]*//')
 _RLBL=$(lsb_release -c | cut -d: -f2- | sed 's/^[ \t]*//')
 _USR_LOCAL_SRC=/usr/local/src
@@ -56,7 +57,8 @@ export DEFAULT_PLAYER=CLMN
 export PYDEVD_DISABLE_FILE_VALIDATION=1
 export GIT_AUTHOR_NAME="Kurt Miller"
 export GIT_AUTHOR_EMAIL="miller.kurt.e@gmail.com"
-export LC_ALL=C
+export LC_ALL=C.utf8
+export DISPLAY=:0
 
 [[ -o login ]] && LOGIN=login || LOGIN=''
 

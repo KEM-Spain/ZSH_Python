@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_vim_EOF
 
@@ -701,3 +702,4 @@ overview.
 
 ${E_WHITE_FG}=========================================================================${E_RESET}
 tip_vim_EOF
+) | mypager

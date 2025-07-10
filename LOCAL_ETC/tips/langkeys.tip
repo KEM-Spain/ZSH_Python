@@ -1,7 +1,8 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 
 cat << tip_lang_EOF
-Key combos: Right-Alt + '${E_WHITE_FG}< > / : " +${E_RESET}' keys
+Key combos: Right-Alt + '${E_WHITE_FG}< > / : " +${E_RESET}' key
 
 Examples:
 
@@ -41,3 +42,4 @@ ${E_WHITE_FG} y ${E_RESET} -> ${E_BOLD}${E_CYAN_FG} ¥ ${E_RESET}
 
 
 tip_lang_EOF
+) | mypager

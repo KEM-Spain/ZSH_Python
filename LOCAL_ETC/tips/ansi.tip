@@ -1,0 +1,4 @@
+#!/usr/bin/zsh
+(
+run_okular --page 1 "/usr/local/etc/ansi.pdf" 
+) 2>/dev/null &

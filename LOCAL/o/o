@@ -29,6 +29,12 @@ E_CYAN_FG=$(echo "\033[36m")
 E_WHITE_FG=$(echo "\033[37m")
 E_STRIKE=$(echo "\033[9m")
 
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIST.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -a _RAWLIST
 typeset -a _MARKED=()
@@ -36,7 +42,6 @@ typeset -a _LOCAL_LIST=()
 typeset -A _FILE_APP
 typeset -A _FILE_NDX
 typeset -A _APP_EXE
-typeset -A _APP_TYPE
 
 # Constants
 _APP_LOG=/tmp/${_SCRIPT}.log
@@ -48,57 +53,56 @@ _APP_EXE[MUSE]="/usr/local/bin/system/launchers/run_musescore"
 _APP_EXE[OFFICE]=/usr/bin/libreoffice
 _APP_EXE[IMAGE]=/usr/local/bin/viewnior
 _APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
+_APP_EXE[CLEM]="/usr/bin/clementine"
 _APP_EXE[HARUNA]=/snap/bin/haruna
+_APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
-
-_APP_TYPE[EBOOK]=GUI
-_APP_TYPE[OKULAR]=GUI
-_APP_TYPE[MDLESS]=TERM
-_APP_TYPE[MUSE]=GUI
-_APP_TYPE[OFFICE]=GUI
-_APP_TYPE[IMAGE]=GUI
-_APP_TYPE[VLC]=GUI
-_APP_TYPE[HARUNA]=GUI
-_APP_TYPE[VIM]=TERM
 
 _MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
 _MD_LOCAL="${HOME}/Documents/Music"
 _MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
 
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
+_VIEWED=2
+_UNSUPPORTED=3
 
 # Functions
 action_do () {
 	local -a _MARKED=(${@})
-	local M
-	local APP
+	local -A RUN_LIST=()
+	local -A FILE_APP=()
+	local -a FLIST=()
 	local APP_EXE_PATH
-	local APP_TYPE
-	local FN
-	local ARGS
 	local CMD
+	local FN
+	local M K
 
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	for M in ${_MARKED};do
 		FN=${(k)_FILE_NDX[(r)${M}]}
 		APP_EXE_PATH=${_FILE_APP[${FN}]}
-		CMD="${APP_EXE_PATH} ${FN:q}"
+		FILE_APP[${FN}]=${APP_EXE_PATH}
+	done
 
-		if [[ ${_DEBUG} -gt 0 ]];then
-			dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-			dbg "FN:${FN}"
-			dbg "APP_EXE_PATH:${APP_EXE_PATH}"
-			dbg "CMD:${CMD}"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "CMD:${CMD}"
+
+	local LAST_APP=?
+	local IN_APP=false
+	for K in ${(k)FILE_APP};do # Allow each app to have a unique filelist
+		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
+			LAST_APP=${FILE_APP[${K}]}
+			FLIST=()
+			FLIST+=${K:q}
+		else
+			FLIST+=${K:q}
 		fi
+		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
+	done
 
-		msg_box -t3 "Starting ${CMD}..."
-		eval "${CMD} 2>${_APP_LOG}" &
-
-		if [[ ${_DEBUG} -gt 0 ]];then
+	for K in ${(k)RUN_LIST};do
+		eval "${K} ${RUN_LIST[${K}]}"
+		RC=${?}
+		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
 		fi
 	done
@@ -136,7 +140,7 @@ get_app () {
 	local APP
 
 	case ${EXT} in
-		avi) APP=${_APP_EXE[HARUNA]};;
+		avi) APP=${_APP_EXE[MPV]};;
 		doc) APP=${_APP_EXE[OFFICE]};;
 		odg) APP=${_APP_EXE[OFFICE]};;
 		epub) APP=${_APP_EXE[EBOOK]};;
@@ -147,11 +151,11 @@ get_app () {
 		log) APP=${_APP_EXE[VIM]};;
 		markdown) APP=${_APP_EXE[MDLESS]};;
 		md) APP=${_APP_EXE[MDLESS]};;
-		mkv) APP=${_APP_EXE[HARUNA]};;
-		mp3) APP=${_APP_EXE[VLC]};;
-		m4a) APP=${_APP_EXE[HARUNA]};;
-		mp4) APP=${_APP_EXE[HARUNA]};;
-		webm) APP=${_APP_EXE[HARUNA]};;
+		mkv) APP=${_APP_EXE[MPV]};;
+		mp3) APP=${_APP_EXE[CLEM]};;
+		m4a) APP=${_APP_EXE[MPV]};;
+		mp4) APP=${_APP_EXE[MPV]};;
+		webm) APP=${_APP_EXE[MPV]};;
 		mscz) APP=${_APP_EXE[MUSE]};;
 		ods) APP=${_APP_EXE[OFFICE]};;
 		odt) APP=${_APP_EXE[OFFICE]};;
@@ -167,7 +171,7 @@ get_app () {
 	esac
 	
 	if [[ ${APP} == '?' ]];then
-		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${VIM}
+		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${_APP_EXE[VIM]} # Editable unknown extensions 
 	fi
 
 	echo ${APP}
@@ -175,11 +179,12 @@ get_app () {
 
 item_decorate () {
 	local NDX=$1
+	local FN=$(pathabv ${_LOCAL_LIST[${NDX}]})
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		2) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
-		3) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
-		*)	tput el;echo -n ${_LOCAL_LIST[${NDX}]};;
+		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
+		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
 	esac
 }
 
@@ -188,7 +193,7 @@ mark_unsupported () {
 	local SUPPORTED
 
 	SUPPORTED=$(get_app ${_LOCAL_LIST[${NDX}]})
-	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=3
+	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
 }
 
 same_extension () {
@@ -273,27 +278,23 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} show unsupported files"
-	echo -e "${WHITE_FG}-m${RESET} process music files"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDam"
+OPTSTR=":HDa"
 OPTIND=0
 
 FILTER_UNSUPPORTED=true
 FILTER="Supported Only"
-MUSIC_DIRS=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      a) FILTER_UNSUPPORTED=false;FILTER="All Files";;
-     m) MUSIC_DIRS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -334,16 +335,21 @@ else
 fi
 
 if [[ -z ${_RAWLIST} ]];then
-	_RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f ! -path ${PWD}")}")
+	CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
+	_RAWLIST=("${(f)$(eval ${CMD})}")
 fi
 
 NDX=0
 for F in ${_RAWLIST};do
 	((NDX++))
 	FN=$(realpath ${F}) # Add full path
-	[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "realpath error: ${FN}")
 	_RAWLIST[${NDX}]=${FN}
 done
+
+MUSIC_DIRS=false
+[[ -e ${_MD_EXTERNAL} ]] && MUSIC_DIRS=true
+[[ -e ${_MD_LOCAL} ]] && MUSIC_DIRS=true
+[[ -e ${_MD_MUSE} ]] && MUSIC_DIRS=true
 
 NDX=0
 for F in ${(o)_RAWLIST};do

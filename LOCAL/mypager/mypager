@@ -1,5 +1,22 @@
 #!/usr/bin/zsh
 
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
 _SCRIPT=${0:t}
 
 read -r -d '' DESC<<EOF
@@ -37,6 +54,9 @@ page () {
 	my $LINES;
 	my $TERM_LINES = `tput lines`;
 	my $WAIT = $ARGV[0] if (defined($ARGV[0]));
+	my $WHITE_ON_GREY="\033[0m\033[0;1;37;100m";
+	my $RESET="\033[m";
+
 	 
 	for ($LINES=0; $LINES<$TERM_LINES; $LINES++) { 
 		if (defined($LINE=<STDIN>)) { 
@@ -45,7 +65,9 @@ page () {
 			print $BUFFER;
 			print "\n";
 			if (defined $WAIT) { # If WAIT is populated end with msg
-				print "Press any key...";
+				cursor off
+				print $WHITE_ON_GREY . "Press any key" . $RESET . "...";
+				cursor on
 			}
 			exit 1;
 		} 

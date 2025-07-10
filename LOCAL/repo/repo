@@ -28,6 +28,7 @@ source ${_LIB}/STR.zsh
 source ${_LIB}/ARRAY.zsh
 source ${_LIB}/LIB_DEPS.zsh # Must be last
 
+# TODO: Add GTK3_Object_Examples
 # Constants
 _REPO=~/Code/REPO
 _REPO_LOCAL_ETC=${_REPO}/LOCAL_ETC
@@ -44,10 +45,10 @@ _REPO_ZSH_LIB=${_REPO}/ZSH_LIB
 _REPO_ZSH_LIB_UTILS=${_REPO}/ZSH_LIB_UTILS
 _REPO_ZSH_NON_LIB_UTILS=${_REPO}/ZSH_NON_LIB_UTILS
 
-_SRC_BIN=/usr/local/bin
-_SRC_BIN_CONV=${_SRC_BIN}/conversion
-_SRC_BIN_PYSCRIPTS=${_SRC_BIN}/__pyscripts__
-_SRC_BIN_SYS=${_SRC_BIN}/system
+_SRC_USR_LOCAL_BIN=/usr/local/bin
+_SRC_USR_LOCAL_BIN_CONV=${_SRC_USR_LOCAL_BIN}/conversion
+_SRC_USR_LOCAL_BIN_PYSCRIPTS=${_SRC_USR_LOCAL_BIN}/__pyscripts__
+_SRC_USR_LOCAL_BIN_SYS=${_SRC_USR_LOCAL_BIN}/system
 _SRC_CODE=${HOME}/Code/LOCAL
 _SRC_LIB=/usr/local/lib
 _SRC_LOCAL_ETC=/usr/local/etc
@@ -56,7 +57,7 @@ _SRC_VIM_CFG=${HOME}/.vim
 _SRC_ZSH_CFG=/etc/zsh
 _SRC_ZSH_CFG_USER=${HOME}/.zsh
 
-_REPO_UTILS=${_SRC_BIN}/system/repo_utils
+_REPO_UTILS=${_SRC_USR_LOCAL_BIN}/system/repo_utils
 _TSTAMP=${_REPO_UTILS}/.last_run
 
 # Declarations
@@ -75,7 +76,7 @@ typeset -a _MODIFIED=()
 # Functions
 copy_conv_files () {
 	echo "${GREEN_FG}CONVERSION UTILITY FILES${RESET}" >&2
-	rsync -a ${_SRC_BIN_CONV} ${_REPO_ZSH_LIB_UTILS}
+	rsync -a ${_SRC_USR_LOCAL_BIN_CONV} ${_REPO_ZSH_LIB_UTILS}
 }
 
 copy_dev_files () {
@@ -94,16 +95,17 @@ copy_dev_files () {
 	done
 
 	for D in ${BIN_LIST};do
-		[[ ${DEV_LIST[${D:t}]} -eq 1 ]] && cp -r ${_SRC_CODE}/${D:t} ${_REPO_LOCAL} # Copy source for active development
+		[[ ${DEV_LIST[${D:t}]} -eq 1 ]] && cp -ar ${_SRC_CODE}/${D:t} ${_REPO_LOCAL} # Copy source for active development
 	done
  
-	cp -r ${_SRC_CODE}/LIBS/scratch ${_REPO_LOCAL}
-	cp -r ${_SRC_CODE}/spanish_quiz ${_REPO_LOCAL}
-	cp -r ${_SRC_CODE}/takeout ${_REPO_LOCAL}
+	cp -ar ${_SRC_CODE}/LIBS/scratch ${_REPO_LOCAL}
+	cp -ar ${_SRC_CODE}/spanish_quiz ${_REPO_LOCAL}
+	cp -ar ${_SRC_CODE}/takeout ${_REPO_LOCAL}
 }
 
 copy_etc_files () {
-	local -a LOCAL_ETC_FILES=("${(f)$(find ${_SRC_LOCAL_ETC} -maxdepth 1 -type f)}")
+	local -a LOCAL_ETC_FILES=("${(f)$(find ${_SRC_LOCAL_ETC} -maxdepth 1 -type f ! -path ${_SRC_LOCAL_ETC})}")
+	local -a LOCAL_ETC_DIRS=("${(f)$(find ${_SRC_LOCAL_ETC} -maxdepth 1 -type d ! -path ${_SRC_LOCAL_ETC})}")
 	local L
 
 	echo "${GREEN_FG}ETC SUPPORT FILES${RESET}" >&2
@@ -112,19 +114,25 @@ copy_etc_files () {
 		cp "${L}" ${_REPO_LOCAL_ETC}
 	done
 
-	cp -r ${_SRC_LOCAL_ETC}/tips ${_REPO_LOCAL_ETC}
+	for L in ${LOCAL_ETC_DIRS};do
+		cp -ar "${L}" ${_REPO_LOCAL_ETC}
+	done
 }
 
 copy_non_zsh_utils () {
+	local ELF=''
+
 	echo "${GREEN_FG}NON ZSH UTILS${RESET}" >&2
 	for L in ${_NON_ZSH_UTILS};do
-		cp "${L}" ${_REPO_NON_ZSH_UTILS}
+		ELF=$(file ${L})
+		[[ ${ELF:l} =~ 'elf' ]] && continue
+		cp "${L}" ${_REPO_NON_ZSH_UTILS} # Skip ELF
 	done
 }
 
 copy_pyscript_files () {
 	echo "${GREEN_FG}PYTHON SCRIPT FILES${RESET}" >&2
-	rsync -a ${_SRC_BIN_PYSCRIPTS} ${_REPO_ZSH_LIB_UTILS}
+	rsync -a ${_SRC_USR_LOCAL_BIN_PYSCRIPTS} ${_REPO_ZSH_LIB_UTILS}
 }
 
 copy_python_dev_files () {
@@ -141,7 +149,7 @@ copy_python_dev_files () {
 
 copy_sys_files () {
 	echo "${GREEN_FG}SYSTEM FILES${RESET}" >&2
-	rsync -a --no-links --exclude 'node' ${_SRC_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
+	rsync -a --no-links --exclude 'node' ${_SRC_USR_LOCAL_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
 }
 
 copy_user_files () {
@@ -222,7 +230,7 @@ tcup 0 0
 echo "${WHITE_FG}Building repo${RESET}..."
 if [[ -e ${_REPO} ]];then
 	if [[ -e ${_REPO}/.git ]];then
-		sudo cp -r ${_REPO}/.git ${_REPO_UTILS} # Set aside .git repo
+		sudo cp -ar ${_REPO}/.git ${_REPO_UTILS} # Set aside .git repo
 		echo "${GREEN_FG}Backed up git repo to:${WHITE_FG}${_REPO_UTILS}${RESET}"
 	fi
 
@@ -230,9 +238,9 @@ if [[ -e ${_REPO} ]];then
 	echo "\n${WHITE_FG}Rebuilding${RESET}..."
 
 	if [[ -e ${_REPO_UTILS}/.git ]];then
-		sudo cp -r ${_REPO_UTILS}/.git ${_REPO} # Git repository
+		sudo cp -ar ${_REPO_UTILS}/.git ${_REPO} # Git repository
 		echo "${GREEN_FG}Copied git repo to:${WHITE_FG}${_REPO}${RESET}"
-		sudo cp ${_REPO_UTILS}/gitconfig ${_REPO}/.git/config # Git config
+		sudo cp -a ${_REPO_UTILS}/gitconfig ${_REPO}/.git/config # Git config
 		echo "${GREEN_FG}Copied git config to:${WHITE_FG}${_REPO}/.git${RESET}"
 	fi
 
@@ -259,7 +267,7 @@ if [[ -e ${_REPO} ]];then
 fi
 
 # Organize /usr/local/bin
-UTILS=("${(f)$(file $(find ${_SRC_BIN} -maxdepth 1 -type f))}")
+UTILS=("${(f)$(file $(find ${_SRC_USR_LOCAL_BIN} -maxdepth 1 -type f))}")
 
 for L in ${UTILS};do
 	FN=$(cut -d: -f1 <<<${L})
@@ -310,9 +318,9 @@ printf "%-30s ${WHITE_FG}%4d${RESET}\n" "Total zsh config user files" $(find ${_
 echo $(str_unicode_line 36)
 printf "${GREEN_FG}%-30s ${WHITE_FG}%4d${RESET}\n" "Total REPO files" $(find ${_REPO} -type f | wc -l)
 
-collect_modifed ${_SRC_BIN} 1
-collect_modifed ${_SRC_BIN_CONV} 1
-collect_modifed ${_SRC_BIN_SYS} 1
+collect_modifed ${_SRC_USR_LOCAL_BIN} 1
+collect_modifed ${_SRC_USR_LOCAL_BIN_CONV} 1
+collect_modifed ${_SRC_USR_LOCAL_BIN_SYS} 1
 collect_modifed ${_SRC_CODE} 3
 collect_modifed ${_SRC_LOCAL_ETC} 3
 collect_modifed ${_SRC_LIB} 3
@@ -339,14 +347,16 @@ echo -n "\nCommit repo? (y/n):"
 read -q RESPONSE
 echo
 if [[ ${RESPONSE} == 'y' ]];then
+	(
 	pushd ${_REPO}
 	sudo chown -R kmiller:kmiller *
 	sudo chown -R kmiller:kmiller .*
 	do_commit
 	popd
 	touch ${_TSTAMP}
-	echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
-	read -q RESPONSE
+	#echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
+	#read -q RESPONSE
+	) | mypager wait
 fi
 
 exit_leave

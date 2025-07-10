@@ -18,22 +18,29 @@ YELLOW_FG="\033[33m"
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/DATE.zsh
 source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
-typeset -A _SZ_FN=()
-typeset -a _DIR_LIST=()
-typeset -a _FLIST=()
-typeset -a _ICO_DIRS=(/opt ${HOME}/.local/share /usr/share/icons /usr/share/pixmaps)
-typeset -a _LIST=()
-typeset -a _SIZES=()
-typeset -a _SUB_LIST=()
-typeset -aU _SZ_LIST=()
+typeset -A _ICON_SIZE=()
+typeset -a _ICO_DIRS=(/opt ${HOME}/.local/share/icons /usr/share/icons /usr/share/pixmaps)
+typeset -a _ICON_LIST=()
+typeset -aU _SIZES=()
+typeset -a _SZ_LIST=()
 
 # Constants
+_ICON_CACHE_DIR=~/.local/share/icon_cache
+
 _ICO_REGEX='.*(ico|png|svg)$'
+_ICON_CACHE_STAMP=${_ICON_CACHE_DIR}/icon_cache.stamp
+
+_ICON_CACHE=${_ICON_CACHE_DIR}/icons
 _ICO_STASH=/tmp/icon_stash
+_SIZE_CACHE=${_ICON_CACHE_DIR}/sizes
+
+# Vars
+_SZ_UPDATE=false
 
 # Globals
 g_LIMIT=200
@@ -41,6 +48,45 @@ g_ICON_DIR=''
 g_ICON_SIZE=''
 
 # Functions
+build_icon_cache () {
+	local D
+
+	/bin/rm -f ${_ICON_CACHE}
+
+	for D in ${_ICO_DIRS};do
+		[[ -n ${g_ICON_DIR} && ! ${D} == ${g_ICON_DIR} ]] && continue
+		[[ ${D} =~ ".*MAC.*" ]] && continue
+		[[ ${D:l} =~ ".*qt.*" ]] && continue
+
+		{
+		find -P ${D} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" 2>/dev/null
+		} >> ${_ICON_CACHE}
+	done
+	touch ${_ICON_CACHE_STAMP}
+}
+
+build_size_cache () {
+	local NDX=0
+	local F
+	local SZ
+
+	/bin/rm -f ${_SIZE_CACHE}
+
+	tput cup 3 0 && tput el
+
+	NDX=0
+	for F in ${_ICON_LIST};do
+		((NDX++))
+		tput cup 3 0; printf "\rProcessing ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} icons ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_ICON_LIST} $(( NDX * 100. / ${#_ICON_LIST} )) 
+		SZ=$(file ${F} | grep -Po '\d+ x \d+')
+		[[ -n ${SZ} ]] && echo "${F}|${SZ}" >> ${_SIZE_CACHE}
+	done
+}
+
+clear_stash () {
+	/bin/rm -rf ${_ICO_STASH}
+}
+
 is_valid_int () {
 	local ARG=${1}
 	local REGEX='^[0-9]+$'
@@ -103,19 +149,21 @@ usage () {
 	echo -e "${WHITE_FG}-d${RESET} select icon directory from list"
 	echo -e "${WHITE_FG}-p print icon paths"
 	echo -e "${WHITE_FG}-s${RESET} select icon size from list"
+	echo -e "${WHITE_FG}-w${RESET} limit searches to whole words only"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDl:dps"
+OPTSTR=":HDl:dpsw"
 OPTIND=0
 
 GET_DIR=false
 GET_SIZE=false
 PRINT_PATHS=false
+WHOLE_WORDS=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -129,6 +177,7 @@ while getopts ${OPTSTR} OPTION;do
         fi;;
      p) PRINT_PATHS=true;;
      s) GET_SIZE=true;;
+     w) WHOLE_WORDS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -140,7 +189,10 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
+set_exit_callback clear_stash
+
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1}
+[[ ${WHOLE_WORDS} == 'true' ]] && GREP_OPTS="-w -i" || GREP_OPTS="-i"
 
 if [[ ${GET_DIR} == 'true' ]];then
 	g_ICON_DIR=''
@@ -148,142 +200,80 @@ if [[ ${GET_DIR} == 'true' ]];then
 	sel_set_list ${(on)_ICO_DIRS}
 	sel_list -O ${MAGENTA_FG} -x5 -y11 -M"<w>Select icon directory<N>"
 
-	[[ ${?} -ne 0 ]] && echo "${BOLD}${RED_FG}Cancelled...${RESET}" && exit_leave
+	[[ ${?} -ne 0 ]] && echo "${_SCRIPT_TAG} ${BOLD}${RED_FG}Operation Cancelled${RESET}" && exit_leave
 
 	g_ICON_DIR=${_SEL_VAL}
 	msg_box_clear OUTER_BOX
 fi
 
-# Build file list of icons
-if [[ -n ${g_ICON_DIR} ]];then
-	tput cup 0 0; printf "Processing directory ${WHITE_FG}%s${RESET}" ${g_ICON_DIR}
-	if [[ -n ${SEARCHTERM} ]];then
-		_FLIST=("${(f)$(find -P ${g_ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" | grep -i ${SEARCHTERM} 2>/dev/null)}")
-	else
-		_FLIST=("${(f)$(find -P ${g_ICON_DIR} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" 2>/dev/null)}")
-	fi
+[[ -n ${g_ICON_DIR} ]] && DIR_LBL=${g_ICON_DIR} || DIR_LBL="${#_ICO_DIRS} directories"
+
+tcup 0 0 && echo "Building icon cache from ${DIR_LBL}..."
+build_icon_cache
+
+[[ ${WHOLE_WORDS} == 'true' ]] && SMSG="${SEARCHTERM} ${RESET}(whole word)" || SMSG=${SEARCHTERM}
+
+# Set list based on options
+if [[ -n ${SEARCHTERM} && -n ${g_ICON_DIR} ]];then
+	_ICON_LIST=("${(f)$(eval "grep ${GREP_OPTS} ${SEARCHTERM} ${_ICON_CACHE}")}")
+	MSG="List contains ${WHITE_FG}${#_ICON_LIST}${RESET} icons ${ITALIC}matching${RESET} ${CYAN_FG}${SMSG}${RESET} in directory ${CYAN_FG}${g_ICON_DIR}${RESET}"
+elif [[ -n ${SEARCHTERM} ]];then
+	_ICON_LIST=("${(f)$(eval "grep ${GREP_OPTS} ${SEARCHTERM} ${_ICON_CACHE}")}")
+	MSG="List contains ${WHITE_FG}${#_ICON_LIST}${RESET} icons ${ITALIC}matching${RESET} ${CYAN_FG}${SMSG}${RESET}"
+elif [[ -n ${g_ICON_DIR} ]];then
+	_ICON_LIST=("${(@f)"$(<${_ICON_CACHE})"}") # File to array
+	MSG="List contains ${WHITE_FG}${#_ICON_LIST}${RESET} icons ${ITALIC}in directory${RESET} ${CYAN_FG}${g_ICON_DIR}${RESET}"
 else
-	NDX=0
-	for D in ${_ICO_DIRS};do
-		((NDX++))
-		[[ ${D} =~ ".*MAC.*" ]] && continue
-		[[ ${D:l} =~ ".*qt.*" ]] && continue
-
-		if [[ -n ${SEARCHTERM} ]];then
-			_SUB_LIST=("${(f)$(find -P ${D} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}" | grep -i ${SEARCHTERM} 2>/dev/null)}")
-		else
-			_SUB_LIST=("${(f)$(find -P ${D} -type f -regextype 'posix-extended' -regex ".*${_ICO_REGEX}")}")
-		fi
-
-		tput cup 0 0; printf "\rProcessing directory ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} directories ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_ICO_DIRS} $(( NDX * 100. / ${#_ICO_DIRS} )) 
-		if [[ -n ${_SUB_LIST} ]];then
-			_FLIST+=(${_SUB_LIST})
-			_SUB_LIST=()
-		fi
-	done
+	_ICON_LIST=("${(@f)"$(<${_ICON_CACHE})"}") # File to array
+	MSG="List contains all ${WHITE_FG}${#_ICON_LIST}${RESET} icons"
 fi
 
-# Possible early exit
-if [[ -n ${SEARCHTERM} ]];then
-	if ! arr_is_populated "${_FLIST}";then
-		exit_leave $(msg_exit W "No icons found matching:${SEARCHTERM}")
-	fi
+if arr_is_populated "${_ICON_LIST}";then
+	tcup 1 0 && echo ${MSG}
+else
+	exit_leave "${RED_FG}No icons found${RESET} based on current options"
 fi
 
 if [[ ${GET_SIZE} == 'true' ]];then
-	g_ICON_SIZE=''
+	tcup 2 0 && echo "Building size cache..."
+	build_size_cache
 
-	MSG="<w>Building size list...<N>"
-	[[ ${#_FLIST} -gt 1000 ]] && MSG+="|Processing a large number of files (${#_FLIST}) - please wait..."
-	msg_box -x5 -y11 ${MSG}
+	_SZ_LIST=("${(@f)"$(<${_SIZE_CACHE})"}") # File to array
 
-	for F in ${_FLIST};do
-		_SZ_FN[${F}]=$(file ${F} | grep -Po '\d+ x \d+')
-		_SZ_LIST+=${_SZ_FN[${F}]}
+	tput cup 4 0 && tput el
+
+	for S in ${_SZ_LIST};do # Extract sizes for all icons
+		((NDX++))
+		tput cup 4 0; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} cache ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_SZ_LIST} $(( NDX * 100. / ${#_SZ_LIST} )) 
+		FN=$(cut -d'|' -f1 <<<${S})
+		SZ=$(cut -d'|' -f2 <<<${S})
+		_ICON_SIZE[${FN}]=${SZ}
+		_SIZES+=${SZ}
 	done
 
-	sel_set_list ${(on)_SZ_LIST}
-	sel_list -O ${CYAN_FG} -x5 -y11 -M"<w>Select icon size<N>"
+	sel_set_list ${(on)_SIZES}
+	sel_list -O ${CYAN_FG} -x8 -y16 -M"<w>Select icon size<N>"
 
 	[[ ${?} -ne 0 ]] && echo "${BOLD}${RED_FG}Cancelled...${RESET}" && exit_leave
 	msg_box_clear OUTER_BOX
 
 	g_ICON_SIZE=${_SEL_VAL}
-
-	_FLIST=()
-	for K in ${(k)_SZ_FN};do
-		[[ ${_SZ_FN[${K}]} == ${g_ICON_SIZE} ]] && _FLIST+=${K} # Narrow _FLIST
-	done
 fi
-
-if [[ ${PRINT_PATHS} == 'true' ]];then # View or save a list of icon paths
-	FN_OUT=icon_list.out
-	VIEW=false
-	WRITE=false
-
-	msg_box -p -H1 "<m>Icon List Options<N>|<w>View icon list in pager <I>or<N> <w>write to file?<N>|Enter: (<w>f<N>)ile or (<w>v<N>)iew"
-	case ${_MSG_KEY} in
-		v) VIEW=true;;
-		f) WRITE=true;;
-		*) exit_leave "${RED_FG}Operation Canceled${RESET}";;
-	esac
-
-	if [[ ${VIEW} == 'true' ]];then
-		do_rmcup
-		for L in ${_FLIST};do
-			RANK=3
-			[[ ${L:t:l} =~ "${SEARCHTERM:l}" ]] && RANK=1
-			[[ ${L:t:l} =~ "[0-9]x[0-9]" ]] && RANK=2
-			echo ${RANK}${L}
-		done | sort -u | sed 's/^[0-9]//' | mypager
-	elif [[ ${WRITE} == 'true' ]];then
-		[[ -e ${FN_OUT} ]] && /bin/rm -f ${FN_OUT} >/dev/null 2>&1
-		for L in ${_FLIST};do
-			echo ${L} >> ${FN_OUT}
-		done
-		do_rmcup
-		echo "Wrote ${#_FLIST} icon paths to file:${WHITE_FG}${FN_OUT}${RESET}"
-	fi
-
-	exit_leave
-fi
-
-# Display icons in viewer
-ROW=1
-tput cup ${ROW} 0; tput el; echo -n "Found:${WHITE_FG}${#_FLIST}${RESET} icon file(s)"
-if [[ -n ${g_ICON_DIR} ]];then
-	echo -n " in ${WHITE_FG}${g_ICON_DIR}${RESET}"
-else
-	echo -n " in ${WHITE_FG}${#_ICO_DIRS}${RESET} directories"
-fi
-
-if [[ -n ${SEARCHTERM} ]];then
-	((ROW++))
-	tput cup ${ROW} 0
-	echo -n "Matching SEARCH:${WHITE_FG}${SEARCHTERM}${RESET}"
-fi
-
-if [[ -n ${g_ICON_SIZE} ]];then
-	((ROW++))
-	tput cup ${ROW} 0
-	echo -n "Size:${WHITE_FG}${g_ICON_SIZE}${RESET}"
-fi
-
-((ROW++))
-tput cup ${ROW} 0; tput el
-echo -n "Continue (y/n)?"
-read -sq RESPONSE
-[[ ${RESPONSE} == 'n' ]] && exit_leave "${RED_FG}Operation Canceled${RESET}"
 
 # Create links to selected files in ${_ICO_STASH}
 [[ ! -e ${_ICO_STASH} ]] && md ${_ICO_STASH} || /bin/rm -f ${_ICO_STASH}/*
-clear
+
+
 NDX=0
-[[ -n ${g_ICON_DIR} ]] && DIR_LBL=${g_ICON_DIR} || DIR_LBL="${#_ICO_DIRS} directories"
-for F in ${_FLIST};do
+for I in ${_ICON_LIST};do
 	((NDX++))
-	tput cup 0 0; tput el; printf "\rProcessing ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} in ${WHITE_FG}%s${RESET} ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_FLIST} ${DIR_LBL} $(( NDX * 100. / ${#_FLIST} )) 
-	ln -s ${F} ${_ICO_STASH} 2>/dev/null
+	if [[ -n ${g_ICON_SIZE} ]];then
+		tcup 5 0; tput el; printf "\rLinking icon files matching size:${g_ICON_SIZE} ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} in ${WHITE_FG}%s${RESET} ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_ICON_LIST} ${_ICO_STASH} $(( NDX * 100. / ${#_ICON_LIST} )) 
+		[[ -n ${_ICON_SIZE[${I}]} && ${_ICON_SIZE[${I}]}  == ${g_ICON_SIZE} ]] && ln -s ${I} ${_ICO_STASH} 2>/dev/null
+	else
+		tcup 5 0; tput el; printf "\rLinking icon file ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} in ${WHITE_FG}%s${RESET} ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_ICON_LIST} ${_ICO_STASH} $(( NDX * 100. / ${#_ICON_LIST} )) 
+		ln -s ${I} ${_ICO_STASH} 2>/dev/null
+	fi
 done
 
 clear
@@ -295,17 +285,21 @@ else
 	wmctrl -a geeqie
 fi
 
+LAST_FN=?
+cursor_off
 while true;do
-	tcup 0 0;tput el
-	respond "Show current (selected) icon path"
-	if [[ ${?} -eq 0 ]];then
-		FN=$(readlink $(geeqie --remote --tell))
-		tcup 1 0; tput el 
-		echo ${FN}
-	else
+	if ! pgrep geeqie >/dev/null;then
+		cursor_on
 		exit_leave
+	fi
+	FN=$(readlink $(geeqie --tell))
+	if [[ ${FN} != ${LAST_FN} ]];then
+		tcup 0 0;tput el
+		echo ${FN}
+		LAST_FN=${FN}
+	else
+		sleep 1
 	fi
 done
 
-/bin/rm -rf ${_ICO_STASH}
 exit_leave

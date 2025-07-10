@@ -33,7 +33,7 @@ typeset -A _CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _LOCATE_OPTS=()
-typeset -a _LOW_PRIORITY_CMDS=()
+typeset -a _FREQ_CMDS=()
 
 # Constants
 #_HIST_DIR=./testing
@@ -43,16 +43,16 @@ _HIST_DIR=~
 _HIST_TMP=/tmp
 _CACHE_DIR=~/.local/share/${0:t:r}
 
-_CACHE_W=${_CACHE_DIR}/.which.cache
-_CACHE_L=${_CACHE_DIR}/.locate.cache
-_CACHE_M=${_CACHE_DIR}/.mya.cache
+_HIST_CACHE=${_CACHE_DIR}/hist_cache
 _HIST_FILE=${_HIST_DIR}/.zsh_history
 _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
-_LOW_PRIORITY_CMDS=(
+_FREQ_CMDS=(
+bak
 doit
+find
 for
 g
 git
@@ -69,6 +69,14 @@ _PROD=?
 _DEEP=?
 _FREQ=?
 
+read -r -d '' DESC<<EOF
+Clean zsh.history
+\tOptions:
+\t -f FREQ - same as PROD except frequent arguments are command only
+\t -d DEEP - unique commands without arguments are retained   
+\t -p PROD - unique commands w/arguments are retained
+EOF
+
 got_opt () {
 	local OPT=${1}
 	local -a ARGS=(${@})
@@ -84,85 +92,79 @@ got_opt () {
 
 cmd_filter () {
 	local ARRAY=${1}
-	local VALID=false
-	local WCH=0
-	local LOC=0
-	local CMD_TGT=''
 	local CMD_IN=''
 	local CMD_MSK=''
 	local CMD_OUT=''
+	local CMD_TGT=''
+	local LOC=0
 	local MYA=0
-	local RJT=0
 	local NDX=0
+	local RJT=0
 	local ROWS=${#${(P)ARRAY}}
+	local VALID=false
+	local WCH=0
+	local CACHE=0
 	local K
 
 	[[ ! -e ${_CACHE_DIR} ]] && md ${_CACHE_DIR}
-	[[ ! -e ${_CACHE_W} ]] && touch ${_CACHE_W}
-	[[ ! -e ${_CACHE_L} ]] && touch ${_CACHE_L}
-	[[ ! -e ${_CACHE_M} ]] && touch ${_CACHE_M}
+	[[ ! -e ${_HIST_CACHE} ]] && touch ${_HIST_CACHE}
 
 	for K in ${(k)${(P)ARRAY}};do
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
-		VALID=false
 		CMD_IN=$(cut -d';' -f2 <<<${K})
 		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN})
-		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # If args are present strip them off
-		if grep -Fq ${CMD_TGT} ${_CACHE_W};then
+		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
+
+		VALID=false
+		if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
 			VALID='true'
-			((WCH++))
+			((CACHE++))
 			printf '%s\n' "${K}"
-		else
+			[[ ${_VERBOSE} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
 			which -s ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((WCH++))
 				printf '%s\n' "${K}"
-				printf '%s\n' "${CMD_TGT}">>${_CACHE_W}
+				printf '%s\n' "${CMD_TGT}">>${_HIST_CACHE}
+				[[ ${_VERBOSE} == 'true' ]] && printf 'Found by which:%s\n' "${CMD_TGT}" >&2
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			if grep -Fq ${CMD_TGT} ${_CACHE_M};then
+			mya -q ${CMD_TGT} >/dev/null
+			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((MYA++))
 				printf '%s\n' "${K}"
-			else
-				mya -q ${CMD_TGT} >/dev/null
-				if [[ ${?} -eq 0 ]];then
-					VALID='true'
-					((MYA++))
-					printf '%s\n' "${K}"
-					printf '%s\n' "${CMD_TGT}">>${_CACHE_M}
-				fi
+				printf '%s\n' "${CMD_TGT}">>${_HIST_CACHE}
+				[[ ${_VERBOSE} == 'true' ]] && printf 'Found by mya:%s\n' "${CMD_TGT}" >&2
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			if grep -Fq ${CMD_TGT} ${_CACHE_L};then
+			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
+			CMD_OUT=$(locate -b -e ${CMD_MSK})
+			if [[ ${?} -eq 0 ]];then
+				if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
 					VALID='true'
 					((LOC++))
 					printf '%s\n' "${K}"
-			else
-				CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
-				CMD_OUT=$(locate -b -e ${CMD_MSK})
-				if [[ ${?} -eq 0 ]];then
-					if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
-						VALID='true'
-						((LOC++))
-						printf '%s\n' "${K}"
-						printf '%s\n' "${${(P)ARRAY}[${K}]}">>${_CACHE_L}
-					fi
+					printf '%s\n' "${CMD_OUT}">>${_HIST_CACHE}
 				fi
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
 			((RJT++))
+			[[ ${_VERBOSE} == 'true' ]] && printf 'Rejected:%s\n' "${CMD_TGT}" >&2
 		fi
 	done
-	echo "${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
+	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
 	[[ ${_PROD} == 'false' ]] && echo >&2 # Clear progress
 }
 
@@ -190,7 +192,7 @@ hist_parse () {
 		elif [[ ${_FREQ} == 'true' ]];then
 			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
 			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
-			if $(arr_in_array "_LOW_PRIORITY_CMDS" ${CMD_ONLY:gs/ //});then
+			if $(arr_in_array "_FREQ_CMDS" ${CMD_ONLY:gs/ //});then
 				CMD=${CMD_ONLY}
 			fi
 		else
@@ -215,17 +217,42 @@ build_hist () {
 
 	_CMD_LIST=("${(f)$(hist_parse ${ARRAY})}") # Order unique commands by timestamp
 
-	_VALID_CMDS=("${(f)$(cmd_filter _CMD_LIST)}") # Eliminate nonsense commands
+	_VALID_CMDS=("${(f)$(cmd_filter _CMD_LIST)}") # Retain valid commands
 
 	for L in ${_VALID_CMDS};do
 		printf "%s\n" "${L}"
 	done | sort -n # Print valid commands in time order
 }
 
+usage () {
+	local -a PENDING_MSGS=(${@})
+
+	tabs 5
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	(
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} [-p -d -f]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-f${RESET} frequent commands w/o arguments"
+	echo -e "${WHITE_FG}-d${RESET} unique commands w/o arguments"
+	echo -e "${WHITE_FG}-p${RESET} unique command w/arguments"
+	echo -e "${WHITE_FG}-v${RESET} verbose output"
+	echo -e "${WHITE_FG}-t${RESET} test mode - no file modifications"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
+	) >&2
+
+	exit_leave ${PENDING_MSGS}
+}
+
 # Execution
+[[ $(got_opt H ${@}) -eq 0 ]] && usage
+[[ $(got_opt D ${@}) -eq 0 ]] && _DEBUG=1 || _DEBUG=0
 [[ $(got_opt p ${@}) -eq 0 ]] && _PROD=true || _PROD=false
 [[ $(got_opt d ${@}) -eq 0 ]] && _DEEP=true || _DEEP=false
 [[ $(got_opt f ${@}) -eq 0 ]] && _FREQ=true || _FREQ=false
+[[ $(got_opt v ${@}) -eq 0 ]] && _VERBOSE=true || _VERBOSE=false
+[[ $(got_opt t ${@}) -eq 0 ]] && _TESTING=true || _TESTING=false
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 for F in ${_HIST_BAK}*;do
@@ -248,10 +275,11 @@ if ! arr_is_populated "_VALID_HIST";then
 fi
  
 read ACC <${_CACHE_DIR}/accumulators
-[[ ${_PROD} == 'false' ]] && echo "  WHICH:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo " CACHED:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "  WHICH:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
 [[ ${_PROD} == 'false' ]] && echo " LOCATE:${WHITE_FG}$(cut -d'|' -f3 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "    MYA:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "REJECTS:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
+[[ ${_PROD} == 'false' ]] && echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
 [[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_VALID_HIST}${RESET}"
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Done.${RESET}\n"
 
@@ -260,7 +288,12 @@ for L in ${_VALID_HIST};do
 	((NDX++))
 	printf "%s\n" "${L}" >> ${_HIST_NEW}
 done
-cp ${_HIST_NEW} ${_HIST_FILE}
+if [[ ${_TESTING} == 'false' ]];then
+	cp ${_HIST_NEW} ${_HIST_FILE}
+else
+	cp ${_HIST_NEW} .
+	echo "Modifications in file:.${_HIST_NEW}"
+fi
 fc -R # Refresh history
 
 [[ ${_PROD} == 'true' ]] && printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}

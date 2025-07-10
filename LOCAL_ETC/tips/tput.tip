@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << "tip_tput_EOF"
 
@@ -391,3 +392,4 @@ tput - list of tput capabilities
 		^J tput sgr0 ^J
 
 tip_tput_EOF
+) | mypager

@@ -207,7 +207,7 @@ sel_list () {
 	local L
 
 	local OPTION=''
-	local OPTSTR=":F:H:I:M:O:T:W:d:s:x:y:SCc"
+	local OPTSTR=":F:H:I:M:O:T:W:d:rs:x:y:SCc"
 	OPTIND=0
 
 	local CLEAR_REGION=false
@@ -228,6 +228,7 @@ sel_list () {
 	local X_COORD_ARG=0
 	local Y_COORD_ARG=0
 	local _HAS_CAT=false
+	local _REFRESH=false
 	local STR=''
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -245,6 +246,7 @@ sel_list () {
 	   W) OB_PAD=${OPTARG};;
 	   c) CLEAR_REGION=true;;
 	   d) _CAT_DELIM=${OPTARG};;
+	   r) _REFRESH=true;;
 	   s) _CAT_SORT=${OPTARG};;
 	   x) X_COORD_ARG=${OPTARG};;
 	   y) Y_COORD_ARG=${OPTARG};;
@@ -254,155 +256,157 @@ sel_list () {
 	done
 	shift $(( OPTIND - 1 ))
 
-	[[ ${#_LIST} -gt 100 ]] && msg_box -c "<w>Building select list...<N>"
+	if [[ -z ${_LIST_DATA} || ${_REFRESH} == 'true' ]];then
+		[[ ${#_LIST} -gt 100 ]] && msg_box -c "<w>Building select list...<N>"
 
-	[[ -n ${_TAG}  ]] && _SELECT_TAG_FILE="/tmp/$$.${_TAG}.state"
+		[[ -n ${_TAG}  ]] && _SELECT_TAG_FILE="/tmp/$$.${_TAG}.state"
 
-	# If no X,Y coords are passed default to center
-	LIST_W=$(arr_long_elem_len ${_LIST})
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: arr_long_elem_len returned: ${LIST_W}"
+		# If no X,Y coords are passed default to center
+		LIST_W=$(arr_long_elem_len ${_LIST})
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: arr_long_elem_len returned: ${LIST_W}"
 
-	if [[ ${LIST_W} -gt ${_MAX_COLS} ]];then
-		LIST_W=$(( _MAX_COLS - 20 ))
-		local LONG_EL=$(arr_long_elem ${_LIST})
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: arr_long_elem returned: ${LONG_EL}"
-	fi
-
-	[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LIST_W:${LIST_W} LIST_H:${LIST_H}"
-
-	BOX_H=$((LIST_H+2)) # Box height based on list count
-	[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 )) # Categories get extra padding
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
-
-	[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(coord_center $(( _MAX_ROWS - 1 )) ${BOX_H}) || BOX_X=${X_COORD_ARG}
-	[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(coord_center $(( _MAX_COLS - 1 )) ${BOX_W}) || BOX_Y=${Y_COORD_ARG}
-
-	# Set field widths for lists having categories
-	if [[ ${_HAS_CAT} == 'true' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CATEGORIES DETECTED"
-		for L in ${_LIST};do
-			F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${L})
-			F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${L})
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
-			[[ ${#F1} -gt ${_CAT_COLS[1]} ]] && _CAT_COLS[1]=${#F1}
-			[[ ${#F2} -gt ${_CAT_COLS[2]} ]] && _CAT_COLS[2]=${#F2}
-		done
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SET category field widths: F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
-		case ${_CAT_SORT} in
-			r) _LIST=(${(O)_LIST});; # Descending categories
-			a) _LIST=(${(o)_LIST});; # Ascending categories
-			n) _LIST=(${_LIST});; # No sorting of categories
-		esac
-	else
-		_CAT_COLS=()
-	fi
-
-	_PAGE_TOPS=($(sel_set_pages ${#_LIST} ${LIST_H})) # Create table of page top indexes
-
-	PAGE_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
-
-	# Decorations w/o markup
-	NM_H=$(msg_nomarkup ${LIST_HDR})
-	NM_F=$(msg_nomarkup ${LIST_FTR})
-	NM_M=$(msg_nomarkup ${LIST_MAP})
-	NM_P=$(msg_nomarkup ${PAGE_HDR})
-
-	[[ ${_PAGE_TOPS[MAX]} -gt 1 ]] && PAGING=true
-
-	MH=${#NM_M} # Set default MAP width
-	[[ ${PAGING} == 'true' ]] && PH=${#NM_P} # Set default PAGING width
-	if [[ ${HAS_OUTER} == 'true' ]];then
-		((MH+=6)) # Add padding for MAP
-		[[ ${PAGING} == 'true' ]] && ((PH+=4)) # Add padding for PAGING
-	fi
-
-	# Widest decoration - inner box, header, footer, map, paging, or exit msg
-	MAX=$(max ${BOX_W} ${#NM_H} ${#NM_F} ${MH} ${PH} ${_EXIT_BOX}) # Add padding for MAP
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} LIST_HDR:${#NM_H} LIST_FTR:${#NM_F} LIST_MAP:${MH} PAGE_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
-
-	# Handle outer box coords
-	if [[ ${HAS_OUTER} == 'true' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Setting OUTER BOX coords"
-		OB_X=$(( BOX_X - OB_X_OFFSET ))
-		OB_Y=$(( BOX_Y - OB_Y_OFFSET ))
-		OB_W=$(( BOX_W + OB_Y_OFFSET * 2 ))
-		OB_H=$(( BOX_H + OB_X_OFFSET * 2 ))
-
-		if [[ ${MAX} -gt ${OB_W} ]];then
-			DIFF=$(( (MAX - OB_W) / 2 ))
-			(( OB_Y-=DIFF ))
-			(( OB_W+=DIFF * 2 ))
+		if [[ ${LIST_W} -gt ${_MAX_COLS} ]];then
+			LIST_W=$(( _MAX_COLS - 20 ))
+			local LONG_EL=$(arr_long_elem ${_LIST})
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: arr_long_elem returned: ${LONG_EL}"
 		fi
-		MIN=$(min ${OB_X} ${OB_Y} ${OB_W} ${OB_H})
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: OUTER_BOX coords: MIN:${MIN} OB_X:${OB_X}  OB_Y:${OB_Y} OB_W:${OB_W} OB_H:${OB_H}"
 
-		if [[ ${MIN} -lt 1 ]];then
-			exit_leave "[${WHITE_FG}SELECT.zsh${RESET}] ${RED_FG}OUTER BOX${RESET} would exceed available display. ${CYAN_FG}HINT${RESET}: increase sel_list -y option from ${Y_COORD_ARG} to $(( (MIN * -1) + Y_COORD_ARG + 1 ))"
+		[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LIST_W:${LIST_W} LIST_H:${LIST_H}"
+
+		BOX_H=$((LIST_H+2)) # Box height based on list count
+		[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 )) # Categories get extra padding
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
+
+		[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(coord_center $(( _MAX_ROWS - 1 )) ${BOX_H}) || BOX_X=${X_COORD_ARG}
+		[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(coord_center $(( _MAX_COLS - 1 )) ${BOX_W}) || BOX_Y=${Y_COORD_ARG}
+
+		# Set field widths for lists having categories
+		if [[ ${_HAS_CAT} == 'true' ]];then
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CATEGORIES DETECTED"
+			for L in ${_LIST};do
+				F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${L})
+				F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${L})
+				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+				[[ ${#F1} -gt ${_CAT_COLS[1]} ]] && _CAT_COLS[1]=${#F1}
+				[[ ${#F2} -gt ${_CAT_COLS[2]} ]] && _CAT_COLS[2]=${#F2}
+			done
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SET category field widths: F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+			case ${_CAT_SORT} in
+				r) _LIST=(${(O)_LIST});; # Descending categories
+				a) _LIST=(${(o)_LIST});; # Ascending categories
+				n) _LIST=(${_LIST});; # No sorting of categories
+			esac
+		else
+			_CAT_COLS=()
 		fi
+
+		_PAGE_TOPS=($(sel_set_pages ${#_LIST} ${LIST_H})) # Create table of page top indexes
+
+		PAGE_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
+
+		# Decorations w/o markup
+		NM_H=$(msg_nomarkup ${LIST_HDR})
+		NM_F=$(msg_nomarkup ${LIST_FTR})
+		NM_M=$(msg_nomarkup ${LIST_MAP})
+		NM_P=$(msg_nomarkup ${PAGE_HDR})
+
+		[[ ${_PAGE_TOPS[MAX]} -gt 1 ]] && PAGING=true
+
+		MH=${#NM_M} # Set default MAP width
+		[[ ${PAGING} == 'true' ]] && PH=${#NM_P} # Set default PAGING width
+		if [[ ${HAS_OUTER} == 'true' ]];then
+			((MH+=6)) # Add padding for MAP
+			[[ ${PAGING} == 'true' ]] && ((PH+=4)) # Add padding for PAGING
+		fi
+
+		# Widest decoration - inner box, header, footer, map, paging, or exit msg
+		MAX=$(max ${BOX_W} ${#NM_H} ${#NM_F} ${MH} ${PH} ${_EXIT_BOX}) # Add padding for MAP
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} LIST_HDR:${#NM_H} LIST_FTR:${#NM_F} LIST_MAP:${MH} PAGE_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
+
+		# Handle outer box coords
+		if [[ ${HAS_OUTER} == 'true' ]];then
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Setting OUTER BOX coords"
+			OB_X=$(( BOX_X - OB_X_OFFSET ))
+			OB_Y=$(( BOX_Y - OB_Y_OFFSET ))
+			OB_W=$(( BOX_W + OB_Y_OFFSET * 2 ))
+			OB_H=$(( BOX_H + OB_X_OFFSET * 2 ))
+
+			if [[ ${MAX} -gt ${OB_W} ]];then
+				DIFF=$(( (MAX - OB_W) / 2 ))
+				(( OB_Y-=DIFF ))
+				(( OB_W+=DIFF * 2 ))
+			fi
+			MIN=$(min ${OB_X} ${OB_Y} ${OB_W} ${OB_H})
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: OUTER_BOX coords: MIN:${MIN} OB_X:${OB_X}  OB_Y:${OB_Y} OB_W:${OB_W} OB_H:${OB_H}"
+
+			if [[ ${MIN} -lt 1 ]];then
+				exit_leave "[${WHITE_FG}SELECT.zsh${RESET}] ${RED_FG}OUTER BOX${RESET} would exceed available display. ${CYAN_FG}HINT${RESET}: increase sel_list -y option from ${Y_COORD_ARG} to $(( (MIN * -1) + Y_COORD_ARG + 1 ))"
+			fi
+		fi
+
+		# Store OUTER_BOX coords
+		box_coords_set OUTER_BOX HAS_OUTER ${HAS_OUTER} X ${OB_X} Y ${OB_Y} W ${OB_W} H ${OB_H} COLOR ${OB_COLOR}
+
+		BOX_BOT=$(( BOX_X + BOX_H)) # Store coordinate
+
+		# Set coords for list decorations
+		if [[ ${HAS_OUTER} == 'true' ]];then
+			HDR_X=$(( BOX_X - 3 ))
+			HDR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_H})
+			MAP_X=${BOX_BOT}
+			MAP_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_M})
+			FTR_X=$(( BOX_BOT + 2 ))
+			FTR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_F})
+			PGH_X=$(( BOX_X - 1 ))
+			PGH_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_P})
+		else
+			HDR_X=$(( BOX_X - 1 ))
+			HDR_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_H})
+			[[ -n ${PAGE_HDR} ]] && MAP_X=$(( BOX_BOT + 1 )) || MAP_X=${BOX_BOT} # Move map down if blocked
+			MAP_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_M})
+			[[ -n ${LIST_MAP} || -n ${PAGE_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${BOX_BOT} # Move footer down if blocked
+			FTR_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_F})
+			PGH_X=${BOX_BOT}
+			PGH_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_P})
+		fi
+
+		# Store DECOR coords
+		box_coords_set DECOR HAS_HDR ${HAS_HDR} HDR_X ${HDR_X} HDR_Y ${HDR_Y} HAS_MAP ${HAS_MAP} MAP_X ${MAP_X} MAP_Y ${MAP_Y} HAS_FTR ${HAS_FTR} FTR_X ${FTR_X} FTR_Y ${FTR_Y}
+
+		# Set coords for region clearing
+		local R_H=$(max $(( FTR_X - BOX_X )) $(( MAP_X - BOX_X )) $(( PGH_X - BOX_X )) ${BOX_H}) 
+		local R_Y=$(min ${HDR_Y} ${MAP_Y} ${FTR_Y} ${PGH_Y} ${BOX_Y})
+		local R_W=$(max ${#LIST_HDR} ${#LIST_MAP} ${#LIST_FTR} ${#PAGE_HDR} ${BOX_W})
+
+		# Store REGION clearing coords
+		box_coords_set REGION X ${HDR_X} Y ${R_Y} W ${R_W} H ${R_H} OB_W ${OB_W} OB_Y ${OB_Y} # For display region clearing if needed
+
+		# Store INNER_BOX coords
+		box_coords_set INNER_BOX X ${BOX_X} Y ${BOX_Y} W ${BOX_W} H ${BOX_H} COLOR ${IB_COLOR} OB_W ${OB_W} OB_Y ${OB_Y}
+
+		# List coords w/ box offset
+		LIST_X=$(( BOX_X + 1 ))
+		LIST_Y=$(( BOX_Y + 1 ))
+
+		# Save data for future reference
+		_LIST_DATA[BOX_W]=${BOX_W}
+		_LIST_DATA[BOX_Y]=${BOX_Y}
+		_LIST_DATA[CLEAR_REGION]=${CLEAR_REGION}
+		_LIST_DATA[FTR]=${LIST_FTR}
+		_LIST_DATA[HDR]=${LIST_HDR}
+		_LIST_DATA[H]=${LIST_H}
+		_LIST_DATA[MAP]=${LIST_MAP}
+		_LIST_DATA[PAGING]=${PAGING}
+		_LIST_DATA[PGH_X]=${PGH_X}
+		_LIST_DATA[PGH_Y]=${PGH_Y}
+		_LIST_DATA[X]=${LIST_X}
+		_LIST_DATA[Y]=${LIST_Y}
 	fi
-
-	# Store OUTER_BOX coords
-	box_coords_set OUTER_BOX HAS_OUTER ${HAS_OUTER} X ${OB_X} Y ${OB_Y} W ${OB_W} H ${OB_H} COLOR ${OB_COLOR}
-
-	BOX_BOT=$(( BOX_X + BOX_H)) # Store coordinate
-
-	# Set coords for list decorations
-	if [[ ${HAS_OUTER} == 'true' ]];then
-		HDR_X=$(( BOX_X - 3 ))
-		HDR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_H})
-		MAP_X=${BOX_BOT}
-		MAP_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_M})
-		FTR_X=$(( BOX_BOT + 2 ))
-		FTR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_F})
-		PGH_X=$(( BOX_X - 1 ))
-		PGH_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_P})
-	else
-		HDR_X=$(( BOX_X - 1 ))
-		HDR_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_H})
-		[[ -n ${PAGE_HDR} ]] && MAP_X=$(( BOX_BOT + 1 )) || MAP_X=${BOX_BOT} # Move map down if blocked
-		MAP_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_M})
-		[[ -n ${LIST_MAP} || -n ${PAGE_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${BOX_BOT} # Move footer down if blocked
-		FTR_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_F})
-		PGH_X=${BOX_BOT}
-		PGH_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_P})
-	fi
-
-	# Store DECOR coords
-	box_coords_set DECOR HAS_HDR ${HAS_HDR} HDR_X ${HDR_X} HDR_Y ${HDR_Y} HAS_MAP ${HAS_MAP} MAP_X ${MAP_X} MAP_Y ${MAP_Y} HAS_FTR ${HAS_FTR} FTR_X ${FTR_X} FTR_Y ${FTR_Y}
-
-	# Set coords for region clearing
-	local R_H=$(max $(( FTR_X - BOX_X )) $(( MAP_X - BOX_X )) $(( PGH_X - BOX_X )) ${BOX_H}) 
-	local R_Y=$(min ${HDR_Y} ${MAP_Y} ${FTR_Y} ${PGH_Y} ${BOX_Y})
-	local R_W=$(max ${#LIST_HDR} ${#LIST_MAP} ${#LIST_FTR} ${#PAGE_HDR} ${BOX_W})
-
-	# Store REGION clearing coords
-	box_coords_set REGION X ${HDR_X} Y ${R_Y} W ${R_W} H ${R_H} OB_W ${OB_W} OB_Y ${OB_Y} # For display region clearing if needed
-
-	# Store INNER_BOX coords
-	box_coords_set INNER_BOX X ${BOX_X} Y ${BOX_Y} W ${BOX_W} H ${BOX_H} COLOR ${IB_COLOR} OB_W ${OB_W} OB_Y ${OB_Y}
-
-	# List coords w/ box offset
-	LIST_X=$(( BOX_X + 1 ))
-	LIST_Y=$(( BOX_Y + 1 ))
-
-	# Save data for future reference
-	_LIST_DATA[BOX_W]=${BOX_W}
-	_LIST_DATA[BOX_Y]=${BOX_Y}
-	_LIST_DATA[CLEAR_REGION]=${CLEAR_REGION}
-	_LIST_DATA[FTR]=${LIST_FTR}
-	_LIST_DATA[HDR]=${LIST_HDR}
-	_LIST_DATA[H]=${LIST_H}
-	_LIST_DATA[MAP]=${LIST_MAP}
-	_LIST_DATA[PAGING]=${PAGING}
-	_LIST_DATA[PGH_X]=${PGH_X}
-	_LIST_DATA[PGH_Y]=${PGH_Y}
-	_LIST_DATA[X]=${LIST_X}
-	_LIST_DATA[Y]=${LIST_Y}
 
 	msg_box_clear
 
-	sel_scroll 1 # Display list page 1 and handle user inputs
+	sel_scroll 1 # Display list and handle user inputs
 }
 
 sel_load_page () {
@@ -535,7 +539,7 @@ sel_scroll () {
 		if [[ ${_LIST_DATA[PAGING]} == 'true' ]];then
 			tcup ${_LIST_DATA[PGH_X]} ${_LIST_DATA[PGH_Y]};echo -n $(msg_markup "Page <w>${PAGE}<N> of <w>${_PAGE_TOPS[MAX]}<N> <m>${_DMD}<N> (<w>N<N>)ext (<w>P<N>)rev")
 		else
-			PAGE_HDR="Showing <w>${#_LIST}<N> Items"
+			PAGE_HDR="Showing <w>${#_LIST}<N> ${(C)$(str_pluralize item ${#_LIST})}"
 			NM_P=$(msg_nomarkup ${PAGE_HDR})
 			PGH_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_P})
 			tcup ${_LIST_DATA[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${PAGE_HDR})

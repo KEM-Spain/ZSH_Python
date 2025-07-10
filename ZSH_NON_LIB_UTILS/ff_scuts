@@ -1,0 +1,4 @@
+#!/usr/bin/zsh
+(
+firefox "file:///run/user/1000/doc/6e8238bd/firefox-kb-shortcuts.html" &
+) 2>/dev/null

@@ -52,9 +52,20 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 info () {
 	# Declarations
+	local -A FLIST=()
 	local -a LIST
+	local BAR=''
+	local BARLINE=0
 	local HIT
-	local L
+	local TIT=''
+	local DUR=''
+	local VID=''
+	local RES=''
+	local AUD=''
+	local SUB=''
+	local LONGEST=0
+	local NDX=0
+	local K L
 
 	# Constants
 	local _VID_REGEX_Z='.*\.(mp4|avi|mkv)$'
@@ -69,18 +80,19 @@ info () {
 		done
 	}
 
-	do_info () {
+	parse_info () {
 		local LIST=("${(f)$(ffprobe ${1}  2>&1 | grep -i 'duration\|stream')}")
-		local DUR=Duration:None
-		local VID=Video:None
+		local -a INFO
 		local AUD=Audio:None
+		local DESC
+		local SDUR=''
+		local DUR=Duration:None
+		local HDR
 		local RES=None
 		local SUB=false
-		local DESC
 		local VAL
-		local HDR
-		local -a INFO
-		local L I
+		local VID=Video:None
+		local L
 
 		for L in ${LIST};do
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} L: ${L}"
@@ -93,23 +105,15 @@ info () {
 		done
 
 		[[ ${SUB} == 'true' ]] && SUB="yes" || SUB="no"
-		[[ ${AUD} != 'Audio:None' ]] && AUD=${AUD:u}
+		[[ ${AUD:l} != 'audio:none' ]] && AUD=${AUD:u}
 
-		DUR=$(sed 's/[0]+$//' <<<${DUR})
+		SDUR=$(cut -d: -f2- <<<${DUR} | trim | tr -d '[:.]')
+		DUR=$(cut -d: -f2- <<<${DUR} | trim)
+		RES=$(cut -d: -f2- <<<${RES} | trim)
+		VID=$(cut -d: -f2- <<<${VID} | trim)
+		AUD=$(cut -d: -f2- <<<${AUD} | trim)
 
-		INFO=("${DUR}" "${(U)VID}" "Resolution:${RES}" "${(U)AUD}" "Subtitiles:${(C)SUB}")
-
-		HDR="\nVideo Information: ${WHITE_FG}${@:t}${RESET}"
-		echo ${HDR}
-		echo $(str_unicode_line $(echo ${HDR} | str_strip_ansi -l))
-
-		for I in ${INFO};do
-			DESC=${$(cut -d: -f1 <<<${I} | trim):=None}
-			VAL=$(cut -d: -f2- <<<${I} | trim)
-			printf "${CYAN_FG}%20s${RESET}: ${WHITE_FG}%-20s${RESET}\n" ${(C)DESC} ${VAL}
-		done
-
-		echo
+		FLIST[${SDUR}:${@:t}]="${DUR}|${(U)VID}|${RES}|${(U)AUD}|${(C)SUB}"
 	}
 
 	#--Begin GetOpts--
@@ -158,8 +162,7 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HD"
@@ -178,6 +181,8 @@ ___EOF
 	#--End GetOpts--
 
 	# Execution
+	[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
 	if [[ ${#} -eq 0 ]];then
 		LIST=("${(f)$(find . -maxdepth 1 -type f -regex "${_VID_REGEX_F}")}")
 	else
@@ -189,14 +194,33 @@ ___EOF
 		[[ ! ${L} =~ ${_VID_REGEX_Z} ]] && continue
 		[[ -d ${L} ]] && continue
 		HIT=true
-		do_info ${L}
+		parse_info ${L}
+		[[ ${#L} -gt ${LONGEST} ]] && LONGEST=${#L}
 	done
 
-	[[ ${HIT} == 'false' ]] && usage "No video files found in ${PWD}/${@}"
+	[[ ${HIT} == 'false' ]] && exit_leave "No video files found in ${PWD}/${@}"
+
+	tcup 0 0
+	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"
+	printf "${MAGENTA_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} $(str_unicode_line ${LONGEST}) $(str_unicode_line 11) $(str_unicode_line 5) $(str_unicode_line 10) $(str_unicode_line 5) $(str_unicode_line 8)
+	NDX=0
+	for K in ${(Onk)FLIST};do
+		((NDX++))
+		TIT=$(cut -d':' -f2 <<<${K})
+		DUR=$(cut -d'|' -f1 <<<${FLIST[${K}]})
+		VID=$(cut -d'|' -f2 <<<${FLIST[${K}]})
+		RES=$(cut -d'|' -f3 <<<${FLIST[${K}]})
+		AUD=$(cut -d'|' -f4 <<<${FLIST[${K}]})
+		SUB=$(cut -d'|' -f5 <<<${FLIST[${K}]})
+		BARLINE=$(( NDX % 2 )) # Barlining 
+		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
+		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
+	done | mypager wait
+
 }
 
 length () {
-	local -a FLIST=()
+	local -a FILELIST=()
 	local -a FN_ARG=()
 	local -a LIST=()
 	local -a PRELIST=()
@@ -209,9 +233,11 @@ length () {
 	local LONGEST=0
 	local NDX=0
 	local TITLE=''
+	local NO_HDR=false
 
 	read -r -d '' DESC<<___EOF
 Display video duration
+\tOptions: -h No header
 ___EOF
 
 	# Functions
@@ -230,15 +256,21 @@ ___EOF
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
+	if [[ ${1} == '-h' ]];then
+		NO_HDR=true
+		shift
+	else
+		NO_HDR=false
+	fi
 	[[ ${#} -eq 0 ]] && FN_ARG=${PWD} || FN_ARG=(${@})
 	
 	if [[ ${FN_ARG} == ${PWD} ]];then
-		FLIST=("${(f)$(find ${PWD} -maxdepth 2 -type f ! -path ${PWD})}")
+		FILELIST=("${(f)$(find ${PWD} -maxdepth 2 -type f ! -path ${PWD})}")
 	else
-		FLIST=${FN_ARG}
+		FILELIST=${FN_ARG}
 	fi
 
-	for F in ${FLIST};do
+	for F in ${FILELIST};do
 		((NDX++))
 		[[ ! -f ${F} ]] && continue
 		file ${F} | grep -qi 'media\|matroska\|video'
@@ -258,15 +290,16 @@ ___EOF
 		LIST+="${DNUM}|${DUR}|${F:t}"
 	done
 
-	[[ ${#F} -gt 1 ]] && HDR="Titles in Descending Length"
-	[[ -n ${HDR} ]] && echo "\n${MAGENTA_FG}${HDR}${CYAN_FG}" && echo $(str_unicode_line ${#HDR}) && echo -n "${RESET}"
+	if [[ ${NO_HDR} == 'false' ]];then
+		[[ ${#F} -gt 1 ]] && HDR="Titles in Descending Length"
+		[[ -n ${HDR} ]] && echo "\n${MAGENTA_FG}${HDR}${CYAN_FG}" && echo $(str_unicode_line ${#HDR}) && echo -n "${RESET}"
+	fi
 
 	for F in ${(On)LIST};do
 		TITLE=$(cut -d'|' -f3 <<<${F})
 		DUR=$(cut -d'|' -f2 <<<${F})
 		printf "${WHITE_FG}%*s${RESET}:%.9s\n" ${LONGEST} ${TITLE} ${DUR}
 	done
-	echo
 }
 
 volume () {
@@ -297,7 +330,7 @@ ___EOF
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
-	[[ ${#} -eq 0 ]] && usage "missing video filename(s)" || FN_ARG=(${@})
+	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO FILE>" || FN_ARG=(${@})
 	[[ ! -f ${FN_ARG} ]] && exit_leave $(msg_exit E "File not found:${FN_ARG}")
 	
 	file ${FN_ARG} | grep -qi 'media\|matroska\|video'
@@ -310,7 +343,7 @@ ___EOF
 merge () {
 	# Declarations
 	local -a FILES_TO_MERGE=()
-	local -a FLIST=()
+	local -a FILELIST=()
 	local APP=ffmpeg
 	local DESTINATION_FILE
 	local F
@@ -329,7 +362,9 @@ merge () {
 Merge video files
 \tDefault merge tool is ffmpeg
 \tOptionally, choose other tools: melt or mkvmerge
-\tIf no destination file is given, a default will be assigned
+\tIf no destination file is given, the default "vid_merge" will be assigned
+\tA single file <GLOB> is accepted to limit the candidates.  If no argument is
+\tprovided, all video files in PWD are candidates.
 ___EOF
 
 	parse_opts () {
@@ -357,7 +392,7 @@ ___EOF
 		case ${OPT} in
 			d) echo "<DIR>";;
 			f) echo "<FILE>";;
-			l) echo "<LIST>";;
+			l) echo "<GLOB>";;
 			t) echo "<FILE_TYPE>";;
 		esac
 	}
@@ -368,7 +403,7 @@ ___EOF
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} $(opt_type l)\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [$(opt_type l)]\n"
 		echo "${WHITE_FG}-H${RESET} help"
 		echo "${WHITE_FG}-m${RESET} use melt"
 		echo "${WHITE_FG}-k${RESET} use mkvmerge"
@@ -398,17 +433,21 @@ ___EOF
 
 	#--Execution--
 	if [[ ${#} -eq 0 ]];then
-		FLIST=("${(f)$(find . -maxdepth 1 -type f -regex "${_VID_REGEX_F}" ! -path ${PWD})}") # Pull list from current dir
+		FILELIST=(eval "${(f)$(find ${PWD} -maxdepth 1 -type f -regex "${_VID_REGEX_F}" ! -path ${PWD})}") # Pull list from current dir
 	else
-		FLIST=(${@}) # List was passed
+		local -a CMD=($(path_get_raw_cmdline))
+		local FGLOB=${CMD[-1]}
+		FILELIST=(eval "${(f)$(find ${PWD} -maxdepth 1 -type f -name ${FGLOB} ! -path ${PWD})}") # Pull list from current dir
 	fi
 
-	for F in ${FLIST};do
+	[[ -z ${FILELIST} ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Missing required arguments${RESET}:<FILES_TO_MERGE>"
+
+	for F in ${FILELIST};do
 		[[ ! ${$(file ${F}):l} =~ 'media' ]] && continue
 		grep -q "${_OUT_FILE}\|vid_merge" <<<${F}
 		[[ ${?} -eq 0 ]] && continue
 		fsub -y -C ${F}
-		FILES_TO_MERGE+=${F}
+		FILES_TO_MERGE+=${F:t}
 	done
 
 	for F in ${FILES_TO_MERGE};do 
@@ -417,7 +456,7 @@ ___EOF
 		[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "file:${F} is not of type video")
 	done
 
-	DESTINATION_FILE=${_OUT_FILE}.${1:e}
+	[[ -z ${DESTINATION_FILE} ]] && DESTINATION_FILE=${_OUT_FILE}.${FILES_TO_MERGE[1]:e} || DESTINATION_FILE=${_OUT_FILE}
 
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
 	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
@@ -501,7 +540,7 @@ ___EOF
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
-		echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
+		echo -e "\n${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
@@ -527,7 +566,7 @@ ___EOF
 
 	# Execution
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
-	[[ ${#} -eq 0 ]] && usage "Missing argument $(opt_type v)" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type v)" || FN=${1}
 
 	[[ ! -e ${FN} ]] && usage "File not found:${FN}"
 
@@ -568,7 +607,7 @@ ___EOF
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 
-	[[ ${#} -eq 0 ]] && usage "missing argument:<VIDEO_FILE>" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO_FILE>" || FN=${1}
 	[[ ! -e ${FN} ]] && exit_leave $(msg_exit E "file not found:${FN}")
 
 	ffmpeg -i ${FN} -map 0 -map 0:a -c copy -c:a:1 ac3 -b:a:1 640k ${FN:r}_ac3.mkv
@@ -659,7 +698,7 @@ else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -sa -O ${CYAN_FG} -C "<w>Show Video Utilities usage or <h>(q)uit<N>"
+	sel_list -sa -O ${GREEN_FG} -C -F"<w>Show Video Utilities usage or <h>(q)uit<N>" -H"Video Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 	echo # Clear read

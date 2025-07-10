@@ -200,7 +200,7 @@ if arr_is_populated "${LIST}";then
 	msg_box -p -PP "Found ${#LIST} matching"
 	if [[ ${_MSG_KEY} == 'y' ]];then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling o ${LIST}"
-		o -m ${LIST}
+		o ${LIST}
 	fi
 else
 	say_msg_search_err

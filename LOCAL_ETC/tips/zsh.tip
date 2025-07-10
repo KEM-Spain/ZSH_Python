@@ -1,3 +1,4 @@
+(
 cat << tip_zsh_EOF_1
 ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 
@@ -4011,3 +4012,4 @@ ${E_MAGENTA_FG}SET Commands${E_RESET}
 -o Used in all places to allow use of long option names
 -s Used by set to sort positional parameters
 tip_zsh_EOF_2
+) | mypager

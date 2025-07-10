@@ -1,3 +1,4 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_mime_EOF
 
@@ -31,3 +32,4 @@ ${E_WHITE_FG}
 update-mime-database /usr/share/mime${E_RESET}
 
 tip_mime_EOF
+) | mypager

@@ -1,0 +1,232 @@
+#!/usr/bin/zsh
+#TODO: Adjust window widths as needed in python source
+
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Echoed ansi
+E_BOLD=$(echo -n "\033[1m")
+E_ITALIC=$(echo -n "\033[3m")
+E_RESET=$(echo -n "\033[m")
+E_REVERSE=$(echo -n "\033[7m")
+E_STRIKE=$(echo -n "\033[9m")
+E_UNDER=$(echo -n "\033[4m")
+
+E_BLUE_FG=$(echo -n "\033[34m")
+E_CYAN_FG=$(echo -n "\033[36m")
+E_GREEN_FG=$(echo -n "\033[32m")
+E_MAGENTA_FG=$(echo -n "\033[35m")
+E_RED_FG=$(echo -n "\033[31m")
+E_WHITE_FG=$(echo -n "\033[37m")
+E_YELLOW_FG=$(echo -n "\033[33m")
+
+E_BLACK_BG=$(echo -n "\033[40m")
+E_BLUE_BG=$(echo -n "\033[44m")
+E_CYAN_BG=$(echo -n "\033[46m")
+E_GREEN_BG=$(echo -n "\033[42m")
+E_MAGENTA_BG=$(echo -n "\033[45m")
+E_RED_BG=$(echo -n "\033[41m")
+E_WHITE_BG=$(echo -n "\033[47m")
+E_YELLOW_BG=$(echo -n "\033[43m")
+
+# Declarations
+typeset -a _OBJS
+
+# Constants
+_OBJ_DIR=/home/kmiller/Code/LANG/Python/GTK3_Object_Examples
+_OBJS=("${(f)$(find ${_OBJ_DIR} -type f -name '*py')}")
+
+_SCRIPT_FQFN=${0}
+
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+# Functions
+find_keyword () {
+	local -A OPTS=('-w' '-w' '-i' '-i' '-d' '-n')
+	local -a GREP_OPTS=()
+	local -a LIST
+	local A D F
+	local HIT=false
+	local KW=''
+	local -a DETAIL=()
+	local TEXT=''
+
+	for A in ${@};do
+		GREP_OPTS+=${OPTS[${A}]}
+	done
+	[[ -n ${GREP_OPTS} ]] && echo "OPTIONS:${WHITE_FG}${GREP_OPTS}${RESET}"
+	KW=${@[-1]}
+
+	if [[ ${GREP_OPTS} =~ '-n' ]];then
+		for F in ${_OBJS};do
+			DETAIL=("${(f)$(grep ${GREP_OPTS} ${KW} ${F})}")
+			[[ ${?} -eq 0 ]] && HIT=true
+			for D in ${DETAIL};do
+				LN=$(cut -d: -f1 <<<${D})
+				TEXT=$(cut -d: -f2 <<<${D})
+				printf "${MAGENTA_FG}%20s ${CYAN_FG}%4s ${WHITE_FG}%.90s${RESET}\n" ${F:t} ${LN} "$(str_trim ${TEXT} | tr -d '\n' | sed "s/${KW}/${E_RED_FG}${KW}${E_RESET}/g")"
+			done
+		done | mypager
+	else
+		for F in ${_OBJS};do
+			grep -q ${GREP_OPTS} ${KW} ${F}
+			[[ ${?} -eq 0 ]] && HIT=true && echo "Keyword:\"${CYAN_FG}${KW}${RESET}\" located in:${WHITE_FG}${F}${RESET}"
+		done
+	fi
+
+	[[ ${HIT} == 'false' ]] && echo "Keyword:\"${CYAN_FG}${KW}${RESET}\" not found"
+}
+
+#--Begin GetOpts--
+read -r -d '' DESC<<EOF
+Display collection of python objects
+\tFor <KEYWORD> searches, additional options
+\tmay be included to enhance search:
+\t-d add line detail -W disable word boundary, -I enable case sensitivity
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( ${OPTIONS}[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		k) echo "<KEYWORD>";;
+		t) echo "<OBJ_NAME>";;
+	esac
+}
+
+usage () {
+
+	tabs 5
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	local OPTS=$(parse_opts ${OPTSTR})
+	local -a PENDING_MSGS=(${@})
+	(
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-I${RESET} enable keyword case sensitivity (default:case insensitive)"
+	echo -e "${WHITE_FG}-W${RESET} disable keyword word matches (default:whole words only)"
+	echo -e "${WHITE_FG}-d${RESET} add line number detail for keyword search results"
+	echo -e "${WHITE_FG}-k $(opt_type k)${RESET} search for keyword"
+	echo -e "${WHITE_FG}-l${RESET} list available objects"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
+	) >&2
+
+	exit_leave ${PENDING_MSGS}
+}
+
+typeset -a OPTIONS
+OPTSTR=":HDIWdk:l"
+OPTIND=0
+
+KEYWORD=''
+KEYWORD_DETAIL=''
+WHOLE_WORD='-w'
+CASE='-i'
+SHOW_OBJS=false
+
+while getopts ${OPTSTR} OPTION;do
+	case ${OPTION} in
+     H) usage;;
+     D) dbg_set_level;;
+     I) CASE='';;
+     W) WHOLE_WORD='';;
+     d) KEYWORD_DETAIL='-d';;
+     k) KEYWORD=${OPTARG};;
+     l) SHOW_OBJS=true;;
+     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+[[ ${#} -ne 0 ]] && ARG=${1} || ARG=''
+
+if [[ -n ${KEYWORD} ]];then
+	echo "Searching for KEYWORD:${WHITE_FG}\"${KEYWORD}\"${RESET}"
+	find_keyword ${CASE} ${WHOLE_WORD} ${KEYWORD_DETAIL} ${KEYWORD}
+	exit_leave
+fi
+
+if [[ ${SHOW_OBJS} == 'true' ]];then
+	do_rmcup
+	echo "${WHITE_FG}AVAILABLE OBJS${RESET}"
+	for T in ${(o)_OBJS};do 
+		FN=${T:t}
+		FN=${FN:r}
+		echo "\\u2022 ${FN}"
+	done
+	exit_leave
+fi
+
+clear
+do_smcup
+if [[ -n ${ARG} ]];then
+	if [[ -e ${_OBJ_DIR}/${ARG}.py ]];then
+		source ${_OBJ_DIR}/${ARG}.py
+	fi
+else
+	while true;do
+		clear # wipe screen
+		sel_set_list $(for T in ${(o)_OBJS};do echo ${T:t:r};done)
+		sel_list -S -O ${CYAN_FG} -F"<w>Select GObject or <h>(q)uit<N>" -H"Collected GObjects"
+		if [[ ${_SEL_VAL} == 'lockbutton' || ${_SEL_VAL} == 'plug' ]];then
+			msg_box -p -PC "Warning: ${WHITE_FG}${_SEL_VAL}${RESET} is brokem - will require Ctrl-C and restart of ${_SCRIPT} if executed"
+			[[ ${_MSG_KEY} != 'y' ]] && continue
+		fi
+		clear # wipe screen
+		pushd ${_OBJ_DIR} # Had to add this to avoid calendar being displayed when 1st item 'aboutdialog' was selected - strange problem
+		eval "${_OBJ_DIR}/${_SEL_VAL}.py 2>/dev/null"
+		popd
+	done
+fi
+
+exit_leave

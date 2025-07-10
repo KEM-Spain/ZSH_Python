@@ -54,9 +54,10 @@ opt_type () {
 	local OPT=${1}
 	case ${OPT} in
 		O) echo "<FILE>";;
-		s) echo "<SEARCHTERM>";;
+		i) echo "<INT>";;
 		m) echo "<MATCHES>";;
 		p) echo "<PATH>";;
+		s) echo "<SEARCHTERM>";;
 	esac
 }
 
@@ -70,17 +71,19 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type s)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-B${RESET} allow scanning of .bak files"
+	echo -e "${WHITE_FG}-B${RESET} allow scanning of .bak files (default: skip)"
 	echo -e "${WHITE_FG}-A${RESET} no ansi color"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-L${RESET} list files on one line"
 	echo -e "${WHITE_FG}-O $(opt_type O)${RESET} redirect output to $(opt_type O)"
+#	echo -e "${WHITE_FG}-a $(opt_type i)${RESET} include ${WHITE_FG}$(opt_type i)${RESET} lines after match"
+#	echo -e "${WHITE_FG}-b $(opt_type i)${RESET} include ${WHITE_FG}$(opt_type i)${RESET} lines before match"
 	echo -e "${WHITE_FG}-h${RESET} suppress file name in output (only for use with option O)"
 	echo -e "${WHITE_FG}-l${RESET} list files"
 	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} max matches to process (default: all)"
 	echo -e "${WHITE_FG}-n${RESET} line numbers"
 	echo -e "${WHITE_FG}-o${RESET} only matched"
-	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} alternate path (default is PWD)"
+	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} alternate path (default: PWD)"
 	echo -e "${WHITE_FG}-r${RESET} recurse"
 	echo -e "${WHITE_FG}-v${RESET} inverted search"
 	echo -e "${WHITE_FG}-w${RESET} whole word match"
@@ -89,6 +92,7 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
+#OPTSTR=":HDABILFO:a:b:lLhm:nop:rvw"
 OPTSTR=":HDABILFO:lLhm:nop:rvw"
 
 CASE_SENSE='-i'
@@ -98,6 +102,8 @@ FILELIST=false
 FILE_OUT=''
 INVERT_OPT=''
 LINENUM_OPT=''
+LINES_BEFORE=''
+LINES_AFTER=''
 LISTFILES_OPT=''
 LITERAL=''
 MAX_MATCHES=''
@@ -121,6 +127,8 @@ while getopts ${OPTSTR} OPTION;do
      I) CASE_SENSE='';;
      L) LISTFILES_OPT=-l;FILELIST=true;ONE_LINE=true;;
      O) FILE_OUT=${OPTARG};;
+#     a) LINES_AFTER="-a${OPTARG}";;
+#     b) LINES_BEFORE="-b${OPTARG}";;
      h) NO_FN=true;;
      l) LISTFILES_OPT=-l;FILELIST=true;;
      m) MAX_MATCHES="-m${OPTARG}";;
@@ -150,7 +158,7 @@ GREP_TARGETS="${PATH_ARG}/(*|.*)"
 
 if [[ -n ${FILE_OUT} ]];then
 	[[ -e ${FILE_OUT} ]] && /bin/rm -f ${FILE_OUT}
-	CMD="grep -h -P -I -r -d skip -D skip ${MAX_MATCHES} --color=never ${LITERAL} ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_TARGETS} ${EXCLUDE_BAK} 2>/dev/null"
+	CMD="grep -h -P -I -r -d skip -D skip ${MAX_MATCHES} --color=never ${LITERAL} ${LINES_BEFORE} ${LINES_AFTER} ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_TARGETS} ${EXCLUDE_BAK} 2>/dev/null"
 	OUT=("${(f)$(eval ${CMD})}")
 	if arr_is_populated "${OUT}";then
 		for L in ${OUT};do
@@ -162,7 +170,7 @@ if [[ -n ${FILE_OUT} ]];then
 	fi
 fi
 
-CMD="grep -H -P -I -r -d skip -D skip ${MAX_MATCHES} --color=never ${LITERAL} ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_TARGETS} ${EXCLUDE_BAK} 2>/dev/null"
+CMD="grep -H -P -I -r -d skip -D skip ${MAX_MATCHES} --color=never ${LITERAL} ${LINES_BEFORE} ${LINES_AFTER} ${CASE_SENSE} ${RECURSE_OPT} ${LINENUM_OPT} ${INVERT_OPT} ${ONLY_OPT} ${WORD_OPT} '"${SEARCHTERM}"' ${GREP_TARGETS} ${EXCLUDE_BAK} 2>/dev/null"
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 
 RAWLIST=("${(f)$(eval ${CMD})}")
@@ -225,8 +233,8 @@ else
 	if [[ ${FILELIST} == 'false' ]];then
 		tput cup 1 0; echo ${CMD} | tr -s '[:space:]'
 		[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
-		[[ -n ${CASE_SENSE} ]] && CASE_MSG=" (case insensitive)" || CASE_MSG=" (case sensitive)"
-		echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CASE_MSG}${RESET}, Result: ${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
+		[[ -n ${CASE_SENSE} ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
+		echo "Path:${CYAN_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${CYAN_FG}${#RAWLIST}${RESET} lines\n\n"
 		if [[ -n ${LINENUM_OPT} ]];then
 			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
 			REM=$(( (_COL_MAX - LONGEST_FN) - 8))

@@ -1,8 +1,9 @@
+(
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 
 local PARAM_1=ABC
 
-cat << EP1
+cat << EP1 | mypager
 \${name}
 
 The value, if any, of the parameter name is substituted. The braces are required if the expansion is
@@ -754,3 +755,4 @@ cat << EP1
 
  R      Include the unmatched portion in the result (the Rest).
 EP1
+) | mypager

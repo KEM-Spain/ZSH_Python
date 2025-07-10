@@ -1,0 +1,106 @@
+#!/usr/bin/zsh
+
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+read -r -d '' DESC<<EOF
+Filter to display screen buffer content as pages
+\tBy default, no pause for keypress will occur
+\tif content does not fill the available screen.
+\tThe [wait] option overrides this behavior and
+\twill force a wait for keypress to continue.
+\n
+EOF
+
+PERL_SCRIPT=''
+
+usage () {
+	tabs 5
+
+	(
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} [wait]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
+	) >&2
+
+	exit 0
+}
+
+page () {
+	read -r -d '' PERL_SCRIPT <<'___EOF'
+	use strict;
+	use warnings;
+	use 5.010;
+	use Term::ReadKey;
+
+	my $BUFFER='';
+	my $LN_OPT=$ENV{'LN_OPT'};
+	my $LESS_CMD="less $LN_OPT -R -F -P'PAGER COMMANDS\\: (h)elp (f,d)PgDn (b,u)PgUp (q)uit vi-keys arrows .?ltLine %lt .?e<EOF>'"; 
+	my $LINE;
+	my $LINES;
+	my $TERM_LINES = `tput lines`;
+	my $WAIT = $ARGV[0] if (defined($ARGV[0]));
+	my $WHITE_ON_GREY="\033[0m\033[0;1;37;100m";
+	my $WHITE="\033[37m";
+	my $RESET="\033[m";
+	my $CSROF="\033[?25l";
+	my $CSRON="\033[?25h";
+
+	if ( -t STDIN and not @ARGV ) {
+		print "[" . $WHITE . "mypager" . $RESET ."] no input - exiting";
+		exit 1;
+	} else {
+		for ($LINES=0; $LINES<$TERM_LINES; $LINES++) { 
+			if (defined($LINE=<STDIN>)) { 
+				$BUFFER .= $LINE;
+			} else { # Less than a full screen will be printed and exit
+				print $BUFFER;
+				print "\n";
+				if (defined $WAIT) { # If WAIT is populated end with msg
+					print $CSROF . $WHITE_ON_GREY . "Press any key" . $RESET . "...";
+				}
+				exit 1;
+			} 
+		} # The first screen is bufferred
+
+		open LESS, "| $LESS_CMD"; # Feed the first screen to less
+		print LESS $BUFFER; 
+
+		while (defined($LINE=<STDIN>)) { # Feed any subsequent screens to less
+			print LESS $LINE; 
+		} 
+
+		close LESS;
+	}
+___EOF
+
+perl -e "$PERL_SCRIPT" ${1}
+}
+
+[[ ${1} == '-H' ]] && usage
+[[ ${1} == '-n' ]] && export LN_OPT='-N' || export LN_OPT=''
+
+page ${1}
+RC=${?}
+
+[[ ${1} == 'wait' && ${RC} -eq 1 ]] && read -sk1

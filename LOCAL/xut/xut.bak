@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -17,31 +17,31 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-#Declarations
+# Declarations
 typeset -A _UTILS
 typeset -A _UTILS_DESC
 
-#Constants
+# Constants
 _WRAPPER=${0:t}
-_LIB=/usr/local/lib
 _UTILS=(
 list 1
 mc 1
 wid 1
-wm2xdo 1
 )
 
 _UTILS_DESC=(
-list "List current windows"
-mc "Show mouse coordinates"
-wid "Current win ID"
-wm2xdo "Convert wm ID to xdo ID"
+list "LIST:List current windows"
+mc "POINTER:Show mouse coordinates"
+wid "ID:Current win ID"
 )
 
-#Imports
-source ${_LIB}/common.zsh
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
-#Functions
+# Functions
 list () {
 	local DESC
 
@@ -49,20 +49,23 @@ list () {
 List current windows
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
+		(
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
-		echo "${WHITE_FG}\nDESC${RESET}:${DESC}"
+		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	echo "wmctrl Info\n-------------------"
@@ -88,33 +91,34 @@ mc  () {
 Show current mouse coordinates
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
+		(
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
-		echo "${WHITE_FG}\nDESC${RESET}:${DESC}"
+		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	for SIG in {1..9}; do
-		trap 'tput cnorm;echo "\n${0} has been brutally ${RED_FG}${ITALIC}${BOLD}murdered${RESET}";exit' ${SIG}
+		trap 'echo "\n${0} has been brutally ${RED_FG}${ITALIC}${BOLD}murdered${RESET}";exit' ${SIG}
 	done
 
-	tput civis
 	while true;do
 		read F1 F2 F3 F4 <<<$(xdotool getmouselocation)
 		printf "\r%10s %10s" ${F1}  ${F2}
 		sleep .5
 	done
-	tput cnorm
 }
 
 wid () {
@@ -124,20 +128,23 @@ wid () {
 Show current window ID
 ___EOF
 
-	#Functions
+	# Functions
 	usage () {
 		local -a PENDING_MSGS=(${@})
 
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
+		(
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
-		echo "${WHITE_FG}\nDESC${RESET}:${DESC}"
+		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+		) >&2
 
-		exit_leave $(msg_err ${PENDING_MSGS})
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
-	#Execution
+	# Execution
 	[[ ${1} == '-H' ]] && usage
 
 	local -a WDW_LIST=("${(f)$( wmctrl -l | grep -i terminal)}") 
@@ -149,81 +156,6 @@ ___EOF
 		xprop -id ${WIN_ID} | grep -qi focused
 		[[ ${?} -eq 0 ]] && echo ${W} 
 	done
-}
-
-wm2xdo () {
-	#Declarations
-	local -a WIN_LIST
-	local ARGS
-	local DESC
-	local DISP
-	local LINE
-	local TITLE
-	local WID
-	local XDO
-	local W
-
-	read -r -d '' DESC<<___EOF
-Convert wmctrl ID (hex) to xdotool ID (dec)
-\tArguments: win title (partial ok) or WM ID (hex)
-\tPipe: limited to a single WM ID
-
-\tOption:[${WHITE_FG}-l${RESET}] lists current wid's
-___EOF
-
-	#Functions
-	usage () {
-		local -a PENDING_MSGS=(${@})
-
-		tabs 5
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup
-
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [ -l | <ID>|STREAM> | <STREAM> ]\n"
-		echo "${WHITE_FG}-l${RESET} list windows"
-		echo "${WHITE_FG}\nDESC${RESET}:${DESC}"
-
-		exit_leave $(msg_err ${PENDING_MSGS})
-	}
-
-	#Execution
-	[[ ${1} == '-H' ]] && usage
-
-	if [[ ! -t 0 ]];then
-		while read LINE;do
-			printf "%d" $(cut -d' ' -f1 <<<${LINE})
-		done
-	else
-		[[ ${#} -ne 0 ]] && ARGS=${@} || usage "missing arguments"
-
-		WIN_LIST=("${(f)$(wmctrl -l | tr -s '[:space:]')}")
-
-		if [[ ${#} -eq 1 ]];then
-			case ${ARGS} in
-				-l)	printf "%-10s %-10s %-5s %-50s\n" "WID" "XDO" "DISP" "TITLE"
-						for W in ${WIN_LIST};do
-							WID=$(cut -d' ' -f1 <<<${W})
-							XDO=$(printf "%d" ${WID})
-							DISP=$(cut -d' ' -f2 <<<${W})
-							TITLE=$(cut -d' ' -f3- <<<${W})
-							[[ ${TITLE} =~ "BDH" ]] && TITLE="${TITLE} (Desktop)"
-							printf "%-10s %-10s %-5s %-50s\n" ${WID} ${XDO} ${DISP} ${TITLE}
-						done
-						;;
-				0x*)	printf "%d" ${1}
-						;;
-				*)		for W in ${WIN_LIST};do
-							WID=$(cut -d' ' -f1 <<<${W})
-							XDO=$(printf "%d" ${WID})
-							DISP=$(cut -d' ' -f2 <<<${W})
-							TITLE=$(cut -d' ' -f3- <<<${W})
-							if [[ ${TITLE:l} =~ ${1:l} ]];then
-								printf "%d" ${WID}
-							fi
-						done
-						;;
-			esac
-		fi
-	fi
 }
 
 #--Begin GetOpts--
@@ -240,17 +172,17 @@ EOF
 
 parse_opts () {
 	local OPTS=${@}
-	local -a OPTSTRING
+	local -a OPTSTR
 	local LETTER_OPT
 	local O
 
 	for O in {1..${#OPTS}};do
 		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-		OPTSTRING+="-${OPTS[${O}]}"
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
 	done
-	echo ${OPTSTRING}
+	echo ${OPTSTR}
 }
 
 opt_exists () {
@@ -272,12 +204,15 @@ usage () {
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 	tabs 5
+	(
 	echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
+	) >&2
 
-	exit_leave $(msg_err "${PENDING_MSGS}")
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	exit_leave
 }
 
 OPTSTR=":HD"
@@ -296,7 +231,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
-#Execution
+# Execution
 
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
@@ -309,13 +244,14 @@ if [[ ${UTIL} != 'none' ]];then
 else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-	selection_list_set ${(v)_UTILS_DESC}
-	selection_list -x11 -y32 "<w>Show X Windows Utilites usage or <h>(q)uit<N>"
+	sel_set_list ${(v)_UTILS_DESC}
+	sel_list -sa -O ${CYAN_FG} -C -F"<w>Show X Windows Utilites usage or <h>(q)uit<N>" -H"X Utilities"
 
-	_SCRIPT=${(k)_UTILS_DESC[(r)${_SELECTION_VALUE}]}
+	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
 
-	echo #clear read
-	${_SCRIPT} -H # call function help
+	echo # Clear read
+	${_SCRIPT} -H # Call function help
+
+	exit_leave
 fi
 
-exit_leave

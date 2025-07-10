@@ -235,10 +235,13 @@ str_rep_char () {
 	echo ${LINE}
 }
 
+str_no_ansi () {
+	perl -pe 's/\x1B\[+[\d;]*[mK]//g' <<<${@}
+}
+
 str_strip_ansi () {
 	local LINE_IN
 	local LINE_OUT
-	local LEN
 
 	local OPTION
 	local OPTSTR=":l"
@@ -261,18 +264,10 @@ str_strip_ansi () {
 	IFS='' # Preserve white space
 	while read -r LINE_IN;do
 		# Strip ansi escape chars
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LINE_IN:\"${LINE_IN}\""
 		LINE_OUT+=$(perl -pe 's/\x1B\[+[\d;]*[mK]//g' <<<${LINE_IN})
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LINE_OUT:\"${LINE_OUT}\""
 	done
 
-	LEN=${#LINE_OUT}
-
-	if [[ ${RETURN_LEN} == 'true' ]];then
-		echo ${LEN}
-	else
-		echo ${LINE_OUT}
-	fi
+	[[ ${RETURN_LEN} == 'true' ]] && echo ${#LINE_OUT} || echo ${LINE_OUT}
 }
 
 str_to_hex () {

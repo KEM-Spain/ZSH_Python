@@ -30,7 +30,7 @@ typeset -a ERR_INODES=()
 typeset -R3 NDX=0
 
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_YTS_DIR=~/.yts
+_YTS_DIR=~/.local/share/yts
 _LOG=yts.downloads
 _DOWNLOAD_LOG=${_YTS_DIR}/${_LOG}
 _NEW_LOG=/tmp/_LOG.new
