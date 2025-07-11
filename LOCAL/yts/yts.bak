@@ -52,14 +52,14 @@ _ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS
 _BREAK_COORDS=(X $((_CONT_COORDS[X] + 3 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Break display coords
 
 # Constants
-_ACRONYMS_FN=/usr/local/etc/acronyms.txt
-_YTS_DIR=~/.local/share/yts
+_CFG_DIR=~/.local/share/yts
+_ACRONYMS_FN=${_CFG_DIR}/acronyms.txt
 _SRC_DIR=/usr/local/src
 _ACTION=download
 _ALERT_TM=.2
 _CMD_LINE_ARGS=false
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_DOWNLOAD_LOG=${_YTS_DIR}/yts.downloads
+_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _ERROR_LIMIT=5
 _ERROR_LOG=/tmp/yts.err
 _FIELD_LEN[age]=30
@@ -75,9 +75,9 @@ _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve a
 _OBJECT=video
 _PAUSE_TM=2
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
-_UPD_MARKER=${_YTS_DIR}/yts-upd.lastrun
+_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
 _YTS_DBG_LOG=/tmp/yt.dbg.log
-_YTS_FAVORITES=${_YTS_DIR}/yts_favorites
+_YTS_FAVORITES=${_CFG_DIR}/yts_favorites
 _YTS_URL_LOG=/tmp/yts.url.log
 
 # Globals
@@ -549,11 +549,11 @@ download_indicator () {
 	local R_SIDE="\\u2771"
 	local MASK=""
 	local MASK_Y=8
-	local OBJ_COLOR=${GREEN_FG}
+	local OBJ_COLOR="${BOLD}${GREEN_FG}"
 	local X=$((_ALERT_COORDS[X]))
 
 	case ${LINE:l} in
-		*mib*) BORDER_COLOR="${RESET}${BOLD}";;
+		*mib*) BORDER_COLOR="${BOLD}${MAGENTA_FG}";;
 		*kib*) BORDER_COLOR="${BOLD}${RED_FG}";;
 	esac
 	
@@ -564,9 +564,9 @@ download_indicator () {
 	fi
 
 	case ${g_MASK_NDX} in
-		1) MASK="${BORDER_COLOR}${L_SIDE}${BOLD}${OBJ_COLOR}${OBJS[1]}    ${RESET}${BORDER_COLOR}${R_SIDE}";;
-		2) MASK="${BORDER_COLOR}${L_SIDE}${BOLD}${OBJ_COLOR}  ${OBJS[2]}  ${RESET}${BORDER_COLOR}${R_SIDE}";;
-		3) MASK="${BORDER_COLOR}${L_SIDE}${BOLD}${OBJ_COLOR}    ${OBJS[3]}${RESET}${BORDER_COLOR}${R_SIDE}";;
+		1) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}${OBJS[1]}    ${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
+		2) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}  ${OBJS[2]}  ${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
+		3) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}    ${OBJS[3]}${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
 	esac
 
 	if [[ ${g_MASK_NDX} -eq 3 ]];then
@@ -1295,6 +1295,7 @@ query_rumble () {
 		fi
 	done
 
+
 	if [[ -n ${g_URL_ARG} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}URL SEARCH${RESET}"
 		g_SEARCH_TYPE=url
@@ -1308,9 +1309,11 @@ query_rumble () {
 		DURATIONS=$(pup 'div' .media-description-info-stream-time '[title]' text{} <<<${PG} | tr -d '\n' | tr -s '[:space:]' | str_trim)
 		[[ -z ${DURATIONS} ]] && DURATIONS="Unavailable"
 		g_QUERY_KEY=$(pup 'div' ."media-heading-name" text{} <<<${PG} | tr -d '\n' | tr -s '[:space:]'  | str_trim)
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} g_QUERY_KEY:${g_QUERY_KEY}"
 
 		VID_LIST+="${g_QUERY_KEY}|${TITLES}|${AGES}|${LINKS}|${DURATIONS}" # Unique rows
 	else
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} g_QUERY_KEY:${g_QUERY_KEY}"
 		[[ ${LIVE} == 'true' ]] && STR='LIVESTREAM' || STR=''
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL ${STR} SEARCH${RESET}"
 
@@ -1319,16 +1322,16 @@ query_rumble () {
 		if [[ ${LIVE} == 'true' ]];then
 			PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}/livestreams")
 			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} QUERY: wget -q -O - http://rumble.com/c/${g_QUERY_KEY}/livestreams"
-			MSG="Requesting channel search livestreams... "
+
+			msg_box -c "Requesting channel search livestreams..."
 		else
 			PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}?page=1")
 			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} QUERY: wget -q -O - http://rumble.com/c/${g_QUERY_KEY}?page=1"
-			MSG="Requesting channel search... "
+
+			msg_box -c "Requesting channel search..."
 		fi
 
-		if [[ -n ${PG} ]];then # Channel search results
-			msg_box -c ${MSG}
-
+		if [[ -n ${PG} ]];then # Verify channel search has results
 			TITLES=("${(f)$(pup --charset utf8 '.title__link text{}' <<<${PG} | tut blank_lines | iconv -f utf-8 -t ascii//TRANSLIT | sed 's/|//g')}")
 			AGES=("${(f)$(pup --charset utf8 '.videostream__data text{}' <<<${PG} | tut blank_lines | tr '[\012|\015]' '[ ]' | sed -e 's/\(comments\?\) /\1 \n/g')}") # Either plural or singular
 			LINKS=("${(f)$(pup --charset utf8 'a.videostream__link attr{href}' <<<${PG})}")
@@ -1340,6 +1343,9 @@ query_rumble () {
 #			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} DURATIONS content:\n $(for V in ${DURATIONS};do echo ${V};done)"
 
 			for ((T=1; T<=${#TITLES}; T++));do
+				# TODO: First two entries are doubled on Greenwald/maybe others
+				[[ ${LINKS[${T}]} =~ 'v1_ucp_f' ]] && continue # Attempt to prevent duplicates
+
 				AGE=$(sed 's/ago .*/ago/' <<<${AGES[${T}]})
 				[[ -z ${AGE} ]] && continue
 				[[ ! ${AGE} =~ 'ago' ]] && continue # Dump junk listings without age
@@ -1351,6 +1357,7 @@ query_rumble () {
 			g_SEARCH_TYPE="user livestreams"
 
 			msg_box -c "Requesting user livestream search..."
+
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
 			PG=$(wget -q -O - "https://rumble.com/user/${g_QUERY_KEY}/livestreams'")
 			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} QUERY: wget -q -O - https://rumble.com/user/${g_QUERY_KEY}/livestreams"
@@ -1420,9 +1427,6 @@ query_rumble () {
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${V}); URL="http://rumble.com${URL}"
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${V})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${V});	AGETIME="(${AGETIME:s/|/ /})"
-
-		# TODO: First two entries are doubled on Greenwald/maybe others
-		[[ ${URL} =~ 'v1_ucp_f' ]] && continue # Attempt to prevent duplicates
 
 		WORK_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done
