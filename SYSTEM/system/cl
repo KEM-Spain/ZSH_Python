@@ -76,10 +76,10 @@ done
 
 if [[ -n ${LOCAL_FILES} ]];then
 	for F in ${LOCAL_FILES};do
-		if [[ -e ${F} && -f ${F} ]];then
+		if [[ -e ${F} ]];then
+			[[ -e ./.${F:t}.nod ]] && continue
 			PROD=$(fut findexe ${F})
 			[[ -z ${PROD} ]] && PROD="NOT FOUND"
-			#[[ -e ${PROD} && -f ${PROD} ]] && continue
 			if [[ ! ${PROD:l} =~ 'code/local' ]];then
 				diff -b ${F} ${PROD} >/dev/null 2>&1
 				if [[ ${?} -ne 0 ]];then

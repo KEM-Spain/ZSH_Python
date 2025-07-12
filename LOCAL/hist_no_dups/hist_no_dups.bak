@@ -43,7 +43,7 @@ _HIST_DIR=~
 _HIST_TMP=/tmp
 _CACHE_DIR=~/.local/share/${0:t:r}
 
-_HIST_CACHE=${_CACHE_DIR}/.hist.cache
+_HIST_CACHE=${_CACHE_DIR}/hist_cache
 _HIST_FILE=${_HIST_DIR}/.zsh_history
 _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
@@ -261,7 +261,9 @@ done
 cp ${_HIST_FILE} ${_HIST_BAK}.$(date +"%s")
 
 echo -n "${ITALIC}Updating locate...${RESET}" >&2
-sudo updatedb ${_LOCATE_OPTS} 2>/dev/null
+#sudo updatedb ${_LOCATE_OPTS} 2>/dev/null
+upd_locate -u 2>/dev/null
+echo -n "${ITALIC}Collating history...${RESET}" >&2
 
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
