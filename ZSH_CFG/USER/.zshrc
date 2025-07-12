@@ -19,6 +19,7 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Constants
+PATH=${PATH}:. # add PWD
 PATH=${PATH}:/usr/local/bin/system # add custom utils
 PATH=${PATH}:/snap/bin # add snaps
 PATH=${PATH}:/usr/local/bin/_perl.local # add local perl

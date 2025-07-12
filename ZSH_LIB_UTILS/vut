@@ -344,9 +344,10 @@ merge () {
 	# Declarations
 	local -a FILES_TO_MERGE=()
 	local -a FILELIST=()
+	local -A ORIGINALS=()
 	local APP=ffmpeg
 	local DESTINATION_FILE
-	local F
+	local F FN
 	local RESPONSE
 
 	# Constants
@@ -441,13 +442,16 @@ ___EOF
 	fi
 
 	[[ -z ${FILELIST} ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Missing required arguments${RESET}:<FILES_TO_MERGE>"
-
+	
 	for F in ${FILELIST};do
 		[[ ! ${$(file ${F}):l} =~ 'media' ]] && continue
 		grep -q "${_OUT_FILE}\|vid_merge" <<<${F}
 		[[ ${?} -eq 0 ]] && continue
-		fsub -y -C ${F}
-		FILES_TO_MERGE+=${F:t}
+		# Merging has problems with some file names - simplify
+		FN=$(fsub -Cs <<<${F})
+		mv -f ${F} ${FN} >/dev/null 2>&1
+		FILES_TO_MERGE+=${FN:t}
+		ORIGINALS[${FN}]=${F}
 	done
 
 	for F in ${FILES_TO_MERGE};do 
@@ -462,7 +466,13 @@ ___EOF
 	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
 	echo "Output file:${BOLD}${ITALIC}${DESTINATION_FILE}${RESET}"
 	respond "${CYAN_FG}Continue${RESET}"
-	[[ ${?} -ne 0 ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
+	if [[ ${?} -ne 0 ]];then
+		local K
+		for K in ${(k)ORIGINALS};do
+			mv -f "${K}" "${ORIGINALS[${K}]}"
+		done
+		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
+	fi
 
 	if overwrite_file ${DESTINATION_FILE};then
 		/bin/rm -f ${DESTINATION_FILE} >/dev/null 2>&1

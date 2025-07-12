@@ -1,5 +1,6 @@
 RESET="\033[m"
 BOLD="\033[1m"
+FAINT="\033[2m"
 ITALIC="\033[3m"
 UNDER="\033[4m"
 REVERSE="\033[7m"

@@ -540,40 +540,8 @@ do_sdc () {
 				B)	TITLE=$(echo ${CANDIDATE} | iconv -f utf-8 -t ascii//translit) # Scrub extended ascii/non ascii
 					HIT=false
 					[[ ${TITLE} != ${CANDIDATE} ]] && HIT=true && CANDIDATE=${TITLE}
+					[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option B${RESET}"
 					;;
-				S)	if [[ ${CANDIDATE} =~ ' ' ]];then
-						HIT=true
-						if [[ ${CAMEL} == "true" ]];then
-							TITLE=()
-							for W in ${=CANDIDATE};do
-								TITLE+=$(/bin/sed 's/\(.\)/\U\1/' <<< ${(C)W})
-							done
-							CANDIDATE=${TITLE}
-						fi
-						CANDIDATE=${CANDIDATE:gs/ //}
-					fi;;
-				D) if [[ ${CANDIDATE} =~ '\.' ||\
-							${CANDIDATE} =~ '\-' ||\
-							${CANDIDATE} =~ '\,' ||\
-							${CANDIDATE} =~ '\(' ||\
-							${CANDIDATE} =~ '\)' ||\
-							${CANDIDATE} =~ [\'] ||\
-							${CANDIDATE} =~ [\"] ||\
-							${CANDIDATE} =~ '\[' ]];then
-						HIT=true
-						CANDIDATE=$(echo ${CANDIDATE} | sed -E 's/\[[0-9.]*\]//g') # Scrub '[99.9]' and such
-						CANDIDATE=${CANDIDATE:gs/_/ /}  # Replace underscores
-						CANDIDATE=${CANDIDATE:gs/\,//} # Scrub commas
-						CANDIDATE=${CANDIDATE:gs/\.//} # Scrub dots
-						CANDIDATE=${CANDIDATE:gs/\-//} # Scrub dashes
-						CANDIDATE=${CANDIDATE:gs/\[//} # Scrub brackets
-						CANDIDATE=${CANDIDATE:gs/\]//} # Scrub brackets
-						CANDIDATE=$(tr -d '()' <<<${CANDIDATE}) # Scrub parens
-						CANDIDATE=$(tr -d \' <<<${CANDIDATE}) # Scrub single quotes
-						CANDIDATE=$(tr -d \" <<<${CANDIDATE}) # Scrub double quotes
-						CANDIDATE=$(tr -s "[:space:]" <<<${CANDIDATE}) # Squeeze extra spaces
-						CANDIDATE=$(iconv -f utf-8 -t ascii//translit <<<${CANDIDATE}) # Scrub extended ascii/non ascii
-					fi;;
 				C) TITLE=()
 					for W in "${(@s/,/)CANDIDATE}";do
 						TITLE+=$(/bin/sed 's/\(.\)/\U\1/' <<< ${W})
@@ -598,16 +566,60 @@ do_sdc () {
 					done
 					CANDIDATE=${TITLE}
 					[[ ${CANDIDATE} != ${C} ]] && HIT=true
+					[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option C${RESET}"
 					;;
+				D) if [[ ${CANDIDATE} =~ '\.' ||\
+							${CANDIDATE} =~ '\_' ||\
+							${CANDIDATE} =~ '\-' ||\
+							${CANDIDATE} =~ '\,' ||\
+							${CANDIDATE} =~ '\(' ||\
+							${CANDIDATE} =~ '\)' ||\
+							${CANDIDATE} =~ [\'] ||\
+							${CANDIDATE} =~ [\"] ||\
+							${CANDIDATE} =~ '\[' ]];then
+						HIT=true
+						CANDIDATE=$(echo ${CANDIDATE} | sed -E 's/\[[0-9.]*\]//g') # Scrub '[99.9]' and such
+						CANDIDATE=${CANDIDATE:gs/_/ /}  # Replace underscores
+						CANDIDATE=${CANDIDATE:gs/\,//} # Scrub commas
+						CANDIDATE=${CANDIDATE:gs/\.//} # Scrub dots
+						CANDIDATE=${CANDIDATE:gs/\-//} # Scrub dashes
+						CANDIDATE=${CANDIDATE:gs/\[//} # Scrub brackets
+						CANDIDATE=${CANDIDATE:gs/\]//} # Scrub brackets
+						CANDIDATE=$(tr -d '()' <<<${CANDIDATE}) # Scrub parens
+						CANDIDATE=$(tr -d \' <<<${CANDIDATE}) # Scrub single quotes
+						CANDIDATE=$(tr -d \" <<<${CANDIDATE}) # Scrub double quotes
+						CANDIDATE=$(tr -s "[:space:]" <<<${CANDIDATE}) # Squeeze extra spaces
+						CANDIDATE=$(iconv -f utf-8 -t ascii//translit <<<${CANDIDATE}) # Scrub extended ascii/non ascii
+						[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option D${RESET}"
+					fi;;
+				S)	if [[ ${CANDIDATE} =~ ' ' ]];then
+						# TODO: Not sure why this CAMEL code is sitting in SPACES section
+						HIT=true
+						if [[ ${CAMEL} == "true" ]];then
+							TITLE=()
+							for W in ${=CANDIDATE};do
+								TITLE+=$(/bin/sed 's/\(.\)/\U\1/' <<< ${(C)W})
+							done
+							CANDIDATE=${TITLE}
+						fi
+						[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option S camel${RESET}"
+					fi;;
 				U) TITLE=$( \
 					echo ${CANDIDATE} | \
 					perl -pe 's{./}{}g; s/(?<=[a-z])(?=[A-Z])/ \1/g'
 					)
 					CANDIDATE=${TITLE}
 					[[ ${CANDIDATE} != ${C} ]] && HIT=true
+					[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option U${RESET}"
 					;;
 			esac
 		done
+
+		if [[ ${_SPACE_DOT} =~ 'S' && ${CANDIDATE} =~ ' ' ]];then # Final operation to remove any remaining spaces
+			HIT=true
+			CANDIDATE=${CANDIDATE:gs/ //}
+			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option S spaces${RESET}"
+		fi
 
 		if [[ ${HIT} == "true" ]];then
 			CPATH=${_CHAIN_LIST[${C}]:h} # Path
@@ -1125,7 +1137,7 @@ fi
 
 # Space_Dot_Camel
 if [[ ${#_SPACE_DOT} -gt 0 ]];then
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_sdc${RESET}..."
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_sdc with _SPACE_DOT:${_SPACE_DOT}${RESET}..."
 	if [[ ${g_VERBOSE} == 'true' ]];then
 		{
 		for X in ${_SPACE_DOT};do

@@ -552,7 +552,14 @@ do_sdc () {
 						fi
 						CANDIDATE=${CANDIDATE:gs/ //}
 					fi;;
-				D) if [[ ${CANDIDATE} =~ '\.' || ${CANDIDATE} =~ '\-' || ${CANDIDATE} =~ '\,' || ${CANDIDATE} =~ '\[' ]];then
+				D) if [[ ${CANDIDATE} =~ '\.' ||\
+							${CANDIDATE} =~ '\-' ||\
+							${CANDIDATE} =~ '\,' ||\
+							${CANDIDATE} =~ '\(' ||\
+							${CANDIDATE} =~ '\)' ||\
+							${CANDIDATE} =~ [\'] ||\
+							${CANDIDATE} =~ [\"] ||\
+							${CANDIDATE} =~ '\[' ]];then
 						HIT=true
 						CANDIDATE=$(echo ${CANDIDATE} | sed -E 's/\[[0-9.]*\]//g') # Scrub '[99.9]' and such
 						CANDIDATE=${CANDIDATE:gs/_/ /}  # Replace underscores

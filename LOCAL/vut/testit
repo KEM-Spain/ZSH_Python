@@ -17,12 +17,7 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-if [[ ${#} -eq 0 || ${1} == -'H' ]];then
-	echo "Usage: ${0:t} yt|ru"
-	echo " Desc: Browse YouTube and Rumble"
-fi
-
-case ${1} in
-	yt) firefox "https://www.youtube.com/feed/subscriptions" 2>/dev/null &;;
-	ru) firefox "https://www.rumble.com/subscriptions" 2>/dev/null &;;
-esac
+mv -f esphrases2.mp4 esphrases_2.mp4
+mv -f esphrases3.mp4 esphrases_3.mp4
+mv -f esphrases4.mp4 esphrases_4.mp4
+mv -f esphrases1.mp4 esphrases_1.mp4

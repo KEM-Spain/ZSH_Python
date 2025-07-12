@@ -19,9 +19,22 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+_SCRIPT=${0:t}
+_SCRIPT_TAG="${WHITE_FG}[${RESET}${_SCRIPT}${WHITE_FG}]${RESET}"
+_ARG="<SEARCHTERM>"
+
+usage () {
+	echo "\nUsage: ${_SCRIPT} ${_ARG}"
+	exit 1
+}
+
+[[ ${1} == '-H' ]] && usage
+[[ ${#} -eq 0 ]] && echo "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:${_ARG}" && usage
+
 ITEMS=7
 
 tput smcup
 ddgr --url-handler=/usr/local/bin/system/launchers/run_google-chrome --num ${ITEMS} ${@} 2>/dev/null
 tput rmcup
+exit 0
 

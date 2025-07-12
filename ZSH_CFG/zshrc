@@ -105,7 +105,7 @@ zstyle ':completion:*:functions' ignored-patterns '_*'
 #Completion behavior
 #zstyle ':completion:*' accept-exact '*(N)'
 #zstyle ':completion:*' auto-description 'specify: %d'
-#zstyle ':completion:*' cache-path ~/.zsh/cache
+zstyle ':completion:*' cache-path ~/.zsh/cache
 #zstyle ':completion:*' completer _expand _complete _correct _approximate
 #zstyle ':completion:*' format 'Completing %d'
 #zstyle ':completion:*' group-name ''
@@ -114,7 +114,7 @@ zstyle ':completion:*:functions' ignored-patterns '_*'
 #zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
 #zstyle ':completion:*' menu select
 #zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
-#zstyle ':completion:*' use-cache on
+zstyle ':completion:*' use-cache on
 #zstyle ':completion:*' use-compctl no
 #zstyle ':completion:*' verbose yes
 #zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
@@ -131,9 +131,9 @@ zstyle ':completion:*:functions' ignored-patterns '_*'
 #zstyle -e ':completion:*:approximate:*' max-errors 'reply=( $(( ($#PREFIX + $#SUFFIX) / 3 )) )'
 #
 ##Command completion
-#zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin /usr/X11R6/bin
-#zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
-#zstyle ':completion:*:*:ext:*' file-patterns '*.(#i)(bz2|tar.gz|tar.xz|tar.lzma|bz2|rar|gz|tar|tbz2|tgz|zip|Z|7z|dmg)'
+zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin /usr/X11R6/bin
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+zstyle ':completion:*:*:ext:*' file-patterns '*.(#i)(bz2|tar.gz|tar.xz|tar.lzma|bz2|rar|gz|tar|tbz2|tgz|zip|Z|7z|dmg)'
 
 #zstyle ':completion:*' file-patterns \
 #  "^($BORING_FILES|.*)(-/):directories:normal\ directories %p~($BORING_FILES|.*)(^-/):globbed-files:normal\ files" \
