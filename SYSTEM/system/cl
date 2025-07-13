@@ -61,7 +61,7 @@ elif [[ -d ${PYPROJ}/${(U)1} ]];then
 	cd ${PYPROJ}/${(U)1} 
 	[[ -d venv ]] && cd venv
 else
-	echo "No directory found:${WHITE_FG}${1}${RESET}"
+	echo "No development directory found:${WHITE_FG}${1}${RESET}"
 	return
 fi
 

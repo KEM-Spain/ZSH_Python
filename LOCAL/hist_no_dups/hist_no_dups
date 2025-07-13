@@ -69,6 +69,26 @@ _PROD=?
 _DEEP=?
 _FREQ=?
 
+size_diff () {
+	local CUR_ZSH_BAK=$(find ${_HIST_DIR} -maxdepth 1 -name '*zsh*bak')
+	local CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
+	local LAST_SIZE=$(stat -c"%s" ${CUR_ZSH_BAK})
+	local DIFF=0
+	local -F PCT=0
+	local AVG=0
+
+	[[ ${CUR_SIZE} -gt ${LAST_SIZE} ]] && DIFF=$(( CUR_SIZE - LAST_SIZE )) || DIFF=$(( LAST_SIZE - CUR_SIZE ))
+	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
+	PCT=$(( ${DIFF}.0 / ${AVG}.0 * 100 ))
+
+	if [[ (( ${PCT} < 1.00 )) ]];then
+		printf 'Only %.2f%% difference' ${PCT}
+		return 1
+	else
+		return 0 # No rebuilds until 1% difference
+	fi
+}
+
 read -r -d '' DESC<<EOF
 Clean zsh.history
 \tOptions:
@@ -254,11 +274,17 @@ usage () {
 [[ $(got_opt v ${@}) -eq 0 ]] && _VERBOSE=true || _VERBOSE=false
 [[ $(got_opt t ${@}) -eq 0 ]] && _TESTING=true || _TESTING=false
 
+MSG=$(size_diff)
+if [[ ${?} -ne 0 ]];then
+	echo -n "History rebuild not required / ${MSG}"
+	exit_leave
+fi
+
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
-for F in ${_HIST_BAK}*;do
+for F in ${_HIST_FILE}*bak*;do
 	/bin/rm -f ${F}
 done
-cp ${_HIST_FILE} ${_HIST_BAK}.$(date +"%s")
+cp ${_HIST_FILE} ${_HIST_BAK}
 
 echo -n "${ITALIC}Updating locate...${RESET}" >&2
 upd_locate -u 2>/dev/null
