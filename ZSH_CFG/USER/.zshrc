@@ -296,7 +296,7 @@ if [[ ${_TERMS} -eq 1 ]];then
 		echo "Killing ${WHITE_FG}power management for wifi...${RESET}"
 		sudo iwconfig wlo1 power off # Turn off power mgt for wifi
 
-		[[ ${CAM_DEFAULT} == 'off' ]] && sut cam on # Kill cam - show status
+		[[ ${CAM_DEFAULT} == 'off' ]] && sut cam off # Kill cam - show status
 
 		# show calendar
 		if [[ ${_TERMS} -eq 1 ]];then

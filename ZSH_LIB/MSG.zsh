@@ -88,7 +88,7 @@ msg_box () {
 	local QUIET=false
 	local RELATIVE=false
 	local SAFE=true
-	local SCROLLING=false
+	local BUFFER_FULL=false
 	local SO=false
 	local TAG_ARG=''
 	local TEXT_STYLE=c # Default is center - Accepted Values:[(l)eft,(c)enter]
@@ -371,9 +371,9 @@ msg_box () {
 			[[ ${_CONT_DATA[OUT]} -eq ${_CONT_DATA[HEADER]} ]] && dbg "${0}:${GREEN_FG}HEADER IS COMPLETE${RESET}"
 		fi
 
-		SCROLLING=false
+		BUFFER_FULL=false
 		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[MAX]} ]];then # Usable display area consumed - shift data lines up
-			SCROLLING=true
+			BUFFER_FULL=true
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:${RED_FG}BUFFER SHIFT${RESET}"
 			shift _CONT_BUFFER # Discard top line
 			_CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Set cursor to header offset
@@ -396,13 +396,12 @@ msg_box () {
 		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area or on last line of display area if full
 		tput ech ${DISPLAY_AREA} # Clear the display area
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Printing pending MSG line:${MSG}"
-		[[ ${SCROLLING} == 'true' ]] && MSG_OUT="${BOLD}${MSG_OUT}${RESET}"
+		[[ ${BUFFER_FULL} == 'true' ]] && MSG_OUT="${BOLD}${MSG_OUT}${RESET}" # Highlight fresh scroll line
 		echo -n "${MSG_OUT}" # Output line
 
 		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # If header is out, add data line to buffer
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Buffering line:${MSG}"
-			MSG_OUT="${FAINT}${MSG_OUT}${RESET}"
-			_CONT_BUFFER+=${MSG_OUT}
+			_CONT_BUFFER+="${FAINT}${MSG_OUT}${RESET}" # Dim scroll history
 		fi
 
 		(( _CONT_DATA[SCR]++))

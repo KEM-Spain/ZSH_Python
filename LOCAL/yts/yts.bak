@@ -54,7 +54,6 @@ _BREAK_COORDS=(X $((_CONT_COORDS[X] + 3 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CON
 # Constants
 _CFG_DIR=~/.local/share/yts
 _ACRONYMS_FN=${_CFG_DIR}/acronyms.txt
-_SRC_DIR=/usr/local/src
 _ACTION=download
 _ALERT_TM=.2
 _CMD_LINE_ARGS=false
@@ -84,9 +83,9 @@ _YTS_URL_LOG=/tmp/yts.url.log
 g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
 g_ENGINE_KEY=''
+g_IND_FLIP=false
 g_LAST_CODE_UPD=?
 g_MASK_NDX=1
-g_IND_FLIP=false
 g_PID=?
 g_PREFER_LIVE=''
 g_PROXY_CMD=''
@@ -1318,6 +1317,8 @@ query_rumble () {
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL ${STR} SEARCH${RESET}"
 
 		g_SEARCH_TYPE=channel
+		#This may be of use - investigate
+		#&sort=date&section=sort 
 
 		if [[ ${LIVE} == 'true' ]];then
 			PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}/livestreams")
@@ -1527,7 +1528,7 @@ query_youtube () {
 		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
 		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
-			if grep -q -w 'y\|el\|al\|de|que' <<<${TITLE:l};then
+			if perl -wln -e "if (/\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bque\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en)
 			fi
 		fi

@@ -76,13 +76,14 @@ size_diff () {
 	local DIFF=0
 	local -F PCT=0
 	local AVG=0
+	local -F THRESHOLD=1.00
 
 	[[ ${CUR_SIZE} -gt ${LAST_SIZE} ]] && DIFF=$(( CUR_SIZE - LAST_SIZE )) || DIFF=$(( LAST_SIZE - CUR_SIZE ))
 	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
 	PCT=$(( ${DIFF}.0 / ${AVG}.0 * 100 ))
 
-	if [[ (( ${PCT} < 1.00 )) ]];then
-		printf 'Only %.2f%% difference' ${PCT}
+	printf "History growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
+	if [[ (( ${PCT} < ${THRESHOLD})) ]];then
 		return 1
 	else
 		return 0 # No rebuilds until 1% difference
@@ -276,14 +277,13 @@ usage () {
 
 MSG=$(size_diff)
 if [[ ${?} -ne 0 ]];then
-	echo -n "History rebuild not required / ${MSG}"
+	echo -n "Rebuild not required / ${MSG}"
 	exit_leave
+else
+	echo -n "${MSG}"
 fi
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
-for F in ${_HIST_FILE}*bak*;do
-	/bin/rm -f ${F}
-done
 cp ${_HIST_FILE} ${_HIST_BAK}
 
 echo -n "${ITALIC}Updating locate...${RESET}" >&2
