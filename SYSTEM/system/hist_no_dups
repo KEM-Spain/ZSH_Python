@@ -277,6 +277,7 @@ usage () {
 
 MSG=$(size_diff)
 if [[ ${?} -ne 0 ]];then
+	# TODO: Requires 2 cycles to take effect - why?
 	echo -n "Rebuild not required / ${MSG}"
 	exit_leave
 else

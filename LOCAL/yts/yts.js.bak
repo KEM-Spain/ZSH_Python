@@ -1,11 +1,11 @@
 (async function(){
-	const os = require("os");
-	const HOME = os.homedir();
-	console.log(HOME)
-	const mods = HOME.node_modules
+	const os = require("os")
+	const HOME = os.homedir()
+	const MODS = "/node_modules"
+	const MOD_PATH = HOME+MODS
 	
-	const { Command } = require(mods+'/commander');
-	const app = new Command();
+	const { Command } = require(MOD_PATH+'/commander')
+	const app = new Command()
 
 	app
 		.description('Search YouTube')
@@ -27,7 +27,7 @@
 	console.log("strict:"+strict)
 	*/
 
-	const yts = require(mods+'/yt-search')
+	const yts = require(MOD_PATH+'/yt-search')
 	const r = await yts(searchterm)
 	const videos = r.videos.slice(0,50)
 	
@@ -58,7 +58,7 @@
 				t_arg = searchterm.toLowerCase()
 				v_arg = v.author.name.toLowerCase()
 				v_arg = v_arg.replace(/ /g, '')
-				if (v_arg.indexOf(t_arg) >= 0) { /* searchterm is in title */
+				if (v_arg.indexOf(v_arg) >= 0) { /* searchterm is in title */
 					if (msgout === false) {
 						console.log("matched strict")
 						msgout = true

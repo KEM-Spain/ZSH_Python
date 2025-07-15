@@ -207,7 +207,7 @@ sel_list () {
 	local L
 
 	local OPTION=''
-	local OPTSTR=":F:H:I:M:O:T:W:d:rs:x:y:SCc"
+	local OPTSTR=":CF:H:I:M:O:RST:W:d:s:x:y:c"
 	OPTIND=0
 
 	local CLEAR_REGION=false
@@ -241,12 +241,12 @@ sel_list () {
 	   I) IB_COLOR=${OPTARG};;
 		M) HAS_MAP=true;LIST_MAP=${OPTARG};;
 	   O) HAS_OUTER=true;OB_COLOR=${OPTARG};;
+	   R) _REFRESH=true;;
 		S) _SAVE_MENU_POS=true;;
 	   T) _TAG=${OPTARG};;
 	   W) OB_PAD=${OPTARG};;
 	   c) CLEAR_REGION=true;;
 	   d) _CAT_DELIM=${OPTARG};;
-	   r) _REFRESH=true;;
 	   s) _CAT_SORT=${OPTARG};;
 	   x) X_COORD_ARG=${OPTARG};;
 	   y) Y_COORD_ARG=${OPTARG};;
@@ -668,11 +668,8 @@ sel_set_ebox () {
 }
 
 sel_set_list () {
-	local -a LIST=(${@})
-
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	_LIST=(${LIST})
+	_LIST=(${@})
 }
 
 sel_set_pages () {

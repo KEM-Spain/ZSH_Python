@@ -741,7 +741,7 @@ fav_get_selected () {
 
 		# Choose high level list item
 		list_set_restore_pos_reset # Fresh list - position at top
-		sel_list -r -S -T${TAG} -O${O_COLOR} -H"${HDR}" -M${MAP} -F${FTR}
+		sel_list -R -S -T${TAG} -O${O_COLOR} -H"${HDR}" -M${MAP} -F${FTR}
 
 		case ${_SEL_KEY} in
 			d) fav_delete ${_SEL_VAL} && continue;;
@@ -1344,7 +1344,7 @@ query_rumble () {
 #			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} DURATIONS content:\n $(for V in ${DURATIONS};do echo ${V};done)"
 
 			for ((T=1; T<=${#TITLES}; T++));do
-				# TODO: First two entries are doubled on Greenwald/maybe others
+				# Links have tags:v1_ucp_a and v1_ucp_f; the 2nd are duplicates
 				[[ ${LINKS[${T}]} =~ 'v1_ucp_f' ]] && continue # Attempt to prevent duplicates
 
 				AGE=$(sed 's/ago .*/ago/' <<<${AGES[${T}]})
@@ -1459,7 +1459,9 @@ query_youtube () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	if [[ -n ${g_QUERY_KEY} ]];then
-		[[ ${g_ENGINE_KEY:l} == 'yns' ]] && g_PROXY_CMD=${g_PROXY_CMD:s/-s//} && g_STRICT=false # No strict requested
+		#echo "g_QUERY_KEY:${g_QUERY_KEY}"
+		#echo "g_PROXY_CMD:${g_PROXY_CMD}"
+		[[ ${g_ENGINE_KEY:l} == 'yns' ]] && g_PROXY_CMD=$(sed 's/\-s//' <<<${g_PROXY_CMD}) && g_STRICT=false # No strict requested
 		PROXY_CMD="${g_PROXY_CMD} ${g_QUERY_KEY:q}"
 	else
 		PROXY_CMD="${g_PROXY_CMD}"
@@ -1519,7 +1521,7 @@ query_youtube () {
 	# Return failed search status
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		g_PROXY_CMD=$(str_trim ${(Q)g_PROXY_CMD})
-		msg_box -H2 -p -PK "<r>No data for query<N>:${g_PROXY_CMD}|${g_STRICT_MSG}|Strict filter option '<w>-S<N>' limits results"
+		msg_box -H2 -p -PK "<r>No data for query<N>:${g_PROXY_CMD}|${g_STRICT_MSG} rejects|Strict filter option '<w>-s<N>' limits results"
 		return 1
 	fi
 
@@ -1620,9 +1622,7 @@ usage () {
 	echo -e "${WHITE_FG}-A${RESET} fix audio (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-L${RESET} prefer livestreams (${MAGENTA_FG}Rumble${RESET} only)"
 	echo -e "${WHITE_FG}-R${RESET} ${MAGENTA_FG}Rumble${RESET} query [${WHITE_FG}default is ${MAGENTA_FG}YouTube${RESET}]"
-	echo -e "${WHITE_FG}-S${RESET} disable strict filtering (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-V${RESET} yt-search version (${MAGENTA_FG}YouTube${RESET} only)"
-	echo -e "${WHITE_FG}-l${RESET} search for livestreams (${MAGENTA_FG}Rumble${RESET} only)"
 	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-u${RESET} export the video URL"
@@ -1632,7 +1632,7 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDALRSVa:s"
+OPTSTR=":HDALRVa:s"
 OPTIND=0
 
 HELP_OPT=false
@@ -1650,7 +1650,6 @@ while getopts ${OPTSTR} OPTION;do
      L) g_PREFER_LIVE=true;;
      V) VERSION_OPT=true;;
      R) g_QRY_ENGINE=rumble;;
-     S) g_STRICT=true;;
      a) AGE=${OPTARG};;
      s) g_STRICT=true;;
     \?) exit_leave "${RED_FG}Error${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}";;
@@ -1662,10 +1661,6 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-if [[ ${g_FIX_AUDIO} == 'true' && ${g_QRY_ENGINE} == 'rumble' ]];then
-	exit_leave "FIX AUDIO not supported for Rumble"
-fi
-
 g_URL_ARG=''
 for A in ${@};do
 	if [[ ${A} =~ 'http' ]];then
@@ -1683,11 +1678,57 @@ FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
+SEARCHTERM=''
+typeset -a STERMS=()
+
+# Remove options 
+RCL=$(path_get_raw_cmdline | sed "s/${_SCRIPT}//")
+for X in ${=RCL};do
+	[[ ${X} =~ '[-]' ]] && continue
+	STERMS+=${X}
+done
+SEARCHTERM=$(str_trim ${STERMS})
+g_QUERY_KEY=${SEARCHTERM} # Searchterm
+
+# Validate/marshall options per engine
+if [[ ${g_QRY_ENGINE} == 'youtube' ]];then
+   if [[ ${HELP_OPT} == 'true' ]];then
+		echo "${MAGENTA_FG}$(str_unicode_line 70)${RESET}"
+		echo "YouTube backend:${WHITE_ON_GREY}${_JS_SCRIPT}${RESET}\n"
+		eval "node ${_JS_SCRIPT} -h" >&2
+		echo "\n${MAGENTA_FG}$(str_unicode_line 70)${RESET}"
+		echo -n "YouTube frontend:${WHITE_ON_GREY}${_SCRIPT}${RESET}\n"
+		usage
+		exit_leave
+	elif [[ ${VERSION_OPT} == 'true'  ]];then
+		echo -n "yt-search version:${WHITE_FG}"
+		node ${_JS_SCRIPT} --version
+		echo ${RESET}
+		exit_leave
+		[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Invalid argument${RESET} - valid age arguments: ${WHITE_FG}all,min,day,week,month,year${RESET}"
+	elif [[ ${g_STRICT} == 'true' ]];then
+		SEARCHTERM="-s ${(qqq)SEARCHTERM}"
+	elif [[ ${g_PREFER_LIVE} == 'true' ]];then
+		exit_leave $(msg_exit E "Option:-L is a Rumble only option")
+	fi
+	g_PROXY_CMD="node ${_JS_SCRIPT} ${SEARCHTERM}"
+else
+	if [[ ${VERSION_OPT} == 'true'  ]];then
+		exit_leave $(msg_exit E "Option:-V is a YouTube only option")
+	elif [[ ${g_FIX_AUDIO} == 'true'  ]];then
+		exit_leave $(msg_exit E "Option:-A is a YouTube only option")
+	elif [[ -n ${AGE} ]];then
+		exit_leave $(msg_exit E "Option:-a is a YouTube only option")
+	elif [[ ${g_STRICT} == 'true' ]];then
+		exit_leave $(msg_exit E "Option:-s is a YouTube only option")
+	fi
+fi
+
+# Check for updates
 g_LAST_CODE_UPD=$(last_code_update ${_UPD_MARKER})
 if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 'today')) ]];then
 	clear
 	msg_box "Checking for yt-dlp updates..."
-
 	{
 		CUR_VER=$(yt-dlp --version)
 		yt-dlp -U
@@ -1695,59 +1736,22 @@ if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 
 		UPD_VER=$(yt-dlp --version)
 	} >/dev/null 2>&1
 	[[ ${CUR_VER} == ${UPD_VER} ]] && MSG="yt-dlp is <g>current<N> at version:<r>${CUR_VER}<N>" || MSG="yt-dlp was <w>updated<N> from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
-
 	msg_box -c -t2 ${MSG}
 fi
 
+# Set callbacks
 set_exit_callback clear_tmp # Clear temp files on exit
 log_update # Update the log
 clear
 
+# Load favorites
 fav_load_list ${_FAV_TAB}
 
-while read LINE;do
-	_ACRONYMS+=${LINE}
-done < ${_ACRONYMS_FN}
-
-# Arg handling for yts.js
-if [[ ${g_QRY_ENGINE} == 'youtube' ]];then
-	g_QUERY_KEY="${@}"
-
-   if [[ ${HELP_OPT} == 'true' ]];then
-		usage
-		echo "\nYouTube backend:${WHITE_ON_GREY}${_JS_SCRIPT}${RESET} help\n"
-		eval "node ${_JS_SCRIPT} -h" >&2
-		exit_leave
-	fi
-
-	RCL=$(path_get_raw_cmdline | sed "s/${_SCRIPT}//")
-	RCL=$(sed 's/\-h//' <<<${RCL}) # Front end option only
-	RCL=$(sed 's/\-A//' <<<${RCL}) # Front end option only
-	RCL=$(sed 's/\-D*//' <<<${RCL}) # Front end option only
-	RCL=$(sed 's/\-S//' <<<${RCL}) # Front end option only
-	RCL=$(sed 's/\-L//' <<<${RCL}) # Rumble only option
-	RCL=$(sed 's/\-l//' <<<${RCL}) # Rumble only option
-
-	[[ ${g_QUERY_KEY} =~ ' ' ]] && g_STRICT=false # Multiword arg
-	[[ ${g_STRICT} == 'true' ]] && RCL="${RCL} -s"
-	
-	[[ ${_DEBUG} -ne 0 ]] && RCL=$(sed 's/\-D* //' <<<${RCL}) # Front end option only
-
-	if [[ ${VERSION_OPT} == 'true'  ]];then
-		echo -n "yt-search version:${WHITE_FG}"
-		node ${_JS_SCRIPT} --version
-		echo ${RESET}
-		exit_leave
-		[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Invalid argument${RESET} - valid age arguments: ${WHITE_FG}all,min,day,week,month,year${RESET}"
-	fi
-
-	if [[ -n ${g_QUERY_KEY} ]];then
-		RCL="${RCL:Q}" # Remove any quotes
-		RCL=$(sed "s/${g_QUERY_KEY}//" <<<${RCL}) # Remove arg as passed
-		RCL="${RCL} ${ARG:q}" # Quote arg for any multi-word searches
-	fi
-
-	g_PROXY_CMD="node ${_JS_SCRIPT} ${RCL}"
+# Load acronyms
+if [[ -e ${_ACRONYMS_FN} ]];then
+	while read LINE;do
+		_ACRONYMS+=${LINE}
+	done < ${_ACRONYMS_FN}
 fi
 
 # Run Query

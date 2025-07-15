@@ -61,6 +61,8 @@
 				if (v_arg.indexOf(t_arg) >= 0) { /* searchterm is in title */
 					if (msgout === false) {
 						console.log("matched strict")
+						console.log("t_arg:"+t_arg)
+						console.log("v_arg:"+v_arg)
 						msgout = true
 					}
 				} else {

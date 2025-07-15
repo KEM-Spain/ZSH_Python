@@ -44,12 +44,13 @@ _HLEN=0
 _PAD=0
 
 # Constants
-_MVQ_DIR=~/.mvq
+_MVQ_DIR=~/.local/share/mvq
 _ACTOR_LIST=${_MVQ_DIR}/actor_list.txt
+_DOWNLOAD_LIST=${_MVQ_DIR}/download_list.txt
 _DIRECTOR_LIST=${_MVQ_DIR}/director_list.txt
 _DECADE_LIST=(1960 1970 1980 1990 2000 2010 2020)
 _LIST_OPTIONS=(Actor A Director D Decade E Year Y)
-_LOG=/tmp/mvqry.log
+_LOG=${_MVQ_DIR}/mvqry.log
 _HEADERS=(A "Movies starring:" D "Movies directed by:" E "Movies for the decade:" Y "Movies for the year:")
 _DISP=122
 _REVIEW=7
@@ -173,12 +174,12 @@ cache_select () {
 	sel_list -S -T"CACHE" -sa -O ${GREEN_FG} -C -H"Cached Favorites" -F"<w>Select from cache or <h>(q)uit<N>" -M ${MAP}
 }
 
-do_list () {
+select_list_type () {
 	local -a LIST
 	local L_NAME F_NAME
 	local RNDX
 	local TITLE
-	local _SEL_F2
+	local NAME_SPLIT
 	local D
 	
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -187,8 +188,8 @@ do_list () {
 	g_LIST_TYPE=''
 
 	sel_set_list ${(k)_LIST_OPTIONS}
-	sel_list -S -T"LIST" -sa -H"<w>List Options<N>" -F"<w>Select List Type or <h>(q)uit<N>"
-	[[ ${?} -ne 0 ]] && exit_leave
+	sel_list -O -S -T"LIST" -sa -H"<w>List Options<N>" -F"<w>Select List Type or <h>(q)uit<N>"
+	[[ ${?} -ne 0 ]] && exit_leave "Select list build had errors"
 
 	case ${_LIST_OPTIONS[${_SEL_VAL}]:l} in
 		a) g_LIST_TYPE=actor
@@ -209,16 +210,16 @@ do_list () {
 	esac
 
 	if [[ ${g_LIST_TYPE} != 'year' ]];then
-			sel_set_list ${(k)_DISPLAY_LIST}
+			sel_set_list ${(ok)_DISPLAY_LIST}
 
 			_SEL_VAL=?
-			sel_list -S -T"SUBLIST" -sa -F"<w>Select ${(C)g_LIST_TYPE} or <h>(q)uit<N>"
+			sel_list -R -O -S -T"SUBLIST" -sa -F"<w>Select ${(C)g_LIST_TYPE} or <h>(q)uit<N>"
 			[[ ${?} -ne 0 ]] && exit_leave
 
 			if [[ ${LIST_TYPE} =~ 'actor\|director' ]];then
-				_SEL_F2=$(cut -d: -f2 <<<${_SEL_VAL})
-				L_NAME=$(cut -d',' -f1 <<<${_SEL_F2})
-				F_NAME=$(cut -d',' -f2 <<<${_SEL_F2} | sed 's/^ //')
+				NAME_SPLIT=$(cut -d: -f2 <<<${_SEL_VAL})
+				L_NAME=$(cut -d',' -f1 <<<${NAME_SPLIT})
+				F_NAME=$(cut -d',' -f2 <<<${NAME_SPLIT} | sed 's/^ //')
 				g_LIST_VALUE="${F_NAME} ${L_NAME}"
 			else
 				g_LIST_VALUE=${_SEL_VAL}
@@ -585,8 +586,9 @@ shift $((OPTIND -1))
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+
 [[ ${#OPTIONS} -eq 0 && ${#} -eq 0 ]] && usage
-[[ ! -e ${_MVQ_DIR} ]] && mkdir ${_MVQ_DIR}
+[[ ! -e ${_MVQ_DIR} ]] && mkdir -p ${_MVQ_DIR}
 
 CMDLINE_ARGS=false
 [[ -n ${ACTOR_ARG} || -n ${DIRECTOR_ARG}  || -n ${DECADE_ARG} || -n ${YEAR_ARG} ]] && CMDLINE_ARGS=true
@@ -632,30 +634,30 @@ while true;do
 		fi
 
 	elif [[ ${DO_LIST} == 'true' ]];then
-		do_list
+		select_list_type
 
 		case ${g_LIST_TYPE:l} in
-			actor)	FN=$(cut -d, -f2 <<<${g_LIST_VALUE} | tr -d '[:space:]')
-						LN=$(cut -d, -f1 <<<${g_LIST_VALUE} | tr -d '[:space:]')
-						QRY="actor='${FN} ${LN}'" && HEADER=${_HEADERS[A]}
-						SEARCHTERM="${FN} ${LN}"
-						ACTOR_ARG=true
-						;;
-		director)	FN=$(cut -d, -f2 <<<${g_LIST_VALUE} | tr -d '[:space:]')
-						LN=$(cut -d, -f1 <<<${g_LIST_VALUE} | tr -d '[:space:]')
-						QRY="director=${FN}+${LN}" && HEADER=${_HEADERS[D]}
-						[[ $(wc -w <<<${QRY}) -gt 1 ]] && QRY=$(sed 's/ /+/g' <<<${QRY})
-						SEARCHTERM="${FN} ${LN}"
-						DIRECTOR_ARG=true
-						;;
-		  decade)	QRY="decade=${g_LIST_VALUE}" && HEADER=${_HEADERS[E]}
-						SEARCHTERM=${g_LIST_VALUE}
-						DECADE_ARG=true
-						;;
-			 year)	QRY="year=${g_LIST_VALUE}" && HEADER=${_HEADERS[Y]}
-						SEARCHTERM=${g_LIST_VALUE}
-						YEAR_ARG=true
-						;;
+				actor)	FN=$(cut -d, -f2 <<<${g_LIST_VALUE} | tr -d '[:space:]')
+							LN=$(cut -d, -f1 <<<${g_LIST_VALUE} | tr -d '[:space:]')
+							QRY="actor='${FN} ${LN}'" && HEADER=${_HEADERS[A]}
+							SEARCHTERM="${FN} ${LN}"
+							ACTOR_ARG=true
+							;;
+			director)	FN=$(cut -d, -f2 <<<${g_LIST_VALUE} | tr -d '[:space:]')
+							LN=$(cut -d, -f1 <<<${g_LIST_VALUE} | tr -d '[:space:]')
+							QRY="director=${FN}+${LN}" && HEADER=${_HEADERS[D]}
+							[[ $(wc -w <<<${QRY}) -gt 1 ]] && QRY=$(sed 's/ /+/g' <<<${QRY})
+							SEARCHTERM="${FN} ${LN}"
+							DIRECTOR_ARG=true
+							;;
+			  decade)	QRY="decade=${g_LIST_VALUE}" && HEADER=${_HEADERS[E]}
+							SEARCHTERM=${g_LIST_VALUE}
+							DECADE_ARG=true
+							;;
+				 year)	QRY="year=${g_LIST_VALUE}" && HEADER=${_HEADERS[Y]}
+							SEARCHTERM=${g_LIST_VALUE}
+							YEAR_ARG=true
+							;;
 		esac
 	fi
 	g_LAST_QRY=${QRY}
