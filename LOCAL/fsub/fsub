@@ -668,7 +668,7 @@ do_subs () {
 	if ! arr_is_populated "${_OUT_LIST}";then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		logit "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
-		return 0 # Treat no match as a non error
+		return 1 
 	fi
 
 	# Match
@@ -941,7 +941,6 @@ YT_TAGS=false
 typeset -a OPTIONS
 OPTIND=0
 
-
 while getopts ${OPTSTR} OPT;do
 	case ${OPT} in
      C) DOTS=true;;
@@ -1132,7 +1131,10 @@ if [[ ${SEARCH_REPLACE} == 'true' ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_subs${RESET}..."
 	[[ ${g_VERBOSE} == 'true' ]] && { echo "${WHITE_ON_GREY}Substituting \"${g_FROM_TEXT}\" with \"${g_TO_TEXT}\"${RESET}" | tee -a ${_LOG} } >&2
 	do_subs
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for substitution" | tee -a ${_LOG} } >&2
+	RC=${?}
+	if [[ ${g_VERBOSE} == 'true' && ${RC} -ne 0 ]];then
+		echo "No matches for substitution" | tee -a ${_LOG} >&2
+	fi
 fi
 
 # Space_Dot_Camel

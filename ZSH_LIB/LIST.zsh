@@ -316,8 +316,11 @@ list_is_valid_selection () {
 			return 1
 		elif ! list_is_within_range ${N} ${MIN} ${MAX};then
 			return 1
-		elif [[ ${_REUSE_STALE} == 'false' && ${_LIST_SELECTED[${N}]} -eq ${_STALE_ROW} && ${_SELECT_ALL} == 'false' ]];then # Cannot select stale row; select 'all' is the only exception
-			return 1
+		elif [[ ${_SELECT_ALL} == 'false' ]];then
+			# Cannot select stale row; select 'all' is the only exception
+			if [[ ${_LIST_SELECTED[${N}]} -eq ${_STALE_ROW} && ${_REUSE_STALE} == 'false' ]];then 
+				return 1
+			fi
 		fi
 	done
 

@@ -62,7 +62,6 @@ _MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
 _MD_LOCAL="${HOME}/Documents/Music"
 _MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
 
-_VIEWED=2
 _UNSUPPORTED=3
 
 # Functions
@@ -182,7 +181,7 @@ item_decorate () {
 	local FN=$(pathabv ${_LOCAL_LIST[${NDX}]})
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
 		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
 		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
 	esac
