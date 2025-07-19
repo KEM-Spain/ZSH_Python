@@ -284,12 +284,13 @@ cmd_get_raw () {
 }
 
 coord_center () {
-	local AREA=${1} # Availble space columns/rows
-	local OBJ=${2} # Object width/height
+	local AREA=${1} # Available space width or height
+	local OBJ=${2} # Object width or height
 	local CTR
 	local REM
 	local AC
 	local OC
+	local COORD
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -301,7 +302,9 @@ coord_center () {
 	REM=$(( CTR % 2 ))
 	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
 
-	echo $(( AC - OC + 2 ))
+	COORD=$(( AC - OC ))
+
+	echo ${COORD}
 }
 
 format_pct () {

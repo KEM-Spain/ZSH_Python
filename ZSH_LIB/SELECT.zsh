@@ -29,7 +29,7 @@ _SEL_VAL=''
 _TAG=''
 
 # Functtons
-sel_box_center () {
+sel_box_ctr_txt () {
 	local BOX_LEFT=${1};shift # Box Y coord
 	local BOX_WIDTH=${1};shift # Box W coord
 	local TXT=${@} # Text to center
@@ -278,8 +278,8 @@ sel_list () {
 		[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 )) # Categories get extra padding
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
 
-		[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(coord_center $(( _MAX_ROWS - 1 )) ${BOX_H}) || BOX_X=${X_COORD_ARG}
-		[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(coord_center $(( _MAX_COLS - 1 )) ${BOX_W}) || BOX_Y=${Y_COORD_ARG}
+		[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(coord_center ${_MAX_ROWS} ${BOX_H}) || BOX_X=${X_COORD_ARG}
+		[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(coord_center ${_MAX_COLS} ${BOX_W}) || BOX_Y=${Y_COORD_ARG}
 
 		# Set field widths for lists having categories
 		if [[ ${_HAS_CAT} == 'true' ]];then
@@ -353,22 +353,22 @@ sel_list () {
 		# Set coords for list decorations
 		if [[ ${HAS_OUTER} == 'true' ]];then
 			HDR_X=$(( BOX_X - 3 ))
-			HDR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 + 3 )) ${NM_H})
+			HDR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 + 3 )) ${NM_H})
 			MAP_X=${BOX_BOT}
-			MAP_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_M})
+			MAP_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_M})
 			FTR_X=$(( BOX_BOT + 2 ))
-			FTR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_F})
+			FTR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_F})
 			PGH_X=$(( BOX_X - 1 ))
-			PGH_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_P})
+			PGH_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_P})
 		else
 			HDR_X=$(( BOX_X - 1 ))
-			HDR_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_H})
+			HDR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_H})
 			[[ -n ${PAGE_HDR} ]] && MAP_X=$(( BOX_BOT + 1 )) || MAP_X=${BOX_BOT} # Move map down if blocked
-			MAP_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_M})
+			MAP_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_M})
 			[[ -n ${LIST_MAP} || -n ${PAGE_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${BOX_BOT} # Move footer down if blocked
-			FTR_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_F})
+			FTR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_F})
 			PGH_X=${BOX_BOT}
-			PGH_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_P})
+			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_P})
 		fi
 
 		# Store DECOR coords
@@ -541,7 +541,7 @@ sel_scroll () {
 		else
 			PAGE_HDR="Showing <w>${#_LIST}<N> ${(C)$(str_pluralize item ${#_LIST})}"
 			NM_P=$(msg_nomarkup ${PAGE_HDR})
-			PGH_Y=$(sel_box_center ${BOX_Y} ${BOX_W} ${NM_P})
+			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_P})
 			tcup ${_LIST_DATA[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${PAGE_HDR})
 		fi
 

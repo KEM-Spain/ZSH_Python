@@ -270,7 +270,7 @@ msg_box () {
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: FORMAT NORMAL HEADER W/ HEADER and SEP"
 	fi
 
-	(( MSG_COLS+=2 )) # Add gutter
+	(( MSG_COLS += 2 )) # Add gutter
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: FINAL MSG_COLS:${MSG_COLS}"
 

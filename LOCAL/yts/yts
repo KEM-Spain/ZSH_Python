@@ -280,7 +280,7 @@ action_do () {
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$(( HDR_LEN + FRAME_PAD + 4 ))
-				HRZ_CTR=$(coord_center $(( _MAX_COLS - 3 )) ${HDR_LEN}) # Horiz center
+				HRZ_CTR=$(coord_center ${_MAX_COLS} ${HDR_LEN}) # Horiz center
 				[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
 				msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 				msg_box -C -jl ${HDR2_TXT}
@@ -1279,7 +1279,7 @@ query_rumble () {
 	local NDX=''
 	local PG=''
 	local REL_W=$(( ${LAST_MSG[W]} + 4 ))
-	local REL_Y=$(coord_center $(( _MAX_COLS + 3 )) ${REL_W})
+	local REL_Y=$(coord_center ${_MAX_COLS} ${REL_W})
 	local STR=''
 	local K V T
 

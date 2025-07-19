@@ -279,12 +279,12 @@ action_do () {
 				HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
-				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
-				HRZ_CTR=$(coord_center $((_MAX_COLS-3)) ${HDR_LEN}) # Horiz center
+				HDR_LEN=$(( HDR_LEN + FRAME_PAD + 4 ))
+				HRZ_CTR=$(coord_center $(( _MAX_COLS - 3 )) ${HDR_LEN}) # Horiz center
 				[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
 				msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 				msg_box -C -jl ${HDR2_TXT}
-				msg_box -C -jl "<c>$(str_unicode_line $((_CONT_COORDS[W]-4)))<N>" # Divider line
+				msg_box -C -jl "<c>$(str_unicode_line $(( _CONT_COORDS[W] - 4 )))<N>" # Divider line
 				HDRS_OUT=true
 			fi
 
@@ -417,16 +417,16 @@ box_center () {
 	local BOX_WIDTH=${_CONT_COORDS[W]} # Width coord
 	local CTR=0
 	local REM=0
-	local TXT_CTR=1
+	local TXT_CTR=0
 	local TXT_LEN=$(( ${#TXT} + BOX )) # Text length
 
-	CTR=$(( TXT_LEN / 2 )) && REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && TXT_CTR=$((CTR+1)) || TXT_CTR=${CTR}
+	CTR=$(( TXT_LEN / 2 )) && REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && TXT_CTR=$(( CTR + 1 )) || TXT_CTR=${CTR}
 
-	CTR=$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && BOX_CTR=$((CTR+1)) || BOX_CTR=${CTR}
+	CTR=$(( BOX_WIDTH / 2 )) && REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && BOX_CTR=$(( CTR + 1 )) || BOX_CTR=${CTR}
 
-	echo $(( BOX_LEFT + BOX_CTR + TXT_CTR ))
+	echo $(( BOX_LEFT + BOX_CTR - TXT_CTR ))
 }
 
 clean_author () {
@@ -548,7 +548,7 @@ download_indicator () {
 	local MASK=""
 	local MASK_Y=8
 	local OBJ_COLOR="${BOLD}${GREEN_FG}"
-	local X=$((_ALERT_COORDS[X]))
+	local X=$(( _ALERT_COORDS[X] ))
 
 	case ${LINE:l} in
 		*mib*) BORDER_COLOR="${BOLD}${MAGENTA_FG}";;
@@ -574,7 +574,7 @@ download_indicator () {
 	(( g_MASK_NDX++))
 	[[ ${g_MASK_NDX} -gt 3 ]] && g_MASK_NDX=1
 
- 	tcup ${X} $((_ALERT_COORDS[Y] + MASK_Y)) && echo -n "${MASK}" && sleep ${DELAY}
+ 	tcup ${X} $(( _ALERT_COORDS[Y] + MASK_Y )) && echo -n "${MASK}" && sleep ${DELAY}
 }
 
 download_select () {
@@ -860,15 +860,15 @@ get_box_center () {
 	local AC
 	local OC
 
-	CTR=$((AREA / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && AC=$((CTR+1)) || AC=${CTR}
+	CTR=$(( AREA / 2 ))
+	REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && AC=$(( CTR + 1 )) || AC=${CTR}
 
-	CTR=$((OBJ / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && OC=$((CTR+1)) || OC=${CTR}
+	CTR=$(( OBJ / 2 ))
+	REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
 
-	echo $((AC-OC+1))
+	echo $(( AC - OC + 1 ))
 }
 
 get_field () {
@@ -1215,7 +1215,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -x$(( _CONT_COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
+	msg_box -x$(( _CONT_COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
 
 	NDX=0
 	while true;do
@@ -1278,7 +1278,7 @@ query_rumble () {
 	local MSG=''
 	local NDX=''
 	local PG=''
-	local REL_W=$(( ${LAST_MSG[W]} +4 ))
+	local REL_W=$(( ${LAST_MSG[W]} + 4 ))
 	local REL_Y=$(coord_center $(( _MAX_COLS + 3 )) ${REL_W})
 	local STR=''
 	local K V T
@@ -1658,7 +1658,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution

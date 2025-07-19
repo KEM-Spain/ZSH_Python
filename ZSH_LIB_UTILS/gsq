@@ -119,7 +119,7 @@ edit_box () {
 	local KEY=${1}
 	local CUR_VALUE=${2}
 	local -A M_COORDS
-	local HDR="<m>$(str_unicode_line 12)<N> New Value for:<w> ${KEY} <m>$(str_unicode_line 12) (vi editor) $(str_unicode_line 12)<N>"
+	local HDR="<m>$(str_unicode_line 3)<N> New Value for:<w> ${KEY} <m>$(str_unicode_line 3) (vi editor) $(str_unicode_line 3)<N>"
 	local ROW=0
 
 	M_COORDS=($(box_coords_get MSG_BOX))
@@ -127,7 +127,7 @@ edit_box () {
 	{
 	# Clear space around input
 	for ((ROW=-1;ROW<=7;ROW++));do
-		tput cup $(( M_COORDS[X] + ROW )) $(coord_center $(( _MAX_COLS - 7 )) ${#HDR})
+		tput cup $(( M_COORDS[X] + ROW )) $(coord_center ${_MAX_COLS} ${#HDR})
 		tput ech ${#HDR}
 	done
 
