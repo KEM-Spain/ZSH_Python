@@ -173,7 +173,7 @@ while getopts ${OPTSTR} OPTION;do
 	  :) exit_leave "${RED_FG}Error${RESET}: option -${OPTARG} requires an argument${RESET}";;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 #--Execution

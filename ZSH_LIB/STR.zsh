@@ -13,7 +13,7 @@ str_array_to_num () {
 	((MAX--))
 	for S in ${STR};do
 		((MAG=10**MAX))
-		NUM=$((NUM+(S*MAG)))
+		NUM=$(( NUM + (S * MAG) ))
 		((MAX--))
 	done
 
@@ -37,10 +37,10 @@ str_center () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: WIDTH:${WIDTH} TEXT:${TEXT} TEXT_WIDTH:${TEXT_WIDTH}"
 
-	REM=$(( WIDTH-${TEXT_WIDTH} ))
+	REM=$(( WIDTH - ${TEXT_WIDTH} ))
 	BORDER=' ' # Minimum border
 	if [[ ${REM} -ne 0 ]];then
-		PAD=$(( REM/2 ))
+		PAD=$(( REM / 2 ))
 		BORDER=$(printf ' %.0s' {1..${PAD}})
 	fi
 
@@ -70,16 +70,16 @@ str_center_pad () {
 	TEXT_WIDTH=${#TEXT}
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: WIDTH:${WIDTH} TEXT_WIDTH:${TEXT_WIDTH} TEXT:${TEXT}"
 
-	REM=$((WIDTH-TEXT_WIDTH))
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: WIDTH-TEXT_WIDTH:$((WIDTH-TEXT_WIDTH)) REM:${REM}"
+	REM=$(( WIDTH - TEXT_WIDTH ))
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: WIDTH-TEXT_WIDTH:$(( WIDTH - TEXT_WIDTH )) REM:${REM}"
 
 	if [[ ${REM} -ne 0 ]];then
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: REM:${REM}"
-		PAD=$(( REM/2 ))
+		PAD=$(( REM / 2 ))
 		BORDER=$(printf ' %.0s' {1..${PAD}})
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PAD:${PAD}"
 	fi
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BORDER:${#BORDER}:[${BORDER}] WIDTH-(PAD+TEXT_WIDTH+2):$(( WIDTH - (PAD+TEXT_WIDTH+2) ))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BORDER:${#BORDER}:[${BORDER}] WIDTH-(PAD+TEXT_WIDTH+2):$(( WIDTH - (PAD + TEXT_WIDTH + 2) ))"
 
 	echo "${BORDER}"
 }
@@ -109,7 +109,7 @@ str_expanded_length () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	LEN=$(expand <<<${STR} | wc -m)
-	echo $((--LEN))
+	echo $(( --LEN ))
 }
 
 str_from_hex () {
@@ -138,7 +138,7 @@ str_pad_string () {
 
 	WIDTH=${1};shift
 	STR=${@}
-	STR="${STR}$(str_rep_char ' ' $((WIDTH-${#STR})))"
+	STR="${STR}$(str_rep_char ' ' $(( WIDTH - ${#STR} )))"
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Returning with:${WHITE_FG}[${STR}]${RESET}" >&2 
 
@@ -259,7 +259,7 @@ str_strip_ansi () {
 			\?) print -u2 " ${_SCRIPT}: ${0}: unknown option -${OPTARG}" >&2; read;;
 		esac
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 
 	IFS='' # Preserve white space
 	while read -r LINE_IN;do
@@ -318,7 +318,7 @@ str_unicode_line () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} LENGTH:${LENGTH}"
 
 	do_rmso
-	printf "\\u2500%.0s" {1..$((${LENGTH}))}
+	printf "\\u2500%.0s" {1..$(( ${LENGTH} ))}
 }
 
 str_unpipe () {

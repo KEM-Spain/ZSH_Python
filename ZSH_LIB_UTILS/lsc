@@ -218,7 +218,7 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup

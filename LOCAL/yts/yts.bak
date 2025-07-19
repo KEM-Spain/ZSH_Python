@@ -417,7 +417,7 @@ box_center () {
 	local BOX_WIDTH=${_CONT_COORDS[W]} # Width coord
 	local CTR=0
 	local REM=0
-	local TXT_CTR=0
+	local TXT_CTR=1
 	local TXT_LEN=$(( ${#TXT} + BOX )) # Text length
 
 	CTR=$(( TXT_LEN / 2 )) && REM=$((CTR % 2))
@@ -426,7 +426,7 @@ box_center () {
 	CTR=$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))
 	[[ ${REM} -ne 0 ]] && BOX_CTR=$((CTR+1)) || BOX_CTR=${CTR}
 
-	echo $(( BOX_LEFT + BOX_CTR - TXT_CTR ))
+	echo $(( BOX_LEFT + BOX_CTR + TXT_CTR ))
 }
 
 clean_author () {
@@ -704,7 +704,7 @@ fav_get_selected () {
 				if [[ ${EKEY} =~ 'r' ]];then
 					_DISPLAY_LIST+=${F:gs/_/ /}
 					_FAVORITE_ENGINE[${F}]=${EKEY}
-					O_COLOR=${BLUE_FG}
+					O_COLOR=${MAGENTA_FG}
 					C_LIST=' '
 				fi
 			else
@@ -720,7 +720,7 @@ fav_get_selected () {
 							if [[ ! ${EKEY} =~ 'p' ]];then
 								_DISPLAY_LIST+=${F:gs/_/ /}
 								_FAVORITE_ENGINE[${F}]=${EKEY}
-								O_COLOR=${MAGENTA_FG}
+								O_COLOR=${CYAN_FG}
 								C_LIST=' '
 							fi
 						fi
@@ -733,14 +733,16 @@ fav_get_selected () {
 
 		clear
 
-		HDR="${(C)g_QRY_ENGINE}${C_LIST}Query"
+		HDR="${BOLD}${(C)g_QRY_ENGINE}${C_LIST}Query"
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)g_QRY_ENGINE} query from history or <h>(q)uit<N>"
 		TAG=$(tr -d '[:space:]' <<<${HDR})
 
 		# Choose high level list item
+		msg_line_weight heavy
 		list_set_restore_pos_reset # Fresh list - position at top
-		sel_list -R -S -T${TAG} -O${O_COLOR} -H"${HDR}" -M${MAP} -F${FTR}
+		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
+		msg_line_weight light
 
 		case ${_SEL_KEY} in
 			d) fav_delete ${_SEL_VAL} && continue;;
@@ -794,9 +796,9 @@ fav_add () {
 		[[ ${g_PREFER_LIVE} == 'true' ]] && FAV="${(C)FAV}|${FAV}|RL" || FAV="${(C)FAV}|${FAV}|R" 
 	else
 		if [[ ${FAV} =~ ' ' ]];then
-			FAV="${(C)FAV}|${FAV}|PYNS" # In quotes - contains spaces
+			FAV="${(C)FAV}|${FAV}|PYNS" # Quoted string
 		else
-			[[ ${g_STRICT} == 'false' ]] && FAV="${(C)FAV}|${FAV}|YNS" || FAV="${(C)FAV}|${FAV}|Y"
+			[[ ${g_STRICT} == 'true' ]] && FAV="${(C)FAV}|${FAV}|YS" || FAV="${(C)FAV}|${FAV}|YNS"
 		fi
 	fi
 
@@ -1439,19 +1441,19 @@ query_youtube () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	if [[ -n ${g_QUERY_KEY} ]];then
-		if [[ ${g_ENGINE_KEY:l} == 'ys' ]];then # Strict requested
+		if [[ ${g_ENGINE_KEY:l} =~ 'ys' ]];then # Strict requested
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER ACTIVE${RESET}"
 			g_STRICT=true
-			PROXY_CMD="node ${_JS_SCRIPT} -s ${(qqq)g_QUERY_KEY}"
-		elif [[ ${g_ENGINE_KEY:l} =~ 'yns' ]];then # No strict requested
+			g_PROXY_CMD="node ${_JS_SCRIPT} -s ${(qqq)g_QUERY_KEY}"
+		else
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER INACTIVE${RESET}"
 			g_STRICT=false
-			PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)g_QUERY_KEY}"
+			g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)g_QUERY_KEY}"
 		fi
-	else
-		PROXY_CMD="${g_PROXY_CMD}"
 	fi
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, g_ENGINE_KEY:${g_ENGINE_KEY}, ${CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
+		dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, ${CYAN_FG}g_ENGINE_KEY${RESET}:${g_ENGINE_KEY}, ${CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
 	_LOCAL_LIST=()
@@ -1479,18 +1481,20 @@ query_youtube () {
 		STR=$(iconv -f utf-8 -t ascii//translit <<<${LINE}) # Scrub non ascii
 		STR=${STR:s/Streamed //}
 
-		if [[ ${CUSTOM_KEY} == 'false' && ${g_STRICT} == 'false' ]];then # No Strict filtering
+		if [[ ${CUSTOM_KEY} == 'false' && ${g_STRICT} == 'false' ]];then # Apply filtering to non strict results
 			HIT=false
 			AUTHOR=$(cut -d'|' -f2 <<<${LINE})
 			[[ ${AUTHOR:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:gs/ //:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} EXPERIMENTAL FILTERING AUTHOR:${AUTHOR} HIT:${HIT}"
+			if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
+				dbg "${0}:${LINENO} NON STRICT FILTERING, AUTHOR:${AUTHOR}, g_DISPLAY_KEY:${g_DISPLAY_KEY}, g_QUERY_KEY:${g_QUERY_KEY}, HIT:${HIT}"
+			fi
 			[[ ${HIT} == 'false' ]] && continue
 		fi
 		 
 		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}
-	done< <(eval ${PROXY_CMD})
+	done< <(eval ${g_PROXY_CMD})
 
 	[[ ${g_STRICT} == 'true' ]] && g_STRICT_MSG="$(total_rejects ${NDX})" || g_STRICT_MSG=''
 
@@ -1503,9 +1507,9 @@ query_youtube () {
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		g_PROXY_CMD=$(str_trim ${(Q)g_PROXY_CMD})
 		if [[ ${g_STRICT} == 'true' ]];then
-			msg_box -H2 -p -PK "<r>No data for query<N>:${g_PROXY_CMD}|${g_STRICT_MSG} rejects|Strict filter option '<w>-s<N>' limits results"
+			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<I>Strict filter is active<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
 		else
-			msg_box -H2 -p -PK "<r>No data for query<N>:${g_PROXY_CMD}"
+			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
 		fi
 		return 1
 	fi
@@ -1564,6 +1568,14 @@ total_rejects () {
 	echo "${RJ_PCT}%"
 }
 
+website () {
+	case ${1} in
+		yt) firefox "https://www.youtube.com/feed/subscriptions" 2>/dev/null &;;
+		ru) firefox "https://www.rumble.com/subscriptions" 2>/dev/null &;;
+		*) exit_leave $(msg_exit E "Enter yt for YouTube, ru for Rumble")
+	esac
+}
+
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
@@ -1576,6 +1588,7 @@ opt_type () {
 	case ${OPT} in
 		a) echo "<AGE_FILTER> [all,min,hour,day,week,month,year]";;
 		s) echo "<SEARCHTERM>";;
+		w) echo "<ABBV>";;
 		u) echo "<URL>";;
 	esac
 }
@@ -1611,17 +1624,19 @@ usage () {
 	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-u${RESET} export the video URL"
+	echo -e "${WHITE_FG}-w${RESET} $(opt_type w) Goto website (yt/ru)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDALRVa:s"
+OPTSTR=":HDALRVa:sw:"
 OPTIND=0
 
 HELP_OPT=false
 VERSION_OPT=false
+WEB=''
 g_STRICT=false
 g_QRY_ENGINE=youtube
 g_FIX_AUDIO=false
@@ -1637,6 +1652,7 @@ while getopts ${OPTSTR} OPTION;do
      R) g_QRY_ENGINE=rumble;;
      a) AGE=${OPTARG};;
      s) g_STRICT=true;;
+     w) WEB=${OPTARG};;
     \?) exit_leave "${RED_FG}Error${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}";;
 	  :) exit_leave "${RED_FG}Error${RESET}: option -${OPTARG} requires an argument${RESET}";;
 	esac
@@ -1646,6 +1662,8 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+[[ -n ${WEB} ]] && website ${WEB} && exit_leave
+
 [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGS IN:${@}, g_QRY_ENGINE:${g_QRY_ENGINE}"
 
 RAWPATH=$(path_get_raw)

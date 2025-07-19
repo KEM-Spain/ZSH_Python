@@ -42,7 +42,7 @@ cursor_row () {
 	read -t 1 -s -d 'R' LINE < /dev/tty
 	LINE="${LINE##*\[}"
 	LINE="${LINE%;*}"
-	echo $((LINE - 2))
+	echo $(( LINE - 2 ))
 }
 
 cursor_save () {

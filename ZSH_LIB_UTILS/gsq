@@ -127,19 +127,19 @@ edit_box () {
 	{
 	# Clear space around input
 	for ((ROW=-1;ROW<=7;ROW++));do
-		tput cup $((M_COORDS[X]+ROW)) $(coord_center $((_MAX_COLS-7)) ${#HDR})
+		tput cup $(( M_COORDS[X] + ROW )) $(coord_center $(( _MAX_COLS - 7 )) ${#HDR})
 		tput ech ${#HDR}
 	done
 
-	msg_box -jl -h ${M_COORDS[H]} -w $((${#HDR}-25)) "${HDR}"
+	msg_box -jl -h ${M_COORDS[H]} -w $(( ${#HDR} - 25 )) "${HDR}"
 
 	# tput smso
-	tput cup $((M_COORDS[X]+4)) $((M_COORDS[Y]+2))
+	tput cup $(( M_COORDS[X] + 4 )) $(( M_COORDS[Y] + 2 ))
 	tput el
 	cursor_on
 	NEW_VALUE=$(inline_edit ${CUR_VALUE}) # Launch line editor
 	cursor_off
-	M_COORDS[H]=$((M_COORDS[H]+2))
+	M_COORDS[H]=$(( M_COORDS[H] + 2 ))
 	tput rmso
 	msg_box_clear
 	} >&2
@@ -231,7 +231,7 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup

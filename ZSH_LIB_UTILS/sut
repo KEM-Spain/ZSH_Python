@@ -204,7 +204,7 @@ ___EOF
 		esac
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 
 	# Execution
@@ -497,7 +497,7 @@ info () {
 		for L in ${LABELS};do
 			((NDX++))
 			(( PADDING = LONGEST - ${#L} ))
-			[[ ${PADDING} -eq 0 ]] && PAD=$(printf ' %.0s' {1..$((LONGEST - 10))}) # Not working as intended - not sure what was intended...
+			[[ ${PADDING} -eq 0 ]] && PAD=$(printf ' %.0s' {1..$(( LONGEST - 10 ))}) # Not working as intended - not sure what was intended...
 			[[ ! ${LABELS[${NDX}]} =~ '-' &&  -z ${TEXTS[${NDX}]} ]] && echo 
 			echo "${PAD}${L}${TEXTS[${NDX}]}"
 		done
@@ -588,7 +588,7 @@ info () {
 			\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 		esac
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 
 	# Execution
@@ -632,7 +632,7 @@ info () {
 		printf "${BOLD}${BLACK_FG}$(str_unicode_line 30)${RESET}\n"
 
 		MEMORY=$(grep -i MemTotal /proc/meminfo | cut -d: -f2 | tr -d '[:space:]' | sed 's/kb//i')
-		MEMORY=$((9.5367431640625E-7 * MEMORY))
+		MEMORY=$(( 9.5367431640625E-7 * MEMORY ))
 		VIDEO=$(get_video)
 
 		printf "${WHITE_FG}%25s${RESET}:${GREEN_FG}%.1f${RESET}\n" "Total Memory GB" "${MEMORY}"
@@ -779,7 +779,7 @@ ___EOF
 		esac
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 
 	# Execution
@@ -880,7 +880,7 @@ ___EOF
 		esac
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 
 	# Execution
@@ -913,7 +913,7 @@ ___EOF
 		local LENGTH=${1}
 		local HORIZ_BAR="\\u2500%.0s"
 
-		printf "\\u2500%.0s" {1..$((${LENGTH}))}
+		printf "\\u2500%.0s" {1..$(( ${LENGTH} ))}
 	}
 
 	echo ${TITLE}
@@ -1016,7 +1016,7 @@ ___EOF
 			:) print -u2 "${0}: option -${OPTARG} requires an argument"; usage;;
 		esac
 	done
-	shift $((${OPTIND} - 1))
+	shift $(( ${OPTIND} - 1 ))
 
 	SEARCHTERM=${1:=null}
 
@@ -1086,7 +1086,7 @@ lscolors () {
 		local CODE
 		local -a CODES
 		local X
-		local LIMIT=$((${#CODE_STRING}+1))
+		local LIMIT=$(( ${#CODE_STRING} + 1 ))
 
 		if [[ -n ${CODE_STRING} ]];then
 			for ((X=1;X<=${LIMIT};X++));do
@@ -1198,7 +1198,7 @@ ___EOF
 			ANSI+=$(get_ansi ${C})
 		done
 		[[ -z ${ANSI} ]] && ANSI=" "
-		printf "${ANSI}%-*s${RESET} %-s %-s %-s\n" $((WIDTH+4)) ${K} ${COLORS[1]} ${COLORS[2]} ${COLORS[3]}
+		printf "${ANSI}%-*s${RESET} %-s %-s %-s\n" $(( WIDTH + 4 )) ${K} ${COLORS[1]} ${COLORS[2]} ${COLORS[3]}
 	done
 
 	for K in ${(ku)FOUND_EXT};do
@@ -1209,7 +1209,7 @@ ___EOF
 			ANSI+=$(get_ansi ${C})
 		done
 		[[ -z ${ANSI} ]] && ANSI=" "
-		printf "${ANSI}%-*s${RESET} %-s %-s %-s\n" $((WIDTH+4)) ${K} ${COLORS[1]} ${COLORS[2]} ${COLORS[3]}
+		printf "${ANSI}%-*s${RESET} %-s %-s %-s\n" $(( WIDTH + 4 )) ${K} ${COLORS[1]} ${COLORS[2]} ${COLORS[3]}
 	done
 	echo
 }
@@ -1422,7 +1422,7 @@ mkinitscript () {
 					usage;;
 		esac
 	done
-	shift $((${OPTIND} - 1))
+	shift $(( ${OPTIND} - 1 ))
 
 	if [[ ${DELETE} == 'true' ]];then
 		if [[ -n "${SCRIPT_NAME}" ]];then
@@ -1640,7 +1640,7 @@ ___EOF
 		 \?) print -u2 "\nERR:${0} - unknown option ${OPTARG}"; usage ;;
 		esac
 	done
-	shift $((${OPTIND} - 1))
+	shift $(( ${OPTIND} - 1 ))
 
 	[[ ${#} -ne 0 ]] && APP=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<PACKAGE>"
 	[[ ${ACTION} == none ]] && usage "No action specified"
@@ -1972,7 +1972,7 @@ ppamgr () {
 		 \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
 		esac
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 	 
 	#--Execution--
@@ -2197,7 +2197,7 @@ ___EOF
 		 \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
 		esac
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 
 	# Execution
@@ -2316,7 +2316,7 @@ ___EOF
 		esac
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 	# Execution
 	[[ ${#} -ne 0 ]] && SEARCHTERM=${1} && echo "Searching for keyword: ${SEARCHTERM}"
@@ -2459,7 +2459,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}

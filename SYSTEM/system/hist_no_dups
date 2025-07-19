@@ -70,9 +70,9 @@ _DEEP=?
 _FREQ=?
 
 size_diff () {
-	local CUR_ZSH_BAK=$(find ${_HIST_DIR} -maxdepth 1 -name '*zsh*bak')
+	local HIST_BAK=$(find ${_HIST_DIR} -maxdepth 1 -name '*zsh*bak')
 	local CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
-	local LAST_SIZE=$(stat -c"%s" ${CUR_ZSH_BAK})
+	local LAST_SIZE=$(stat -c"%s" ${HIST_BAK})
 	local DIFF=0
 	local -F PCT=0
 	local AVG=0
@@ -82,7 +82,7 @@ size_diff () {
 	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
 	PCT=$(( ${DIFF}.0 / ${AVG}.0 * 100 ))
 
-	printf "History growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
+	printf "History growth:${WHITE_FG}%.2f%%${RESET} C:%d L:%d" ${PCT} ${CUR_SIZE} ${LAST_SIZE}
 	if [[ (( ${PCT} < ${THRESHOLD})) ]];then
 		return 1
 	else
@@ -157,7 +157,7 @@ cmd_filter () {
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			mya -q ${CMD_TGT} >/dev/null
+			mya -q -- ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((MYA++))
@@ -277,19 +277,16 @@ usage () {
 
 MSG=$(size_diff)
 if [[ ${?} -ne 0 ]];then
-	# TODO: Requires 2 cycles to take effect - why?
 	echo -n "Rebuild not required / ${MSG}"
 	exit_leave
-else
-	echo -n "${MSG}"
 fi
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 cp ${_HIST_FILE} ${_HIST_BAK}
 
-echo -n "${ITALIC}Updating locate...${RESET}" >&2
+echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
 upd_locate -u 2>/dev/null
-echo -n "${ITALIC}collating history...${RESET}" >&2
+echo "${ITALIC}collating history...${RESET}" >&2
 
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
@@ -302,28 +299,33 @@ if ! arr_is_populated "_VALID_HIST";then
 	exit_leave
 fi
  
-read ACC <${_CACHE_DIR}/accumulators
-[[ ${_PROD} == 'false' ]] && echo " CACHED:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "  WHICH:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo " LOCATE:${WHITE_FG}$(cut -d'|' -f3 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_VALID_HIST}${RESET}"
-[[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Done.${RESET}\n"
-
 NDX=0
 for L in ${_VALID_HIST};do
 	((NDX++))
 	printf "%s\n" "${L}" >> ${_HIST_NEW}
 done
-if [[ ${_TESTING} == 'false' ]];then
-	cp ${_HIST_NEW} ${_HIST_FILE}
-else
-	cp ${_HIST_NEW} .
-	echo "Modifications in file:.${_HIST_NEW}"
-fi
-fc -R # Refresh history
 
-[[ ${_PROD} == 'true' ]] && printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
+if [[ ${_TESTING} == 'true' ]];then
+	echo "History output file:${PWD}/${_HIST_NEW}"
+	cp ${_HIST_NEW} ${PWD}
+else
+	cp ${_HIST_NEW} ${_HIST_FILE}
+fi
+
+if [[ ${_PROD} == 'false' ]];then
+	CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
+	read ACC <${_CACHE_DIR}/accumulators
+	echo "   SIZE:${WHITE_FG}${CUR_SIZE}${RESET}"
+	echo " CACHED:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
+	echo "  WHICH:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
+	echo " LOCATE:${WHITE_FG}$(cut -d'|' -f3 <<<${ACC})${RESET}"
+	echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
+	echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
+	echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_VALID_HIST}${RESET}"
+	echo "${WHITE_ON_GREY}Done.${RESET}\n"
+else
+	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
+fi
+
 
 exit_leave

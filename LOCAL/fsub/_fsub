@@ -1,5 +1,7 @@
 #compdef fsub
 
+_files -W ${PWD} fsub
+
 _arguments \
 '-H[help]' \
 '-C[eliminate quotes, parens, dots, dashes, commas, underscores, and non-ascii (M)]' \
@@ -14,7 +16,7 @@ _arguments \
 '-d[allow directories as candidates]' \
 '-e[limit operations to files having (opt_type e)]' \
 '-i[case insensitive]' \
-'-m[operate on matching media title ('enclose multiword args in quotes')]' \
+'-m[operate on matching media title (enclose multiword args in quotes)]' \
 '-n[clean leading numbers (remove dots between numbers and text) (M)]' \
 '-p[prepend text to filenames]' \
 '-r[preserve resolution (720p/1080p) in media titles (only valid with -m)]' \

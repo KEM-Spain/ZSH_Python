@@ -62,7 +62,6 @@ usage () {
 }
 
 # Execution
-# TODO: SHOW_DEV is BROKEN
 [[ ${1} == '-H' ]] && usage
 [[ ${1} == '-d' ]] && SHOW_DEV=true || SHOW_DEV=false
 

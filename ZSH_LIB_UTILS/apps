@@ -244,7 +244,7 @@ set_package_list () {
 			[[ ${#P_DESC} -ge ${LONGEST[DESC]} ]] && LONGEST[DESC]=${#P_DESC}
 		done
 		((LONGEST[NAME]+=2))
-		[[ ${LONGEST[DESC]} -ge ${g_MAX_DESC_LEN} ]] && LONGEST[DESC]=$((g_MAX_DESC_LEN+=2)) || ((LONGEST[DESC]+=2))
+		[[ ${LONGEST[DESC]} -ge ${g_MAX_DESC_LEN} ]] && LONGEST[DESC]=$(( g_MAX_DESC_LEN += 2 )) || (( LONGEST[DESC] += 2 ))
 		return
 	fi
 
@@ -346,7 +346,7 @@ set_package_list () {
 	done
 
 	((_LONGEST[NAME]+=2))
-	[[ ${_LONGEST[DESC]} -ge ${g_MAX_DESC_LEN} ]] && _LONGEST[DESC]=$((g_MAX_DESC_LEN+=2)) || ((_LONGEST[DESC]+=2))
+	[[ ${_LONGEST[DESC]} -ge ${g_MAX_DESC_LEN} ]] && _LONGEST[DESC]=$(( g_MAX_DESC_LEN += 2 )) || (( _LONGEST[DESC] +=2 ))
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#_LOCAL_LIST}"
 }
 
@@ -513,7 +513,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution

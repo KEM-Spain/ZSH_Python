@@ -133,14 +133,14 @@ box_coords_overlap () {
 	local -A BOX_2_COORDS=($(box_coords_get ${TAG_2}))
 
 	local X1_MIN=${BOX_1_COORDS[X]}
-	local X1_MAX=$(( BOX_1_COORDS[X] + BOX_1_COORDS[H] -1 )) # Add the height
+	local X1_MAX=$(( BOX_1_COORDS[X] + BOX_1_COORDS[H] - 1 )) # Add the height
 	local Y1_MIN=${BOX_1_COORDS[Y]}
-	local Y1_MAX=$(( BOX_1_COORDS[Y] + BOX_1_COORDS[W] -1 )) # Add the width
+	local Y1_MAX=$(( BOX_1_COORDS[Y] + BOX_1_COORDS[W] - 1 )) # Add the width
 
 	local X2_MIN=${BOX_2_COORDS[X]}
-	local X2_MAX=$(( BOX_2_COORDS[X] + BOX_2_COORDS[H] -1 )) # Add the height
+	local X2_MAX=$(( BOX_2_COORDS[X] + BOX_2_COORDS[H] - 1 )) # Add the height
 	local Y2_MIN=${BOX_2_COORDS[Y]}
-	local Y2_MAX=$(( BOX_2_COORDS[Y] + BOX_2_COORDS[W] -1 )) # Add the width
+	local Y2_MAX=$(( BOX_2_COORDS[Y] + BOX_2_COORDS[W] - 1 )) # Add the width
 
 	# isOverlapping = (x1min < x2max) && (x2min < x1max) && (y1min < y2max) && (y2min < y1max)
 	
@@ -234,6 +234,45 @@ box_coords_upd () {
 	box_coords_set ${TAG} ${(kv)ORIG}
 }
 
+center_wdw () {
+	local WIN_NAME=${1}
+	local WIN_PXH=${2}
+	local WIN_PXW=${3}
+	local DIMS=$(xdpyinfo | grep dimension | perl -pe 's/^(.*:\s+)(.*)( pix.*$)/$2/g')
+	local RES_W=$(cut -d'x' -f1 <<<${DIMS})
+	local RES_H=$(cut -d'x' -f2 <<<${DIMS})
+	local NDX WID WIN_W WIN_H PX PY
+	local -a WIDS=()
+	local MAX_IDS=3 # Testing shows as many as 3 id's generated per execution
+	local X
+
+	logit ${LOG} "${0}:${LINENO} DIMS:${DIMS}"
+	logit ${LOG} "${0}:${LINENO} RES_W:${RES_W} RES_H:${RES_H}"
+
+	for (( X=0; X<10; X++ ));do
+		[[ ${#WIDS} -eq ${MAX_IDS} ]] && break
+		WIDS=("${(f)$(xdotool search --name ${WIN_NAME})}")
+		sleep .5
+	done
+
+	WID=${WIDS[${#WIDS}]} # Most recent id
+	[[ -z ${WID} ]] && echo "${0}:${RED_FG}Unable to locate window${RESET}:${WHITE_FG}${WIN_NAME}${RESET}" && return 1
+	logit ${LOG} "${0}:${LINENO} Got WID:${WID}"
+
+	logit ${LOG} "${0}:${LINENO} Calling: xdotool windowsize ${WID} ${WIN_PXH} ${WIN_PXW}"
+	xdotool windowsize ${WID} ${WIN_PXH} ${WIN_PXW}
+
+	logit ${LOG} "${0}:${LINENO} Calling: xdotool getwindowgeometry --shell ${WID}"
+	WIN_W=$(xdotool getwindowgeometry --shell ${WID} | head -4 | tail -1 | sed 's/[^0-9]*//')
+	WIN_H=$(xdotool getwindowgeometry --shell ${WID} | head -5 | tail -1 | sed 's/[^0-9]*//')
+
+	PX=$(( RES_W / 2 - WIN_W / 2 ))
+	PY=$(( RES_H / 2 - WIN_H / 2 ))
+
+	logit ${LOG} "${0}:${LINENO} Calling: xdotool windowmove ${WID} $PX $PY"
+	xdotool windowmove ${WID} $PX $PY
+}
+
 cmd_get_raw () {
 	local CMD_LINE
 
@@ -254,15 +293,15 @@ coord_center () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	CTR=$((AREA / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && AC=$((CTR+1)) || AC=${CTR}
+	CTR=$(( AREA / 2 ))
+	REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && AC=$(( CTR + 1 )) || AC=${CTR}
 
-	CTR=$((OBJ / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && OC=$((CTR+1)) || OC=${CTR}
+	CTR=$(( OBJ / 2 ))
+	REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
 
-	echo $((AC-OC+1))
+	echo $(( AC - OC + 2 ))
 }
 
 format_pct () {
@@ -377,7 +416,7 @@ get_keys () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	(tcup $((_MAX_ROWS-2)) 0;printf "${PROMPT}")>&2 # Position cursor and display prompt to STDERR
+	(tcup $(( _MAX_ROWS - 2 )) 0;printf "${PROMPT}")>&2 # Position cursor and display prompt to STDERR
 
 	trap reset_rate INT
 
@@ -654,9 +693,9 @@ num_byte_conv () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	case ${WANTED} in
-		KB) echo $((${BYTES} / 1024 ));;
-		MB) echo $((${BYTES} / 1024^2 ));;
-		GB) echo $((${BYTES} / 1024^3 ));;
+		KB) echo $(( ${BYTES} / 1024 ));;
+		MB) echo $(( ${BYTES} / 1024^2 ));;
+		GB) echo $(( ${BYTES} / 1024^3 ));;
 	esac
 }
 
@@ -669,9 +708,9 @@ num_human () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	(
-	if [[ ${BYTES} -gt ${GIG_D} ]];then printf "%10.2fGB" $((${BYTES}.0/${GIG_D}.0))
-	elif [[ ${BYTES} -gt ${MEG_D} ]];then printf "%10.2fMB" $((${BYTES}.0/${MEG_D}.0))
-	elif [[ ${BYTES} -gt ${KIL_D} ]];then printf "%10.2fKB" $((${BYTES}.0/${KIL_D}.0))
+	if [[ ${BYTES} -gt ${GIG_D} ]];then printf "%10.2fGB" $(( ${BYTES}.0 / ${GIG_D}.0 ))
+	elif [[ ${BYTES} -gt ${MEG_D} ]];then printf "%10.2fMB" $(( ${BYTES}.0 / ${MEG_D}.0 ))
+	elif [[ ${BYTES} -gt ${KIL_D} ]];then printf "%10.2fKB" $(( ${BYTES}.0 / ${KIL_D}.0 ))
 	else printf "%10dB" ${BYTES} 
 	fi
 	) | sed 's/^[ \t]*//g' 

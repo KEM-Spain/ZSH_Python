@@ -111,7 +111,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 if [[ -n ${NUM_COLS_ARG} && ${NUM_COLS_ARG} -le 0 ]];then

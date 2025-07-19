@@ -32,20 +32,20 @@ _SOURCES[${PWD}]=PWD
 _SOURCES[/usr/local/bin]=PROD
 _SOURCES[/usr/local/bin/system]=PROD
 _SOURCES[/usr/local/lib]=PROD
-_SOURCES[/home/kmiller/Code/LOCAL]=DEV
+_SOURCES[${HOME}/Code/LOCAL]=DEV
 _SRC_CLR[PROD]=${GREEN_FG}
 _SRC_CLR[DEV]=${RED_FG}
 _SRC_CLR[PWD]=${WHITE_ON_GREY}
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/STR.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 read -r -d '' DESC<<EOF
 Show list of TODO labels embedded in scripts
-\tUse -d to include development files
+\tUse option -d to include development files
 EOF
 
 # Functions
@@ -58,16 +58,17 @@ usage () {
 	echo "Usage: ${_SCRIPT}"
 	echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 # Execution
+# TODO: SHOW_DEV is BROKEN
 [[ ${1} == '-H' ]] && usage
 [[ ${1} == '-d' ]] && SHOW_DEV=true || SHOW_DEV=false
 
 clear
 echo "[${WHITE_FG}${0}${RESET}] Searching for TODO items...\n"
-[[ ${SHOW_DEV} == 'false' ]] && echo "Development [-d] not selected\n"
+[[ ${SHOW_DEV} == 'false' ]] && echo "Development not scanned - use option [-d]\n"
 
 for S in ${(k)_SOURCES};do
 	_TODO_LIST+=("${(f)$(find ${S} -maxdepth 2 -type f)}")
@@ -75,9 +76,10 @@ done
 
 HIT=false
 for F in ${_TODO_LIST};do
+	[[ ! $(file ${F}) =~ 'zsh' ]] && continue
 	[[ ${F:e} == 'bak' ]] && continue
 	[[ ${F:e} == 'orig' ]] && continue
-	LINE=$(grep "#TODO" ${F})
+	LINE=$(grep -P "#\s+?TODO" ${F})
 	[[ ${?} -ne 0 ]] && continue
 	grep -q "grep" <<<${LINE} # Skip 'todo' itself
 	[[ ${?} -eq 0 ]] && continue
@@ -88,7 +90,7 @@ for F in ${_TODO_LIST};do
 		fi
 	done
 	echo "File:${WHITE_FG}${F}${RESET}"
-	_TODO_TEXT=("${(f)$(grep '#TODO' ${F})}")
+	_TODO_TEXT=("${(f)$(grep -nP '#\s+?TODO' ${F})}")
 	for T in ${_TODO_TEXT};do
 		TXT=$(str_trim ${T})
 		TXT=$(echo ${RESET}${TXT} | str_trim | sed "s/TODO/$(echo ${WHITE_FG}${ITALIC})TODO$(echo ${RESET})$(echo ${MAGENTA_FG})/g")

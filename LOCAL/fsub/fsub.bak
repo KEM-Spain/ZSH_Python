@@ -51,6 +51,18 @@ source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
+get_fn_noext () {
+	local FN=${1}
+
+	[[ ${FN:e} =~ '[[:alpha:]]+' ]] && echo ${FN:t:r} || echo ${FN}
+}
+
+get_fn_ext () {
+	local FN=${1}
+
+	[[ ${FN:e} =~ '[[:alpha:]]+' ]] && echo ".${FN:e}" || echo ""
+}
+
 inode_ndx () {
 	local NDX_FN=${1}
 	local FILE_OR_PATH=${2}
@@ -190,6 +202,8 @@ do_finalize () {
 	local MASKED=false
 	local I_TAG=''
 	local RESPONSE=''
+	local IFN=''
+	local OFN=''
 
 	if [[ ${_PIPED} == "true" ]];then
 		if [[ -n ${_OUT_LIST} ]];then
@@ -206,7 +220,7 @@ do_finalize () {
 		# Avoid any downstream file errors
 		if [[ -n ${_IN_LIST[${K}]} ]];then
 			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:${LINENO} K:${K} _IN_LIST[K]: ${_IN_LIST[${K}]}"
-			if [[ $(realpath ${_IN_LIST[${K}]}) == $(realpath ${_OUT_LIST[${K}]}) ]];then
+			if [[ "${_IN_LIST[${K}]}" == "${_OUT_LIST[${K}]}" ]];then
 				MSG="${MAGENTA_FG}Warning${RESET}:candidate filename:\n[${WHITE_FG}${_OUT_LIST[${K}]}${RESET}]\nwould be ${ITALIC}${BOLD}identical${RESET} to original - ${MAGENTA_FG}omitted${RESET}"
 				[[ ${g_VERBOSE} == 'true' ]] && echo ${MSG} >&2
 				[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:${LINENO} ${MSG}"
@@ -501,7 +515,7 @@ do_proper_case () {
 
 	for C in ${(k)_CHAIN_LIST};do
 		HEAD=${_CHAIN_LIST[${C}]:h} # Path
-		TAIL=$(str_trim ${(C)_CHAIN_LIST[${C}]:t:r}) # File
+		TAIL=$(str_trim $(get_fn_noext ${(C)_CHAIN_LIST[${C}]})) # File w/o extension - trimmed
 		TAIL=$(sed -E "s/('[A-Z])/\L\1/g" <<<${TAIL}) # Proper case fix for apostophe
 		EXT=${_CHAIN_LIST[${C}]:e:l} # Extension
 		if [[ -n ${TAIL} ]];then
@@ -534,35 +548,16 @@ do_sdc () {
 
 	HIT=false
 	for C in ${(k)_CHAIN_LIST};do
-		CANDIDATE=${_CHAIN_LIST[${C}]:t:r} # W/o path & extension
-		for OP in ${_SPACE_DOT};do
+		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # W/o path & extension
+		for OP in ${(o)_SPACE_DOT};do
 			case ${OP} in
 				B)	TITLE=$(echo ${CANDIDATE} | iconv -f utf-8 -t ascii//translit) # Scrub extended ascii/non ascii
 					HIT=false
 					[[ ${TITLE} != ${CANDIDATE} ]] && HIT=true && CANDIDATE=${TITLE}
 					[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option B${RESET}"
 					;;
-				C) TITLE=()
-					for W in "${(@s/,/)CANDIDATE}";do
-						TITLE+=$(/bin/sed 's/\(.\)/\U\1/' <<< ${W})
-						TITLE=${TITLE:gs/ //}
-					done
-					TITLE=()
-					for W in "${(@s/./)CANDIDATE}";do
-						TITLE+=$(/bin/sed 's/\(.\)/\U\1/' <<< ${W})
-						TITLE=${TITLE:gs/ //}
-					done
-					CANDIDATE=${TITLE}
-					TITLE=()
-					for W in "${(@s/-/)CANDIDATE}";do
-						TITLE+=$(/bin/sed 's/\(.\)/\U\1/' <<< ${W})
-						TITLE=${TITLE:gs/ //}
-					done
-					CANDIDATE=${TITLE}
-					TITLE=()
-					for W in "${(@s/[/)CANDIDATE}";do
-						TITLE+=$(/bin/sed 's/\(.\)/\U\1/' <<< ${W})
-						TITLE=${TITLE:gs/ //}
+				C) for W in ${=CANDIDATE};do # Camel case 
+						TITLE+=${(C)W}
 					done
 					CANDIDATE=${TITLE}
 					[[ ${CANDIDATE} != ${C} ]] && HIT=true
@@ -576,10 +571,10 @@ do_sdc () {
 							${CANDIDATE} =~ '\)' ||\
 							${CANDIDATE} =~ [\'] ||\
 							${CANDIDATE} =~ [\"] ||\
-							${CANDIDATE} =~ '\[' ]];then
+							${CANDIDATE} =~ '\[' ||\
+							${CANDIDATE} =~ '\]' ]];then
 						HIT=true
-						CANDIDATE=$(echo ${CANDIDATE} | sed -E 's/\[[0-9.]*\]//g') # Scrub '[99.9]' and such
-						CANDIDATE=${CANDIDATE:gs/_/ /}  # Replace underscores
+						CANDIDATE=${CANDIDATE:gs/_/ /} # Swap underscores w/ spaces
 						CANDIDATE=${CANDIDATE:gs/\,//} # Scrub commas
 						CANDIDATE=${CANDIDATE:gs/\.//} # Scrub dots
 						CANDIDATE=${CANDIDATE:gs/\-//} # Scrub dashes
@@ -588,21 +583,14 @@ do_sdc () {
 						CANDIDATE=$(tr -d '()' <<<${CANDIDATE}) # Scrub parens
 						CANDIDATE=$(tr -d \' <<<${CANDIDATE}) # Scrub single quotes
 						CANDIDATE=$(tr -d \" <<<${CANDIDATE}) # Scrub double quotes
-						CANDIDATE=$(tr -s "[:space:]" <<<${CANDIDATE}) # Squeeze extra spaces
+						CANDIDATE=$(tr -s "[:space:]" <<<${CANDIDATE}) # Squeeze space
 						CANDIDATE=$(iconv -f utf-8 -t ascii//translit <<<${CANDIDATE}) # Scrub extended ascii/non ascii
 						[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option D${RESET}"
 					fi;;
 				S)	if [[ ${CANDIDATE} =~ ' ' ]];then
-						# TODO: Not sure why this CAMEL code is sitting in SPACES section
 						HIT=true
-						if [[ ${CAMEL} == "true" ]];then
-							TITLE=()
-							for W in ${=CANDIDATE};do
-								TITLE+=$(/bin/sed 's/\(.\)/\U\1/' <<< ${(C)W})
-							done
-							CANDIDATE=${TITLE}
-						fi
-						[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option S camel${RESET}"
+						CANDIDATE=${CANDIDATE:gs/ //}
+						[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option S spaces${RESET}"
 					fi;;
 				U) TITLE=$( \
 					echo ${CANDIDATE} | \
@@ -615,15 +603,9 @@ do_sdc () {
 			esac
 		done
 
-		if [[ ${_SPACE_DOT} =~ 'S' && ${CANDIDATE} =~ ' ' ]];then # Final operation to remove any remaining spaces
-			HIT=true
-			CANDIDATE=${CANDIDATE:gs/ //}
-			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option S spaces${RESET}"
-		fi
-
 		if [[ ${HIT} == "true" ]];then
 			CPATH=${_CHAIN_LIST[${C}]:h} # Path
-			[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=.${_CHAIN_LIST[${C}]:e} || CEXT='' # Set extension
+			[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=$(get_fn_ext ${_CHAIN_LIST[${C}]}) # Set extension
 			_OUT_LIST[${C}]=${CPATH}/${CANDIDATE}${CEXT}
 		else
 			unset "_IN_LIST[${C}]"
@@ -668,7 +650,7 @@ do_subs () {
 	if ! arr_is_populated "${_OUT_LIST}";then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		logit "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
-		return 0 # Treat no match as a non error
+		return 1 
 	fi
 
 	# Match
@@ -704,7 +686,7 @@ do_truncate () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
 	for C in ${(k)_CHAIN_LIST};do
-		CANDIDATE=${_CHAIN_LIST[${C}]:t:r} # W/o path & extension
+		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # W/o path & extension
 		if [[ ${TRUNC_FN_LEN} -gt 0 ]];then
 			[[ ${#CANDIDATE} -le ${TRUNC_FN_LEN} ]] && unset "_IN_LIST[${C}]" && continue # Remove non matches from original
 			HIT=true
@@ -737,7 +719,7 @@ do_trim () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
 	for C in ${(k)_CHAIN_LIST};do
-		CANDIDATE=${_CHAIN_LIST[${C}]:t:r} # Exclude the extension
+		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # Exclude the extension
 		TRIMMED=$(str_trim ${CANDIDATE})
 		if [[ ${#TRIMMED} -eq ${#CANDIDATE} ]];then
 			unset "_IN_LIST[${C}]" && continue # Remove non matches from original
@@ -768,7 +750,7 @@ do_prepend () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
 	for C in ${(k)_CHAIN_LIST};do
-		CANDIDATE=${_CHAIN_LIST[${C}]:t:r} # W/o tail & extension
+		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # W/o tail & extension
 		CPATH=${_CHAIN_LIST[${C}]:h}
 		[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
 		_OUT_LIST[${C}]="${CPATH}/${TAG}${CANDIDATE}${CEXT}"
@@ -788,7 +770,7 @@ do_yt_tag () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
 	for C in ${(k)_CHAIN_LIST};do
-		CANDIDATE=${_CHAIN_LIST[${C}]:t:r} # Exclude the extension
+		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # Exclude the extension
 		CPATH=$(realpath ${_CHAIN_LIST[${C}]:h})
 		[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
 
@@ -886,7 +868,7 @@ usage () {
 	echo -e "${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [FromText] [ToText] [FileList]\n"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-H${RESET} help"
-	echo -e "${WHITE_FG}-C${RESET} eliminate quotes, parens, dots, dashes, commas, underscores, and non-ascii (${CYAN_FG}M${RESET})"
+	echo -e "${WHITE_FG}-C${RESET} eliminate floats, underscores, commas, dots, dashes, brackets, parens, quotes, extra space, non ascii (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-I${RESET} interactive changes"
 	echo -e "${WHITE_FG}-N${RESET} add leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-P${RESET} proper case"
@@ -941,7 +923,6 @@ YT_TAGS=false
 typeset -a OPTIONS
 OPTIND=0
 
-
 while getopts ${OPTSTR} OPT;do
 	case ${OPT} in
      C) DOTS=true;;
@@ -973,10 +954,11 @@ while getopts ${OPTSTR} OPT;do
 	esac
 	[[ ${OPT} != 'D' ]] && OPTIONS+=${OPT}
 done
-shift $((OPTIND - 1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
+# TODO: Test fsub -p - is dropping filename - extension only
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
@@ -994,8 +976,7 @@ fi
 
 # Record arg types
 {
-echo "Parsing arguments:${@:-null}"
-if [[ -n ${@} ]];then
+if [[ ${#} -ne 0 ]];then
 	for ((A=1; A <= ${#@}; A++));do
 		OBJ=${@[${A}]}
 		if [[ -e ${OBJ} ]];then
@@ -1007,6 +988,8 @@ if [[ -n ${@} ]];then
 			echo "Found text:${WHITE_FG}${OBJ}${RESET}"
 		fi
 	done
+else
+	echo "No arguments passed"
 fi
 } >> ${_LOG}
 
@@ -1032,9 +1015,9 @@ fi
 
 # Prep for space dot camel
 [[ ${EXTENDED} == "true" ]] && _SPACE_DOT+=(B)
-[[ ${SPACES} == "true" ]] && _SPACE_DOT+=(S)
-[[ ${DOTS} == "true" ]] && _SPACE_DOT+=(D)
 [[ ${CAMEL} == "true" ]] && _SPACE_DOT+=(C)
+[[ ${DOTS} == "true" ]] && _SPACE_DOT+=(D)
+[[ ${SPACES} == "true" ]] && _SPACE_DOT+=(S)
 [[ ${UNCAMEL} == "true" ]] && _SPACE_DOT+=(U)
 
 # No options
@@ -1132,7 +1115,10 @@ if [[ ${SEARCH_REPLACE} == 'true' ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_subs${RESET}..."
 	[[ ${g_VERBOSE} == 'true' ]] && { echo "${WHITE_ON_GREY}Substituting \"${g_FROM_TEXT}\" with \"${g_TO_TEXT}\"${RESET}" | tee -a ${_LOG} } >&2
 	do_subs
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for substitution" | tee -a ${_LOG} } >&2
+	RC=${?}
+	if [[ ${g_VERBOSE} == 'true' && ${RC} -ne 0 ]];then
+		echo "No matches for substitution" | tee -a ${_LOG} >&2
+	fi
 fi
 
 # Space_Dot_Camel
@@ -1140,12 +1126,12 @@ if [[ ${#_SPACE_DOT} -gt 0 ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_sdc with _SPACE_DOT:${_SPACE_DOT}${RESET}..."
 	if [[ ${g_VERBOSE} == 'true' ]];then
 		{
-		for X in ${_SPACE_DOT};do
+			for X in ${(o)_SPACE_DOT};do
 			case ${X} in
 				B) echo "${CYAN_FG}Eliminating extended/non-ascii...${RESET}";;
-				S) echo "${CYAN_FG}Eliminating spaces...${RESET}";;
-				D) echo "${CYAN_FG}Eliminating dots, dashes, underscores, and commas...${RESET}";;
 				C) echo "${CYAN_FG}Camel casing...${RESET}";;
+				D) echo "${CYAN_FG}Eliminating dots, dashes, underscores, and commas...${RESET}";;
+				S) echo "${CYAN_FG}Eliminating spaces...${RESET}";;
 				U) echo "${CYAN_FG}UnCamel casing...${RESET}";;
 			esac
 		done
@@ -1157,7 +1143,7 @@ if [[ ${#_SPACE_DOT} -gt 0 ]];then
 	if [[ ${?} -ne 0 ]];then
 		if [[ ${g_VERBOSE} == 'true' ]];then
 			{
-			for X in ${_SPACE_DOT};do
+			for X in ${(o)_SPACE_DOT};do
 				case ${X} in
 					B) echo "No matches for extended/non-ascii";;
 					S) echo "No matches for eliminating spaces";;

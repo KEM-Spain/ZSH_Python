@@ -98,8 +98,8 @@ exit_request () {
 		msg_box -T ${TAG} -jc -O ${RED_FG} -p ${MSG}
 	else
 		COORDS=(X ${X:=null} Y ${Y:=null} W ${W:=null} H ${H})
-		[[ ${COORDS[W]} == 'null' ]] && COORDS[W]=$(( ${#MSG} + ${FRAME_WIDTH} )) && COORDS[Y]=$(( COORDS[Y]-${#MSG}/2 ))
-		box_coords_set ${TAG} X $((COORDS[X]-1)) Y $((COORDS[Y]-FRAME_WIDTH/2)) W $((COORDS[W]+FRAME_WIDTH/2)) H ${COORDS[H]} # Compensate for frame dimensions
+		[[ ${COORDS[W]} == 'null' ]] && COORDS[W]=$(( ${#MSG} + ${FRAME_WIDTH} )) && COORDS[Y]=$(( COORDS[Y] - ${#MSG} / 2 ))
+		box_coords_set ${TAG} X $(( COORDS[X] - 1 )) Y $(( COORDS[Y] - FRAME_WIDTH / 2 )) W $(( COORDS[W] + FRAME_WIDTH / 2 )) H ${COORDS[H]} # Compensate for frame dimensions
 		msg_box -T ${TAG} -jc -O ${RED_FG} -p -x ${COORDS[X]} -y ${COORDS[Y]} -w ${COORDS[W]} -h ${COORDS[H]} ${MSG}
 	fi
 

@@ -27,7 +27,7 @@ msg_box () {
 
 	local MAX_X_COORD=$(( _MAX_ROWS - 5 )) # Not including frame 5 up from bottom, 4 with frame
 	local MAX_Y_COORD=$(( _MAX_COLS - 10 )) # Not including frame 10 from sides, 9 with frame
-	local MIN_X_COORD=$(( (_MAX_ROWS - MAX_X_COORD)-1 )) # Vertical limit
+	local MIN_X_COORD=$(( (_MAX_ROWS - MAX_X_COORD) - 1 )) # Vertical limit
 	local MIN_Y_COORD=$(( _MAX_COLS - MAX_Y_COORD )) # Horiz limit
 	local USABLE_COLS=$(( MAX_Y_COORD - MIN_Y_COORD )) # Horizontal space boundary
 	local USABLE_ROWS=$(( MAX_X_COORD - MIN_X_COORD )) # Vertical space boundary
@@ -125,7 +125,7 @@ msg_box () {
 			\?) print -u2 " ${_SCRIPT}: ${0}: unknown option -${OPTARG}" >&2; read;;
 		esac
 	done
-	shift $(( OPTIND -1 ))
+	shift $(( OPTIND - 1 ))
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -294,9 +294,9 @@ msg_box () {
 		fi
 	else
 		[[ ${WIDTH_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${WIDTH_ARG}
-		[[ ${HEIGHT_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} +2 )) || BOX_HEIGHT=${HEIGHT_ARG}
+		[[ ${HEIGHT_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${HEIGHT_ARG}
 		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$((  (_MAX_ROWS-BOX_HEIGHT) / 2 + 1 )) || MSG_X_COORD=${MSG_X_COORD_ARG}
-		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(coord_center $(( _MAX_COLS - 3 )) BOX_WIDTH) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
+		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(coord_center $(( _MAX_COLS )) BOX_WIDTH) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
 	fi
 
 	# Box coords - compensate for frame
@@ -515,8 +515,8 @@ msg_box_align () {
 		MSG=" "
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added blank line"
 	elif [[ ${MSG} =~ '<SEP>' ]];then # Handle embed:<SEP> Message separator
-		MSG=$(str_unicode_line $(( BOX_WIDTH-4 )) )
-		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH+1 )) ${MSG} )
+		MSG=$(str_unicode_line $(( BOX_WIDTH - 4 )) )
+		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH + 1 )) ${MSG} )
 		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L} - 1 )) )
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Added heading separator: SEP:${MSG} BOX_WIDTH:${BOX_WIDTH} TEXT_PAD_L:\"${TEXT_PAD_L}\" TEXT_PAD_R:\"${TEXT_PAD_R}\""
 	elif [[ ${MSG} =~ '<L>' ]];then # Handle embed: <L> Bullet List item
@@ -524,14 +524,14 @@ msg_box_align () {
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - ( ${#TEXT_PAD_L}+${#TEXT} ) - OFFSET -1 ))) # compensate for bullet/space
+		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L} + ${#TEXT}) - OFFSET - 1 ))) # compensate for bullet/space
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item bullets"
 	elif [[ ${MSG} =~ '<X>' ]];then # Handle embed: <X> Numbered List item
 		MSG=$(sed -e 's/^.*<X>//' <<<${MSG})
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - ( ${#TEXT_PAD_L}+${#TEXT} ) - OFFSET -1 ))) # compensate for number/space
+		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L} + ${#TEXT}) - OFFSET - 1 ))) # compensate for number/space
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item numbers"
 	elif [[ ${MSG} =~ '<D>' ]];then # Handle embed: <D> Data Field List item
 		MSG=$(sed -e 's/^.*<D>//' <<<${MSG})
@@ -541,19 +541,19 @@ msg_box_align () {
 		MSG="<c>${LBL}<N>:<w>${VAL}<N>" # Colorize
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L}+${#TEXT}) - OFFSET )) )
+		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L} + ${#TEXT}) - OFFSET )) )
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Data item"
 	elif [[ ${BOX_STYLE:l} == 'l' ]];then # Justification: Left
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L}+${#TEXT}) - OFFSET )) )
+		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L} + ${#TEXT}) - OFFSET )) )
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Left justifed text"
 	elif [[ ${BOX_STYLE:l} == 'c' ]];then # Justification: Center
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
-		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH-2 )) $(msg_nomarkup ${TEXT} ))
-		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L}-1 )) )
+		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH - 2 )) $(msg_nomarkup ${TEXT} ))
+		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L} - 1 )) )
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Centered text"
 	else # Unpadded
 		TEXT=$(msg_nomarkup ${MSG})
@@ -627,7 +627,7 @@ msg_box_ebox_coords () {
 	local W=${3}
 	local HEADER=${4}
 
-	echo $(( X+${HEADER} + 2 )) $(( Y+W/2 ))
+	echo $(( X + ${HEADER} + 2 )) $(( Y + W / 2 ))
 }
 
 msg_box_parse () {
@@ -647,7 +647,7 @@ msg_box_parse () {
 	DELIM_COUNT=$(grep --color=never -o "[${_DELIM}]" <<<${MSGS_IN} | wc -l) # Slice MSG into fields and count
 
 	# Extract item by delim and fold any lines that exceed display
-	for (( X=1; X <= $((${DELIM_COUNT}+1 )); X++ ));do
+	for (( X=1; X <= $(( ${DELIM_COUNT} + 1 )); X++ ));do
 		[[ ${DELIM_COUNT} -ne 0 ]] && MSG=$(cut -d"${_DELIM}" -f${X} <<<${MSGS_IN}) || MSG=${MSGS_IN}
 	 	MSG=$(sed "s/_DELIM_/${_DELIM}/g" <<<${MSG}) # Restore escaped delimiters
 		L=$(tr -d '[:space:]' <<<${MSG})
@@ -816,8 +816,8 @@ msg_list_data () {
 	for K in ${MSG};do
 		((NDX++))
 		MARK=${K[(i)[:]]}
-		[[ ${MARK} -lt ${MAX} ]] && PAD=$((MAX - MARK)) || PAD=0 # Align fields at separator
-		PAD=$((PAD+${#K}))
+		[[ ${MARK} -lt ${MAX} ]] && PAD=$(( MAX - MARK )) || PAD=0 # Align fields at separator
+		PAD=$(( PAD + ${#K} ))
 		VAL=$(cut -d':' -f2 <<<${K})
 		LINE="<D> ${(l(${PAD})(#))K}:${VAL}"
 		[[ ${NDX} -lt ${#MSG} ]] && echo -n ${LINE}${DELIM} || echo -n ${LINE}
@@ -886,8 +886,8 @@ msg_paging () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: TL_PAGES:${TL_PAGES}, PARTIAL:${PARTIAL}"
 
 	TOP=0
-	BOT=$(( (TL_PAGES-1) * PG_LINES ))
-	PGUP=$(( NDX - (PG_LINES*2) )); [[ ${PGUP} -lt 1 ]] && PGUP=0
+	BOT=$(( (TL_PAGES - 1) * PG_LINES ))
+	PGUP=$(( NDX - (PG_LINES * 2) )); [[ ${PGUP} -lt 1 ]] && PGUP=0
 	PGDN=${NDX}
 
 	if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
@@ -923,14 +923,14 @@ msg_paging_page () {
 msg_proc () {
 	local BOX_W=20
 	local BOX_H=3
-	local H_POS=$(coord_center $(( _MAX_COLS - 3 )) BOX_W) # Horiz center
-	local V_POS=$(( _MAX_ROWS/2 - BOX_H ))
+	local H_POS=$(coord_center $(( _MAX_COLS )) BOX_W) # Horiz center
+	local V_POS=$(( _MAX_ROWS / 2 - BOX_H ))
 	local X R C
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	msg_unicode_box ${V_POS} ${H_POS} ${BOX_W} ${BOX_H}
-	tput cup $(( V_POS+1 )) $(( H_POS+2 ));echo -n "${GREEN_FG}Processing...${RESET}"
+	tput cup $(( V_POS + 1 )) $(( H_POS + 2 ));echo -n "${GREEN_FG}Processing...${RESET}"
 	TAG=${_PROC_BOX_TAG}
 	box_coords_set ${TAG} X ${V_POS} Y ${H_POS} W ${BOX_W} H ${BOX_H}
 	_PROC_MSG=false
@@ -972,7 +972,7 @@ msg_stream () {
 			\?) print -u2 " ${_SCRIPT}: ${0}: unknown option -${OPTARG}" >&2; read;;
 		esac
 	done
-	shift $(( OPTIND -1 ))
+	shift $(( OPTIND - 1 ))
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -1011,7 +1011,7 @@ msg_stream () {
 	
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MSG COUNT with BLANK LINES REMOVED:${#MSG_LINES}"
 
-	msg_box -y20 -w$(( FOLD_WIDTH+4 )) -P"<m>Last Page<N>" -pc -s${DELIM} -j${STYLE} ${MSG_LINES} # Display window
+	msg_box -y20 -w$(( FOLD_WIDTH + 4 )) -P"<m>Last Page<N>" -pc -s${DELIM} -j${STYLE} ${MSG_LINES} # Display window
 }
 
 msg_unicode_box () {
@@ -1036,10 +1036,10 @@ msg_unicode_box () {
 	[[ $(( BOX_WIDTH - 2 )) -gt 0 ]] && BOX_WIDTH=$(( BOX_WIDTH - 2 )) # Dont go negative
 	[[ $(( BOX_HEIGHT - 2 )) -gt 0 ]] && BOX_HEIGHT=$(( BOX_HEIGHT - 2 )) # Dont go negative
 
-	L_SPAN=$(( BOX_Y_COORD+1 ))
-	R_SPAN=$(( BOX_Y_COORD+BOX_WIDTH ))
-	T_SPAN=$(( BOX_X_COORD+1 ))
-	B_SPAN=$(( BOX_X_COORD+BOX_HEIGHT ))
+	L_SPAN=$(( BOX_Y_COORD + 1 ))
+	R_SPAN=$(( BOX_Y_COORD + BOX_WIDTH ))
+	T_SPAN=$(( BOX_X_COORD + 1 ))
+	B_SPAN=$(( BOX_X_COORD + BOX_HEIGHT ))
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -1110,7 +1110,7 @@ msg_unicode_box () {
 	echo -n ${RESET}
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOTTOM RIGHT: BOX_X_COORD:${X} BOX_Y_COORD:${Y}"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX DIMENSIONS:$(( X-BOX_X_COORD+1 )) x $(( Y-BOX_Y_COORD+1 ))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX DIMENSIONS:$(( X - BOX_X_COORD + 1 )) x $(( Y - BOX_Y_COORD + 1 ))"
 }
 
 msg_warn () {

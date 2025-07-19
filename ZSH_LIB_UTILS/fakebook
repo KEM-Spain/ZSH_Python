@@ -47,7 +47,7 @@ action_do () {
 	for M in ${_MARKED};do
 		BOOK=$(get_book ${_LIST[${M}]})
 		PG=$(get_pg ${_LIST[${M}]})
-		okular -p $((PG+${_BOOKS["${BOOK}"]})) ${FAKE_BOOKS}/${BOOK}.pdf 2>/dev/null & # Add the offset to access the correct page in the various books
+		okular -p $(( PG + ${_BOOKS["${BOOK}"]} )) ${FAKE_BOOKS}/${BOOK}.pdf 2>/dev/null & # Add the offset to access the correct page in the various books
 		xdotool windowfocus ${THIS_WIN}
 	done
 
@@ -144,7 +144,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup

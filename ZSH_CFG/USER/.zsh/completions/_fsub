@@ -1,28 +1,28 @@
 #compdef fsub
 
-_files -W ${PWD} 
+_files -W ${PWD} fsub
 
 _arguments \
 '-H[help]' \
-'-C[eliminate quotes, parens, dots, dashes, commas, underscores, and non-ascii]' \
+'-C[eliminate quotes, parens, dots, dashes, commas, underscores, and non-ascii (M)]' \
 '-I[interactive changes]' \
-'-N[add leading numbers]' \
+'-N[add leading numbers (M)]' \
 '-P[proper case]' \
-'-S[service mode background job]' \
-'-T[trim leading/trailing whitespace from files or dirs]' \
+'-S[service mode (background job)]' \
+'-T[trim leading/trailing whitespace from files or dirs (M)]' \
 '-Y[eliminate YouTube tags]' \
-'-b[eliminate extended/non-ascii]' \
-'-c[camelCase]' \
+'-b[eliminate extended/non-ascii (M)]' \
+'-c[camelCase (M)]' \
 '-d[allow directories as candidates]' \
-'-e[limit operations to files having <EXT>]' \
+'-e[limit operations to files having (opt_type e)]' \
 '-i[case insensitive]' \
-'-m[operate on matching media title \"enclose multiword args in quotes\"]' \
-'-n[clean leading numbers remove dots between numbers and text]' \
+'-m[operate on matching media title (enclose multiword args in quotes)]' \
+'-n[clean leading numbers (remove dots between numbers and text) (M)]' \
 '-p[prepend text to filenames]' \
-'-r[preserve resolution \"720p/1080p\" in media titles only valid with -m]' \
-'-s[eliminate spaces]' \
-'-t[truncate filenames to arbitrary length]' \
-'-u[unCamelCase]' \
+'-r[preserve resolution (720p/1080p) in media titles (only valid with -m)]' \
+'-s[eliminate spaces (M)]' \
+'-t[truncate filenames to arbitrary length (M)]' \
+'-u[unCamelCase (M)]' \
 '-v[verbose output]' \
-'-x[strip leading numbers]' \
-'-y[no prompting]' 
+'-x[strip leading numbers (M)]' \
+'-y[no prompting]' \

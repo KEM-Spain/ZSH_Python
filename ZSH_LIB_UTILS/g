@@ -142,7 +142,7 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 SEARCHTERM=${@} 
 
@@ -239,13 +239,13 @@ else
 			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
 			REM=$(( (_COL_MAX - LONGEST_FN) - 8))
 			printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text"
-			echo -n "${MAGENTA_FG}$(str_unicode_line $((LONGEST_FN--)))  ${MAGENTA_FG}$(str_unicode_line 4)${RESET} ${MAGENTA_FG}$(str_unicode_line $((LONGEST_LN - 4)))${RESET}"
+			echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- )))  ${MAGENTA_FG}$(str_unicode_line 4)${RESET} ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN - 4 )))${RESET}"
 			echo
 		else
 			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 4 ))
 			REM=$(( (_COL_MAX - LONGEST_FN) - 4))
 			printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text"
-			echo -n "${MAGENTA_FG}$(str_unicode_line $((LONGEST_FN--))) ${MAGENTA_FG}$(str_unicode_line $((LONGEST_LN--)))${RESET}"
+			echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- ))) ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN-- )))${RESET}"
 			echo
 		fi
 	fi

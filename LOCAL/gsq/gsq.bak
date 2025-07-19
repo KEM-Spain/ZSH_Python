@@ -8,13 +8,12 @@ typeset -a _URLS
 typeset -a _VALUES
 
 # Constants
-_LIB_DIR=/usr/local/lib
 _MAX_DISPLAY_LEN=40
 _TYPE_LABELS=(u "URL" k "Key" v "Value")
 _MAX_FIELD=40 # Max field width
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
@@ -71,7 +70,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_GHOST_ROW}
+		list_set_selected ${M} ${_STALE_ROW}
 	done
 }
 
@@ -136,6 +135,7 @@ edit_box () {
 
 	# tput smso
 	tput cup $((M_COORDS[X]+4)) $((M_COORDS[Y]+2))
+	tput el
 	cursor_on
 	NEW_VALUE=$(inline_edit ${CUR_VALUE}) # Launch line editor
 	cursor_off
@@ -160,7 +160,7 @@ inline_edit () {
 	my $term = new Term::ReadLine 'gsq';
 	$term->parse_and_bind("set editing-mode vi");
 
-	system('sleep .1;xdotool key Home &');
+	system('sleep .1;xdotool key Home Escape space Left &'); # Trick to set the cursor to beginning in non destructive cursor mode
 	while ( defined ($_ = $term->readline($ARGV[0],$ARGV[1])) ) {
 		print $_;
 		exit;
@@ -214,7 +214,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:Lookup/Set values in the gsettings database"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDl"
@@ -236,7 +236,7 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ -z ${1} ]] && usage "Argument:missing search string for a gsettings url"
+[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
 SEARCHTERM=${@}
 
 _LOCAL_LIST=("${(@f)$(gsettings list-recursively | sort -u | egrep "${SEARCHTERM}" | sed -e 's/: /:/g')}")
@@ -263,12 +263,13 @@ list_set_header 'printf "%5s %-${_MAX_FIELD}s %-${_MAX_FIELD}s %-${_MAX_FIELD}s"
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4d${RESET}) ${SHADE}${BAR}${MAGENTA_FG}%-${_MAX_FIELD}s${RESET} ${SHADE}${BAR}${YELLOW_FG}%-${_MAX_FIELD}s${RESET} ${SHADE}${BAR}${GREEN_FG}%-${_MAX_FIELD}s${RESET}\n" ${_LIST_NDX} "${$(get_url ${_LIST_NDX})[1,40]}" "${$(get_key ${_LIST_NDX})[1,40]}" "${$(get_val ${_LIST_NDX})[1,40]}"
+printf "${BOLD}${WHITE_FG}%4d${RESET}${_MARKER} ${SHADE}${BAR}${MAGENTA_FG}%-${_MAX_FIELD}s${RESET} ${SHADE}${BAR}${YELLOW_FG}%-${_MAX_FIELD}s${RESET} ${SHADE}${BAR}${GREEN_FG}%-${_MAX_FIELD}s${RESET}\n" ${_LIST_NDX} "${$(get_url ${_LIST_NDX})[1,40]}" "${$(get_key ${_LIST_NDX})[1,40]}" "${$(get_val ${_LIST_NDX})[1,40]}"
 '
 
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select line item then <${GREEN_FG}ENTER${RESET}> to edit value ${ITALIC}or exit if none selected${RESET}"
+list_set_select_action "edit value"
 list_set_barlines true
-list_set_clear_ghosts true
+list_set_reuse_stale true
+list_set_searchable true
 
 while true;do
 	# Get selection

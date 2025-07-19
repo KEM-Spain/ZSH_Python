@@ -169,7 +169,7 @@ while getopts ${OPTS} OPTION;do
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} ${OPTARG}"; exit_leave;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 # End getopts
 
 # Execution

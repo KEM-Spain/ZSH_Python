@@ -51,15 +51,15 @@ sel_box_center () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ARGC:${#@} TXT:${TXT} TXT_LEN:${TXT_LEN}"
 
-	CTR=$(( TXT_LEN / 2 )) && REM=$((TXT_LEN % 2))
-	[[ ${REM} -ne 0 ]] && TXT_CTR=$((CTR+1)) || TXT_CTR=${CTR}
+	CTR=$(( TXT_LEN / 2 )) && REM=$(( TXT_LEN % 2 ))
+	[[ ${REM} -ne 0 ]] && TXT_CTR=$(( CTR + 1 )) || TXT_CTR=${CTR}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( TXT_LEN / 2 )) && REM=$((CTR % 2))':$(( TXT_LEN / 2 )) && REM:$((CTR % 2))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( TXT_LEN / 2 )) && REM=$(( CTR % 2 ))':$(( TXT_LEN / 2 )) && REM:$(( CTR % 2 ))"
 
-	CTR=$(( BOX_WIDTH / 2 )) && REM=$((BOX_WIDTH % 2))
-	[[ ${REM} -ne 0 ]] && BOX_CTR=$((CTR+1)) || BOX_CTR=${CTR}
+	CTR=$(( BOX_WIDTH / 2 )) && REM=$(( BOX_WIDTH % 2 ))
+	[[ ${REM} -ne 0 ]] && BOX_CTR=$(( CTR + 1 )) || BOX_CTR=${CTR}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))':$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( BOX_WIDTH / 2 )) && REM=$(( CTR % 2 ))':$(( BOX_WIDTH / 2 )) && REM=$(( CTR % 2 ))"
 
 	CTR=$(( BOX_LEFT + BOX_CTR - TXT_CTR ))
 
@@ -274,7 +274,7 @@ sel_list () {
 		[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LIST_W:${LIST_W} LIST_H:${LIST_H}"
 
-		BOX_H=$((LIST_H+2)) # Box height based on list count
+		BOX_H=$(( LIST_H + 2 )) # Box height based on list count
 		[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 )) # Categories get extra padding
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
 
@@ -348,12 +348,12 @@ sel_list () {
 		# Store OUTER_BOX coords
 		box_coords_set OUTER_BOX HAS_OUTER ${HAS_OUTER} X ${OB_X} Y ${OB_Y} W ${OB_W} H ${OB_H} COLOR ${OB_COLOR}
 
-		BOX_BOT=$(( BOX_X + BOX_H)) # Store coordinate
+		BOX_BOT=$(( BOX_X + BOX_H )) # Store coordinate
 
 		# Set coords for list decorations
 		if [[ ${HAS_OUTER} == 'true' ]];then
 			HDR_X=$(( BOX_X - 3 ))
-			HDR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_H})
+			HDR_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 + 3 )) ${NM_H})
 			MAP_X=${BOX_BOT}
 			MAP_Y=$(sel_box_center $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_M})
 			FTR_X=$(( BOX_BOT + 2 ))
@@ -549,7 +549,7 @@ sel_scroll () {
 
 		_SEL_VAL=${_PAGE[${NDX}]} # Initialize return value
 
-		sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]} # Initial item hilite
+		sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]} # Initial item hilite
 
 		# Get user inputs
 		while true;do
@@ -589,21 +589,21 @@ sel_scroll () {
 			if [[ ${SCROLL} == 'U' ]];then # Up
 				NORM_NDX=${NDX} && ((NDX--))
 				[[ ${NDX} -lt 1 ]] && NDX=${#_PAGE}
-				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
-				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+				sel_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
+				sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 			elif [[ ${SCROLL} == 'D' ]];then # Down
 				NORM_NDX=${NDX} && ((NDX++))
 				[[ ${NDX} -gt ${#_PAGE} ]] && NDX=1
-				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
-				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+				sel_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
+				sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 			elif [[ ${SCROLL} == 'T' ]];then # Top
 				NORM_NDX=${NDX} && NDX=1
-				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
-				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+				sel_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
+				sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 			elif [[ ${SCROLL} == 'B' ]];then # Bot
 				NORM_NDX=${NDX} && NDX=${#_PAGE}
-				sel_norm $((NORM_NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
-				sel_hilite $((NDX+X_OFF)) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+				sel_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
+				sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 			elif [[ ${SCROLL} == 'N' ]];then # Next Page
 				((PAGE++))
 				PAGE_CHANGE=true

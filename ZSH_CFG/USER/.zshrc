@@ -306,7 +306,7 @@ if [[ ${_TERMS} -eq 1 ]];then
 			cal_clr
 		fi
 
-		# background dbus - maximize new windows (gnome forgets win coords issue)
+		# background dbus - maximize new windows (gnome doesn't track win coords)
 		INSTANCE=$(pgrep -c wait_app_start)
 		if [[ ${INSTANCE} -eq 0 ]];then
 			( wait_app_start & ) >/dev/null 2>&1

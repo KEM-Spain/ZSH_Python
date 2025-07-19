@@ -131,7 +131,7 @@ ______EOF
 		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 		esac
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 	 
 	# Execution
@@ -448,7 +448,7 @@ _____EOF
 
 			[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 		done
-		shift $((OPTIND -1))
+		shift $(( OPTIND - 1 ))
 		#--End GetOpts--
 
 		# Execution
@@ -632,7 +632,7 @@ ______EOF
 			esac
 			[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 		done
-		shift $((OPTIND -1))
+		shift $(( OPTIND - 1 ))
 		#--End GetOpts--
 		
 		local -a ARGS=(${@})
@@ -719,7 +719,7 @@ ______EOF
 			esac
 			[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 		done
-		shift $((OPTIND -1))
+		shift $(( OPTIND - 1 ))
 		#--End GetOpts--
 		 
 		local -a ARGS=(${@})
@@ -829,7 +829,7 @@ ______EOF
 			esac
 			[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 		done
-		shift $((OPTIND -1))
+		shift $(( OPTIND - 1 ))
 		#--End GetOpts--
 		
 		local -a ARGS=(${@})
@@ -960,7 +960,7 @@ ______EOF
 			esac
 			[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 		done
-		shift $((OPTIND -1))
+		shift $(( OPTIND - 1 ))
 		#--End GetOpts--
 		
 		local -a ARGS=(${@})
@@ -1130,7 +1130,7 @@ ______EOF
 			esac
 			[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 		done
-		shift $((OPTIND -1))
+		shift $(( OPTIND - 1 ))
 		#--End GetOpts--
 
 		# Execution
@@ -1282,7 +1282,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}

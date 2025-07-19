@@ -157,7 +157,7 @@ cmd_filter () {
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			mya -q ${CMD_TGT} >/dev/null
+			mya -q -- ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((MYA++))

@@ -158,7 +158,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
@@ -190,7 +190,7 @@ for L in ${(o)_RAWLIST};do
 	_STATS=("${(f)$(stat ${L} -c'%x %y %z' | perl -ne 'for (m/\d{4}-\d{2}-\d{2} \d{2}:\d{2}/g) { print "$_\n" }')}")
 	_SORT_LIST+="${(f)LINE}|${_STATS[3]}|${_STATS[2]}|${_STATS[1]}" # Columns sort indexing
 done
-LONGEST=$(( LONGEST+4 )) # Allow for directory markup ' (d)'
+LONGEST=$(( LONGEST + 4 )) # Allow for directory markup ' (d)'
 
 _LOCAL_LIST=("${(f)$(list_sort_flat "ARRAY _SORT_LIST COL 2 ORDER d DELIM ${_LIST_DELIM}")}") # Pre sort
 
@@ -205,8 +205,8 @@ local LC=''
 
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize file)  Path:${WHITE_FG}%-40s${RESET} ${_PG}" ${#_LIST} "${PATHLBL}"'
 list_set_header 'printf " "'
-list_set_header 'printf "%-*s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" $((LONGEST+5)) "" ${_TYPE_LABELS[a]} ${_TYPE_LABELS[m]} ${_TYPE_LABELS[b]}'
-list_set_header 'printf "%-*s ${SCOL2_CLR}%${LBL_WIDTH}s${RESET} ${SCOL3_CLR}%${LBL_WIDTH}s${RESET} ${SCOL4_CLR}%${LBL_WIDTH}s${RESET}" $((LONGEST+5)) "" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})"'
+list_set_header 'printf "%-*s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" $(( LONGEST + 5 )) "" ${_TYPE_LABELS[a]} ${_TYPE_LABELS[m]} ${_TYPE_LABELS[b]}'
+list_set_header 'printf "%-*s ${SCOL2_CLR}%${LBL_WIDTH}s${RESET} ${SCOL3_CLR}%${LBL_WIDTH}s${RESET} ${SCOL4_CLR}%${LBL_WIDTH}s${RESET}" $(( LONGEST + 5 )) "" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})" "$(str_unicode_line ${LBL_WIDTH})"'
 
 # Set line item
 list_set_line_item ' 

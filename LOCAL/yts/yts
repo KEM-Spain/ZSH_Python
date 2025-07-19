@@ -279,12 +279,12 @@ action_do () {
 				HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
-				HDR_LEN=$((HDR_LEN + FRAME_PAD + 4))
-				HRZ_CTR=$(coord_center $((_MAX_COLS-3)) ${HDR_LEN}) # Horiz center
+				HDR_LEN=$(( HDR_LEN + FRAME_PAD + 4 ))
+				HRZ_CTR=$(coord_center $(( _MAX_COLS - 3 )) ${HDR_LEN}) # Horiz center
 				[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
 				msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 				msg_box -C -jl ${HDR2_TXT}
-				msg_box -C -jl "<c>$(str_unicode_line $((_CONT_COORDS[W]-4)))<N>" # Divider line
+				msg_box -C -jl "<c>$(str_unicode_line $(( _CONT_COORDS[W] - 4 )))<N>" # Divider line
 				HDRS_OUT=true
 			fi
 
@@ -420,11 +420,11 @@ box_center () {
 	local TXT_CTR=0
 	local TXT_LEN=$(( ${#TXT} + BOX )) # Text length
 
-	CTR=$(( TXT_LEN / 2 )) && REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && TXT_CTR=$((CTR+1)) || TXT_CTR=${CTR}
+	CTR=$(( TXT_LEN / 2 )) && REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && TXT_CTR=$(( CTR + 1 )) || TXT_CTR=${CTR}
 
-	CTR=$(( BOX_WIDTH / 2 )) && REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && BOX_CTR=$((CTR+1)) || BOX_CTR=${CTR}
+	CTR=$(( BOX_WIDTH / 2 )) && REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && BOX_CTR=$(( CTR + 1 )) || BOX_CTR=${CTR}
 
 	echo $(( BOX_LEFT + BOX_CTR - TXT_CTR ))
 }
@@ -548,7 +548,7 @@ download_indicator () {
 	local MASK=""
 	local MASK_Y=8
 	local OBJ_COLOR="${BOLD}${GREEN_FG}"
-	local X=$((_ALERT_COORDS[X]))
+	local X=$(( _ALERT_COORDS[X] ))
 
 	case ${LINE:l} in
 		*mib*) BORDER_COLOR="${BOLD}${MAGENTA_FG}";;
@@ -574,7 +574,7 @@ download_indicator () {
 	(( g_MASK_NDX++))
 	[[ ${g_MASK_NDX} -gt 3 ]] && g_MASK_NDX=1
 
- 	tcup ${X} $((_ALERT_COORDS[Y] + MASK_Y)) && echo -n "${MASK}" && sleep ${DELAY}
+ 	tcup ${X} $(( _ALERT_COORDS[Y] + MASK_Y )) && echo -n "${MASK}" && sleep ${DELAY}
 }
 
 download_select () {
@@ -704,7 +704,7 @@ fav_get_selected () {
 				if [[ ${EKEY} =~ 'r' ]];then
 					_DISPLAY_LIST+=${F:gs/_/ /}
 					_FAVORITE_ENGINE[${F}]=${EKEY}
-					O_COLOR=${BLUE_FG}
+					O_COLOR=${MAGENTA_FG}
 					C_LIST=' '
 				fi
 			else
@@ -720,7 +720,7 @@ fav_get_selected () {
 							if [[ ! ${EKEY} =~ 'p' ]];then
 								_DISPLAY_LIST+=${F:gs/_/ /}
 								_FAVORITE_ENGINE[${F}]=${EKEY}
-								O_COLOR=${MAGENTA_FG}
+								O_COLOR=${CYAN_FG}
 								C_LIST=' '
 							fi
 						fi
@@ -733,14 +733,16 @@ fav_get_selected () {
 
 		clear
 
-		HDR="${(C)g_QRY_ENGINE}${C_LIST}Query"
+		HDR="${BOLD}${(C)g_QRY_ENGINE}${C_LIST}Query"
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)g_QRY_ENGINE} query from history or <h>(q)uit<N>"
 		TAG=$(tr -d '[:space:]' <<<${HDR})
 
 		# Choose high level list item
+		msg_line_weight heavy
 		list_set_restore_pos_reset # Fresh list - position at top
-		sel_list -R -S -T${TAG} -O${O_COLOR} -H"${HDR}" -M${MAP} -F${FTR}
+		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
+		msg_line_weight light
 
 		case ${_SEL_KEY} in
 			d) fav_delete ${_SEL_VAL} && continue;;
@@ -858,15 +860,15 @@ get_box_center () {
 	local AC
 	local OC
 
-	CTR=$((AREA / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && AC=$((CTR+1)) || AC=${CTR}
+	CTR=$(( AREA / 2 ))
+	REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && AC=$(( CTR + 1 )) || AC=${CTR}
 
-	CTR=$((OBJ / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && OC=$((CTR+1)) || OC=${CTR}
+	CTR=$(( OBJ / 2 ))
+	REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
 
-	echo $((AC-OC+1))
+	echo $(( AC - OC + 1 ))
 }
 
 get_field () {
@@ -1213,7 +1215,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -x$(( _CONT_COORDS[X]+4 )) -y$(box_center ${MSG}) ${MSG}
+	msg_box -x$(( _CONT_COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
 
 	NDX=0
 	while true;do
@@ -1276,7 +1278,7 @@ query_rumble () {
 	local MSG=''
 	local NDX=''
 	local PG=''
-	local REL_W=$(( ${LAST_MSG[W]} +4 ))
+	local REL_W=$(( ${LAST_MSG[W]} + 4 ))
 	local REL_Y=$(coord_center $(( _MAX_COLS + 3 )) ${REL_W})
 	local STR=''
 	local K V T
@@ -1566,6 +1568,14 @@ total_rejects () {
 	echo "${RJ_PCT}%"
 }
 
+website () {
+	case ${1} in
+		yt) firefox "https://www.youtube.com/feed/subscriptions" 2>/dev/null &;;
+		ru) firefox "https://www.rumble.com/subscriptions" 2>/dev/null &;;
+		*) exit_leave $(msg_exit E "Enter yt for YouTube, ru for Rumble")
+	esac
+}
+
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
@@ -1578,6 +1588,7 @@ opt_type () {
 	case ${OPT} in
 		a) echo "<AGE_FILTER> [all,min,hour,day,week,month,year]";;
 		s) echo "<SEARCHTERM>";;
+		w) echo "<ABBV>";;
 		u) echo "<URL>";;
 	esac
 }
@@ -1613,17 +1624,19 @@ usage () {
 	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-u${RESET} export the video URL"
+	echo -e "${WHITE_FG}-w${RESET} $(opt_type w) Goto website (yt/ru)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDALRVa:s"
+OPTSTR=":HDALRVa:sw:"
 OPTIND=0
 
 HELP_OPT=false
 VERSION_OPT=false
+WEB=''
 g_STRICT=false
 g_QRY_ENGINE=youtube
 g_FIX_AUDIO=false
@@ -1639,15 +1652,18 @@ while getopts ${OPTSTR} OPTION;do
      R) g_QRY_ENGINE=rumble;;
      a) AGE=${OPTARG};;
      s) g_STRICT=true;;
+     w) WEB=${OPTARG};;
     \?) exit_leave "${RED_FG}Error${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}";;
 	  :) exit_leave "${RED_FG}Error${RESET}: option -${OPTARG} requires an argument${RESET}";;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution
+[[ -n ${WEB} ]] && website ${WEB} && exit_leave
+
 [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGS IN:${@}, g_QRY_ENGINE:${g_QRY_ENGINE}"
 
 RAWPATH=$(path_get_raw)

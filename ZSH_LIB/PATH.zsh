@@ -25,7 +25,7 @@ path_abbv () {
 		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 		esac
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 
 	[[ ${MAX_LEN} != 'false' ]] && LEN_LIMIT=${MAX_LEN} || LEN_LIMIT=60
 
@@ -389,7 +389,7 @@ path_trailing_segs () {
 	done
 
 	OUT=''
-	for ((S=${#SEG_NDX}; S>$((${#SEG_NDX}-TARGET)); S--));do
+	for (( S=${#SEG_NDX}; S>$(( ${#SEG_NDX} - TARGET )); S-- ));do
 		OUT=${SEG_NDX[${S}]}/${OUT}
 		[[ ${S} -lt 1 ]] && break
 	done
