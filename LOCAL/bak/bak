@@ -385,8 +385,6 @@ Manage script sources during the development cycle
 \t\tthe version in <PRODUCTION> (default: ${_PRODUCTION_DIR}) as <PRODUCTION> 
 \n\t'bak <FILE>' default action is to first create a local backup of the existing 
 \t<PRODUCTION> version and then copy <DEVELOPMENT> to <PRODUCTION>
-\n\tAll operations other than -b (local backup) require a <PRODUCTION> copy to exist
-\tNo unalterable actions are taken without consent
 EOF
 
 parse_opts () {
@@ -463,7 +461,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution

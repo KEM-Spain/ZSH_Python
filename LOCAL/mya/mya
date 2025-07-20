@@ -92,7 +92,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDcdeq"
@@ -117,7 +117,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
@@ -142,9 +142,9 @@ fi
 
 if [[ ${ECHO} == 'true' ]];then
 	for K in ${(k)ALIASES};do
-		[[ ${K} == ${SEARCHTERM} ]] && printf "%s|%s\n" ${K} ${ALIASES[${K}]}
+		[[ ${K} == ${SEARCHTERM} ]] && printf "%s|%s\n" ${K} ${ALIASES[${K}]} && return 0
 	done
-	return
+	return 1
 fi
 
 {

@@ -69,6 +69,7 @@ opt_type () {
 	case ${OPT} in
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
+		s) echo "<SEARCHTERM>";;
 		t) echo "<FILE_TYPE>";;
 	esac
 }
@@ -81,13 +82,13 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type s)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-c${RESET} show aliases that execute commands"
 	echo -e "${WHITE_FG}-d${RESET} show aliases that execute directory changes"
-	echo -e "${WHITE_FG}-e${RESET} echo alias corresponding to <SEARCHTERM>"
-	echo -e "${WHITE_FG}-q${RESET} return true/false exit code for <SEARCHTERM>"
+	echo -e "${WHITE_FG}-e${RESET} echo alias corresponding to $(opt_type s)"
+	echo -e "${WHITE_FG}-q${RESET} return true/false exit code for $(opt_type s)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 

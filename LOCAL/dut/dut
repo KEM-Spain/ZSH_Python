@@ -391,7 +391,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo -e "${WHITE_FG}Usage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type p)]\n"
+		echo -e "${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type p)]\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-b${RESET} brief status message"
@@ -425,7 +425,7 @@ ___EOF
 		esac
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 	
 	# Execution
@@ -630,7 +630,7 @@ ___EOF
 		esac
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 
 	# Execution
@@ -695,20 +695,20 @@ ___EOF
 				DO_HDR=false
 				printf "${HDR} order...\n"
 				printf "%-10s %-${LONGEST}s %s\n" "KBytes" "Directory" "Human"
-				printf "\\u2500%.0s" {1..$((LONGEST+17))}
+				printf "\\u2500%.0s" {1..$(( LONGEST + 17 ))}
 				printf "\n"
 			fi
 
 			(
 			for N in ${(k)NORMAL};do
-				printf "${CYAN_FG}%10s ${WHITE_FG}%-${LONGEST}s ${GREEN_FG}%s${RESET}\n" ${NORMAL[${N}]} ${N} $(numfmt --to=iec $((${NORMAL[${N}]}*1024)))
+				printf "${CYAN_FG}%10s ${WHITE_FG}%-${LONGEST}s ${GREEN_FG}%s${RESET}\n" ${NORMAL[${N}]} ${N} $(numfmt --to=iec $(( ${NORMAL[${N}]} * 1024 )))
 			done
 			) | sort -k1.6 -n${SORT}
 
 			(
 			for H in ${(k)HIDDEN};do
 				[[ ${H} == "." ]] && continue
-				printf "${CYAN_FG}%10s ${WHITE_FG}%-${LONGEST}s ${GREEN_FG}%s${RESET}\n" ${HIDDEN[${H}]} ${H} $(numfmt --to=iec $((${HIDDEN[${H}]}*1024)))
+				printf "${CYAN_FG}%10s ${WHITE_FG}%-${LONGEST}s ${GREEN_FG}%s${RESET}\n" ${HIDDEN[${H}]} ${H} $(numfmt --to=iec $(( ${HIDDEN[${H}]} * 1024 )))
 			done
 			) | sort -k1.6 -n${SORT}
 		fi
@@ -719,10 +719,10 @@ ___EOF
 		DU=$(sudo du -sh 2>/dev/null | sed -e 's/\t/ /' -e 's/\./Total/g')
 		SZ=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f1) # Total PWD size in human readable
 		FN=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f2)
-		HU=$(numfmt --to=iec $((${TSZ}*1024))) # For percentage
+		HU=$(numfmt --to=iec $(( ${TSZ} * 1024 ))) # For percentage
 
 		if [[ ${DIRCNT} -ne 0 ]];then
-			printf "\\u2500%.0s" {1..$((LONGEST+17))}
+			printf "\\u2500%.0s" {1..$(( LONGEST + 17 ))}
 			printf "\n"
 			printf "${CYAN_FG}%10s ${WHITE_FG}%-${LONGEST}s ${GREEN_FG}%s${RESET}\n" ${SZ} ${FN} ${HU}
 		else
@@ -737,7 +737,7 @@ ___EOF
 		# Percentage of total
 		D=$(convert_GMK ${HU})
 		S=$(convert_GMK ${g_SYSTEM_TOTAL})
-		PCT=$(format_pct $(( D*1.0/S*1.0 * 100 )))
+		PCT=$(format_pct $(( D*1.0 / S*1.0 * 100 )))
 
 		echo "\nDirectory:${WHITE_FG}${PWD:t}${RESET} is ${CYAN_FG}${PCT}%${RESET} of total disk space ${RESET}(${WHITE_FG}${g_SYSTEM_TOTAL}${RESET})"
 	} | mypager wait
@@ -1004,7 +1004,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}

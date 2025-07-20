@@ -90,8 +90,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDc:w:h:"
@@ -112,7 +111,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 if [[ -n ${NUM_COLS_ARG} && ${NUM_COLS_ARG} -le 0 ]];then

@@ -78,8 +78,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDt"
@@ -97,11 +96,11 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
-[[ ${#} -eq 0 ]] && usage "Missing argument:<APP>"
+[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<APP>"
 APP=${1}
 
 logit "Received request for APP:${APP} window id"

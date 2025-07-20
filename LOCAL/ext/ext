@@ -96,8 +96,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDl"
@@ -115,7 +114,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
@@ -128,7 +127,7 @@ if [[ ${LIST_EXT} == 'true' ]];then
 	exit_leave
 fi
 
-[[ ${#} -eq 0 ]] && usage "missing argument:$(opt_type c)" || FN=${1}
+[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type c)" || FN=${1}
 [[ ! -f ${FN} ]] && exit_leave $(msg_exit E "file not found:${FN}")
 
 FES=(${${(s/./)FN}[2,-1]}) # All possible file extensions

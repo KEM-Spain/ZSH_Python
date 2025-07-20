@@ -25,17 +25,14 @@ typeset -A _LIB_DEP_LIST=()
 typeset -a _LIST=()
 typeset -a _LIBS=()
 
-# Constants
-_LIB_DIR=/usr/local/lib
-_LIBS=("${(f)$(find ${_LIB_DIR} -maxdepth 1 -name '*zsh' -type f)}")
-
-# Globals
-
 # Imports
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Constants
+_LIBS=("${(f)$(find ${_LIB_DIR} -maxdepth 1 -name '*zsh' -type f)}")
 
 # Functions
 app_scan () {
@@ -50,13 +47,13 @@ app_scan () {
 	local CNT=0
 	local FUNC=''
 	local HDR=''
-	local K L N S V F
 	local LIB=''
 	local LIB_CNT=0
 	local LINE_COL=0
 	local LINE_LEN=24
 	local NDX=0
 	local SCORE=0
+	local K L N S V F
 
 	# All functions defined in application
 	APP_FUNCS=("${(f)$(grep -PH --color=never '() {\s?$' ${FN} | sed -E 's/\s+[(][)] \{//' | sort)}")
@@ -67,7 +64,7 @@ app_scan () {
 	done
 
 	(
-	echo "Found:${WHITE_FG}${#APP_FUNCS}${RESET} functions ${CYAN_FG}${ITALIC}defined${RESET} in ${WHITE_FG}${APP}${RESET}"
+	echo "Found:${WHITE_FG}${#APP_FUNCS}${RESET} functions ${CYAN_FG}${ITALIC}locally defined${RESET} in ${WHITE_FG}${APP}${RESET}"
 	echo $(str_unicode_line 80)
 	NDX=0
 	for L in ${APP_FUNCS};do
@@ -84,6 +81,7 @@ app_scan () {
 	for K in ${(ok)_LIB_FUNC_LIST};do
 		F=$(grep -w -m1 -o --color=never ${K} ${FN}) # find lib function
 		[[ ${?} -ne 0 ]] && continue
+		[[ ${F} =~ '\n' ]] && F=$(head -1 <<<${F})
 		((NDX++))
 		APP_LIB_FUNC_LIST[${F}]=${_LIB_FUNC_LIST[${K}]}
 		printf "${WHITE_FG}%2d${RESET}) ${CYAN_FG}%s ${WHITE_FG}${ITALIC}%s${RESET} is provided by:${WHITE_FG}%s${RESET}\n" ${NDX} ${FN:t} ${F} ${${APP_LIB_FUNC_LIST[${F}]}:t}
@@ -241,8 +239,8 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #Execution
-[[ ${#} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage $(msg_warn "No operation was specified")
-[[ ${#} -eq 1 && ! -e ${1} ]] && exit_leave $(msg_err "File not found:${1}") || APP=${1}
+[[ ${#} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage $(msg_exit W "No operation was specified")
+[[ ${#} -eq 1 && ! -e ${1} ]] && exit_leave $(msg_exit E "File not found:${1}") || APP=${1}
 
 map_lib_func
 

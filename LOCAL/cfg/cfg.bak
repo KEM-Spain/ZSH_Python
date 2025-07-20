@@ -215,11 +215,12 @@ if arr_is_populated "${_GNOME_LIST}";then
 	echo "Found ${WHITE_FG}gnome extension${RESET} for '${SEARCHTERM}' in:${WHITE_FG}${_GNOME_LIST}${RESET}"
 
 	respond "Continue search"
-	echo
 	if [[ ${?} -ne 0 ]];then
 		do_rmcup
 		echo "${RED_FG}Operation cancelled${RESET}..."
 		exit_leave
+	else
+		msg_box "Continuing search...."
 	fi
 fi
 
@@ -259,7 +260,7 @@ fi
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _LOCAL_LIST:${#_LOCAL_LIST} ${=_LOCAL_LIST[1,20]} ...truncated"
 
 # Set headings
-list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} configuration file(s) for:${WHITE_FG}%s${RESET}  ${_PG}" ${#_LIST} ${SEARCHTERM}'
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} configuration $(str_pluralize file ${#_LIST}) for:${WHITE_FG}%s${RESET}  ${_PG}" ${#_LIST} ${SEARCHTERM}'
 list_add_header_break
 
 # Set line item

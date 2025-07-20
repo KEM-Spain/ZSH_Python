@@ -195,6 +195,8 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
 [[ ${#} -ne 0 ]] && ARG=${1} || ARG=''
 
 if [[ -n ${KEYWORD} ]];then

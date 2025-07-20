@@ -130,8 +130,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS
@@ -155,14 +154,14 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
  
 SEARCHTERM=${@}
-[[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
+[[ -z ${SEARCHTERM} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
 
 SEARCH_REGEX=".*${SEARCHTERM}.*"
 
@@ -201,7 +200,7 @@ if arr_is_populated "${LIST}";then
 	msg_box -p -PP "Found ${#LIST} matching"
 	if [[ ${_MSG_KEY} == 'y' ]];then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling o ${LIST}"
-		o -m ${LIST}
+		o ${LIST}
 	fi
 else
 	say_msg_search_err

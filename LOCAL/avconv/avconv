@@ -83,8 +83,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"
@@ -99,15 +98,15 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ -z ${1} ]] && usage "missing argument:$(opt_type f)" || FN=${1}
+[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type f)" || FN=${1}
 if [[ ${FN:e:l} == 'mov' ]];then
 	EXT=mkv
 elif [[ -z ${2} ]];then
-	usage "missing argument:$(opt_type e)"
+	usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type e)"
 else
 	EXT=${2}
 fi
@@ -115,6 +114,21 @@ fi
 [[ ! -e ${FN} ]] && exit_leave $(msg_exit E "file not found:${1}")
 
 FN_EXT=${FN:e}
+
+# Supported conversion of video to audio
+if [[ ${FN_EXT} == 'mp4' && ${EXT} == 'flac' ]];then
+	echo "Processing video file:${FN} - converting video mp4 to audio flac"
+	ffmpeg -i ${FN} -acodec flac -bits_per_raw_sample 16 -ar 44100 ${FN:r}.flac
+	exit_leave
+elif [[ ${FN_EXT} == 'mp4' && ${EXT} == 'mp3' ]];then
+	echo "Processing video file:${FN} - converting video mp4 to audio mp3"
+	ffmpeg -i ${FN} -vn -acodec mp3 -ab 320k -ar 44100 -ac 2 ${FN:r}.mp3
+	exit_leave
+elif [[ ${FN_EXT} == 'mp4' && ${EXT} == 'wav' ]];then
+	echo "Processing video file:${FN} - converting video mp4 to audio wav"
+	ffmpeg -i ${FN} -vn -acodec pcm_s16le -ar 44100 -ac 2 ${FN:r}.wav
+	exit_leave
+fi
 
 # Capture file extension if complete file name was entered instead of bare extension
 for E in ${_VID_EXT};do

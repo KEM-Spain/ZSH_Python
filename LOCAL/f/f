@@ -39,6 +39,14 @@ read -r -d '' DESC<<EOF
 Find files and/or directories in or below the current directory
 \tAll <SEARCHTERM> args are find command regex components
 \tA leading and trailing match component '.*/<REGEX>.*' are automatically included
+\n\t${UNDER}Valid file types${RESET}:
+\tb block (buffered) special
+\tc character (unbuffered) special
+\td directory
+\tp named pipe (FIFO)
+\tf regular file
+\tl symbolic link
+\ts socket
 EOF
 
 parse_opts () {
@@ -65,7 +73,7 @@ opt_type () {
 	local OPT=${1}
 	case ${OPT} in
 		s) echo "<SEARCHTERM>";;
-		t) echo "<OBJ_TYPE>";;
+		t) echo "<TYPE>";;
 	esac
 }
 
@@ -79,15 +87,16 @@ usage () {
 	(
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type s)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
-	echo -e "${WHITE_FG}-D${RESET} debug; when repeated increases level"
+	echo -e "${WHITE_FG}-D${RESET} debug; repetition increases level"
 	echo -e "${WHITE_FG}-L${RESET} add listing detail"
-	echo -e "${WHITE_FG}-d${RESET} depth; each repetition increases search depth"
-	echo -e "${WHITE_FG}-p${RESET} search path (default pwd)"
-	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} (any valid type:f,d,l,p,c,s,b)  Default:${WHITE_FG}any${RESET}"
+	echo -e "${WHITE_FG}-d${RESET} depth; repetition increases depth"
+	echo -e "${WHITE_FG}-p${RESET} search path (default PWD)"
+	echo -e "${WHITE_FG}-t${RESET} $(opt_type t) (default:any)"
+	echo -e "${WHITE_FG}-v${RESET} verbose"
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS
@@ -98,9 +107,9 @@ TYPE=''
 OPTIND=0
 REGEX_ARG=''
 FIND_PATH=${PWD}
-SHOW_CMD=false
+VERBOSE=false
 
-OPTSTR=":HDLdp:t:c"
+OPTSTR=":HDLdp:t:v"
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -110,13 +119,13 @@ while getopts ${OPTSTR} OPTION;do
      d) depth_set_level;;
      p) FIND_PATH=${OPTARG};;
      t) TYPE="${OPTARG}";;
-     c) SHOW_CMD=true;;
+     v) VERBOSE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
@@ -127,8 +136,10 @@ MAXDEPTH=${_DEPTH}
 REGEX_ARG=''
 if [[ ${#} -ne 0 ]];then
 	REGEX_ARG=${1}
-	REGEX=".*/${REGEX_ARG}.*"
-	REGEX="-regextype 'posix-extended' -regex ${(qqq)REGEX}"
+	REGEX=".*${REGEX_ARG}.*"
+	C_REGEX=".*${(C)REGEX_ARG}.*"
+	L_REGEX=".*${REGEX_ARG:l}.*"
+	REGEX="-regextype 'posix-extended' -regex ${(qqq)REGEX} -o -regex ${(qqq)L_REGEX} -o -regex ${(qqq)C_REGEX}"
 fi
 
 case ${TYPE} in
@@ -142,7 +153,9 @@ case ${TYPE} in
 	*) TYPE='';TDESC='None';;
 esac
 
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nOBJ_TYPE:${OBJ_TYPE:-any}"
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nTYPE:${TYPE:-any}"
+
+[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
 
 CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE}"
 
@@ -155,7 +168,6 @@ fi
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#LIST}"
 
 {
-[[ ${SHOW_CMD} == 'true' ]] && echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
 if [[ ${LISTING} == 'true' ]];then
 	ls -lAdrt ${LIST}
 else

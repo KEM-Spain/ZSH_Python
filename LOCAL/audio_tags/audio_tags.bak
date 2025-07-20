@@ -105,8 +105,6 @@ tags_display () {
 		tcup 12 50
 		echo -n "Enter '${WHITE_FG}e${RESET}' to edit, '${WHITE_FG}q${RESET}' to quit, <${WHITE_FG}ENTER${RESET}> for next track"
 
-		tcup -x${BOX_X} -y${BOX_Y};echo -n "Working..."
-
 		msg_box -q -c -p -x${BOX_X} -y${BOX_Y} -w 60 ${LABELS}
 
 		_EDIT_COORDS=($(box_coords_get MSG_BOX))
@@ -128,6 +126,7 @@ tags_display () {
 			tags_update ${FIELDS}
 		fi
 		msg_box_clear
+		tcup ${BOX_X} ${BOX_Y};echo -n "Working..."
 	done
 }
 

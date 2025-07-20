@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -45,13 +45,13 @@ echo "Initial extract of variables" >>${LOG}
 
 echo "Clearing variables of modifiers and tags" >>${LOG}
 for V in ${(o)_VARS};do
-	VAR=("${(f)$(perl -pe 's/((?<={))([(][A-Za-z].*[)])(.*)(?=})/\1\3\4/' <<<${V})}") # strip modifiers
-	[[ ${VAR} =~ "\[" ]] && VAR=$(cut -d'[' -f1 <<<${VAR}) || VAR=${V} # strip element refs
-	VAR=$(tr -d '${}' <<<${VAR}) # prefix, braces
-	[[ -z ${VAR} ]] && continue # null
-	[[ ${VAR} =~ "^ *$" ]] && continue # spaces
-	[[ ${VAR} =~ "^\(" ]] && continue # remnant
-	if $(grep -q "${BLACK_LIST}" <<<${VAR});then # blacklisted
+	VAR=("${(f)$(perl -pe 's/((?<={))([(][A-Za-z].*[)])(.*)(?=})/\1\3\4/' <<<${V})}") # Strip modifiers
+	[[ ${VAR} =~ "\[" ]] && VAR=$(cut -d'[' -f1 <<<${VAR}) || VAR=${V} # Strip element refs
+	VAR=$(tr -d '${}' <<<${VAR}) # Prefix, braces
+	[[ -z ${VAR} ]] && continue # Null
+	[[ ${VAR} =~ "^ *$" ]] && continue # Spaces
+	[[ ${VAR} =~ "^\(" ]] && continue # Remnant
+	if $(grep -q "${BLACK_LIST}" <<<${VAR});then # Blacklisted
 		echo "BLACKLISTED:${VAR}"
 		continue
 	fi
@@ -71,15 +71,22 @@ for B in ${(o)_BARE_VARS};do
 	fi
 done >> ${LOG}
 
-echo "\n${WHITE_ON_GREY}App:${SCRIPT:t} Assigned Variables${RESET}"
-for A in ${_ASSIGNED};do
-	echo ${A}
-done
+echo "${CYAN_FG}Assigned and Referenced vars for app${RESET}:${WHITE_FG}${SCRIPT}${RESET}"
+if [[ ${#_ASSIGNED} -ne 0 ]];then
+	echo "${WHITE_ON_GREY}Assigned Variables${RESET}"
+	for A in ${_ASSIGNED};do
+		echo ${A}
+	done
+	echo
+fi
 
-echo "\n${WHITE_ON_GREY}App:${SCRIPT:t} Referenced Variables${RESET}"
-for R in ${_REFERENCED};do
-	echo "\${${R}}"
-done
+if [[ ${#_REFERENCED} -ne 0 ]];then
+	echo "${WHITE_ON_GREY}Referenced Variables${RESET}"
+	for R in ${_REFERENCED};do
+		echo "\${${R}}"
+	done
+	echo
+fi
 
 _UNREF=("${(f)$(
 for U in ${_REFERENCED};do
@@ -88,9 +95,12 @@ for U in ${_REFERENCED};do
 done
 )}")
 
-if [[ -n ${_UNREF} ]];then
-	echo "\n${WHITE_ON_GREY}App:${SCRIPT:t} Unused Variables${RESET}"
-	for L in ${_UNREF};do
-		echo ${L}
-	done
+if [[ ${#_UNREF} -ne 0 ]];then
+	if [[ -n ${_UNREF} ]];then
+		echo "${WHITE_ON_GREY}Unused Variables${RESET}"
+		for L in ${_UNREF};do
+			echo ${L}
+		done
+	fi
+	echo
 fi

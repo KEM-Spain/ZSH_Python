@@ -72,7 +72,7 @@ action_do () {
 
 	APP=/usr/bin/vim
 	ARGS=$(echo "${APP} $(list_quote_marked_elements ${MARKED})")
-	eval "${ARGS}"
+	eval "sudo ${ARGS}"
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "<B><I>${0}: ${APP} returned an error<N>"
 
 	for M in ${MARKED};do
@@ -135,7 +135,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:Search for system config files based on search phrase (case sensitive)\n"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDd"
@@ -157,7 +157,7 @@ shift $((${OPTIND} - 1))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 SEARCHTERM=${@}
-[[ -z ${SEARCHTERM} ]] && usage "Missing argument:${WHITE_FG}<APP>${RESET}"
+[[ -z ${SEARCHTERM} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:${WHITE_FG}<APP>${RESET}"
 
 DEPTH=2
 [[ ${DEEP} == "true" ]] && CFGDIRS+=(/usr/share /usr/lib) && ((DEPTH++))
@@ -193,7 +193,7 @@ _APP_DIRS=("${(f)$(echo ${_APP_DIRS})}") # Break array on newline
 
 ONCE=true
 for D in ${CFGDIRS};do
-	if in_array _APP_DIRS ${D};then
+	if arr_in_array _APP_DIRS ${D};then
 		INAME=''
 	else
 		INAME="-name '*${SEARCHTERM}*'"
@@ -217,7 +217,7 @@ if arr_is_populated "${_GNOME_LIST}";then
 	respond "Continue search"
 	if [[ ${?} -ne 0 ]];then
 		do_rmcup
-		echo "${RED_FG}Operation cancelled${RESET}..."
+		echo "${_SCRIPT_TAG} ${RED_FG}Operation Cancelled${RESET}..."
 		exit_leave
 	else
 		msg_box "Continuing search...."
@@ -271,6 +271,7 @@ list_set_select_action "edit"
 list_set_action_msgs edit config
 list_set_reuse_stale true
 list_set_searchable true
+list_set_restore_pos true
 
 while true;do
 	# Get selection

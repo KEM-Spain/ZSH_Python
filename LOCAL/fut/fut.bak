@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -19,7 +19,7 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-#Declarations
+# Declarations
 typeset -A _UTILS=(
 comments 1
 extensions 1
@@ -44,30 +44,21 @@ findexe "EXE:Find executable file"
 surface "EXTRACT:Extract files from sub directory"
 )
 
-#Constants
-_LIB_DIR=/usr/local/lib
+# Constants
 _WRAPPER=${0:t}
 
-#Globals
+# Globals
 g_USAGE=false
 g_UTIL=''
 
-#Imports
-_LIB_DIR=/usr/local/lib
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/VALIDATE.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB_DIR}/${D} ]];then
-		source ${_LIB_DIR}/${D}
-	else
-		echo "Cannot source:${_LIB_DIR}/${D} - not found"
-		exit 1
-	fi
-done
-
-#Functions
+# Functions
 findexe () {
 	local -a LIST
 	local -a RAWLINE
@@ -120,10 +111,11 @@ ______EOF
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-l${RESET} local files have priority"
-		echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(msg_err "${PENDING_MSGS}")
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		exit_leave
 	}
 
 	OPTSTR=":HDl"
@@ -142,20 +134,30 @@ ______EOF
 	done
 	shift $((OPTIND -1))
 	#--End GetOpts--
-	#Execution
+	 
+	# Execution
 	[[ ${#} -eq 0 ]] && usage "missing argument:<FILE>" || FN=${1}
 
 	RAWLINE=("${(f)$(whereis -bf ${FN} | cut -d: -f2-)}")
+	RAWLINE+=("${(f)$(whereis -B ~/Code -f ${FN} | cut -d: -f2-)}")
 
 	for R in ${=RAWLINE};do
 		LIST+=${R}
 	done
 
+	if ! arr_is_populated "${LIST}";then
+		set_exit_value 1
+		exit_leave $(msg_exit E "No file:${FN} found")
+	fi
+
 	if [[ ${#LIST} -gt 1 ]];then
 		for L in ${LIST};do
+			[[ ! -f ${L} ]] && continue
 			if [[ ${LOCAL} == 'true' ]];then
-				[[ ${L:h} == ${PWD} ]] && echo ${L}
-				return
+				if [[ ${L:h} == ${PWD} ]];then
+					echo ${L}
+					return
+				fi
 			elif [[ ${L:h} != ${PWD} ]];then
 				echo ${L}
 				return
@@ -167,8 +169,6 @@ ______EOF
 		echo ${LIST}
 		return
 	fi
-
-	exit_leave
 }
 
 surface () {
@@ -184,7 +184,7 @@ surface () {
 		local SOURCES
 		local RC
 
-		#Globals
+		# Globals
 		local g_TARGET_DIR=${PWD}
 		 
 		get_response () {
@@ -253,12 +253,12 @@ surface () {
 			
 			if [[ ${RC} -eq 0 ]];then
 				echo "${YELLOW_FG}Skipped empty directory:${GREEN_FG}${1}${RESET}"
-				return #skip empty dirs in the current dir
+				return # Skip empty dirs in the current dir
 			else
 				if [[ ${DO_PROMPTS} = 'true' ]];then
 					echo -n "Should files from ${GREEN_FG}${1}${RESET} be moved to ${TARGET_DIR_MSG}? (y/n):"
 					if ! get_response;then
-						exit_leave $(msg_warn "Operation cancelled")
+						exit_leave $(msg_exit I "Operation cancelled")
 					fi
 				fi
 			fi
@@ -424,10 +424,11 @@ _____EOF
 			echo -e "${WHITE_FG}-d${RESET} do not remove empty dirs"
 			echo -e "${WHITE_FG}-j${RESET} do not remove junk files from torrent directories"
 			echo -e "${WHITE_FG}-s${RESET} simulate actions only"
-			echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
+			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			exit_leave $(msg_err "${PENDING_MSGS}")
+			echo "\n$(msg_exit W ${PENDING_MSGS})"
+			exit_leave
 		}
 
 		OPTSTR=":DHit:djs"
@@ -451,18 +452,18 @@ _____EOF
 		shift $((OPTIND -1))
 		#--End GetOpts--
 
-		#Execution
+		# Execution
 		[[ ${DO_SIM} == 'true' ]] && echo "${WHITE_ON_GREY}SIMULATION MODE${RESET}"
 
-		[[ ${#} -eq 0 ]] && exit_leave $(msg_err "Missing argument:$(opt_type d)") || SOURCE_DIR=${@:=${PWD}}
-		[[ ! -d ${SOURCE_DIR} ]] && exit_leave $(msg_err "Argument not a directory:${SOURCE_DIR}")
+		[[ ${#} -eq 0 ]] && exit_leave $(msg_exit E "Missing argument:$(opt_type d)") || SOURCE_DIR=${@:=${PWD}}
+		[[ ! -d ${SOURCE_DIR} ]] && exit_leave $(msg_exit E "Argument not a directory:${SOURCE_DIR}")
 
 		if [[ ${DO_SIM} == 'false' ]];then
 			if [[ ! -d ${g_TARGET_DIR} ]];then
-				mkdir ${g_TARGET_DIR} # create destination directory if needed
+				mkdir ${g_TARGET_DIR} # Create destination directory if needed
 				RC=${?}
 			fi
-			[[ ${RC} -ne 0 ]] && exit_leave $(msg_err "Unable to create directory:${g_TARGET_DIR}")
+			[[ ${RC} -ne 0 ]] && exit_leave $(msg_exit E "Unable to create directory:${g_TARGET_DIR}")
 			[[ ${_DEBUG} -ge 1 ]] && dbg "${0}: ${LINENO} created target directory:${g_TARGET_DIR}"
 		else
 			[[ ! -d ${g_TARGET_DIR} ]] && echo "Target:${g_TARGET_DIR} ${RED_FG}not found${RESET} - would create target dir:${WHITE_FG}${g_TARGET_DIR}${RESET}"
@@ -523,12 +524,10 @@ _____EOF
 					echo "Removing ${WHITE_FG}${D}${RESET}"
 					[[ ${DO_SIM} == 'false' ]] && /bin/rm -rf ${D} >/dev/null 2>&1
 				else
-					exit_leave $(msg_warn "Operation cancelled")
+					exit_leave $(msg_exit I "Operation cancelled")
 				fi
 			fi  
 		done
-
-		exit_leave
 }
 
 comments () {
@@ -537,7 +536,7 @@ comments () {
 		local HIDE=false
 		local SHOW=false
 
-		#Functions
+		# Functions
 		hide_comments () {
 			local LINE
 
@@ -613,10 +612,11 @@ ______EOF
 			echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 			echo -e "${WHITE_FG}-h${RESET} hide file comments (default)"
 			echo -e "${WHITE_FG}-s${RESET} show file comments"
-			echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
+			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			exit_leave $(msg_err "${PENDING_MSGS}")
+			echo "\n$(msg_exit W ${PENDING_MSGS})"
+			exit_leave
 		}
 
 		OPTSTR=":HDhs"
@@ -644,7 +644,7 @@ ______EOF
 		[[ ${HIDE} == 'true' ]] && hide_comments <${FN}
 		[[ ${SHOW} == 'true' ]] && show_comments <${FN}
 
-		[[ ${HIDE} == 'false' && ${SHOW} == 'false' ]] && hide_comments <${FN} #default
+		[[ ${HIDE} == 'false' && ${SHOW} == 'false' ]] && hide_comments <${FN} # Default
 }
 
 extensions () {
@@ -700,10 +700,11 @@ ______EOF
 			echo -e "${WHITE_FG}-H${RESET} help"
 			echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 			echo -e "${WHITE_FG}-c${RESET} copy instead (move is default)"
-			echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
+			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			exit_leave $(msg_err "${PENDING_MSGS}")
+			echo "\n$(msg_exit W ${PENDING_MSGS})"
+			exit_leave
 		}
 
 		OPTSTR=":HDc"
@@ -805,10 +806,11 @@ ______EOF
 			echo -e "${WHITE_FG}-d${RESET} create dirs"
 			echo -e "${WHITE_FG}-h${RESET} create hidden files"
 			echo -e "${WHITE_FG}-l${RESET} create symbolic links"
-			echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
+			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			exit_leave $(msg_err "${PENDING_MSGS}")
+			echo "\n$(msg_exit W ${PENDING_MSGS})"
+			exit_leave
 		}
 
 		OPTSTR=":HDe:fdhl"
@@ -836,9 +838,9 @@ ______EOF
 		[[ -z ${ARGS} ]] && usage "missing required argument"
 		[[ $(validate_is_number ${ARGS}) -eq 0 ]] && CNT=${ARGS} || usage "count must be a positive integer"
 
-		[[ ${#OPTIONS} -eq 0 ]] && FILE=true # default
+		[[ ${#OPTIONS} -eq 0 ]] && FILE=true # Default
 
-		[[ ${FILE} == "false" && ${DIR} == "false" && ${HIDDEN} == "false" && ${LINK} == "false" ]] && FILE=true #default
+		[[ ${FILE} == "false" && ${DIR} == "false" && ${HIDDEN} == "false" && ${LINK} == "false" ]] && FILE=true # Default
 
 		[[ ${FILE} == "true" ]] && echo "Creating ${CNT} regular file(s) in ${PWD}"
 		[[ ${DIR} == "true" ]] && echo "Creating ${CNT} dir(s) in ${PWD}"
@@ -875,7 +877,7 @@ links () {
 		local NDX=0
 		local OPTSET=false
 
-		#Functions
+		# Functions
 		get_level () {
 			local HEAD=${@}
 
@@ -937,10 +939,11 @@ ______EOF
 			echo -e "${WHITE_FG}-d${RESET} increase depth of scan (repeats increase level)"
 			echo -e "${WHITE_FG}-f${RESET} pipe delimited output"
 			echo -e "${WHITE_FG}-i${RESET} ignore broken links"
-			echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
+			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			exit_leave $(msg_err "${PENDING_MSGS}")
+			echo "\n$(msg_exit W ${PENDING_MSGS})"
+			exit_leave
 		}
 
 		OPTSTR=":HDdfl"
@@ -963,7 +966,7 @@ ______EOF
 		
 		local -a ARGS=(${@})
 
-		[[ -z ${ARGS} ]] && ARGS=${PWD} # default to pwd
+		[[ -z ${ARGS} ]] && ARGS=${PWD} # Default to pwd
 		[[ $(is_dir ${ARGS}) -eq 0 ]] && CMD_PATH=${ARGS} || usage "path is invalid:${ARGS}"
 
 		local -a BY_LEVEL
@@ -977,11 +980,11 @@ ______EOF
 		local LONGEST
 		local TARGET_TYPE
 
-		echo "\n${0} - Scanning:depth level ${WHITE_FG}${FIND_DEPTH}${RESET} of ${WHITE_FG}$(realpath ${CMD_PATH})${RESET}..."
+		echo "\n[${0}] Scanning:depth level ${WHITE_FG}${FIND_DEPTH}${RESET} of ${WHITE_FG}$(realpath ${CMD_PATH})${RESET}..."
 
-		pushd ${CMD_PATH} #run in path
+		pushd ${CMD_PATH} # Run in path
 
-		LINKED+=("${(f)$(sudo find $(pwd) -maxdepth ${FIND_DEPTH} ! -path . -type l)}") #build list of links
+		LINKED+=("${(f)$(sudo find $(pwd) -maxdepth ${FIND_DEPTH} ! -path . -type l)}") # Build list of links
 
 		[[ -z ${LINKED[1]} ]] && exit_leave "No linked files or directories found"
 
@@ -992,25 +995,25 @@ ______EOF
 			exit_leave
 		fi
 
-		#Sort LINKED by level and record longest path
+		# Sort LINKED by level and record longest path
 		LONGEST=0
 		for L in ${LINKED};do
-			BY_LEVEL+="$(get_level ${L:h})|${L}" #build array with level,path
+			BY_LEVEL+="$(get_level ${L:h})|${L}" # Build array with level,path
 			[[ ${#L:t} -gt ${LONGEST} ]] && LONGEST=${#L:t}
 		done
 
 		NDX=0
 		LAST_LINK_LEVEL=?
 		LAST_LINK_PATH=?
-		for L in ${(on)BY_LEVEL};do #sort by level,path
+		for L in ${(on)BY_LEVEL};do # Sort by level,path
 			LINK_LEVEL=$(echo ${L} | cut -d '|' -f1)
 			LINK_PATH=$(echo ${L} | cut -d '|' -f2)
 
-			TARGET_TYPE="${E_RED_FG}[UNKN]${E_RESET}" #default type
+			TARGET_TYPE="${E_RED_FG}[UNKN]${E_RESET}" # Default type
 			[[ -d ${LINK_PATH} ]] && TARGET_TYPE=" <DIR>"
 			[[ -f ${LINK_PATH} ]] && TARGET_TYPE="<FILE>"
 
-			F_INFO=$(file -L ${LINK_PATH}) #using dereference option
+			F_INFO=$(file -L ${LINK_PATH}) # Using dereference option
 
 			if [[ ${F_INFO} =~ 'broken' ]];then
 				if [[ ${IGNORE} == 'true' ]];then
@@ -1102,16 +1105,19 @@ ______EOF
 			echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 			echo -e "${WHITE_FG}-c${RESET} increase CTIME (repeatable)"
 			echo -e "${WHITE_FG}-d${RESET} increase depth of scan (repeatable)"
-			echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}\n"
+			echo -e "${WHITE_FG}-n${RESET} suppress headers"
+			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			exit_leave $(msg_err "${PENDING_MSGS}")
+			echo "\n$(msg_exit W ${PENDING_MSGS})"
+			exit_leave
 		}
 
-		OPTSTR=":HDcd"
+		OPTSTR=":HDcdn"
 		OPTIND=0
 
 		local CTIME=0
+		local NO_HEADERS=false
 
 		while getopts ${OPTSTR} OPTION;do
 			case $OPTION in
@@ -1119,6 +1125,7 @@ ______EOF
 			  D) dbg_set_level;;
 			  c) ((CTIME++));;
 			  d) ((FIND_DEPTH++));;
+			  n) NO_HEADERS=true;;
 			  :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 			 \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 			esac
@@ -1127,13 +1134,13 @@ ______EOF
 		shift $((OPTIND -1))
 		#--End GetOpts--
 
-		#Execution
+		# Execution
 		local -a ARGS=(${@})
 
-		[[ -z ${ARGS} ]] && ARGS=${PWD} # default to pwd
+		[[ -z ${ARGS} ]] && ARGS=${PWD} # Default to pwd
 		[[ $(is_dir ${ARGS}) -eq 0 ]] && CMD_PATH=${ARGS} || usage "path is invalid:${ARGS}"
 
-		echo "\n${0} - Scanning:depth level ${WHITE_FG}${FIND_DEPTH}${RESET} of ${WHITE_FG}$(realpath ${CMD_PATH})${RESET}\n"
+		[[ ${NO_HEADERS} == 'false' ]] && echo "\n[${0}] Scanning:depth level ${WHITE_FG}${FIND_DEPTH}${RESET} of ${WHITE_FG}$(realpath ${CMD_PATH})${RESET} for ${WHITE_FG}${CTIME}${RESET} $(str_pluralize day ${CTIME}) ago\n"
 
 		local HDR
 		local -a LIST
@@ -1145,20 +1152,20 @@ ______EOF
 
 			pushd ${CMD_PATH}
 
-			LIST=("${(f)$(sudo find $(pwd) -maxdepth ${FIND_DEPTH} -type f -daystart -ctime ${D})}")
+			LIST=("${(f)$(sudo find "$(pwd)" -maxdepth ${FIND_DEPTH} -type f -daystart -ctime ${D})}")
 			HDR="${#LIST} $(str_pluralize file ${#LIST}) created/${TAG}"
 
 			if [[ -n ${LIST[1]} ]];then
-				echo "\n${WHITE_FG}${HDR}${RESET}"
-				echo "$(str_unicode_line ${#HDR})"
+				[[ ${NO_HEADERS} == 'false' ]] && echo "\n${WHITE_FG}${HDR}${RESET}"
+				[[ ${NO_HEADERS} == 'false' ]] && echo "$(str_unicode_line ${#HDR})"
 				for L in ${LIST};do
 					echo ${L}
 				done
 			else
-				echo "\n${RED_FG}No files modified${RESET} in:${WHITE_FG}${CMD_PATH}${RESET} ${D} $(str_pluralize day ${D}) ago"
+				[[ ${NO_HEADERS} == 'false' ]] && echo "\n${RED_FG}No files modified${RESET} in:${WHITE_FG}${CMD_PATH}${RESET} ${D} $(str_pluralize day ${D}) ago"
 			fi
 			popd
-		done
+		done | mypager
 }
 
 inode_del () {
@@ -1173,7 +1180,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
-		echo "${WHITE_FG}\nDESC${RESET}:${DESC}"
+		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
 
@@ -1195,7 +1202,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
-		echo "${WHITE_FG}\nDESC${RESET}:${DESC}"
+		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
 
@@ -1255,10 +1262,11 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "\n${WHITE_FG}\nDESC${RESET}:${DESC}"
+	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err "${PENDING_MSGS}")
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	exit_leave
 }
 
 OPTSTR=":HD"
@@ -1277,7 +1285,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
-#Execution
+# Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
 [[ ${UTIL} != 'none' && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "UTIL:${UTIL} not found"
@@ -1289,12 +1297,13 @@ if [[ ${UTIL} != 'none' ]];then
 else
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-	selection_list_set ${(v)_UTILS_DESC}
-	selection_list -O ${CYAN_FG} -x11 -y32 -c -w10 "<w>Show Files Utilities usage or <h>(q)uit<N>"
+	sel_set_list ${(v)_UTILS_DESC}
+	sel_list -sa -O ${CYAN_FG} -C -F"<w>Show Files Utilities usage or <h>(q)uit<N>" -H"File Utilities"
 
-	_SCRIPT=${(k)_UTILS_DESC[(r)${_SELECTION_VALUE}]}
-	echo #clear read
-	${_SCRIPT} -H # call function help
+	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
+	echo # Clear read
+	${_SCRIPT} -H # Call function help
+
+	exit_leave
 fi
 
-exit_leave

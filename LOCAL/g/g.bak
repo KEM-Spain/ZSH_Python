@@ -42,7 +42,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -53,7 +53,7 @@ parse_opts () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		f) echo "<FILE>";;
+		O) echo "<FILE>";;
 		s) echo "<SEARCHTERM>";;
 		m) echo "<MATCHES>";;
 		p) echo "<PATH>";;
@@ -74,7 +74,7 @@ usage () {
 	echo -e "${WHITE_FG}-A${RESET} no ansi color"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-L${RESET} list files on one line"
-	echo -e "${WHITE_FG}-O $(opt_type f)${RESET} redirect output to $(opt_type f)"
+	echo -e "${WHITE_FG}-O $(opt_type O)${RESET} redirect output to $(opt_type O)"
 	echo -e "${WHITE_FG}-h${RESET} suppress file name in output (only for use with option O)"
 	echo -e "${WHITE_FG}-l${RESET} list files"
 	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} max matches to process (default: all)"

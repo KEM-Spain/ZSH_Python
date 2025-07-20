@@ -17,7 +17,11 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-_SCRIPT=${0:t}
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 read -r -d '' DESC<<EOF
 Filter to display screen buffer content as pages
@@ -27,6 +31,8 @@ Filter to display screen buffer content as pages
 \twill force a wait for keypress to continue.
 \n
 EOF
+
+PERL_SCRIPT=''
 
 usage () {
 	tabs 5
@@ -55,32 +61,37 @@ page () {
 	my $TERM_LINES = `tput lines`;
 	my $WAIT = $ARGV[0] if (defined($ARGV[0]));
 	my $WHITE_ON_GREY="\033[0m\033[0;1;37;100m";
+	my $WHITE="\033[37m";
 	my $RESET="\033[m";
+	my $CSROF="\033[?25l";
+	my $CSRON="\033[?25h";
 
-	 
-	for ($LINES=0; $LINES<$TERM_LINES; $LINES++) { 
-		if (defined($LINE=<STDIN>)) { 
-			$BUFFER .= $LINE;
-		} else { # Less than a full screen will be printed and exit
-			print $BUFFER;
-			print "\n";
-			if (defined $WAIT) { # If WAIT is populated end with msg
-				cursor off
-				print $WHITE_ON_GREY . "Press any key" . $RESET . "...";
-				cursor on
-			}
-			exit 1;
+	if ( -t STDIN and not @ARGV ) {
+		print "[" . $WHITE . "mypager" . $RESET ."] no input - exiting";
+		exit 1;
+	} else {
+		for ($LINES=0; $LINES<$TERM_LINES; $LINES++) { 
+			if (defined($LINE=<STDIN>)) { 
+				$BUFFER .= $LINE;
+			} else { # Less than a full screen will be printed and exit
+				print $BUFFER;
+				print "\n";
+				if (defined $WAIT) { # If WAIT is populated end with msg
+					print $CSROF . $WHITE_ON_GREY . "Press any key" . $RESET . "...";
+				}
+				exit 1;
+			} 
+		} # The first screen is bufferred
+
+		open LESS, "| $LESS_CMD"; # Feed the first screen to less
+		print LESS $BUFFER; 
+
+		while (defined($LINE=<STDIN>)) { # Feed any subsequent screens to less
+			print LESS $LINE; 
 		} 
-	} # The first screen is bufferred
 
-	open LESS, "| $LESS_CMD"; # Feed the first screen to less
-	print LESS $BUFFER; 
-
-	while (defined($LINE=<STDIN>)) { # Feed any subsequent screens to less
-		print LESS $LINE; 
-	} 
-
-	close LESS;
+		close LESS;
+	}
 ___EOF
 
 perl -e "$PERL_SCRIPT" ${1}

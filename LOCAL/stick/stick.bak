@@ -30,7 +30,6 @@ typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
 _PATHLBL=''
 
 # Constants
-_STICK_DBG=4
 _SCRIPT=${0:t}
 _RSYNC_LOG=/tmp/rsync.log
 _LOCAL_PATH=''
@@ -43,7 +42,7 @@ g_LOCAL_LVL=1
 g_STICK_LVL=1
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIST.zsh
@@ -123,14 +122,14 @@ action_do () {
 		msg_box -p -PK -x $((_COORDS[X] + 3)) "Transfer Complete"
 
 		for M in ${(k)PAYLOAD};do
-			list_set_selected ${M} 3
+			list_set_selected ${M} ${_USED_ROW}
 		done
 	else
 		# Call rm
 		msg_box "Deleting..."
 		/bin/rm -rf ${(v)PAYLOAD}
 		for M in ${(k)PAYLOAD};do
-			list_set_selected ${M} 2
+			list_set_selected ${M} ${_STALE_ROW}
 		done
 		msg_box_clear
 	fi
@@ -146,7 +145,7 @@ action_warn () {
 	if [[ ! -w ${_STICK_PATH} ]];then
 		msg_box -H1 -p -PK "<r>Error - Unable to Copy<N>|Stick is Readonly"
 		for M in ${_MARKED};do
-			list_set_selected ${M} 0
+			list_set_selected ${M} ${_AVAIL_ROW}
 		done
 		return -1
 	fi
@@ -178,9 +177,9 @@ item_decorate () {
 	[[ ${g_LAST_VIEW} == "LOCAL" ]] && ITEM=${${ITEM}##${_LOCAL_PATH}} || ITEM=${${ITEM}##${_STICK_PATH}}
 	ITEM=${ITEM[1,${_MAX}]}
 	
-	if [[ ${_LIST_SELECTED[${NDX}]} -eq 2 ]];then # 2 = deleted
+	if [[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]];then # 2 = deleted
 		echo -n "${E_STRIKE}${E_RED_FG}${ITEM}${E_RESET} ${E_ITALIC}deleted${E_RESET}" || echo -n ${ITEM}
-	elif [[ ${_LIST_SELECTED[${NDX}]} -eq 3 ]];then # 3 = copied
+	elif [[ ${_LIST_SELECTED[${NDX}]} -eq ${_USED_ROW} ]];then # 3 = copied
 		echo -n "${E_STRIKE}${E_CYAN_FG}${ITEM}${E_RESET} ${E_ITALIC}copied${E_RESET}" || echo -n ${ITEM}
 	else
 		case ${_LIST_OBJS[${NDX}]} in
@@ -216,12 +215,13 @@ list_show () {
 
 	#set line item
 	list_set_line_item ' 
-	printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 	'
 
-	list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select, (${GREEN_FG}T${RESET})oggle to view ${WHITE_ON_GREY}${g_NEXT_VIEW}${RESET}, or (${GREEN_FG}D${RESET})etail [1-4] ( <${GREEN_FG}ENTER${RESET}>${ITALIC} will exit if none selected${RESET} )"
-	list_set_key_callback_quit T list_switch
-	list_set_key_callback_quit D list_detail
+	list_set_select_action "view"
+	list_set_key_callback_quit KEY T FUNC list_switch RET true
+	list_set_key_callback_quit KEY D FUNC list_detail RET true
+	list_set_searchable false
 
 	while true;do
 		#get selection
@@ -289,9 +289,9 @@ load_local () {
 
 	_LOCAL_LIST=("${(f)$(eval "find ${PWD:q} -maxdepth ${DETAIL_LVL} -type ${TYPE} ! -path ${PWD:q}" 2>/dev/null | sort)}")
 	if [[ ${?} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_STICK_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${PWD} -maxdepth 1 -type f ! -path ${PWD}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${PWD} -maxdepth 1 -type f ! -path ${PWD}"
 	else
-		[[ ${_DEBUG} -ge ${_STICK_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 	fi
 
 	if arr_is_populated "${_LOCAL_LIST}";then
@@ -317,9 +317,9 @@ load_stick () {
 
 	_STICK_LIST=("${(f)$(eval "find ${STICK_DATA[PATH]} -maxdepth ${DETAIL_LVL} -type ${TYPE} ! -path ${STICK_DATA[PATH]}" 2>/dev/null | sort)}")
 	if [[ ${?} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_STICK_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${STICK_DATA[PATH]} -maxdepth 1 -type f ! -path ${STICK_DATA[PATH]}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${STICK_DATA[PATH]} -maxdepth 1 -type f ! -path ${STICK_DATA[PATH]}"
 	else
-		[[ ${_DEBUG} -ge ${_STICK_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_STICK_LIST COUNT${RESET}:${#_STICK_LIST}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_STICK_LIST COUNT${RESET}:${#_STICK_LIST}"
 	fi
 
 	if arr_is_populated "${_STICK_LIST}";then

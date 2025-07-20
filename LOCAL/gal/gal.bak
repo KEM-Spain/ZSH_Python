@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -24,7 +24,7 @@ RED_BG="\033[41m"
 WHITE_BG="\033[47m"
 YELLOW_BG="\033[43m"
 
-#Echoed ansi
+# Echoed ansi
 E_BOLD=$(echo -n "\033[1m")
 E_ITALIC=$(echo -n "\033[3m")
 E_RESET=$(echo -n "\033[m")
@@ -49,22 +49,28 @@ E_RED_BG=$(echo -n "\033[41m")
 E_WHITE_BG=$(echo -n "\033[47m")
 E_YELLOW_BG=$(echo -n "\033[43m")
 
-#Constants
-_LIB=/usr/local/lib
+# Constants
 _ALIAS_FN=/etc/zsh/aliases
 
-#Imports
+# Imports
 zmodload zsh/pcre
-source ${_LIB}/common.zsh
 
-#Declarations
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
+source ${_LIB_DIR}/DURABLE.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+# Declarations
 typeset -A ALIAS_LIST
 typeset -a _SEARCH_MSGS
 typeset -a _SCOPE_MSGS
 typeset -a _MATCH_MSGS
 typeset -a _OUTPUT_MSGS
 
-#Functions
+# Functions
 function strip {
 	echo ${1} | sed "s/[\'\"]//g"
 }
@@ -94,8 +100,8 @@ do_header () {
 	printf "${MAGENTA_FG}%s${RESET}\n"  $(str_unicode_line $(( LONGEST+8 )))
 	echo
 
-	printf "${CYAN_FG}%12s${RESET}    ${GREEN_FG}%-50s${RESET}\n"  "Alias" "Command"
-	printf "${CYAN_FG}%12s${RESET}    ${GREEN_FG}%-50s${RESET}\n"  $(str_unicode_line 5) $(str_unicode_line 7)
+	printf "${CYAN_FG}%-12s${RESET}    ${GREEN_FG}%-50s${RESET}\n"  "Alias" "Command"
+	printf "${CYAN_FG}%-12s${RESET}    ${GREEN_FG}%-50s${RESET}\n"  $(str_unicode_line 12) $(str_unicode_line 12)
 }
 
 do_match () {
@@ -129,17 +135,17 @@ EOF
 
 parse_opts () {
 	local OPTS=${@}
-	local -a OPTSTRING
+	local -a OPTSTR
 	local LETTER_OPT
 	local O
 
 	for O in {1..${#OPTS}};do
 		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-		OPTSTRING+="-${OPTS[${O}]}"
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
 	done
-	echo ${OPTSTRING}
+	echo ${OPTSTR}
 }
 
 opt_exists () {
@@ -164,7 +170,8 @@ usage () {
 	tabs 5
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
-	echo -e "${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type s)]\n"
+	(
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type s)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-a${RESET} match alias only"
@@ -173,9 +180,10 @@ usage () {
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-x${RESET} exact match"
 	echo -e "${WHITE_FG}-q${RESET} quiet"
-	echo -e "${WHITE_FG}\nDESC${RESET}:${DESC}"
+	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
+	) >&2
 
-	exit_leave $(msg_err ${PENDING_MSGS})
+	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
@@ -199,8 +207,8 @@ while getopts ${OPTSTR} OPTION;do
      e) OUTPUT_CMD_ONLY=true;;
      q) QUIET=true;;
      x) EXACT=true;;
-     :) print -u2 "${RED_FG}${SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
-    \?) print -u2 "${RED_FG}${SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+     :) print -u2 "[${WHITE_FG}${_SCRIPT}${RESET}]: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "[${WHITE_FG}${_SCRIPT}${RESET}]: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
@@ -216,7 +224,7 @@ shift $((OPTIND -1))
 
 [[ ${QUIET} == 'true' ]] && WAIT='' || WAIT='wait'
 
-#Build list
+# Build list
 ALIASES=("${(@f)$(cat ${_ALIAS_FN} | grep ^alias | sort)}")
 for A in ${ALIASES};do
 	ALIAS=$(echo ${A} | cut -d= -f1 | sed -e 's/^alias//g' -e 's/.*-g//g')
@@ -225,7 +233,7 @@ for A in ${ALIASES};do
 	[[ ${_DEBUG} -gt 1 ]] && dbg "${0}:${LINENO} ALIASES:${#ALIASES} -> ALIAS:${ALIAS} DEF:${DEF}"
 done
 
-#Apply search criteria
+# Apply search criteria
 [[ -n ${SEARCHTERM} ]] && LIST_ALL=false || LIST_ALL=true
 
 if [[ ${LIST_ALL} == true ]];then
@@ -255,7 +263,7 @@ fi
 REGEX="${SEARCHTERM}"
 [[ ${EXACT} == "true" ]] && IS_WORD=true || IS_WORD=false
 
-#Process list
+# Process list
 {
 	durable_set EXV EV 0
 	_HIT=false
@@ -309,7 +317,7 @@ REGEX="${SEARCHTERM}"
 						do_header ${_SCOPE_MSGS}
 						HEADER_OUT=true
 					fi
-					[[ ${A} == ${LAST_ALIAS} ]] && continue #Avoid duplicate output
+					[[ ${A} == ${LAST_ALIAS} ]] && continue # Avoid duplicate output
 					printf "${CYAN_FG}%12s${RESET} -> ${WHITE_FG}%-50s${RESET}\n" ${A} "$(strip ${ALIAS_LIST[${A}]})"
 				fi
 			fi
@@ -320,11 +328,11 @@ REGEX="${SEARCHTERM}"
 	if [[ ${_HIT} == 'false' ]];then
 		durable_set EXV EV 1
 		if [[ ${MATCH_MODE} == "alias" ]];then
-			echo "No alias matches ${SEARCHTERM}"
+			msg_exit W "No alias matches for:${SEARCHTERM}"
 		elif [[ ${MATCH_MODE} == "cmd" ]];then
-			echo "No command matches ${SEARCHTERM}"
+			msg_exit W "No command matches for:${SEARCHTERM}"
 		else
-			echo "No matches for ${SEARCHTERM}"
+			msg_exit W "No matches for:${SEARCHTERM}"
 		fi
 	fi
 

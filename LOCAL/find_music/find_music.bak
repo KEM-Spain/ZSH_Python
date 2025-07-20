@@ -14,57 +14,35 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-#Declarations
+# Declarations
 typeset -a LOCAL_LIST
 typeset -a LIST
 typeset -a MUSIC_DIRS
 typeset -g SEARCHTERM
 
-#Constants
-_LIB=/usr/local/lib
-_MD_EXTERNAL="/media/kmiller/KEM_Misc/Music/KEM-B9"
-_MD_LOCAL="/home/kmiller/Documents/Music"
-_MD_MUSE="/home/kmiller/Documents/MuseScore/Scores"
-_PRINTED='\(\.pdf\|\.txt\|\.doc\|\.odg\)$'
-_RECORDED='\(\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\|\.mp4\)$'
-_NOTATION='\.mscz$'
-_ALL='\(\.pdf\|\.txt\|\.doc\|\.odg\|\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\|\.mp4\|\.mscz\)$'
+# Constants
+_MD_EXTERNAL="/media/${USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MD_LOCAL="${HOME}/Documents/Music"
+#_PRINTED='\(\.pdf\|\.txt\|\.doc\|\.odg\)$'
+#_RECORDED='\(\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\|\.mp4\)$'
+#_NOTATION='\.mscz$'
+#_ALL='\(\.pdf\|\.txt\|\.doc\|\.odg\|\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\|\.mp4\|\.mscz\)$'
 
-#Globals
+_PRINTED='(pdf|txt|doc|odg)$'
+_RECORDED='(mp3|m4a|flac|ogg|wav|mp4)$'
+_NOTATION='\mscz$'
+_ALL='(pdf|txt|doc|odg|mp3|m4a|flac|ogg|wav|mp4|mscz)$'
+
+# Globals
 WIN_X=5
 
-#Imports
-source ${_LIB}/common.zsh
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
-#Functions
-get_selection () {
-	local ROWS=${1}
-	local MSG="Please enter a valid list item (${WHITE_FG}1...${ROWS}${RESET})"
-	local RESPONSE
-
-	echo -n "\n${MSG}${RESET}:" >&2
-	read RESPONSE
-	[[ -z ${RESPONSE} ]] && return 1
-
-	if validate_is_integer ${RESPONSE};then
-		if validate_is_list_item ${RESPONSE} ${ROWS};then
-			echo ${RESPONSE}
-		else
-			say_err ${MSG}
-			return 2
-		fi
-	else
-		say_err ${MSG}
-		return 2
-	fi
-	return 0
-}
-
-say_err () {
-	MSG=${@}
-	echo "${RED_FG}Error${RESET}: ${MSG}" >&2
-}
-
+# Functions
 say_msg_search_info () {
 	local EXT_DRV=${1:=null}
 
@@ -92,56 +70,32 @@ say_msg_search_err () {
 		msg_box -p -PK "No music found matching:${SEARCHTERM}"
 	fi
 }
-
-validate_is_integer () {
-	local VAL=${1}
-	local RET
-
-	[[ ${_DEBUG} -gt 2 ]] && dbg "${0}:${@}"
-
-	RET=$( echo "${VAL}" | sed 's/^[-+]*[0-9]*//g' )
-	if [[ -z ${RET} ]];then
-		return 0
-	else
-		return 1
-	fi
-}
-
-validate_is_list_item () {
-	local ITEM_NDX=${1}
-	local MAX_ITEM=${2}
-
-	[[ ${_DEBUG} -gt 2 ]] && dbg "${0}:${@}"
-
-	[[ ${ITEM_NDX} -gt 0 && ${ITEM_NDX} -le ${MAX_ITEM} ]] && return 0 || return 1
-}
-
 #--Begin GetOpts--
 RESET="\033[m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 
 read -r -d '' DESC<<EOF
-Find recorded, printed, or notation music files.
-\t<SEARCHTERM> is either a full or partial search parameter.
-\tThe default search is for music of any type. Any search 
-\tresult selected will be opened by the appropriate 
+Find music files in recorded, printed, or notation format.
+\t<SEARCHTERM> parameter is a fuzzy match by default.
+\tSearch is for music of any type by default. Any selected
+\tsearch result will be opened by the appropriate 
 \tapplication.
 EOF
 
 parse_opts () {
 	local OPTS=${@}
-	local -a OPTSTRING
+	local -a OPTSTR
 	local LETTER_OPT
 	local O
 
 	for O in {1..${#OPTS}};do
 		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
-		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
-		OPTSTRING+="-${OPTS[${O}]}"
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
 	done
-	echo ${OPTSTRING}
+	echo ${OPTSTR}
 }
 
 opt_exists () {
@@ -165,6 +119,7 @@ usage () {
 	tabs 5
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
+	(
 	echo -e "${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} <SEARCHTERM>\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
@@ -172,9 +127,10 @@ usage () {
 	echo -e "${WHITE_FG}-p${RESET} find printed music"
 	echo -e "${WHITE_FG}-r${RESET} find recorded music"
 	echo -e "${WHITE_FG}-x${RESET} exact match"
-	echo -e "${WHITE_FG}\nDESC${RESET}:${DESC}"
-	
-	echo $(msg_err ${PENDING_MSGS})
+	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
+	) >&2
+
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
 	exit_leave
 }
 
@@ -195,14 +151,14 @@ while getopts ${OPTSTR} OPTION;do
      r) FIND_RECORDED=true;;
      x) EXACT_MATCH=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
-    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
+    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
 shift $((OPTIND -1))
 #--End GetOpts--
 
-#Execution
+# Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
  
 SEARCHTERM=${@}
@@ -235,15 +191,17 @@ say_msg_search_info ${EXTERNAL_DRIVE}
 (( WIN_X += 3 ))
 for D in ${MUSIC_DIRS};do
 	msg_box -x${WIN_X} "Location:<w>${D}<N>"
-	LIST+=("${(f)$(find -L ${D} -type f -iregex ${SEARCH_REGEX}${EXTENSIONS})}")
+	REGEX=${SEARCH_REGEX}${EXTENSIONS}
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} find -L ${D} -type f -regextype posix-extended -iregex ${REGEX}"
+	LIST+=("${(f)$(find -L ${D} -type f -regextype posix-extended -iregex ${REGEX})}")
 	(( WIN_X+=3 ))
 done
 
 if arr_is_populated "${LIST}";then
 	msg_box -p -PP "Found ${#LIST} matching"
 	if [[ ${_MSG_KEY} == 'y' ]];then
-		[[ ${_DEBUG} -gt 0 ]] && dbg "Calling o -n ${LIST}"
-		o -n ${LIST}
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling o ${LIST}"
+		o -m ${LIST}
 	fi
 else
 	say_msg_search_err

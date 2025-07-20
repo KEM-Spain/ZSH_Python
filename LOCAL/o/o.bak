@@ -100,7 +100,7 @@ action_do () {
 	done
 
 	for K in ${(k)RUN_LIST};do
-		eval "${K} ${RUN_LIST[${K}]} >${_APP_LOG} 2>&1 &"
+		eval "${K} ${RUN_LIST[${K}]}"
 		RC=${?}
 		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."

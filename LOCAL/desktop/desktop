@@ -38,7 +38,7 @@ action_do () {
 
 	APP=/usr/bin/vim
 	ARGS=$(echo "${APP} $(list_quote_marked_elements ${MARKED})")
-	eval "${ARGS}"
+	eval "sudo ${ARGS}"
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "<B><I>${0}: ${APP} returned an error<N>"
 
 	for M in ${MARKED};do
@@ -115,7 +115,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"
@@ -129,7 +129,7 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution

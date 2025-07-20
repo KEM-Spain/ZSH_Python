@@ -54,7 +54,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 get_fn_noext () {
 	local FN=${1}
 
-	[[ ${FN:e} =~ '[[:alpha:]]+' ]] && echo ${FN:t:r} || echo ${FN}
+	[[ ${FN:e} =~ '[[:alpha:]]+' ]] && echo ${FN:t:r} || echo ${FN:t}
 }
 
 get_fn_ext () {
@@ -650,6 +650,7 @@ do_subs () {
 	if ! arr_is_populated "${_OUT_LIST}";then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		logit "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
+		echo "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		return 1 
 	fi
 
@@ -958,7 +959,6 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-# TODO: Test fsub -p - is dropping filename - extension only
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
@@ -1110,6 +1110,14 @@ fi
 	} >> ${_LOG}
 #fi
 
+# Prepend
+if [[ ${PREPEND} == "true" ]];then
+	[[ ! -e ${1} ]] && echo "${_SCRIPT_TAG} ${RED_FG}File not found${RESET}:${1}" >&2 && return 1
+	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Prepending file names" | tee -a ${_LOG} } >&2
+	do_prepend ${PREPEND_TAG}
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for prepend" | tee -a ${_LOG} } >&2
+fi
+
 # Substitutions
 if [[ ${SEARCH_REPLACE} == 'true' ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_subs${RESET}..."
@@ -1196,13 +1204,6 @@ if [[ ${TRIM} == "true" ]];then
 	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Trimming file names" | tee -a ${_LOG} } >&2
 	do_trim
 	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for trim" | tee -a ${_LOG} } >&2
-fi
-
-# Prepend
-if [[ ${PREPEND} == "true" ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Prepending file names" | tee -a ${_LOG} } >&2
-	do_prepend ${PREPEND_TAG}
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for prepend" | tee -a ${_LOG} } >&2
 fi
 
 # YouTube tags

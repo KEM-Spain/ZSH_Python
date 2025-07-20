@@ -138,7 +138,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS
@@ -160,7 +160,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
@@ -217,7 +217,7 @@ for F in ${(o)_RAWLIST};do
 	_LOCAL_LIST+=${FN}
 done
 ((_COL_WIDTHS[FN]+=6))
-[[ ${_COL_WIDTHS[FN]} -gt $((_MAX_COLS-10)) ]] && _COL_WIDTHS[FN]=$((_MAX_COLS-=10))
+[[ ${_COL_WIDTHS[FN]} -gt $(( _MAX_COLS - 10 )) ]] && _COL_WIDTHS[FN]=$(( _MAX_COLS -= 10 ))
 
 if [[ ${HIT} == 'false' ]];then
 	typeset -a OPTMSGS
@@ -226,7 +226,7 @@ if [[ ${HIT} == 'false' ]];then
 	[[ ${FUZZY} == 'false' && ${FUZZY_CNT} -ne 0 ]] && OPTMSGS+="| |<w>Use option [-f] to select from files that matched<N> (<w>${FUZZY_CNT}<N>) <w>the substring \"${SEARCHTERM}\"<N>"
 	[[ ${EXACT_MATCH} == 'true' && ${EXACT_CNT} -ne 0 ]] && OPTMSGS+="| |<w>Use option [-x] to see files<N> (<w>${EXACT_CNT}<N>) <w>that matched but not exactly<N>"
 	[[ ${IS_OWNER} == 'true' && ${OWNER_CNT} -ne 0 ]] && OPTMSGS+="| |<w>Use option [-o] to see files that matched<N> (<w>${OWNER_CNT}<N>) but you are not the owner<N>"
-	msg_box -H$((${#OPTMSGS}+1)) -p -PK -jl "<r>No Matches for a file named${RESET}:${SEARCHTERM}${OPTMSGS}|$(msg_list_bullet ${(o)_RAWLIST})"
+	msg_box -H$(( ${#OPTMSGS} + 1 )) -p -PK -jl "<r>No Matches for a file named${RESET}:${SEARCHTERM}${OPTMSGS}|$(msg_list_bullet ${(o)_RAWLIST})"
 	msg_box_clear
 	exit_leave
 fi

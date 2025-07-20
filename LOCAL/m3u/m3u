@@ -19,10 +19,10 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Generate m3u playlist
-\tInput has 3 forms:
-\t1) Piped input of fully qualified file names
-\t2) File containing fully qualified file names
-\t3) Directory containing files
+Input has 3 forms:
+1) Piped input of fully qualified file names
+2) File containing fully qualified file names
+3) Directory containing files
 EOF
 
 parse_opts () {
@@ -86,7 +86,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 #--Execution--

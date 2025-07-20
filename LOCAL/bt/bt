@@ -74,7 +74,7 @@ connection_msgs () {
 	fi
 
 	msg_box_clear 19 10 4 60
-	msg_box -c -x20 -y10 "${_DEV_MAC_NAME[${_SELECTED_DEVICE}]} - ${(C)MODE}ing..."
+	msg_box -c -x25 -y85 "${_DEV_MAC_NAME[${_SELECTED_DEVICE}]} - ${(C)MODE}ing..."
 
 	wait_status_change ${DEV_STATE}
 	RC=${?}
@@ -206,7 +206,7 @@ select_device () {
 		tput ed
 
 		sel_set_list ${DEVICES}
-		sel_list -x10 -y11 -H"Devices" -F"<c>Select BT Device or (<w>q<c>)uit<N>"
+		sel_list -x10 -y11 -H"Devices" -F"<c>Select BT Device or (<w>q<c>)uit<N>" -O ${CYAN_FG}
 		[[ ${?} -ne 0 ]] && exit_leave "[${_SCRIPT}]:${RED_FG}Operation Cancelled${RESET}"
 		DEV=${_SEL_VAL}
 
@@ -214,13 +214,13 @@ select_device () {
 		_SELECTED_DEVICE=${MAC}
 
 		sel_set_list ${_ACTIONS}
-		sel_list -x15 -y60 -H"Actions" -F"<c>Select Action for ${DEV} or (<w>q<c>)uit<N>"
+		sel_list -x15 -y60 -H"Actions" -F"<c>Select Action for ${DEV} or (<w>q<c>)uit<N>" -O ${CYAN_FG}
 		[[ ${?} -ne 0 ]] && exit_leave "[${_SCRIPT}]:${RED_FG}Operation Cancelled${RESET}"
 		ACTION=${_SEL_VAL}
 
 		if [[ ${ACTION} == 'toggle' ]];then
 			STATUS=$(get_connection_status ${MAC})
-			[[ ${STATUS} != 'connected' ]] && exit_leave "${RED_FG}Not toggling a disconnected device${RESET}:${DEV}"
+			[[ ${STATUS} != 'connected' ]] && exit_leave "${RED_FG}Device is not connected${RESET}:${DEV}"
 			if [[ -n ${ACTION} ]];then
 				STATE=$(get_connection_status ${MAC})
 				[[ ${STATE} == 'connected' ]] && TOGGLE_STATE=disconnect || TOGGLE_STATE=connect
@@ -233,17 +233,21 @@ select_device () {
 				set_device_connection ${TOGGLE_STATE} ${MAC}
 			fi
 		elif [[ ${ACTION} == 'connect' ]];then
+			STATUS=$(get_connection_status ${MAC})
+			[[ ${STATUS} == 'connected' ]] && exit_leave "${RED_FG}Device is already connected${RESET}:${DEV}"
 			STATE=connect
 			set_device_connection ${STATE} ${MAC}
 			RC=${?}
 		elif [[ ${ACTION} == 'disconnect' ]];then
+			STATUS=$(get_connection_status ${MAC})
+			[[ ${STATUS} != 'connected' ]] && exit_leave "${RED_FG}Device is not connected${RESET}:${DEV}"
 			STATE=disconnect
 			set_device_connection ${STATE} ${MAC}
 			RC=${?}
 		fi
 		if [[ ${RC} -eq 2 ]];then
 			MSG="<U>Attempted ${(C)STATE}ion to ${DEV}<N>||<I>Command timed out<N>. <c>Is bluetooth active on the device<N>?|"
-			msg_box -c -x24 -y10 -p -PK ${MSG}
+			msg_box -c -x24 -y80 -p -PK ${MSG}
 		else
 			break
 		fi
@@ -336,7 +340,7 @@ wait_status_change () {
 	local TIMEOUT=5
 	local TIMER=0
 
-	msg_box -x24 -y10 "${_DEV_MAC_NAME[${_SELECTED_DEVICE}]} - Current status:${_DEV_STATE_COLOR[${INITIAL_STATUS}]}${(C)INITIAL_STATUS}${RESET}"
+	msg_box -x28 -y85 "${_DEV_MAC_NAME[${_SELECTED_DEVICE}]} - Current status:${_DEV_STATE_COLOR[${INITIAL_STATUS}]}${(C)INITIAL_STATUS}${RESET}"
 	while true;do
 		((TIMER++))
 		CURRENT_STATUS=$(get_connection_status ${_SELECTED_DEVICE})
@@ -405,7 +409,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDTs"
@@ -424,12 +428,11 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
-
 
 if [[ ${SET_SINK} == 'true' ]];then
 	select_sink

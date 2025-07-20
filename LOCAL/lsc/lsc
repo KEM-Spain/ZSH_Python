@@ -200,7 +200,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDRadegimrst"
@@ -218,7 +218,7 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
@@ -385,6 +385,7 @@ list_set_sortable true
 list_set_reuse_stale true
 list_set_barlines true
 list_set_searchable false
+list_set_restore_pos true
 list_set_sort_defaults ARRAY _LIST MAXCOL ${#_SORT_TABLE} TYPE assoc ORDER a COL 1 DELIM ${_LIST_DELIM} TABLE "${(kv)_SORT_TABLE}"
 
 while true;do

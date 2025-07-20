@@ -100,7 +100,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 [[ -z ${1} ]] && usage "Missing argument:$(opt_type f)"

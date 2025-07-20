@@ -650,7 +650,7 @@ do_subs () {
 	if ! arr_is_populated "${_OUT_LIST}";then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		logit "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
-		echo "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
+		[[ ${g_VERBOSE} == 'true' ]] && echo "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		return 1 
 	fi
 

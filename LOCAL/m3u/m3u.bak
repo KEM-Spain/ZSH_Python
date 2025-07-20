@@ -19,10 +19,10 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Generate m3u playlist
-Input has 3 forms:
-1) Piped input of fully qualified file names
-2) File containing fully qualified file names
-3) Directory containing files
+\tInput has 3 forms:
+\t1) Piped input of fully qualified file names
+\t2) File containing fully qualified file names
+\t3) Directory containing files
 EOF
 
 parse_opts () {
@@ -72,13 +72,15 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HD"
+OPTSTR=":HDd:t:"
 OPTIND=0
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     d) TRACK_DIR=${OPTARG};;
+     t) TRACK_FN=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac

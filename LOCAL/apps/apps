@@ -244,7 +244,7 @@ set_package_list () {
 			[[ ${#P_DESC} -ge ${LONGEST[DESC]} ]] && LONGEST[DESC]=${#P_DESC}
 		done
 		((LONGEST[NAME]+=2))
-		[[ ${LONGEST[DESC]} -ge ${g_MAX_DESC_LEN} ]] && LONGEST[DESC]=$((g_MAX_DESC_LEN+=2)) || ((LONGEST[DESC]+=2))
+		[[ ${LONGEST[DESC]} -ge ${g_MAX_DESC_LEN} ]] && LONGEST[DESC]=$(( g_MAX_DESC_LEN += 2 )) || (( LONGEST[DESC] += 2 ))
 		return
 	fi
 
@@ -346,7 +346,7 @@ set_package_list () {
 	done
 
 	((_LONGEST[NAME]+=2))
-	[[ ${_LONGEST[DESC]} -ge ${g_MAX_DESC_LEN} ]] && _LONGEST[DESC]=$((g_MAX_DESC_LEN+=2)) || ((_LONGEST[DESC]+=2))
+	[[ ${_LONGEST[DESC]} -ge ${g_MAX_DESC_LEN} ]] && _LONGEST[DESC]=$(( g_MAX_DESC_LEN += 2 )) || (( _LONGEST[DESC] +=2 ))
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#_LOCAL_LIST}"
 }
 
@@ -473,8 +473,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD3cdpinrsuvz"
@@ -514,7 +513,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
@@ -610,6 +609,7 @@ list_user_prompt_style msg_box
 list_set_no_top_offset # Place the first detail line immediately after heading
 list_set_barlines true
 list_set_searchable true
+list_set_restore_pos true
 
 while true;do
 	# Get selection

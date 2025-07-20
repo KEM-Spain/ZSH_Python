@@ -177,19 +177,21 @@ for R in ${RAWLIST};do
 	[[ ${R} =~ ${0} ]] && continue
 
 	((NDX++))
-	SQUEEZED=$(squeeze ${R})
+	if [[ -n ${R} ]];then
+		SQUEEZED=$(squeeze ${R})
 
-	_OWNERS[${NDX}]=$(cut -d' ' -f1 <<<${SQUEEZED})
-	_PIDS[${NDX}]=$(cut -d' ' -f2 <<<${SQUEEZED})
-	_CMDS[${NDX}]=$(cut -d' ' -f3- <<<${SQUEEZED})
+		_OWNERS[${NDX}]=$(cut -d' ' -f1 <<<${SQUEEZED})
+		_PIDS[${NDX}]=$(cut -d' ' -f2 <<<${SQUEEZED})
+		_CMDS[${NDX}]=$(cut -d' ' -f3- <<<${SQUEEZED})
 
-	[[ -n ${R} ]] && _LOCAL_LIST+=${R}
+		_LOCAL_LIST+=${R}
 
-	[[ ${#_CMDS[${NDX}]} -ge $((_MAX_COLS - 40)) ]] && _CMDS[${NDX}]=${${_CMDS[${NDX}][1,$((_MAX_COLS - 60))]}} # Truncate lines too long
+		[[ ${#_CMDS[${NDX}]} -ge $((_MAX_COLS - 40)) ]] && _CMDS[${NDX}]=${${_CMDS[${NDX}][1,$((_MAX_COLS - 60))]}} # Truncate lines too long
 
-	[[ ${#_OWNERS[${NDX}]} -gt ${_LBL_WIDTH[o]} ]] && _LBL_WIDTH[o]=${#_OWNERS[${NDX}]}
-	[[ ${#_PIDS[${NDX}]} -gt ${_LBL_WIDTH[p]} ]] && _LBL_WIDTH[p]=${#_PIDS[${NDX}]}
-	[[ ${#_CMDS[${NDX}]} -gt ${_LBL_WIDTH[c]} ]] && _LBL_WIDTH[c]=${#_CMDS[${NDX}]}
+		[[ ${#_OWNERS[${NDX}]} -gt ${_LBL_WIDTH[o]} ]] && _LBL_WIDTH[o]=${#_OWNERS[${NDX}]}
+		[[ ${#_PIDS[${NDX}]} -gt ${_LBL_WIDTH[p]} ]] && _LBL_WIDTH[p]=${#_PIDS[${NDX}]}
+		[[ ${#_CMDS[${NDX}]} -gt ${_LBL_WIDTH[c]} ]] && _LBL_WIDTH[c]=${#_CMDS[${NDX}]}
+	fi
 done
 msg_box_clear
 

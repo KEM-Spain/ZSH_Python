@@ -70,19 +70,17 @@ action_do () {
 		((FCNT++))
 		MATCHES=("${(f)$(perl -ne "if (/${g_FROM_TEXT:q}/) { print }" ${_LOCAL_LIST[${M}]})}")
 		if ! arr_is_populated "${MATCHES}";then
-			msg_box -p -PK "Nothing matches <w>${(qq)g_FROM_TEXT}<N>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
+			msg_box -c -p -PK "Nothing matches <w>${(qq)g_FROM_TEXT}<N>|in File:<w>${_LOCAL_LIST[${M}]}<N>"
 			list_set_selected ${M} ${_NOMATCH_ROW} # Mark as missing match
 		else
 			if [[ ${APPROVE_ALL} == 'false' ]];then
 				[[ ${#_MARKED} -gt 1 ]] && PROMPT=N || PROMPT=C
-				msg_box_clear -TGSUB
 				msg_box -TGSUB -H3 -p -P${PROMPT} "File:${FCNT}|Substituting <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT}<N>|File:<w>${_LOCAL_LIST[${M}]}<N>|Lines:|$(msg_list_bullet ${MATCHES})"
 				case ${_MSG_KEY} in
 					a) APPROVE_ALL=true;;
 					y) APPROVE_ALL=false;;
 					s) list_clear_selected ${M};continue;;
-					*) msg_box -p -PC "Cancel this operation?"
-						msg_box_clear -TGSUB
+					*) msg_box -c -p -PC "Cancel this operation?"
 						[[ ${_MSG_KEY} == 'y' ]] && exit_leave "[${WHITE_FG}${_SCRIPT}${RESET}] ${RED_FG}Operation cancelled${RESET}"
 						list_clear_selected ${M};continue
 						continue # Assume skip
@@ -106,8 +104,7 @@ action_do () {
 		fi
 	done
 	if [[ ${RC} -eq 0 && ${HIT} == 'true' ]];then
-		msg_box_clear -TGSUB
-		msg_box -p -PK "Substituted <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT} in ${HCNT} file(s)<N>|Backup files are in:<w>${_BAK_DIR}<N>"
+		msg_box -c -p -PK "Substituted <w>${(qq)g_FROM_TEXT}<N> with <w>${(qq)g_TO_TEXT} in ${HCNT} file(s)<N>|Backup files are in:<w>${_BAK_DIR}<N>"
 	fi
 }
 

@@ -77,8 +77,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -166,7 +165,7 @@ ___EOF
 
 		tabs 5
 		(
-		echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 		echo -e "${WHITE_FG}-f${RESET} full mode"
@@ -192,7 +191,7 @@ ___EOF
 		esac
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 	# Execution
 	 
@@ -452,7 +451,7 @@ ___EOF
 			\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 		esac
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 
 	# Execution
@@ -587,7 +586,7 @@ ___EOF
 		esac
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 	
 	# Execution
@@ -869,7 +868,7 @@ ___EOF
 		 \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 		esac
 	done
-	shift $((OPTIND -1))
+	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 	
 	#--Execution
@@ -960,7 +959,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 

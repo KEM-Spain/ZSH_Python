@@ -283,7 +283,7 @@ popd # -- POPD ---
 
 # Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO_DIR} ${_GIT_REPO_DIR} ${SELECTED_COUNT}'
-[[ -n ${_FN_ARG} ]] && list_set_header 'printf "${WHITE_ON_GREY}Results limited to FILE${RESET}:${MAGENTA_FG}${_FN_ARG}${RESET}"'
+[[ -n ${_FN_ARG} ]] && list_set_header 'printf "Results limited to FILE:${MAGENTA_FG}${_FN_ARG}${RESET}"'
 list_add_header_break
 
 # Set line item

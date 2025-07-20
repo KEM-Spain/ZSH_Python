@@ -211,13 +211,15 @@ fi
 tcup 0 0 && echo "Building icon cache from ${DIR_LBL}..."
 build_icon_cache
 
+[[ ${WHOLE_WORDS} == 'true' ]] && SMSG="${SEARCHTERM} ${RESET}(whole word)" || SMSG=${SEARCHTERM}
+
 # Set list based on options
 if [[ -n ${SEARCHTERM} && -n ${g_ICON_DIR} ]];then
 	_ICON_LIST=("${(f)$(eval "grep ${GREP_OPTS} ${SEARCHTERM} ${_ICON_CACHE}")}")
-	MSG="List contains ${WHITE_FG}${#_ICON_LIST}${RESET} icons ${ITALIC}matching${RESET} ${CYAN_FG}${SEARCHTERM}${RESET} in directory ${CYAN_FG}${g_ICON_DIR}${RESET}"
+	MSG="List contains ${WHITE_FG}${#_ICON_LIST}${RESET} icons ${ITALIC}matching${RESET} ${CYAN_FG}${SMSG}${RESET} in directory ${CYAN_FG}${g_ICON_DIR}${RESET}"
 elif [[ -n ${SEARCHTERM} ]];then
 	_ICON_LIST=("${(f)$(eval "grep ${GREP_OPTS} ${SEARCHTERM} ${_ICON_CACHE}")}")
-	MSG="List contains ${WHITE_FG}${#_ICON_LIST}${RESET} icons ${ITALIC}matching${RESET} ${CYAN_FG}${SEARCHTERM}${RESET}"
+	MSG="List contains ${WHITE_FG}${#_ICON_LIST}${RESET} icons ${ITALIC}matching${RESET} ${CYAN_FG}${SMSG}${RESET}"
 elif [[ -n ${g_ICON_DIR} ]];then
 	_ICON_LIST=("${(@f)"$(<${_ICON_CACHE})"}") # File to array
 	MSG="List contains ${WHITE_FG}${#_ICON_LIST}${RESET} icons ${ITALIC}in directory${RESET} ${CYAN_FG}${g_ICON_DIR}${RESET}"

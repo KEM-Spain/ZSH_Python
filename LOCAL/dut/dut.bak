@@ -427,10 +427,13 @@ ___EOF
 	done
 	shift $((OPTIND -1))
 	#--End GetOpts--
+	
 	# Execution
-
 	[[ -n ${1} ]] && PARTITION=${1} || PARTITION=''
-	[[ ${#OPTIONS} -eq 0 ]] && g_BRIEF=true # Default
+	if [[ ${#OPTIONS} -eq 0 ]];then
+		g_VERBOSE=true # Set defaults
+		g_SHOW_LIST=true # Set defaults
+	fi
 
 	get_disk_info
 	if ! arr_is_populated "${_LOCAL_LIST}";then

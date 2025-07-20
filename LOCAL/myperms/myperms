@@ -170,8 +170,8 @@ set_perms () {
 	local BIT_2=${_PERMS[2]}
 	local BIT_3=${_PERMS[3]}
 	local BIT_4=${_PERMS[4]}
-	local F_UMASK="0$(( 666-$(umask) ))"
-	local D_UMASK="0$(( 777-$(umask) ))"
+	local F_UMASK="0$(( 666 - $(umask) ))"
+	local D_UMASK="0$(( 777 - $(umask) ))"
 
 	# Msg_box -p "PTYPE:${PTYPE} PERM_CODE:${PERM_CODE} FN:${FN}"
 	 
@@ -250,15 +250,15 @@ coord_center () {
 	local OC
 	local C
 
-	CTR=$((AREA / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && AC=$((CTR+1)) || AC=${CTR}
+	CTR=$(( AREA / 2 ))
+	REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && AC=$(( CTR + 1 )) || AC=${CTR}
 
-	CTR=$((OBJ / 2))
-	REM=$((CTR % 2))
-	[[ ${REM} -ne 0 ]] && OC=$((CTR+1)) || OC=${CTR}
+	CTR=$(( OBJ / 2 ))
+	REM=$(( CTR % 2 ))
+	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
 
-	C=$((AC-OC))
+	C=$(( AC - OC ))
 
 	echo ${C}
 }
@@ -366,7 +366,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:This script..."
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"
@@ -380,7 +380,7 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
@@ -416,7 +416,7 @@ _SORT_TABLE=(1 _FILES 2 _FTYPES 3 _PERMS 4 _OWNERS 5 _GROUPS 6 _EPERMS 7 _OPERMS
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET}  Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} "${PATHLBL}" ${SELECTED_COUNT}'
 list_set_header 'printf " "'
 list_set_header 'printf "%*s %*s %4s %4s %10s %10s %-12s %${LBL_WIDTH}s %${LBL_WIDTH}s %${LBL_WIDTH}s" 5 "" ${LONGEST} "File" "Type" "Perm" "Owner" "Group" ${_PERM_LABELS[s]} ${_PERM_LABELS[o]} ${_PERM_LABELS[g]} ${_PERM_LABELS[w]}'
-list_set_header 'printf "%*s ${SCOL1_CLR}%4s${RESET} ${SCOL2_CLR}%4s${RESET} ${SCOL3_CLR}%4s${RESET} ${SCOL4_CLR}%10s${RESET} ${SCOL5_CLR}%10s${RESET} ${SCOL6_CLR}%-12s${RESET} ${SCOL7_CLR}%${LBL_WIDTH}s${RESET} ${SCOL8_CLR}%${LBL_WIDTH}s${RESET} ${SCOL9_CLR}%${LBL_WIDTH}s${RESET}" $((LONGEST+1)) "" $(str_unicode_line 4) $(str_unicode_line 4) $(str_unicode_line 4)  $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 12) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH})' 
+list_set_header 'printf "%*s ${SCOL1_CLR}%4s${RESET} ${SCOL2_CLR}%4s${RESET} ${SCOL3_CLR}%4s${RESET} ${SCOL4_CLR}%10s${RESET} ${SCOL5_CLR}%10s${RESET} ${SCOL6_CLR}%-12s${RESET} ${SCOL7_CLR}%${LBL_WIDTH}s${RESET} ${SCOL8_CLR}%${LBL_WIDTH}s${RESET} ${SCOL9_CLR}%${LBL_WIDTH}s${RESET}" $(( LONGEST + 1 )) "" $(str_unicode_line 4) $(str_unicode_line 4) $(str_unicode_line 4)  $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 12) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH}) $(str_unicode_line ${LBL_WIDTH})' 
 
 # Set line item
 list_set_line_item ' 

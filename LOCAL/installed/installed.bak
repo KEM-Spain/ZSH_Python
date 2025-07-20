@@ -18,10 +18,10 @@ typeset -a _RELATED
 typeset -a _MARKED
 
 # Imports
-_LIB_DIR=/usr/local/lib
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/GET_DEPS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 action_do () {
@@ -44,7 +44,7 @@ action_warn () {
 	local _INFO_MSG
 	
 	[[ ${_SELECT_ALL} == 'true' ]] && _INFO_MSG="|(<w><I>current page only<N>)" || _INFO_MSG=''
-	msg_box -p -PV "<I>Please respond<N>|$(str_unicode_line 14)| |$(str_pluralize application $CNT true) queued for viewing${_INFO_MSG}"
+	msg_box -H1 -p -PV "<w><I>Please respond<N>|<Z>|$(str_pluralize application $CNT true) queued for viewing${_INFO_MSG}"
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do
 			list_clear_selected ${M}
@@ -153,7 +153,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(msg_exit W ${PENDING_MSGS})
 }
  
 OPTIND=0
@@ -191,13 +191,13 @@ for I in ${_INSTALLED};do
 done
 
 if [[ ${NDX} -eq 0 ]];then
-	exit_leave "No package matching:${WHITE_FG}${SEARCHTERM}${RESET} (excluding snap and flatpak) was found"
+	exit_leave $(msg_exit W "No package matching:${SEARCHTERM} (excluding snap and flatpak) was found")
 else
 	msg_box -t 1.5 "Found ${#_PKG_KEYS} packages. Gathering data. Please wait..."
 	msg_box_clear
 fi
 
-[[ -z ${_PKG_KEYS} ]] && exit_leave "\nNo package matching \"${SEARCHTERM}\" was found"
+[[ -z ${_PKG_KEYS} ]] && exit_leave $(msg_exit W "No package matching:${SEARCHTERM} was found")
 
 [[ -n ${SEARCHTERM} ]] && _INFO_MSG+="Searching for:<B><I>${SEARCHTERM}<N>" || _INFO_MSG+="Showing <B><I>ALL<N> installed packages..."
 
@@ -220,7 +220,8 @@ for K in ${_PKG_KEYS};do
 	((PNDX--))
 	_LOCAL_LIST+=${K}
 	[[ ${#K} -gt ${LONGEST_PKG} ]] && LONGEST_PKG=${#K}
-	DESC[${K}]="$(apt-cache show ${K} 2>/dev/null | grep -i description-en | head -n 1 | sed 's/description\-en://gI')"
+	DESC[${K}]="$(apt-cache show ${K} 2>/dev/null | grep --color=never -i description | head -n 1 | sed 's/description.*: //gI')"
+	[[ -z ${DESC[${K}]} ]] && DESC[${K}]="No description available"
 	[[ ${#DESC[${K}]} -gt ${LONGEST_DESC} ]] && LONGEST_DESC=${#DESC[${K}]}
 done
 
@@ -233,13 +234,14 @@ list_set_header 'printf "%5s ${MAGENTA_FG}%-*s  %-*s${RESET}" "" ${LONGEST_PKG} 
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${BAR} ${SHADE}%-*s${RESET} ${BAR} ${WHITE_FG}%-*s${RESET}\n" ${_LIST_NDX} ${LONGEST_PKG} "${_LIST[${_LIST_NDX}]}" ${LONGEST_DESC} "${(C)DESC[${_LIST[${_LIST_NDX}]}]}"
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${BAR} ${SHADE}%-*s${RESET} ${BAR} ${WHITE_FG}%-*s${RESET}\n" ${_LIST_NDX} ${LONGEST_PKG} "${_LIST[${_LIST_NDX}]}" ${LONGEST_DESC} "${(C)DESC[${_LIST[${_LIST_NDX}]}]}"
 '
 
-list_set_prompt "Select packages to inspect:"
+list_set_select_action "inspect"
 list_set_action_msgs inspect package
-list_set_clear_ghosts true
+list_set_reuse_stale true
 list_set_barlines true
+list_set_searchable true
 
 while true;do
 	# Get selection

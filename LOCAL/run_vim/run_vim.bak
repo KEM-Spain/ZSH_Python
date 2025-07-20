@@ -17,12 +17,11 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
 #Constants
-TEMPLATES=/usr/local/etc/templates
-COLORS=${TEMPLATES}/color.template
-HEADERS=${TEMPLATES}/app.template
-APPEXEC=${TEMPLATES}/app_exec.template
-GETOPTS=${TEMPLATES}/getopt.template
-CURSOR=${TEMPLATES}/list_cursor.template
+COLORS=/usr/local/etc/color.template
+HEADERS=/usr/local/etc/app.template
+APPEXEC=/usr/local/etc/app_exec.template
+GETOPTS=/usr/local/etc/getopt.template
+CURSOR=/usr/local/etc/list_cursor.template
 _LIB=/usr/local/lib
 _DIR_USER=$(id -nu)
 _DIR_GROUP=$(id -ng)
