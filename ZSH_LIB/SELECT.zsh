@@ -33,13 +33,15 @@ sel_box_ctr_txt () {
 	local BOX_LEFT=${1};shift # Box Y coord
 	local BOX_WIDTH=${1};shift # Box W coord
 	local TXT=${@} # Text to center
-	local BOX_CTR=0
-	local CTR=0
+	local BOX_CTR_X=0
+	local CTR_X=0
 	local REM=0
-	local TXT_CTR=0
+	local TXT_CTR_X=0
 	local TXT_LEN=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	TXT=$(msg_nomarkup ${TXT})
 
 	if validate_is_integer ${TXT};then # Accept either strings or integers
 		TXT_LEN=${TXT}
@@ -51,22 +53,22 @@ sel_box_ctr_txt () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ARGC:${#@} TXT:${TXT} TXT_LEN:${TXT_LEN}"
 
-	CTR=$(( TXT_LEN / 2 )) && REM=$(( TXT_LEN % 2 ))
-	[[ ${REM} -ne 0 ]] && TXT_CTR=$(( CTR + 1 )) || TXT_CTR=${CTR}
+	CTR_X=$(( TXT_LEN / 2 )) && REM=$(( TXT_LEN % 2 ))
+	[[ ${REM} -ne 0 ]] && TXT_CTR_X=$(( CTR_X + 1 )) || TXT_CTR_X=${CTR_X}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( TXT_LEN / 2 )) && REM=$(( CTR % 2 ))':$(( TXT_LEN / 2 )) && REM:$(( CTR % 2 ))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR_X='$(( TXT_LEN / 2 )) && REM=$(( CTR_X % 2 ))':$(( TXT_LEN / 2 )) && REM:$(( CTR_X % 2 ))"
 
-	CTR=$(( BOX_WIDTH / 2 )) && REM=$(( BOX_WIDTH % 2 ))
-	[[ ${REM} -ne 0 ]] && BOX_CTR=$(( CTR + 1 )) || BOX_CTR=${CTR}
+	CTR_X=$(( BOX_WIDTH / 2 )) && REM=$(( BOX_WIDTH % 2 ))
+	[[ ${REM} -ne 0 ]] && BOX_CTR_X=$(( CTR_X + 1 )) || BOX_CTR_X=${CTR_X}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( BOX_WIDTH / 2 )) && REM=$(( CTR % 2 ))':$(( BOX_WIDTH / 2 )) && REM=$(( CTR % 2 ))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR_X='$(( BOX_WIDTH / 2 )) && REM=$(( CTR_X % 2 ))':$(( BOX_WIDTH / 2 )) && REM=$(( CTR_X % 2 ))"
 
-	CTR=$(( BOX_LEFT + BOX_CTR - TXT_CTR ))
+	CTR_X=$(( BOX_LEFT + BOX_CTR_X - TXT_CTR_X ))
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR='$(( BOX_LEFT + BOX_CTR - TXT_CTR ))': $(( BOX_LEFT + BOX_CTR - TXT_CTR ))"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_LEFT:${BOX_LEFT} BOX_CTR:${BOX_CTR} TXT_CTR:${TXT_CTR}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR_X='$(( BOX_LEFT + BOX_CTR_X - TXT_CTR_X ))': $(( BOX_LEFT + BOX_CTR_X - TXT_CTR_X ))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_LEFT:${BOX_LEFT} BOX_CTR_X:${BOX_CTR_X} TXT_CTR_X:${TXT_CTR_X}"
 
-	echo ${CTR}
+	echo ${CTR_X}
 }
 
 sel_clear_region () {
@@ -257,7 +259,7 @@ sel_list () {
 	shift $(( OPTIND - 1 ))
 
 	if [[ -z ${_LIST_DATA} || ${_REFRESH} == 'true' ]];then
-		[[ ${#_LIST} -gt 100 ]] && msg_box -c "<w>Building select list...<N>"
+		[[ ${#_LIST} -gt 100 ]] && msg_box -x1 -y1 -c "<w>Building select list...<N>"
 
 		[[ -n ${_TAG}  ]] && _SELECT_TAG_FILE="/tmp/$$.${_TAG}.state"
 
@@ -353,7 +355,7 @@ sel_list () {
 		# Set coords for list decorations
 		if [[ ${HAS_OUTER} == 'true' ]];then
 			HDR_X=$(( BOX_X - 3 ))
-			HDR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 + 3 )) ${NM_H})
+			HDR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_H})
 			MAP_X=${BOX_BOT}
 			MAP_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_M})
 			FTR_X=$(( BOX_BOT + 2 ))

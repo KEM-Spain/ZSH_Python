@@ -516,7 +516,7 @@ msg_box_align () {
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added blank line"
 	elif [[ ${MSG} =~ '<SEP>' ]];then # Handle embed:<SEP> Message separator
 		MSG=$(str_unicode_line $(( BOX_WIDTH - 4 )) )
-		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH + 1 )) ${MSG} )
+		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH )) ${MSG} )
 		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L} - 1 )) )
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Added heading separator: SEP:${MSG} BOX_WIDTH:${BOX_WIDTH} TEXT_PAD_L:\"${TEXT_PAD_L}\" TEXT_PAD_R:\"${TEXT_PAD_R}\""
 	elif [[ ${MSG} =~ '<L>' ]];then # Handle embed: <L> Bullet List item
@@ -552,7 +552,7 @@ msg_box_align () {
 	elif [[ ${BOX_STYLE:l} == 'c' ]];then # Justification: Center
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
-		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH - 2 )) $(msg_nomarkup ${TEXT} ))
+		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH )) $(msg_nomarkup ${TEXT} ))
 		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L} - 1 )) )
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Centered text"
 	else # Unpadded

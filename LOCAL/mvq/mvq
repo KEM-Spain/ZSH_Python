@@ -171,7 +171,7 @@ cache_select () {
 	list_set_restore_pos_reset
 	sel_set_app_keys d
 	sel_set_list ${(k)_CACHE_LIST}
-	sel_list -S -T"CACHE" -sa -O ${GREEN_FG} -C -H"Cached Favorites" -F"<w>Select from cache or <h>(q)uit<N>" -M ${MAP}
+	sel_list -R -S -T"CACHE" -sa -O ${GREEN_FG} -C -H"Cached Favorites" -F"<w>Select from cache or <h>(q)uit<N>" -M ${MAP}
 }
 
 select_list_type () {
@@ -188,7 +188,7 @@ select_list_type () {
 	g_LIST_TYPE=''
 
 	sel_set_list ${(k)_LIST_OPTIONS}
-	sel_list -O -S -T"LIST" -sa -H"<w>List Options<N>" -F"<w>Select List Type or <h>(q)uit<N>"
+	sel_list -R -O"${RESET}" -S -T"LIST" -sa -H"<w>List Options<N>" -F"<w>Select List Type or <h>(q)uit<N>"
 	[[ ${?} -ne 0 ]] && exit_leave "Select list build had errors"
 
 	case ${_LIST_OPTIONS[${_SEL_VAL}]:l} in
@@ -213,7 +213,7 @@ select_list_type () {
 			sel_set_list ${(ok)_DISPLAY_LIST}
 
 			_SEL_VAL=?
-			sel_list -R -O -S -T"SUBLIST" -sa -F"<w>Select ${(C)g_LIST_TYPE} or <h>(q)uit<N>"
+			sel_list -R -O"${RESET}" -S -T"SUBLIST" -H"${(C)g_LIST_TYPE}" -sa -F"<w>Select ${(C)g_LIST_TYPE} or <h>(q)uit<N>"
 			[[ ${?} -ne 0 ]] && exit_leave
 
 			if [[ ${LIST_TYPE} =~ 'actor\|director' ]];then
