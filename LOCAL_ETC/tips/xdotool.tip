@@ -1,0 +1,827 @@
+( 
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET} 
+cat << tip_xdotool_EOF
+
+${E_BOLD}${E_WHITE_FG}Xdotool – Window Stack${E_RESET}
+
+As you have seen, if you read the other Xdotool articles, this tool can be very useful. The use of the Window Stack
+helps to increase its abilities for performing actions on multiple windows.
+
+There are three commands which retrieves Window IDs. These three commands can get more than one ID. When an ID is
+found by these three commands, the IDs are stored in the Window Stack. The IDs can then be retrieved for use by other
+commands. The three commands which place Window IDs in the Window stack are:
+
+search getwindowfocus getactivewindow
+
+Of course, you may notice that ${E_BOLD}${E_WHITE_FG}the search command is the main command for retrieving multiple
+Window IDs${E_RESET}.
+
+Now, let's look at an example. If I have three LibreOffice Writer applications open and I find that the Class name for
+the Writer is 'libreoffice', then I can perform a search for them by:
+
+xdotool search --class libreoffice
+
+The result is three Window IDs as follows:
+
+14680152 14731975 14733803
+
+Within the same command-line, these IDs will remain in the Window Stack. Once my command ends, the stack is deleted.
+Chaining is covered in the article Xdotool – Mouse.
+
+Now, let's assume I want to get the Window Name of the first item only. To reference the first item in the stack use
+'%1'. You should note that the second item is '%2' and so on. To reference all items in the stack, use '%@'. To see the
+title of the first item in the Stack, I can perform the following command:
+
+xdotool search --class libreoffice getwindowname %1
+
+In the command, the first part of the chain performs the search and fills the Window Stack. The second command uses the
+first item in the Stack for the 'getwindowname' command. The output is:
+
+xDoTool - Window Stack.doc - LibreOffice Writer
+
+I can also list every item in the Window Stack with the following command:
+
+xdotool search --class libreoffice getwindowname %@
+
+The output would be:
+
+xDoTool - Window Stack.doc - LibreOffice Writer ls.txt - LibreOffice Writer raw.txt - LibreOffice Writer
+
+Any command which uses the 'window_id' as an option for a command can use the Window Stack. All of the commands read
+from the stack, but the three listed previously write to the Window Stack. The commands which read from the Stack are:
+
+key type mousemove click getwindowpid getwindowname windowsize windowmove windowfocus windowunmap windowmap
+windowminimize windowkill set_window windowactivate set_desktop_for_window get_desktop_for_window
+
+
+Let's look back a minute at the use of '%1'. When a 'window_id' is required for a command, but it is not specified, then
+the '%1' is considered the default or even the current window. It is best to always specify the Window ID or else, use
+the '%1' variable to specify the use of the Window Stack.
+
+If no items are in the stack and a '%1' variable is used, an error is generated as follows:
+
+There are no windows in the stack Invalid window ' %1'
+
+Two commands were not covered in the other xdotool articles. These commands deal with the Window Stack. The two commands
+are:
+
+windowraise windowreparent
+
+
+The windowraise command specifies which window to raise to the foreground. It uses the '%n' value, or it can use the
+window_id. The syntax is:
+
+windowraise [window_id or %n]
+
+The windowraise command can be used to place windows over the top of windows to stack them on the screen.
+
+If I have three windows, Window 1, 2 and 3 and the three are in the Windows stack as %1, %2 and %3, then I can place
+them in the order of 2,3,1 by using the following commands:
+
+xdotool windowraise %1 windowraise %3 windowraise %2
+
+NOTE: The number place the order as top (1), middle (2) and bottom (3)
+
+The syntax for the windowreparent command is:
+
+windowreparent source_window_id destination_window_id
+
+The windowreparent command causes the source window to be placed over the destination window as if it were a child
+window. The windows can also be specified by the Window ID or by using the Window Stack's variable of '%1', '%2', etc.
+
+Let's make an example by closing all Firefox windows. To start, we need to create the Window Stack of all the open
+Firefox windows. Once the stack is made, we can close all of the windows by using the 'windowkill' command.
+
+With Firefox, we can find that the classname is 'Firefox'. So, the search command to fill the Window Stack is:
+
+search --classname Firefox
+
+Once the stack is filled, we then use the 'windowkill' command to kill the windows in the stack using the following:
+
+windowkill %@
+
+NOTE: Be sure that your search does not add more to the stack than you need. If you need more added to the stack,
+perform two or more searches in a row.
+
+The whole command would then be:
+
+xdotool search --classname Firefox windowkill %@
+
+
+${E_BOLD}${E_WHITE_FG}Xdotool - Window${E_RESET}
+
+The xdotool is a utility used from the terminal or in a script to manually perform keyboard, mouse and window input
+(see the Xdotool – Keyboard and Xdotool – Mouse article). The commands can also be used to make a script of many
+xdotool commands to create large tasks. Later articles will cover the xdotool ability to control desktop
+manipulation.
+
+The syntax for xdotool depends on the command being used. The first, but very powerful command, is 'search'. The
+syntax is as follows:
+
+search [options] pattern
+
+The search command helps to find specific windows on a system.
+
+There are twelve options available for search which are:
+
+--class class_name – name of the window's class --classname classname_name – name of the window's classname --name
+name – title of the window --maxdepth N – recursive search for window, default is -1 meaning infinite (all child
+		windows too) and 0 means top windows only, depth of 1 or more can get most windows --onlyvisible – results show
+only windows which are visible which have the IsViewable state --pid PID_NUM – process ID number of the window
+--screen N – number of the monitor on which the window is open (0 is first monitor, but defaults to all available
+		screens) --desktop N – number of the desktop or workspace --limit N – maximum number of results to display.
+Default is no limit (--limit 0) --all – requires that all conditions for a match are met when multiple options are
+specified --any – requires that any condition is true when specifying multiple options --sync – halt all commands
+until previous commands produce results
+
+
+NOTE: To find the class and classname, use the command 'xprop' in a Terminal. Once typed, the mouse cursor changes to
+allow the user to click on a window. Once selected, 'xprop' displays information about the selected window. The line
+labeled 'WM_CLASS(STRING)' displays two entries. The first entry is referred to as the Instance or Classname and the
+second is the Class name. The two may be identical except in case as with Gedit:
+
+WM_CLASS(STRING) = "gedit", "Gedit"
+
+The two names can be different as with Firefox:
+
+WM_CLASS(STRING) = "Navigator", "Firefox"
+
+Here, the Classname is Navigator while the Class name is Firefox. Sometimes, it is best to use the Classname or Class
+rather than the Name. The Name can return all the child processes as well as can be seen when you open some
+calculator programs and perform a search with the name of 'calculator'.
+
+xdotool search --name calculator
+
+If you have a program which is generating multiple window Ids and you only have one instance of the application
+running, you can use the 'maxdepth' option. With the maxdepth option set at 0, you only get the window ID of the top
+window and no child processes.
+
+The IsViewable state allows for applications which are not 'hidden' windows. Background services are a good example.
+
+The PID number of an application can pinpoint a specific application.
+
+NOTE: The PID can be found in the 'xprop' application under the Terminal in the line '_NET_WM_PID(CARDINAL)'. Other
+applications like 'htop' can display the same information.
+
+The next option is to specify which screen to search. If your system has only one monitor, then the default screen is
+'0'.
+
+NOTE: Do not confuse screen with desktop. If your system has multiple monitors, then you have multiple screens.
+
+Instead of specifying a screen, you can designate a specific desktop or workspace to search for a window. For
+example, to search Workspace 2 you would use '--desktop 2'.
+
+When you perform a search and the display shows numerous matches, you can limit the results to a specific number. The
+default is zero which displays all matches.
+
+If you specify more than one option for a search, then you can use the '--all' option to require that all the options
+be true for a match to be made. With the '--any' option, any option can be true to produce a match. For example, I
+could perform the following:
+
+xdotool search --all --class gedit --classname navigator
+
+Here, the results should show no matches. The gedit application does not have a classname of navigator which is a
+browser. For a different response, I use the following command:
+
+xdotool search --any --class gedit --classname navigator
+
+The previous command would give me the window ID for Gedit as well as Firefox. The any command allows for a check of
+all windows to match any, not all, of the the possible matches. Only one criteria must match to generate a window ID.
+
+The 'sync' option stops processing commands until the window is available. This can be helpful if you have a script
+running many xdotool commands and you are starting applications. It is helpful to know when the application has
+started and is running before commands are passed to the window.
+
+The next command is 'selectwindow'. The syntax is as follows:
+
+selectwindow
+
+There are no options for this command since it performs one function. When entered, the cursor changes to allow the
+user to click on a window. You can change workspaces to get to a desired window. The output is the window ID of the
+selected window.
+
+NOTE: When selecting a window, it is possible to select the desktop and applets.
+
+Many times, you may want to perform an action when a specific event occurs with a window. These events are mainly
+mouse events, but they do include when the window gets or loses focus. The command syntax is:
+
+behave window_id action command
+
+The first item in the syntax is the window or window ID which has been covered. The next item is the 'action'. The
+action specifies what event is occurring to the window designated by its ID. There are five events which can be used:
+
+mouse-enter – when the cursor enters a window's boundaries mouse-leave – when the cursor leaves the window's
+boundaries mouse-click – when the mouse is clicked (released) within the window's boundaries focus – when the window
+gains focus (active window) blur – when the window loses focus (another window becomes active)
+
+The 'command' is a command to run when the event occurs. For example, we can force a user to stay in a window until
+the window is closed:
+
+xdotool behave 48234652 mouse-leave mousemove --window 48234652 --polar 0 0
+
+What happens? Well, when the window gains focus, the cursor returns to the center of the window whenever it leaves
+the window. One way to get out of it requires the user to close the window.
+
+The next command is 'getwindowpid' and the syntax is:
+
+getwindowpid window_id
+
+With this command, we can find the Processor ID (PID) number of a window if we know the window ID.
+
+The next command is 'getwindowname' with the syntax as follows:
+
+getwindowname window_id
+
+By using the window ID, we can find the name or title of a window. For example, if we have two text editors open, a
+search results in two matches. We can use the window IDs to determine the title so we can then know which window
+belongs to which ID.
+
+Another command is the 'getwindowgeometry'. The command allows for gaining information about a specific window. The
+syntax is:
+
+getwindowgeometry options window_id
+
+The geometry results include the x and y coordinate of the the upper-left corner of the window, the window's width
+and height and the screen number to which the window is located. For example, if I used the following command:
+
+xdotool getwindowgeometry 48234652
+
+Would possibly produce something like the following:
+
+Window 48234652 Position: 358,149 (screen: 0) Geometry: 566x379
+
+The position shows the x, y coordinates. The geometry shows the width and height. We are also shown the Screen number
+as well as the window ID.
+
+The command has one option: --shell. This places the information in a columnar fashion with one geometry item per
+line as follows:
+
+WINDOW=48234652 X=358 Y=149 WIDTH=566 HEIGHT=379 SCREEN=0
+
+The shell output can be used for other utilities such as grep. The output can be searched to produce only the desired
+results, such as the screen width, as follows:
+
+xdotool getwindowgeometry -shell 48234652 | grep WIDTH=
+
+Commands like these can help produce long scripts and find the information needed to specify which window is to be
+worked with for each command.
+
+The next command can be used to find the window which has focus, but does not include the desktop or applets,
+gadgets, etc. The result displayed will be the window ID. The command and its syntax is:
+
+getwindowfocus [options]
+
+
+The only option is '-f' which allows you to get the window id of the item which has focus, even if it is not a
+window. The items included are the desktop, applets, gadgets, etc.
+
+The next command is 'windowsize' which allows you to set the size of a window. The syntax is:
+
+windowsize [options] [window_id] width height
+
+Percentages can be used to compare the size to the screen, such as 100% could be used for height and/or width to make
+the window the full height and/or width of the screen. Using 100% for both height and width will make the window full
+screen.
+
+There are two options for this command:
+
+--usehints – specifies size by row and column, not by pixel size. This option is used for windows such as terminals.
+--sync – requires the resize to be carried out before any following commands are performed.
+
+So, to set a window to be half the height of the screen and a quarter of the the width, the following command would
+be used:
+
+xdotool windowsize 37748855 25% 50%
+
+It is also possible to specify the pixel size, such as 500 pixels by 750 pixels:
+
+xdotool windowsize 37748855 500 750
+
+The pixel size and percentages can be mixed, such as a width of 500 pixels and a height of 100%:
+
+xdotool windowsize 37748855 500 100%
+
+The next command is 'windowmove' and the syntax is:
+
+xdotool windowmove [options] [window] x y
+
+This command allows a window to be moved to a specific positon. If either 'x' or 'y' is not replaced with a specific
+number, but you use the 'x' or 'y' letter, then the current value is used. There are two options:
+
+--sync – the window's size is changed before further commands are performed --relative – values are relative to
+current location
+
+Here, we can move a window to the location of 100,100 by the following command:
+
+xdotool windowmove 46137500 100 100
+
+We can then start at the current location and move the same window left 10 pixels (-10) and down 100 pixels:
+
+xdotool windowmove --relative 46137500 -10 100
+
+To move the window down to position 500 but leave the x value the same, the following command could be used:
+
+xdotool windowmove -relative 46137500 x 500
+
+Another command is the 'windowfocus' command to make a specified window the focus:
+
+windowfocus [options] [window_id]
+
+The only option is the –sync option which allows for the command to be carried out before other commands are
+performed.
+
+NOTE: Be aware that the window has focus to allow keyboard input to it, but it may not be the active window on top of
+all others.
+
+The next command is 'windowunmap' which makes the window hidden or invisible. The opposite is the 'windowmap' command
+to make the window visible. Their syntax is:
+
+windowunmap[options] [window_id] windowmap[options] [window_id]
+
+Each command has one option only, that of '--sync' which allows for the window to be hidden or reappear before more
+commands are processed.
+
+Another command is 'windowminimize'. This command is not the same as windowunmap since windowunmap makes the window
+disappear and windowminimize causes the window to be minimized. The syntax is:
+
+windowminimize[options] [window_id]
+
+The command has one option, that of '--sync' which allows for the window to be minimized before more commands are
+processed.
+
+Another command which can be very useful is 'windowkill'. This command allows a window to be terminated as well as
+the client controlling it. The syntax is as follows:
+
+windowkill[window_id]
+
+The only parameter to pass to it is the window id of the window that you wish to terminate.
+
+The next command is the 'set_window' command which has the following syntax:
+
+set_window[options] [window_id]
+
+The command allows for changing properties of a specified window. There are six options to determine which property
+is to be changed for this command:
+
+
+--name new_name – allows the name of the window to be changed --icon-name new_icon_name – sets the title of the
+window when minimized (depends on Operating System) --role new_role – changes the role property of a window. The role
+property is sometimes used to help distinguish one window from another for parent and child windows --classname
+classname_name – sets the classname of a window --class class_name – sets a new class name for the window
+overridedirect value – if the value is set to 0, then the window manager will control the window and all redrawing.
+If the value is 1, then the window manager will not control it. Some window managers may not accept the change until
+the window is unmapped and mapped again
+
+Two other commands exist, but these will be saved until the article “xdotool: Windows Stack”.
+
+
+${E_BOLD}${E_WHITE_FG}Xdotool - Keyboard${E_RESET}
+
+The xdotool is a utility used from the terminal or in a script to manually perform keyboard input. The commands can
+also be used to make a script of many xdotool commands to perform large tasks. Later articles will cover the xdotool
+ability to perform mouse input as well as window and desktop manipulation.
+
+The syntax for xdotool depends on the command being used. Let's start with sending keystrokes to a window by using
+the 'key' command. The syntax is as follows:
+
+key [options] [keys]
+
+There are three options available for the key command:
+
+--window window_id – specified keys for the keystrokes are sent to the window_id application.  --clearmodifiers – all
+modifiers are cleared, such as CAPS LOCK, NUM LOCK, shift held down, a mouse button held down, etc.  --delay
+milliseconds – sets the delay between each keystroke being sent, the default is 12 ms.
+
+
+The [keys] specify which keys are being sent to the specified window. The keys are based on the X Keysym strings and
+are:
+
+space
+
+R
+
+exclam
+
+S
+
+quotedbl
+
+T
+
+numbersign
+
+U
+
+dollar
+
+V
+
+percent
+
+W
+
+ampersand
+
+X
+
+quoteright
+
+Y
+
+parenleft
+
+Z
+
+parenright
+
+bracketleft
+
+asterisk
+
+backslash
+
+plus
+
+bracketright
+
+comma
+
+asciicircum
+
+minus
+
+underscore
+
+period
+
+quoteleft
+
+slash
+
+a
+
+0
+
+b
+
+1
+
+c
+
+2
+
+d
+
+3
+
+e
+
+4
+
+f
+
+5
+
+g
+
+6
+
+h
+
+7
+
+i
+
+8
+
+j
+
+9
+
+k
+
+colon
+
+l
+
+semicolon
+
+m
+
+less
+
+n
+
+equal
+
+o
+
+greater
+
+p
+
+question
+
+q
+
+at
+
+r
+
+A
+
+s
+
+B
+
+t
+
+C
+
+u
+
+D
+
+v
+
+E
+
+w
+
+F
+
+x
+
+G
+
+y
+
+H
+
+z
+
+I
+
+braceleft
+
+J
+
+bar
+
+K
+
+braceright
+
+L
+
+asciitilde
+
+M
+
+ctrl (Control key)
+
+N
+
+alt (Alternate key)
+
+O
+
+BackSpace
+
+P
+
+F1-F12 (Function 1 key to Function 12 just use the number of the specific Function key)
+
+Q
+
+Return (Return or Enter key)
+
+Each of these characters can be used separately and some together. A space is placed between individual keystrokes
+and simultaneous keystrokes are connected with a plus (+) sign. For example, to perform a single keystroke of a space
+and then an 'x' would be: 'space x'. When simultaneous keys are pressed, such as CTRL and 'x', the keystroke would
+be: 'ctrl+x'. Another example would be to open a file in LibreOffice Writer. The keystrokes would be 'alt+f o', or
+even the shortcut key 'ctrl+o'.
+
+Looking at the previous options for the key command, you may have noticed the –window option which requires the
+window id. You may wonder how you find the id of a specific window. Finding the id is a simple procedure which will
+be covered more in another article, but I can give the basics of it now since it is needed.
+
+To find the window id of a specific window, use the following command:
+
+xdotool search --name TITLE
+
+“TITLE” is replaced with a part or all of the title of the window. When any application is opened, the title bar
+shows the window title. Use this name or part of it to determine the window id as shown in Figure 1.  xDoTool -
+Keyboard Figure 1.jpg
+
+FIGURE 1​
+
+You can see I did a search for 'google'. I could have searched for any word of the title name of 'google mozilla
+firefox'. I received only one response of “52428942” since there is only one match for the title name of 'google' on
+the system.
+
+Now, let us assume I wanted to do something easy, to shutdown Firefox with the xdotool command. To close Firefox, I
+need to send it the keystroke of alt+f to open the File menu, then a 'Q' to select Quit. The command would be:
+
+xdotool key --window 52428942 alt+f Q
+
+NOTE: If you enter everything correctly and your system supports xdotool, then Firefox should close. If you have
+multiple tabs opened there should be a message box appears to ask to close all tabs.
+
+The next command is the 'keydown' command. The keydown produces the effect of holding down a key on the keyboard. The
+key will remain pressed until you press CTRL+C.
+
+The syntax is:
+
+keydown [options] [key]
+
+The options are the same as the “key” command. The following command would produce an effect in the current window to
+have the letter 'J' held down on the keyboard.
+
+xdotool keydown J
+
+The letter “J” will repeat continuously until you press CTRL+C.
+
+Another command is the 'keyup' command to stop the keydown. The options are the same as key and keydown commands. The
+following command will allow the letter 'J' to be held down, and then the key is released with the keyup command
+after a delay of 500 ms:
+
+xdotool keydown J; xdotol keyup --delay 500 J
+
+Multiple commands can be placed on a single line separated by a semicolon (;).
+
+Another way to chain commands is to place multiple xdotool commands only separated by a space as follows:
+
+xdotool keydown J keyup --delay 500 J
+
+The last keyboard command for xdotool is 'type'. The syntax is as follows:
+
+type [options] [string]
+
+The options are the same as the other commands for the keyboard and work the same way.
+
+For instance, to type a string into the Firefox application in the currently selected box, perform the following:
+
+xdotool type --window 46137486 www.linux.org
+
+The window id for Firefox is 46137486. If the current selected input box is the search box for Google, then
+'www.linux.org' would be typed in the search box. If the current input is the address box, then 'www.linux.org' would
+be in the address box.
+
+If the address box is selected as the current input box, then you could have it automatically put in 'www.linux.org'
+as follows:
+
+xdotool type --window 46137486 www.linux.org
+
+All characters after type are accepted as the string to type. No other commands can be placed after type.
+
+Practice on the keyboard commands and I will cover the mouse commands next time.
+
+
+${E_BOLD}${E_WHITE_FG}Xdotool - Mouse${E_RESET}
+
+The xdotool is a utility used from the terminal or in a script to manually perform keyboard and mouse input (see the
+		Xdotool – Keyboard article). The commands can also be used to make a script of many xdotool commands to create
+large tasks. Later articles will cover the xdotool ability to control window and desktop manipulation.
+
+The syntax for xdotool depends on the command being used. Let's start with sending mouse movements to a window by
+using the 'mousemove' command. The syntax is as follows:
+
+mousemove [options] x y
+
+There are five options available for mousemove which are:
+
+· --window window_id – for mouse movement. The window you specify will be the one used as a relative point for
+movement · --screen screen_number – specifies the screen number, screen 0 is your first monitor · --polar – uses
+polar coordinates by specifying 'x' between 0-360 degrees and 'y' as the distance from the center. Based off the
+specified window by its id · --clearmodifiers – clears all modifiers such as Shift, CTRL and such keyboard keys as
+well as a mouse button being pressed manually · --sync – causes the mousemove command to be sent, but the cursor does
+not move until the mouse is physically moved. Once moved, the cursor will go to the position specified
+
+NOTE: To find the window_id see the previous article: Xdotool – Keyboard.
+
+If I had a text editor open which had the window id of 46137499 and I wished to move the mouse cursor to the upper
+left corner of the window I would perform the following command:
+
+xdotool mousemove --window 46137499 0 0
+
+If I wanted to move the cursor to the top left corner of the whole screen, I would do the following:
+
+xdotool mousemove 0 0
+
+NOTE: When no window is specified, the desktop is assumed as the window.
+
+If I wished to use polar coordinates up is 0 or 360 degrees, right is 90, down is 180 and left is 270 degrees. The
+'y' coordinate is the number of pixels from the center of the window. In the following example, the cursor will be
+placed 45 degrees and 300 pixels from the center of the desktop:
+
+xdotool mousemove –polar 45 300
+
+NOTE: The cursor is placed in the upper right part of the screen. Any pixel value greater than what would cause the
+cursor to be off the screen will only place the cursor at the edge of the screen.
+
+There exists another mousemove command which restores the cursor back to where it was before you performed the
+previous mousemove:
+
+mousemove [options] restore
+
+The options are the same as the mousemove, except –window and –polar do not work. The restore command needs to be
+used in the same xdotool command as follows:
+
+xdotool mousemove 1000 1000 mousemove restore
+
+NOTE: Multiple commands can be chained together in xdotool command as shown. All the commands can be mixed such as
+keyboard, mouse, window and desktop commands.
+
+The third mousemove command is:
+
+mousemove_relative [options] x y
+
+This command moves the cursor relative to its current position. The options are as follows:
+
+· --polar – uses polar coordinates by specifying 'x' between 0-360 degrees and 'y' as the distance from the center,
+based off the specified window by its id · --clearmodifiers – clears all modifiers such as Shift, CTRL and such
+keyboard keys as well as a mouse button being pressed manually · --sync – causes the mousemove command to be sent,
+but the cursor does not move until the mouse is physically moved. Once moved, the cursor will go to the position
+specified
+
+Here, we can move the cursor to the center of the screen and then use the relative command to move it down (180
+		degrees) and a distance of 50 pixels:
+
+xdotool mousemove --polar 0 0 mousemove_relative --polar 180 50
+
+Another mouse command is the 'click' command. Here, we can cause the cursor to perform a mouse click as if the user
+did physically click a button on the mouse. The syntax is:
+
+click [options] button
+
+The options are as follows:
+
+· --window window_id – for mouse movement, the window you specify will be the one used as a relative point for
+movement · --clearmodifiers – clears all modifiers such as Shift, CTRL and such keyboard keys as well as a mouse
+button being pressed manually · --repeat – specifies the number of times to click. The default is one which is a
+single click, specify 2 for a double click · --delay milliseconds – the number of milliseconds to delay between
+clicks. The option is only used when the repeat option is used with a value greater than 1
+
+The buttons are numeric from left to right on the mouse or the opposite way if it is as left-handed mouse. For a
+right-handed mouse, button 1 is the far leftmost, the center button is button 2 if there is one, and the right button
+would either be 2 or 3 depending if a middle button existed.
+
+NOTE: With some systems, button 4 can be for the middle button up and 5 for the middle button down.
+
+For example, let us use a text editor with a window id of 46137499. We will move the cursor to the top left corner of
+the window and left click to select it (focus). The cursor is then moved down 10 pixels and right 100 pixels relative
+to the current position. At this point we will cause the wheel to scroll down 10 times:
+
+xdotool mousemove --window 46137499 0 0 click 1 mousemove_relative 10 110 click --repeat 10 5
+
+The following two commands are similar and work together. The commands are:
+
+mousedown [options] button mouseup [options] button
+
+Here it is possible to perform drag-and-drop procedures on systems which support it. Place the cursor in a position.
+Use the mousedown command with the proper button, move the mouse again and use the mouseup command to drop what has
+been dragged.
+
+For example, let us click on the text editor window and select it with the left mouse button. The mousedown command
+is used to be able to drag it. The mouse is moved to the desktop coordinates of 10 10. Now the mouseup command is
+given to drop the window.
+
+xdotool mousemove --window 46137499 0 0 click 1; xdotool mousedown 1; xdotool mousemove 10 10; xdotool mouseup 1
+
+NOTE: In this case, chaining the commands does not work and each command must be seprarate. Chained commands must be
+experimented with before using in a script.
+
+The next command is the 'getmouselocation' which is shown in Figure 1. Here you can see the Terminal executing the
+'getmouselocation' command while the mouse is on the text editor window. The output for get mouse location is: x:1170
+y:19 screen:0 window:46137499.
+
+NOTE: This is another way to get the window id.
+
+The getmouselocation has no input, but can accept the --shell option. The --shell option places the four location
+items in a column rather than a row. The items can be used in a shell script to provide information for variables to
+use in the scripts.
+
+The next command is the 'behave_screen_edge'. The syntax is as follows:
+
+behave_screen_edge [options] WHERE COMMAND
+
+This command allows you to specify an edge of a screen which will cause an action to be performed when the mouse hits
+the specified edge. The command seems to work best when the current window is maximized or touches the edge of the
+screen that is the “hot spot”.
+
+The options are as follows:
+
+· delay milliseconds – specifies the number of milliseconds which the cursor must be at the WHERE to trigger event ·
+quiesce milliseconds – delay before next trigger can occur (default 0)
+
+The WHERE options are as follows:
+
+· left · top-left · top · top-right · right · bottom-left · bottom · bottom-right
+
+A simple command is to execute the gedit text editor command when the cursor touches the left side of the screen:
+
+xdotool behave_screen_edge --quiesce 750 left exec gedit
+
+tip_xdotool_EOF
+) | mypager

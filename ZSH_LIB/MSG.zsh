@@ -290,7 +290,7 @@ msg_box () {
 			MSG_Y_COORD=${_REL_COORDS[Y]}
 			BOX_WIDTH=${_REL_COORDS[W]}
 			BOX_HEIGHT=${_REL_COORDS[H]}
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RELATIVE COORDS: MSG_X_COORD:${_REL_COORDS[X]} MSG_Y_COORD:${_REL_COORDS[Y]} BOX_WIDTH:${_REL_COORDS[W]} BOX_HEIGHT:${_REL_COORDS[H]}"
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}USING RELATIVE COORDS${RESET}: MSG_X_COORD:${_REL_COORDS[X]} MSG_Y_COORD:${_REL_COORDS[Y]} BOX_WIDTH:${_REL_COORDS[W]} BOX_HEIGHT:${_REL_COORDS[H]}"
 		fi
 	else
 		[[ ${WIDTH_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${WIDTH_ARG}
@@ -314,6 +314,7 @@ msg_box () {
 	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 		dbg "${0}: --- BOX COORDS ---"
 		dbg "${0}: TAG:${TAG}"
+		dbg "${0}: MSG_COLS:${MSG_COLS}"
 		dbg "${0}: BOX_X,Y:${WHITE_FG}(${BOX_X_COORD},${BOX_Y_COORD})${RESET}"
 		dbg "${0}: BOX_HEIGHT:${WHITE_FG}${BOX_HEIGHT}${RESET}"
 		dbg "${0}: BOX_WIDTH:${WHITE_FG}${BOX_WIDTH}${RESET}"
@@ -410,13 +411,14 @@ msg_box () {
 	else
 		# Headers
 		if [[ -n ${MSG_HEADER} ]];then
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}GENERATING HEADERS${RESET}"
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}PRINTING MSG HEADER${RESET}"
 			SCR_NDX=${BOX_X_COORD} 
 			DTL_NDX=0
 			for H in ${MSG_HEADER};do
 				(( SCR_NDX++))
 				(( DTL_NDX++))
 				MSG_OUT=$(msg_box_align ${TAG} ${H}) # Apply justification
+				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
 				tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
 				tput ech ${MSG_COLS} # Clear line
 				echo -n "${MSG_OUT}"
@@ -427,12 +429,13 @@ msg_box () {
 		# Body
 		SCR_NDX=$(( BOX_X_COORD + ${#MSG_HEADER} )) # Move past headers
 		DTL_NDX=0
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}GENERATING BODY${RESET}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}PRINTING MSG BODY${RESET}"
 
 		for (( MSG_NDX=1;MSG_NDX<=${#MSG_BODY};MSG_NDX++));do
 			(( SCR_NDX++))
 			(( DTL_NDX++))
 			MSG_OUT=$(msg_box_align ${TAG} ${MSG_BODY[${MSG_NDX}]}) # Apply padding to both sides of msg
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
 			tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
 			tput ech ${MSG_COLS} # Clear line
 			echo -n "${MSG_OUT}"
@@ -449,6 +452,7 @@ msg_box () {
 					MSG_OUT=$(msg_box_align ${TAG} "<w>Page ${MSG_PAGE} of ${MSG_PAGES}<N>")
 					PAGING_BOT=${SCR_NDX}
 					(( SCR_NDX+=2 )) # Last row
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
 					tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
 					tput ech ${MSG_COLS} # Clear line
 					echo -n "${MSG_OUT}"
@@ -465,7 +469,7 @@ msg_box () {
 		done
 
 		# Footer
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}GENERATING FOOTER${RESET} SCR_NDX:${SCR_NDX}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}PRINTING MSG FOOTER${RESET}"
 
 		[[ ${MSG_PAGING} == 'true' ]] && SCR_NDX=${PAGING_BOT}
 
@@ -500,8 +504,10 @@ msg_box_align () {
 	local -A BOX_COORDS=($(box_coords_get ${TAG}))
 	local BOX_WIDTH=${BOX_COORDS[W]}
 	local BOX_STYLE=${BOX_COORDS[S]}
-	local TEXT_PAD_L=''
-	local TEXT_PAD_R=''
+	local BOX_SPAN=$(( BOX_WIDTH - 2 )) # Box interior
+	local PADDING=''
+	local PAD_L=''
+	local PAD_R=''
 	local MSG_OUT=''
 	local OFFSET=3
 	local PADDED=''
@@ -512,26 +518,26 @@ msg_box_align () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} TAG:${TAG} COORDS:${BOX_COORDS} MSG LEN:${#MSG}"
 
 	if [[ ${MSG} =~ '<Z>' ]];then # Handle embed:<Z> Blank line
-		MSG=" "
+		MSG_OUT=" "
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Added blank line"
 	elif [[ ${MSG} =~ '<SEP>' ]];then # Handle embed:<SEP> Message separator
-		MSG=$(str_unicode_line $(( BOX_WIDTH - 4 )) )
-		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH )) ${MSG} )
-		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L} - 1 )) )
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Added heading separator: SEP:${MSG} BOX_WIDTH:${BOX_WIDTH} TEXT_PAD_L:\"${TEXT_PAD_L}\" TEXT_PAD_R:\"${TEXT_PAD_R}\""
+		MSG_OUT=$(str_unicode_line ${BOX_SPAN})
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Added heading separator"
 	elif [[ ${MSG} =~ '<L>' ]];then # Handle embed: <L> Bullet List item
 		MSG=$(sed -e 's/^.*<L>/\\u2022 /' <<<${MSG}) # Swap marker with bullet and space
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
-		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L} + ${#TEXT}) - OFFSET - 1 ))) # compensate for bullet/space
+		PAD_L=' '
+		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET - 1 ))) # compensate for bullet/space
+		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item bullets"
 	elif [[ ${MSG} =~ '<X>' ]];then # Handle embed: <X> Numbered List item
 		MSG=$(sed -e 's/^.*<X>//' <<<${MSG})
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
-		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L} + ${#TEXT}) - OFFSET - 1 ))) # compensate for number/space
+		PAD_L=' '
+		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET - 1 ))) # compensate for number/space
+		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: List item numbers"
 	elif [[ ${MSG} =~ '<D>' ]];then # Handle embed: <D> Data Field List item
 		MSG=$(sed -e 's/^.*<D>//' <<<${MSG})
@@ -540,33 +546,35 @@ msg_box_align () {
 		VAL=$(cut -d':' -f2 <<<${MSG})
 		MSG="<c>${LBL}<N>:<w>${VAL}<N>" # Colorize
 		TEXT=$(msg_nomarkup ${MSG})
-		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L} + ${#TEXT}) - OFFSET )) )
+		PAD_L=' '
+		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET )) )
+		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Data item"
 	elif [[ ${BOX_STYLE:l} == 'l' ]];then # Justification: Left
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
-		TEXT_PAD_L=' '
-		TEXT_PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#TEXT_PAD_L} + ${#TEXT}) - OFFSET )) )
+		PAD_L=' '
+		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET )) )
+		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Left justifed text"
 	elif [[ ${BOX_STYLE:l} == 'c' ]];then # Justification: Center
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
-		TEXT_PAD_L=$(str_center_pad $(( BOX_WIDTH )) $(msg_nomarkup ${TEXT} ))
-		TEXT_PAD_R=$(str_rep_char ' ' $(( ${#TEXT_PAD_L} - 1 )) )
+		PADDING=$(str_center_pad ${BOX_WIDTH} ${TEXT})
+		PAD_L=$(printf ' %.0s' {1..$(cut -d: -f1 <<<${PADDING})})
+		PAD_R=$(printf ' %.0s' {1..$(cut -d: -f2 <<<${PADDING})})
+		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Centered text"
 	else # Unpadded
 		TEXT=$(msg_nomarkup ${MSG})
-		TEXT=$(str_trim ${TEXT})
+		MSG_OUT=$(str_trim ${TEXT})
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: UNPADDED text"
 	fi
 
-	MSG_OUT=$(msg_markup ${MSG}) # Apply markup
-	PADDED="${TEXT_PAD_L}${MSG_OUT}${TEXT_PAD_R}"
+	MSG_OUT=$(msg_markup ${MSG_OUT}) # Apply markup
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MSG_OUT: |${MSG_OUT}|"
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PADDING: |${PADDED}|"
-
-	echo ${PADDED}
+	echo ${MSG_OUT}
 }
 
 msg_box_clear () {
@@ -1061,7 +1069,7 @@ msg_unicode_box () {
 		VERT_BAR="\\u2503%.0s"
 	fi
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TOP LEFT: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TOP LEFT CORNER - BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
 
 	# Reset standout (if set)
 	tput rmso
@@ -1083,7 +1091,7 @@ msg_unicode_box () {
 	printf ${TOP_RIGHT}
 
 	# Sides
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_WIDTH:${BOX_WIDTH}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SIDES - BOX_WIDTH:${BOX_WIDTH}"
 	for (( X=${T_SPAN}; X<=${B_SPAN}; X++ ));do
 		tput cup ${X} ${BOX_Y_COORD}
 		printf ${VERT_BAR}
@@ -1109,7 +1117,7 @@ msg_unicode_box () {
 
 	echo -n ${RESET}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOTTOM RIGHT: BOX_X_COORD:${X} BOX_Y_COORD:${Y}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOTTOM RIGHT - BOX_X_COORD:${X} BOX_Y_COORD:${Y}"
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX DIMENSIONS:$(( X - BOX_X_COORD + 1 )) x $(( Y - BOX_Y_COORD + 1 ))"
 }
 

@@ -17,7 +17,6 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
@@ -28,8 +27,10 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 _WEB_ROOT="https://python-gtk-3-tutorial.readthedocs.io/en/latest"
 _SCRIPT=${0:t}
 
-LIST=("${(f)$(wget -qO- 'https://python-gtk-3-tutorial.readthedocs.io/en/latest/index.html' | pup 'a attr{href}' | grep -v '#\|http\|_' | sort -u)}")
+# Execution
+do_smcup
 
+LIST=("${(f)$(wget -qO- 'https://python-gtk-3-tutorial.readthedocs.io/en/latest/index.html' | pup 'a attr{href}' | grep -v '#\|http\|_' | sort -u)}")
 
 while true;do
 	clear # wipe screen
@@ -38,3 +39,5 @@ while true;do
 	clear # wipe screen
 	eval "/usr/bin/firefox ${_WEB_ROOT}/${_SEL_VAL}.html 2>/dev/null &"
 done
+
+exit_leave

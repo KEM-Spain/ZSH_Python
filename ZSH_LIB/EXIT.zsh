@@ -51,7 +51,7 @@ exit_pre_exit () {
 	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}"
 
 	if [[ -n ${_EXIT_CALLBACKS} ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}:EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
 		for C in ${_EXIT_CALLBACKS};do
 			${C}
 		done

@@ -55,43 +55,46 @@ str_center () {
 }
 
 str_center_pad () {
-	local -i PAD
-	local -i REM
-	local BORDER=' ' # Minimum border
-	local MSG 
-	local TEXT 
-	local TEXT_WIDTH
-	local WIDTH
+	local -A PAD=()
+	local -i GAP=0
+	local -i L_GAP=0
+	local -i R_GAP=0
+	local SPAN=0
+	local S_LEN
+	local TEXT_IN=''
+	local TEXT_WIDTH=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	WIDTH=${1};shift
-	TEXT=${@}
-	TEXT_WIDTH=${#TEXT}
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: WIDTH:${WIDTH} TEXT_WIDTH:${TEXT_WIDTH} TEXT:${TEXT}"
+	SPAN=${1};shift
+	TEXT_IN=${@}
 
-	REM=$(( WIDTH - TEXT_WIDTH ))
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: WIDTH-TEXT_WIDTH:$(( WIDTH - TEXT_WIDTH )) REM:${REM}"
+	(( SPAN -= 2 )) # Minimum 1 space border surrounding text
+	TEXT_WIDTH=$(str_clean_line_len ${TEXT_IN})
 
-	if [[ ${REM} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: REM:${REM}"
-		PAD=$(( REM / 2 ))
-		BORDER=$(printf ' %.0s' {1..${PAD}})
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PAD:${PAD}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_IN:${TEXT_IN} TEXT_WIDTH:${TEXT_WIDTH}"
+
+	GAP=$(( SPAN - TEXT_WIDTH ))
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SPAN:${SPAN} GAP:${GAP}"
+
+	if [[ ${GAP} -gt 0 ]];then
+		L_GAP=$(( GAP / 2 ))
+		S_LEN=$(( L_GAP + TEXT_WIDTH ))
+		R_GAP=$(( SPAN - S_LEN ))
 	fi
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BORDER:${#BORDER}:[${BORDER}] WIDTH-(PAD+TEXT_WIDTH+2):$(( WIDTH - (PAD + TEXT_WIDTH + 2) ))"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RETURNING: ${L_GAP}:${R_GAP}"
 
-	echo "${BORDER}"
+	echo "${L_GAP}:${R_GAP}"
 }
 
 str_clean_line_len () {
-	local STR_IN=${@}
-	local LENGTH
+	local TEXT_IN=${@}
+	local LEN
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	LENGTH=$(echo ${STR_IN} | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/ *$//g' | tr -d '\011\012\015') # Ansi/trailing sp/newlines/etc
-	echo ${#LENGTH}
+	LEN=$(echo ${TEXT_IN} | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/ *$//g' | tr -d '\011\012\015') # Ansi/space/newlines/etc
+	echo ${#LEN}
 }
 
 str_clean_path () {

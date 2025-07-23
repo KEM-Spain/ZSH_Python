@@ -100,8 +100,14 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
-[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<APP>"
-APP=${1}
+if [[ ${#} -eq 0 ]];then
+	ID=$(xdotool getactivewindow)
+	printf "Current window id:0x%x %d" ${ID} ${ID}
+	exit_leave
+else
+	APP=${1}
+fi
+
 
 logit "Received request for APP:${APP} window id"
 

@@ -69,25 +69,25 @@ if !has("gui_running")
 	nnoremap <expr> <c-t> "oHello, " . input("Please give your name: ") . ". You have a very nice name.\<ESC>"
 
 	"activate Ansi plugin
-	nnoremap <c-a> :AnsiEsc<CR>
+	nnoremap <c-a> :AnsiEsc<CR>:echom "ANSI mode"<CR>
 
 	"enclose bare vars with braces in zsh
-	nnoremap <c-b> :1,$s/\$\@<=[~A-Z_0-9:a-z@#?]\+/{&}/g
+	nnoremap <c-b> :1,$s/\$\@<=[~A-Z_0-9:a-z@#?]\+/{&}/g:echom "Wrapped vars in braces"<CR>
 
 	"delimit all words
-	nnoremap <silent> <c-d> <Esc>0A<Esc>0y$$<Esc>0:1,$s/ /\|/g<CR>:echo "delimited"<CR>
+	nnoremap <silent> <c-d> <Esc>0A<Esc>0y$$<Esc>0:1,$s/ /\|/g<CR>:echom "Delimited all words"<CR>
 
 	"add app shebangs
-	nnoremap <c-e> ggi#!/usr/bin/zsh<CR> <ESC>
-	nnoremap <c-p> ggi#!/usr/bin/env python3<CR> <ESC>
-	nnoremap <c-l> ggi#!/usr/bin/env perl<CR> <ESC>
+	nnoremap <c-e> ggi#!/usr/bin/zsh<CR> <ESC>:echom "zsh app"<CR>
+	nnoremap <c-p> ggi#!/usr/bin/env python3<CR> <ESC>:echom "python app"<CR>
+	nnoremap <c-l> ggi#!/usr/bin/env perl<CR> <ESC>:echom "perl app"<CR>
 
 	"find left anchored
 	nnoremap <c-f> :/^
 
 	"marked delete/yank
-	nnoremap <c-x> :'a,'bd <CR>
-	nnoremap <c-c> :'a,'by <CR>
+	nnoremap <c-x> :'a,'bd <CR>:echom "Deleted between a,b markers"<CR>
+	nnoremap <c-c> :'a,'by <CR>:echom "Yanked between a,b markers"<CR>
 
 	"marked copy/move - TODO: interfering with line number goto
 	"nnoremap <c-m> :'a,'b mo . <CR>
@@ -97,18 +97,18 @@ if !has("gui_running")
 	nnoremap <c-l> :'a,'b
 
 	"indent/outdent
-	nnoremap <c-i> :'a,'b> <CR>
-	nnoremap <c-o> :'a,'b< <CR>
+	nnoremap <c-i> :'a,'b> <CR>:echom "Indent"<CR>
+	nnoremap <c-o> :'a,'b< <CR>:echom "Outdent"<CR>
 
 	"marked sort
-	nnoremap <c-s> :'a,'bsort <CR>
+	nnoremap <c-s> :'a,'bsort <CR>:echom "Sorted between a,b markers"<CR>
 
 	"marked comment/uncomment
-	nnoremap <c-u> :'a,'bs/^/#/g <CR>
-	nnoremap <c-y> :'a,'bs/^#//g <CR>
+	nnoremap <c-u> :'a,'bs/^/#/g <CR>:echom "Commented"<CR>
+	nnoremap <c-y> :'a,'bs/^#//g <CR>:echom "Unommented"<CR>
 
 	"wrap long lines
-	nnoremap <c-w> <esc>gqq
+	nnoremap <c-w> <esc>gggqG:echom "Wrapped long lines"<CR>
 	
 	set autoindent "automatic code indent
 	set backspace=2 "backspace del all
