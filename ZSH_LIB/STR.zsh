@@ -20,45 +20,9 @@ str_array_to_num () {
 	echo ${NUM}
 }
 
-str_center () {
-	local -i PAD
-	local -i REM
-	local BORDER
-	local MSG 
-	local TEXT 
-	local TEXT_WIDTH
-	local WIDTH
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	WIDTH=${1};shift
-	TEXT="${@}"
-	TEXT_WIDTH=${#TEXT}
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: WIDTH:${WIDTH} TEXT:${TEXT} TEXT_WIDTH:${TEXT_WIDTH}"
-
-	REM=$(( WIDTH - ${TEXT_WIDTH} ))
-	BORDER=' ' # Minimum border
-	if [[ ${REM} -ne 0 ]];then
-		PAD=$(( REM / 2 ))
-		BORDER=$(printf ' %.0s' {1..${PAD}})
-	fi
-
-	MSG="${BORDER}${TEXT}${BORDER}" # Pad
-
-	[[ ${#MSG} -lt ${WIDTH} ]] && MSG=$(str_pad_string ${WIDTH} ${MSG})
-	[[ ${#MSG} -gt ${WIDTH} ]] && MSG=${MSG[1,${WIDTH}]} # Do not exceed width
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}\nReturning${RESET}:${0} with [${MSG}] Length:${#MSG}" >&2 
-
-	echo "${MSG}"
-}
-
 str_center_pad () {
-	local -A PAD=()
 	local -i GAP=0
 	local -i L_GAP=0
-	local -i R_GAP=0
 	local SPAN=0
 	local S_LEN
 	local TEXT_IN=''
@@ -79,12 +43,10 @@ str_center_pad () {
 
 	if [[ ${GAP} -gt 0 ]];then
 		L_GAP=$(( GAP / 2 ))
-		S_LEN=$(( L_GAP + TEXT_WIDTH ))
-		R_GAP=$(( SPAN - S_LEN ))
 	fi
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RETURNING: ${L_GAP}:${R_GAP}"
 
-	echo "${L_GAP}:${R_GAP}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RETURNING: ${L_GAP}"
+	echo ${L_GAP}
 }
 
 str_clean_line_len () {

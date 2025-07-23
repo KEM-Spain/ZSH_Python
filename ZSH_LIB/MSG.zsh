@@ -505,12 +505,11 @@ msg_box_align () {
 	local BOX_WIDTH=${BOX_COORDS[W]}
 	local BOX_STYLE=${BOX_COORDS[S]}
 	local BOX_SPAN=$(( BOX_WIDTH - 2 )) # Box interior
-	local PADDING=''
 	local PAD_L=''
 	local PAD_R=''
 	local MSG_OUT=''
 	local OFFSET=3
-	local PADDED=''
+	local PADDING=''
 	local TEXT=''
 	local LBL=''
 	local VAL=''
@@ -561,8 +560,8 @@ msg_box_align () {
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PADDING=$(str_center_pad ${BOX_WIDTH} ${TEXT})
-		PAD_L=$(printf ' %.0s' {1..$(cut -d: -f1 <<<${PADDING})})
-		PAD_R=$(printf ' %.0s' {1..$(cut -d: -f2 <<<${PADDING})})
+		PAD_L=$(printf ' %.0s' {1..${PADDING}})
+		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET )) )
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Centered text"
 	else # Unpadded

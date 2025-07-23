@@ -241,28 +241,6 @@ item_decorate () {
   esac
 }
 
-coord_center () {
-	local AREA=${1}
-	local OBJ=${2}
-	local CTR
-	local REM
-	local AC
-	local OC
-	local C
-
-	CTR=$(( AREA / 2 ))
-	REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && AC=$(( CTR + 1 )) || AC=${CTR}
-
-	CTR=$(( OBJ / 2 ))
-	REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
-
-	C=$(( AC - OC ))
-
-	echo ${C}
-}
-
 parse_perms () {
 	local PERMS=${1}
 	local POS=${2}
