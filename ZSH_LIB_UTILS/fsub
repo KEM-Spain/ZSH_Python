@@ -264,7 +264,7 @@ do_finalize () {
 
 	if ! arr_is_populated "${FINAL}";then
 		[[ ${g_VERBOSE} == 'true' ]] && MSG="No files qualified as candidates" || MSG=''
-		exit_leave $(msg_exit W ${MSG})
+		exit_leave $(err_msg_exit W ${MSG})
 	fi
 
 	if [[ ${_DEBUG} -ne 0 ]];then
@@ -1068,7 +1068,7 @@ else
 fi
 
 if ! arr_is_populated "${_IN_LIST}";then
-	exit_leave $(msg_exit W "${_SCRIPT}:Can't continue - ${g_LIST_METHOD} failed - _IN_LIST is empty")
+	exit_leave $(err_msg_exit W "${_SCRIPT}:Can't continue - ${g_LIST_METHOD} failed - _IN_LIST is empty")
 fi
 
 #if [[ ${_DEBUG} -gt 0 ]];then

@@ -128,7 +128,7 @@ if [[ ${LIST_EXT} == 'true' ]];then
 fi
 
 [[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type c)" || FN=${1}
-[[ ! -f ${FN} ]] && exit_leave $(msg_exit E "file not found:${FN}")
+[[ ! -f ${FN} ]] && exit_leave $(err_msg_exit E "file not found:${FN}")
 
 FES=(${${(s/./)FN}[2,-1]}) # All possible file extensions
 FE=''
@@ -142,7 +142,7 @@ done
 echo "File extension:${WHITE_FG}${FE}${RESET}"
 
 CMD=${_SUPPORTED_TYPES[${FE[2,-1]}]} # Skip leading dot
-[[ -z ${CMD} ]] && exit_leave $(msg_exit E "unsupported extension:${FE}")
+[[ -z ${CMD} ]] && exit_leave $(err_msg_exit E "unsupported extension:${FE}")
 
 [[ ${CMD} =~ 'unzip' ]] && ARG_SET="$(tr -cd '[:alnum:]' <<<${FN:r}) ${(qqq)FN}" || ARG_SET="${FN}" # Special arg handling for unzip - needs dir name to extract to
 

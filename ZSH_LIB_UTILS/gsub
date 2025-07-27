@@ -64,7 +64,7 @@ action_do () {
 	fi
 
 	[[ ! -e ${_BAK_DIR} ]] && mkdir ${_BAK_DIR} && RC=${?}
-	[[ ${RC} -ne 0 ]] && exit_leave $(msg_exit W "Unable to create backup directory: ${_BAK_DIR} (RC=${RC})")
+	[[ ${RC} -ne 0 ]] && exit_leave $(err_msg_exit W "Unable to create backup directory: ${_BAK_DIR} (RC=${RC})")
 
 	for M in ${(on)_MARKED};do
 		((FCNT++))
@@ -212,7 +212,7 @@ shift $(( OPTIND - 1 ))
 
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ ${g_FROM_TEXT} == ${g_TO_TEXT} ]] && exit_leave $(msg_exit E "$(opt_type f) and $(opt_type t) are identical")
+[[ ${g_FROM_TEXT} == ${g_TO_TEXT} ]] && exit_leave $(err_msg_exit E "$(opt_type f) and $(opt_type t) are identical")
 
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
@@ -224,7 +224,7 @@ _RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f" 2>/dev/null )}")
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${GREEN_FG}LIST COUNT${RESET}:${#_RAWLIST}"
 
 if ! arr_is_populated "${_RAWLIST}";then
-	exit_leave $(msg_exit W "No files match:${@}")
+	exit_leave $(err_msg_exit W "No files match:${@}")
 fi
 
 for R in ${(o)_RAWLIST};do
@@ -236,7 +236,7 @@ for R in ${(o)_RAWLIST};do
 done
 
 if ! arr_is_populated "${_LOCAL_LIST}";then
-	exit_leave $(msg_exit W "No ${ITALIC}text${RESET} files contain candidates:${WHITE_FG}${(qq)g_FROM_TEXT}${RESET}")
+	exit_leave $(err_msg_exit W "No ${ITALIC}text${RESET} files contain candidates:${WHITE_FG}${(qq)g_FROM_TEXT}${RESET}")
 fi
 
 [[ ${CASE} == 'i' ]] && CASE_MSG="Case insensitive" || CASE_MSG="Case sensitive"

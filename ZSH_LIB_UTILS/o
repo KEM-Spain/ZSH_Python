@@ -216,7 +216,8 @@ single_file_launch () {
 
 	[[ ${APP} == '?' ]] && exit_leave "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${FN}${RESET} of type: [$(file -b ${FN})]"
 
-	_LIST+=$(realpath ${FN}) # Add full path
+	[[ -e ${PWD}/${FN:t} ]] && _LIST+=${FN:t} || _LIST+=$(realpath ${FN}) 
+
 	_FILE_APP[${F}]=${APP}
 	_FILE_NDX[${F}]=1
 
@@ -329,7 +330,7 @@ else
 	HDR_MSG="Processing file list"
 	_RAWLIST=(${@})
 	for F in ${_RAWLIST};do
-		[[ ! -e ${F} ]] && exit_leave $(msg_exit E "File:${F} not found")
+		[[ ! -e ${F} ]] && exit_leave $(err_msg_exit E "File:${F} not found")
 	done
 fi
 
@@ -341,8 +342,7 @@ fi
 NDX=0
 for F in ${_RAWLIST};do
 	((NDX++))
-	FN=$(realpath ${F}) # Add full path
-	_RAWLIST[${NDX}]=${FN}
+	[[ -e ${PWD}/${F:t} ]] && _RAWLIST[${NDX}]=${F:t} || _RAWLIST[${NDX}]=$(realpath ${F}) 
 done
 
 MUSIC_DIRS=false

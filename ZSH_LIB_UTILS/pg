@@ -26,8 +26,8 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 #Execution
-[[ ${#} -eq 0 ]] && exit_leave $(msg_exit E "Missing argument:<FN>") || FN=${1}
-[[ ! -e ${FN} ]] && exit_leave $(msg_exit E "File not found:${FN}")
+[[ ${#} -eq 0 ]] && exit_leave $(err_msg_exit E "Missing argument:<FN>") || FN=${1}
+[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit E "File not found:${FN}")
 tput smcup
 less $1
 tput rmcup

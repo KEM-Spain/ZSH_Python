@@ -110,7 +110,7 @@ if [[ ${PENDING} == 'false' ]];then
 		msg_box -p -PB "<r>Reboot required<N>"
 		[[ ${_MSG_KEY} == 'y' ]] && rb -r
 	fi
-	exit_leave $(msg_exit I "No updates available")
+	exit_leave $(err_msg_exit I "No updates available")
 fi
 
 if [[ ${PRE_APPROVED} == false ]];then

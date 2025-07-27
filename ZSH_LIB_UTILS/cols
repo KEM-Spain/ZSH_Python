@@ -127,7 +127,7 @@ LINES_IN=("${(f)$(
 		ansi2txt <<<${LINE} | col -b
 	done 
 )}")
-[[ -z ${LINES_IN} ]] && exit_leave $(msg_exit E 'No input provided')
+[[ -z ${LINES_IN} ]] && exit_leave $(err_msg_exit E 'No input provided')
 
 CALC_WIDTH=0
 for L in ${LINES_IN};do

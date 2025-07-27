@@ -181,7 +181,7 @@ fi
 _RAWLIST=("${(@f)$(find ${START_DIR} -maxdepth ${_DEPTH} -executable -type f -iregex ".*${SEARCHTERM}.*" 2>/dev/null | grep ${_BLACKLIST})}")
 
 if ! arr_is_populated "${_RAWLIST}";then
-	[[ -n ${SEARCHTERM} ]] && exit_leave $(msg_exit W "No matches for:${SEARCHTERM}")
+	[[ -n ${SEARCHTERM} ]] && exit_leave $(err_msg_exit W "No matches for:${SEARCHTERM}")
 fi
 
 HIT=false

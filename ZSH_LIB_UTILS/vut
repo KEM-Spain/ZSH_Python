@@ -81,6 +81,7 @@ info () {
 	}
 
 	parse_info () {
+		local FN=${1:t:r}
 		local LIST=("${(f)$(ffprobe ${1}  2>&1 | grep -i 'duration\|stream')}")
 		local -a INFO
 		local AUD=Audio:None
@@ -89,7 +90,7 @@ info () {
 		local DUR=Duration:None
 		local HDR
 		local RES=None
-		local SUB=false
+		local SUB=None
 		local VAL
 		local VID=Video:None
 		local L
@@ -97,14 +98,14 @@ info () {
 		for L in ${LIST};do
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} L: ${L}"
 			[[ ${L} =~ 'attached pic' ]] && continue
-			[[ ${L:l} =~ 'subtitle:' ]] && SUB=true
+			[[ ${L:l} =~ 'subtitle:' ]] && SUB=internal
 			[[ ${L:l} =~ 'duration:' ]] && DUR=$(perl -p -e 's/(\s+)([^,]+)(.*)/$2/i' <<<${L})
 			[[ ${L:l} =~ "video:" ]] && RES=$(perl -p -e 's/^(.*)(?<=[ ,])(\d+x\d+)(?=[ ,])(.*)$/$2/g' <<<${L})
 			[[ ${L:l} =~ "video:" ]] && VID=$(perl -pe 's/^(.*)(vid.*?)(?=[,(])(.*)/$2/i' <<<${L})
 			[[ ${L:l} =~ "audio:" ]] && AUD=$(perl -pe 's/^(.*)(aud.*?)(?=[,(])(.*)/$2/i' <<<${L})
 		done
 
-		[[ ${SUB} == 'true' ]] && SUB="yes" || SUB="no"
+		[[ -e ${FN}.srt ]] && SUB=external
 		[[ ${AUD:l} != 'audio:none' ]] && AUD=${AUD:u}
 
 		SDUR=$(cut -d: -f2- <<<${DUR} | trim | tr -d '[:.]')
@@ -250,7 +251,7 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILES>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -324,17 +325,17 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILES>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO FILE>" || FN_ARG=(${@})
-	[[ ! -f ${FN_ARG} ]] && exit_leave $(msg_exit E "File not found:${FN_ARG}")
+	[[ ! -f ${FN_ARG} ]] && exit_leave $(err_msg_exit E "File not found:${FN_ARG}")
 	
 	file ${FN_ARG} | grep -qi 'media\|matroska\|video'
-	[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "File not a video:${FN_ARG}")
+	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit E "File not a video:${FN_ARG}")
 
 	echo "\n${CYAN_FG}Increasing volume by 3dB...${RESET}"
 	ffmpeg -i "${FN_ARG}" -af "volume=3dB" ${FN_ARG:r}_v+3d.${FN_ARG:e}
@@ -411,7 +412,7 @@ ___EOF
 		echo "${WHITE_FG}-o $(opt_type f)${RESET} output file name"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -455,9 +456,9 @@ ___EOF
 	done
 
 	for F in ${FILES_TO_MERGE};do 
-		[[ ! -e ${F} ]] && exit_leave $(msg_exit E "file:${F} not found")
+		[[ ! -e ${F} ]] && exit_leave $(err_msg_exit E "file:${F} not found")
 		file ${F} | grep -qi 'media\|matroska\|video'
-		[[ ${?} -ne 0 ]] && exit_leave $(msg_exit E "file:${F} is not of type video")
+		[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit E "file:${F} is not of type video")
 	done
 
 	[[ -z ${DESTINATION_FILE} ]] && DESTINATION_FILE=${_OUT_FILE}.${FILES_TO_MERGE[1]:e} || DESTINATION_FILE=${_OUT_FILE}
@@ -555,7 +556,7 @@ ___EOF
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -586,7 +587,7 @@ ___EOF
 	SCALE=${_SEL_VAL}
 
 	FN_OUT="${FN:r} ${SCALE}.mkv"
-	[[ -e ${FN_OUT} ]] && exit_leave $(msg_exit W "File naming confict: ${FN_OUT}")
+	[[ -e ${FN_OUT} ]] && exit_leave $(err_msg_exit W "File naming confict: ${FN_OUT}")
 
 	ffmpeg -i ${FN} -vf scale=${SCALE} ${FN_OUT}
 }
@@ -610,7 +611,7 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILE>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -618,7 +619,7 @@ ___EOF
 	[[ ${1} == '-H' ]] && usage
 
 	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO_FILE>" || FN=${1}
-	[[ ! -e ${FN} ]] && exit_leave $(msg_exit E "file not found:${FN}")
+	[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit E "file not found:${FN}")
 
 	ffmpeg -i ${FN} -map 0 -map 0:a -c copy -c:a:1 ac3 -b:a:1 640k ${FN:r}_ac3.mkv
 }
@@ -674,7 +675,7 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 	exit_leave
 }
 

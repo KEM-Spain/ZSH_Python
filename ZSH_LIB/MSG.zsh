@@ -296,13 +296,12 @@ msg_box () {
 		[[ ${WIDTH_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${WIDTH_ARG}
 		[[ ${HEIGHT_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${HEIGHT_ARG}
 		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$((  (_MAX_ROWS-BOX_HEIGHT) / 2 + 1 )) || MSG_X_COORD=${MSG_X_COORD_ARG}
-		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(coord_center $(( _MAX_COLS )) BOX_WIDTH) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
+		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(coord_center $(( _MAX_COLS )) ${BOX_WIDTH}) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
 	fi
 
-	# Box coords - compensate for frame
-	BOX_X_COORD=${$(( MSG_X_COORD - 1 )):=1}
-	BOX_Y_COORD=${$(( MSG_Y_COORD - 1 )):=1}
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: FRAME COMPENSATION: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
+	BOX_X_COORD=${MSG_X_COORD}
+	BOX_Y_COORD=$(( MSG_Y_COORD - 1 ))
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
 	# --- END COORDS SETUP ---
 
 	# Save box coords
@@ -698,64 +697,6 @@ msg_calc_gap () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: GAP:${GAP}"
 
 	echo ${GAP}
-}
-
-msg_err () {
-	local MSG=${@}
-	local LABEL='Error'
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ -z ${MSG} ]] && return
-
-	grep -q '|' <<<${MSG}
-	[[ ${?} -eq 0 ]] && LABEL=$(cut -d '|' -f1 <<<${MSG}) && MSG=$(cut -d '|' -f2 <<<${MSG})
-
-	if [[ -n ${MSG} ]];then
-		[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:(.*)\s/\e[m:\e[3;37m$1\e[m /g' <<<${MSG})
-		printf "[${WHITE_FG}%s${RESET}]:[${BOLD}${RED_FG}${LABEL}${RESET}] %s" ${_SCRIPT} "${MSG}"
-	fi
-}
-
-msg_exit () {
-	local LEVEL=${1}
-	local MSG=${2}
-	local LABEL=''
-	local LCOLOR=''
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ -z ${@} ]] && return
-
-	case ${LEVEL} in 
-		W) LABEL="Warning";LCOLOR=${ITALIC}${BOLD}${MAGENTA_FG};;
-		E) LABEL="Error";LCOLOR=${ITALIC}${BOLD}${RED_FG};;
-		I) LABEL="Info";LCOLOR=${ITALIC}${CYAN_FG};;
-		*) LABEL="Error";LCOLOR=${ITALIC}${BOLD}${RED_FG};;
-	esac
-
-	if [[ -n ${MSG} ]];then
-		[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:(\w+\.?\w+)(.*$)/\e[m:\e[3;37m$1\e[m\2/' <<<${MSG})
-		printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "${MSG}"
-	fi
-}
-
-msg_info () {
-	local MSG=${@}
-	local LABEL='Info'
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ -z ${MSG} ]] && return
-
-	grep -q '|' <<<${MSG}
-	[[ ${?} -eq 0 ]] && LABEL=$(cut -d '|' -f1 <<<${MSG}) && MSG=$(cut -d '|' -f2 <<<${MSG})
-
-	if [[ -n ${MSG} ]];then
-		#[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:([[:print:]]+?\s)(\w+.*)?$/\e[m:\e[3;37m$1\e[m\2/' <<<${MSG})
-		[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:(.*)\s/\e[m:\e[3;37m$1\e[m /g' <<<${MSG})
-		printf "[${WHITE_FG}%s${RESET}]:[${BOLD}${CYAN_FG}${LABEL}${RESET}] %s" ${_SCRIPT} "${MSG}"
-	fi
 }
 
 msg_line_weight () {

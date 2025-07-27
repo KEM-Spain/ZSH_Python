@@ -38,7 +38,7 @@ else
 	MUSIC_DIR=(/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9)
 fi
 
-[[ ! -e ${AGREP} ]] && exit_leave $(msg_exit E "Requires ${AGREP}")
+[[ ! -e ${AGREP} ]] && exit_leave $(err_msg_exit E "Requires ${AGREP}")
 
 #--Begin GetOpts--
 RESET="\033[m"
@@ -250,7 +250,7 @@ done
 
 [[ ${VERBOSE} == 'true' ]] && echo "Resulting FILTERED_LIST contains ${WHITE_FG}${#FILTERED_LIST}${RESET} entries"
 
-[[ ${#FILTERED_LIST} -eq 0 ]] && exit_leave $(msg_exit W "No results")
+[[ ${#FILTERED_LIST} -eq 0 ]] && exit_leave $(err_msg_exit W "No results")
 
 [[ ${VERBOSE} == 'true' ]] && echo "STEP 4:Build playlist..."
 

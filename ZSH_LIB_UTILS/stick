@@ -424,7 +424,7 @@ if [[ ${?} -eq 0 ]];then
 	_STICK_PATH=${STICK_DATA[PATH]}
 	msg_box -p -PK -H1 "<w>USB Stick Information<N>|<c>${STICK_DATA[NAME]}<N>|<w>Device<N>:${STICK_DATA[DEVICE]}|<w>Mount<N>:${STICK_DATA[PATH]}"
 else
-	exit_leave $(msg_exit W "No USB stick found")
+	exit_leave $(err_msg_exit W "No USB stick found")
 fi
 
 g_LAST_VIEW="STICK"

@@ -90,7 +90,7 @@ done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
-[[ ! -e ${JAR} ]] && exit_leave $(msg_exit E "${JAR} not found")
+[[ ! -e ${JAR} ]] && exit_leave $(err_msg_exit E "${JAR} not found")
 
 (
 	nohup java -jar ${JAR} >/tmp/${_SCRIPT}.nohup.out &

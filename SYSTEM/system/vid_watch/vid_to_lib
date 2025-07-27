@@ -76,7 +76,7 @@ clean_media () {
 			echo "Cleaning title:${WHITE_FG}${TITLE}${RESET}"
 			[[ ${SERVICE_MODE} == 'true' ]] && FSUB_OPTS="-Syrm" || FSUB_OPTS="-yrm"
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: Calling: ${_VW}/fsub ${FSUB_OPTS} ${TITLE}"
-			logit "${0} calling fsub ${FSUB_OPTS} ${TITLE}"
+			logit "${0} calling fsub.standalone DIR:${V:h}, FILE:${V:t}, TITLE:${WHITE_FG}${TITLE}${RESET}"
 			${_VW}/fsub "${FSUB_OPTS} ${TITLE}"
 			[[ ${?} -ne 0 ]] && logit "${0}: fsub returned an error"
 			popd

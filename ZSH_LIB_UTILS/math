@@ -104,7 +104,7 @@ shift $(( OPTIND - 1 ))
 [[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type f)" || FORMULA=${1}
 
 if ! validate_is_integer ${PRECISION};then
-	exit_leave $(msg_exit E "$(opt_type p) must be an integer")
+	exit_leave $(err_msg_exit E "$(opt_type p) must be an integer")
 fi
 
 do_rmcup

@@ -1,0 +1,87 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+_SCRIPT=${0:t}
+_SCRIPT_TAG="${WHITE_FG}[${RESET}${_SCRIPT}${WHITE_FG}]${RESET}"
+
+get_center () {
+	local WIDTH=${1}
+	local CENTER=0
+	local REM=0
+
+	CENTER=$(( WIDTH / 2 ))
+	REM=$(( WIDTH % 2 ))
+	[[ ${REM} -ne 0 ]] && (( CENTER++ ))
+
+	echo ${CENTER}
+}
+
+# Execution
+# Discreet functions
+# center (no args) = terminal center
+# center -h <CONTAINER_WIDTH> = center container horz
+# center -v <CONTAINER_HEIGHT> = center container vert
+# center -t <CONTAINER_WIDTH> <CONTAINER_TEXT> = center container text
+[[ -n ${1} ]] && ENCL_W=${1} || exit_leave "Missing enclosure width"
+[[ -n ${2} ]] && CONTENT=${2} || exit_leave "Missing content text"
+TERM_H_OFF=${3:=0}
+TERM_V_OFF=${4:=0}
+
+clear && cursor_off
+
+CONT_W=${#CONTENT}
+
+TERM_W=$(tput cols)
+TERM_H=$(tput lines)
+TERM_H_CTR=$(get_center ${TERM_W})
+TERM_H_CTR=$(( TERM_H_CTR + TERM_H_OFF ))
+TERM_V_CTR=$(get_center ${TERM_H})
+
+ENCL_H_CTR=$(get_center ${ENCL_W})
+ENCL_H_REF=$(( TERM_H_CTR - ENCL_H_CTR + 1 ))
+
+[[ ${TERM_V_OFF} -eq 0 ]] && TERM_V_OFF=$(( TERM_V_CTR - BOX_HEIGHT - 1 ))
+
+BOX_X=${TERM_V_OFF}
+BOX_Y=${ENCL_H_REF}
+BOX_HEIGHT=3
+BOX_WIDTH=${ENCL_W}
+
+
+#tput cup 0 ${TERM_H_CTR};echo -n "|"
+msg_unicode_box ${BOX_X} ${BOX_Y} ${BOX_WIDTH} ${BOX_HEIGHT}
+
+CONT_CTR=$(get_center ${CONT_W})
+CONT_REF=$(( ENCL_H_CTR - CONT_CTR ))
+CONT_POS=$(( ENCL_H_REF + CONT_REF ))
+tput cup $(( BOX_X + 1 )) ${CONT_POS}
+echo -n ${CONTENT}
+
+tput cup $(( TERM_H - 2 )) 0;echo "TERM_W:${TERM_W}, TERM_H_CTR:${TERM_H_CTR}, TERM_H_OFF:${TERM_H_OFF}, TERM_V_OFF:${TERM_V_OFF}, TERM_V_CTR:${TERM_V_CTR}"
+tput cup $(( TERM_H - 1 )) 0;echo "ENCL_W:${ENCL_W}, ENCL_H_REF:${ENCL_H_REF}, ENCL_H_CTR:${ENCL_H_CTR}"
+tput cup $(( TERM_H - 0 )) 0;echo "CONT_W:${CONT_W}, CONT_REF:${CONT_REF}, CONT_CTR:${CONT_CTR} CONT_POS:${CONT_POS}"
+read
+cursor_on

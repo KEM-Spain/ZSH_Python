@@ -284,25 +284,27 @@ cmd_get_raw () {
 }
 
 coord_center () {
-	local AREA=${1} # Available space width or height
-	local OBJ=${2} # Object width or height
-	local CTR
-	local REM
-	local AC
-	local OC
+	local REGION=${1} # Available region
+	local CONTAINER=${2} # Container width or height
 	local COORD
+	local REM=0
+	local C_CTR=0
+	local R_CTR=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	CTR=$(( AREA / 2 ))
-	REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && AC=$(( CTR + 1 )) || AC=${CTR}
+	R_CTR=$(( REGION / 2 ))
+	REM=$(( REGION % 2 ))
+	[[ ${REM} -ne 0 ]] && (( R_CTR++ ))
 
-	CTR=$(( OBJ / 2 ))
-	REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
+	C_CTR=$(( CONTAINER / 2 ))
+	REM=$(( CONTAINER % 2 ))
+	[[ ${REM} -ne 0 ]] && (( C_CTR++ ))
 
-	COORD=$(( AC - OC ))
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:${LINENO}: REGION:${REGION} CENTER:${R_CTR}, CONTAINER:${CONTAINER} CENTER:${C_CTR}"
+
+	COORD=$(( R_CTR - C_CTR ))
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:${LINENO}: CENTER COORD:${COORD}"
 
 	echo ${COORD}
 }

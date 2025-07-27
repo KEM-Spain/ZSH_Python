@@ -306,7 +306,7 @@ set_target () {
 				done
 				echo -n "Choose a file [${WHITE_FG}1..${#PRIORITIZE}${RESET}] or ${WHITE_FG}<ENTER>${RESET} to skip:"
 				read PFN
-				[[ -z ${PFN} ]] && exit_leave $(msg_exit I "Operation cancelled")
+				[[ -z ${PFN} ]] && exit_leave $(err_msg_exit I "Operation cancelled")
 				if [[ ${PFN} -ge 1 && ${PFN} -le ${#PRIORITIZE} ]];then
 					g_TARGET_FILE=$(echo ${PRIORITIZE[${PFN}]} | cut -d'|' -f2)
 					break
@@ -401,7 +401,7 @@ RAW_CMD_LINE=($(fc -lnr | head -1)) # Unexpanded command line
 
 # Validate editor
 if [[ ! -x ${_EDITOR_CMD} ]];then
-	exit_leave $(msg_exit W "_EDITOR_CMD${RESET}:${_EDITOR_CMD} is not a valid executable${RESET}.")
+	exit_leave $(err_msg_exit W "_EDITOR_CMD${RESET}:${_EDITOR_CMD} is not a valid executable${RESET}.")
 fi
 
 # Catch missing argument
@@ -442,7 +442,7 @@ if [[ ${IGNORE_CACHE} == "false" ]];then
 				CACHED_FN=${CACHED_TARGETS[${T}]}
 			else
 				msg_box -p -PK "Cache returned a non-existent file:${CACHED_TARGETS[${T}]}"
-				exit_leave $(msg_exit E "File:${CACHED_TARGETS[${T}]} is not editable")
+				exit_leave $(err_msg_exit E "File:${CACHED_TARGETS[${T}]} is not editable")
 			fi
 		fi
 	done
@@ -469,7 +469,7 @@ else
 		# Cache this edit
 		write_cache "${FILE_ARG}" "${FN}"
 	else
-		exit_leave $(msg_exit W "No candidate found for:${FILE_ARG}")
+		exit_leave $(err_msg_exit W "No candidate found for:${FILE_ARG}")
 	fi
 fi
 

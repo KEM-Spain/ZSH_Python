@@ -173,7 +173,7 @@ while getopts ${OPTSTR} OPTION;do
 	  l) if is_valid_int ${OPTARG};then
            g_LIMIT=${OPTARG}
         else
-			  exit_leave $(msg_exit W "Invalid integer")
+			  exit_leave $(err_msg_exit W "Invalid integer")
         fi;;
      p) PRINT_PATHS=true;;
      s) GET_SIZE=true;;

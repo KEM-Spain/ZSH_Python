@@ -30,43 +30,42 @@ _TAG=''
 
 # Functtons
 sel_box_ctr_txt () {
-	local BOX_LEFT=${1};shift # Box Y coord
-	local BOX_WIDTH=${1};shift # Box W coord
-	local TXT=${@} # Text to center
-	local BOX_CTR_X=0
+	local CONTAINER_LEFT=${1};shift # Container Y coord
+	local CONTAINER_WIDTH=${1};shift # Container width
+	local CONTENT=${@} # Text to center
+	local CONTAINER_CTR_X=0
+	local CONTENT_CTR_X=0
+	local CONTENT_LEN=0
 	local CTR_X=0
 	local REM=0
-	local TXT_CTR_X=0
-	local TXT_LEN=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	TXT=$(msg_nomarkup ${TXT})
+	CONTENT=$(msg_nomarkup ${CONTENT})
 
-	if validate_is_integer ${TXT};then # Accept either strings or integers
-		TXT_LEN=${TXT}
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: GOT INTEGER FOR TXT_LEN"
+	if validate_is_integer ${CONTENT};then # Accept either strings or integers
+		CONTENT_LEN=${CONTENT}
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: GOT INTEGER FOR CONTENT_LEN"
 	else
-		TXT_LEN=${#TXT}
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: GOT STRING FOR TXT_LEN"
+		CONTENT=$(str_no_ansi ${CONTENT})
+		CONTENT_LEN=${#CONTENT}
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: GOT STRING FOR CONTENT_LEN"
 	fi
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ARGC:${#@} TXT:${TXT} TXT_LEN:${TXT_LEN}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ARGS: CONTAINER_LEFT=${CONTAINER_LEFT}, CONTAINER_WIDTH=${CONTAINER_WIDTH}, CONTENT=${CONTENT}"
 
-	CTR_X=$(( TXT_LEN / 2 )) && REM=$(( TXT_LEN % 2 ))
-	[[ ${REM} -ne 0 ]] && TXT_CTR_X=$(( CTR_X + 1 )) || TXT_CTR_X=${CTR_X}
+	CTR_X=$(( CONTAINER_WIDTH / 2 )) && REM=$(( CONTAINER_WIDTH % 2 ))
+	[[ ${REM} -ne 0 ]] && CONTAINER_CTR_X=$(( CTR_X++ )) || CONTAINER_CTR_X=${CTR_X}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR_X='$(( TXT_LEN / 2 )) && REM=$(( CTR_X % 2 ))':$(( TXT_LEN / 2 )) && REM:$(( CTR_X % 2 ))"
+	CTR_X=$(( CONTENT_LEN / 2 )) && REM=$(( CONTENT_LEN % 2 ))
+	[[ ${REM} -ne 0 ]] && CONTENT_CTR_X=$(( CTR_X++ )) || CONTENT_CTR_X=${CTR_X}
 
-	CTR_X=$(( BOX_WIDTH / 2 )) && REM=$(( BOX_WIDTH % 2 ))
-	[[ ${REM} -ne 0 ]] && BOX_CTR_X=$(( CTR_X + 1 )) || BOX_CTR_X=${CTR_X}
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CONTAINER_WIDTH:${CONTAINER_WIDTH} CONTENT_LEN:${CONTENT_LEN}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CONTAINER_CTR_X:${CONTAINER_CTR_X} CONTENT_CTR_X:${CONTENT_CTR_X}"
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR_X='$(( BOX_WIDTH / 2 )) && REM=$(( CTR_X % 2 ))':$(( BOX_WIDTH / 2 )) && REM=$(( CTR_X % 2 ))"
+	CTR_X=$(( CONTAINER_LEFT + (CONTAINER_CTR_X - CONTENT_CTR_X) ))
 
-	CTR_X=$(( BOX_LEFT + BOX_CTR_X - TXT_CTR_X ))
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CTR_X='$(( BOX_LEFT + BOX_CTR_X - TXT_CTR_X ))': $(( BOX_LEFT + BOX_CTR_X - TXT_CTR_X ))"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_LEFT:${BOX_LEFT} BOX_CTR_X:${BOX_CTR_X} TXT_CTR_X:${TXT_CTR_X}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CONTAINER CENTERED CONTENT:${CTR_X}"
 
 	echo ${CTR_X}
 }
@@ -205,7 +204,7 @@ sel_list () {
 	local OB_Y=0
 	local OB_Y_OFFSET=4
 	local PAGING=false
-	local PAGE_HDR=''
+	local LIST_HDR=''
 	local L
 
 	local OPTION=''
@@ -218,8 +217,8 @@ sel_list () {
 	local HAS_MAP=false
 	local HAS_OUTER=false
 	local IB_COLOR=${RESET}
-	local LIST_FTR=''
-	local LIST_HDR=''
+	local FRAME_FTR=''
+	local FRAME_HDR=''
 	local LIST_MAP=''
 	local LM=0
 	local MAX=0
@@ -238,8 +237,8 @@ sel_list () {
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 	   C) _HAS_CAT=true;;
-		F) HAS_FTR=true;LIST_FTR=${OPTARG};;
-		H) HAS_HDR=true;LIST_HDR=${OPTARG};;
+		F) HAS_FTR=true;FRAME_FTR=${OPTARG};;
+		H) HAS_HDR=true;FRAME_HDR=${OPTARG};;
 	   I) IB_COLOR=${OPTARG};;
 		M) HAS_MAP=true;LIST_MAP=${OPTARG};;
 	   O) HAS_OUTER=true;OB_COLOR=${OPTARG};;
@@ -305,13 +304,13 @@ sel_list () {
 
 		_PAGE_TOPS=($(sel_set_pages ${#_LIST} ${LIST_H})) # Create table of page top indexes
 
-		PAGE_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
+		LIST_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
 
 		# Decorations w/o markup
-		NM_H=$(msg_nomarkup ${LIST_HDR})
-		NM_F=$(msg_nomarkup ${LIST_FTR})
+		NM_H=$(msg_nomarkup ${FRAME_HDR})
+		NM_F=$(msg_nomarkup ${FRAME_FTR})
 		NM_M=$(msg_nomarkup ${LIST_MAP})
-		NM_P=$(msg_nomarkup ${PAGE_HDR})
+		NM_P=$(msg_nomarkup ${LIST_HDR})
 
 		[[ ${_PAGE_TOPS[MAX]} -gt 1 ]] && PAGING=true
 
@@ -324,7 +323,7 @@ sel_list () {
 
 		# Widest decoration - inner box, header, footer, map, paging, or exit msg
 		MAX=$(max ${BOX_W} ${#NM_H} ${#NM_F} ${MH} ${PH} ${_EXIT_BOX}) # Add padding for MAP
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} LIST_HDR:${#NM_H} LIST_FTR:${#NM_F} LIST_MAP:${MH} PAGE_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} FRAME_HDR:${#NM_H} FRAME_FTR:${#NM_F} LIST_MAP:${MH} LIST_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
 
 		# Handle outer box coords
 		if [[ ${HAS_OUTER} == 'true' ]];then
@@ -365,9 +364,9 @@ sel_list () {
 		else
 			HDR_X=$(( BOX_X - 1 ))
 			HDR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_H})
-			[[ -n ${PAGE_HDR} ]] && MAP_X=$(( BOX_BOT + 1 )) || MAP_X=${BOX_BOT} # Move map down if blocked
+			[[ -n ${LIST_HDR} ]] && MAP_X=$(( BOX_BOT + 1 )) || MAP_X=${BOX_BOT} # Move map down if blocked
 			MAP_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_M})
-			[[ -n ${LIST_MAP} || -n ${PAGE_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${BOX_BOT} # Move footer down if blocked
+			[[ -n ${LIST_MAP} || -n ${LIST_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${BOX_BOT} # Move footer down if blocked
 			FTR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_F})
 			PGH_X=${BOX_BOT}
 			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_P})
@@ -379,7 +378,7 @@ sel_list () {
 		# Set coords for region clearing
 		local R_H=$(max $(( FTR_X - BOX_X )) $(( MAP_X - BOX_X )) $(( PGH_X - BOX_X )) ${BOX_H}) 
 		local R_Y=$(min ${HDR_Y} ${MAP_Y} ${FTR_Y} ${PGH_Y} ${BOX_Y})
-		local R_W=$(max ${#LIST_HDR} ${#LIST_MAP} ${#LIST_FTR} ${#PAGE_HDR} ${BOX_W})
+		local R_W=$(max ${#FRAME_HDR} ${#LIST_MAP} ${#FRAME_FTR} ${#LIST_HDR} ${BOX_W})
 
 		# Store REGION clearing coords
 		box_coords_set REGION X ${HDR_X} Y ${R_Y} W ${R_W} H ${R_H} OB_W ${OB_W} OB_Y ${OB_Y} # For display region clearing if needed
@@ -395,8 +394,8 @@ sel_list () {
 		_LIST_DATA[BOX_W]=${BOX_W}
 		_LIST_DATA[BOX_Y]=${BOX_Y}
 		_LIST_DATA[CLEAR_REGION]=${CLEAR_REGION}
-		_LIST_DATA[FTR]=${LIST_FTR}
-		_LIST_DATA[HDR]=${LIST_HDR}
+		_LIST_DATA[FTR]=${FRAME_FTR}
+		_LIST_DATA[HDR]=${FRAME_HDR}
 		_LIST_DATA[H]=${LIST_H}
 		_LIST_DATA[MAP]=${LIST_MAP}
 		_LIST_DATA[PAGING]=${PAGING}
@@ -541,10 +540,10 @@ sel_scroll () {
 		if [[ ${_LIST_DATA[PAGING]} == 'true' ]];then
 			tcup ${_LIST_DATA[PGH_X]} ${_LIST_DATA[PGH_Y]};echo -n $(msg_markup "Page <w>${PAGE}<N> of <w>${_PAGE_TOPS[MAX]}<N> <m>${_DMD}<N> (<w>N<N>)ext (<w>P<N>)rev")
 		else
-			PAGE_HDR="Showing <w>${#_LIST}<N> ${(C)$(str_pluralize item ${#_LIST})}"
-			NM_P=$(msg_nomarkup ${PAGE_HDR})
+			LIST_HDR="Showing <w>${#_LIST}<N> ${(C)$(str_pluralize item ${#_LIST})}"
+			NM_P=$(msg_nomarkup ${LIST_HDR})
 			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_P})
-			tcup ${_LIST_DATA[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${PAGE_HDR})
+			tcup ${_LIST_DATA[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${LIST_HDR})
 		fi
 
 		sel_disp_page # Display list items

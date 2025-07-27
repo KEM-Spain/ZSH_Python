@@ -206,7 +206,7 @@ if [[ ${USE_LOCAL_REPO} == 'true' ]];then
 	if [[ -e ${PWD}/.git ]];then
 		_GIT_REPO_DIR=${PWD}
 	else
-		exit_leave $(msg_exit R "Option -L -> No .git repository found in:${PWD}")
+		exit_leave $(err_msg_exit R "Option -L -> No .git repository found in:${PWD}")
 	fi
 else
 	msg_box -t2 "Using repo:${_GIT_REPO}"
@@ -223,7 +223,7 @@ if [[ -n ${_FN_ARG} ]];then
 	dbg "${0}: Executing find ${_GIT_REPO_DIR} -name ${_FN_ARG} -type f"
 	FLIST=("${(f)$(find ${_GIT_REPO_DIR} -name ${_FN_ARG} -type f)}")
 	dbg "${0}: find returned a list of ${#FLIST} -> FLIST:${FLIST}"
-	[[ -z ${FLIST} ]] && exit_leave $(msg_exit E "File:${@} not found")
+	[[ -z ${FLIST} ]] && exit_leave $(err_msg_exit E "File:${@} not found")
 
 	NDX=0
 	if [[ ${#FLIST} -gt 1 ]];then

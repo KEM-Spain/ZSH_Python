@@ -110,7 +110,7 @@ action_do () {
 	local ERROR_CNT=0
 	local ETA=''
 	local ETA_COMPLETE=false
-	local FRAME_PAD=4
+	local FRAME_PAD=8
 	local HAD_ERROR=false
 	local HDR1_TXT=0
 	local HDR2_TXT=0
@@ -143,7 +143,7 @@ action_do () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	# Why this?
+	# TODO: Why this?
 	for M in ${_MARKED};do
 		list_set_selected ${M} ${_AVAIL_ROW}
 	done
@@ -279,7 +279,7 @@ action_do () {
 				HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
-				HDR_LEN=$(( HDR_LEN + FRAME_PAD + 4 ))
+				HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
 				HRZ_CTR=$(coord_center ${_MAX_COLS} ${HDR_LEN}) # Horiz center
 				[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
 				msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
@@ -546,9 +546,9 @@ download_indicator () {
 	local L_SIDE="\\u2770"
 	local R_SIDE="\\u2771"
 	local MASK=""
-	local MASK_Y=8
+	local IND_X=$(( _ALERT_COORDS[X] ))
+	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
 	local OBJ_COLOR="${BOLD}${GREEN_FG}"
-	local X=$(( _ALERT_COORDS[X] ))
 
 	case ${LINE:l} in
 		*mib*) BORDER_COLOR="${BOLD}${MAGENTA_FG}";;
@@ -574,7 +574,7 @@ download_indicator () {
 	(( g_MASK_NDX++))
 	[[ ${g_MASK_NDX} -gt 3 ]] && g_MASK_NDX=1
 
- 	tcup ${X} $(( _ALERT_COORDS[Y] + MASK_Y )) && echo -n "${MASK}" && sleep ${DELAY}
+ 	tcup ${IND_X} ${IND_Y} && echo -n "${MASK}" && sleep ${DELAY}
 }
 
 download_select () {
@@ -1305,7 +1305,7 @@ query_rumble () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL ${STR} SEARCH${RESET}"
 
 	g_SEARCH_TYPE=channel
-	#This may be of use - investigate
+	#This URL tag may be of use - investigate
 	#&sort=date&section=sort 
 
 	if [[ ${LIVE} == 'true' ]];then
@@ -1519,9 +1519,9 @@ query_youtube () {
 		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
 		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
-			if perl -wln -e "if (/\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
+			#if perl -wln -e "if (/\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en)
-			fi
+			#fi
 		fi
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
@@ -1570,9 +1570,9 @@ total_rejects () {
 
 website () {
 	case ${1} in
-		yt) firefox "https://www.youtube.com/feed/subscriptions" 2>/dev/null &;;
-		ru) firefox "https://www.rumble.com/subscriptions" 2>/dev/null &;;
-		*) exit_leave $(msg_exit E "Enter yt for YouTube, ru for Rumble")
+		y) firefox "https://www.youtube.com/feed/subscriptions" >/dev/null 2>&1 &;;
+		r) firefox "https://www.rumble.com/subscriptions" >/dev/null 2>&1 &;;
+		*) exit_leave $(msg_exit E "Enter y for YouTube, r for Rumble")
 	esac
 }
 
@@ -1624,7 +1624,7 @@ usage () {
 	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-u${RESET} export the video URL"
-	echo -e "${WHITE_FG}-w${RESET} $(opt_type w) Goto website (yt/ru)"
+	echo -e "${WHITE_FG}-w${RESET} $(opt_type w) Goto website (y/r)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
