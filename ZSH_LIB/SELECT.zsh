@@ -279,8 +279,8 @@ sel_list () {
 		[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 )) # Categories get extra padding
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
 
-		[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(coord_center ${_MAX_ROWS} ${BOX_H}) || BOX_X=${X_COORD_ARG}
-		[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(coord_center ${_MAX_COLS} ${BOX_W}) || BOX_Y=${Y_COORD_ARG}
+		[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(center -v${BOX_H}) || BOX_X=${X_COORD_ARG}
+		[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(center -h${BOX_W}) || BOX_Y=${Y_COORD_ARG}
 
 		# Set field widths for lists having categories
 		if [[ ${_HAS_CAT} == 'true' ]];then

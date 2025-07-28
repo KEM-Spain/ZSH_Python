@@ -620,7 +620,7 @@ list_search_get_key () {
 list_search_new () {
 	local PAGE=${1}
 	local HDR=''
-	local HL=0
+	local HDR_LEN=0
 	local H_CTR=0
 	local HEIGHT=7
 	local PROMPT=''
@@ -636,10 +636,10 @@ list_search_new () {
 	_TARGET_PAGE=''
 
 	HDR="<m>$(str_unicode_line 12) List Search (Next:<w>><m>, Prev:<w><<m>) $(str_unicode_line 12)<N>"
-	HL=$(msg_nomarkup ${HDR});HL=${#HL}
+	HDR=$(msg_nomarkup ${HDR});HDR_LEN=${#HDR}
 
 	V_CTR=$(( _MAX_ROWS/2 - 4 )) # Vertical center
-	H_CTR=$(coord_center $(( _MAX_COLS - 3 )) ${HL}) # Horiz center
+	H_CTR=$(center -h${HDR_LEN}) # Horiz center
 
 	for (( ROW=1; ROW<=HEIGHT + 1; ROW++ ));do # Clear a space to place the UI
 		tcup $(( V_CTR + ROW - 3 )) $(( H_CTR -3 ))

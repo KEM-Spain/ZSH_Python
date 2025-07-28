@@ -280,7 +280,7 @@ action_do () {
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
-				HRZ_CTR=$(coord_center ${_MAX_COLS} ${HDR_LEN}) # Horiz center
+				HRZ_CTR=$(center -h${HDR_LEN}) # Horiz center
 				[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
 				msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 				msg_box -C -jl ${HDR2_TXT}
@@ -411,7 +411,7 @@ action_warn () {
 
 box_center () {
 	local TXT=${@} # Text to center
-	local BOX=4 # Compensate for box border
+	local BOX=-4 # Compensate for box border
 	local BOX_CTR=0
 	local BOX_LEFT=${_CONT_COORDS[Y]} # Left coord
 	local BOX_WIDTH=${_CONT_COORDS[W]} # Width coord
@@ -420,13 +420,7 @@ box_center () {
 	local TXT_CTR=0
 	local TXT_LEN=$(( ${#TXT} + BOX )) # Text length
 
-	CTR=$(( TXT_LEN / 2 )) && REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && TXT_CTR=$(( CTR + 1 )) || TXT_CTR=${CTR}
-
-	CTR=$(( BOX_WIDTH / 2 )) && REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && BOX_CTR=$(( CTR + 1 )) || BOX_CTR=${CTR}
-
-	echo $(( BOX_LEFT + BOX_CTR - TXT_CTR ))
+	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT})
 }
 
 clean_author () {
@@ -852,25 +846,6 @@ get_av_codes () {
 	echo "${VIDEO_CODE}+${AUDIO_CODE}"
 }
 
-get_box_center () {
-	local OBJ=$(( ${#1} + 4 ))
-	local AREA=$(( _CONT_COORDS[Y] + _CONT_COORDS[W] ))
-	local CTR
-	local REM
-	local AC
-	local OC
-
-	CTR=$(( AREA / 2 ))
-	REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && AC=$(( CTR + 1 )) || AC=${CTR}
-
-	CTR=$(( OBJ / 2 ))
-	REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
-
-	echo $(( AC - OC + 1 ))
-}
-
 get_field () {
 	local FIELD=${1}
 	local NDX=${2}
@@ -1279,7 +1254,7 @@ query_rumble () {
 	local NDX=''
 	local PG=''
 	local REL_W=$(( ${LAST_MSG[W]} + 4 ))
-	local REL_Y=$(coord_center ${_MAX_COLS} ${REL_W})
+	local REL_Y=$(center -h${REL_W})
 	local STR=''
 	local K V T
 
@@ -1473,7 +1448,7 @@ query_youtube () {
 		[[ ${LINE:l} =~ 'matched' ]] && DATA=true && continue
 
 		[[ ${LINE:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
-		[[ ${LINE:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(msg_exit E "${PROXY_CMD} returned an error")
+		[[ ${LINE:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
 
 		((NDX++))
 		[[ ${LINE:l} =~ 'rejected' ]] && _REJECTS[${NDX}]=true || _REJECTS[${NDX}]=false
@@ -1572,7 +1547,7 @@ website () {
 	case ${1} in
 		y) firefox "https://www.youtube.com/feed/subscriptions" >/dev/null 2>&1 &;;
 		r) firefox "https://www.rumble.com/subscriptions" >/dev/null 2>&1 &;;
-		*) exit_leave $(msg_exit E "Enter y for YouTube, r for Rumble")
+		*) exit_leave $(err_msg_exit E "Enter y for YouTube, r for Rumble")
 	esac
 }
 
@@ -1702,18 +1677,18 @@ if [[ ${g_QRY_ENGINE} == 'youtube' ]];then
 	elif [[ ${g_STRICT} == 'true' ]];then
 		SEARCHTERM="-s ${(qqq)SEARCHTERM}"
 	elif [[ ${g_PREFER_LIVE} == 'true' ]];then
-		exit_leave $(msg_exit E "Option:-L is a Rumble only option")
+		exit_leave $(err_msg_exit E "Option:-L is a Rumble only option")
 	fi
 	g_PROXY_CMD="node ${_JS_SCRIPT} ${SEARCHTERM}"
 else
 	if [[ ${VERSION_OPT} == 'true'  ]];then
-		exit_leave $(msg_exit E "Option:-V is a YouTube only option")
+		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")
 	elif [[ ${g_FIX_AUDIO} == 'true'  ]];then
-		exit_leave $(msg_exit E "Option:-A is a YouTube only option")
+		exit_leave $(err_msg_exit E "Option:-A is a YouTube only option")
 	elif [[ -n ${AGE} ]];then
-		exit_leave $(msg_exit E "Option:-a is a YouTube only option")
+		exit_leave $(err_msg_exit E "Option:-a is a YouTube only option")
 	elif [[ ${g_STRICT} == 'true' ]];then
-		exit_leave $(msg_exit E "Option:-s is a YouTube only option")
+		exit_leave $(err_msg_exit E "Option:-s is a YouTube only option")
 	fi
 fi
 

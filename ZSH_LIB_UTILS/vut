@@ -187,7 +187,7 @@ ___EOF
 	if [[ ${#} -eq 0 ]];then
 		LIST=("${(f)$(find . -maxdepth 1 -type f -regex "${_VID_REGEX_F}")}")
 	else
-		LIST=(${@})
+		[[ -e ${@} ]] && LIST=(${@}) || exit_leave $(err_msg_exit E "File not found:${@}")
 	fi
 
 	HIT=false
@@ -199,7 +199,7 @@ ___EOF
 		[[ ${#L} -gt ${LONGEST} ]] && LONGEST=${#L}
 	done
 
-	[[ ${HIT} == 'false' ]] && exit_leave "No video files found in ${PWD}/${@}"
+	[[ ${HIT} == 'false' ]] && exit_leave "No video files found in ${PWD}"
 
 	tcup 0 0
 	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"

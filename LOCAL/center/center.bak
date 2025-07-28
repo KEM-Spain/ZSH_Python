@@ -30,6 +30,10 @@ _SCRIPT=${0:t}
 _SCRIPT_TAG="${WHITE_FG}[${RESET}${_SCRIPT}${WHITE_FG}]${RESET}"
 _TERM_WIDTH=$(tput cols)
 _TERM_HEIGHT=$(tput lines)
+_REG_WIDTH=0
+_REG_HEIGHT=0
+_X_OFFSET=0
+_Y_OFFSET=0
 
 get_center () {
 	local WIDTH=${1}
@@ -41,6 +45,25 @@ get_center () {
 	[[ ${REM} -ne 0 ]] && (( CENTER++ ))
 
 	echo ${CENTER}
+}
+
+test_region () {
+	local HORZ_CTR=${1}
+	local VERT_CTR=${2}
+
+	clear
+	cursor_off
+	tcup 0 ${HORZ_CTR};echo -n "|"
+	tcup ${VERT_CTR} ${HORZ_CTR};echo -n "+"
+	tcup 0 0;echo -n "HORZ_CTR:${HORZ_CTR}"
+	tcup ${VERT_CTR} 0;echo -n "VERT_CTR:${VERT_CTR}"
+	tcup 2 0;echo -n "REGION_WIDTH:${_REG_WIDTH}"
+	tcup 3 0;echo -n "REGION_HEIGHT:${_REG_HEIGHT}"
+	tcup 4 0;echo -n "OFFSETS: HORZ:${_Y_OFFSET}, VERT:${_X_OFFSET}"
+	tcup $(( VERT_CTR + 2 )) 0;echo -n "${WHITE_FG}Press any key${RESET}"
+	read
+	cursor_on
+	clear
 }
 
 test_horz () {
@@ -63,6 +86,9 @@ test_horz () {
 	((NDX++))
 	tcup 0 $(( CONT_REF + CONT_WIDTH - 1 ));echo -n "|"
 	tcup 0 0;echo -n "CONTAINER WIDTH:${NDX}"
+	tcup 1 0;echo -n "CONTAINER REF:${CONT_REF}"
+	tcup 2 0;echo -n "OFFSET:${_Y_OFFSET}"
+	tcup 4 0;echo -n "${WHITE_FG}Press any key${RESET}"
 	read
 	cursor_on
 	clear
@@ -90,6 +116,9 @@ test_vert () {
 	((NDX++))
 	tcup $(( CONT_REF + CONT_HEIGHT - 1 )) 80;echo "---"
 	tcup 0 0;echo -n "CONTAINER HEIGHT:${NDX}"
+	tcup 1 0;echo -n "CONTAINER REF:${CONT_REF}"
+	tcup 2 0;echo -n "OFFSET:${_X_OFFSET}"
+	tcup 4 0;echo -n "${WHITE_FG}Press any key${RESET}"
 	read
 	cursor_on
 	clear
@@ -106,15 +135,20 @@ test_text () {
 
 	clear
 	cursor_off
-	tcup 0 ${CONT_REF};echo -n "|"
+	tcup ${_X_OFFSET} ${CONT_REF};echo -n "|"
 	NDX=1
 	for X in {1..$(( CONT_WIDTH - 2 ))};do
 		((NDX++))
 	done
 	((NDX++))
-	tcup 0 $(( CONT_REF + CONT_WIDTH - 1 ));echo -n "|"
+	tcup ${_X_OFFSET} $(( CONT_REF + CONT_WIDTH - 1 ));echo -n "|"
 	tcup 0 0;echo -n "CONTAINER WIDTH:${NDX}"
-	tcup 0 ${TEXT_REF};echo -n ${TEXT}
+	tcup 1 0;echo -n "CONTAINER REF:${CONT_REF}"
+	tcup 2 0;echo -n "TEXT WIDTH:${#TEXT}"
+	tcup 3 0;echo -n "TEXT REF:${TEXT_REF}"
+	tcup 4 0;echo -n "OFFSETS: HORZ:${_Y_OFFSET}, VERT:${_X_OFFSET}"
+	tcup ${_X_OFFSET} ${TEXT_REF};echo -n ${TEXT}
+	tcup 6 0;echo -n "${WHITE_FG}Press any key${RESET}"
 	read
 	cursor_on
 	clear
@@ -126,7 +160,9 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-This script does...
+Provide centering coordinates for cursor placements
+\tDefault region is terminal
+\tRedefining region coords is experimental and may be removed in the future
 EOF
 
 parse_opts () {
@@ -154,9 +190,12 @@ opt_type () {
 	case ${OPT} in
 		h) echo "<INT>";;
 		o) echo "<INT>";;
+		r) echo "<COORDS>";;
 		s) echo "<STRING>";;
 		t) echo "<INT>";;
 		v) echo "<INT>";;
+		x) echo "<INT>";;
+		y) echo "<INT>";;
 	esac
 }
 
@@ -171,41 +210,42 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [ <CONTENT_TEXT> ]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-X${RESET} returns region horizontal center"
-	echo -e "${WHITE_FG}-Y${RESET} returns region vertical center"
+	echo -e "${WHITE_FG}-R${RESET} returns region X/Y center"
 	echo -e "${WHITE_FG}-T${RESET} test mode"
 	echo -e "${WHITE_FG}-h$(opt_type h)${RESET} Horizontal center - expects container width"
-	echo -e "${WHITE_FG}-o$(opt_type o)${RESET} Offset - expects width or height offset (+/-)"
+	echo -e "${WHITE_FG}-r$(opt_type r)${RESET} $(opt_type s) Override region defaults i.e. XX:YY"
 	echo -e "${WHITE_FG}-t$(opt_type t)${RESET} $(opt_type s) Text center - expects container width and $(opt_type s)"
 	echo -e "${WHITE_FG}-v$(opt_type v)${RESET} Vertical center - expects container height"
+	echo -e "${WHITE_FG}-x$(opt_type x)${RESET} Vertical offset"
+	echo -e "${WHITE_FG}-y$(opt_type y)${RESET} Horizontal offset"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDXYTh:o:t:v:"
+OPTSTR=":HDRTh:r:t:v:x:y:"
 OPTIND=0
 
-REGION_X=false
-REGION_Y=false
+REGION=false
 HORZ=false
 VERT=false
 TEXT=false
 TEST_MODE=false
-OFFSET=false
+REG_OVERRIDE=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     X) REGION_X=true;;
-     Y) REGION_Y=true;;
+     R) REGION=true;;
      T) TEST_MODE=true;;
 	  h) HORZ=true;CONTAINER_WIDTH=${OPTARG};;
-	  o) OFFSET=true;OFFSET_VALUE=${OPTARG};;
+	  r) REG_OVERRIDE=true;REG_COORDS=${OPTARG};;
 	  t) TEXT=true;CONTAINER_WIDTH=${OPTARG};;
 	  v) VERT=true;CONTAINER_HEIGHT=${OPTARG};;
+	  x) _X_OFFSET=${OPTARG};;
+	  y) _Y_OFFSET=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -224,29 +264,38 @@ if [[ ${TEXT} == 'true' ]];then
 	fi
 fi
 
-TERM_HORZ_CTR=$(get_center ${_TERM_WIDTH})
-TERM_HORZ_CTR=$(( TERM_HORZ_CTR + OFFSET_VALUE ))
-if [[ ${REGION_Y} == 'true' ]];then
-	echo ${TERM_HORZ_CTR} && return
+if [[ ${REG_OVERRIDE} == 'false' ]];then
+	_REG_WIDTH=${_TERM_WIDTH}
+	_REG_HEIGHT=${_TERM_HEIGHT}
+else
+	_REG_WIDTH=$(cut -d: -f1 <<<${REG_COORDS})
+	_REG_HEIGHT=$(cut -d: -f2 <<<${REG_COORDS})
 fi
 
-TERM_VERT_CTR=$(get_center ${_TERM_HEIGHT})
-TERM_VERT_CTR=$(( TERM_VERT_CTR + OFFSET_VALUE ))
-if [[ ${REGION_X} == 'true' ]];then
-	echo ${TERM_VERT_CTR} && return
+[[ ${CONTAINER_HEIGHT} -gt ${_REG_HEIGHT} ]] && exit_leave $(err_msg_exit E "Invalid argument:<CONTAINER_HEIGHT>:exceeds region height (${_REG_HEIGHT})")
+[[ ${CONTAINER_WIDTH} -gt ${_REG_WIDTH} ]] && exit_leave $(err_msg_exit E "Invalid argument:<CONTAINER_WIDTH>:exceeds region width (${_REG_WIDTH})")
+
+REG_HORZ_CTR=$(get_center ${_REG_WIDTH})
+REG_HORZ_CTR=$(( REG_HORZ_CTR + _Y_OFFSET ))
+REG_VERT_CTR=$(get_center ${_REG_HEIGHT})
+REG_VERT_CTR=$(( REG_VERT_CTR + _X_OFFSET ))
+
+if [[ ${REGION} == 'true' ]];then
+	[[ ${TEST_MODE} == 'true' ]] && test_region ${REG_HORZ_CTR} ${REG_VERT_CTR} && exit_leave
+	echo ${REG_HORZ_CTR}:${REG_VERT_CTR} && return
 fi
 
 CONT_HORZ_CTR=$(get_center ${CONTAINER_WIDTH})
-CONT_HORZ_REF=$(( TERM_HORZ_CTR - CONT_HORZ_CTR ))
-CONT_HORZ_REF=$(( CONT_HORZ_REF + OFFSET_VALUE ))
+CONT_HORZ_REF=$(( REG_HORZ_CTR - CONT_HORZ_CTR ))
+CONT_HORZ_REF=$(( CONT_HORZ_REF + _Y_OFFSET ))
 if [[ ${HORZ} == 'true' ]];then
 	[[ ${TEST_MODE} == 'true' ]] && test_horz ${CONT_HORZ_REF} ${CONTAINER_WIDTH} && exit_leave
 	echo ${CONT_HORZ_REF} && return
 fi
 
 CONT_VERT_CTR=$(get_center ${CONTAINER_HEIGHT})
-CONT_VERT_REF=$(( TERM_VERT_CTR - CONT_VERT_CTR ))
-CONT_VERT_REF=$(( CONT_VERT_REF + OFFSET_VALUE ))
+CONT_VERT_REF=$(( REG_VERT_CTR - CONT_VERT_CTR ))
+CONT_VERT_REF=$(( CONT_VERT_REF + _X_OFFSET ))
 if [[ ${VERT} == 'true' ]];then
 	[[ ${TEST_MODE} == 'true' ]] && test_vert ${CONT_VERT_REF} ${CONTAINER_HEIGHT} && exit_leave
 	echo ${CONT_VERT_REF} && return

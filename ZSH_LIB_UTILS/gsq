@@ -127,7 +127,7 @@ edit_box () {
 	{
 	# Clear space around input
 	for ((ROW=-1;ROW<=7;ROW++));do
-		tput cup $(( M_COORDS[X] + ROW )) $(coord_center ${_MAX_COLS} ${#HDR})
+		tput cup $(( M_COORDS[X] + ROW )) $(center -h${#HDR})
 		tput ech ${#HDR}
 	done
 

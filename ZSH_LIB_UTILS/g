@@ -142,8 +142,8 @@ while getopts ${OPTSTR} OPTION;do
      t) FTYPE=${OPTARG};;
      v) GO_INVERT='-v';;
      w) GO_WORD='-w';;
-     :) print -u2 "${_SCRIPT}: Option: -${OPTARG} requires an argument"; usage;;
-    \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+     :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
 done
 shift $(( OPTIND - 1 ))
