@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="ARRAY.zsh DBG.zsh STR.zsh TPUT.zsh UTILS.zsh"
+_DEPS_+="ARRAY.zsh CENTER.zsh DBG.zsh STR.zsh TPUT.zsh UTILS.zsh"
 
 # LIB Declarations
 typeset -a _CONT_BUFFER=()

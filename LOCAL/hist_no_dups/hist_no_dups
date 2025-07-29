@@ -82,7 +82,7 @@ size_diff () {
 	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
 	PCT=$(( ${DIFF}.0 / ${AVG}.0 * 100 ))
 
-	printf "History growth:${WHITE_FG}%.2f%%${RESET} C:%d L:%d" ${PCT} ${CUR_SIZE} ${LAST_SIZE}
+	printf "History growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
 	if [[ (( ${PCT} < ${THRESHOLD})) ]];then
 		return 1
 	else

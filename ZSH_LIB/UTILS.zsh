@@ -286,10 +286,10 @@ cmd_get_raw () {
 coord_center () {
 	local REGION=${1} # Available region
 	local CONTAINER=${2} # Container width or height
-	local COORD
-	local REM=0
-	local C_CTR=0
-	local R_CTR=0
+		local COORD
+		local REM=0
+		local C_CTR=0
+		local R_CTR=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -617,15 +617,17 @@ key_wait () {
 }
 
 logit () {
-	local LOG
-	local MSG
+	local LOG=''
+	local MSG=''
 	local STAMP=$(date +'%Y-%m-%d_%H:%M:')
 
+	# Collect args
 	[[ ${#} -gt 1 ]] && LOG=${1} && shift
 	MSG=${@}
 
-	[[ -z ${LOG} ]] && LOG=${_LOG} # _LOG was defined
-	[[ -z ${LOG} ]] && LOG=/tmp/${0}.log} # fall back to default
+	if [[ -z ${LOG} ]];then # No log passed
+		[[ -n ${_LOG} ]] && LOG=${_LOG} || LOG=/tmp/${0}.log} # Assign log
+	fi
 
 	echo "${STAMP} ${MSG}" >> ${LOG}
 }

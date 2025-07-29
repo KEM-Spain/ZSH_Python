@@ -48,6 +48,8 @@ RS_OPTS+=('--delete-excluded') # Exluded here; deleted there
 RS_OPTS+=('--ignore-errors') # Continue through errors
 
 #--Exclude settings for rsync--
+RS_EXCL+=(--exclude='/home/kmiller/node_modules')
+RS_EXCL+=(--exclude='/home/kmiller/.vim/undo')
 RS_EXCL+=(--exclude='lost+found')
 RS_EXCL+=(--exclude='Downloads')
 RS_EXCL+=(--exclude='Videos')
@@ -56,6 +58,10 @@ RS_EXCL+=(--exclude='.cache')
 RS_EXCL+=(--exclude='Cache')
 RS_EXCL+=(--exclude='cache')
 RS_EXCL+=(--exclude='/usr/local/src/yt-dlp/yt_dlp/__pycache__')
+RS_EXCL+=(--exclude='/usr/local/lib/node_modules')
+RS_EXCL+=(--exclude='/usr/local/lib/x86_64-linux-gnu')
+RS_EXCL+=(--exclude='/usr/local/lib/gimp')
+RS_EXCL+=(--exclude='/usr/local/lib/python3.12')
 RS_EXCL+=(--exclude='snap')
 RS_EXCL+=(--exclude='.local/share/flatpak')
 RS_EXCL+=(--exclude='.config/google-chrome')

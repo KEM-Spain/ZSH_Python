@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="ARRAY.zsh DBG.zsh MSG.zsh STR.zsh TPUT.zsh ./UTILS.zsh VALIDATE.zsh"
+_DEPS_+="ARRAY.zsh CENTER.zsh DBG.zsh MSG.zsh STR.zsh TPUT.zsh ./UTILS.zsh VALIDATE.zsh"
 
 # Constants
 _EXIT_BOX=32

@@ -143,11 +143,6 @@ action_do () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	# TODO: Why this?
-	for M in ${_MARKED};do
-		list_set_selected ${M} ${_AVAIL_ROW}
-	done
-
 	for M in ${_MARKED};do
 		((DL_CNT++))
 		_DOWNLOADS[${DL_CNT}]=false
@@ -171,8 +166,7 @@ action_do () {
 		msg_box -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "Download requested..."
 		sleep 3
 
-		# Detect missing log
-		if [[ ! -e ${g_YTS_LOG} ]];then
+		if [[ ! -e ${g_YTS_LOG} ]];then # Detect missing log
 			[[ ${NDX} -gt 10 ]] && exit_leave "${g_YTS_LOG} not detected" # No activity
 		fi
 
@@ -202,7 +196,7 @@ action_do () {
 				continue
 			fi
 
-			# Scan for 'already been downloaded'
+			# Scan for downloaded
 			LOG_LINE=$(grep -m1 -i "already been downloaded" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
@@ -212,7 +206,7 @@ action_do () {
 				break # Scan cycle
 			fi
 
-			# Scan for 'not yet available'
+			# Scan for not available
 			LOG_LINE=$(grep -m1 -i "will begin\|premieres\|upcoming" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
@@ -224,7 +218,7 @@ action_do () {
 				break # Scan cycle
 			fi
 
-			# Scan for 'format not available'
+			# Scan for format not available
 			LOG_LINE=$(grep -m1 -i "format is not available" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
 				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
@@ -234,7 +228,7 @@ action_do () {
 				break # Scan cycle
 			fi
 
-			# Scan for 'unable to download'
+			# Scan for unable to download
 			LOG_LINE=$(grep -m1 -i "unable to download video" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
 				if [[ ${ERROR_CNT} -eq 0 ]];then # Attempt recovery
@@ -255,7 +249,7 @@ action_do () {
 				fi
 			fi
 
-			# Scan for 'resumed'
+			# Scan for resumed
 			INFO_TAG=''
 			LOG_LINE=$(grep -m1 -i "resuming download" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
@@ -420,7 +414,7 @@ box_center () {
 	local TXT_CTR=0
 	local TXT_LEN=$(( ${#TXT} + BOX )) # Text length
 
-	echo $(center -o${BOX} -t${BOX_WIDTH} ${TXT})
+	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT})
 }
 
 clean_author () {
@@ -541,7 +535,7 @@ download_indicator () {
 	local R_SIDE="\\u2771"
 	local MASK=""
 	local IND_X=$(( _ALERT_COORDS[X] + 1 ))
-	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
+	local IND_Y=$(( _ALERT_COORDS[Y] + 6 ))
 	local OBJ_COLOR="${BOLD}${GREEN_FG}"
 
 	case ${LINE:l} in

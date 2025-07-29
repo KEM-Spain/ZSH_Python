@@ -127,7 +127,7 @@ edit_box () {
 	{
 	# Clear space around input
 	for ((ROW=-1;ROW<=7;ROW++));do
-		tput cup $(( M_COORDS[X] + ROW )) $(coord_center ${_MAX_COLS} ${#HDR})
+		tput cup $(( M_COORDS[X] + ROW )) $(center -h${#HDR})
 		tput ech ${#HDR}
 	done
 
@@ -242,7 +242,7 @@ SEARCHTERM=${@}
 _LOCAL_LIST=("${(@f)$(gsettings list-recursively | sort -u | egrep "${SEARCHTERM}" | sed -e 's/: /:/g')}")
 
 if ! arr_is_populated "${_LOCAL_LIST}";then
-	exit_leave $(msg_exit W "No matching entries for:${SEARCHTERM}")
+	exit_leave $(err_msg_exit W "No matching entries for:${SEARCHTERM}")
 fi
 
 if [[ ${DUMPLIST} == 'true' ]];then
