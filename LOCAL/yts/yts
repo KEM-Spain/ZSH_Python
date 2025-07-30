@@ -393,7 +393,7 @@ action_warn () {
 	
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	msg_box -H1 -x${_CONT_COORDS[X]} -p -PG "<w><I>Please respond<N>|<Z>|${#_MARKED} $(str_pluralize ${_OBJECT} ${#_MARKED}) selected"
+	msg_box -H1 -p -PG "<w><I>Please respond<N>|<Z>|${#_MARKED} $(str_pluralize ${_OBJECT} ${#_MARKED}) selected"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do

@@ -290,32 +290,6 @@ cmd_get_raw () {
 	echo ${CMD_LINE}
 }
 
-coord_center () {
-	local REGION=${1} # Available region
-	local CONTAINER=${2} # Container width or height
-		local COORD
-		local REM=0
-		local C_CTR=0
-		local R_CTR=0
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	R_CTR=$(( REGION / 2 ))
-	REM=$(( REGION % 2 ))
-	[[ ${REM} -ne 0 ]] && (( R_CTR++ ))
-
-	C_CTR=$(( CONTAINER / 2 ))
-	REM=$(( CONTAINER % 2 ))
-	[[ ${REM} -ne 0 ]] && (( C_CTR++ ))
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:${LINENO}: REGION:${REGION} CENTER:${R_CTR}, CONTAINER:${CONTAINER} CENTER:${C_CTR}"
-
-	COORD=$(( R_CTR - C_CTR ))
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:${LINENO}: CENTER COORD:${COORD}"
-
-	echo ${COORD}
-}
-
 format_pct () {
 	local ARG=${1}
 	local -F1 P1

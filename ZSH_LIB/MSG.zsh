@@ -38,6 +38,7 @@ msg_box () {
 	local BODY_MAX=0
 	local BOX_X_COORD=0
 	local BOX_Y_COORD=0
+	local BOX_Y_WRITE=0
 	local DELIM_COUNT=0
 	local DTL_NDX=0
 	local FOOTER_MAX=0
@@ -301,6 +302,7 @@ msg_box () {
 
 	BOX_X_COORD=${MSG_X_COORD}
 	BOX_Y_COORD=${MSG_Y_COORD}
+	BOX_Y_WRITE=$(( BOX_Y_COORD + 1 )) # Writable area of box inside frame
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
 	# --- END COORDS SETUP ---
 
@@ -418,7 +420,7 @@ msg_box () {
 				(( DTL_NDX++))
 				MSG_OUT=$(msg_box_align ${TAG} ${H}) # Apply justification
 				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-				tcup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
+				tcup ${SCR_NDX} ${BOX_Y_WRITE} # Place cursor inside box
 				tput ech ${MSG_COLS} # Clear line
 				echo -n "${MSG_OUT}"
 				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}HEADER SCR_NDX${RESET}:${SCR_NDX}"
@@ -435,7 +437,7 @@ msg_box () {
 			(( DTL_NDX++ ))
 			MSG_OUT=$(msg_box_align ${TAG} ${MSG_BODY[${MSG_NDX}]}) # Apply padding
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-			tcup ${SCR_NDX} $(( MSG_Y_COORD + 1 )) # Place cursor inside box
+			tcup ${SCR_NDX} ${BOX_Y_WRITE} # Place cursor inside box
 			tput ech ${MSG_COLS} # Clear line
 			echo -n "${MSG_OUT}"
 
@@ -452,7 +454,7 @@ msg_box () {
 					PAGING_BOT=${SCR_NDX}
 					(( SCR_NDX+=2 )) # Last row
 					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-					tcup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
+					tcup ${SCR_NDX} ${BOX_Y_WRITE} # Place cursor inside box
 					tput ech ${MSG_COLS} # Clear line
 					echo -n "${MSG_OUT}"
 					_MSG_KEY=$(get_keys)
@@ -476,7 +478,7 @@ msg_box () {
 			(( SCR_NDX++))
 			(( DTL_NDX++))
 			MSG_OUT=$(msg_box_align ${TAG} ${MSG_FOOTER[${MSG_NDX}]}) # Apply padding to both sides of msg
-			tcup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
+			tcup ${SCR_NDX} ${BOX_Y_WRITE} # Place cursor inside box
 			tput ech ${MSG_COLS} # Clear line
 			echo -n "${MSG_OUT}"
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}FOOTER SCR_NDX${RESET}:${SCR_NDX}"
