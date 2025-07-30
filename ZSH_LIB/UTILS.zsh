@@ -187,20 +187,27 @@ box_coords_repaint () {
 	local ROW_LIMIT=0
 	local SNDX=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${_SCREEN} ]] && return # Screen cache is empty
 
 	if [[ -z ${TAG} && -e ${LAST_COORDS} ]];then
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: No TAG, getting LAST_COORDS TAG"
 		read TAG < ${LAST_COORDS}
 		/bin/rm -f ${LAST_COORDS}
-		[[ -n ${TAG} ]] && COORDS=($(box_coords_get ${TAG}))
+		if [[ -n ${TAG} ]];then
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Got LAST_COORDS TAG:${TAG}"
+			COORDS=($(box_coords_get ${TAG}))
+		fi
 	fi
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TAG:${TAG} COORDS:${(kv)COORDS}"
 
 	LIST_ROW=$(( COORDS[X] - _LIST_HEADER_LINES + 1 ))
 	ROW_LIMIT=$(( LIST_ROW + COORDS[H] - 1 ))
 
 	for (( LNDX=LIST_ROW; LNDX <= ROW_LIMIT; LNDX++ ));do
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: _SCREEN[LNDX]: ${_SCREEN[${LNDX}]}"
 		[[ -n ${_SCREEN[${LNDX}]} ]] && tput cup $(( COORDS[X] + SNDX )) 0 && echo -n ${_SCREEN[${LNDX}]}
 		((SNDX++))
 	done

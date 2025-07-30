@@ -47,7 +47,7 @@ typeset -a _ACRONYMS=()
 typeset -aU _LOCAL_LIST=()
 
 # Display Constants
-_CONT_COORDS=(X 10 Y 33 H 10 W 86) # Continuous box coords
+_CONT_COORDS=(X 10 Y $(center -h86) H 10 W 86) # Continuous box coords
 _ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alerts display coords
 _BREAK_COORDS=(X $((_CONT_COORDS[X] + 3 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Break display coords
 

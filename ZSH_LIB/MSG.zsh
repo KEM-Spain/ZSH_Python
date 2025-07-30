@@ -295,12 +295,12 @@ msg_box () {
 	else
 		[[ ${WIDTH_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${WIDTH_ARG}
 		[[ ${HEIGHT_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${HEIGHT_ARG}
-		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$((  (_MAX_ROWS-BOX_HEIGHT) / 2 + 1 )) || MSG_X_COORD=${MSG_X_COORD_ARG}
+		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$(center -v${BOX_HEIGHT}) || MSG_X_COORD=${MSG_X_COORD_ARG}
 		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(center -h${BOX_WIDTH}) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
 	fi
 
 	BOX_X_COORD=${MSG_X_COORD}
-	BOX_Y_COORD=$(( MSG_Y_COORD - 1 ))
+	BOX_Y_COORD=${MSG_Y_COORD}
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
 	# --- END COORDS SETUP ---
 
@@ -378,7 +378,7 @@ msg_box () {
 			shift _CONT_BUFFER # Discard top line
 			_CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Set cursor to header offset
 			for M in ${_CONT_BUFFER};do
-				tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
+				tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
 				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Dumping buffer line:${M}"
 				echo -n ${M} # Output buffered line
 				(( _CONT_DATA[SCR]++)) # Increment cursor
@@ -393,7 +393,7 @@ msg_box () {
 		[[ -n ${_MSG_BOX_DISPLAY_AREA} ]] && DISPLAY_AREA=${_MSG_BOX_DISPLAY_AREA} || DISPLAY_AREA=${BOX_WIDTH} # If value is present limit horiz clearing
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DISPLAY_AREA:${DISPLAY_AREA}"
 
-		tput cup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area or on last line of display area if full
+		tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area or on last line of display area if full
 		tput ech ${DISPLAY_AREA} # Clear the display area
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Printing pending MSG line:${MSG}"
 		[[ ${BUFFER_FULL} == 'true' ]] && MSG_OUT="${BOLD}${MSG_OUT}${RESET}" # Highlight fresh scroll line
@@ -418,7 +418,7 @@ msg_box () {
 				(( DTL_NDX++))
 				MSG_OUT=$(msg_box_align ${TAG} ${H}) # Apply justification
 				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-				tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
+				tcup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
 				tput ech ${MSG_COLS} # Clear line
 				echo -n "${MSG_OUT}"
 				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}HEADER SCR_NDX${RESET}:${SCR_NDX}"
@@ -431,11 +431,11 @@ msg_box () {
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}PRINTING MSG BODY${RESET}"
 
 		for (( MSG_NDX=1;MSG_NDX<=${#MSG_BODY};MSG_NDX++));do
-			(( SCR_NDX++))
-			(( DTL_NDX++))
-			MSG_OUT=$(msg_box_align ${TAG} ${MSG_BODY[${MSG_NDX}]}) # Apply padding to both sides of msg
+			(( SCR_NDX++ ))
+			(( DTL_NDX++ ))
+			MSG_OUT=$(msg_box_align ${TAG} ${MSG_BODY[${MSG_NDX}]}) # Apply padding
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-			tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
+			tcup ${SCR_NDX} $(( MSG_Y_COORD + 1 )) # Place cursor inside box
 			tput ech ${MSG_COLS} # Clear line
 			echo -n "${MSG_OUT}"
 
@@ -452,7 +452,7 @@ msg_box () {
 					PAGING_BOT=${SCR_NDX}
 					(( SCR_NDX+=2 )) # Last row
 					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-					tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
+					tcup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
 					tput ech ${MSG_COLS} # Clear line
 					echo -n "${MSG_OUT}"
 					_MSG_KEY=$(get_keys)
@@ -476,7 +476,7 @@ msg_box () {
 			(( SCR_NDX++))
 			(( DTL_NDX++))
 			MSG_OUT=$(msg_box_align ${TAG} ${MSG_FOOTER[${MSG_NDX}]}) # Apply padding to both sides of msg
-			tput cup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
+			tcup ${SCR_NDX} ${MSG_Y_COORD} # Place cursor
 			tput ech ${MSG_COLS} # Clear line
 			echo -n "${MSG_OUT}"
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}FOOTER SCR_NDX${RESET}:${SCR_NDX}"
@@ -494,7 +494,7 @@ msg_box () {
 
 	# Restore display
 	tput rc # Restore cursor position
-	tput cup ${_MAX_ROWS} ${_MAX_COLS} # Drop cursor to bottom right corner
+	tcup ${_MAX_ROWS} ${_MAX_COLS} # Drop cursor to bottom right corner
 }
 
 msg_box_align () {
@@ -616,7 +616,7 @@ msg_box_clear () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Starting on ROW ${BOX_COORDS[X]:=null} and clearing from COL ${BOX_COORDS[Y]:=null} for ${BOX_COORDS[W]:=null} COLS for ${BOX_COORDS[H]:=null} LINES"
 
 	for (( X=${BOX_COORDS[X]}; X <= ( ${BOX_COORDS[X]} + ${BOX_COORDS[H]} - 1 ); X++));do
-		tput cup ${X} ${BOX_COORDS[Y]}
+		tcup ${X} ${BOX_COORDS[Y]}
 		tput ech ${BOX_COORDS[W]}
 	done
 
@@ -878,7 +878,7 @@ msg_proc () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
 
 	msg_unicode_box ${V_POS} ${H_POS} ${BOX_W} ${BOX_H}
-	tput cup $(( V_POS + 1 )) $(( H_POS + 2 ));echo -n "${GREEN_FG}Processing...${RESET}"
+	tcup $(( V_POS + 1 )) $(( H_POS + 2 ));echo -n "${GREEN_FG}Processing...${RESET}"
 	TAG=${_PROC_BOX_TAG}
 	box_coords_set ${TAG} X ${V_POS} Y ${H_POS} W ${BOX_W} H ${BOX_H}
 	_PROC_MSG=false
@@ -888,7 +888,7 @@ msg_proc () {
 	R=${V_POS}
 	C=${H_POS}
 	for (( X=${V_POS}; X<BOX_H+V_POS; X++ ));do
-		tput cup ${R} ${C} 
+		tcup ${R} ${C} 
 		tput ech ${BOX_W}
 		((R++))
 	done
@@ -1018,12 +1018,12 @@ msg_unicode_box () {
 	echo -n ${BOX_COLOR}
 
 	# Top left corner
-	tput cup ${BOX_X_COORD} ${BOX_Y_COORD}
+	tcup ${BOX_X_COORD} ${BOX_Y_COORD}
 	printf ${TOP_LEFT}
 
 	# Top border
 	for (( Y=${L_SPAN}; Y<=${R_SPAN}; Y++ ));do
-		tput cup ${BOX_X_COORD} ${Y}
+		tcup ${BOX_X_COORD} ${Y}
 		printf ${HORIZ_BAR}
 	done
 
@@ -1033,26 +1033,26 @@ msg_unicode_box () {
 	# Sides
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SIDES - BOX_WIDTH:${BOX_WIDTH}"
 	for (( X=${T_SPAN}; X<=${B_SPAN}; X++ ));do
-		tput cup ${X} ${BOX_Y_COORD}
+		tcup ${X} ${BOX_Y_COORD}
 		printf ${VERT_BAR}
 		tput ech ${BOX_WIDTH} # Clear box area
-		tput cup ${X} $(( R_SPAN + 1 ))
+		tcup ${X} $(( R_SPAN + 1 ))
 		printf ${VERT_BAR}
 	done
 
 	# Bottom left corner
-	tput cup ${X} ${BOX_Y_COORD}
+	tcup ${X} ${BOX_Y_COORD}
 	printf ${BOT_LEFT}
 
 	# Bottom border
 	for (( Y=${L_SPAN}; Y<=${R_SPAN}; Y++ ));do
-		tput cup ${X} ${Y}
+		tcup ${X} ${Y}
 		printf ${HORIZ_BAR}
 	done
 
 	# Bottom right corner
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_HEIGHT:${BOX_HEIGHT}"
-	tput cup ${X} ${Y}
+	tcup ${X} ${Y}
 	printf ${BOT_RIGHT}
 
 	echo -n ${RESET}

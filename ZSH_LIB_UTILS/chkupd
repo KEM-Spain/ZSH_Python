@@ -114,7 +114,7 @@ if [[ ${PENDING} == 'false' ]];then
 fi
 
 if [[ ${PRE_APPROVED} == false ]];then
-	tput cup 0 0
+	tcup 0 0
 	echo "Finding ${WHITE_FG}obsolete packages${RESET} and any ${WHITE_FG}pending updates${RESET}...\n"
 	sleep .5
 

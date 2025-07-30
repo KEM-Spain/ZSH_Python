@@ -324,6 +324,7 @@ if [[ ${_PROD} == 'false' ]];then
 	echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_VALID_HIST}${RESET}"
 	echo "${WHITE_ON_GREY}Done.${RESET}\n"
 else
+	tput el
 	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
 fi
 

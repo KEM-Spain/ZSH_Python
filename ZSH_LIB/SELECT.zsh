@@ -654,14 +654,14 @@ sel_set_ebox () {
 	Y_ARG=$(( I_COORDS[Y] - 2 ))
 
 	if	[[ ${I_COORDS[OB_W]} -ne 0 ]];then
-		Y_ARG=$(( I_COORDS[OB_Y] + 2 ))
+		Y_ARG=$(( I_COORDS[OB_Y] + 1 ))
 		W_ARG=$(( I_COORDS[OB_W] - 2 ))
 	elif [[ ${MSG_LEN} -gt ${I_COORDS[W]}  ]];then
 		DIFF=$(( (MSG_LEN - I_COORDS[W]) / 2 ))
 		Y_ARG=$(( I_COORDS[Y] - DIFF ))
 	else
-		X_ARG=$(( I_COORDS[X] + 2 ))
-		Y_ARG=$(( I_COORDS[Y] + 2 ))
+		X_ARG=$(( I_COORDS[X] + 1 ))
+		Y_ARG=$(( I_COORDS[Y] + 1 ))
 		W_ARG=$(( I_COORDS[W] - 2 ))
 	fi
 
