@@ -504,17 +504,6 @@ clean_title () {
 	echo ${STR}
 }
 
-clear_tmp () {
-	local -a LIST=("${(f)$(find /tmp -maxdepth 1 -name '*state' -type f)}")
-	local L
-
-	if [[ -n ${LIST} ]];then
-		for L in ${LIST};do
-			rm -f ${L}
-		done
-	fi
-}
-
 dashed_line () {
 	local CNT=10
 	local LEN=5
@@ -691,6 +680,7 @@ fav_get_selected () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	# TODO: Missing support for Rumble on Custom list - clean this up - make sense of key parsing
 	while true;do
 		_DISPLAY_LIST=()
 		for F in ${(k)_DISPLAY_KEYS};do
@@ -777,6 +767,16 @@ fav_add () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE}"
+
+#	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
+#	msg_box_clear
+#	tput rc
+#	case ${_MSG_KEY} in
+#		1) YouTube;;
+#		2) Rumble;;
+#		3) Custom;;
+#		*) echo; exit_leave $(msg_warn "Operation Cancelled");;
+#	esac
 
 	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
@@ -1719,7 +1719,6 @@ if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 
 fi
 
 # Set callbacks
-#set_exit_callback clear_tmp # Clear temp files on exit ( already accomplished in EXIT.zsh )
 log_update # Update the log
 clear
 

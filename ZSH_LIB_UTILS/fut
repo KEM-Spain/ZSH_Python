@@ -146,7 +146,7 @@ ______EOF
 
 	if ! arr_is_populated "${LIST}";then
 		set_exit_value 1
-		exit_leave $(err_msg_exit E "No file:${FN} found")
+		exit_leave $(err_msg_exit E "File not found:${FN}")
 	fi
 
 	if [[ ${#LIST} -gt 1 ]];then

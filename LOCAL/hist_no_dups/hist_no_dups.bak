@@ -82,7 +82,7 @@ size_diff () {
 	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
 	PCT=$(( ${DIFF}.0 / ${AVG}.0 * 100 ))
 
-	printf "History growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
+	printf "Growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
 	if [[ (( ${PCT} < ${THRESHOLD})) ]];then
 		return 1
 	else
@@ -201,7 +201,7 @@ hist_parse () {
 
 	for L in ${(on)${(P)ARRAY}};do
 		[[ -z ${L} ]] && continue # Blank hist line
-		[[ ${L} =~ ';\[\[' ]] && continue # test commands
+		#[[ ${L} =~ ';\[\[' ]] && continue # test commands
 
 		LINE=$(tr -d '\n' <<<${L})
 		TS=$(cut -d';' -f1 <<<${LINE})
@@ -277,7 +277,7 @@ usage () {
 
 MSG=$(size_diff)
 if [[ ${?} -ne 0 ]];then
-	echo -n "Rebuild not required / ${MSG}"
+	echo -n "History rebuild not required / ${MSG}"
 	exit_leave
 fi
 

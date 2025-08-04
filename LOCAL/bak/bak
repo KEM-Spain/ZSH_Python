@@ -116,7 +116,7 @@ prod_to_local () {
 		else
 			echo ${g_PROD_DIFFERS_LOCAL}
 
-			NEWEST=$(file_date_diff ${FN} ./${FN:t})
+			NEWEST=$(date_file_diff ${FN} ./${FN:t})
 			if [[ ${NEWEST} == ${FN} ]];then
 				echo "${WHITE_ON_GREY}PRODUCTION CONTAINS THE MOST RECENT CHANGES!${RESET}"
 				echo ${g_PROD_IS_MORE_RECENT}
@@ -256,7 +256,7 @@ local_to_prod () {
 			echo ${g_PROD_MATCHES_LOCAL}
 			exit_leave
 		else
-			NEWEST=$(file_date_diff ${FN} ./${FN:t})
+			NEWEST=$(date_file_diff ${FN} ./${FN:t})
 			if [[ ${NEWEST} == ${FN} ]];then
 				echo "${WHITE_ON_GREY}PRODUCTION CONTAINS THE MOST RECENT CHANGES!${RESET}"
 				echo ${g_PROD_IS_MORE_RECENT}

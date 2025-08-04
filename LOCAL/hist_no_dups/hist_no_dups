@@ -76,7 +76,7 @@ size_diff () {
 	local DIFF=0
 	local -F PCT=0
 	local AVG=0
-	local -F THRESHOLD=1.00
+	local -F THRESHOLD=5.00
 
 	[[ ${CUR_SIZE} -gt ${LAST_SIZE} ]] && DIFF=$(( CUR_SIZE - LAST_SIZE )) || DIFF=$(( LAST_SIZE - CUR_SIZE ))
 	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
@@ -86,7 +86,7 @@ size_diff () {
 	if [[ (( ${PCT} < ${THRESHOLD})) ]];then
 		return 1
 	else
-		return 0 # No rebuilds until 1% difference
+		return 0 # No rebuilds until THRESHOLD difference
 	fi
 }
 
@@ -201,7 +201,7 @@ hist_parse () {
 
 	for L in ${(on)${(P)ARRAY}};do
 		[[ -z ${L} ]] && continue # Blank hist line
-		[[ ${L} =~ ';\[\[' ]] && continue # test commands
+		#[[ ${L} =~ ';\[\[' ]] && continue # test commands
 
 		LINE=$(tr -d '\n' <<<${L})
 		TS=$(cut -d';' -f1 <<<${LINE})

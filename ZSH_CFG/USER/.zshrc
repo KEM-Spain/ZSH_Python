@@ -19,11 +19,6 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Constants
-PATH=${PATH}:. # add PWD
-PATH=${PATH}:/usr/local/bin/system # add custom utils
-PATH=${PATH}:/snap/bin # add snaps
-PATH=${PATH}:/usr/local/bin/_perl.local # add local perl
-
 _REL=$(lsb_release -d | cut -d: -f2- | sed 's/^[ \t]*//')
 _RLBL=$(lsb_release -c | cut -d: -f2- | sed 's/^[ \t]*//')
 _USR_LOCAL_SRC=/usr/local/src
@@ -222,6 +217,28 @@ alias sudo='sudo ' # Sudo tweak
 fpath=(/home/kmiller/.zsh/completions ${fpath})
 autoload -Uz compinit && compinit
 
+precmd () {
+	local HIT=false
+	local LPWD=''
+	local P
+
+	if [[ -e /tmp/pwd.last ]];then
+		read LPWD < /tmp/pwd.last
+	fi
+
+	if [[ ${PWD} != ${LPWD} ]];then
+		export PATH=${ORIG_PATH} # Reset path to the original setting
+
+		while read -d: P;do
+			[[ ${PWD} == ${P} ]] && HIT=true && break
+		done <<<${PATH}
+
+		[[ ${HIT} == 'false' ]] && export PATH=${PATH}:$(pwd) # Add the pwd to the path
+	fi
+
+	echo ${PWD} > /tmp/pwd.last
+}
+
 # Hooks
 add-zsh-hook precmd _reload_funcs # Reload modified functions
 add-zsh-hook precmd _reload_aliases # Reload modified aliases
@@ -283,7 +300,6 @@ if [[ ${_TERMS} -eq 1 ]];then
 			echo "Enpass:${WHITE_FG}${ITALIC}waiting${RESET}..."
 		fi
 
-
 		dut external -b # External drive status
 
 		gd -s # Google Drive status
@@ -306,7 +322,7 @@ if [[ ${_TERMS} -eq 1 ]];then
 			cal_clr
 		fi
 
-		# background dbus - maximize new windows (gnome doesn't track win coords)
+		# background dbus job - maximize new windows (gnome doesn't track win coords)
 		INSTANCE=$(pgrep -c wait_app_start)
 		if [[ ${INSTANCE} -eq 0 ]];then
 			( wait_app_start & ) >/dev/null 2>&1

@@ -510,6 +510,7 @@ clear_tmp () {
 
 	if [[ -n ${LIST} ]];then
 		for L in ${LIST};do
+			logit ${_YTS_DBG_LOG} "${0}: deleting ${L}"
 			rm -f ${L}
 		done
 	fi
@@ -691,6 +692,7 @@ fav_get_selected () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	# TODO: Missing support for Rumble on Custom list - clean this up - make sense of key parsing
 	while true;do
 		_DISPLAY_LIST=()
 		for F in ${(k)_DISPLAY_KEYS};do
@@ -777,6 +779,16 @@ fav_add () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE}"
+
+#	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
+#	msg_box_clear
+#	tput rc
+#	case ${_MSG_KEY} in
+#		1) YouTube;;
+#		2) Rumble;;
+#		3) Custom;;
+#		*) echo; exit_leave $(msg_warn "Operation Cancelled");;
+#	esac
 
 	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
@@ -1464,7 +1476,7 @@ query_youtube () {
 		((NDX++))
 		[[ ${LINE:l} =~ 'rejected' ]] && _REJECTS[${NDX}]=true || _REJECTS[${NDX}]=false
 
-		STR=$(iconv -f utf-8 -t ascii//translit <<<${LINE}) # Scrub non ascii
+		STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
 		STR=${STR:s/Streamed //}
 
 		if [[ ${CUSTOM_KEY} == 'false' && ${g_STRICT} == 'false' ]];then # Apply filtering to non strict results

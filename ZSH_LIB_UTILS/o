@@ -58,7 +58,7 @@ _APP_EXE[HARUNA]=/snap/bin/haruna
 _APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
 
-_MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MD_EXTERNAL="/media/${USER}/KEM_Misc/Music/KEM-B9"
 _MD_LOCAL="${HOME}/Documents/Music"
 _MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
 
@@ -195,6 +195,18 @@ mark_unsupported () {
 	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
 }
 
+mp4_lcase () {
+	local -a LIST=("${(f)$(find . -maxdepth 1 -name '*MP4' -type f ! -path .)}")
+	local L
+
+	if [[ -n ${LIST} ]];then
+		msg_box -t2 "Renaming MP4 files to mp4..."
+		for L in ${LIST};do
+			mv -f ${L} ${L:r}.mp4
+		done
+	fi
+}
+
 same_extension () {
 	local _MARKED=(${@})
 	local SAME_EXT=true
@@ -309,6 +321,8 @@ shift $(( OPTIND - 1 ))
 
 # File(s) passed on command line or pipe
 typeset -a ARGS
+
+mp4_lcase
 
 # Command line args
 # 1) none - all files in PWD

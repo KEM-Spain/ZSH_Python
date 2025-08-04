@@ -28,7 +28,7 @@ typeset -aU _ARTISTS
 _AUDIO_FILES='\(\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\)$'
 _MUSIC_DIRS+="${PWD}"
 _MUSIC_DIRS+="${HOME}/Documents/Music"
-_MUSIC_DIRS+="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MUSIC_DIRS+="/media/${USER}/KEM_Misc/Music/KEM-B9"
 _PLAYLIST_FILE=${HOME}/.tmp/playlist.m3u
 _DEFAULT_PLAYER=/usr/bin/clementine
 

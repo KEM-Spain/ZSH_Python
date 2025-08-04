@@ -1,5 +1,5 @@
 #!/usr/bin/zsh
-_USER_NAME=kmiller
+_USER_NAME=${USER}
 _gd_MOUNTPOINT="${HOME}/GoogleDrive"
 _gd_VOLUME=~/PRS1;
 

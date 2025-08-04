@@ -21,7 +21,7 @@ typeset -a MUSIC_DIRS
 typeset -g SEARCHTERM
 
 # Constants
-_MD_EXTERNAL="/media/${USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MD_EXTERNAL="/media/${USER}/KEM_Misc/Music/KEM-B9"
 _MD_LOCAL="${HOME}/Documents/Music"
 #_PRINTED='\(\.pdf\|\.txt\|\.doc\|\.odg\)$'
 #_RECORDED='\(\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\|\.mp4\)$'

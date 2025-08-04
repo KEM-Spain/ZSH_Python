@@ -156,7 +156,7 @@ SEARCHTERM=${@}
 # Arg validation
 [[ -z ${SEARCHTERM} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
 [[ ! -t 0 ]] && exit_leave $(msg_exit W "No support for piped input")
-[[ ${NO_FN} == 'true' && -z ${FILE_OUT} ]] && exit_leave "${_SCRIPT_TAG} Option:-h is only valid while using option:-O"
+[[ ${GO_FN} == '--no-filename' && -z ${FILE_OUT} ]] && exit_leave "${_SCRIPT_TAG} Option:-h is only valid in combination with option:-O"
 
 # Set grep options
 GREP_OPTS+=${GO_BAK}

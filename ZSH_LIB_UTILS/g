@@ -108,40 +108,40 @@ FTYPE=''
 ONE_LINE=false
 PATH_ARG=${PWD}
 
-GO_BAK='--exclude=\*bak'
-GO_CASE='--ignore-case'
-GO_COLOR='--color=always'
-GO_FN='--with-filename'
-GO_INVERT=''
-GO_LINE=''
-GO_LIST=''
-GO_LITERAL=''
-GO_MAX_MATCH=''
-GO_ONLY=''
-GO_RECURSE=''
-GO_WORD=''
+GR_OPT_BAK=false
+GR_OPT_CASE='--ignore-case'
+GR_OPT_COLOR='--color=always'
+GR_OPT_FN='--with-filename'
+GR_OPT_INVERT=''
+GR_OPT_LINE=''
+GR_OPT_LIST=''
+GR_OPT_LITERAL=''
+GR_OPT_MAX_MATCH=''
+GR_OPT_ONLY=''
+GR_OPT_RECURSE=''
+GR_OPT_WORD=''
 
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case ${OPTION} in
      H) usage;;
 	  D) dbg_set_level;;
-     A) GO_COLOR='--color=never';;
-	  B) GO_BAK='--include=\*bak';;
-     F) GO_LITERAL=-F;;
-     I) GO_CASE='--no-ignore-case';;
-     L) GO_LIST='-l';FILELIST=true;ONE_LINE=true;;
+     A) GR_OPT_COLOR='--color=never';;
+	  B) GR_OPT_BAK=true;;
+     F) GR_OPT_LITERAL=-F;;
+     I) GR_OPT_CASE='--no-ignore-case';;
+     L) GR_OPT_LIST='-l';FILELIST=true;ONE_LINE=true;;
      O) FILE_OUT=${OPTARG};;
      P) PATH_ARG=${OPTARG};;
-     h) GO_FN='--no-filename';;
-     l) GO_LIST=-l;FILELIST=true;;
-     m) GO_MAX_MATCH="-m${OPTARG}";;
-     n) GO_LINE='-n';;
-     o) GO_ONLY='-o';;
-     r) GO_RECURSE='-r';;
+     h) GR_OPT_FN='--no-filename';;
+     l) GR_OPT_LIST=-l;FILELIST=true;;
+     m) GR_OPT_MAX_MATCH="-m${OPTARG}";;
+     n) GR_OPT_LINE='-n';;
+     o) GR_OPT_ONLY='-o';;
+     r) GR_OPT_RECURSE='-r';;
      t) FTYPE=${OPTARG};;
-     v) GO_INVERT='-v';;
-     w) GO_WORD='-w';;
+     v) GR_OPT_INVERT='-v';;
+     w) GR_OPT_WORD='-w';;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
@@ -156,21 +156,20 @@ SEARCHTERM=${@}
 # Arg validation
 [[ -z ${SEARCHTERM} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
 [[ ! -t 0 ]] && exit_leave $(err_msg_exit W "No support for piped input")
-[[ ${GO_FN} == '--no-filename' && -z ${FILE_OUT} ]] && exit_leave "${_SCRIPT_TAG} Option:-h is only valid in combination with option:-O"
+[[ ${GR_OPT_FN} == '--no-filename' && -z ${FILE_OUT} ]] && exit_leave "${_SCRIPT_TAG} Option:-h is only valid in combination with option:-O"
 
 # Set grep options
-GREP_OPTS+=${GO_BAK}
-GREP_OPTS+=${GO_CASE}
-GREP_OPTS+=${GO_COLOR}
-GREP_OPTS+=${GO_FN}
-GREP_OPTS+=${GO_INVERT}
-GREP_OPTS+=${GO_LINE}
-GREP_OPTS+=${GO_LIST}
-GREP_OPTS+=${GO_LITERAL}
-GREP_OPTS+=${GO_MAX_MATCH}
-GREP_OPTS+=${GO_ONLY}
-GREP_OPTS+=${GO_RECURSE}
-GREP_OPTS+=${GO_WORD}
+GREP_OPTS+=${GR_OPT_CASE}
+GREP_OPTS+=${GR_OPT_COLOR}
+GREP_OPTS+=${GR_OPT_FN}
+GREP_OPTS+=${GR_OPT_INVERT}
+GREP_OPTS+=${GR_OPT_LINE}
+GREP_OPTS+=${GR_OPT_LIST}
+GREP_OPTS+=${GR_OPT_LITERAL}
+GREP_OPTS+=${GR_OPT_MAX_MATCH}
+GREP_OPTS+=${GR_OPT_ONLY}
+GREP_OPTS+=${GR_OPT_RECURSE}
+GREP_OPTS+=${GR_OPT_WORD}
 
 # Limit to file type if specified
 FTYPE_MSG='all'
@@ -222,6 +221,7 @@ for L in ${(uo)RAWLIST};do
 	fi
 	FN=$(str_no_ansi ${L})
 	FN=$(cut -d: -f1 <<<${FN})
+	[[ ${GR_OPT_BAK} == 'false' && ${FN:e} == 'bak' ]] && continue
 	FTYPE=$(file -L ${FN})
 	[[ ${_DEBUG} -gt 0 && (! ${FTYPE} =~ 'text') ]] && dbg "${0}:${LINENO} File:${FN} rejected - not text:${FTYPE}" 
 	[[ ! ${FTYPE} =~ 'text' ]] && continue
@@ -232,7 +232,7 @@ for L in ${(uo)RAWLIST};do
 	LN=$(sed 's/[\t\n]/ /' <<<${LN})
 	LN=$(sed 's/\x2a//g' <<<${LN})
 	LN=$(str_trim <<<${LN})
-	if [[ ${GO_COLOR} =~ 'always' ]];then
+	if [[ ${GR_OPT_COLOR} =~ 'always' ]];then
 		LN=$(perl -pe 's/^\x1b\x5b\x6d\x1b\x5b\x4b\x20/\x1b\x5b\x6d\x1b\x5b\x4b/' <<<${LN}) # Kill the space after 1st seq for even margin
 	fi
 	if [[ ${FN:h} != ${PWD} ]];then
@@ -270,7 +270,7 @@ else
 	if [[ ${FILELIST} == 'false' ]];then
 		tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
 		[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
-		[[ ${GO_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
+		[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
 		echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Files:${WHITE_FG}${FTYPE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
 		if [[ -n ${LINENUM_OPT} ]];then
 			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))

@@ -33,7 +33,6 @@ on_exit () {
 	ps -p ${_INOT_PID} >/dev/null 2>&1
 	[[ ${?} -eq 0 ]] && kill ${_INOT_PID}
 
-	echo "Deleting ${_PID_FN}" | tee -a >>${_LOG}
 	/bin/rm -f ${_PID_FN}
 
 	exit
