@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="DBG.zsh UTILS.zsh"
+_DEPS_+=(DBG.zsh)
 
 # LIB Declarations
 typeset -A _ARGS # Holds command line arguments for raw path parsing

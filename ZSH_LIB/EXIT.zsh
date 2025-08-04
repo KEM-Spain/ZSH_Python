@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="MSG.zsh UTILS.zsh"
+_DEPS_+=(DBG.zsh MSG.zsh UTILS.zsh)
 
 # LIB declarations
 typeset -a _EXIT_CALLBACKS=()

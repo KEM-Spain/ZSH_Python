@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="TPUT.zsh DBG.zsh"
+_DEPS_+=(DBG.zsh TPUT.zsh)
 
 str_array_to_num () {
 	local -a STR=(${@})
@@ -201,7 +201,20 @@ str_rep_char () {
 }
 
 str_no_ansi () {
-	perl -pe 's/\x1B\[+[\d;]*[mK]//g' <<<${@}
+	local STR=${1}
+	echo ${STR} | perl -pe 's/\x1B\[+[\d;]*[mK]//g'
+}
+
+str_to_ascii () {
+	local STR=${1}
+
+	if [[ -n ${STR} ]];then
+		echo ${STR} | iconv -f utf-8 -t ascii//translit
+	else
+		while read STR;do
+			iconv -f utf-8 -t ascii//translit <<<${STR}
+		done
+	fi
 }
 
 str_strip_ansi () {

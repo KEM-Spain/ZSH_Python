@@ -95,7 +95,7 @@ last_backup () {
 	local LB_LAST_RUN
 	local LB_LAST_TIME
 
-	[[ -z ${MARKER_ARG} ]] && exit_leave "${0:t} Missing arument: MARKER"
+	[[ -z ${MARKER_ARG} ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Missing arument${RESET}: MARKER"
 
 	if [[ -e ${MARKER_ARG} ]];then
 		LB_LAST_RUN=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
@@ -187,7 +187,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:Backup selected directories"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDfis"
@@ -207,7 +207,7 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution

@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="STR.zsh"
+_DEPS_+=(STR.zsh)
 
 # Declarations
 typeset -a _DEBUG_LINES=()

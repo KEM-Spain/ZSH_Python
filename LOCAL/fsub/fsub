@@ -264,7 +264,7 @@ do_finalize () {
 
 	if ! arr_is_populated "${FINAL}";then
 		[[ ${g_VERBOSE} == 'true' ]] && MSG="No files qualified as candidates" || MSG=''
-		exit_leave $(msg_exit W ${MSG})
+		exit_leave $(err_msg_exit W ${MSG})
 	fi
 
 	if [[ ${_DEBUG} -ne 0 ]];then
@@ -551,7 +551,7 @@ do_sdc () {
 		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # W/o path & extension
 		for OP in ${(o)_SPACE_DOT};do
 			case ${OP} in
-				B)	TITLE=$(echo ${CANDIDATE} | iconv -f utf-8 -t ascii//translit) # Scrub extended ascii/non ascii
+				B)	TITLE=$(str_to_ascii <<<${CANDIDATE}) # Scrub extended ascii/non ascii
 					HIT=false
 					[[ ${TITLE} != ${CANDIDATE} ]] && HIT=true && CANDIDATE=${TITLE}
 					[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option B${RESET}"
@@ -584,7 +584,7 @@ do_sdc () {
 						CANDIDATE=$(tr -d \' <<<${CANDIDATE}) # Scrub single quotes
 						CANDIDATE=$(tr -d \" <<<${CANDIDATE}) # Scrub double quotes
 						CANDIDATE=$(tr -s "[:space:]" <<<${CANDIDATE}) # Squeeze space
-						CANDIDATE=$(iconv -f utf-8 -t ascii//translit <<<${CANDIDATE}) # Scrub extended ascii/non ascii
+						CANDIDATE=$(str_to_ascii <<<${CANDIDATE}) # Scrub extended ascii/non ascii
 						[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${CYAN_FG}Executed option D${RESET}"
 					fi;;
 				S)	if [[ ${CANDIDATE} =~ ' ' ]];then
@@ -1068,7 +1068,7 @@ else
 fi
 
 if ! arr_is_populated "${_IN_LIST}";then
-	exit_leave $(msg_exit W "${_SCRIPT}:Can't continue - ${g_LIST_METHOD} failed - _IN_LIST is empty")
+	exit_leave $(err_msg_exit W "${_SCRIPT}:Can't continue - ${g_LIST_METHOD} failed - _IN_LIST is empty")
 fi
 
 #if [[ ${_DEBUG} -gt 0 ]];then

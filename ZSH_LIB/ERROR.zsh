@@ -1,3 +1,7 @@
+# LIB Dependencies
+_DEPS_+=(DBG.zsh)
+
+# LIB functions
 err_msg_exit () {
 	local E_TYPE=${1}
 	local MSG=${2}
@@ -17,6 +21,6 @@ err_msg_exit () {
 
 	if [[ -n ${MSG} ]];then
 		[[ ${MSG} =~ ":" ]] && MSG=$(perl -pe "s/^(.*:)(.*)$/\1\e[37m\2\e[m/" <<<${MSG})
-		printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "${MSG}" >&2
+		printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "$(echo ${MSG})" >&2
 	fi
 }

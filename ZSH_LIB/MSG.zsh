@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="ARRAY.zsh CENTER.zsh DBG.zsh STR.zsh TPUT.zsh UTILS.zsh"
+_DEPS_+=(DBG.zsh ARRAY.zsh CENTER.zsh STR.zsh TPUT.zsh)
 
 # LIB Declarations
 typeset -a _CONT_BUFFER=()
@@ -38,7 +38,7 @@ msg_box () {
 	local BODY_MAX=0
 	local BOX_X_COORD=0
 	local BOX_Y_COORD=0
-	local BOX_Y_WRITE=0
+	local BOX_TEXT_CSR=0
 	local DELIM_COUNT=0
 	local DTL_NDX=0
 	local FOOTER_MAX=0
@@ -302,7 +302,7 @@ msg_box () {
 
 	BOX_X_COORD=${MSG_X_COORD}
 	BOX_Y_COORD=${MSG_Y_COORD}
-	BOX_Y_WRITE=$(( BOX_Y_COORD + 1 )) # Writable area of box inside frame
+	BOX_TEXT_CSR=$(( BOX_Y_COORD + 1 )) # Initialize inside frame
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
 	# --- END COORDS SETUP ---
 
@@ -358,13 +358,13 @@ msg_box () {
 	if [[ ${CONTINUOUS} == 'true' ]];then
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:${CYAN_FG}MSG is CONTINUOUS${RESET}"
 		CONT_COORDS=($(box_coords_get ${_CONT_BOX_TAG}))
-		_CONT_DATA[TOP]=${CONT_COORDS[X]} && (( _CONT_DATA[TOP]++ )) # Initialize TOP and move past border
-		_CONT_DATA[Y]=${CONT_COORDS[Y]} && (( _CONT_DATA[Y]++ )) # Initialize Y and move past border
-		_CONT_DATA[MAX]=${CONT_COORDS[H]} && (( _CONT_DATA[MAX]-=2 )) # Initialize MAX and move past border
-		_CONT_DATA[COLS]=${CONT_COORDS[W]} && (( _CONT_DATA[COLS]-=4 )) # Initialize COLS and compensate for border
+		_CONT_DATA[TOP]=${CONT_COORDS[X]} && (( _CONT_DATA[TOP]++ )) # Initialize inside frame
+		_CONT_DATA[Y]=${CONT_COORDS[Y]} && (( _CONT_DATA[Y]++ )) # Initialize inside frame
+		_CONT_DATA[MAX]=${CONT_COORDS[H]} && (( _CONT_DATA[MAX]-=2 )) # Initialize inside frame
+		_CONT_DATA[COLS]=${CONT_COORDS[W]} && (( _CONT_DATA[COLS]-=4 )) # Initialize inside frame
 
-		[[ ${_CONT_DATA[OUT]} -eq 0 ]] && _CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Nothing yet output - initialize cursor to output region
-		[[ ${_CONT_DATA[HEADER]} -gt 0 ]] && (( _CONT_DATA[TOP] += _CONT_DATA[HEADER] )) # HEADER is present - cursor through header lines
+		[[ ${_CONT_DATA[OUT]} -eq 0 ]] && _CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Initialize inside frame
+		[[ ${_CONT_DATA[HEADER]} -gt 0 ]] && (( _CONT_DATA[TOP] += _CONT_DATA[HEADER] )) # HEADER present - cursor past header
 
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:\n_CONT_DATA[OUT]:${_CONT_DATA[OUT]}\n_CONT_DATA[MAX]:${_CONT_DATA[MAX]}\n_CONT_DATA[TOP]:${_CONT_DATA[TOP]}\n#_CONT_BUFFER:${#_CONT_BUFFER}"
 
@@ -374,34 +374,34 @@ msg_box () {
 		fi
 
 		BUFFER_FULL=false
-		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[MAX]} ]];then # Usable display area consumed - shift data lines up
+		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[MAX]} ]];then # Usable display consumed - shift data lines
 			BUFFER_FULL=true
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:${RED_FG}BUFFER SHIFT${RESET}"
 			shift _CONT_BUFFER # Discard top line
-			_CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Set cursor to header offset
+			_CONT_DATA[SCR]=${_CONT_DATA[TOP]} # Set cursor
 			for M in ${_CONT_BUFFER};do
-				tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
 				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Dumping buffer line:${M}"
-				echo -n ${M} # Output buffered line
-				(( _CONT_DATA[SCR]++)) # Increment cursor
+				tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
+				echo -n ${M} # Output line
+				(( _CONT_DATA[SCR]++)) # Increment
 			done
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:CURSOR value following buffer dump:${_CONT_DATA[SCR]}"
 		fi
 		
 		box_coords_upd ${_CONT_BOX_TAG} S ${TEXT_STYLE}
-		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]}) # Apply markup, padding 
-		MSG_OUT=$(str_trim ${MSG_OUT})
+		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]})
+		MSG_OUT=$(str_trim ${MSG_OUT}) # Trim to prevent overwriting indicator
 
-		[[ -n ${_MSG_BOX_DISPLAY_AREA} ]] && DISPLAY_AREA=${_MSG_BOX_DISPLAY_AREA} || DISPLAY_AREA=${BOX_WIDTH} # If value is present limit horiz clearing
+		[[ -n ${_MSG_BOX_DISPLAY_AREA} ]] && DISPLAY_AREA=${_MSG_BOX_DISPLAY_AREA} || DISPLAY_AREA=${BOX_WIDTH} # Limited line clearing
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DISPLAY_AREA:${DISPLAY_AREA}"
 
-		tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area or on last line of display area if full
-		tput ech ${DISPLAY_AREA} # Clear the display area
+		tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area
+		tput ech ${DISPLAY_AREA} # Clear line
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Printing pending MSG line:${MSG}"
 		[[ ${BUFFER_FULL} == 'true' ]] && MSG_OUT="${BOLD}${MSG_OUT}${RESET}" # Highlight fresh scroll line
 		echo -n "${MSG_OUT}" # Output line
 
-		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # If header is out, add data line to buffer
+		if [[ ${_CONT_DATA[OUT]} -ge ${_CONT_DATA[HEADER]} ]];then # If header is out, add line to buffer
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Buffering line:${MSG}"
 			_CONT_BUFFER+="${FAINT}${MSG_OUT}${RESET}" # Dim scroll history
 		fi
@@ -418,9 +418,9 @@ msg_box () {
 			for H in ${MSG_HEADER};do
 				(( SCR_NDX++))
 				(( DTL_NDX++))
-				MSG_OUT=$(msg_box_align ${TAG} ${H}) # Apply justification
-				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-				tcup ${SCR_NDX} ${BOX_Y_WRITE} # Place cursor inside box
+				MSG_OUT=$(msg_box_align ${TAG} ${H})
+				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${BOX_TEXT_CSR}"
+				tcup ${SCR_NDX} ${BOX_TEXT_CSR} # Place cursor
 				tput ech ${MSG_COLS} # Clear line
 				echo -n "${MSG_OUT}"
 				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}HEADER SCR_NDX${RESET}:${SCR_NDX}"
@@ -435,9 +435,9 @@ msg_box () {
 		for (( MSG_NDX=1;MSG_NDX<=${#MSG_BODY};MSG_NDX++));do
 			(( SCR_NDX++ ))
 			(( DTL_NDX++ ))
-			MSG_OUT=$(msg_box_align ${TAG} ${MSG_BODY[${MSG_NDX}]}) # Apply padding
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-			tcup ${SCR_NDX} ${BOX_Y_WRITE} # Place cursor inside box
+			MSG_OUT=$(msg_box_align ${TAG} ${MSG_BODY[${MSG_NDX}]})
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${BOX_TEXT_CSR}"
+			tcup ${SCR_NDX} ${BOX_TEXT_CSR} # Place cursor
 			tput ech ${MSG_COLS} # Clear line
 			echo -n "${MSG_OUT}"
 
@@ -453,8 +453,8 @@ msg_box () {
 					MSG_OUT=$(msg_box_align ${TAG} "<w>Page ${MSG_PAGE} of ${MSG_PAGES}<N>")
 					PAGING_BOT=${SCR_NDX}
 					(( SCR_NDX+=2 )) # Last row
-					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${MSG_Y_COORD}"
-					tcup ${SCR_NDX} ${BOX_Y_WRITE} # Place cursor inside box
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${BOX_TEXT_CSR}"
+					tcup ${SCR_NDX} ${BOX_TEXT_CSR} # Place cursor
 					tput ech ${MSG_COLS} # Clear line
 					echo -n "${MSG_OUT}"
 					_MSG_KEY=$(get_keys)
@@ -477,8 +477,9 @@ msg_box () {
 		for (( MSG_NDX=1;MSG_NDX<=${#MSG_FOOTER};MSG_NDX++));do
 			(( SCR_NDX++))
 			(( DTL_NDX++))
-			MSG_OUT=$(msg_box_align ${TAG} ${MSG_FOOTER[${MSG_NDX}]}) # Apply padding to both sides of msg
-			tcup ${SCR_NDX} ${BOX_Y_WRITE} # Place cursor inside box
+			MSG_OUT=$(msg_box_align ${TAG} ${MSG_FOOTER[${MSG_NDX}]}) # Apply padding
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PRINT COORDS: X:${SCR_NDX} Y:${BOX_TEXT_CSR}"
+			tcup ${SCR_NDX} ${BOX_TEXT_CSR} # Place cursor
 			tput ech ${MSG_COLS} # Clear line
 			echo -n "${MSG_OUT}"
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}FOOTER SCR_NDX${RESET}:${SCR_NDX}"

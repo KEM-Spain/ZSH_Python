@@ -53,7 +53,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 external () {
 	# Constants
-	local MOUNT_ROOT=/media/${_USER_NAME}
+	local MOUNT_ROOT=/media/${USER}
 
 	#App Vars
 	local -a MSG_OUT
@@ -118,7 +118,7 @@ external () {
 			do_${ACTION} ${NDX}
 
 			if [[ ${?} -ne 0 ]];then
-				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
+				msg_box -c -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
 			else
 				get_disk_info
 			fi
@@ -134,7 +134,7 @@ external () {
 			fi
 			MLIST+="${_PARTITIONS[${NDX}]} is ${STATE}"
 		done
-		msg_box -p -PK "Mount Status| |$(msg_list_bullet ${MLIST})"
+		msg_box -c -p -PK -H1 "Mount Status| |$(msg_list_bullet ${MLIST})"
 
 		for M in ${MARKED};do
 			MARKED[${M}]=0
@@ -309,7 +309,7 @@ external () {
 			unmounted) msg_box -p -P"Mount all devices (y/n)?" "All devices are unmounted";;
 			mounted) msg_box -p -P"Unmount all devices (y/n)?" "All devices are mounted";;
 		esac
-		[[ ${_MSG_KEY} == 'n' ]] && clear && exit_leave $(err_msg_exit I "Operation cancelled")
+		[[ ${_MSG_KEY} == 'n' ]] && clear && exit_leave $(msg_exit I "Operation cancelled")
 		return 0
 	}
 
@@ -610,7 +610,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
+		echo "\n$(msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -792,7 +792,7 @@ ___EOF
 		read -k1 RESPONSE
 		echo
 
-		[[ ${RESPONSE} =~ "^\x0a" ]] && exit_leave $(err_msg_exit I "Operation cancelled")
+		[[ ${RESPONSE} =~ "^\x0a" ]] && exit_leave $(msg_exit I "Operation cancelled")
 
 		NDX=0
 		for M in ${(k)MOUNTS};do
@@ -806,7 +806,7 @@ ___EOF
 		[[ ${?} -ne 0 ]] && echo "An error occurred ejecting ${M}:$?" || echo "Safe to unplug"
 	else
 		echo
-		exit_leave $(err_msg_exit W "No:${PART_REGEX} partitions appear to be mounted")
+		exit_leave $(msg_exit W "No:${PART_REGEX} partitions appear to be mounted")
 	fi
 }
 
@@ -986,7 +986,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
+	echo "\n$(msg_exit W ${PENDING_MSGS})"
 	exit_leave
 }
 

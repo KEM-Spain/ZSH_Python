@@ -95,12 +95,12 @@ copy_dev_files () {
 	done
 
 	for D in ${BIN_LIST};do
-		[[ ${DEV_LIST[${D:t}]} -eq 1 ]] && cp -r ${_SRC_CODE}/${D:t} ${_REPO_LOCAL} # Copy source for active development
+		[[ ${DEV_LIST[${D:t}]} -eq 1 ]] && cp -ar ${_SRC_CODE}/${D:t} ${_REPO_LOCAL} # Copy source for active development
 	done
  
-	cp -r ${_SRC_CODE}/LIBS/scratch ${_REPO_LOCAL}
-	cp -r ${_SRC_CODE}/spanish_quiz ${_REPO_LOCAL}
-	cp -r ${_SRC_CODE}/takeout ${_REPO_LOCAL}
+	cp -ar ${_SRC_CODE}/LIBS/scratch ${_REPO_LOCAL}
+	cp -ar ${_SRC_CODE}/spanish_quiz ${_REPO_LOCAL}
+	cp -ar ${_SRC_CODE}/takeout ${_REPO_LOCAL}
 }
 
 copy_etc_files () {
@@ -115,7 +115,7 @@ copy_etc_files () {
 	done
 
 	for L in ${LOCAL_ETC_DIRS};do
-		cp -r "${L}" ${_REPO_LOCAL_ETC}
+		cp -ar "${L}" ${_REPO_LOCAL_ETC}
 	done
 }
 
@@ -125,7 +125,8 @@ copy_non_zsh_utils () {
 	echo "${GREEN_FG}NON ZSH UTILS${RESET}" >&2
 	for L in ${_NON_ZSH_UTILS};do
 		ELF=$(file ${L})
-		[[ ! ${ELF:l} =~ 'elf' ]] && cp "${L}" ${_REPO_NON_ZSH_UTILS} # Skip ELF
+		[[ ${ELF:l} =~ 'elf' ]] && continue
+		cp "${L}" ${_REPO_NON_ZSH_UTILS} # Skip ELF
 	done
 }
 
@@ -229,7 +230,7 @@ tcup 0 0
 echo "${WHITE_FG}Building repo${RESET}..."
 if [[ -e ${_REPO} ]];then
 	if [[ -e ${_REPO}/.git ]];then
-		sudo cp -r ${_REPO}/.git ${_REPO_UTILS} # Set aside .git repo
+		sudo cp -ar ${_REPO}/.git ${_REPO_UTILS} # Set aside .git repo
 		echo "${GREEN_FG}Backed up git repo to:${WHITE_FG}${_REPO_UTILS}${RESET}"
 	fi
 
@@ -237,9 +238,9 @@ if [[ -e ${_REPO} ]];then
 	echo "\n${WHITE_FG}Rebuilding${RESET}..."
 
 	if [[ -e ${_REPO_UTILS}/.git ]];then
-		sudo cp -r ${_REPO_UTILS}/.git ${_REPO} # Git repository
+		sudo cp -ar ${_REPO_UTILS}/.git ${_REPO} # Git repository
 		echo "${GREEN_FG}Copied git repo to:${WHITE_FG}${_REPO}${RESET}"
-		sudo cp ${_REPO_UTILS}/gitconfig ${_REPO}/.git/config # Git config
+		sudo cp -a ${_REPO_UTILS}/gitconfig ${_REPO}/.git/config # Git config
 		echo "${GREEN_FG}Copied git config to:${WHITE_FG}${_REPO}/.git${RESET}"
 	fi
 

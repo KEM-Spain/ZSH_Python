@@ -435,7 +435,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(err_msg_exit W ${PENDING_MSGS})
+	exit_leave $(err_msg_exit E ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
@@ -469,7 +469,7 @@ shift $(( OPTIND - 1 ))
 [[ -n ${TESTING} ]] && exit_leave $(msg_err "TESTING is set - unset before continuing")
 
 FILE_ARG=${1}
-[[ -z ${FILE_ARG} ]] && usage "Missing argument:${WHITE_FG}$(opt_type f)${RESET}"
+[[ -z ${FILE_ARG} ]] && usage "Missing argument:$(opt_type f)"
 
 # If any options are present they will require a local copy of the file arg
 [[ ! -e ./${FILE_ARG} && ${#OPTIONS} -ne 0 ]] && exit_leave $(msg_warn "No such file:${FILE_ARG} exists in the current directory")

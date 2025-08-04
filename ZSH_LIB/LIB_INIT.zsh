@@ -1,9 +1,10 @@
 # Import standard libs
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/ANSI.zsh
-source ${_LIB_DIR}/EXIT.zsh
-source ${_LIB_DIR}/ERROR.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
+[[ -z ${ZSH_LIB_DIR} ]] && LIB_DIR=/usr/local/lib || LIB_DIR=${ZSH_LIB_DIR}
+
+source ${LIB_DIR}/ANSI.zsh
+source ${LIB_DIR}/EXIT.zsh
+source ${LIB_DIR}/ERROR.zsh
+source ${LIB_DIR}/LIB_DEPS.zsh
 
 # Default Options
 setopt warncreateglobal # Monitor locals
@@ -18,20 +19,17 @@ mbegin=''
 mend=''
 
 # Constants
-_MY_PID="$$"
 _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
+_DEBUG_FILE=/tmp/$$_${_SCRIPT}_debug.out
 _GEO_KEY="key=uMibiyDeEGlYxeK3jx6J"
 _GEO_PROVIDER="https://extreme-ip-lookup.com"
 _MAX_COLS=$(tput -T xterm cols)
 _MAX_ROWS=$(tput -T xterm lines)
-_PID=$$
+_MY_PID="$$"
 _SCRIPT_TAG="[${WHITE_FG}${_SCRIPT}${RESET}]:"
 _TERM=xterm
-_USER_NAME=$(id -un)
-_USER_HOME=/home/${_USER_NAME}
 _XSET_DEFAULT_RATE="r rate 500 33" # Default <delay> <repeat>
 _XSET_MENU_RATE="r rate 600 20" # Menu rate <delay> <repeat>
-_DEBUG_FILE=/tmp/${_MY_PID}_${_SCRIPT}_debug.out
 
 # ROW status 
 _AVAIL_ROW=0 # Selectable

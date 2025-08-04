@@ -53,7 +53,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 external () {
 	# Constants
-	local MOUNT_ROOT=/media/${_USER_NAME}
+	local MOUNT_ROOT=/media/${USER}
 
 	#App Vars
 	local -a MSG_OUT
@@ -118,7 +118,7 @@ external () {
 			do_${ACTION} ${NDX}
 
 			if [[ ${?} -ne 0 ]];then
-				msg_box -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
+				msg_box -c -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
 			else
 				get_disk_info
 			fi
@@ -134,7 +134,7 @@ external () {
 			fi
 			MLIST+="${_PARTITIONS[${NDX}]} is ${STATE}"
 		done
-		msg_box -p -PK "Mount Status| |$(msg_list_bullet ${MLIST})"
+		msg_box -c -p -PK -H1 "Mount Status| |$(msg_list_bullet ${MLIST})"
 
 		for M in ${MARKED};do
 			MARKED[${M}]=0

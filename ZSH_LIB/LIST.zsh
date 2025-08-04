@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="ARRAY.zsh CENTER.zsh DBG.zsh MSG.zsh PATH.zsh STR.zsh TPUT.zsh UTILS.zsh VALIDATE.zsh"
+_DEPS_+=(DBG.zsh ARRAY.zsh CENTER.zsh MSG.zsh PATH.zsh STR.zsh TPUT.zsh VALIDATE.zsh)
 
 # LIB Declarations
 typeset -A _KEY_CALLBACKS=()

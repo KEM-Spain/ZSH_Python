@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="DBG.zsh"
+_DEPS_+=(DBG.zsh)
 
 # LIB Vars
 _CURSOR=''

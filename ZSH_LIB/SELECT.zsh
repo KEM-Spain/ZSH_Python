@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="ARRAY.zsh CENTER.zsh DBG.zsh MSG.zsh STR.zsh TPUT.zsh ./UTILS.zsh VALIDATE.zsh"
+_DEPS_+=(DBG.zsh ARRAY.zsh CENTER.zsh MSG.zsh STR.zsh TPUT.zsh VALIDATE.zsh)
 
 # Constants
 _EXIT_BOX=32
@@ -257,10 +257,14 @@ sel_list () {
 	done
 	shift $(( OPTIND - 1 ))
 
+	_TAG=$(str_no_ansi "${_TAG}") # Clean tag
+
 	if [[ -z ${_LIST_DATA} || ${_REFRESH} == 'true' ]];then
 		[[ ${#_LIST} -gt 100 ]] && msg_box -x1 -y1 -c "<w>Building select list...<N>"
 
-		[[ -n ${_TAG}  ]] && _SELECT_TAG_FILE="/tmp/$$.${_TAG}.state"
+		if [[ -n ${_TAG}  ]];then
+			_SELECT_TAG_FILE="/tmp/$$.${_TAG}.state"
+		fi
 
 		# If no X,Y coords are passed default to center
 		LIST_W=$(arr_long_elem_len ${_LIST})

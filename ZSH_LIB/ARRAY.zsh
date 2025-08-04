@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="DBG.zsh MSG.zsh STR.zsh"
+_DEPS_+=(DBG.zsh MSG.zsh STR.zsh)
 
 # LIB Functions
 arr_get_nonzero_count () {

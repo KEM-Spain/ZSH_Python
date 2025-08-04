@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="DBG.zsh MSG.zsh TPUT.zsh"
+_DEPS_+=(MSG.zsh TPUT.zsh)
 
 # LIB Declarations
 typeset -a _DELIMS=('#' '|' ':' ',' '	') # Recognized field delimiters

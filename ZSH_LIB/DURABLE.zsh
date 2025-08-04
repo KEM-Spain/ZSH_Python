@@ -1,5 +1,5 @@
 # LIB Dependencies
-_DEPS_+="DBG.zsh"
+_DEPS_+=(DBG.zsh)
 
 # LIB Declarations
 typeset -A _DURABLE # Holds variable values that can survive a subshell
