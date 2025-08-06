@@ -173,12 +173,11 @@ while getopts ${OPTSTR} OPTION;do
 	  :) exit_leave "${RED_FG}Error${RESET}: option -${OPTARG} requires an argument${RESET}";;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 #--Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
-[[ ${#} -ne 0 ]] && SEARCHTERM=(${@}) || SEARCHTERM=''
 
 # Set content type
 [[ ${DIRS} == "true" ]] && OBJTYPE="directory" || OBJTYPE="file"
@@ -191,9 +190,14 @@ PATHLBL=$(path_get_label 40)
 
 [[ ${DIRS} == 'true' ]] && TYPE=d || TYPE=f,l
 
-FNAME=''
-if [[ -n ${SEARCHTERM} ]];then
-	FNAME="-name '*${SEARCHTERM}*'"
+# Handle wildcards
+if [[ ${#} -ne 0 ]];then
+	if [[ ${FGLOB} =~ 'inum' ]];then
+		FNAME="-name ${(qqq)@}"
+	else
+		FNAME=${FGLOB}
+		FPATH=${FPATH:h}
+	fi
 fi
 
 CMD="find ${FPATH} -maxdepth 1 -type ${TYPE} ${FNAME} ! -path ${FPATH}"

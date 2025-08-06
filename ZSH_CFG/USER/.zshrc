@@ -224,6 +224,7 @@ precmd () {
 
 	if [[ -e /tmp/pwd.last ]];then
 		read LPWD < /tmp/pwd.last
+		rm -f /tmp/pwd.last
 	fi
 
 	if [[ ${PWD} != ${LPWD} ]];then
@@ -233,9 +234,9 @@ precmd () {
 			[[ ${PWD} == ${P} ]] && HIT=true && break
 		done <<<${PATH}
 
-		[[ ${HIT} == 'false' ]] && export PATH=${PATH}:$(pwd) # Add the pwd to the path
-	fi
+		[[ ${HIT} == 'false' ]] && export PATH=$(pwd):${PATH} # Prepend pwd to path
 
+	fi
 	echo ${PWD} > /tmp/pwd.last
 }
 

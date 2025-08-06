@@ -34,8 +34,7 @@ typeset -A _BREAK_COORDS=()
 typeset -A _DISPLAY_KEYS=()
 typeset -A _DOWNLOADS=()
 typeset -A _FAILED=()
-typeset -A _FAVORITE_ENGINE=()
-typeset -A _FAVORITE_OPTS=()
+typeset -A _FAV_LIST=()
 typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
 typeset -A _PARTIALS=()
@@ -82,9 +81,9 @@ _YTS_URL_LOG=/tmp/yts.url.log
 # Globals
 g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
-g_ENGINE_KEY=''
 g_IND_FLIP=false
 g_LAST_CODE_UPD=?
+g_LTYPE=y
 g_MASK_NDX=1
 g_PID=?
 g_PREFER_LIVE=''
@@ -504,18 +503,6 @@ clean_title () {
 	echo ${STR}
 }
 
-clear_tmp () {
-	local -a LIST=("${(f)$(find /tmp -maxdepth 1 -name '*state' -type f)}")
-	local L
-
-	if [[ -n ${LIST} ]];then
-		for L in ${LIST};do
-			logit ${_YTS_DBG_LOG} "${0}: deleting ${L}"
-			rm -f ${L}
-		done
-	fi
-}
-
 dashed_line () {
 	local CNT=10
 	local LEN=5
@@ -543,7 +530,7 @@ download_indicator () {
 	local R_SIDE="\\u2771"
 	local MASK=""
 	local IND_X=$(( _ALERT_COORDS[X] + 1 ))
-	local IND_Y=$(( _ALERT_COORDS[Y] + 6 ))
+	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
 	local OBJ_COLOR="${BOLD}${GREEN_FG}"
 
 	case ${LINE:l} in
@@ -668,7 +655,7 @@ fav_delete () {
 			else
 				mv -f /tmp/favlist.new ${_YTS_FAVORITES}
 				logit ${_YTS_DBG_LOG} "${0}: log ${_YTS_FAVORITES} updated"
-				fav_load_list
+				fav_load
 			fi
 		else
 			exit_leave "No favorites have been saved"
@@ -676,98 +663,111 @@ fav_delete () {
 	fi
 }
 
-fav_get_selected () {
-	local -a _DISPLAY_LIST=()
-	local DKEY # Display key
-	local EKEY # Engine key
-	local HDR # List Header
-	local FTR # List footer
-	local MAP # List map
-	local TAG=''
-	local MSG=''
-	local QKEY='' # Query key
+fav_get () {
+	local -A QUERY_KEYS=()
+	local -A QUERY_OPTS=()
+	local -a LIST=()
+	local C_MSG=''
+	local D_KEY=''
+	local ENGINE=''
+	local FTR=''
+	local HDR=''
+	local MAP=''
+	local OPTS=''
 	local O_COLOR=''
-	local C_LIST=' '
-	local F
+	local Q_KEY=''
+	local Q_OPT=''
+	local Q_OPT_EXT=''
+	local TAG=''
+	local L
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	# TODO: Missing support for Rumble on Custom list - clean this up - make sense of key parsing
 	while true;do
-		_DISPLAY_LIST=()
-		for F in ${(k)_DISPLAY_KEYS};do
-			EKEY=${$(cut -d: -f1 <<<${_DISPLAY_KEYS[${F}]}):l}
-			if [[ ${g_QRY_ENGINE} == 'rumble' ]];then
-				if [[ ${EKEY} =~ 'r' ]];then
-					_DISPLAY_LIST+=${F:gs/_/ /}
-					_FAVORITE_ENGINE[${F}]=${EKEY}
-					O_COLOR=${MAGENTA_FG}
-					C_LIST=' '
-				fi
-			else
-				if [[ ${EKEY} =~ 'y' ]];then
-						if [[ ${g_CUSTOM_LIST} == 'true' ]];then
-							if [[ ${EKEY} =~ 'p' ]];then
-								_DISPLAY_LIST+=${F:gs/_/ /}
-								_FAVORITE_ENGINE[${F}]=${EKEY:s/p//} # Strip custom marker
-								O_COLOR=${RED_FG}
-								C_LIST=" <I>(Custom List)<N> "
-							fi
-						else
-							if [[ ! ${EKEY} =~ 'p' ]];then
-								_DISPLAY_LIST+=${F:gs/_/ /}
-								_FAVORITE_ENGINE[${F}]=${EKEY}
-								O_COLOR=${CYAN_FG}
-								C_LIST=' '
-							fi
-						fi
-				fi
+		LIST=()
+		QUERY_KEYS=()
+		QUERY_OPTS=()
+		g_DISPLAY_KEY=''
+		g_PREFER_LIVE=false
+		g_QRY_ENGINE=''
+		g_STRICT=false
+
+		for L in ${(k)_FAV_LIST};do
+			D_KEY=${L:gs/_/ /}
+			Q_KEY=$(cut -d: -f1 <<<${_FAV_LIST[${L}]})
+			Q_OPT=$(cut -d: -f2 <<<${_FAV_LIST[${L}]:l})
+			if [[ ${g_LTYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
+				#set -xv
+				LIST+=${D_KEY}
+				QUERY_KEYS[${D_KEY}]=${Q_KEY}
+				QUERY_OPTS[${D_KEY}]=${Q_OPT}
+				O_COLOR=${RED_FG}
+				C_MSG=" <I>(Custom List)<N> "
+				#set +xv;read
+			elif [[ ${g_LTYPE} == 'y' && ${Q_OPT[1]} == 'y' ]];then
+				LIST+=${D_KEY}
+				QUERY_KEYS[${D_KEY}]=${Q_KEY}
+				QUERY_OPTS[${D_KEY}]=${Q_OPT}
+				ENGINE=youtube
+				O_COLOR=${CYAN_FG}
+				C_MSG=''
+			elif [[ ${g_LTYPE} == 'r' && ${Q_OPT[1]} == 'r' ]];then
+				LIST+=${D_KEY}
+				QUERY_KEYS[${D_KEY}]=${Q_KEY}
+				QUERY_OPTS[${D_KEY}]=${Q_OPT}
+				ENGINE=rumble
+				O_COLOR=${MAGENTA_FG}
+				C_MSG=''
 			fi
 		done
 
-		sel_set_list ${(o)_DISPLAY_LIST}
+		sel_set_list ${(o)LIST}
 		sel_set_app_keys d r y c
 
 		clear
 
-		HDR="${BOLD}${(C)g_QRY_ENGINE}${C_LIST}Query"
+		HDR="${BOLD}${(C)ENGINE}${C_MSG} Query"
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
-		FTR="<w>Run ${(C)g_QRY_ENGINE} query from history or <h>(q)uit<N>"
+		FTR="<w>Run ${(C)ENGINE} query from history or <h>(q)uit<N>"
 		TAG=$(tr -d '[:space:]' <<<${HDR})
 
-		# Choose high level list item
 		msg_line_weight heavy
 		list_set_restore_pos_reset # Fresh list - position at top
 		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
 		msg_line_weight light
 
-		case ${_SEL_KEY} in
-			d) fav_delete ${_SEL_VAL} && continue;;
-			r) g_QRY_ENGINE='rumble' && g_CUSTOM_LIST=false && continue;;
-			y) g_QRY_ENGINE='youtube' && g_CUSTOM_LIST=false && continue;;
-			c) g_QRY_ENGINE='youtube' && g_CUSTOM_LIST=true && continue;;
-		esac
-		[[ ${_SEL_VAL} != '?' ]] && break
-	done
+		[[ ${_SEL_KEY} == 'd' ]] && fav_delete ${_SEL_VAL}
+		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && g_LTYPE=${_SEL_KEY}
 
-	g_QUERY_KEY=$(cut -d: -f2 <<<${_DISPLAY_KEYS[${_SEL_VAL:gs/ /_}]})
-	g_ENGINE_KEY=$(cut -d: -f1 <<<${_DISPLAY_KEYS[${_SEL_VAL:gs/ /_}]})
-	g_DISPLAY_KEY=${_SEL_VAL}
+		if [[ ${_SEL_KEY} == '?' ]];then
+			g_QRY_ENGINE=${ENGINE}
+			g_QUERY_KEY=${QUERY_KEYS[${_SEL_VAL}]}
+			g_DISPLAY_KEY=${_SEL_VAL}
+			OPTS=${QUERY_OPTS[${_SEL_VAL}]}
+			if [[ ${OPTS[1]} == 'p' ]];then
+				[[ ${OPTS[2]} == 'y' ]] && g_QRY_ENGINE=youtube || g_QRY_ENGINE=rumble
+				OPTS=${OPTS[3,-1]}
+			else
+				OPTS=${OPTS[2,-1]}
+			fi
+			[[ ${OPTS} == 's' ]] && g_STRICT=true
+			[[ ${OPTS} == 'l' ]] && g_PREFER_LIVE=true
+			break
+		fi
+	done
 }
 
-fav_load_list () {
+fav_load () {
 	local LINE
-	local DKEY
-	local QKEY
-	local QCODE
+	local D_KEY
+	local Q_KEY
+	local Q_OPT
 
-	_DISPLAY_KEYS=()
+	_FAV_LIST=()
 
 	while read LINE;do
-		DKEY=$(cut -d'|' -f1 <<<${LINE})
-		QKEY=$(cut -d'|' -f2 <<<${LINE})
-		QCODE=$(cut -d'|' -f3 <<<${LINE})
-		_DISPLAY_KEYS[${DKEY}]="${QCODE}:${QKEY}"
+		D_KEY=$(cut -d'|' -f1 <<<${LINE})
+		Q_KEY=$(cut -d'|' -f2 <<<${LINE})
+		Q_OPT=$(cut -d'|' -f3 <<<${LINE})
+		_FAV_LIST[${D_KEY}]="${Q_KEY}:${Q_OPT}"
 	done < ${_YTS_FAVORITES}
 }
 
@@ -793,11 +793,14 @@ fav_add () {
 	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
 
-	# R    - Rumble  - channel/user query
-	# RL   - Rumble  - prefer livestreams
-	# Y    - YouTube - ID query
-	# YNS  - YouTube - ID no strict
-	# PYNS - YouTube - general query
+	# R   - Rumble list  - channel/user query
+	# RL  - Rumble list  - livestream
+	# Y   - YouTube list - no strict
+	# YS  - YouTube list - strict
+	# PY  - Custom list  - no strict
+	# PYS - Custom list  - YouTube No Strict
+	# PR  - Custom list  - Rumble
+	# PRL - Custom list  - Rumble livestream
 	
 	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
 		[[ ${g_PREFER_LIVE} == 'true' ]] && FAV="${(C)FAV}|${FAV}|RL" || FAV="${(C)FAV}|${FAV}|R" 
@@ -1261,7 +1264,6 @@ query_rumble () {
 	local CHANNEL=''
 	local DO_GENERAL=false
 	local GEN_SEARCH=''
-	local LIVE=''
 	local MSG=''
 	local NDX=''
 	local PG=''
@@ -1276,26 +1278,16 @@ query_rumble () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -n ${SEARCHTERM} ]] && g_QUERY_KEY=${SEARCHTERM}
-
-	LIVE=false
-	for K in ${(v)_DISPLAY_KEYS};do
-		local SITE_KEY=$(cut -d':' -f1 <<<${K})
-		local SITE_QUERY=$(cut -d':' -f2 <<<${K})
-		if [[ ${g_QUERY_KEY} == ${SITE_QUERY} ]];then
-			[[ ${SITE_KEY} == 'RL' ]] && LIVE=true
-			break
-		fi
-	done
-
+	 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} g_QUERY_KEY:${g_QUERY_KEY}"
-	[[ ${LIVE} == 'true' ]] && STR='LIVESTREAM' || STR=''
+	[[ ${g_PREFER_LIVE} == 'true' ]] && STR='LIVESTREAM' || STR=''
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL ${STR} SEARCH${RESET}"
 
 	g_SEARCH_TYPE=channel
 	#This URL tag may be of use - investigate
 	#&sort=date&section=sort 
 
-	if [[ ${LIVE} == 'true' ]];then
+	if [[ ${g_PREFER_LIVE} == 'true' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 
 		PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}/livestreams")
@@ -1438,27 +1430,21 @@ query_youtube () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
-	if [[ -n ${g_QUERY_KEY} ]];then
-		if [[ ${g_ENGINE_KEY:l} =~ 'ys' ]];then # Strict requested
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER ACTIVE${RESET}"
-			g_STRICT=true
-			g_PROXY_CMD="node ${_JS_SCRIPT} -s ${(qqq)g_QUERY_KEY}"
-		else
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER INACTIVE${RESET}"
-			g_STRICT=false
-			g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)g_QUERY_KEY}"
-		fi
+	if [[ ${g_STRICT} == 'true' ]];then # Strict requested
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER ACTIVE${RESET}"
+		g_PROXY_CMD="node ${_JS_SCRIPT} -s ${(qqq)g_QUERY_KEY}"
+	else
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER INACTIVE${RESET}"
+		g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)g_QUERY_KEY}"
 	fi
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, ${CYAN_FG}g_ENGINE_KEY${RESET}:${g_ENGINE_KEY}, ${CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
+		dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, ${CYAN_FG}g_CUSTOM_LIST${RESET}:${g_CUSTOM_LIST}, ${CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
 	_LOCAL_LIST=()
 
-	[[ ${g_ENGINE_KEY:l} =~ 'p' ]] && CUSTOM_KEY=true
-
-	if [[ ${CUSTOM_KEY} == 'false' ]];then
+	if [[ ${g_CUSTOM_LIST} == 'false' ]];then
 		g_SEARCH_TYPE='channel'
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL SEARCH${RESET}"
 	else
@@ -1731,12 +1717,11 @@ if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 
 fi
 
 # Set callbacks
-#set_exit_callback clear_tmp # Clear temp files on exit ( already accomplished in EXIT.zsh )
 log_update # Update the log
 clear
 
 # Load favorites
-fav_load_list ${_FAV_TAB}
+fav_load ${_FAV_TAB}
 
 # Load acronyms
 if [[ -e ${_ACRONYMS_FN} ]];then
@@ -1749,7 +1734,7 @@ fi
 do_smcup
 if [[ ${#} -eq 0 ]];then # NO args passed
 	while true;do
-		fav_get_selected
+		fav_get
 		if [[ -n ${g_QUERY_KEY} ]];then
 			msg_box "Querying ${g_QRY_ENGINE} for <B><I>${g_DISPLAY_KEY}<N>..."
 			query_${g_QRY_ENGINE} ${g_QUERY_KEY} # Call the extractor

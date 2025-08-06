@@ -17,8 +17,14 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
-typeset -A _BLACKLIST=(usage 1 parse_opts 1 opt_type 1 opt_exists 1 dbg 1 dbg_msg 1 dbg_set_level 1)
+typeset -A _BLACKLIST=(usage 1 parse_opts 1 opt_type 1 opt_exists 1 dbg 1 dbg_set_level 1)
 typeset -A _FOUND
 typeset -A _LIB_FUNC_MASTER
 typeset -A _SEEN
@@ -33,21 +39,27 @@ typeset -i _VERBOSE_LVL=0
 
 # Constants
 typeset -a _LIBS=(
-ARRAY.zsh 
-DATE.zsh 
-DBG.zsh 
-DURABLE.zsh 
+ANSI.zsh
+ARRAY.zsh
+CENTER.zsh
+DATE.zsh
+DBG.zsh
+DURABLE.zsh
+ERROR.zsh
 EXIT.zsh
-LIST.zsh 
-MSG.zsh 
-PATH.zsh 
-SEL_LIST.zsh 
-STR.zsh 
-TPUT.zsh 
-UTILS.zsh 
-VALIDATE.zsh 
-WIN.zsh 
+LIB_DEPS.zsh
+LIB_INIT.zsh
+LIST.zsh
+MSG.zsh
+PATH.zsh
+SELECT.zsh
+STR.zsh
+TPUT.zsh
+UTILS.zsh
+VALIDATE.zsh
+WIN.zsh
 )
+
 _SCRIPT_PATH=/usr/local/bin
 _APP_FUNC_BODIES=/tmp/app_func_bodies.out
 _LIB_FUNC_BODIES=/tmp/lib_func_bodies.out
@@ -56,13 +68,12 @@ _APP_BODY=/tmp/app_body.out
 # Globals
 g_MODE=app_utilization
  
-# Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
-
 # Functions
+f_pl () {
+	local COUNT=${1}
+	[[ ${COUNT} -gt 1 ]] && echo "functions" || echo "function"
+}
+
 get_lib_funcs () {
 	local -a FUNCS
 	local F L K
@@ -71,12 +82,14 @@ get_lib_funcs () {
 
 	# All library functions
 	for L in ${_LIBS};do
-		FUNCS=("${(f)$(grep -H --color=never '() {' ${_LIB_DIR}/${L} | sed -E 's/\s+[(][)] \{//' | sort)}")
-		for F in ${FUNCS};do
-			LIB=$(cut -d':' -f1 <<<${F})
-			FUNC=$(cut -d':' -f2 <<<${F})
-			_LIB_FUNC_MASTER[${FUNC}]=${LIB}
-		done
+		FUNCS=("${(f)$(grep -H -P --color=never '() {\s*?$' ${_LIB_DIR}/${L} | sed -E 's/\s*[(][)] \{.*//' | sort)}")
+		if arr_is_populated "${FUNCS}";then
+			for F in ${FUNCS};do
+				LIB=$(cut -d':' -f1 <<<${F})
+				FUNC=$(cut -d':' -f2 <<<${F})
+				_LIB_FUNC_MASTER[${FUNC}]=${LIB}
+			done
+		fi
 	done
 
 	for K in ${(k)_LIB_FUNC_MASTER};do
@@ -96,13 +109,13 @@ summarize () {
 	local TITLE
 	local TAG
 
-	TITLE="Current Utilization for:${FN}"
-	TAG=$(( 34 - ${#TITLE} )) # Longest detail is 34
+	TITLE="Current Internal Utilization for:"
+	TAG=$(( 33 - ${#TITLE} + ${#FN} ))
 	[[ ${TAG} -le 0 ]] && TAG=0
 
-	printf "\n${CYAN_FG}%s${RESET}:${WHITE_FG}%s${RESET}\n" "Current Utilization for" ${FN}
+	echo "\n${CYAN_FG}${TITLE}${RESET}${WHITE_FG}${FN}${RESET}"
 	echo $(str_unicode_line $(( ${#TITLE} + TAG )) )
-	printf "${CYAN_FG}%26s${RESET}:${WHITE_FG}%d${RESET}\n" "Total Function Count" ${TL_FUNCS}
+	printf "${CYAN_FG}%26s${RESET}:${WHITE_FG}%d${RESET}\n" "Total Functions Declared" ${TL_FUNCS}
 	printf "${CYAN_FG}%26s${RESET}:${WHITE_FG}%d${RESET}\n" "Total Functions Called" ${FUNCS_CALLED}
 	printf "${CYAN_FG}%26s${RESET}:${WHITE_FG}%d${RESET}\n" "Total Functions NOT Called" ${FUNCS_NOT_CALLED}
 	printf "${CYAN_FG}%26s${RESET}:${WHITE_FG}%.2f%%${RESET}\n\n" "Percent Utilized" $(( (FUNCS_CALLED/TL_FUNCS) * 100 ))
@@ -116,18 +129,19 @@ collect_funcs () {
 	[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:${LINENO} collecting funcs in:${FN}"
 	[[ ${_VERBOSE_LVL} -ge 4 ]] && echo "${0}:collecting funcs in:${FN}" >&2
 
-	FUNCS=($(grep -P "^\S.*\(\) {$" < ${FN} | cut -d'(' -f1 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'))
-	
-	for F in ${FUNCS};do
-		[[ ${IGNORE_BLACKLIST} == 'false' && ${_BLACKLIST[${F}]} -eq 1 ]] && continue
-		echo ${F}
-	done
+	FUNCS=($(grep -P "^\S.*\(\)\s*{\s*?$" < ${FN} | cut -d'(' -f1 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'))
+	if arr_is_populated "${FUNCS}";then
+		for F in ${FUNCS};do
+			[[ ${IGNORE_BLACKLIST} == 'false' && ${_BLACKLIST[${F}]} -eq 1 ]] && continue
+			echo ${F}
+		done
+	fi
 }
 
 has_funcs () {
 	local FN=${1}
 
-	grep -qP "^\S.*\(\) {$" ${FN}
+	grep -qP "^\S.*\(\)\s*{\s*?$" ${FN}
 	return ${?}
 }
 
@@ -142,7 +156,7 @@ save_funcs () {
 	[[ ${_DEBUG} -ne 0 ]] && dbg "${0}:${LINENO} saving lines of func:${FUNC} in:${FN}"
 	[[ ${_VERBOSE_LVL} -ge 4 ]] && echo "${0}:saving lines of func:${FUNC} in:${FN}" >&2
 
-	perl -ne "print if /^${FUNC}\s+\(\)\s+{$/ .. /^}$/" ${FN} >>${SAVE_AS}
+	perl -ne "print if /^${FUNC}\s+\(\)\s+{$/ .. /^}$/" ${FN} >>${SAVE_AS} 2>/dev/null
 	sed -i '/\(\) {$/d' ${SAVE_AS} # Remove any declarations
 }
 
@@ -166,7 +180,6 @@ Scan individual files for function usage
 \tUnused functions are identified
 \tOptionally scan all scripts for library utilization
 \tUnused library functions are identified
-\tNOTE: trivial arg processing functions are blacklisted by default
 EOF
 
 parse_opts () {
@@ -215,7 +228,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	echo "$(err_msg_exit W ${PENDING_MSGS})"
 	exit_leave
 }
 
@@ -248,7 +261,7 @@ else
 	[[ ${#} -gt 1 ]] && usage "Too many arguments:$(opt_type f)"
 	[[ ! -e ${1} ]] && usage "File not found:${1}"
 	if ! has_funcs ${1};then
-		exit_leave $(msg_exit W "File:${1} has no functions")
+		exit_leave $(err_msg_exit W "File:${1} has no functions")
 	fi
 fi
 
@@ -285,13 +298,13 @@ if [[ ${g_MODE} == 'app_utilization' ]];then
 	
 	# Test for lib calls
 	for L in ${(k)_LIB_FUNC_MASTER};do
-		if grep --color=never -q -m1 -w ${L} ${_APP_BODY};then
+		if grep --color=never -q -w -m1 -w -P "${L}|\s\|\s ${L}" ${_APP_BODY};then
 			_APP_LIB_CALLS+=${L}
 		fi
 	done 
 
 	if [[ ${#_APP_LIB_CALLS} -gt 0 ]];then
-		printf "${WHITE_FG}%3d${RESET} library functions called\n" ${#_APP_LIB_CALLS}
+		printf "${WHITE_FG}%3d${RESET} library $(f_pl ${#_APP_LIB_CALLS}) called\n" ${#_APP_LIB_CALLS}
 		for F in ${(o)_APP_LIB_CALLS};do
 			if [[ ${_VERBOSE_LVL} -ge 3 ]];then
 				printf "\t${CYAN_FG}%-30s${RESET}\n" ${F}
@@ -299,7 +312,7 @@ if [[ ${g_MODE} == 'app_utilization' ]];then
 		done
 	fi
 
-	printf "${WHITE_FG}%3d${RESET} functions declared in ${WHITE_FG}${ORIG_FN}${RESET}\n" ${#_APP_FUNC_LIST}
+	printf "${WHITE_FG}%3d${RESET} $(f_pl ${#_APP_FUNC_LIST}) declared in ${WHITE_FG}${ORIG_FN}${RESET}\n" ${#_APP_FUNC_LIST}
 	if [[ ${_VERBOSE_LVL} -ge 2 ]];then
 		for L in ${_APP_FUNC_LIST};do
 			printf "\t${CYAN_FG}%-30s${RESET}\n" ${L}
@@ -310,14 +323,14 @@ if [[ ${g_MODE} == 'app_utilization' ]];then
 	_APP_FUNC_CALLS=()
 	for L in ${_APP_FUNC_LIST};do
 		_FOUND[${L}]=0
-		if grep -q ${L} ${_APP_FUNC_BODIES};then
+		if grep -q -w ${L} ${_APP_FUNC_BODIES};then
 			_FOUND[${L}]=1
 			_APP_FUNC_CALLS+=${L}
 		fi
 	done 
 
 	if [[ ${#_APP_FUNC_CALLS} -gt 0 ]];then
-		printf "${WHITE_FG}%3d${RESET} functions called within functions\n" ${#_APP_FUNC_CALLS}
+		printf "${WHITE_FG}%3d${RESET} $(f_pl ${#_APP_FUNC_CALLS}) called within $(f_pl ${#_APP_FUNC_CALLS})\n" ${#_APP_FUNC_CALLS}
 		for F in ${(o)_APP_FUNC_CALLS};do
 			if [[ ${_VERBOSE_LVL} -ge 1 ]];then
 				printf "\t${CYAN_FG}%-30s${RESET} called by function\n" ${F}
@@ -328,14 +341,14 @@ if [[ ${g_MODE} == 'app_utilization' ]];then
 	# Test for calls from app body
 	_APP_BODY_CALLS=()
 	for F in ${_APP_FUNC_LIST};do
-		if grep -q ${F} ${_APP_BODY};then
+		if grep -q -w -P "${F}|\s\|\s ${F}" ${_APP_BODY};then
 			_FOUND[${F}]=1
 			_APP_BODY_CALLS+=${F}
 		fi
 	done 
 
 	if [[ ${#_APP_BODY_CALLS} -gt 0 ]];then
-		printf "${WHITE_FG}%3d${RESET} functions called in body\n" ${#_APP_BODY_CALLS}
+		printf "${WHITE_FG}%3d${RESET} $(f_pl ${#_APP_BODY_CALLS}) called in body\n" ${#_APP_BODY_CALLS}
 		for F in ${(o)_APP_BODY_CALLS};do
 			if [[ ${_VERBOSE_LVL} -ge 1 ]];then
 				printf "\t${CYAN_FG}%-30s${RESET} called in body\n" ${F}
@@ -354,14 +367,14 @@ if [[ ${g_MODE} == 'app_utilization' ]];then
 	done
 
 	if [[ ${NO_CALL} -gt 0 ]];then
-		printf "${WHITE_FG}%3d${RESET} uncalled functions\n" ${#_APP_FUNC_NOT_CALLED}
+		printf "${WHITE_FG}%3d${RESET} uncalled $(f_pl ${#_APP_FUNC_NOT_CALLED})\n" ${#_APP_FUNC_NOT_CALLED}
 		for F in ${(o)_APP_FUNC_NOT_CALLED};do
 			if [[ ${_VERBOSE_LVL} -ge 1 ]];then
 				printf "\t${CYAN_FG}%-30s${RESET} was ${RED_FG}not${RESET} called\n" ${F}
 			fi
 		done
 	else
-		printf "${WHITE_FG}%3d${RESET} functions were called\n"  $(( ${#_APP_FUNC_LIST}  + ${#_APP_LIB_CALLS} ))
+		printf "${WHITE_FG}%3d${RESET} functions were called (internal and library)\n"  $(( ${#_APP_FUNC_LIST}  + ${#_APP_LIB_CALLS} ))
 	fi
 
 	echo
@@ -383,7 +396,7 @@ else # Lib utilization
 	for F in ${(o)_LIB_FUNCS_CALLED_WITHIN_LIB};do
 		_FOUND[${F}]=1
 		 if [[ ${_VERBOSE_LVL} -ge 1 || ${_DEBUG} -gt 0 ]];then
-			[[ ${_VERBOSE_LVL} -ge 1 && ${MSG} == 'true' ]] && echo "${BOLD}${MAGENTA_FG}Library functions that are called internally${RESET}"
+			 [[ ${_VERBOSE_LVL} -ge 1 && ${MSG} == 'true' ]] && echo "${BOLD}${MAGENTA_FG}Library functions that are called internally${RESET}"
 			MSG=false
 			[[ -z ${_SEEN[${F}]} ]] && echo "Function ${CYAN_FG}${F}${RESET} called ${ITALIC}within${RESET} library" >&2
 			_SEEN[${F}]=1
@@ -397,7 +410,7 @@ else # Lib utilization
 		[[ ${?} -eq 0 ]] && _FLIST+=${F}
 	done
 
-	SCRIPTLIST=("${(f)$(grep -Pl '\(\)\s+\{' ${_FLIST})}")
+	SCRIPTLIST=("${(f)$(grep -Pl '\(\)\s*\{\s*?$' ${_FLIST})}")
 
 	echo "${GREEN_FG}Scanning scripts for calls to library...${RESET}"
 
