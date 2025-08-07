@@ -162,6 +162,7 @@ msg_box () {
 			N) MSG_FOOTER+="|<Z>|<w>(y)es,(s)kip,(a)ll?";;
 			O) MSG_FOOTER+="|<Z>|<w>Overwrite? (y/n)<N>";;
 			P) MSG_FOOTER+="|<Z>|<w>Proceed? (y/n)<N>";;
+			S) MSG_FOOTER+="|<Z>|<w>Select Option...<N>";;
 			Q) MSG_FOOTER+="|<Z>|<w>Queue? (y/n)<N>";;
 			V) MSG_FOOTER+="|<Z>|<w>View? (y/n)<N>";;
 			X) MSG_FOOTER+="|<Z>|<w>Kill? (y/n)<N>";;

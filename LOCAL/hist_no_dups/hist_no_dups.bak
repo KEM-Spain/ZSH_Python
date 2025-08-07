@@ -75,18 +75,18 @@ size_diff () {
 	local LAST_SIZE=$(stat -c"%s" ${HIST_BAK})
 	local DIFF=0
 	local -F PCT=0
-	local AVG=0
-	local -F THRESHOLD=1.00
+	local -F THRESHOLD=5
+	local -F AVG=0
 
 	[[ ${CUR_SIZE} -gt ${LAST_SIZE} ]] && DIFF=$(( CUR_SIZE - LAST_SIZE )) || DIFF=$(( LAST_SIZE - CUR_SIZE ))
 	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
-	PCT=$(( ${DIFF}.0 / ${AVG}.0 * 100 ))
+	PCT=$(( ${DIFF} / ${AVG} * 10 ))
 
 	printf "Growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
 	if [[ (( ${PCT} < ${THRESHOLD})) ]];then
 		return 1
 	else
-		return 0 # No rebuilds until 1% difference
+		return 0 # No rebuilds until THRESHOLD difference
 	fi
 }
 

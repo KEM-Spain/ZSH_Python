@@ -224,7 +224,7 @@ precmd () {
 
 	if [[ -e /tmp/pwd.last ]];then
 		read LPWD < /tmp/pwd.last
-		rm -f /tmp/pwd.last
+		rm -f /tmp/pwd.last >/dev/null 2>&1
 	fi
 
 	if [[ ${PWD} != ${LPWD} ]];then

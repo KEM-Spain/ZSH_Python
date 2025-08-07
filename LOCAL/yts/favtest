@@ -1,5 +1,23 @@
 #!/usr/bin/zsh
  
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
@@ -17,6 +35,8 @@ g_QRY_ENGINE=''
 g_QUERY_KEY=''
 g_STRICT=''
 g_PREFER_LIVE=''
+g_DISPLAY_KEY=''
+g_LTYPE=y
 
 fav_delete () {
 	local FAV=${1:gs/ /_/:l}
@@ -68,7 +88,6 @@ fav_get () {
 	local ENGINE=''
 	local FTR=''
 	local HDR=''
-	local LTYPE=y
 	local MAP=''
 	local OPTS=''
 	local O_COLOR=''
@@ -82,6 +101,7 @@ fav_get () {
 		LIST=()
 		QUERY_KEYS=()
 		QUERY_OPTS=()
+		g_DISPLAY_KEY=''
 		g_PREFER_LIVE=false
 		g_QRY_ENGINE=''
 		g_STRICT=false
@@ -90,22 +110,20 @@ fav_get () {
 			D_KEY=${L:gs/_/ /}
 			Q_KEY=$(cut -d: -f1 <<<${_FAV_LIST[${L}]})
 			Q_OPT=$(cut -d: -f2 <<<${_FAV_LIST[${L}]:l})
-			if [[ ${LTYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
-				#set -xv
+			if [[ ${g_LTYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
 				O_COLOR=${RED_FG}
 				C_MSG=" <I>(Custom List)<N> "
-				#set +xv;read
-			elif [[ ${LTYPE} == 'y' && ${Q_OPT[1]} == 'y' ]];then
+			elif [[ ${g_LTYPE} == 'y' && ${Q_OPT[1]} == 'y' ]];then
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
 				ENGINE=youtube
 				O_COLOR=${CYAN_FG}
 				C_MSG=''
-			elif [[ ${LTYPE} == 'r' && ${Q_OPT[1]} == 'r' ]];then
+			elif [[ ${g_LTYPE} == 'r' && ${Q_OPT[1]} == 'r' ]];then
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
@@ -131,11 +149,12 @@ fav_get () {
 		msg_line_weight light
 
 		[[ ${_SEL_KEY} == 'd' ]] && fav_delete ${_SEL_VAL}
-		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && LTYPE=${_SEL_KEY}
+		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && g_LTYPE=${_SEL_KEY}
 
 		if [[ ${_SEL_KEY} == '?' ]];then
 			g_QRY_ENGINE=${ENGINE}
 			g_QUERY_KEY=${QUERY_KEYS[${_SEL_VAL}]}
+			g_DISPLAY_KEY=${_SEL_VAL}
 			OPTS=${QUERY_OPTS[${_SEL_VAL}]}
 			if [[ ${OPTS[1]} == 'p' ]];then
 				[[ ${OPTS[2]} == 'y' ]] && g_QRY_ENGINE=youtube || g_QRY_ENGINE=rumble
@@ -167,63 +186,71 @@ fav_load () {
 }
 
 fav_add () {
-	local FAV=$(str_trim ${1:gs/ /_/})
+	local FAVORITE=$(str_trim ${1:gs/ /_/})
 	local -aU HISTORY
-	local LINE
+	local LINE=''
+	local LTYPE=''
 	local H
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAVORITE:${FAVORITE} g_QRY_ENGINE:${g_QRY_ENGINE}"
 
-#	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
-#	msg_box_clear
-#	tput rc
-#	case ${_MSG_KEY} in
-#		1) YouTube;;
-#		2) Rumble;;
-#		3) Custom;;
-#		*) echo; exit_leave $(msg_warn "Operation Cancelled");;
-#	esac
-
-	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
+	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAVORITE:gs/_/ /}} to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
 
-	# R   - Rumble list  - channel/user query
-	# RL  - Rumble list  - livestream
-	# Y   - YouTube list - no strict
-	# YS  - YouTube list - strict
-	# PY  - Custom list  - no strict
-	# PYS - Custom list  - YouTube No Strict
-	# PR  - Custom list  - Rumble
-	# PRL - Custom list  - Rumble livestream
-	
-	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
-		[[ ${g_PREFER_LIVE} == 'true' ]] && FAV="${(C)FAV}|${FAV}|RL" || FAV="${(C)FAV}|${FAV}|R" 
-	else
-		if [[ ${FAV} =~ ' ' ]];then
-			FAV="${(C)FAV}|${FAV}|PYNS" # Quoted string
-		else
-			[[ ${g_STRICT} == 'true' ]] && FAV="${(C)FAV}|${FAV}|YS" || FAV="${(C)FAV}|${FAV}|YNS"
-		fi
-	fi
-
-	HISTORY+=${FAV}
-
-	if [[ -e ${_YTS_FAVORITES} ]];then
-		while read LINE;do
-			HISTORY+=${LINE}
-		done < ${_YTS_FAVORITES}
-
-		/bin/rm -f ${_YTS_FAVORITES}
-	fi
-
-	for H in ${(o)HISTORY};do
-		echo ${H} >> ${_YTS_FAVORITES}
+	while true;do
+		msg_box -H1 -p -PS -jl "<w>Select Favorites List<N>|<Z>|y) YouTube|r) Rumble|c) Custom|a) Abort"
+		case ${_MSG_KEY:l} in
+			1) LTYPE=y && break;;
+			2) LTYPE=r && break;;
+			3) LTYPE=c && break;;
+			a) return;;
+			*) msg_box -p -PK "Invalid option";;
+		esac
 	done
 
-	sort -o ${_YTS_FAVORITES} -t'|' -k3 ${_YTS_FAVORITES} 
+	echo "LTYPE:${LTYPE}"
+	echo "g_STRICT:${g_STRICT}"
+	echo "g_PREFER_LIVE:${g_PREFER_LIVE}"
+	read
+
+#	# R   - Rumble list  - channel/user query
+#	# RL  - Rumble list  - livestream
+#	# Y   - YouTube list - no strict
+#	# YS  - YouTube list - strict
+#	# PY  - Custom list  - no strict
+#	# PYS - Custom list  - YouTube No Strict
+#	# PR  - Custom list  - Rumble
+#	# PRL - Custom list  - Rumble livestream
+#	
+#	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
+#		[[ ${g_PREFER_LIVE} == 'true' ]] && FAVORITE="${(C)FAVORITE}|${FAVORITE}|RL" || FAVORITE="${(C)FAVORITE}|${FAVORITE}|R" 
+#	else
+#		if [[ ${FAVORITE} =~ ' ' ]];then
+#			FAVORITE="${(C)FAVORITE}|${FAVORITE}|PYNS" # Quoted string
+#		else
+#			[[ ${g_STRICT} == 'true' ]] && FAVORITE="${(C)FAVORITE}|${FAVORITE}|YS" || FAVORITE="${(C)FAVORITE}|${FAVORITE}|YNS"
+#		fi
+#	fi
+#
+#	HISTORY+=${FAVORITE}
+#
+#	if [[ -e ${_YTS_FAVORITES} ]];then
+#		while read LINE;do
+#			HISTORY+=${LINE}
+#		done < ${_YTS_FAVORITES}
+#
+#		/bin/rm -f ${_YTS_FAVORITES}
+#	fi
+#
+#	for H in ${(o)HISTORY};do
+#		echo ${H} >> ${_YTS_FAVORITES}
+#	done
+#
+#	sort -o ${_YTS_FAVORITES} -t'|' -k3 ${_YTS_FAVORITES} 
 }
 
 g_QRY_ENGINE=rumble
 fav_load
-fav_get
+#fav_get
+fav_add "The Best Ever Favorite"

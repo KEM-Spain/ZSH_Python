@@ -57,15 +57,15 @@ exit_pre_exit () {
 		done
 	fi
 
-#	if [[ ${_EXIT_SCRUB} == 'true' ]];then
-#		{
-#			SCRUB=("${(f)$(find /tmp/*${_PID}* -type f)}")
-#			for F in ${SCRUB};do
-#				[[ ${F:e} == 'log' ]] && continue # Retain any logs
-#				/bin/rm -f ${F}
-#			done
-#		} >/dev/null 2>&1
-#	fi
+	if [[ ${_EXIT_SCRUB} == 'true' ]];then
+		{
+			SCRUB=("${(f)$(find /tmp/*${_PID}* -type f)}")
+			for F in ${SCRUB};do
+				[[ ${F:e} == 'log' ]] && continue # Retain any logs
+				/bin/rm -f ${F}
+			done
+		} >/dev/null 2>&1
+	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
 
