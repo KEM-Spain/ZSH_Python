@@ -10,7 +10,7 @@ typeset -A _KWD_ARGS=()
 _EXIT_VALUE=0
 _FUNC_TRAP=false
 _BAREWORD_IS_FILE=false
-_BOX_TAG="/tmp/$$.box_tag"
+_BOX_TAG="/tmp/${_MY_PID}.box_tag"
 
 arg_parse () {
 	local KWD=false
@@ -508,6 +508,16 @@ is_bare_word () {
 
 	if [[ ${_BAREWORD_IS_FILE} == 'false' ]];then # Bare words should be tested as possible file and dir names
 		[[ -f ${TEXT:Q} || -d ${TEXT:Q} ]] && return 1 || return 0
+	fi
+}
+
+is_binary () {
+	if [[ -f ${1} ]];then
+		grep -q -P '[\x7f-\xff]' ${1}
+		[[ ${?} -eq 0 ]] && return 0 || return 1
+	else
+		echo "${1} not file" >&2
+		return 1
 	fi
 }
 

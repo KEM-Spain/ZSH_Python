@@ -190,67 +190,59 @@ fav_add () {
 	local -aU HISTORY
 	local LINE=''
 	local LTYPE=''
+	local FTYPE=''
 	local H
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAVORITE:${FAVORITE} g_QRY_ENGINE:${g_QRY_ENGINE}"
 
-	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAVORITE:gs/_/ /}} to favorites?"
+	clear
+
+	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add \"${(C)${FAVORITE:gs/_/ /}}\" to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
 
 	while true;do
-		msg_box -H1 -p -PS -jl "<w>Select Favorites List<N>|<Z>|y) YouTube|r) Rumble|c) Custom|a) Abort"
+		msg_box -c -H1 -p -PS -jl "<w>Select Favorites List<N>|<Z>|y) YouTube|r) Rumble|c) Custom"
 		case ${_MSG_KEY:l} in
-			1) LTYPE=y && break;;
-			2) LTYPE=r && break;;
-			3) LTYPE=c && break;;
-			a) return;;
+			y) LTYPE=y && break;;
+			r) LTYPE=r && break;;
+			c) LTYPE=c && break;;
+			0) return;;
 			*) msg_box -p -PK "Invalid option";;
 		esac
 	done
 
-	echo "LTYPE:${LTYPE}"
-	echo "g_STRICT:${g_STRICT}"
-	echo "g_PREFER_LIVE:${g_PREFER_LIVE}"
-	read
+	echo "\ng_QRY_ENGINE:${g_QRY_ENGINE}"
 
-#	# R   - Rumble list  - channel/user query
-#	# RL  - Rumble list  - livestream
-#	# Y   - YouTube list - no strict
-#	# YS  - YouTube list - strict
-#	# PY  - Custom list  - no strict
-#	# PYS - Custom list  - YouTube No Strict
-#	# PR  - Custom list  - Rumble
-#	# PRL - Custom list  - Rumble livestream
-#	
-#	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
-#		[[ ${g_PREFER_LIVE} == 'true' ]] && FAVORITE="${(C)FAVORITE}|${FAVORITE}|RL" || FAVORITE="${(C)FAVORITE}|${FAVORITE}|R" 
-#	else
-#		if [[ ${FAVORITE} =~ ' ' ]];then
-#			FAVORITE="${(C)FAVORITE}|${FAVORITE}|PYNS" # Quoted string
-#		else
-#			[[ ${g_STRICT} == 'true' ]] && FAVORITE="${(C)FAVORITE}|${FAVORITE}|YS" || FAVORITE="${(C)FAVORITE}|${FAVORITE}|YNS"
-#		fi
-#	fi
-#
-#	HISTORY+=${FAVORITE}
-#
-#	if [[ -e ${_YTS_FAVORITES} ]];then
-#		while read LINE;do
-#			HISTORY+=${LINE}
-#		done < ${_YTS_FAVORITES}
-#
-#		/bin/rm -f ${_YTS_FAVORITES}
-#	fi
-#
-#	for H in ${(o)HISTORY};do
-#		echo ${H} >> ${_YTS_FAVORITES}
-#	done
-#
-#	sort -o ${_YTS_FAVORITES} -t'|' -k3 ${_YTS_FAVORITES} 
+	case ${g_QRY_ENGINE} in
+		youtube) [[ ${g_STRICT} == 'true' ]] && FTYPE="YS" || FTYPE="Y";;
+		rumble) [[ ${g_PREFER_LIVE} == 'true' ]] && FTYPE="RL" || FTYPE="R";;
+	esac
+
+	[[ ${LTYPE} == 'c' ]] && FTYPE="P${FTYPE}"
+
+	FAVORITE="${(C)FAVORITE}|${FAVORITE}|${FTYPE}"
+
+	HISTORY+=${FAVORITE}
+
+	if [[ -e ${_YTS_FAVORITES} ]];then
+		while read LINE;do
+			HISTORY+=${LINE}
+		done < ${_YTS_FAVORITES}
+
+		/bin/rm -f ${_YTS_FAVORITES}
+	fi
+
+	for H in ${(o)HISTORY};do
+		echo ${H} >> ${_YTS_FAVORITES}
+	done
+
+	sort -o ${_YTS_FAVORITES} -t'|' -k3 ${_YTS_FAVORITES} 
 }
 
 g_QRY_ENGINE=rumble
 fav_load
-#fav_get
-fav_add "The Best Ever Favorite"
+while true;do
+	fav_get
+	fav_add "The Best Ever Favorite"
+done

@@ -721,10 +721,11 @@ fav_get () {
 
 		clear
 
-		HDR="${BOLD}${(C)ENGINE}${C_MSG} Query"
+		HDR="<B>${(C)ENGINE} <B>Query<N>"
+		TAG=$(tr -d '[:space:]' <<<${HDR}) # TAG w/o C_MSG
+		[[ -n ${C_MSG} ]] && HDR="<B>${(C)ENGINE}${C_MSG} <B>Query<N>"
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)ENGINE} query from history or <h>(q)uit<N>"
-		TAG=$(tr -d '[:space:]' <<<${HDR})
 
 		msg_line_weight heavy
 		list_set_restore_pos_reset # Fresh list - position at top
@@ -769,47 +770,42 @@ fav_load () {
 }
 
 fav_add () {
-	local FAV=$(str_trim ${1:gs/ /_/})
+	local FAVORITE=$(str_trim ${1:gs/ /_/})
 	local -aU HISTORY
-	local LINE
+	local LINE=''
+	local LTYPE=''
+	local FTYPE=''
 	local H
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAVORITE:${FAVORITE} g_QRY_ENGINE:${g_QRY_ENGINE}"
 
-#	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
-#	msg_box_clear
-#	tput rc
-#	case ${_MSG_KEY} in
-#		1) YouTube;;
-#		2) Rumble;;
-#		3) Custom;;
-#		*) echo; exit_leave $(msg_warn "Operation Cancelled");;
-#	esac
+	clear
 
-	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
+	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add \"${(C)${FAVORITE:gs/_/ /}}\" to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
 
-	# R   - Rumble list  - channel/user query
-	# RL  - Rumble list  - livestream
-	# Y   - YouTube list - no strict
-	# YS  - YouTube list - strict
-	# PY  - Custom list  - no strict
-	# PYS - Custom list  - YouTube No Strict
-	# PR  - Custom list  - Rumble
-	# PRL - Custom list  - Rumble livestream
-	
-	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
-		[[ ${g_PREFER_LIVE} == 'true' ]] && FAV="${(C)FAV}|${FAV}|RL" || FAV="${(C)FAV}|${FAV}|R" 
-	else
-		if [[ ${FAV} =~ ' ' ]];then
-			FAV="${(C)FAV}|${FAV}|PYNS" # Quoted string
-		else
-			[[ ${g_STRICT} == 'true' ]] && FAV="${(C)FAV}|${FAV}|YS" || FAV="${(C)FAV}|${FAV}|YNS"
-		fi
-	fi
+	while true;do
+		msg_box -c -H1 -p -PS -jl "<w>Select Favorites List<N>|<Z>|y) YouTube|r) Rumble|c) Custom"
+		case ${_MSG_KEY:l} in
+			y) LTYPE=y && break;;
+			r) LTYPE=r && break;;
+			c) LTYPE=c && break;;
+			0) return;;
+			*) msg_box -p -PK "Invalid option";;
+		esac
+	done
 
-	HISTORY+=${FAV}
+	case ${g_QRY_ENGINE} in
+		youtube) [[ ${g_STRICT} == 'true' ]] && FTYPE="YS" || FTYPE="Y";;
+		rumble) [[ ${g_PREFER_LIVE} == 'true' ]] && FTYPE="RL" || FTYPE="R";;
+	esac
+
+	[[ ${LTYPE} == 'c' ]] && FTYPE="P${FTYPE}"
+
+	FAVORITE="${(C)FAVORITE}|${FAVORITE}|${FTYPE}"
+
+	HISTORY+=${FAVORITE}
 
 	if [[ -e ${_YTS_FAVORITES} ]];then
 		while read LINE;do
@@ -1247,6 +1243,7 @@ post_process () {
 }
 
 query_rumble () {
+	# TODO: Crosstalk is getting old videos; needs a tweak
 	local SEARCHTERM=${1}
 	local -A FIELD_MAP=("author" 2 "title" 3 "age" 4 "url" 5 "time" 6 "agetime" "4,6")
 	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
@@ -1266,11 +1263,12 @@ query_rumble () {
 	local PG=''
 	local REL_W=$(( ${LAST_MSG[W]} + 4 ))
 	local REL_Y=$(center -h${REL_W})
+	local QRY=''
 	local STR=''
 	local K V T
 
 	ping -w1 www.rumble.com >/dev/null
-	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -1281,24 +1279,28 @@ query_rumble () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL ${STR} SEARCH${RESET}"
 
 	g_SEARCH_TYPE=channel
-	#This URL tag may be of use - investigate
+	#Sort tag 
 	#&sort=date&section=sort 
 
 	if [[ ${g_PREFER_LIVE} == 'true' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 
-		PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}/livestreams")
+		QRY="http://rumble.com/c/${g_QUERY_KEY}/livestreams"
+		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: http://rumble.com/c/${g_QUERY_KEY}/livestreams to /tmp/Rumble-livestream.qry${RESET}"
-			wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}/livestreams" > /tmp/Rumble-livestream.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-livestream.qry${RESET}"
+			wget -q -O - ${QRY} > /tmp/Rumble-livestream.qry
 		fi
 	else
 		msg_box -c "Requesting <c><I>channel<N> search..."
 
-		PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}?page=1")
+		QRY="http://rumble.com/c/${g_QUERY_KEY}?page=1"
+		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: http://rumble.com/c/${g_QUERY_KEY}?page=1 to /tmp/Rumble-channel.qry${RESET}"
-			wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}?page=1" > /tmp/Rumble-channel.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-channel.qry${RESET}"
+			wget -q -O - ${QRY} > /tmp/Rumble-channel.qry
 		fi
 	fi
 
@@ -1323,10 +1325,12 @@ query_rumble () {
 		g_SEARCH_TYPE="user livestreams"
 
 		GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
-		PG=$(wget -q -O - "https://rumble.com/user/${g_QUERY_KEY}/livestreams'")
+		QRY="https://rumble.com/user/${g_QUERY_KEY}/livestreams"
+		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: https://rumble.com/user/${g_QUERY_KEY}/livestreams to /tmp/Rumble-user-livestream.qry${RESET}"
-			wget -q -O - "https://rumble.com/user/${g_QUERY_KEY}/livestreams" > /tmp/Rumble-user-livestream.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-user-livestream.qry${RESET}"
+			wget -q -O - ${QRY} > /tmp/Rumble-user-livestream.qry
 		fi
 
 		[[ -z ${PG} || ${PG:l} =~ "no videos found" ]] && DO_GENERAL=true || DO_GENERAL=false
@@ -1352,10 +1356,12 @@ query_rumble () {
 			g_SEARCH_TYPE=general
 
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
-			PG=$(wget -q -O - "https://rumble.com/search/all?q=${GEN_SEARCH}")
+			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
+			logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+			PG=$(wget -q -O - ${QRY})
 			if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-				dbg "${0}:${LINENO} ${WHITE_FG}Saved query: https://rumble.com/search/all?q=${GEN_SEARCH} to /tmp/Rumble-general.qry${RESET}"
-				wget -q -O - "https://rumble.com/search/all?q=${GEN_SEARCH}" > /tmp/Rumble-general.qry
+				dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-general.qry${RESET}"
+				wget -q -O - ${QRY} > /tmp/Rumble-general.qry
 			fi
 
 			TITLES=("${(f)$(pup --charset utf8 '.video-item--title text{}' <<<${PG} | sed 's/|//g')}")
@@ -1422,7 +1428,7 @@ query_youtube () {
 	local F
 
 	ping -w1 www.youtube.com >/dev/null
-	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 

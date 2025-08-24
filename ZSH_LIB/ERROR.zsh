@@ -10,6 +10,9 @@ err_msg_exit () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	[[ -z ${1} ]] && echo "${0}: missing argument 1" && exit 1
+	[[ -z ${2} ]] && echo "${0}: missing argument 2" && exit 1
+
 	[[ -z ${@} ]] && return
 
 	case ${E_TYPE} in 

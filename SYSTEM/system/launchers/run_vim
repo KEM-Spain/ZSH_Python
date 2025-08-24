@@ -16,6 +16,15 @@ MAGENTA_FG="\033[35m"
 CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+#Declarations
+typeset -a FILES
+
 #Constants
 TEMPLATES=/usr/local/etc/templates
 COLORS=${TEMPLATES}/color.template
@@ -23,35 +32,39 @@ HEADERS=${TEMPLATES}/app.template
 APPEXEC=${TEMPLATES}/app_exec.template
 GETOPTS=${TEMPLATES}/getopt.template
 CURSOR=${TEMPLATES}/list_cursor.template
-_LIB=/usr/local/lib
-_DIR_USER=$(id -nu)
-_DIR_GROUP=$(id -ng)
-_VIM=/usr/bin/vim
-_EDITABLE='ascii\|text\|script\|empty\|regular'
-_ROWS=$(tput lines)
+
+#Vars
 _COLS=$(tput cols)
+_DIR_GROUP=$(id -ng)
+_DIR_USER=$(id -nu)
+_EDITABLE='ascii\|text\|script\|empty\|regular'
+_FTYPE=''
+_ROWS=$(tput lines)
+_VIM=/usr/bin/vim
 _VIM_RC=~/.vimrc
-
-#Imports
-_LIB_DIR=/usr/local/lib
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/STR.zsh
-source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
-
-#Declarations
-typeset -a FILES
 
 #Functions
 is_text () {
 	local FILE=${1}
 
-	[[ -z ${1} ]] && exit_leave $(msg_err "${0}:Missing argument:FILE")
+	_FTYPE=$(file ${FILE} | cut -d',' -f1 | cut -d':' -f2)
+	_FTYPE=$(str_trim ${_FTYPE})
+
+	[[ -z ${1} ]] && exit_leave $(err_msg_exit E "${0}:Missing argument:FILE")
+	[[ ! -f ${FILE} ]] && exit_leave $(err_msg_exit E "${0}: ${FILE} not file")
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "Checking 'file -L ${FILE}' for ${_EDITABLE}"
-	file -L ${FILE} 2>/dev/null | grep -qi ${_EDITABLE} #filter editable result
-	[[ $? -eq 0 ]]	&& return 0 || return 1
+	file -L ${FILE} 2>/dev/null | grep -qi ${_EDITABLE} # Filter for editable
+
+	if [[ $? -eq 0 ]];then
+		return 0
+	else
+		if is_binary ${FILE};then # Detect possible misidentification by file utility of text as data
+			return 1
+		else
+			return 0
+		fi
+	fi
 }
 
 need_sudo () {
@@ -59,7 +72,7 @@ need_sudo () {
 	local RC
 	local FQFN=$(realpath ${FN})
 
-	[[ -z ${1} ]] && exit_leave $(msg_err "${0}:Missing argument:FILE")
+	[[ -z ${1} ]] && exit_leave $(err_msg_exit E "${0}:Missing argument:FILE")
 
 	if [[ -e ${FQFN} ]];then
 		[[ -r ${FQFN} ]] && RC=1 || RC=0
@@ -201,15 +214,16 @@ shift $((OPTIND -1))
 FILES=(${@})
 SIZE=0
 
-[[ ${#} -eq 0 ]] && usage $(msg_err "Missing arg:$(opt_type f)")
+[[ ${#} -eq 0 ]] && usage $(err_msg_exit E "Missing arg:$(opt_type f)")
 
 if [[ ${#} -gt 1 ]];then
-	${_VIM} ${@:q} # multiple file args simply run and the OS will handle any permission errors etc.
+	${_VIM} ${@:q} # multiple file args simply submitted and vim will handle any errors
 	exit_leave
 fi
 
 #From here onward there is only a single file name to manage
 FN=${1}
+
 if [[ ${MAKE_SCRIPT} == 'true' ]];then
 	if [[ -f ${FN} ]];then #ignore for existing files
 		echo "FILE:${FN} exists - editing existing file"
@@ -221,7 +235,7 @@ if [[ ${MAKE_SCRIPT} == 'true' ]];then
 			PYTHON)	make_python ${FN};RC=${?};;
 		esac
 
-		[[ ${RC} -ne 0 ]] && exit_leave $(msg_err "Unable to create ${MAKE_TYPE} stub - check permissions")
+		[[ ${RC} -ne 0 ]] && exit_leave $(err_msg_exit W "Unable to create ${MAKE_TYPE} stub - check permissions")
 
 		SIZE=$(stat -c '%s' ${FN} 2>/dev/null)
 		if [[ -e ${FN} ]];then
@@ -233,7 +247,7 @@ fi
 
 if [[ -e ${FN} && ${FORCE} == 'false' ]];then
 	if ! is_text ${FN};then
-		exit_leave $(msg_err "File: ${FN} is not a text file ($(file ${FN} | cut -d',' -f1 | cut -d':' -f2 | sed 's/^ //'))")
+		exit_leave $(err_msg_exit E "File:${FN} is type:${_FTYPE} ${RED_FG}not editable${RESET}")
 	fi
 fi
 

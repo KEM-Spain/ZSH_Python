@@ -17,11 +17,12 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
 #Constants
-COLORS=/usr/local/etc/color.template
-HEADERS=/usr/local/etc/app.template
-APPEXEC=/usr/local/etc/app_exec.template
-GETOPTS=/usr/local/etc/getopt.template
-CURSOR=/usr/local/etc/list_cursor.template
+TEMPLATES=/usr/local/etc/templates
+COLORS=${TEMPLATES}/color.template
+HEADERS=${TEMPLATES}/app.template
+APPEXEC=${TEMPLATES}/app_exec.template
+GETOPTS=${TEMPLATES}/getopt.template
+CURSOR=${TEMPLATES}/list_cursor.template
 _LIB=/usr/local/lib
 _DIR_USER=$(id -nu)
 _DIR_GROUP=$(id -ng)
@@ -46,7 +47,7 @@ typeset -a FILES
 is_text () {
 	local FILE=${1}
 
-	[[ -z ${1} ]] && exit_leave $(msg_err "${0}:Missing argument:FILE")
+	[[ -z ${1} ]] && exit_leave $(err_msg_exit "${0}:Missing argument:FILE")
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "Checking 'file -L ${FILE}' for ${_EDITABLE}"
 	file -L ${FILE} 2>/dev/null | grep -qi ${_EDITABLE} #filter editable result
@@ -58,7 +59,7 @@ need_sudo () {
 	local RC
 	local FQFN=$(realpath ${FN})
 
-	[[ -z ${1} ]] && exit_leave $(msg_err "${0}:Missing argument:FILE")
+	[[ -z ${1} ]] && exit_leave $(err_msg_exit "${0}:Missing argument:FILE")
 
 	if [[ -e ${FQFN} ]];then
 		[[ -r ${FQFN} ]] && RC=1 || RC=0
@@ -200,7 +201,7 @@ shift $((OPTIND -1))
 FILES=(${@})
 SIZE=0
 
-[[ ${#} -eq 0 ]] && usage $(msg_err "Missing arg:$(opt_type f)")
+[[ ${#} -eq 0 ]] && usage $(err_msg_exit "Missing arg:$(opt_type f)")
 
 if [[ ${#} -gt 1 ]];then
 	${_VIM} ${@:q} # multiple file args simply run and the OS will handle any permission errors etc.
@@ -220,7 +221,7 @@ if [[ ${MAKE_SCRIPT} == 'true' ]];then
 			PYTHON)	make_python ${FN};RC=${?};;
 		esac
 
-		[[ ${RC} -ne 0 ]] && exit_leave $(msg_err "Unable to create ${MAKE_TYPE} stub - check permissions")
+		[[ ${RC} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to create ${MAKE_TYPE} stub - check permissions")
 
 		SIZE=$(stat -c '%s' ${FN} 2>/dev/null)
 		if [[ -e ${FN} ]];then
@@ -232,7 +233,7 @@ fi
 
 if [[ -e ${FN} && ${FORCE} == 'false' ]];then
 	if ! is_text ${FN};then
-		exit_leave $(msg_err "File: ${FN} is not a text file ($(file ${FN} | cut -d',' -f1 | cut -d':' -f2 | sed 's/^ //'))")
+		exit_leave $(err_msg_exit "File: ${FN} is not a text file ($(file ${FN} | cut -d',' -f1 | cut -d':' -f2 | sed 's/^ //'))")
 	fi
 fi
 

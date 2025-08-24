@@ -79,7 +79,6 @@ _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
 _YTS_URL_LOG=/tmp/yts.url.log
 
 # Globals
-g_CUSTOM_LIST=false
 g_DISPLAY_KEY=''
 g_IND_FLIP=false
 g_LAST_CODE_UPD=?
@@ -695,13 +694,11 @@ fav_get () {
 			Q_KEY=$(cut -d: -f1 <<<${_FAV_LIST[${L}]})
 			Q_OPT=$(cut -d: -f2 <<<${_FAV_LIST[${L}]:l})
 			if [[ ${g_LTYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
-				#set -xv
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
 				O_COLOR=${RED_FG}
 				C_MSG=" <I>(Custom List)<N> "
-				#set +xv;read
 			elif [[ ${g_LTYPE} == 'y' && ${Q_OPT[1]} == 'y' ]];then
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
@@ -724,10 +721,11 @@ fav_get () {
 
 		clear
 
-		HDR="${BOLD}${(C)ENGINE}${C_MSG} Query"
+		HDR="<B>${(C)ENGINE} <B>Query<N>"
+		TAG=$(tr -d '[:space:]' <<<${HDR}) # TAG w/o C_MSG
+		[[ -n ${C_MSG} ]] && HDR="<B>${(C)ENGINE}${C_MSG} <B>Query<N>"
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)ENGINE} query from history or <h>(q)uit<N>"
-		TAG=$(tr -d '[:space:]' <<<${HDR})
 
 		msg_line_weight heavy
 		list_set_restore_pos_reset # Fresh list - position at top
@@ -772,47 +770,42 @@ fav_load () {
 }
 
 fav_add () {
-	local FAV=$(str_trim ${1:gs/ /_/})
+	local FAVORITE=$(str_trim ${1:gs/ /_/})
 	local -aU HISTORY
-	local LINE
+	local LINE=''
+	local LTYPE=''
+	local FTYPE=''
 	local H
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAV:${FAV} g_QRY_ENGINE:${g_QRY_ENGINE}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAVORITE:${FAVORITE} g_QRY_ENGINE:${g_QRY_ENGINE}"
 
-#	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
-#	msg_box_clear
-#	tput rc
-#	case ${_MSG_KEY} in
-#		1) YouTube;;
-#		2) Rumble;;
-#		3) Custom;;
-#		*) echo; exit_leave $(msg_warn "Operation Cancelled");;
-#	esac
+	clear
 
-	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add ${(C)${FAV:gs/_/ /}} to favorites?"
+	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add \"${(C)${FAVORITE:gs/_/ /}}\" to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
 
-	# R   - Rumble list  - channel/user query
-	# RL  - Rumble list  - livestream
-	# Y   - YouTube list - no strict
-	# YS  - YouTube list - strict
-	# PY  - Custom list  - no strict
-	# PYS - Custom list  - YouTube No Strict
-	# PR  - Custom list  - Rumble
-	# PRL - Custom list  - Rumble livestream
-	
-	if [[ ${g_QRY_ENGINE:l} == 'rumble' ]];then
-		[[ ${g_PREFER_LIVE} == 'true' ]] && FAV="${(C)FAV}|${FAV}|RL" || FAV="${(C)FAV}|${FAV}|R" 
-	else
-		if [[ ${FAV} =~ ' ' ]];then
-			FAV="${(C)FAV}|${FAV}|PYNS" # Quoted string
-		else
-			[[ ${g_STRICT} == 'true' ]] && FAV="${(C)FAV}|${FAV}|YS" || FAV="${(C)FAV}|${FAV}|YNS"
-		fi
-	fi
+	while true;do
+		msg_box -c -H1 -p -PS -jl "<w>Select Favorites List<N>|<Z>|y) YouTube|r) Rumble|c) Custom"
+		case ${_MSG_KEY:l} in
+			y) LTYPE=y && break;;
+			r) LTYPE=r && break;;
+			c) LTYPE=c && break;;
+			0) return;;
+			*) msg_box -p -PK "Invalid option";;
+		esac
+	done
 
-	HISTORY+=${FAV}
+	case ${g_QRY_ENGINE} in
+		youtube) [[ ${g_STRICT} == 'true' ]] && FTYPE="YS" || FTYPE="Y";;
+		rumble) [[ ${g_PREFER_LIVE} == 'true' ]] && FTYPE="RL" || FTYPE="R";;
+	esac
+
+	[[ ${LTYPE} == 'c' ]] && FTYPE="P${FTYPE}"
+
+	FAVORITE="${(C)FAVORITE}|${FAVORITE}|${FTYPE}"
+
+	HISTORY+=${FAVORITE}
 
 	if [[ -e ${_YTS_FAVORITES} ]];then
 		while read LINE;do
@@ -1250,6 +1243,7 @@ post_process () {
 }
 
 query_rumble () {
+	# TODO: Crosstalk is getting old videos; needs a tweak
 	local SEARCHTERM=${1}
 	local -A FIELD_MAP=("author" 2 "title" 3 "age" 4 "url" 5 "time" 6 "agetime" "4,6")
 	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
@@ -1273,7 +1267,7 @@ query_rumble () {
 	local K V T
 
 	ping -w1 www.rumble.com >/dev/null
-	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -1412,11 +1406,10 @@ query_rumble () {
 	return 0
 }
 
-query_youtube () { 
+query_youtube () {
 	local -a WORK_LIST=()
 	local -A FIELD_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
 	local AGE AUTHOR TITLE URL TIME AGETIME
-	local CUSTOM_KEY=false
 	local DATA=false
 	local HIT=false
 	local LINE=''
@@ -1426,7 +1419,7 @@ query_youtube () {
 	local F
 
 	ping -w1 www.youtube.com >/dev/null
-	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
@@ -1439,18 +1432,13 @@ query_youtube () {
 	fi
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, ${CYAN_FG}g_CUSTOM_LIST${RESET}:${g_CUSTOM_LIST}, ${CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
+		dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
 	_LOCAL_LIST=()
 
-	if [[ ${g_CUSTOM_LIST} == 'false' ]];then
-		g_SEARCH_TYPE='channel'
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL SEARCH${RESET}"
-	else
-		g_SEARCH_TYPE='general'
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
-	fi
+	g_SEARCH_TYPE='general'
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 
 	NDX=0
 	while read LINE;do
@@ -1465,9 +1453,11 @@ query_youtube () {
 		STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
 		STR=${STR:s/Streamed //}
 
-		if [[ ${CUSTOM_KEY} == 'false' && ${g_STRICT} == 'false' ]];then # Apply filtering to non strict results
+		if [[ ${g_STRICT} == 'false' ]];then # Apply filtering to non strict results
 			HIT=false
-			AUTHOR=$(cut -d'|' -f2 <<<${LINE})
+			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
+			TITLE=$(cut -d'|' -f3 <<<${LINE}) && TITLE=$(str_to_ascii ${TITLE})
+			[[ ${TITLE:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
 			[[ ${AUTHOR:gs/ //:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
@@ -1688,7 +1678,7 @@ if [[ ${g_QRY_ENGINE} == 'youtube' ]];then
 	elif [[ ${g_PREFER_LIVE} == 'true' ]];then
 		exit_leave $(err_msg_exit E "Option:-L is a Rumble only option")
 	fi
-	g_PROXY_CMD="node ${_JS_SCRIPT} ${SEARCHTERM}"
+	g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)SEARCHTERM}"
 else
 	if [[ ${VERSION_OPT} == 'true'  ]];then
 		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")

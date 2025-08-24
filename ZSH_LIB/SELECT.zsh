@@ -23,7 +23,7 @@ _CURRENT_PAGE=0
 _HAS_CAT=false
 _HILITE_X=0
 _SAVE_MENU_POS=false
-_SELECT_TAG_FILE="/tmp/$$.${_SCRIPT}_sel.state"
+_SELECT_TAG_FILE="/tmp/${_MY_PID}.${_SCRIPT}_sel.state"
 _SEL_KEY=''
 _SEL_VAL=''
 _TAG=''
@@ -263,7 +263,7 @@ sel_list () {
 		[[ ${#_LIST} -gt 100 ]] && msg_box -x1 -y1 -c "<w>Building select list...<N>"
 
 		if [[ -n ${_TAG}  ]];then
-			_SELECT_TAG_FILE="/tmp/$$.${_TAG}.state"
+			_SELECT_TAG_FILE="/tmp/${_MY_PID}.${_TAG}.state"
 		fi
 
 		# If no X,Y coords are passed default to center

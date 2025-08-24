@@ -18,6 +18,9 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+# set as login shell
+set -o login
+
 # Constants
 _REL=$(lsb_release -d | cut -d: -f2- | sed 's/^[ \t]*//')
 _RLBL=$(lsb_release -c | cut -d: -f2- | sed 's/^[ \t]*//')
@@ -246,6 +249,12 @@ add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
 
 # Execution
+if [[ ! -e /tmp/term.init ]];then
+	if pgrep -io terminal >/dev/null 2>&1;then
+		wmctrl -r terminal -b add,maximized_vert,maximized_horz
+		touch /tmp/term.init
+	fi
+fi
 if [[ ${_TERMS} -eq 1 ]];then
 	INTERACTIVE=''
 	if [[ -o interactive ]]; then

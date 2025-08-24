@@ -1,95 +1,142 @@
 #!/usr/bin/zsh
-# Inline ansi
-BOLD="\033[1m"
-ITALIC="\033[3m"
-RESET="\033[m"
-REVERSE="\033[7m"
-STRIKE="\033[9m"
-UNDER="\033[4m"
 
-BLACK_BG="\033[40m"
-
-BLUE_FG="\033[34m"
-CYAN_FG="\033[36m"
-GREEN_FG="\033[32m"
-MAGENTA_FG="\033[35m"
-RED_FG="\033[31m"
-WHITE_FG="\033[37m"
-YELLOW_FG="\033[33m"
-
-WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Constants
 _LOG=/tmp/${0:t}.log
-typeset -a _APPS_TO_SCAN=(deluge okular)
-typeset -A _RUNNING_APPS
+_SYS_APPS=/usr/local/bin/system/launchers
 
-# Imports
-_LIB=/usr/local/lib
-source ${_LIB}/LIB_INIT.zsh
-source ${_LIB}/UTILS.zsh
+# Declarations
+typeset -a _APPS_TO_SCAN=()
+typeset -a _BLACKLIST=(pyts org.gnome.Terminal)
+typeset -A _ALT_PIDS=(musescore mscore4portable)
 
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB}/${D} ]];then
-		source ${_LIB}/${D}
-	else
-		echo "Cannot source:${_LIB}/${D} - not found"
-		exit 1
-	fi
-done
+# Functions
+apps_to_scan () {
+	local -a APPS=()
+	local STR
+	local L
 
-logit "Started scan for new windows"
+	STR=$(gsq -l favorite-apps)
+	STR=${STR:gs/,//}
+	STR=$(perl -pe 's/^.*\[//;s/\]//;s/\x27//g' <<<${STR})
 
-SCANS=0
-SCAN_LIMIT=50
-SSBN=false
-NDX=0
-while IFS= read -ru3 LINE || [ -n "$LINE" ]; do
-	if [[ ${LINE:l} =~ "interfacesadded" && ${LINE:l} =~ "terminal" ]];then
-		logit "Terminal opened a new window"
-		win_max terminal
-		logit "win_max terminal"
-	elif [[ ${LINE:l} =~ "startservicebyname" ]];then
-		SSBN=true
-	fi
+	APPS=(${STR})
 
-	if [[ ${LINE:l} =~ "\.desktop" ]];then
-		DTOP=true
-		((NDX++))
-		[[ ${NDX} -eq 1 ]] && logit "Starting app scan"
-	else
-		DTOP=false
-	fi
+	for L in ${=APPS};do
+		echo ${L}
+	done
+}
 
-	if [[ ${SSBN} == 'true' && ${DTOP} == 'true' ]];then
-		((SCANS++))
-		if [[ ${SCANS} -ge ${SCAN_LIMIT} ]];then
-			logit "Hit scan limit"
-			NDX=0
-			SCANS=0
-			SSBN=false
-			DTOP=false
-			continue
+get_val () {
+	local KEY=${1};shift
+	local VAR=${1};shift
+	local LINE=${@}
+	local VAL=''
+	local L
+
+	for L in ${=LINE};do
+		if [[ ${L} =~ '[=]' && ${L:l} =~ ${VAR:l} ]];then
+			VAL=$(cut -d= -f2 <<< ${L})
+			[[ ${VAL:l} =~ 'dbus' ]] && return 0
+			echo -n "${WHITE_FG}KEY${RESET}:${KEY} ${WHITE_FG}VAR${RESET}:${VAR} ${WHITE_FG}VAL${RESET}:$(cut -d= -f2 <<< ${L})"
+			return 0
+		fi
+	done
+	return 1
+}
+
+get_wid () {
+	local APP=${1}
+	local PID
+	local TRY
+	local RETRIES=20
+	local WID=''
+
+	while true;do
+		((TRY++))
+		if [[ ${TRY} -gt ${RETRIES} ]];then
+			logit "Get PID unsuccessful for ${APP} - exceeded retries:${RETRIES}" 
+			break
+		fi
+		if [[ -n ${_ALT_PIDS[${APP}]} ]];then
+			PID=$(ps aux | grep ${${_ALT_PIDS[${APP}]}[1,14]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2)
 		else
-			for A in ${_APPS_TO_SCAN};do
-				[[ ${SCANS} -eq 1 ]] && logit "Scanning for ${A}"
-				if [[ ${LINE:l} =~ "${A}" ]];then
-					logit "Scan matched ${A}"
-					PID=$(ps -e | grep deluge | grep -v grep | tr -s '[:space:]' | cut -d' ' -f2)
-					if [[ ! ${_RUNNING_APPS[${PID}]} =~ ${A} ]];then
-						win_max ${A}
-						logit "win_max ${A} ${PID}"
-					else
-						logit "win_max ${A} is already maximized"
-					fi
-					_RUNNING_APPS[${PID}]=${A}
-					NDX=0
-					SCANS=0
-					SSBN=false
-					DTOP=false
-					continue
+			PID=$(pgrep -in ${APP[1,14]})
+		fi
+		if [[ -n ${PID} ]];then
+			logit "PID:${PID}"
+			while true;do
+				((TRY++))
+				if [[ ${TRY} -gt ${RETRIES} ]];then
+					logit "Get WID unsuccessful for ${APP} - exceeded retries:${RETRIES}" 
+					break 2
 				fi
+				WID=$(wmctrl -lp | sort -r | grep -m1 ${PID} | cut -d' ' -f1) # Most recent
+				if [[ -n ${WID} ]];then
+					echo ${WID}
+					break 2
+				fi
+				sleep 1 
 			done
 		fi
+		sleep .1
+	done
+}
+
+scan_string () {
+	local LINE=${@}
+	local F
+
+	for F in ${_APPS_TO_SCAN};do
+		grep -q -i ${F:l} <<<${LINE:l}
+		if [[ ${?} -eq 0 ]];then
+			echo ${F:s/.desktop//}
+		fi
+	done
+}
+
+# Execution
+_APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
+
+logit ${_LOG} "Started scan for new windows"
+
+GOT_SIG=false
+VAL=''
+STR=''
+while IFS= read -ru3 LINE;do
+	[[ ${LINE:l} =~ 'signal' ]] && GOT_SIG=true
+
+	if [[ ${GOT_SIG} == 'true' && ${LINE:l} =~ 'array of bytes' ]];then
+		STR=$(scan_string ${LINE})
+		GOT_SIG=false
 	fi
-done 3< <( dbus-monitor | grep --line-buffered -i "startservicebyname\|desktop\|interfacesadded")
+
+	[[ ${LINE:l} =~ 'method' ]] && VAL=$(get_val method path ${LINE})
+
+	if [[ ${VAL:l} =~ 'terminal' ]];then
+		logit ${_LOG} "GOT NEW TERMINAL"
+		WID=$(get_wid terminal)
+		logit ${_LOG} "GOT TERMINAL WID:${WID}"
+		win_max terminal
+		wmctrl -i -a ${WID}
+		VAL=''
+	else
+		if [[ -n ${STR} ]];then
+			[[ ${APP} =~ '_' ]] && APP=$(cut -d_ -f1 <<<${STR}) || APP=${STR}
+			logit ${_LOG} "GOT DOCK APP:${APP}"
+			if [[ ${_BLACKLIST[(i)${APP}]} -le ${#_BLACKLIST} ]];then
+				logit ${_LOG} "${APP} is blacklisted"
+				return 0
+			fi
+			WID=$(get_wid ${APP})
+			win_max ${APP}
+			wmctrl -i -a ${WID}
+			STR=''
+		fi
+	fi
+done 3< <(dbus-monitor)

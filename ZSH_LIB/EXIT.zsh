@@ -59,11 +59,13 @@ exit_pre_exit () {
 
 	if [[ ${_EXIT_SCRUB} == 'true' ]];then
 		{
-			SCRUB=("${(f)$(find /tmp/*${_PID}* -type f)}")
-			for F in ${SCRUB};do
-				[[ ${F:e} == 'log' ]] && continue # Retain any logs
-				/bin/rm -f ${F}
-			done
+			if [[ -n ${_MY_PID} ]];then
+				SCRUB=("${(f)$(find /tmp/*${_MY_PID}* -type f)}")
+				for F in ${SCRUB};do
+					echo "${0}: Scrubbed: ${F}" >> /tmp/scrub.log
+					/bin/rm -f ${F}
+				done
+			fi
 		} >/dev/null 2>&1
 	fi
 

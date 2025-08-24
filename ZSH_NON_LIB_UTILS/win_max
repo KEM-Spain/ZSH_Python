@@ -40,7 +40,7 @@ log_it "${_SCRIPT}: Waiting for application:${APP}"
 
 # Get PID
 for X in {1..100};do
-	PID=$(pgrep -ni ${APP:t})
+	PID=$(pgrep -ni ${${APP:t}[1,14]})
 	[[ -n ${PID} ]] && break
 	sleep .1
 done
@@ -60,13 +60,12 @@ while true;do
 		((g_WMCTRL_CALL++))
 		[[ ${g_WMCTRL_CALL} -ge ${_MAX_WMCTRL_CALLS} ]] && log_it "Unable to fetch window list (wmctrl) - exiting" && exit 1
 		APP_WDWS=("${(f)$(wmctrl -plx 2>/dev/null | grep -i ${APP})}") # All app windows
-		if [[ -z ${APP_WDWS} ]];then
-			sleep 2
-		else
+		if [[ -n ${APP_WDWS} ]];then
 			g_WMCTRL_CALL=0
 			break
 		fi
 		log_it "g_WMCTRL_CALL:${g_WMCTRL_CALL} - Waiting for window list"
+		sleep .1
 	done
 
 	log_it "Resetting KEYS..."
