@@ -1263,6 +1263,7 @@ query_rumble () {
 	local PG=''
 	local REL_W=$(( ${LAST_MSG[W]} + 4 ))
 	local REL_Y=$(center -h${REL_W})
+	local QRY=''
 	local STR=''
 	local K V T
 
@@ -1278,24 +1279,28 @@ query_rumble () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}CHANNEL ${STR} SEARCH${RESET}"
 
 	g_SEARCH_TYPE=channel
-	#This URL tag may be of use - investigate
+	#Sort tag 
 	#&sort=date&section=sort 
 
 	if [[ ${g_PREFER_LIVE} == 'true' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 
-		PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}/livestreams")
+		QRY="http://rumble.com/c/${g_QUERY_KEY}/livestreams"
+		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: http://rumble.com/c/${g_QUERY_KEY}/livestreams to /tmp/Rumble-livestream.qry${RESET}"
-			wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}/livestreams" > /tmp/Rumble-livestream.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-livestream.qry${RESET}"
+			wget -q -O - ${QRY} > /tmp/Rumble-livestream.qry
 		fi
 	else
 		msg_box -c "Requesting <c><I>channel<N> search..."
 
-		PG=$(wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}?page=1")
+		QRY="http://rumble.com/c/${g_QUERY_KEY}?page=1"
+		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: http://rumble.com/c/${g_QUERY_KEY}?page=1 to /tmp/Rumble-channel.qry${RESET}"
-			wget -q -O - "http://rumble.com/c/${g_QUERY_KEY}?page=1" > /tmp/Rumble-channel.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-channel.qry${RESET}"
+			wget -q -O - ${QRY} > /tmp/Rumble-channel.qry
 		fi
 	fi
 
@@ -1320,10 +1325,12 @@ query_rumble () {
 		g_SEARCH_TYPE="user livestreams"
 
 		GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
-		PG=$(wget -q -O - "https://rumble.com/user/${g_QUERY_KEY}/livestreams'")
+		QRY="https://rumble.com/user/${g_QUERY_KEY}/livestreams"
+		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: https://rumble.com/user/${g_QUERY_KEY}/livestreams to /tmp/Rumble-user-livestream.qry${RESET}"
-			wget -q -O - "https://rumble.com/user/${g_QUERY_KEY}/livestreams" > /tmp/Rumble-user-livestream.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-user-livestream.qry${RESET}"
+			wget -q -O - ${QRY} > /tmp/Rumble-user-livestream.qry
 		fi
 
 		[[ -z ${PG} || ${PG:l} =~ "no videos found" ]] && DO_GENERAL=true || DO_GENERAL=false
@@ -1349,10 +1356,12 @@ query_rumble () {
 			g_SEARCH_TYPE=general
 
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
-			PG=$(wget -q -O - "https://rumble.com/search/all?q=${GEN_SEARCH}")
+			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
+			logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+			PG=$(wget -q -O - ${QRY})
 			if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-				dbg "${0}:${LINENO} ${WHITE_FG}Saved query: https://rumble.com/search/all?q=${GEN_SEARCH} to /tmp/Rumble-general.qry${RESET}"
-				wget -q -O - "https://rumble.com/search/all?q=${GEN_SEARCH}" > /tmp/Rumble-general.qry
+				dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-general.qry${RESET}"
+				wget -q -O - ${QRY} > /tmp/Rumble-general.qry
 			fi
 
 			TITLES=("${(f)$(pup --charset utf8 '.video-item--title text{}' <<<${PG} | sed 's/|//g')}")

@@ -21,7 +21,7 @@ apps_to_scan () {
 	local STR
 	local L
 
-	STR=$(gsq -l favorite-apps)
+	STR=$(gsq -l favorite-apps) # Grab gsettings for dock apps
 	STR=${STR:gs/,//}
 	STR=$(perl -pe 's/^.*\[//;s/\]//;s/\x27//g' <<<${STR})
 
@@ -35,6 +35,7 @@ apps_to_scan () {
 get_val () {
 	local KEY=${1};shift
 	local VAR=${1};shift
+	local SEARCHTERM=${1};shift
 	local LINE=${@}
 	local VAL=''
 	local L
@@ -42,12 +43,12 @@ get_val () {
 	for L in ${=LINE};do
 		if [[ ${L} =~ '[=]' && ${L:l} =~ ${VAR:l} ]];then
 			VAL=$(cut -d= -f2 <<< ${L})
-			[[ ${VAL:l} =~ 'dbus' ]] && return 0
-			echo -n "${WHITE_FG}KEY${RESET}:${KEY} ${WHITE_FG}VAR${RESET}:${VAR} ${WHITE_FG}VAL${RESET}:$(cut -d= -f2 <<< ${L})"
-			return 0
+			[[ ! ${VAL:l} =~ ${SEARCHTERM:l} ]] && continue # Ignore non SEARCHTERM
+			logit ${_LOG} "KEY:${KEY} VAR:${VAR} VAL:${VAL}"
 		fi
 	done
-	return 1
+
+	echo ${VAL}
 }
 
 get_wid () {
@@ -56,29 +57,30 @@ get_wid () {
 	local TRY
 	local RETRIES=20
 	local WID=''
+	local PGREP_MAX=15 # pgrep max is 15 chars
 
 	while true;do
 		((TRY++))
 		if [[ ${TRY} -gt ${RETRIES} ]];then
-			logit "Get PID unsuccessful for ${APP} - exceeded retries:${RETRIES}" 
+			logit "Failed to get PID for:${APP} - exceeded retries:${RETRIES}" 
 			break
 		fi
 		if [[ -n ${_ALT_PIDS[${APP}]} ]];then
-			PID=$(ps aux | grep ${${_ALT_PIDS[${APP}]}[1,14]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2)
+			PID=$(ps aux | grep ${${_ALT_PIDS[${APP}]}[1,${PGREP_MAX}]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2)
 		else
-			PID=$(pgrep -in ${APP[1,14]})
+			PID=$(pgrep -in ${APP[1,${PGREP_MAX}]})
 		fi
 		if [[ -n ${PID} ]];then
-			logit "PID:${PID}"
+			logit "Got ${APP} PID:${PID}"
 			while true;do
 				((TRY++))
 				if [[ ${TRY} -gt ${RETRIES} ]];then
-					logit "Get WID unsuccessful for ${APP} - exceeded retries:${RETRIES}" 
+					logit "Failed to get WID for:${APP} - exceeded retries:${RETRIES}" 
 					break 2
 				fi
 				WID=$(wmctrl -lp | sort -r | grep -m1 ${PID} | cut -d' ' -f1) # Most recent
 				if [[ -n ${WID} ]];then
-					echo ${WID}
+					logit "Got ${APP} WID:${WID}"
 					break 2
 				fi
 				sleep 1 
@@ -86,6 +88,8 @@ get_wid () {
 		fi
 		sleep .1
 	done
+	
+	echo ${WID}
 }
 
 scan_string () {
@@ -98,6 +102,26 @@ scan_string () {
 			echo ${F:s/.desktop//}
 		fi
 	done
+}
+
+win_focus () {
+	local WIN=${1}
+	local WID=''
+
+	WID=$(get_wid ${WIN})
+	logit ${_LOG} "Setting focus to WIN:${WID}"
+	[[ -n ${WID} ]] && wmctrl -i -a ${WID}
+}
+
+win_maximize () {
+	local APP=${1}
+
+	if [[ ${_BLACKLIST[(i)${APP}]} -le ${#_BLACKLIST} ]];then
+		logit ${_LOG} "${APP} is blacklisted - no maximize"
+	else
+		logit ${_LOG} "Maximizing ${APP} window"
+		win_max ${APP}
+	fi
 }
 
 # Execution
@@ -116,26 +140,19 @@ while IFS= read -ru3 LINE;do
 		GOT_SIG=false
 	fi
 
-	[[ ${LINE:l} =~ 'method' ]] && VAL=$(get_val method path ${LINE})
+	[[ ${LINE:l} =~ 'method' ]] && VAL=$(get_val method path terminal ${LINE})
 
 	if [[ ${VAL:l} =~ 'terminal' ]];then
-		logit ${_LOG} "GOT NEW TERMINAL"
-		WID=$(get_wid terminal)
-		logit ${_LOG} "GOT TERMINAL WID:${WID}"
-		win_max terminal
-		wmctrl -i -a ${WID}
+		logit ${_LOG} "GOT TERMINAL"
+		win_maximize terminal
+		win_focus terminal
 		VAL=''
 	else
 		if [[ -n ${STR} ]];then
-			[[ ${APP} =~ '_' ]] && APP=$(cut -d_ -f1 <<<${STR}) || APP=${STR}
-			logit ${_LOG} "GOT DOCK APP:${APP}"
-			if [[ ${_BLACKLIST[(i)${APP}]} -le ${#_BLACKLIST} ]];then
-				logit ${_LOG} "${APP} is blacklisted"
-				return 0
-			fi
-			WID=$(get_wid ${APP})
-			win_max ${APP}
-			wmctrl -i -a ${WID}
+			[[ ${STR} =~ '_' ]] && APP=$(cut -d_ -f1 <<<${STR}) || APP=${STR}
+			logit ${_LOG} "GOT APP:${APP}"
+			win_maximize ${APP}
+			win_focus ${APP}
 			STR=''
 		fi
 	fi

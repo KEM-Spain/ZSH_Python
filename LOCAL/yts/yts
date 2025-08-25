@@ -1243,7 +1243,6 @@ post_process () {
 }
 
 query_rumble () {
-	# TODO: Crosstalk is getting old videos; needs a tweak
 	local SEARCHTERM=${1}
 	local -A FIELD_MAP=("author" 2 "title" 3 "age" 4 "url" 5 "time" 6 "agetime" "4,6")
 	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
