@@ -12,7 +12,7 @@
 		.version('1.0')
 		.argument('<searchterm>', 'youtube search term')
 		.option('-s, --strict', 'author must match searchterm')
-		.option('-a, --age <keyword>', 'all min hour day week mon year', 'all')
+		.option('-a, --age <keyword>', 'all recent min hour day week mon year', 'all')
 
 	app.parseAsync(process.argv);
 
@@ -45,6 +45,14 @@
 				console.log("matched on all")
 				msgout = true
 			}
+		} else if (age === "recent") { /* any recent age */
+				if ( v.ago.indexOf("hour") >= 0 || v.ago.indexOf("day") >= 0 || v.ago.indexOf("min") >= 0 ) {
+					has_match = true
+					if (msgout === false) {
+						console.log("matched on recent")
+						msgout = true
+					}
+				}
 		} else {
 			if (v.ago.indexOf(age) >= 0) { /* age was specified */
 				has_match = true

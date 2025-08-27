@@ -12,8 +12,9 @@ _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
 typeset -a _APPS_TO_SCAN=()
-typeset -a _BLACKLIST=(pyts org.gnome.Terminal)
-typeset -A _ALT_PIDS=(musescore mscore4portable)
+typeset -a _BLACKLIST=(pyts org.gnome.Terminal libreoffice)
+typeset -A _ALT_PIDS=(musescore mscore4portable pyts pyscripts brave brave/brave audacity bin/audacity)
+typeset -A _WAITTIMES=(haruna 6 musescore 4 audacity 12 viber 4)
 
 # Functions
 apps_to_scan () {
@@ -59,6 +60,7 @@ get_wid () {
 	local WID=''
 	local PGREP_MAX=15 # pgrep max is 15 chars
 
+	logit "Attempting to get PID and WID for:${APP}..."
 	while true;do
 		((TRY++))
 		if [[ ${TRY} -gt ${RETRIES} ]];then
@@ -66,7 +68,7 @@ get_wid () {
 			break
 		fi
 		if [[ -n ${_ALT_PIDS[${APP}]} ]];then
-			PID=$(ps aux | grep ${${_ALT_PIDS[${APP}]}[1,${PGREP_MAX}]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2)
+			PID=$(ps aux | grep -- ${${_ALT_PIDS[${APP}]}[1,${PGREP_MAX}]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2)
 		else
 			PID=$(pgrep -in ${APP[1,${PGREP_MAX}]})
 		fi
@@ -105,23 +107,23 @@ scan_string () {
 }
 
 win_focus () {
-	local WIN=${1}
+	local APP=${1}
 	local WID=''
 
-	WID=$(get_wid ${WIN})
-	logit ${_LOG} "Setting focus to WIN:${WID}"
-	[[ -n ${WID} ]] && wmctrl -i -a ${WID}
+	WID=$(get_wid ${APP})
+	if [[ -n ${WID} ]];then
+		logit ${_LOG} "Setting focus to ${APP} window"
+		wmctrl -i -a ${WID}
+	else
+		logit ${_LOG} "Unable to focus ${APP} window"
+	fi
 }
 
 win_maximize () {
 	local APP=${1}
 
-	if [[ ${_BLACKLIST[(i)${APP}]} -le ${#_BLACKLIST} ]];then
-		logit ${_LOG} "${APP} is blacklisted - no maximize"
-	else
-		logit ${_LOG} "Maximizing ${APP} window"
-		win_max ${APP}
-	fi
+	logit ${_LOG} "Maximizing ${APP} window"
+	win_max ${APP}
 }
 
 # Execution
@@ -149,10 +151,32 @@ while IFS= read -ru3 LINE;do
 		VAL=''
 	else
 		if [[ -n ${STR} ]];then
-			[[ ${STR} =~ '_' ]] && APP=$(cut -d_ -f1 <<<${STR}) || APP=${STR}
-			logit ${_LOG} "GOT APP:${APP}"
-			win_maximize ${APP}
-			win_focus ${APP}
+			if [[ ${STR} =~ [_-] ]];then # Parse app string
+				logit ${_LOG} "Parsing APP:${STR}"
+				if [[ ${STR} =~ '_' ]];then
+					APP=$(cut -d'_' -f1 <<<${STR}) # Underscore
+				elif [[ ${STR} =~ '-' ]];then
+					APP=$(cut -d'-' -f1 <<<${STR}) # Hyphen
+				fi
+			else
+				APP=${STR}
+			fi
+
+			if [[ -n ${APP} ]];then
+				logit ${_LOG} "GOT APP:${APP}"
+				if [[ ${_BLACKLIST[(i)${APP}]} -le ${#_BLACKLIST} ]];then
+					logit ${_LOG} "${APP} is blacklisted - skipping"
+				else
+					if [[ -n ${_WAITTIMES[${APP}]} ]];then
+						logit ${_LOG} "Waiting ${_WAITTIMES[${APP}]} seconds for ${APP} to launch"
+						sleep ${_WAITTIMES[${APP}]}
+					fi
+					win_maximize ${APP}
+					win_focus ${APP}
+				fi
+			else
+				logit ${_LOG} "Missing value for APP:${APP}"
+			fi
 			STR=''
 		fi
 	fi

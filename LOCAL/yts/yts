@@ -436,55 +436,55 @@ clean_title () {
 	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
-	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
 
 	STR=$(str_word_clip ${STR} ${TITLE_LEN})
-	logit ${_YTS_DBG_LOG} "${0}: str_word_clip TITLE:${TITLE}"
+	#logit ${_YTS_DBG_LOG} "${0}: str_word_clip TITLE:${TITLE}"
 
 	TITLE=${STR}
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
-	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
 
 	TITLE=${STR}
 	STR=$(sed 's/[ _]\(d\|l\|s\|t\|re\|ve\)[ _]/\o047\1 /Ig' <<<${STR}) # Fix any yt-dlp contraction gaps
-	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Contraction gap:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Contraction gap:${STR}"
 	 
 	TITLE=${STR}
 	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
-	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
 	 
 	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9])+\b')}") # Allow alpha,digits, and hyphen
 	for U in ${UCASE_WORDS};do
 		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
 	done
-	[[ -n ${UCASE_WORDS} ]] && logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
+	#[[ -n ${UCASE_WORDS} ]] && logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
 	TITLE=${STR}
 	STR=$(perl -pe  's/\o{47}(?![rstv].?\b)//g' <<<${STR}) # Remove any sentence quotes, leave contractions
-	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Sentence quotes:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Sentence quotes:${STR}"
 
 	TITLE=${STR}
 	STR=$(sed -E -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' -e 's/(\S)([-])(\S)/\1 \3/g' <<<${STR}) # Trim
-	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Trim and separate hyphenated words:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Trim and separate hyphenated words:${STR}"
 	 
 	TITLE=${STR}
 	STR=${(C)STR} # Proper case
-	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
 
 	TITLE=${STR}
 	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
-	[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
 
 	for W in ${=STR};do
 		W=$(tr -dc '[:alnum:][\047]' <<<${W}) # Strip other than alpha,digits,single quotes, and hyphen
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
-			logit ${_YTS_DBG_LOG} "${0}: Found acronym:${W:u}"
+			#logit ${_YTS_DBG_LOG} "${0}: Found acronym:${W:u}"
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acromyns
 			SEEN[${W}]=1
 		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				logit ${_YTS_DBG_LOG} "${0}: Found uppercase:${W:u}"
+				#logit ${_YTS_DBG_LOG} "${0}: Found uppercase:${W:u}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
 				SEEN[${W}]=1
 			fi
@@ -494,7 +494,7 @@ clean_title () {
 	for W in ${KEYWORDS};do # Scrub keywords
 		STR=$(sed "s/${W}//I" <<<${STR})
 	done
-	logit ${_YTS_DBG_LOG} "${0}: Scrubbed keywords"
+	#logit ${_YTS_DBG_LOG} "${0}: Scrubbed keywords"
 
 	TITLE=${STR[1,${_MAX_TITLE}]} # Title length
 
@@ -1285,7 +1285,7 @@ query_rumble () {
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 
 		QRY="http://rumble.com/c/${g_QUERY_KEY}/livestreams"
-		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-livestream.qry${RESET}"
@@ -1295,7 +1295,7 @@ query_rumble () {
 		msg_box -c "Requesting <c><I>channel<N> search..."
 
 		QRY="http://rumble.com/c/${g_QUERY_KEY}?page=1"
-		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-channel.qry${RESET}"
@@ -1325,7 +1325,7 @@ query_rumble () {
 
 		GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
 		QRY="https://rumble.com/user/${g_QUERY_KEY}/livestreams"
-		logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-user-livestream.qry${RESET}"
@@ -1356,7 +1356,7 @@ query_rumble () {
 
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
 			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
-			logit ${_YTS_URL_LOG} "Rumble Query:${QRY}"
+			logit ${_YTS_URL_LOG} "${0}:${QRY}"
 			PG=$(wget -q -O - ${QRY})
 			if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 				dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-general.qry${RESET}"
@@ -1436,12 +1436,14 @@ query_youtube () {
 		g_PROXY_CMD="node ${_JS_SCRIPT} -s ${(qqq)g_QUERY_KEY}"
 	else
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER INACTIVE${RESET}"
-		g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)g_QUERY_KEY}"
+		g_PROXY_CMD="node ${_JS_SCRIPT} -a recent ${(qqq)g_QUERY_KEY}"
 	fi
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
+
+	logit ${_YTS_DBG_LOG} "${0}:g_QUERY_KEY:${g_QUERY_KEY}, g_PROXY_CMD:${g_PROXY_CMD}"
 
 	_LOCAL_LIST=()
 
@@ -1485,7 +1487,7 @@ query_youtube () {
 
 	[[ ${_SMCUP} == 'false' ]] && do_smcup
 
-	# Return failed search status
+	# Search failed
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		g_PROXY_CMD=$(str_trim ${(Q)g_PROXY_CMD})
 		if [[ ${g_STRICT} == 'true' ]];then
@@ -1501,9 +1503,9 @@ query_youtube () {
 		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
 		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
-			#if perl -wln -e "if (/\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
+			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en)
-			#fi
+			fi
 		fi
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${F})
@@ -1568,7 +1570,7 @@ EOF
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		a) echo "<AGE_FILTER> [all,min,hour,day,week,month,year]";;
+		a) echo "<AGE_FILTER> [all,recent,min,hour,day,week,month,year]";;
 		s) echo "<SEARCHTERM>";;
 		w) echo "<ABBV>";;
 		u) echo "<URL>";;
@@ -1710,8 +1712,13 @@ if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 
 		touch ${_UPD_MARKER}
 		UPD_VER=$(yt-dlp --version)
 	} >/dev/null 2>&1
-	[[ ${CUR_VER} == ${UPD_VER} ]] && MSG="yt-dlp is <g>current<N> at version:<r>${CUR_VER}<N>" || MSG="yt-dlp was <w>updated<N> from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
-	msg_box -c -t2 ${MSG}
+	if [[ ${CUR_VER} == ${UPD_VER} ]];then
+		MSG="yt-dlp is <g>CURRENT<N> at version:<r>${CUR_VER}<N>"
+		msg_box -c -t2 ${MSG}
+	else
+		MSG="yt-dlp was <w>UPDATED<N> from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
+		msg_box -PK -c -t2 ${MSG}
+	fi
 fi
 
 # Set callbacks

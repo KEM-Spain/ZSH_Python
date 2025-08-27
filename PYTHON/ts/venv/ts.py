@@ -516,7 +516,7 @@ class SearchWin(Gtk.Window):
 
     def set_column_header(self, ndx):
         if len(self.hist_model) == 0:
-            self.column.set_title("Previous Queries (None)")
+            self.column.set_title("No Query History")
         else:
             if ndx == 1:
                 self.column.set_title("Previous Queries (Ctrl-X to Delete, Enter to Edit)")
