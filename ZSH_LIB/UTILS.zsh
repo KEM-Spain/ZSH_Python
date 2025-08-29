@@ -617,7 +617,7 @@ logit () {
 	MSG=${@}
 
 	if [[ -z ${LOG} ]];then # No log passed
-		[[ -n ${_LOG} ]] && LOG=${_LOG} || LOG=/tmp/${0}.log} # Assign log
+		[[ -n ${_LOG} ]] && LOG=${_LOG} || LOG=/tmp/${0}.log # Assign log
 	fi
 
 	echo "${STAMP} ${MSG}" >> ${LOG}

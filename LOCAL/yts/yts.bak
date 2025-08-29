@@ -1570,7 +1570,7 @@ EOF
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		a) echo "<AGE_FILTER> [all,min,hour,day,week,month,year]";;
+		a) echo "<AGE_FILTER> [all,recent,min,hour,day,week,month,year]";;
 		s) echo "<SEARCHTERM>";;
 		w) echo "<ABBV>";;
 		u) echo "<URL>";;

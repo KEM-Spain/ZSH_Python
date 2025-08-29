@@ -250,9 +250,11 @@ add-zsh-hook precmd _cursor_on
 
 # Execution
 if [[ ! -e /tmp/term.init ]];then
-	if pgrep -io terminal >/dev/null 2>&1;then
-		wmctrl -r terminal -b add,maximized_vert,maximized_horz
-		touch /tmp/term.init
+	if [[ ${_TERMS} -eq 1 ]];then
+		if pgrep -io terminal >/dev/null 2>&1;then
+			wmctrl -r terminal -b add,maximized_vert,maximized_horz
+			touch /tmp/term.init
+		fi
 	fi
 fi
 if [[ ${_TERMS} -eq 1 ]];then

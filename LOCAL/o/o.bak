@@ -58,11 +58,10 @@ _APP_EXE[HARUNA]=/snap/bin/haruna
 _APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
 
-_MD_EXTERNAL="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MD_EXTERNAL="/media/${USER}/KEM_Misc/Music/KEM-B9"
 _MD_LOCAL="${HOME}/Documents/Music"
 _MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
 
-_VIEWED=2
 _UNSUPPORTED=3
 
 # Functions
@@ -100,7 +99,7 @@ action_do () {
 	done
 
 	for K in ${(k)RUN_LIST};do
-		eval "${K} ${RUN_LIST[${K}]}"
+		eval "${K} ${RUN_LIST[${K}]} >${_APP_LOG} 2>&1 &"
 		RC=${?}
 		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
@@ -182,7 +181,7 @@ item_decorate () {
 	local FN=$(pathabv ${_LOCAL_LIST[${NDX}]})
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		${_VIEWED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
 		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
 		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
 	esac
@@ -194,6 +193,18 @@ mark_unsupported () {
 
 	SUPPORTED=$(get_app ${_LOCAL_LIST[${NDX}]})
 	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
+}
+
+mp4_lcase () {
+	local -a LIST=("${(f)$(find . -maxdepth 1 -name '*MP4' -type f ! -path .)}")
+	local L
+
+	if [[ -n ${LIST} ]];then
+		msg_box -t2 "Renaming MP4 files to mp4..."
+		for L in ${LIST};do
+			mv -f ${L} ${L:r}.mp4
+		done
+	fi
 }
 
 same_extension () {
@@ -217,7 +228,8 @@ single_file_launch () {
 
 	[[ ${APP} == '?' ]] && exit_leave "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${FN}${RESET} of type: [$(file -b ${FN})]"
 
-	_LIST+=$(realpath ${FN}) # Add full path
+	[[ -e ${PWD}/${FN:t} ]] && _LIST+=${FN:t} || _LIST+=$(realpath ${FN}) 
+
 	_FILE_APP[${F}]=${APP}
 	_FILE_NDX[${F}]=1
 
@@ -300,7 +312,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 #--Execution
@@ -309,6 +321,8 @@ shift $((OPTIND -1))
 
 # File(s) passed on command line or pipe
 typeset -a ARGS
+
+mp4_lcase
 
 # Command line args
 # 1) none - all files in PWD
@@ -330,7 +344,7 @@ else
 	HDR_MSG="Processing file list"
 	_RAWLIST=(${@})
 	for F in ${_RAWLIST};do
-		[[ ! -e ${F} ]] && exit_leave $(msg_exit E "File:${F} not found")
+		[[ ! -e ${F} ]] && exit_leave $(err_msg_exit E "File:${F} not found")
 	done
 fi
 
@@ -342,8 +356,7 @@ fi
 NDX=0
 for F in ${_RAWLIST};do
 	((NDX++))
-	FN=$(realpath ${F}) # Add full path
-	_RAWLIST[${NDX}]=${FN}
+	[[ -e ${PWD}/${F:t} ]] && _RAWLIST[${NDX}]=${F:t} || _RAWLIST[${NDX}]=$(realpath ${F}) 
 done
 
 MUSIC_DIRS=false

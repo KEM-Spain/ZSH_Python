@@ -99,7 +99,7 @@ action_do () {
 	done
 
 	for K in ${(k)RUN_LIST};do
-		eval "${K} ${RUN_LIST[${K}]}"
+		eval "${K} ${RUN_LIST[${K}]} >${_APP_LOG} 2>&1 &"
 		RC=${?}
 		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
@@ -195,7 +195,7 @@ mark_unsupported () {
 	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
 }
 
-mp4_lcase () {
+lcase_mp4s () {
 	local -a LIST=("${(f)$(find . -maxdepth 1 -name '*MP4' -type f ! -path .)}")
 	local L
 
@@ -322,7 +322,7 @@ shift $(( OPTIND - 1 ))
 # File(s) passed on command line or pipe
 typeset -a ARGS
 
-mp4_lcase
+lcase_mp4s
 
 # Command line args
 # 1) none - all files in PWD

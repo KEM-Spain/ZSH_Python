@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+ 
 # Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -32,7 +33,7 @@ wid 1
 _UTILS_DESC=(
 list "LIST:List current windows"
 mc "POINTER:Show mouse coordinates"
-wid "ID:Current win ID"
+wid "ID:Display win ID"
 )
 
 # Imports
@@ -121,10 +122,17 @@ ___EOF
 }
 
 wid () {
+	local APP=${1}
+	local WID=''
+	local _SHOW_CURRENT=false
+
 	local DESC
 
 	read -r -d '' DESC<<___EOF
-Show current window ID
+Display window ID for application
+\tor current window ID by default
+\tApplication argument is text that fully
+\tor partially matches the window title
 ___EOF
 
 	# Functions
@@ -135,7 +143,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [APP]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
@@ -145,16 +153,25 @@ ___EOF
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
+	[[ ${#} -gt 1 ]] && usage
+	[[ ${1} =~ ' ' ]] && usage
+	[[ -z ${1} ]] && _SHOW_CURRENT=true
 
-	local -a WDW_LIST=("${(f)$( wmctrl -l | grep -i terminal)}") 
-	local WIN_ID
-	local W
+	if [[ ${_SHOW_CURRENT} == 'true' ]];then
+		local -a WDW_LIST=("${(f)$( wmctrl -l | grep -i terminal)}") 
+		local WIN
+		local W
 
-	for W in ${WDW_LIST};do
-		WIN_ID=$(echo ${W} | cut -d' ' -f1)
-		xprop -id ${WIN_ID} | grep -qi focused
-		[[ ${?} -eq 0 ]] && echo ${W} 
-	done
+		logit "Getting current WID..."
+		for W in ${WDW_LIST};do
+			WIN=$(echo ${W} | cut -d' ' -f1)
+			xprop -id ${WIN} | grep -qi focused
+			[[ ${?} -eq 0 ]] && WID=$(cut -d' ' -f1 <<<${W} )
+			echo ${WID}
+		done
+	else
+		win_id ${APP}
+	fi
 }
 
 #--Begin GetOpts--

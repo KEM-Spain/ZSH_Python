@@ -32,7 +32,10 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-Request Window ID for given application
+Request a window ID for given application or the current window
+\tAn application is specified by a string fully or partially matching the window title
+\tIf no string is passed, the application is assumed to be the terminal
+\tReturn format:HEX ID|DEC ID|TITLE
 EOF
 
 parse_opts () {
@@ -58,9 +61,9 @@ opt_exists () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
+		a) echo "<APP_STRING>";;
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
-		t) echo "<FILE_TYPE>";;
 	esac
 }
 
@@ -72,46 +75,47 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type a)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDt"
+OPTSTR=":HD"
 OPTIND=0
-
-TITLE=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     t) TITLE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
-[[ ${#} -eq 0 ]] && usage "Missing argument:<APP>"
-APP=${1}
+if [[ ${#} -eq 0 ]];then
+	ID=$(xdotool getactivewindow)
+	printf "0x%x|%d|Terminal" ${ID} ${ID} # Active window will be terminal is executed from command line
+	exit_leave
+else
+	APP=${1}
+fi
 
 logit "Received request for APP:${APP} window id"
 
 for X in {1..10};do
-	PID=$(pgrep -i ${APP})
+	PID=$(pgrep -i ${APP[1,15]}) # Limit string len to pgrep max allowed
 	[[ -n ${PID} ]] && break
 	sleep .1
 done
-[[ -z ${PID} ]] && echo "[${WHITE_FG}${0:t}${RESET}]: Application:${WHITE_FG}${APP}${RESET} is ${RED_FG}${ITALIC}NOT${RESET} running" >&2 && exit 1
+[[ -z ${PID} ]] && echo "[${WHITE_FG}${0:t}${RESET}]: A PID for application:${WHITE_FG}${APP}${RESET} could ${RED_FG}${ITALIC}NOT${RESET} be detected" >&2 && exit 1
 
 typeset -A SINGLE_WIN_APPS=(gnome-terminal 1 terminal 1 deluge 1 vlc 1 chrome 1 haruna 1 viber 1 pycharm 1)
 typeset -a WIN_INFO
@@ -125,34 +129,36 @@ MAX_CYCLES=50 # Max attempts to get an id
 STABLE_ID=12 # 12 iterations without a change of id should indicate a stable id
 TIMEOUT=false
 TITLE=''
+WIN_INFO=''
+HEX_ID=''
+DEC_ID=''
 
 while true;do
 	((CYCLE++))
 	[[ ${CYCLE} -ge ${MAX_CYCLES} ]] && TIMEOUT=true && break 
 
-	WIN_INFO=("${(f)$(wmctrl -lx 2>/dev/null)}") # List all active windows
-
-	for I in ${WIN_INFO};do
-		WDW_ID=$(echo ${I} | grep -i ${APP} | tr -s '[:space:]' | cut -d' ' -f1)
-		if [[ ${WDW_ID} =~ '0x' ]];then
-			[[ ${LAST_WID} != ${WDW_ID} ]] && LAST_WID=${WDW_ID} && ((ID_CHANGE++)) && ID_CNT=0 # Different id
-			[[ ${LAST_WID} == ${WDW_ID} ]] && ((ID_CNT++)) # Same id
-			if [[ (${SINGLE_WIN_APPS[${APP}]} -eq 1) || (${ID_CHANGE} -ge ${MAX_CHANGES}) || (${ID_CNT} -ge ${STABLE_ID}) ]];then
-				logit "Returning ${WDW_ID} for APP:${APP}"
-				TITLE=$(sed 's/\(^.*\)\(KEM-AS \)\(.*$\)/\3/' <<<${I})
-				[[ ${TITLE} == 'false' ]] && echo ${WDW_ID} || echo "${WDW_ID}|${TITLE}"
-				break 2
-			fi
+	WIN_INFO=$(wmctrl -lp | grep -i ${APP} | sort -r | head -1 | tr -s '[:space:]')
+	if [[ -n ${WIN_INFO} ]];then
+		WIN_ID=$(cut -d' ' -f1 <<<${WIN_INFO})
+		TITLE=$(cut -d' ' -f4- <<<${WIN_INFO})
+		logit "Got WIN_INFO:${WIN_INFO} WIN_ID:${WIN_ID} TITLE:${TITLE} for APP:${APP}"
+		[[ ${LAST_WID} != ${WDW_ID} ]] && LAST_WID=${WDW_ID} && ((ID_CHANGE++)) && ID_CNT=0 # Different id
+		[[ ${LAST_WID} == ${WDW_ID} ]] && ((ID_CNT++)) # Same id
+		if [[ (${SINGLE_WIN_APPS[${APP}]} -eq 1) || (${ID_CHANGE} -ge ${MAX_CHANGES}) || (${ID_CNT} -ge ${STABLE_ID}) ]];then
+			DEC_ID=$(printf "%d" ${WIN_ID})
+			logit "Returning HEX_ID:${WIN_ID}, DEC_ID:${DEC_ID}, TITLE:${TITLE}"
+			echo "${WIN_ID}|${DEC_ID}|${TITLE}"
+			break
 		fi
-	done
-	[[ ${ID_CHANGE} -eq 0 ]] && TIMEOUT=true && break
+		[[ ${ID_CHANGE} -eq 0 ]] && TIMEOUT=true && break
+	fi
 	sleep .2
 done 
 
 if [[ ${TIMEOUT} == 'true' ]];then
-	echo "[${WHITE_FG}${0:t}${RESET}]: Window for:${WHITE_FG}${APP} ${RED_FG}NOT${RESET} found" >&2 
-	logit "Window NOT found for APP:${APP}"
-	exit 1
+	echo "[${WHITE_FG}${0:t}${RESET}]: Window ID for:${WHITE_FG}${APP} ${RED_FG}NOT${RESET} found" >&2 
+	logit "Window ID NOT found for APP:${APP}"
+	return 1
 fi
 
-exit 0
+return 0

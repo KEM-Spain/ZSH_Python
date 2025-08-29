@@ -54,43 +54,10 @@ get_val () {
 
 get_wid () {
 	local APP=${1}
-	local PID
-	local TRY
-	local RETRIES=20
-	local WID=''
-	local PGREP_MAX=15 # pgrep max is 15 chars
+	local WID=$(win_id ${APP} | cut -d'|' -f1)
 
-	logit "Attempting to get PID and WID for:${APP}..."
-	while true;do
-		((TRY++))
-		if [[ ${TRY} -gt ${RETRIES} ]];then
-			logit "Failed to get PID for:${APP} - exceeded retries:${RETRIES}" 
-			break
-		fi
-		if [[ -n ${_ALT_PIDS[${APP}]} ]];then
-			PID=$(ps aux | grep -- ${${_ALT_PIDS[${APP}]}[1,${PGREP_MAX}]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2)
-		else
-			PID=$(pgrep -in ${APP[1,${PGREP_MAX}]})
-		fi
-		if [[ -n ${PID} ]];then
-			logit "Got ${APP} PID:${PID}"
-			while true;do
-				((TRY++))
-				if [[ ${TRY} -gt ${RETRIES} ]];then
-					logit "Failed to get WID for:${APP} - exceeded retries:${RETRIES}" 
-					break 2
-				fi
-				WID=$(wmctrl -lp | sort -r | grep -m1 ${PID} | cut -d' ' -f1) # Most recent
-				if [[ -n ${WID} ]];then
-					logit "Got ${APP} WID:${WID}"
-					break 2
-				fi
-				sleep 1 
-			done
-		fi
-		sleep .1
-	done
-	
+	logit ${_LOG} "Returning ${WID} for APP:${APP}"
+
 	echo ${WID}
 }
 
@@ -109,6 +76,7 @@ scan_string () {
 win_focus () {
 	local APP=${1}
 	local WID=''
+
 
 	WID=$(get_wid ${APP})
 	if [[ -n ${WID} ]];then
@@ -134,6 +102,7 @@ logit ${_LOG} "Started scan for new windows"
 GOT_SIG=false
 VAL=''
 STR=''
+local TERM_CNT
 while IFS= read -ru3 LINE;do
 	[[ ${LINE:l} =~ 'signal' ]] && GOT_SIG=true
 
@@ -144,8 +113,8 @@ while IFS= read -ru3 LINE;do
 
 	[[ ${LINE:l} =~ 'method' ]] && VAL=$(get_val method path window ${LINE})
 
-	if [[ ${VAL:l} =~ 'terminal' ]];then
-		logit ${_LOG} "GOT TERMINAL"
+	if [[ ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
+		logit ${_LOG} "GOT NEW TERMINAL WINDOW"
 		win_maximize terminal
 		win_focus terminal
 		VAL=''
@@ -154,28 +123,28 @@ while IFS= read -ru3 LINE;do
 			if [[ ${STR} =~ [_-] ]];then # Parse app string
 				logit ${_LOG} "Parsing APP:${STR}"
 				if [[ ${STR} =~ '_' ]];then
-					APP=$(cut -d'_' -f1 <<<${STR})
+					APP=$(cut -d'_' -f1 <<<${STR}) # Underscore
 				elif [[ ${STR} =~ '-' ]];then
-					APP=$(cut -d'-' -f1 <<<${STR})
+					APP=$(cut -d'-' -f1 <<<${STR}) # Hyphen
 				fi
 			else
 				APP=${STR}
 			fi
 
-			if [[ ${_BLACKLIST[(i)${APP}]} -le ${#_BLACKLIST} ]];then
-				logit ${_LOG} "${APP} is blacklisted - skipping"
-			else
-				if [[ -n ${APP} ]];then
-					logit ${_LOG} "GOT APP:${APP}"
+			if [[ -n ${APP} ]];then
+				logit ${_LOG} "GOT APP:${APP}"
+				if [[ ${_BLACKLIST[(i)${APP}]} -le ${#_BLACKLIST} ]];then
+					logit ${_LOG} "${APP} is blacklisted - skipping"
+				else
 					if [[ -n ${_WAITTIMES[${APP}]} ]];then
 						logit ${_LOG} "Waiting ${_WAITTIMES[${APP}]} seconds for ${APP} to launch"
 						sleep ${_WAITTIMES[${APP}]}
 					fi
 					win_maximize ${APP}
 					win_focus ${APP}
-				else
-					logit ${_LOG} "Missing value for APP:${APP}"
 				fi
+			else
+				logit ${_LOG} "Missing value for APP:${APP}"
 			fi
 			STR=''
 		fi

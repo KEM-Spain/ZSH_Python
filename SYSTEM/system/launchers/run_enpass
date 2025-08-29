@@ -20,8 +20,7 @@ _ENP_CONFIG="/home/kmiller/.enp"
 _ENPASS_INFO=''
 _ENPASS_WDW_ID=''
 _ENPASS_WDW_TITLE=''
-_TERM_ID=$(win_id -t terminal)
-_TERM_ID=$(cut -d'|' -f1 <<<${_TERM_ID})
+_TERM_ID=$(win_id terminal | cut -d'|' -f2) # Get decimal ID for xdotool
 
 #Get PW
 read _ENP_PW < ${_ENP_CONFIG}
@@ -64,11 +63,11 @@ start_enpass () {
 }
 
 pass_login_to_enpass () {
-	_ENPASS_INFO=$(win_id -t enpass)
+	_ENPASS_INFO=$(win_id enpass) # Get decimal ID for xdotool
 	[[ -z ${_ENPASS_INFO} ]] && logit "ERROR: _ENPASS_INFO not populated" && exit
 
-	_ENPASS_WDW_ID=$(cut -d'|' -f1 <<<${_ENPASS_INFO})
-	_ENPASS_WDW_TITLE=$(cut -d'|' -f2 <<<${_ENPASS_INFO})
+	_ENPASS_WDW_ID=$(cut -d'|' -f2 <<<${_ENPASS_INFO})
+	_ENPASS_WDW_TITLE=$(cut -d'|' -f3 <<<${_ENPASS_INFO})
 
 	logit "Received ID:${_ENPASS_WDW_ID}"
 	logit "Received Title:${_ENPASS_WDW_TITLE}"
@@ -80,7 +79,7 @@ pass_login_to_enpass () {
 		xdotool key --window ${_ENPASS_WDW_ID} Escape
 		sleep 2
 		logit "Getting new window ID"
-		_ENPASS_WDW_ID=$(win_id enpass)
+		_ENPASS_WDW_ID=$(win_id enpass | cut -d'|' -f2) # Get decimal ID for xdotool
 		logit "New window ID:${_ENPASS_WDW_ID}"
 	fi
 

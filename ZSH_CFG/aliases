@@ -3,24 +3,25 @@ alias tc='. ~/.tc'
 alias gd='. ~/.gd'
 
 # apps
-alias cat='/usr/bin/batcat --theme=1337 --style=full'
 alias anthem='/opt/AnthemScore/AnthemScore >/dev/null 2>&1 &'
 alias battery='/usr/local/bin/system/tweaks/battery_charge_limit'
 alias calc='/usr/bin/gnome-calculator'
+alias cat='/usr/bin/batcat --theme=1337 --style=full'
+alias chrome=/usr/bin/google-chrome-stable
+alias easydrop='/opt/easydrop/run_easydrop_app_image'
 alias foxit='/opt/foxitreader/FoxitReader >/dev/null 2>&1 &'
 alias lossless='/usr/local/bin/system/launchers/run_losslesscut >/dev/null 2>&1 &'
-alias easydrop='/opt/easydrop/run_easydrop_app_image'
 alias ls='ls --color=always -XNv --group-directories-first'
 alias pdf2txt='/usr/bin/pdftotext -layout -nopgbrk >/dev/null 2>&1 &'
 alias postit='gtk-launch xpad.desktop'
 alias prefs='/usr/bin/gnome-control-center >/dev/null 2>&1 &'
 alias sc='sudo systemctl'
 alias spot='/usr/local/bin/system/launchers/run_spotify >/dev/null 2>&1 &'
-alias templates='ls /usr/local/etc/*template'
-alias wim='mono /usr/local/src/RemoteMouse/RemoteMouse.exe >/dev/null 2>&1 &'
 alias t='tz'
+alias templates='ls /usr/local/etc/*template'
 alias ten='trans -no-pager es:en'
 alias tes='trans -no-pager en:es'
+alias wim='mono /usr/local/src/RemoteMouse/RemoteMouse.exe >/dev/null 2>&1 &'
 
 # misc
 alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"

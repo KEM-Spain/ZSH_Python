@@ -54,43 +54,10 @@ get_val () {
 
 get_wid () {
 	local APP=${1}
-	local PID
-	local TRY
-	local RETRIES=20
-	local WID=''
-	local PGREP_MAX=15 # pgrep max is 15 chars
+	local WID=$(win_id ${APP} | cut -d'|' -f1)
 
-	logit "Attempting to get PID and WID for:${APP}..."
-	while true;do
-		((TRY++))
-		if [[ ${TRY} -gt ${RETRIES} ]];then
-			logit "Failed to get PID for:${APP} - exceeded retries:${RETRIES}" 
-			break
-		fi
-		if [[ -n ${_ALT_PIDS[${APP}]} ]];then
-			PID=$(ps aux | grep -- ${${_ALT_PIDS[${APP}]}[1,${PGREP_MAX}]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2)
-		else
-			PID=$(pgrep -in ${APP[1,${PGREP_MAX}]})
-		fi
-		if [[ -n ${PID} ]];then
-			logit "Got ${APP} PID:${PID}"
-			while true;do
-				((TRY++))
-				if [[ ${TRY} -gt ${RETRIES} ]];then
-					logit "Failed to get WID for:${APP} - exceeded retries:${RETRIES}" 
-					break 2
-				fi
-				WID=$(wmctrl -lp | sort -r | grep -m1 ${PID} | cut -d' ' -f1) # Most recent
-				if [[ -n ${WID} ]];then
-					logit "Got ${APP} WID:${WID}"
-					break 2
-				fi
-				sleep 1 
-			done
-		fi
-		sleep .1
-	done
-	
+	logit ${_LOG} "Returning ${WID} for APP:${APP}"
+
 	echo ${WID}
 }
 
@@ -110,9 +77,11 @@ win_focus () {
 	local APP=${1}
 	local WID=''
 
+
 	WID=$(get_wid ${APP})
+
 	if [[ -n ${WID} ]];then
-		logit ${_LOG} "Setting focus to ${APP} window"
+		logit ${_LOG} "Setting focus to ${APP} window:${WID}"
 		wmctrl -i -a ${WID}
 	else
 		logit ${_LOG} "Unable to focus ${APP} window"
@@ -134,6 +103,7 @@ logit ${_LOG} "Started scan for new windows"
 GOT_SIG=false
 VAL=''
 STR=''
+local TERM_CNT
 while IFS= read -ru3 LINE;do
 	[[ ${LINE:l} =~ 'signal' ]] && GOT_SIG=true
 
@@ -144,8 +114,8 @@ while IFS= read -ru3 LINE;do
 
 	[[ ${LINE:l} =~ 'method' ]] && VAL=$(get_val method path window ${LINE})
 
-	if [[ ${VAL:l} =~ 'terminal' ]];then
-		logit ${_LOG} "GOT TERMINAL"
+	if [[ ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
+		logit ${_LOG} "GOT NEW TERMINAL WINDOW"
 		win_maximize terminal
 		win_focus terminal
 		VAL=''
