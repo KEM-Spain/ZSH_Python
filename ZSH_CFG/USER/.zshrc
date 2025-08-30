@@ -295,22 +295,16 @@ if [[ ${_TERMS} -eq 1 ]];then
 
 		# Check for Enpass
 		ENPASS=/opt/enpass/Enpass
-		ENP_FOUND=false
+		ENPASS_MARKER=/tmp/enpass.set
+		ENP_RUNNING=false
 		RETRIES=0
 
 		while true;do
 			((++RETRIES))
-			pgrep -f ${ENPASS} >/dev/null 2>&1
-			[[ ${?} -eq 0 ]] && ENP_FOUND=true && break
-			[[ ${RETRIES} -eq 10 ]] && break
-			sleep .2
+			[[ ${RETRIES} -eq 30 ]] && break
+			[[ -e ${ENPASS_MARKER} ]] && break
+			sleep 1
 		done
-
-		if [[ ${ENP_FOUND} == 'true' ]];then
-			echo "Enpass:${GREEN_FG}${ITALIC}running${RESET}..."
-		else
-			echo "Enpass:${WHITE_FG}${ITALIC}waiting${RESET}..."
-		fi
 
 		dut external -b # External drive status
 

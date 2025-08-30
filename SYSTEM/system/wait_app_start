@@ -12,8 +12,7 @@ _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
 typeset -a _APPS_TO_SCAN=()
-typeset -a _BLACKLIST=(pyts org.gnome.Terminal libreoffice)
-typeset -A _ALT_PIDS=(musescore mscore4portable pyts pyscripts brave brave/brave audacity bin/audacity)
+typeset -a _BLACKLIST=(pyts org.gnome.terminal libreoffice)
 typeset -A _WAITTIMES=(haruna 6 musescore 4 audacity 12 viber 4)
 
 # Functions
@@ -52,13 +51,29 @@ get_val () {
 	echo ${VAL}
 }
 
-get_wid () {
+has_waittime () {
 	local APP=${1}
-	local WID=$(win_id ${APP} | cut -d'|' -f1)
+	local A
+	local WT=0
 
-	logit ${_LOG} "Returning ${WID} for APP:${APP}"
+	for A in ${(k)_WAITTIMES};do
+		if [[ ${A:l} =~ ${APP:l} ]];then
+			WT=${_WAITTIMES[${A}]}
+		fi
+	done
 
-	echo ${WID}
+	echo ${WT}
+}
+
+is_blacklisted () {
+	local APP=${1}
+	local A
+
+	for A in ${_BLACKLIST};do
+		[[ ${APP:l} =~ ${A:l} ]] && return 0 
+	done
+
+	return 1
 }
 
 scan_string () {
@@ -75,16 +90,17 @@ scan_string () {
 
 win_focus () {
 	local APP=${1}
+	local WIN_INFO=''
 	local WID=''
 
+	WIN_INFO=$(win_id ${APP})
 
-	WID=$(get_wid ${APP})
-
-	if [[ -n ${WID} ]];then
+	if [[ -n ${WIN_INFO} ]];then
+		WID=$(cut -d '|' -f1 <<<${WIN_INFO})
 		logit ${_LOG} "Setting focus to ${APP} window:${WID}"
 		wmctrl -i -a ${WID}
 	else
-		logit ${_LOG} "Unable to focus ${APP} window"
+		logit ${_LOG} "Unable to get WIN_INFO for ${APP}"
 	fi
 }
 
@@ -103,7 +119,6 @@ logit ${_LOG} "Started scan for new windows"
 GOT_SIG=false
 VAL=''
 STR=''
-local TERM_CNT
 while IFS= read -ru3 LINE;do
 	[[ ${LINE:l} =~ 'signal' ]] && GOT_SIG=true
 
@@ -121,33 +136,23 @@ while IFS= read -ru3 LINE;do
 		VAL=''
 	else
 		if [[ -n ${STR} ]];then
-			if [[ ${STR} =~ [_-] ]];then # Parse app string
-				logit ${_LOG} "Parsing APP:${STR}"
-				if [[ ${STR} =~ '_' ]];then
-					APP=$(cut -d'_' -f1 <<<${STR}) # Underscore
-				elif [[ ${STR} =~ '-' ]];then
-					APP=$(cut -d'-' -f1 <<<${STR}) # Hyphen
-				fi
-			else
-				APP=${STR}
-			fi
+			APP=${STR}
+			logit ${_LOG} "GOT APP:${APP}"
 
-			if [[ -n ${APP} ]];then
-				logit ${_LOG} "GOT APP:${APP}"
-				if [[ ${_BLACKLIST[(i)${APP}]} -le ${#_BLACKLIST} ]];then
-					logit ${_LOG} "${APP} is blacklisted - skipping"
-				else
-					if [[ -n ${_WAITTIMES[${APP}]} ]];then
-						logit ${_LOG} "Waiting ${_WAITTIMES[${APP}]} seconds for ${APP} to launch"
-						sleep ${_WAITTIMES[${APP}]}
-					fi
-					win_maximize ${APP}
-					win_focus ${APP}
-				fi
+			if is_blacklisted ${APP};then
+				logit ${_LOG} "APP:${APP} is blacklisted"
+				STR=''
 			else
-				logit ${_LOG} "Missing value for APP:${APP}"
+				WT=$(has_waittime ${APP})
+				if [[ ${WT} -ne 0 ]];then
+					logit ${_LOG} "Waiting ${WT} for APP:${APP} to launch"
+					sleep ${WT}
+				fi
+
+				win_maximize ${APP}
+				win_focus ${APP}
+				STR=''
 			fi
-			STR=''
 		fi
 	fi
 done 3< <(dbus-monitor)

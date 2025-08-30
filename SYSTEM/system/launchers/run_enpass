@@ -1,20 +1,13 @@
 #!/usr/bin/zsh
 
-#Imports
-_LIB=/usr/local/lib
-source ${_LIB}/LIB_INIT.zsh
-source ${_LIB}/UTILS.zsh
-
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB}/${D} ]];then
-		source ${_LIB}/${D}
-	else
-		echo "Cannot source:${_LIB}/${D} - not found"
-		exit 1
-	fi
-done
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 #Vars
+_ENP_MARKER=/tmp/enpass.set
 _ENP_PW=''
 _ENP_CONFIG="/home/kmiller/.enp"
 _ENPASS_INFO=''
@@ -111,6 +104,8 @@ close_enpass_window () {
 }
 
 #Execution
+/bin/rm -f ${_ENP_MARKER}
+
 if [[ ${1} == "-H" ]];then
 	echo "Usage: ${0:t} [foreground]" && exit
 elif [[ ${1} == "foreground" ]];then
@@ -124,4 +119,5 @@ if [[ ${1} != "noauto" ]];then
 	close_enpass_window
 fi
 
+touch ${_ENP_MARKER}
 exit_leave

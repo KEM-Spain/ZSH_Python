@@ -617,7 +617,11 @@ logit () {
 	MSG=${@}
 
 	if [[ -z ${LOG} ]];then # No log passed
-		[[ -n ${_LOG} ]] && LOG=${_LOG} || LOG=/tmp/${0}.log # Assign log
+		if [[ -n ${_LOG} ]];then
+			LOG=${_LOG} # Log is defined
+		else
+			LOG=/tmp/${0}.log # Define log
+		fi
 	fi
 
 	echo "${STAMP} ${MSG}" >> ${LOG}
