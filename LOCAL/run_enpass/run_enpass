@@ -105,17 +105,6 @@ close_enpass_window () {
 }
 
 #Execution
- 
-# Wait for term to initialize
-MAX_WAIT=30
-NDX=0
-while true;do
-	((NDX++))
-	[[ ${NDX} -eq ${MAX_WAIT} ]] && break
-	[[ -e /tmp/term.init ]] && break
-	sleep 1
-done
-
 /bin/rm -f ${_ENP_MARKER}
 
 if [[ ${1} == "-H" ]];then

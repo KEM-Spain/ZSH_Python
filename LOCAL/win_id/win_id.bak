@@ -24,7 +24,7 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A ALT_PID_TAGS=(com.obsproject.studio obs firefox_firefox firefox haruna_haruna bin/haruna musescore mscore4portable chrome store=basic)
+typeset -A ALT_PID_TAGS=(audacity /bin/audacity com.obsproject.studio obs firefox_firefox firefox haruna_haruna bin/haruna musescore mscore4portable chrome store=basic enpass opt/enpass)
 typeset -A SINGLE_WIN_APPS=(com.obsproject.studio 1 simplescreenrecorder 1 deluge 1 vlc 1 chrome 1 haruna 1 viber 1 pycharm 1)
 typeset -a WIN_INFO
 
