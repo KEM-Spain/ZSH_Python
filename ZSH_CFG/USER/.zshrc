@@ -34,6 +34,7 @@ _WIFI_PREF="WiFi_OliveNet-Casa 7_5G"
 _BATT_LIMIT=95
 _CAL_LINES=9
 _TERMS=$(terms -c)
+_TERM_MARKER=/tmp/term.init
 _THIS_WINDOW=$(xut wid | cut -d' ' -f1)
 
 # Declarations
@@ -249,12 +250,11 @@ add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
 
 # Execution
-if [[ ! -e /tmp/term.init ]];then
+WIN_ID=$(wmctrl -lp | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
+if [[ ! -e ${_TERM_MARKER} ]];then
 	if [[ ${_TERMS} -eq 1 ]];then
-		if pgrep -io terminal >/dev/null 2>&1;then
-			wmctrl -r terminal -b add,maximized_vert,maximized_horz
-			touch /tmp/term.init
-		fi
+			wmctrl -i -r ${WIN_ID} -b add,maximized_vert,maximized_horz
+			wmctrl -i -a ${WIN_ID}
 	fi
 fi
 if [[ ${_TERMS} -eq 1 ]];then
@@ -293,19 +293,6 @@ if [[ ${_TERMS} -eq 1 ]];then
 		setopt >~/.cur_setopts
 		unsetopt >~/.cur_unsetopts
 
-		# Check for Enpass
-		ENPASS=/opt/enpass/Enpass
-		ENPASS_MARKER=/tmp/enpass.init
-		ENP_RUNNING=false
-		RETRIES=0
-
-		while true;do
-			((++RETRIES))
-			[[ ${RETRIES} -eq 30 ]] && break
-			[[ -e ${ENPASS_MARKER} ]] && break
-			sleep 1
-		done
-
 		dut external -b # External drive status
 
 		gd -s # Google Drive status
@@ -339,3 +326,5 @@ if [[ ${_TERMS} -eq 1 ]];then
 		xdotool mousemove $((1920/2)) $((1080/2)) # center the mouse  pointer
 	fi
 fi
+touch ${_TERM_MARKER}
+wmctrl -i -a ${WIN_ID}

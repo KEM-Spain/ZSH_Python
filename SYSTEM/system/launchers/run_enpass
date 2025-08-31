@@ -10,7 +10,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 _ENP_MARKER=/tmp/enpass.init
 _ENP_PW=''
 _ENP_CONFIG="/home/kmiller/.enp"
-_ENPASS_INFO=''
+_WIN_INFO=''
 _ENPASS_WDW_ID=''
 _ENPASS_WDW_TITLE=''
 _TERM_ID=$(win_id terminal | cut -d'|' -f2) # Get decimal ID for xdotool
@@ -18,7 +18,8 @@ _TERM_ID=$(win_id terminal | cut -d'|' -f2) # Get decimal ID for xdotool
 #Get PW
 read _ENP_PW < ${_ENP_CONFIG}
 _DELAY=1
-_LOG=/tmp/${0:t}.log
+_SCRIPT=${0:t}
+_LOG=/tmp/${_SCRIPT}.log
 _ENPASS=/opt/enpass/Enpass 
 
 start_enpass () {
@@ -29,12 +30,12 @@ start_enpass () {
 	_ENPASS_PID=($(pgrep -xf ${_ENPASS})) #get PID for Enpass
 
 	if [[ -n ${_ENPASS_PID} ]];then
-		logit "Enpass already running...killing instance"
+		logit ${_LOG} "Enpass already running...killing instance"
 		sudo killall -I enpass
 	fi
 
 	#Start Enpass...
-	logit "Starting Enpass..."
+	logit ${_LOG} "Starting Enpass..."
 	if [[ ${ARG} == 'foreground' ]];then
 		echo "Control-C to exit..." >&2
 		${_ENPASS} 2>/dev/null
@@ -42,7 +43,7 @@ start_enpass () {
 		exec ${_ENPASS} 2>/dev/null & 
 	fi
 
-	logit "Waiting for Enpass to start..."
+	logit ${_LOG} "Waiting for Enpass to start..."
 	send-notification ${_DELAY} "Waiting for Enpass instance..."
 
 	_ENPASS_PID=?
@@ -52,31 +53,31 @@ start_enpass () {
 		sleep .2
 	done
 
-	logit "Enpass has started..."
+	logit ${_LOG} "Enpass has started..."
 }
 
 pass_login_to_enpass () {
-	_ENPASS_INFO=$(win_id enpass) # Get decimal ID for xdotool
-	[[ -z ${_ENPASS_INFO} ]] && logit "ERROR: _ENPASS_INFO not populated" && exit
+	_WIN_INFO=$(win_id enpass) # Get decimal ID for xdotool
+	[[ -z ${_WIN_INFO} ]] && logit ${_LOG} "ERROR: _WIN_INFO not populated" && exit_leave "${_SCRIPT} _WIN_INFO did not populate"
 
-	_ENPASS_WDW_ID=$(cut -d'|' -f2 <<<${_ENPASS_INFO})
-	_ENPASS_WDW_TITLE=$(cut -d'|' -f3 <<<${_ENPASS_INFO})
+	_ENPASS_WDW_ID=$(cut -d'|' -f2 <<<${_WIN_INFO})
+	_ENPASS_WDW_TITLE=$(cut -d'|' -f3 <<<${_WIN_INFO})
 
-	logit "Received ID:${_ENPASS_WDW_ID}"
-	logit "Received Title:${_ENPASS_WDW_TITLE}"
+	logit ${_LOG} "Received ID:${_ENPASS_WDW_ID}"
+	logit ${_LOG} "Received Title:${_ENPASS_WDW_TITLE}"
 
 	if [[ ${_ENPASS_WDW_TITLE:l} =~ 'crash' ]];then
-		logit "Detected Enpass Crash Window"
-		logit "Sending Escape Key"
+		logit ${_LOG} "Detected Enpass Crash Window"
+		logit ${_LOG} "Sending Escape Key"
 		xdotool windowfocus ${_ENPASS_WDW_ID}
 		xdotool key --window ${_ENPASS_WDW_ID} Escape
 		sleep 2
-		logit "Getting new window ID"
+		logit ${_LOG} "Getting new window ID"
 		_ENPASS_WDW_ID=$(win_id enpass | cut -d'|' -f2) # Get decimal ID for xdotool
-		logit "New window ID:${_ENPASS_WDW_ID}"
+		logit ${_LOG} "New window ID:${_ENPASS_WDW_ID}"
 	fi
 
-	logit "Passing credentials to Enpass..."
+	logit ${_LOG} "Passing credentials to Enpass..."
 	send-notification ${_DELAY} "Sending credentials to Enpass..."
 
 	xdotool windowfocus ${_TERM_ID}
@@ -96,9 +97,9 @@ pass_login_to_enpass () {
 }
 
 close_enpass_window () {
-	logit "Closing Enpass window..."
+	logit ${_LOG} "Closing Enpass window..."
 
-	[[ -z ${_ENPASS_WDW_ID} ]] && logit "ERROR: _ENPASS_WDW_ID not populated" && exit
+	[[ -z ${_ENPASS_WDW_ID} ]] && logit ${_LOG} "ERROR: _ENPASS_WDW_ID not populated" && exit
 
 	xdotool windowclose ${_ENPASS_WDW_ID}
 }
@@ -114,8 +115,10 @@ else
 	start_enpass
 fi
 
-pass_login_to_enpass
-close_enpass_window
+if [[ ${1} != "noauto" ]];then
+	pass_login_to_enpass
+	close_enpass_window
+fi
 
 touch ${_ENP_MARKER}
 exit_leave

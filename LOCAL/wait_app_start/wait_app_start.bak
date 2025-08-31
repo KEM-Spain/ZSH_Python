@@ -12,8 +12,9 @@ _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
 typeset -a _APPS_TO_SCAN=()
+typeset -a _APPS_NON_DOCK=(chrome)
 typeset -a _BLACKLIST=(pyts org.gnome.terminal libreoffice)
-typeset -A _WAITTIMES=(haruna 12 musescore 4 audacity 12 viber 4)
+typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
 
 # Functions
 apps_to_scan () {
@@ -114,6 +115,7 @@ win_maximize () {
 
 # Execution
 _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
+_APPS_TO_SCAN+=${_APPS_NON_DOCK}
 
 logit ${_LOG} "Started scan for new windows"
 

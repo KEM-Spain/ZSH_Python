@@ -63,7 +63,7 @@ start_enpass () {
 }
 
 pass_login_to_enpass () {
-	_ENPASS_INFO=$(win_id enpass | cut -d'|' -f2) # Get decimal ID for xdotool
+	_ENPASS_INFO=$(win_id enpass) # Get decimal ID for xdotool
 	[[ -z ${_ENPASS_INFO} ]] && logit "ERROR: _ENPASS_INFO not populated" && exit
 
 	_ENPASS_WDW_ID=$(cut -d'|' -f2 <<<${_ENPASS_INFO})

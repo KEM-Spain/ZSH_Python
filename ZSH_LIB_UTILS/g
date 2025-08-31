@@ -174,13 +174,16 @@ GREP_OPTS+=${GR_OPT_WORD}
 # Limit to file type if specified
 FTYPE_MSG='all'
 if [[ -n ${FTYPE} ]];then
-	typeset -a FLIST=()
-	FLIST=("${(f)$(find ${PATH_ARG} -maxdepth 1 -type f ! -path ${PATH_ARG} | xargs file | grep --color=never -i ${FTYPE} | cut -d: -f1)}")
-	if [[ -n ${FLIST} ]];then
-		FTYPE_MSG="type:${FTYPE}"
-	else
-		exit_leave $(err_msg_exit E "No files qualified for type:${FTYPE}")
-	fi
+	FLIST="${PATH_ARG}/*${FTYPE}"
+	[[ ${FTYPE} == 'bak' ]] && GR_OPT_BAK=true
+	FTYPE_MSG=${FTYPE}
+#	typeset -a FLIST=()
+#	FLIST=("${(f)$(find ${PATH_ARG} -maxdepth 1 -type f ! -path ${PATH_ARG} | xargs file | grep --color=never -i ${FTYPE} | cut -d: -f1)}")
+#	if [[ -n ${FLIST} ]];then
+#		FTYPE_MSG="type:${FTYPE}"
+#	else
+#		exit_leave $(err_msg_exit E "No files qualified for type:${FTYPE}")
+#	fi
 else
 	FLIST="${PATH_ARG}/(*|.*)"
 fi
@@ -226,7 +229,7 @@ for L in ${(uo)RAWLIST};do
 	[[ ${_DEBUG} -gt 0 && (! ${FTYPE} =~ 'text') ]] && dbg "${0}:${LINENO} File:${FN} rejected - not text:${FTYPE}" 
 	[[ ! ${FTYPE} =~ 'text' ]] && continue
 	LN=$(cut -d: -f2- <<<${L})
-	LN=${LN[1,${_COL_MAX}]} # Limit usable line length; some files have no line breaks
+	LN=${LN[1,${_COL_MAX}]} # Limit line length
 	LN=$(tr -d '\012\015' <<<${LN})
 	LN=$(tr -s '[:space:]' <<<${LN})
 	LN=$(sed 's/[\t\n]/ /' <<<${LN})
@@ -267,24 +270,22 @@ if [[ ${FILELIST} == 'true' ]];then
 	done
 else
 	{
-	if [[ ${FILELIST} == 'false' ]];then
-		tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
-		[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
-		[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
-		echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Files:${WHITE_FG}${FTYPE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
-		if [[ -n ${LINENUM_OPT} ]];then
-			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
-			REM=$(( (_COL_MAX - LONGEST_FN) - 8))
-			printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text"
-			echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- )))  ${MAGENTA_FG}$(str_unicode_line 4)${RESET} ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN - 4 )))${RESET}"
-			echo
-		else
-			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 4 ))
-			REM=$(( (_COL_MAX - LONGEST_FN) - 4))
-			printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text"
-			echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- ))) ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN-- )))${RESET}"
-			echo
-		fi
+	tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
+	[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
+	[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
+	echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Files:${WHITE_FG}${FTYPE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
+	if [[ -n ${LINENUM_OPT} ]];then
+		[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
+		REM=$(( (_COL_MAX - LONGEST_FN) - 8))
+		printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text"
+		echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- )))  ${MAGENTA_FG}$(str_unicode_line 4)${RESET} ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN - 4 )))${RESET}"
+		echo
+	else
+		[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 4 ))
+		REM=$(( (_COL_MAX - LONGEST_FN) - 4))
+		printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text"
+		echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- ))) ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN-- )))${RESET}"
+		echo
 	fi
 
 	NDX=0
