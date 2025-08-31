@@ -7,7 +7,7 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 #Vars
-_ENP_MARKER=/tmp/enpass.set
+_ENP_MARKER=/tmp/enpass.init
 _ENP_PW=''
 _ENP_CONFIG="/home/kmiller/.enp"
 _ENPASS_INFO=''
@@ -114,10 +114,8 @@ else
 	start_enpass
 fi
 
-if [[ ${1} != "noauto" ]];then
-	pass_login_to_enpass
-	close_enpass_window
-fi
+pass_login_to_enpass
+close_enpass_window
 
 touch ${_ENP_MARKER}
 exit_leave

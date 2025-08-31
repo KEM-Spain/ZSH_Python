@@ -24,8 +24,7 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A ALT_PID_TAGS=(com.obsproject.studio obs)
-typeset -A ALT_WID_TAGS=(com.obsproject.studio obs)
+typeset -A ALT_PID_TAGS=(com.obsproject.studio obs firefox_firefox firefox haruna_haruna bin/haruna musescore mscore4portable)
 typeset -A SINGLE_WIN_APPS=(com.obsproject.studio 1 simplescreenrecorder 1 deluge 1 vlc 1 chrome 1 haruna 1 viber 1 pycharm 1)
 typeset -a WIN_INFO
 
@@ -45,6 +44,7 @@ read -r -d '' DESC<<EOF
 Request a window ID for given application or the current window
 \tAn application is specified by a string fully or partially matching the window title
 \tIf no string is passed, the application is assumed to be the terminal
+\tNote: Use HEX_ID for wmctrl, DEC_ID for xdotool
 \tReturn format:HEX ID|DEC ID|TITLE
 EOF
 
@@ -131,17 +131,10 @@ else
 	PID_TAG=${APP:l}
 fi
 
-if [[ -n ${ALT_WID_TAGS[${APP:l}]} ]];then # Lowercase
-	WID_TAG=${ALT_WID_TAGS[${APP:l}]}
-	logit ${_LOG} "Got alternate WID_TAG:${WID_TAG} for APP:${APP}"
-else
-	WID_TAG=${APP}
-fi
-
 # Find PID
 logit ${_LOG} "Probing for PID_TAG:${PID_TAG}"
-for X in {1..5};do
-	PID=$(pgrep -i ${PID_TAG[1,15]}) # Limit string len to pgrep max allowed
+for X in {1..10};do
+	PID=$(ps aux | grep  -i ${PID_TAG[1,15]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2) # Limit string len to pgrep max allowed
 	[[ -n ${PID} ]] && break
 	sleep .2
 done
@@ -164,19 +157,25 @@ TIMEOUT=false
 TITLE=''
 WIN_INFO=''
 
-logit ${_LOG} "Probing for WID_TAG:${WID_TAG}"
+logit ${_LOG} "Probing for WID with PID:${PID}"
+MSG_OUT=false
 while true;do
 	((CYCLE++))
 	[[ ${CYCLE} -ge ${MAX_CYCLES} ]] && TIMEOUT=true && break 
 
-	WIN_INFO=$(wmctrl -lp | grep -i ${WID_TAG} | sort -r | head -1 | tr -s '[:space:]') # sorts by hex win_id - most recent is top
+	WIN_INFO=$(wmctrl -lp | grep -i ${PID} | sort -r | head -1 | tr -s '[:space:]') # sorts by hex win_id - most recent is top
 	if [[ -n ${WIN_INFO} ]];then
 		WIN_ID=$(cut -d' ' -f1 <<<${WIN_INFO})
 		TITLE=$(cut -d' ' -f4- <<<${WIN_INFO})
-		logit ${_LOG} "Got WIN_INFO:${WIN_INFO} WIN_ID:${WIN_ID} TITLE:${TITLE} for APP:${APP}"
+		if [[ ${MSG_OUT} == 'false' ]];then
+			logit ${_LOG} "Got WIN_INFO:${WIN_INFO} WIN_ID:${WIN_ID} TITLE:${TITLE} for APP:${APP}"
+			logit ${_LOG} "Verifying stability..."
+			MSG_OUT=true
+		fi
 		[[ ${LAST_WID} != ${WDW_ID} ]] && LAST_WID=${WDW_ID} && ((ID_CHANGE++)) && ID_CNT=0 # Different id
 		[[ ${LAST_WID} == ${WDW_ID} ]] && ((ID_CNT++)) # Same id
 		if [[ (${SINGLE_WIN_APPS[${APP:l}]} -eq 1) || (${ID_CHANGE} -ge ${MAX_CHANGES}) || (${ID_CNT} -ge ${STABLE_ID}) ]];then
+			[[ ${MSG_OUT} == 'true' ]] && logit ${_LOG} "WDW_ID:${WIN_ID} is stable"
 			DEC_ID=$(printf "%d" ${WIN_ID})
 			logit ${_LOG} "Returning HEX_ID:${WIN_ID}, DEC_ID:${DEC_ID}, TITLE:${TITLE}"
 			echo "${WIN_ID}|${DEC_ID}|${TITLE}"
@@ -189,6 +188,6 @@ done
 logit ${_LOG} "Finished probing for WID..."
 
 if [[ ${TIMEOUT} == 'true' ]];then
-	logit ${_LOG} "Probing for WID_TAG:${WID_TAG} timed out"
+	logit ${_LOG} "Probing for WID with PID:${PID} timed out"
 	return 1
 fi

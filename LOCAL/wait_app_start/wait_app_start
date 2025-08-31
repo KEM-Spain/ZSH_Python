@@ -13,7 +13,7 @@ _SYS_APPS=/usr/local/bin/system/launchers
 # Declarations
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(pyts org.gnome.terminal libreoffice)
-typeset -A _WAITTIMES=(haruna 6 musescore 4 audacity 12 viber 4)
+typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
 
 # Functions
 apps_to_scan () {
@@ -59,6 +59,7 @@ has_waittime () {
 	for A in ${(k)_WAITTIMES};do
 		if [[ ${A:l} =~ ${APP:l} ]];then
 			WT=${_WAITTIMES[${A}]}
+			break
 		fi
 	done
 

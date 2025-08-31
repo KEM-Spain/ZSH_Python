@@ -295,7 +295,7 @@ if [[ ${_TERMS} -eq 1 ]];then
 
 		# Check for Enpass
 		ENPASS=/opt/enpass/Enpass
-		ENPASS_MARKER=/tmp/enpass.set
+		ENPASS_MARKER=/tmp/enpass.init
 		ENP_RUNNING=false
 		RETRIES=0
 

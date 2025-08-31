@@ -13,7 +13,7 @@ _SYS_APPS=/usr/local/bin/system/launchers
 # Declarations
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(pyts org.gnome.terminal libreoffice)
-typeset -A _WAITTIMES=(haruna 6 musescore 4 audacity 12 viber 4)
+typeset -A _WAITTIMES=(haruna 12 musescore 4 audacity 12 viber 4)
 
 # Functions
 apps_to_scan () {
@@ -59,6 +59,7 @@ has_waittime () {
 	for A in ${(k)_WAITTIMES};do
 		if [[ ${A:l} =~ ${APP:l} ]];then
 			WT=${_WAITTIMES[${A}]}
+			break
 		fi
 	done
 
@@ -90,15 +91,17 @@ scan_string () {
 
 win_focus () {
 	local APP=${1}
+	local WIN_INFO=''
 	local WID=''
 
-	WID=$(win_id ${APP})
+	WIN_INFO=$(win_id ${APP})
 
-	if [[ -n ${WID} ]];then
+	if [[ -n ${WIN_INFO} ]];then
+		WID=$(cut -d '|' -f1 <<<${WIN_INFO})
 		logit ${_LOG} "Setting focus to ${APP} window:${WID}"
 		wmctrl -i -a ${WID}
 	else
-		logit ${_LOG} "Unable to focus ${APP} window"
+		logit ${_LOG} "Unable to get WIN_INFO for ${APP}"
 	fi
 }
 

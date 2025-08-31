@@ -193,7 +193,7 @@ for D in ${MUSIC_DIRS};do
 	REGEX=${SEARCH_REGEX}${EXTENSIONS}
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} find -L ${D} -type f -regextype posix-extended -iregex ${REGEX}"
 	LIST+=("${(f)$(find -L ${D} -type f -regextype posix-extended -iregex ${REGEX})}")
-	(( WIN_X+=3 ))
+	(( WIN_X += 3 ))
 done
 
 if arr_is_populated "${LIST}";then
