@@ -24,8 +24,7 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A ALT_PID_TAGS=(audacity /bin/audacity com.obsproject.studio obs firefox_firefox firefox haruna_haruna bin/haruna musescore mscore4portable chrome store=basic enpass opt/enpass)
-typeset -A SINGLE_WIN_APPS=(com.obsproject.studio 1 simplescreenrecorder 1 deluge 1 vlc 1 chrome 1 haruna 1 viber 1 pycharm 1)
+typeset -A APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
 typeset -a WIN_INFO
 
 # Constants
@@ -33,7 +32,6 @@ _LOG=/tmp/${0:t}.log
 MAX_CYCLES=25 # Max attempts to get an id
 MAX_CHANGES=3 # Some apps open preliminary windows and id's change - 3 changes should be sufficient
 STABLE_ID=5 # iterations without a change of id should indicate a stable id
-
 
 #--Begin GetOpts--
 local -a OPTIONS
@@ -124,70 +122,32 @@ else
 fi
 
 # Handle any alternate tags
-if [[ -n ${ALT_PID_TAGS[${APP:l}]} ]];then # Lowercase
-	PID_TAG=${ALT_PID_TAGS[${APP:l}]}
-	logit ${_LOG} "Got alternate PID_TAG:${PID_TAG} for APP:${APP}"
+if [[ -n ${APP_TAGS[${APP:l}]} ]];then # Lowercase
+	APP_TAG=${APP_TAGS[${APP:l}]}
+	logit ${_LOG} "Got alternate APP_TAG:${APP_TAG} for APP:${APP}"
 else
-	PID_TAG=${APP:l}
+	APP_TAG=${APP:l}
 fi
 
-# Find PID
-logit ${_LOG} "Probing for PID_TAG:${PID_TAG}"
-for X in {1..10};do
-	PID=$(ps aux | grep  -i ${PID_TAG[1,15]} | head -1 | tr -s '[:space:]' | cut -d' ' -f2) # Limit string len to pgrep max allowed
-	[[ -n ${PID} ]] && break
-	sleep .2
-done
-logit ${_LOG} "Finished probing for PID..."
-
-if [[ -z ${PID} ]];then
-	logit ${_LOG} "PID for PID_TAG:${PID_TAG} could NOT be found"
-	return 1
-else
-	logit ${_LOG} "Got PID:${PID} for PID_TAG:${PID_TAG}"
-fi
-
-# Find WID
-CYCLE=0
-DEC_ID=''
-ID_CHANGE=0
-ID_CNT=0
-LAST_WID=?
-TIMEOUT=false
-TITLE=''
-WIN_INFO=''
-
-logit ${_LOG} "Probing for WID with PID:${PID}"
-MSG_OUT=false
+RETRIES=10
 while true;do
-	((CYCLE++))
-	[[ ${CYCLE} -ge ${MAX_CYCLES} ]] && TIMEOUT=true && break 
-
-	WIN_INFO=$(wmctrl -lp | grep -i ${PID} | sort -r | head -1 | tr -s '[:space:]') # sorts by hex win_id - most recent is top
+	((NDX++))
+	[[ ${NDX} -gt ${RETRIES} ]] && break
+	WIN_INFO=$(wmctrl -l | grep -i ${APP_TAG} | sort -r | head -1 | tr -s '[:space:]')
 	if [[ -n ${WIN_INFO} ]];then
 		WIN_ID=$(cut -d' ' -f1 <<<${WIN_INFO})
-		TITLE=$(cut -d' ' -f4- <<<${WIN_INFO})
-		if [[ ${MSG_OUT} == 'false' ]];then
-			logit ${_LOG} "Got WIN_INFO:${WIN_INFO} WIN_ID:${WIN_ID} TITLE:${TITLE} for APP:${APP}"
-			logit ${_LOG} "Verifying stability..."
-			MSG_OUT=true
-		fi
-		[[ ${LAST_WID} != ${WDW_ID} ]] && LAST_WID=${WDW_ID} && ((ID_CHANGE++)) && ID_CNT=0 # Different id
-		[[ ${LAST_WID} == ${WDW_ID} ]] && ((ID_CNT++)) # Same id
-		if [[ (${SINGLE_WIN_APPS[${APP:l}]} -eq 1) || (${ID_CHANGE} -ge ${MAX_CHANGES}) || (${ID_CNT} -ge ${STABLE_ID}) ]];then
-			[[ ${MSG_OUT} == 'true' ]] && logit ${_LOG} "WDW_ID:${WIN_ID} is stable"
-			DEC_ID=$(printf "%d" ${WIN_ID})
-			logit ${_LOG} "Returning HEX_ID:${WIN_ID}, DEC_ID:${DEC_ID}, TITLE:${TITLE}"
-			echo "${WIN_ID}|${DEC_ID}|${TITLE}"
-			return 0
-		fi
-		[[ ${ID_CHANGE} -eq 0 ]] && TIMEOUT=true && break
+		WIN_TITLE=$(cut -d' ' -f3- <<<${WIN_INFO})
+		break
 	fi
 	sleep .2
-done 
-logit ${_LOG} "Finished probing for WID..."
+done
 
-if [[ ${TIMEOUT} == 'true' ]];then
-	logit ${_LOG} "Probing for WID with PID:${PID} timed out"
+if [[ -n ${WIN_ID} ]];then
+	printf "%s|%d|%s" ${WIN_ID} ${WIN_ID} ${WIN_TITLE}
+	return 0
+else
+	echo "Unable to locate WIN_ID for ${APP_TAG}"
+	logit ${_LOG} "Failed to locate WIN_ID for ${APP_TAG}"
 	return 1
 fi
+

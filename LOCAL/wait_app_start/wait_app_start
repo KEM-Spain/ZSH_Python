@@ -109,8 +109,12 @@ win_focus () {
 win_maximize () {
 	local APP=${1}
 
-	logit ${_LOG} "Maximizing ${APP} window"
 	win_max ${APP}
+	if [[ ${?} -eq 0 ]];then
+		logit ${_LOG} "Maximized ${APP} window"
+	else
+		logit ${_LOG} "Unable to maximize ${APP}"
+	fi
 }
 
 # Execution

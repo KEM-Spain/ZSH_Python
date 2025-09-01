@@ -28,6 +28,8 @@ if [[ -n ${WIN_INFO} ]];then
 	logit ${_LOG} "Extracted WID:${WID}"
 	wmctrl -i -r ${WID} -b add,maximized_vert,maximized_horz >/dev/null 2>&1
 	logit ${_LOG} "${APP} WID:${WID} was MAXIMIZED"
+	return 0
 else
 	logit ${_LOG} "Unable to get WIN_INFO for ${APP}"
+	return 1
 fi
