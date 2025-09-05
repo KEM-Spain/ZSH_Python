@@ -529,16 +529,16 @@ download_indicator () {
 	local -A OBJS_2=(1 ${R_OBJ} 2 ${M_OBJ} 3 ${L_OBJ})
 	local BORDER_COLOR=''
 	local DELAY=.3
+	local IND_X=$(( _ALERT_COORDS[X] + 1 ))
+	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
+	local LSPEED=0
+	local LSP_TYPE=''
 	local L_SIDE="\\u2770"
 	local R_SIDE="\\u2771"
 	local MASK=""
-	local IND_X=$(( _ALERT_COORDS[X] + 1 ))
-	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
 	local OBJ_COLOR="${BOLD}${GREEN_FG}"
-	local SP_TYPE=''
-	local LSP_TYPE=''
-	local LSPEED=0
 	local SP_DIR=I
+	local SP_TYPE=''
 
 	[[ -n ${SPEED} ]] && SPEED=${SPEED[1,-4]} || SPEED=0
 	[[ -n ${SPEED} && ${SPEED} =~ 'mib' ]] && SP_TYPE='M' || SP_TYPE='K'
