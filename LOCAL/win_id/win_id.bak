@@ -28,7 +28,8 @@ typeset -A APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firef
 typeset -a WIN_INFO
 
 # Constants
-_LOG=/tmp/${0:t}.log
+#_LOG=/tmp/${0:t}.log
+_LOG=/tmp/wait_app_start.log
 MAX_CYCLES=25 # Max attempts to get an id
 MAX_CHANGES=3 # Some apps open preliminary windows and id's change - 3 changes should be sufficient
 STABLE_ID=5 # iterations without a change of id should indicate a stable id
@@ -129,7 +130,7 @@ else
 	APP_TAG=${APP:l}
 fi
 
-RETRIES=10
+RETRIES=50
 while true;do
 	((NDX++))
 	[[ ${NDX} -gt ${RETRIES} ]] && break

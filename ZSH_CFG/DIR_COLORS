@@ -45,7 +45,7 @@ EXEC 01;32			#FILE with EXECUTE permissions
 
 #SYMLINKS
 #LINK target			#30;42 #SYMBOLIC LINK. (If you set this to 'target' instead of a numerical value, the color is as for the file pointed to.)
-LINK 30;46				#SYMBOLIC LINK. (If you set this to 'target' instead of a numerical value, the color is as for the file pointed to.)
+LINK 37;45;01			#SYMBOLIC LINK. (If you set this to 'target' instead of a numerical value, the color is as for the file pointed to.)
 ORPHAN 40;31			#SYMLINK to nonexistent file, or non-stat'able file
 MULTIHARDLINK 44;37	#REGULAR FILE with MORE than ONE LINK
 

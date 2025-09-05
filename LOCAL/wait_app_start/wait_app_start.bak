@@ -8,6 +8,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Constants
 _LOG=/tmp/${0:t}.log
+_SCRIPT=${0:t}
 _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
@@ -50,6 +51,14 @@ get_val () {
 	done
 
 	echo ${VAL}
+}
+
+cnt_instance () {
+	local INSTANCES=$(pgrep -c ${_SCRIPT})
+
+	logit ${_LOG} "Instance count of ${APP} is:${INSTANCES}"
+
+	echo ${INSTANCES}
 }
 
 has_waittime () {
@@ -111,13 +120,16 @@ win_maximize () {
 
 	win_max ${APP}
 	if [[ ${?} -eq 0 ]];then
-		logit ${_LOG} "Maximizing ${APP} window"
+		logit ${_LOG} "Maximized ${APP} window"
 	else
 		logit ${_LOG} "Unable to maximize ${APP}"
 	fi
 }
 
 # Execution
+CNT=$(cnt_instance)
+[[ ${CNT} -ne 1 ]] && exit_leave "${_SCRIPT}:${RED_FG}More than 1 instance not permitted${RESET}"
+
 _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
 _APPS_TO_SCAN+=${_APPS_NON_DOCK}
 
@@ -144,15 +156,15 @@ while IFS= read -ru3 LINE;do
 	else
 		if [[ -n ${STR} ]];then
 			APP=${STR}
-			logit ${_LOG} "GOT APP:${APP}"
 
 			if is_blacklisted ${APP};then
 				logit ${_LOG} "APP:${APP} is blacklisted"
 				STR=''
 			else
+				logit ${_LOG} "GOT APP:${APP}"
 				WT=$(has_waittime ${APP})
 				if [[ ${WT} -ne 0 ]];then
-					logit ${_LOG} "Waiting ${WT} for APP:${APP} to launch"
+					logit ${_LOG} "Waiting ${WT} seconds for APP:${APP} to launch"
 					sleep ${WT}
 				fi
 

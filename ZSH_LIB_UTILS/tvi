@@ -161,7 +161,7 @@ try_locate () {
 
 	if [[ ${UPDATE_LOCATE_DB} == 'true' ]];then
 		echo "Updating locate database..."
-		upd_locate -I
+		upd_locate -u
 	fi
 
 	LIST=("${(f)$(sudo locate -r "\/${ARG:q}$")}") 

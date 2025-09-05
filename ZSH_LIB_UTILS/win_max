@@ -11,8 +11,6 @@ _SCRIPT=${0:t}
 _LOG=/tmp/${_SCRIPT}.log
 
 # Execution
- 
-# Args
 APP=${1}
 if [[ -z ${APP} ]];then
 	logit ${_LOG} "Missing argument:APP"
@@ -22,6 +20,7 @@ else
 fi
 
 WIN_INFO=$(win_id ${APP})
+
 if [[ -n ${WIN_INFO} ]];then
 	logit ${_LOG} "Got WIN_INFO:${WIN_INFO} for APP:${APP}"
 	WID=$(cut -d'|' -f1 <<<${WIN_INFO})
