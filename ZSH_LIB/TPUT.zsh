@@ -33,7 +33,7 @@ cursor_restore () {
 	tput -T ${_TERM} rc # Save cursor
 }
 
-_cursor_row () {
+cursor_row () {
 	local ROW
 
 	echo -ne "\033[6n" > /dev/tty # Voodoo to grab row

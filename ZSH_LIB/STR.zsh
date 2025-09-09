@@ -321,7 +321,7 @@ str_word_clip () {
 	local LINE=''
 	local B P
 
-	[[ ${LEN} -ge ${#TEXT} ]] && LINE=${TEXT} # No length restriction
+	[[ ${#TEXT} -le ${LEN} ]] && LINE=${TEXT} # No length restriction
 
 	if [[ -z ${LINE} ]];then
 		for (( P=1; P <= ${#TEXT}; P++ ));do # Mark all word boundaries
@@ -337,7 +337,7 @@ str_word_clip () {
 		done
 	fi
 
-	LINE=$(sed -E -e 's/[[:punct:]]*\s+?$//' -e 's/ *$//' <<<${LINE}) # Clean the tail of dangling punctuation
+	LINE=$(sed -E -e 's/[[:punct:]]*\s+?$//' -e 's/ *$//' <<<${LINE}) # Clean any dangling punctuation
 
 	echo ${LINE}
 }

@@ -306,8 +306,8 @@ action_do () {
 			elif grep -qi 'error' <<<${LOG_LINE} 2>/dev/null;then
 				logit ${_YTS_DBG_LOG} "${0}: GOT ERROR:${LOG_LINE}"
 				ERR=${LOG_LINE}
-			elif grep -qi 'Fixing MPEG-TS' <<<${LOG_LINE} 2>/dev/null;then
-				logit ${_YTS_DBG_LOG} "${0}: GOT Fragmented completion:${LOG_LINE}"
+			elif grep -qi 'Fixing MPEG-TS\|FixupM3u8' <<<${LOG_LINE} 2>/dev/null;then
+				logit ${_YTS_DBG_LOG} "${0}: GOT Fragmention post-process:${LOG_LINE}"
 				ETA="100% of download completed"
 			elif grep -qi '100%' <<<${LOG_LINE} 2>/dev/null;then
 				logit ${_YTS_DBG_LOG} "${0}: GOT completion:${LOG_LINE}"
@@ -419,14 +419,6 @@ box_center () {
 	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT})
 }
 
-clean_author () {
-	local AUTHOR=${1}
-
-	[[ ${AUTHOR} =~ '[?]' ]] && AUTHOR=$(sed 's/[?].*//' <<< ${AUTHOR})
-
-	echo ${AUTHOR}
-}
-
 clean_title () {
 	local TITLE=${1}
 	local TITLE_LEN=${2:=${_MAX_TITLE}}
@@ -437,13 +429,11 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
-	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
 
 	STR=$(str_word_clip ${STR} ${TITLE_LEN})
-	#logit ${_YTS_DBG_LOG} "${0}: str_word_clip TITLE:${TITLE}"
+	logit ${_YTS_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"
 
 	TITLE=${STR}
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
@@ -918,16 +908,6 @@ get_field () {
 		[[ ${STR:l} =~ 'views' ]] && STR=$(sed -E 's/^(.*views )(.*ago)(.*)/(\2)/' <<<${STR})
 		[[ ${STR:l} =~ 'live' ]] && STR=$(sed -E 's/(.*ago)( live)(.*)/\1)/I' <<<${STR})
 	fi
-
-#	if [[ ${FIELD} == 'author' ]];then
-#		if [[ ${g_SEARCH_TYPE} == 'general' ]];then
-# 			TSTR=${(C)STR}
-#		else
-#			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Author:${STR} swapped with g_DISPLAY_KEY:${g_DISPLAY_KEY}"
-#			TSTR=${g_DISPLAY_KEY:gs/_/ /}
-#		fi
-#		STR=${TSTR:=${STR}}
-#	fi
 
 	if [[ ${FIELD} == 'author' ]];then
 		STR=${g_DISPLAY_KEY:gs/_/ /}
@@ -1437,7 +1417,7 @@ query_rumble () {
 
 	for V in ${_LOCAL_LIST};do
 		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${V})
-		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${V}) AUTHOR=$(clean_author ${AUTHOR})
+		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${V})
 		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${V}); TITLE=$(clean_title ${TITLE})
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${V}); URL="http://rumble.com${URL}"
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${V})

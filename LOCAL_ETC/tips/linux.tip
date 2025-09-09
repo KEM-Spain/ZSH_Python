@@ -120,4 +120,9 @@ fifty-five    : 55
 alternate method:
 head -n 55 numbers_en.txt | tail -n 5
 tip_linux_EOF
+
+Limit width of man output
+-------------------------
+MANWIDTH=100;export MANWIDTH;man rsync > rsync.txt
+
 ) | mypager

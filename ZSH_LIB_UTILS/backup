@@ -1,12 +1,13 @@
 #!/usr/bin/zsh
-# Vim: syntax off
+
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
+BLACK_BG="\033[40m"
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -14,6 +15,9 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -26,8 +30,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Declarations
 typeset -a MARKED
 typeset -a RS_OPTS
-typeset -a RS_EXCL
-typeset -a RS_INCL
+typeset -a RS_FLTR
 typeset -a BACKUP_DIRS
 
 #--Option settings for rsync--
@@ -48,26 +51,23 @@ RS_OPTS+=('--delete-excluded') # Exluded here; deleted there
 RS_OPTS+=('--ignore-errors') # Continue through errors
 
 #--Exclude settings for rsync--
-RS_EXCL+=(--exclude='/home/kmiller/node_modules')
-RS_EXCL+=(--exclude='/home/kmiller/.vim/undo')
-RS_EXCL+=(--exclude='lost+found')
-RS_EXCL+=(--exclude='Downloads')
-RS_EXCL+=(--exclude='Videos')
-RS_EXCL+=(--exclude='Virtual*')
-RS_EXCL+=(--exclude='.cache')
-RS_EXCL+=(--exclude='Cache')
-RS_EXCL+=(--exclude='cache')
-RS_EXCL+=(--exclude='/usr/local/src/yt-dlp/yt_dlp/__pycache__')
-RS_EXCL+=(--exclude='/usr/local/lib/node_modules')
-RS_EXCL+=(--exclude='/usr/local/lib/x86_64-linux-gnu')
-RS_EXCL+=(--exclude='/usr/local/lib/gimp')
-RS_EXCL+=(--exclude='/usr/local/lib/python3.12')
-RS_EXCL+=(--exclude='snap')
-RS_EXCL+=(--exclude='.local/share/flatpak')
-RS_EXCL+=(--exclude='.config/google-chrome')
-RS_EXCL+=(--exclude='.git')
+RS_FLTR+=(--exclude='.cache')
+RS_FLTR+=(--exclude='.config/google-chrome')
+RS_FLTR+=(--exclude='.git')
+RS_FLTR+=(--exclude='/home/kmiller/node_modules')
+RS_FLTR+=(--exclude='Cache')
+RS_FLTR+=(--exclude='Downloads')
+RS_FLTR+=(--exclude='Videos')
+RS_FLTR+=(--exclude='Virtual*')
+RS_FLTR+=(--exclude='cache')
+RS_FLTR+=(--exclude='lost+found')
+RS_FLTR+=(--exclude='snap')
+RS_FLTR+=(--exclude='/usr/local/lib/geeqie')
+RS_FLTR+=(--exclude='/usr/local/lib/gimp')
+RS_FLTR+=(--exclude='/usr/local/lib/node_modules')
+RS_FLTR+=(--exclude='/usr/local/lib/python3.12')
+RS_FLTR+=(--exclude='/usr/local/lib/x86_64-linux-gnu')
 
-RS_INCL+=(--include='Downloads/Torrents/Completed')
 BACKUP_DIRS=(/root ${HOME} /usr/local /etc /opt)
 
 # Constants
@@ -134,7 +134,7 @@ is_mounted () {
 cleanup () {
 	local PID
 
-	clear
+	[[ -z ${DRYRUN} ]] && clear
 	msg_box "Waiting for rsync process to finish..."
 
 	while true;do
@@ -187,6 +187,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-d${RESET} dry run"
 	echo -e "${WHITE_FG}-f${RESET} force"
 	echo -e "${WHITE_FG}-s${RESET} status"
 	echo -e "${WHITE_FG}-i${RESET} date of last backup"
@@ -196,16 +197,18 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDfis"
+OPTSTR=":HDdfis"
 
 FORCE=false
 INFO=false
+DRYRUN=''
 
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     d) DRYRUN='--dry-run';;
      f) FORCE=true;;
      s) last_backup ${_MARKER};exit;;
      i) INFO=true;;
@@ -218,6 +221,13 @@ shift $(( OPTIND - 1 ))
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+if [[ ${PWD} =~ ${_MOUNTPOINT} ]];then
+	echo "${_SCRIPT} Cannot execute from ${_MOUNTPOINT}"
+	echo "Interferes with umount - change directories before executing"
+	exit 1
+fi
+
 g_LAST_RUN=$(last_backup ${_MARKER})
 
 if [[ -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
@@ -240,7 +250,7 @@ if [[ (-f ${_MARKER}) && (${FORCE} == "false") && (${g_LAST_RUN:l} =~ 'today') ]
 	fi
 fi
 
-clear
+[[ -z ${DRYRUN} ]] && clear
 msg_box -t.8 "Checking mounted drives..."
 while true;do
 	if is_mounted;then
@@ -258,12 +268,18 @@ done
 
 # Backup
 echo
-echo "Backup started: $(date)" | tee ${_LOGFILE}
-echo "Excluded files: ${RS_EXCL}" | tee -a ${_LOGFILE}
+if [[ -n ${DRYRUN} ]];then
+	do_rmcup
+	echo "${RED_ON_WHITE}THIS IS A DRY RUN${RESET}"
+else
+	echo "Backup started: $(date)" | tee ${_LOGFILE}
+	echo "Excluded files: ${RS_FLTR}" | tee -a ${_LOGFILE}
+	echo "Included files: ${RS_INCL}" | tee -a ${_LOGFILE}
+fi
 
 for D in ${BACKUP_DIRS};do
-	echo "sudo rsync ${RS_OPTS} ${RS_EXCL} ${D} ${_DESTINATION}" | tee -a ${_LOGFILE}
-	sudo rsync ${RS_OPTS} ${RS_EXCL} ${D} ${_DESTINATION} 2>/dev/null | tee -a ${_LOGFILE}
+	echo "sudo rsync ${DRYRUN} ${RS_OPTS} ${RS_FLTR} ${RS_INCL} ${D} ${_DESTINATION}" | tee -a ${_LOGFILE}
+	sudo rsync ${DRYRUN} ${RS_OPTS} ${RS_FLTR} ${D} ${_DESTINATION} 2>/dev/null | tee -a ${_LOGFILE}
 	RC=${?}
 	[[ ${RC} -ne 0 ]] && msg_box -p -PK "rsync had an error:${RC}"
 done
