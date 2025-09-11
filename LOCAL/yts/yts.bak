@@ -83,7 +83,8 @@ g_DISPLAY_KEY=''
 g_IND_FLIP=false
 g_LAST_CODE_UPD=?
 g_LAST_SPEED=0
-g_LTYPE=y
+g_LAST_STYPE=0
+g_LAST_FAV_TYPE=y
 g_MASK_NDX=1
 g_PID=?
 g_PREFER_LIVE=''
@@ -342,8 +343,7 @@ action_do () {
 			LINE_COLOR=''
 			if [[ -n ${ETA} && ${ETA_COMPLETE} == 'false' ]];then
 				ERROR_CNT=0 
-				[[ ${g_QRY_ENGINE} == 'youtube' ]] && X=6 || X=7
-				SPEED=$(tr -s '[:space:]' <<<${ETA:l} | cut -d' ' -f${X} | cut -d'/' -f1)
+				SPEED=$(get_speed ${ETA})
 				download_indicator ${SPEED}
 				case ${ETA:l} in
 					*100*%*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;; # Stop parsing ETA
@@ -510,7 +510,8 @@ dashed_line () {
 }
 
 download_indicator () {
-	local SPEED=${1}
+	local SPEED=$(cut -d'|' -f1 <<<${1})
+	local STYPE=$(cut -d'|' -f2 <<<${1})
 	local L_OBJ="\\u23FA"
 	local M_OBJ="\\u25CF"
 	local R_OBJ="\\u2B24"
@@ -521,27 +522,21 @@ download_indicator () {
 	local DELAY=.3
 	local IND_X=$(( _ALERT_COORDS[X] + 1 ))
 	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
-	local LSPEED=0
-	local LSP_TYPE=''
 	local L_SIDE="\\u2770"
 	local R_SIDE="\\u2771"
 	local MASK=""
 	local OBJ_COLOR="${BOLD}${GREEN_FG}"
 	local SP_DIR=I
-	local SP_TYPE=''
 
-	[[ -n ${SPEED} ]] && SPEED=${SPEED[1,-4]} || SPEED=0
-	[[ -n ${SPEED} && ${SPEED} =~ 'mib' ]] && SP_TYPE='M' || SP_TYPE='K'
+	[[ -z ${SPEED} ]] && SPEED=0
+	[[ -z ${g_LAST_SPEED} ]] && g_LAST_SPEED=0
+	[[ -z ${STYPE} ]] && STYPE=''
+	[[ -z ${g_LAST_STYPE} ]] && g_LAST_STYPE=''
 
-	[[ -n ${g_LAST_SPEED} ]] && LSPEED=${g_LAST_SPEED[1,-4]} || LSPEED=0
-	[[ -n ${g_LAST_SPEED} && ${g_LAST_SPEED} =~ 'mib' ]] && LSP_TYPE='M' || LSP_TYPE='K'
-
-	#echo "SPEED:${SPEED}, LSPEED:${LSPEED}, SP_TYPE:${SP_TYPE}, LSP_TYPE:${LSP_TYPE}" >>x
-
-	if [[ ${SPEED} -gt ${LSPEED} ]];then 
+	if [[ ${SPEED} -gt ${g_LAST_SPEED} ]];then 
 		OBJ_COLOR="${BOLD}${GREEN_FG}"
 		SP_DIR=I # Increasing
-	elif [[ ${SPEED} -lt ${LSPEED} ]];then 
+	elif [[ ${SPEED} -lt ${g_LAST_SPEED} ]];then 
 		OBJ_COLOR="${BOLD}${YELLOW_FG}"
 		SP_DIR=D # Decreasing
 	else
@@ -549,10 +544,10 @@ download_indicator () {
 		SP_DIR=I # Stable
 	fi
 
-	if [[ ${SP_TYPE} == 'M' && LSP_TYPE == 'K' ]];then 
+	if [[ ${STYPE} == 'M' && ${g_LAST_STYPE} == 'K' ]];then 
 		OBJ_COLOR="${BOLD}${GREEN_FG}"
 		SP_DIR=I # Increasing
-	elif [[ ${SP_TYPE} == 'K' && LSP_TYPE == 'M' ]];then 
+	elif [[ ${STYPE} == 'K' && ${g_LAST_STYPE} == 'M' ]];then 
 		OBJ_COLOR="${BOLD}${YELLOW_FG}"
 		SP_DIR=D # Decreasing
 	fi
@@ -585,6 +580,7 @@ download_indicator () {
  	tcup ${IND_X} ${IND_Y} && echo -n "${MASK}" && sleep ${DELAY}
 
 	g_LAST_SPEED=${SPEED}
+	g_LAST_STYPE=${STYPE}
 }
 
 download_select () {
@@ -721,20 +717,20 @@ fav_get () {
 			D_KEY=${L:gs/_/ /}
 			Q_KEY=$(cut -d: -f1 <<<${_FAV_LIST[${L}]})
 			Q_OPT=$(cut -d: -f2 <<<${_FAV_LIST[${L}]:l})
-			if [[ ${g_LTYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
+			if [[ ${g_LAST_FAV_TYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
 				O_COLOR=${RED_FG}
 				C_MSG=" <I>(Custom List)<N> "
-			elif [[ ${g_LTYPE} == 'y' && ${Q_OPT[1]} == 'y' ]];then
+			elif [[ ${g_LAST_FAV_TYPE} == 'y' && ${Q_OPT[1]} == 'y' ]];then
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
 				ENGINE=youtube
 				O_COLOR=${CYAN_FG}
 				C_MSG=''
-			elif [[ ${g_LTYPE} == 'r' && ${Q_OPT[1]} == 'r' ]];then
+			elif [[ ${g_LAST_FAV_TYPE} == 'r' && ${Q_OPT[1]} == 'r' ]];then
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
@@ -761,7 +757,7 @@ fav_get () {
 		msg_line_weight light
 
 		[[ ${_SEL_KEY} == 'd' ]] && fav_delete ${_SEL_VAL}
-		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && g_LTYPE=${_SEL_KEY}
+		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && g_LAST_FAV_TYPE=${_SEL_KEY}
 
 		if [[ ${_SEL_KEY} == '?' ]];then
 			g_QRY_ENGINE=${ENGINE}
@@ -918,6 +914,19 @@ get_field () {
 	else
 		echo -n ${STR}
 	fi
+}
+
+get_speed () {
+	local SPEED=${@}
+	local TYPE=''
+
+	SPEED=$(sed -E 's/^.*at\s+//' <<<${SPEED:l} | cut -d' ' -f1 | sed 's/[/]s//')
+	[[ ${SPEED} =~ 'mib' ]] && TYPE=M || TYPE=K
+	SPEED=$(sed 's/.ib//' <<<${SPEED})
+
+	[[ ${SPEED} == '100%' ]] && SPEED=0 # Completed
+
+	echo "${SPEED}|${TYPE}"
 }
 
 item_decorate () {
@@ -1108,7 +1117,6 @@ log_find () {
 		[[ ${DBG} == 'true' ]] && echo "LIST_TM:${LIST_TM}" >>${0}.dbg
 		[[ ${DBG} == 'true' ]] && echo "\nAttempting TITLE match on:${LIST_TITLE[1,50]}" >>${0}.dbg 
 
-		# TODO: Check this - improve?
 		LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE[1,50]} ${_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
 		if [[ ${?} -eq 0 ]];then
 			LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Fetch line number
@@ -1120,7 +1128,6 @@ log_find () {
 			[[ ${DBG} == 'true' ]] && echo "Log line:${LOG_LINE}" >>${0}.dbg
 			[[ ${DBG} == 'true' ]] && echo "Author:${LIST_AU} Time:${LIST_TM}" >>${0}.dbg
 
-			set -xv
 			if [[ -n ${LOG_TM} && -n ${LOG_AU} ]];then
 				LOG_FN=$(cut -d '|' -f3 <<<${LOG_LINE}) # Fetch filename
 				_DOWNLOADS[${R}]=true
@@ -1131,7 +1138,6 @@ log_find () {
 			else
 				[[ ${DBG} == 'true' ]] && echo "Failed to confirm download" >>${0}.dbg
 			fi
-			set +xv;read
 		fi
 	done
 }

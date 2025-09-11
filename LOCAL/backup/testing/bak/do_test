@@ -66,7 +66,7 @@ mkdir -p ./source/dir_4/dir_4_4
 touch ./source/dir_4/dir_4_4/file_1
 touch ./source/dir_4/dir_4_4/file_2
 
-CMD="rsync -vv --debug=FILTER ${RS_OPTS} ${RS_FLTR} ./source/ backup"
+CMD="rsync --debug=FILTER ${RS_OPTS} ${RS_FLTR} ./source/ backup"
 echo "${CMD}";read
 eval ${CMD} 2>&1 | mypager
 tree ./backup | mypager
