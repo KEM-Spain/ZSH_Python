@@ -33,18 +33,20 @@ typeset -a RS_OPTS
 typeset -a RS_FLTR
 typeset -a BACKUP_DIRS
 
+# Dependencies
+_MOUNT=media
+_MOUNTPOINT="/${_MOUNT}/${USER}"
+_TAG=$(hostname)_RSYNC2
+_DEST_ID=KEM_Backup
+
 # Constants
 _CONF_DIR=${HOME}/.local/share/backup
 #_DBG_FILTER='--debug=FILTER'
-_MOUNT=media
-_MOUNTPOINT="/${_MOUNT}/${USER}"
-_DEST_ID=KEM_Backup
-_TAG=$(hostname)_RSYNC2
 _DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
-_MARKER=${_CONF_DIR}/${_TAG}.lastrun
 _LOGFILE=${_CONF_DIR}/${_TAG}.log
+_MARKER=${_CONF_DIR}/${_TAG}.lastrun
 _TODAY=$(date +'%Y-%m-%d') 
-_VERBOSE=''
+_VERBOSE='-vv' # Default verbose level
 
 # Globals
 g_LAST_RUN=?
@@ -122,7 +124,7 @@ cleanup () {
 	local PID
 
 	[[ -z ${DRYRUN} ]] && clear
-	msg_box "Waiting for rsync process to finish..."
+	msg_box -x0 "Waiting for rsync process to finish..."
 
 	while true;do
 		PID=$(pgrep -n rsync)
@@ -131,7 +133,8 @@ cleanup () {
 	done
 
 	[[ ${g_FOUND_EXT} == 'true' ]] && dut external -u
-	msg_box -t.8 "External drive ${_DEST_ID:l} was unmounted"
+	msg_box -x0 -t1 "External drive ${_DEST_ID:l} was unmounted"
+	clear
 }
 
 verbose_set_level () {
@@ -268,26 +271,23 @@ done
 [[ g_FOUND_EXT == 'false' ]] && exit_leave $(err_msg_exit W "Failed to mount ${_DEST_ID:l}")
 
 # Backup
-echo
-if [[ -n ${DRYRUN} ]];then
-	do_rmcup
-	echo "${RED_ON_WHITE}THIS IS A DRY RUN${RESET}"
-else
-	echo "Backup started: $(date)" | tee ${_LOGFILE}
-	echo "Filter rules: ${RS_FLTR}" | tee -a ${_LOGFILE}
-fi
+[[ -n ${DRYRUN} ]] && echo "\n${RED_ON_WHITE}THIS IS A DRY RUN${RESET}"
+FILTER="--filter=\"merge ${RS_FLTR}\"" # Set filter option
 
-FILTER="--filter=\"merge ${RS_FLTR}\""
+echo "Backup started: $(date)" > ${_LOGFILE} # Start logging
+echo "Filter rules: ${RS_FLTR}" >> ${_LOGFILE}
+
 for D in ${BACKUP_DIRS};do
-	CMD="sudo rsync ${_DBG_FILTER} ${DRYRUN} ${_VERBOSE} ${RS_OPTS} ${FILTER} ${D} ${_DESTINATION} | tee -a ${_LOGFILE}"
+	echo "${WHITE_FG}Processing${RESET}:${D}..."
+	CMD="sudo rsync ${_DBG_FILTER} ${DRYRUN} ${_VERBOSE} ${RS_OPTS} ${FILTER} ${D} ${_DESTINATION} >> ${_LOGFILE} 2>&1"
 	echo ${CMD}
 	eval ${CMD}
 	RC=${?}
-	[[ ${RC} -ne 0 ]] && msg_box -p -PK "rsync had an error:${RC}"
+	[[ ${RC} -ne 0 ]] && echo "rsync had an error:${RC}" >> ${_LOGFILE}
 done
+echo "${WHITE_FG}Finished backup${RESET}..."
 
-echo "Finished backup..." | tee -a ${_LOGFILE}
-echo "Backup ended: $(date)" | tee -a ${_LOGFILE}
+echo "Backup ended: $(date)" >> ${_LOGFILE} # End logging
 
 touch ${_MARKER}
 cleanup
