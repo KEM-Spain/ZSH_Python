@@ -20,6 +20,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/PATH.zsh
 source ${_LIB_DIR}/DATE.zsh
 source ${_LIB_DIR}/UTILS.zsh
@@ -926,7 +927,11 @@ get_speed () {
 
 	[[ ${SPEED} == '100%' ]] && SPEED=0 # Completed
 
-	echo "${SPEED}|${TYPE}"
+	if validate_is_number ${SPEED};then
+		echo "${SPEED}|${TYPE}"
+	else
+		echo "0|${TYPE}"
+	fi
 }
 
 item_decorate () {

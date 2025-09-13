@@ -8,8 +8,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Constants
 _SCRIPT=${0:t}
-#_LOG=/tmp/${_SCRIPT}.log
-_LOG=/tmp/wait_app_start.log
+_LOG=/tmp/${_SCRIPT}.log
 
 # Execution
 APP=${1}

@@ -1,0 +1,33 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+typeset -A FIELD_MAP=(WID 1 PARENT 2 PROCESS 3 TITLE 4 GEOM 5 SIZE 6)
+
+LIST=("${(f)$(xwininfo -tree -root | tr -s '[:space:]' | sed 's/^ *//')}")
+for L in ${LIST};do
+	WID=$(cut -d' ' -f${FIELD_MAP[WID]} <<<${L})
+	[[ ${L} =~ 'no name' ]] && continue
+	[[ ! ${WID} =~ '^0x' ]] && continue
+	PARENT=$(cut -d' ' -f${FIELD_MAP[PARENT]} <<<${L})
+	PROCESS=$(cut -d' ' -f${FIELD_MAP[PROCESS]} <<<${L})
+	TITLE=$(cut -d' ' -f${FIELD_MAP[TITLE]} <<<${L})
+	GEOM=$(cut -d' ' -f${FIELD_MAP[GEOM]} <<<${L})
+	SIZE=$(cut -d' ' -f${FIELD_MAP[SIZE]} <<<${L})
+	echo "WID:${WID} PARENT:${PARENT} PROCESS:${PROCESS} TITLE:${TITLE} GEOM:${GEOM} SIZE:${SIZE}"
+done

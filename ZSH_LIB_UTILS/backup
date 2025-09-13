@@ -46,7 +46,7 @@ _DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
 _LOGFILE=${_CONF_DIR}/${_TAG}.log
 _MARKER=${_CONF_DIR}/${_TAG}.lastrun
 _TODAY=$(date +'%Y-%m-%d') 
-_VERBOSE='-vv' # Default verbose level
+_VERBOSE='-v' # Default verbose level
 
 # Globals
 g_LAST_RUN=?
@@ -277,6 +277,7 @@ FILTER="--filter=\"merge ${RS_FLTR}\"" # Set filter option
 echo "Backup started: $(date)" > ${_LOGFILE} # Start logging
 echo "Filter rules: ${RS_FLTR}" >> ${_LOGFILE}
 
+echo
 for D in ${BACKUP_DIRS};do
 	echo "${WHITE_FG}Processing${RESET}:${D}..."
 	CMD="sudo rsync ${_DBG_FILTER} ${DRYRUN} ${_VERBOSE} ${RS_OPTS} ${FILTER} ${D} ${_DESTINATION} >> ${_LOGFILE} 2>&1"

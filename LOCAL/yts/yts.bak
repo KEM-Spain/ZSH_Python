@@ -1532,7 +1532,7 @@ query_youtube () {
 			AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
 			TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
 			if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
-				if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
+				if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 					TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en)
 			fi
 		fi
