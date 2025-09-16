@@ -141,8 +141,9 @@ while IFS= read -ru3 LINE;do
 					sleep ${WT}
 				fi
 
-				[[ ! -p ${WIN_PIPE} ]] && mkfifo ${WIN_PIPE}
-				echo ${APP} > ${WIN_PIPE} &
+				# TODO: Passing APP via pipe is unnecessary - ARG suffices
+				[[ ! -p ${_WIN_PIPE} ]] && mkfifo ${_WIN_PIPE}
+				echo ${APP} > ${_WIN_PIPE} &
 				win_maximize ${APP}
 				STR=''
 			fi

@@ -15,7 +15,6 @@ typeset -aU _WIN_LIST=()
 # Constants
 _SCRIPT=${0:t}
 _LOG=/tmp/${_SCRIPT}.log
-_WIN_PIPE=/tmp/win_pipe
 
 # Functions
 get_app_tag () {
@@ -135,7 +134,7 @@ is_maximized () {
 }
 
 set_cur_win () {
-	local EXPECT=${1:l} # Lowercase
+	local EXPECT=${1}
 	local F1 F2 F3 F4 F5 MAX
 	local TRIES=0
 	local RETRIES=0
@@ -144,15 +143,19 @@ set_cur_win () {
 	local TERM_CNT=0
 
 	if [[ -n ${EXPECT} ]];then
-		logit ${_LOG} "${0}: Expecting window:${EXPECT}"
 		RETRIES=10 # Let expected match drive the break
+		logit ${_LOG} "${0}: Expecting window:${EXPECT}, RETRIES:${RETRIES}"
 	else
 		RETRIES=3 # Minimize looping for unexpected windows
+		logit ${_LOG} "${0}: Unexpected window, RETRIES:${RETRIES}"
 	fi
 
 	while true;do
 		((TRIES++))
-		[[ ${TRIES} -gt ${RETRIES} ]] && break
+		if [[ ${TRIES} -gt ${RETRIES} ]];then
+			logit ${_LOG} "${0}: Reached maximum retries:${RETRIES}"
+			break
+		fi
 		_CUR_WIN=("${(f)$(wmctrl -lp | tr -s '[:space:]')}")
 
 		for L in ${_CUR_WIN};do
@@ -163,7 +166,7 @@ set_cur_win () {
 			F5=$(cut -d' ' -f${_FLD_LIST[TITLE]}- <<<${L})
 
 			[[ ${F2} == '-1' ]] && continue # Eliminate invisible
-			[[ ${F5:l} =~ "terminal" ]] && ((TERM_CNT++))
+			[[ ${F5:l} =~ "terminal" ]] && ((TERM_CNT++)) # Count terminal hits
 
 			xwininfo -wm -id ${F1} 2>/dev/null | grep -qi 'maximized'
 			[[ ${?} -eq 0 ]] && MAX=true || MAX=false
@@ -174,7 +177,7 @@ set_cur_win () {
 				logit ${_LOG} "${0}: Got expected window:${EXPECT}"
 				break 2
 			fi
-			[[ ${F5:l} =~ 'terminal' && ${TERM_CNT} == ${TERMS} ]] && break 2
+			[[ ${EXPECT} =~ 'terminal' && ${TERM_CNT} == ${TERMS} ]] && break 2 # Optimize terminal search
 		done
 		sleep .5
 	done
@@ -265,11 +268,14 @@ shift $((OPTIND -1))
 #--End GetOpts--
  
 # Execution
-WIN_ARG=${1}
+WIN_ARG=${1:l} # Lowercase
 
 WID=''
+EXPECT=''
 if [[ -n ${1} ]];then
 	ARG_TYPE=TITLE
+	EXPECT=$(get_app_tag ${WIN_ARG})
+	logit ${_LOG} "EXPECT was set:${EXPECT}"
 elif [[ -n ${PID_ARG} ]];then
 	ARG_TYPE=PID
 	WIN_ARG=${PID_ARG}
@@ -282,25 +288,7 @@ fi
 
 logit ${_LOG} "Got ARG:${WIN_ARG}, TYPE:${ARG_TYPE}"
 
-if [[ -p ${_WIN_PIPE} ]];then
-	EXPECT=$(cat ${_WIN_PIPE})
-	if [[ -n ${EXPECT} ]];then
-		logit ${_LOG} "Read from pipe:${_WIN_PIPE} - got ${EXPECT}"
-	else
-		logit ${_LOG} "Failed to read from pipe:${_WIN_PIPE}"
-	fi
-	unlink ${_WIN_PIPE}
- 	EXPECT=$(get_app_tag ${EXPECT}) # Parse token
-else
-	logit ${_LOG} "Pipe:${_WIN_PIPE} not found"
-fi
-
-#_EXPECT_LIST=("${(f)$(find /tmp -type f -name '*expect' 2>/dev/null)}") # wait_app_start will place a token in /tmp
-#if [[ ${#_EXPECT_LIST} -eq 1 ]];then
-#	EXPECT=$(get_app_tag ${_EXPECT_LIST[1]:r:t}) # Parse token
-#	/bin/rm -f ${_EXPECT_LIST[1]} # Remove token
-#fi
-
+logit ${_LOG} "Passing ${EXPECT} to set_cur_win"
 set_cur_win ${EXPECT} # Create list of open or expected windows
 
 # Get WID
