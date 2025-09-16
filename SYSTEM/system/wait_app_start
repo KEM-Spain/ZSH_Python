@@ -91,22 +91,6 @@ scan_string () {
 	done
 }
 
-win_focus () {
-	local APP=${1}
-	local WIN_INFO=''
-	local WID=''
-
-	WIN_INFO=$(win_id ${APP})
-
-	if [[ -n ${WIN_INFO} ]];then
-		WID=$(cut -d '|' -f1 <<<${WIN_INFO})
-		logit ${_LOG} "Setting focus to ${APP} window:${WID}"
-		wmctrl -i -a ${WID}
-	else
-		logit ${_LOG} "Unable to get WIN_INFO for ${APP}"
-	fi
-}
-
 win_maximize () {
 	local APP=${1}
 
@@ -140,7 +124,6 @@ while IFS= read -ru3 LINE;do
 	if [[ ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
 		logit ${_LOG} "GOT NEW TERMINAL WINDOW"
 		win_maximize terminal
-		win_focus terminal
 		VAL=''
 	else
 		if [[ -n ${STR} ]];then
@@ -157,8 +140,8 @@ while IFS= read -ru3 LINE;do
 					sleep ${WT}
 				fi
 
+				touch /tmp/${APP}.expect
 				win_maximize ${APP}
-				win_focus ${APP}
 				STR=''
 			fi
 		fi

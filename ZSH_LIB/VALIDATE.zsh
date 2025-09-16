@@ -36,7 +36,7 @@ validate_is_number () {
 
 	[[ ${#} -eq 0 ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARG:${ARG}"
 
 	[[ ${ARG} =~ '^[-]' || ${ARG} =~ '^[+]' ]] && ARG=${ARG[2,-1]}
 

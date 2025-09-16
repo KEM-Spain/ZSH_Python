@@ -328,6 +328,7 @@ if [[ ${_TERMS} -eq 1 ]];then
 
 		PID=$(ps aux | grep -v grep | grep -i enpass)
 		if [[ ${?} -ne 0 ]];then
+			wmctrl -i -a ${WIN_ID} # Focus
 			run_enpass
 		else
 			tput cup ${C_POS} 0 # Cursor position following last info 

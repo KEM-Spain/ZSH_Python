@@ -78,6 +78,7 @@ pass_login_to_enpass () {
 	logit ${_LOG} "Received ID:${_ENPASS_WDW_ID}"
 	logit ${_LOG} "Received Title:${_ENPASS_WDW_TITLE}"
 
+	# TODO: Not recovering from crash window
 	if [[ ${_ENPASS_WDW_TITLE:l} =~ 'crash' ]];then
 		logit ${_LOG} "Detected Enpass Crash Window"
 		logit ${_LOG} "Sending Escape Key"

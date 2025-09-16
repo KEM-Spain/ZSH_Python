@@ -1314,7 +1314,7 @@ query_rumble () {
 	g_SEARCH_TYPE=channel
 	#Sort tag 
 	#&sort=date&section=sort 
-
+	 
 	if [[ ${g_PREFER_LIVE} == 'true' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 
@@ -1389,7 +1389,7 @@ query_rumble () {
 			g_SEARCH_TYPE=general
 
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
-			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
+			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}&sort=date&section=sort"
 			logit ${_YTS_URL_LOG} "${0}:${QRY}"
 			PG=$(wget -q -O - ${QRY})
 			if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
@@ -1436,6 +1436,10 @@ query_rumble () {
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${V}); URL="http://rumble.com${URL}"
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${V})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${V});	AGETIME="(${AGETIME:s/|/ /})"
+
+		[[ -z ${AGE} ]] && continue
+		[[ ${TIME:l} == 'live' ]] && continue
+		[[ ! ${TIME:l} =~ ':' ]] && continue
 
 		WORK_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done

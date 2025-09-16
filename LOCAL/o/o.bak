@@ -87,6 +87,7 @@ action_do () {
 	local APP_EXE_PATH
 	local APP_WIN
 	local CMD
+	local CMD_PID
 	local FN
 	local IN_APP=false
 	local LAST_APP=?
@@ -107,9 +108,9 @@ action_do () {
 		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
 			LAST_APP=${FILE_APP[${K}]}
 			FLIST=()
-			FLIST+=${K:q}
+			FLIST+=${K}
 		else
-			FLIST+=${K:q}
+			FLIST+=${K}
 		fi
 		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
 	done
@@ -117,14 +118,17 @@ action_do () {
 	for K in ${(k)RUN_LIST};do
 		FN=$(realpath ${RUN_LIST[${K}]})
 		if is_foreground_only ${K};then
-			eval "${K} ${FN} 2>${_APP_LOG}"
+			eval "${K} ${FN} >${_APP_LOG}"
 		else
-			eval "${K} ${FN} >${_APP_LOG} 2>&1 &"
-			# TODO: implement win_max here
+			eval "${K} ${FN:q} >${_APP_LOG} 2>&1 &"
+			CMD_PID=${!} && RC=${?}
 		fi
-		RC=${?}
 		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
+		else
+			set -xv
+			max_win ${CMD_PID}
+			set +xv;read
 		fi
 	done
 
@@ -163,31 +167,31 @@ get_app () {
 	case ${EXT} in
 		avi) APP=${_APP_EXE[MPV]};;
 		doc) APP=${_APP_EXE[OFFICE]};;
-		odg) APP=${_APP_EXE[OFFICE]};;
 		epub) APP=${_APP_EXE[EBOOK]};;
+		flac) APP=${_APP_EXE[CLEM]};;
 		gif) APP=${_APP_EXE[IMAGE]};;
 		html) APP=${_APP_EXE[VIM]};;
 		jpeg) APP=${_APP_EXE[IMAGE]};;
 		jpg) APP=${_APP_EXE[IMAGE]};;
 		log) APP=${_APP_EXE[VIM]};;
+		m4a) APP=${_APP_EXE[MPV]};;
 		markdown) APP=${_APP_EXE[MDLESS]};;
 		md) APP=${_APP_EXE[MDLESS]};;
 		mkv) APP=${_APP_EXE[MPV]};;
 		mp3) APP=${_APP_EXE[CLEM]};;
-		m4a) APP=${_APP_EXE[MPV]};;
 		mp4) APP=${_APP_EXE[MPV]};;
-		webm) APP=${_APP_EXE[MPV]};;
 		mscz) APP=${_APP_EXE[MUSE]};;
+		odg) APP=${_APP_EXE[OFFICE]};;
 		ods) APP=${_APP_EXE[OFFICE]};;
 		odt) APP=${_APP_EXE[OFFICE]};;
 		pdf) APP=${_APP_EXE[OKULAR]};;
 		png) APP=${_APP_EXE[IMAGE]};;
 		rtf) APP=${_APP_EXE[OFFICE]};;
 		svg) APP=${_APP_EXE[IMAGE]};;
-		xls) APP=${_APP_EXE[OFFICE]};;
 		txt) APP=${_APP_EXE[VIM]};;
-		wav) APP=${_APP_EXE[VLC]};;
-		flac) APP=${_APP_EXE[VLC]};;
+		wav) APP=${_APP_EXE[CLEM]};;
+		webm) APP=${_APP_EXE[MPV]};;
+		xls) APP=${_APP_EXE[OFFICE]};;
 		*) APP=?;;
 	esac
 	
@@ -204,34 +208,34 @@ get_app_win () {
 	local APP_WIN
 
 	case ${EXT} in
-		avi) APP_WIN=${_APP_WIN[MPV]};;
-		doc) APP_WIN=${_APP_WIN[OFFICE]};;
-		odg) APP_WIN=${_APP_WIN[OFFICE]};;
-		epub) APP_WIN=${_APP_WIN[EBOOK]};;
-		gif) APP_WIN=${_APP_WIN[IMAGE]};;
-		html) APP_WIN=${_APP_WIN[VIM]};;
-		jpeg) APP_WIN=${_APP_WIN[IMAGE]};;
-		jpg) APP_WIN=${_APP_WIN[IMAGE]};;
-		log) APP_WIN=${_APP_WIN[VIM]};;
-		markdown) APP_WIN=${_APP_WIN[MDLESS]};;
-		md) APP_WIN=${_APP_WIN[MDLESS]};;
-		mkv) APP_WIN=${_APP_WIN[MPV]};;
-		mp3) APP_WIN=${_APP_WIN[CLEM]};;
-		m4a) APP_WIN=${_APP_WIN[MPV]};;
-		mp4) APP_WIN=${_APP_WIN[MPV]};;
-		webm) APP_WIN=${_APP_WIN[MPV]};;
-		mscz) APP_WIN=${_APP_WIN[MUSE]};;
-		ods) APP_WIN=${_APP_WIN[OFFICE]};;
-		odt) APP_WIN=${_APP_WIN[OFFICE]};;
-		pdf) APP_WIN=${_APP_WIN[OKULAR]};;
-		png) APP_WIN=${_APP_WIN[IMAGE]};;
-		rtf) APP_WIN=${_APP_WIN[OFFICE]};;
-		svg) APP_WIN=${_APP_WIN[IMAGE]};;
-		xls) APP_WIN=${_APP_WIN[OFFICE]};;
-		txt) APP_WIN=${_APP_WIN[VIM]};;
-		wav) APP_WIN=${_APP_WIN[VLC]};;
-		flac) APP_WIN=${_APP_WIN[VLC]};;
-		*) APP_WIN=?;;
+		avi) APP=${_APP_EXE[MPV]};;
+		doc) APP=${_APP_EXE[OFFICE]};;
+		epub) APP=${_APP_EXE[EBOOK]};;
+		flac) APP=${_APP_EXE[CLEM]};;
+		gif) APP=${_APP_EXE[IMAGE]};;
+		html) APP=${_APP_EXE[VIM]};;
+		jpeg) APP=${_APP_EXE[IMAGE]};;
+		jpg) APP=${_APP_EXE[IMAGE]};;
+		log) APP=${_APP_EXE[VIM]};;
+		m4a) APP=${_APP_EXE[MPV]};;
+		markdown) APP=${_APP_EXE[MDLESS]};;
+		md) APP=${_APP_EXE[MDLESS]};;
+		mkv) APP=${_APP_EXE[MPV]};;
+		mp3) APP=${_APP_EXE[CLEM]};;
+		mp4) APP=${_APP_EXE[MPV]};;
+		mscz) APP=${_APP_EXE[MUSE]};;
+		odg) APP=${_APP_EXE[OFFICE]};;
+		ods) APP=${_APP_EXE[OFFICE]};;
+		odt) APP=${_APP_EXE[OFFICE]};;
+		pdf) APP=${_APP_EXE[OKULAR]};;
+		png) APP=${_APP_EXE[IMAGE]};;
+		rtf) APP=${_APP_EXE[OFFICE]};;
+		svg) APP=${_APP_EXE[IMAGE]};;
+		txt) APP=${_APP_EXE[VIM]};;
+		wav) APP=${_APP_EXE[CLEM]};;
+		webm) APP=${_APP_EXE[MPV]};;
+		xls) APP=${_APP_EXE[OFFICE]};;
+		*) APP=?;;
 	esac
 	
 	if [[ ${APP_WIN} == '?' ]];then
@@ -270,22 +274,23 @@ mark_unsupported () {
 }
 
 max_win () {
-	local APP=${1}
-	local GOT_WIN=false
+	local PID=${1}
+	local TRIES=0
 	local RETRIES=10
-	local NDX=0
+	local HIT=false
 
 	while true;do
-		((NDX++))
-		[[ ${NDX} -gt ${RETRIES} ]] && break
-		wmctrl -lx | grep -qi ${APP}
-		[[ ${?} -eq 0 ]] && GOT_WIN=true
+		((TRIES++))
+		[[ ${TRIES} -gt ${RETRIES} ]] && break
+		wmctrl -lp | grep -q ${PID}
+		if [[ ${?} -eq 0 ]];then
+			HIT=true
+			break
+		fi
 		sleep .5
 	done
 
-	if [[ ${GOT_WIN} == 'true' ]];then
-		win_max ${APP}
-	fi
+	[[ ${HIT} == 'true' ]] && win_max -p ${PID}
 }
 
 lcase_mp4s () {

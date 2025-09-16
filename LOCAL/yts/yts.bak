@@ -20,6 +20,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/PATH.zsh
 source ${_LIB_DIR}/DATE.zsh
 source ${_LIB_DIR}/UTILS.zsh
@@ -926,7 +927,11 @@ get_speed () {
 
 	[[ ${SPEED} == '100%' ]] && SPEED=0 # Completed
 
-	echo "${SPEED}|${TYPE}"
+	if validate_is_number ${SPEED};then
+		echo "${SPEED}|${TYPE}"
+	else
+		echo "0|${TYPE}"
+	fi
 }
 
 item_decorate () {
@@ -1309,6 +1314,8 @@ query_rumble () {
 	g_SEARCH_TYPE=channel
 	#Sort tag 
 	#&sort=date&section=sort 
+	 
+	echo ${(kv)QUERY_KEYS} >keys
 
 	if [[ ${g_PREFER_LIVE} == 'true' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
@@ -1384,7 +1391,7 @@ query_rumble () {
 			g_SEARCH_TYPE=general
 
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
-			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
+			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}&sort=date&section=sort"
 			logit ${_YTS_URL_LOG} "${0}:${QRY}"
 			PG=$(wget -q -O - ${QRY})
 			if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
@@ -1431,6 +1438,10 @@ query_rumble () {
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${V}); URL="http://rumble.com${URL}"
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${V})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${V});	AGETIME="(${AGETIME:s/|/ /})"
+
+		[[ -z ${AGE} ]] && continue
+		[[ ${TIME:l} == 'live' ]] && continue
+		[[ ! ${TIME:l} =~ ':' ]] && continue
 
 		WORK_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done

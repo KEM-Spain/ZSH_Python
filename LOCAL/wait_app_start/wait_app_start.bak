@@ -53,14 +53,6 @@ get_val () {
 	echo ${VAL}
 }
 
-cnt_instance () {
-	local INSTANCES=$(pgrep -c ${_SCRIPT})
-
-	logit ${_LOG} "Instance count of ${APP} is:${INSTANCES}"
-
-	echo ${INSTANCES}
-}
-
 has_waittime () {
 	local APP=${1}
 	local A
@@ -99,22 +91,6 @@ scan_string () {
 	done
 }
 
-win_focus () {
-	local APP=${1}
-	local WIN_INFO=''
-	local WID=''
-
-	WIN_INFO=$(win_id ${APP})
-
-	if [[ -n ${WIN_INFO} ]];then
-		WID=$(cut -d '|' -f1 <<<${WIN_INFO})
-		logit ${_LOG} "Setting focus to ${APP} window:${WID}"
-		wmctrl -i -a ${WID}
-	else
-		logit ${_LOG} "Unable to get WIN_INFO for ${APP}"
-	fi
-}
-
 win_maximize () {
 	local APP=${1}
 
@@ -127,9 +103,6 @@ win_maximize () {
 }
 
 # Execution
-CNT=$(cnt_instance)
-[[ ${CNT} -ne 1 ]] && exit_leave "${_SCRIPT}:${RED_FG}More than 1 instance not permitted${RESET}"
-
 _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
 _APPS_TO_SCAN+=${_APPS_NON_DOCK}
 
@@ -151,7 +124,6 @@ while IFS= read -ru3 LINE;do
 	if [[ ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
 		logit ${_LOG} "GOT NEW TERMINAL WINDOW"
 		win_maximize terminal
-		win_focus terminal
 		VAL=''
 	else
 		if [[ -n ${STR} ]];then
@@ -168,9 +140,13 @@ while IFS= read -ru3 LINE;do
 					sleep ${WT}
 				fi
 
-				win_maximize ${APP}
-				win_focus ${APP}
-				STR=''
+				if [[ -p ${WIN_PIPE} ]];then
+					echo ${APP} > ${WIN_PIPE} &
+					win_maximize ${APP}
+					STR=''
+				else
+					logit ${_LOG} "Named pipe WIN_PIPE not found"
+				fi
 			fi
 		fi
 	fi
