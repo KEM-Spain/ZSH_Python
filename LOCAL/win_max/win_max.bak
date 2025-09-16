@@ -11,11 +11,11 @@ typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_fire
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5 MAX 6)
 typeset -a _CUR_WIN=()
 typeset -aU _WIN_LIST=()
-typeset -a _EXPECT_LIST=()
 
 # Constants
 _SCRIPT=${0:t}
 _LOG=/tmp/${_SCRIPT}.log
+_WIN_PIPE=/tmp/win_pipe
 
 # Functions
 get_app_tag () {
@@ -140,12 +140,14 @@ set_cur_win () {
 	local TRIES=0
 	local RETRIES=0
 	local L
+	local TERMS=$(terms -c)
+	local TERM_CNT=0
 
 	if [[ -n ${EXPECT} ]];then
-		logit ${_LOG} "${0}: Expecting window for:${EXPECT}"
+		logit ${_LOG} "${0}: Expecting window:${EXPECT}"
 		RETRIES=10 # Let expected match drive the break
 	else
-		RETRIES=4 # Minimize looping
+		RETRIES=3 # Minimize looping for unexpected windows
 	fi
 
 	while true;do
@@ -159,14 +161,20 @@ set_cur_win () {
 			F3=$(cut -d' ' -f${_FLD_LIST[PID]} <<<${L})
 			F4=$(cut -d' ' -f${_FLD_LIST[CLIENT]} <<<${L})
 			F5=$(cut -d' ' -f${_FLD_LIST[TITLE]}- <<<${L})
+
 			[[ ${F2} == '-1' ]] && continue # Eliminate invisible
+			[[ ${F5:l} =~ "terminal" ]] && ((TERM_CNT++))
+
 			xwininfo -wm -id ${F1} 2>/dev/null | grep -qi 'maximized'
 			[[ ${?} -eq 0 ]] && MAX=true || MAX=false
+
 			_WIN_LIST+="${F1}|${F2}|${F3}|${F4}|${F5}|${MAX}"
+
 			if [[ -n ${EXPECT} && ${F5:l} =~ ${EXPECT} ]];then # Wait for any recently launched windows
 				logit ${_LOG} "${0}: Got expected window:${EXPECT}"
 				break 2
 			fi
+			[[ ${F5:l} =~ 'terminal' && ${TERM_CNT} == ${TERMS} ]] && break 2
 		done
 		sleep .5
 	done
@@ -274,11 +282,24 @@ fi
 
 logit ${_LOG} "Got ARG:${WIN_ARG}, TYPE:${ARG_TYPE}"
 
-_EXPECT_LIST=("${(f)$(find /tmp -type f -name '*expect' 2>/dev/null)}") # wait_app_start will place a token in /tmp
-if [[ ${#_EXPECT_LIST} -eq 1 ]];then
-	EXPECT=$(get_app_tag ${_EXPECT_LIST[1]:r:t}) # Parse token
-	/bin/rm -f ${_EXPECT_LIST[1]} # Remove token
+if [[ -p ${_WIN_PIPE} ]];then
+	EXPECT=$(cat ${_WIN_PIPE})
+	if [[ -n ${EXPECT} ]];then
+		logit ${_LOG} "Read from pipe:${_WIN_PIPE} - got ${EXPECT}"
+	else
+		logit ${_LOG} "Failed to read from pipe:${_WIN_PIPE}"
+	fi
+	unlink ${_WIN_PIPE}
+ 	EXPECT=$(get_app_tag ${EXPECT}) # Parse token
+else
+	logit ${_LOG} "Pipe:${_WIN_PIPE} not found"
 fi
+
+#_EXPECT_LIST=("${(f)$(find /tmp -type f -name '*expect' 2>/dev/null)}") # wait_app_start will place a token in /tmp
+#if [[ ${#_EXPECT_LIST} -eq 1 ]];then
+#	EXPECT=$(get_app_tag ${_EXPECT_LIST[1]:r:t}) # Parse token
+#	/bin/rm -f ${_EXPECT_LIST[1]} # Remove token
+#fi
 
 set_cur_win ${EXPECT} # Create list of open or expected windows
 

@@ -10,6 +10,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 _LOG=/tmp/${0:t}.log
 _SCRIPT=${0:t}
 _SYS_APPS=/usr/local/bin/system/launchers
+_WIN_PIPE=/tmp/win_pipe
 
 # Declarations
 typeset -a _APPS_TO_SCAN=()
@@ -140,7 +141,8 @@ while IFS= read -ru3 LINE;do
 					sleep ${WT}
 				fi
 
-				touch /tmp/${APP}.expect
+				[[ ! -p ${_WIN_PIPE} ]] && mkfifo ${_WIN_PIPE}
+				echo ${APP} > ${_WIN_PIPE} &
 				win_maximize ${APP}
 				STR=''
 			fi
