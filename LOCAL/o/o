@@ -119,7 +119,7 @@ action_do () {
 	for K in ${(k)RUN_LIST};do
 		FN=$(realpath ${RUN_LIST[${K}]})
 		if is_foreground_only ${K};then
-			eval "${K} ${FN} >${_APP_LOG}"
+			eval "${K} ${FN} 2>${_APP_LOG}"
 		else
 			eval "${K} ${FN:q} >${_APP_LOG} 2>&1 &"
 			CMD_PID=${!} && RC=${?}
@@ -127,7 +127,7 @@ action_do () {
 		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
 		else
-			max_win ${CMD_PID}
+			win_max -p ${CMD_PID}
 		fi
 	done
 
@@ -158,41 +158,12 @@ create_list () {
 	local NDX=0
 }
 
+
 get_app () {
 	local FN=${1}
 	local EXT=${FN:e:l}
-	local APP
 
-	case ${EXT} in
-		avi) APP=${_APP_EXE[MPV]};;
-		doc) APP=${_APP_EXE[OFFICE]};;
-		epub) APP=${_APP_EXE[EBOOK]};;
-		flac) APP=${_APP_EXE[CLEM]};;
-		gif) APP=${_APP_EXE[IMAGE]};;
-		html) APP=${_APP_EXE[VIM]};;
-		jpeg) APP=${_APP_EXE[IMAGE]};;
-		jpg) APP=${_APP_EXE[IMAGE]};;
-		log) APP=${_APP_EXE[VIM]};;
-		m4a) APP=${_APP_EXE[MPV]};;
-		markdown) APP=${_APP_EXE[MDLESS]};;
-		md) APP=${_APP_EXE[MDLESS]};;
-		mkv) APP=${_APP_EXE[MPV]};;
-		mp3) APP=${_APP_EXE[CLEM]};;
-		mp4) APP=${_APP_EXE[MPV]};;
-		mscz) APP=${_APP_EXE[MUSE]};;
-		odg) APP=${_APP_EXE[OFFICE]};;
-		ods) APP=${_APP_EXE[OFFICE]};;
-		odt) APP=${_APP_EXE[OFFICE]};;
-		pdf) APP=${_APP_EXE[OKULAR]};;
-		png) APP=${_APP_EXE[IMAGE]};;
-		rtf) APP=${_APP_EXE[OFFICE]};;
-		svg) APP=${_APP_EXE[IMAGE]};;
-		txt) APP=${_APP_EXE[VIM]};;
-		wav) APP=${_APP_EXE[CLEM]};;
-		webm) APP=${_APP_EXE[MPV]};;
-		xls) APP=${_APP_EXE[OFFICE]};;
-		*) APP=?;;
-	esac
+	APP=$(map_ext ${EXT})
 	
 	if [[ ${APP} == '?' ]];then
 		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${_APP_EXE[VIM]} # Editable unknown extensions 
@@ -206,36 +177,7 @@ get_app_win () {
 	local EXT=${FN:e:l}
 	local APP_WIN
 
-	case ${EXT} in
-		avi) APP=${_APP_EXE[MPV]};;
-		doc) APP=${_APP_EXE[OFFICE]};;
-		epub) APP=${_APP_EXE[EBOOK]};;
-		flac) APP=${_APP_EXE[CLEM]};;
-		gif) APP=${_APP_EXE[IMAGE]};;
-		html) APP=${_APP_EXE[VIM]};;
-		jpeg) APP=${_APP_EXE[IMAGE]};;
-		jpg) APP=${_APP_EXE[IMAGE]};;
-		log) APP=${_APP_EXE[VIM]};;
-		m4a) APP=${_APP_EXE[MPV]};;
-		markdown) APP=${_APP_EXE[MDLESS]};;
-		md) APP=${_APP_EXE[MDLESS]};;
-		mkv) APP=${_APP_EXE[MPV]};;
-		mp3) APP=${_APP_EXE[CLEM]};;
-		mp4) APP=${_APP_EXE[MPV]};;
-		mscz) APP=${_APP_EXE[MUSE]};;
-		odg) APP=${_APP_EXE[OFFICE]};;
-		ods) APP=${_APP_EXE[OFFICE]};;
-		odt) APP=${_APP_EXE[OFFICE]};;
-		pdf) APP=${_APP_EXE[OKULAR]};;
-		png) APP=${_APP_EXE[IMAGE]};;
-		rtf) APP=${_APP_EXE[OFFICE]};;
-		svg) APP=${_APP_EXE[IMAGE]};;
-		txt) APP=${_APP_EXE[VIM]};;
-		wav) APP=${_APP_EXE[CLEM]};;
-		webm) APP=${_APP_EXE[MPV]};;
-		xls) APP=${_APP_EXE[OFFICE]};;
-		*) APP=?;;
-	esac
+	APP_WIN=$(map_ext ${EXT})
 	
 	if [[ ${APP_WIN} == '?' ]];then
 		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP_WIN=${_APP_WIN[VIM]} # Editable unknown extensions 
@@ -264,32 +206,50 @@ item_decorate () {
 	esac
 }
 
+map_ext () {
+	local EXT=${1}
+	local APP=''
+
+	case ${EXT} in
+		avi) APP=${_APP_EXE[MPV]};;
+		doc) APP=${_APP_EXE[OFFICE]};;
+		epub) APP=${_APP_EXE[EBOOK]};;
+		flac) APP=${_APP_EXE[CLEM]};;
+		gif) APP=${_APP_EXE[IMAGE]};;
+		html) APP=${_APP_EXE[VIM]};;
+		jpeg) APP=${_APP_EXE[IMAGE]};;
+		jpg) APP=${_APP_EXE[IMAGE]};;
+		log) APP=${_APP_EXE[VIM]};;
+		m4a) APP=${_APP_EXE[MPV]};;
+		markdown) APP=${_APP_EXE[MDLESS]};;
+		md) APP=${_APP_EXE[MDLESS]};;
+		mkv) APP=${_APP_EXE[MPV]};;
+		mp3) APP=${_APP_EXE[CLEM]};;
+		mp4) APP=${_APP_EXE[MPV]};;
+		mscz) APP=${_APP_EXE[MUSE]};;
+		odg) APP=${_APP_EXE[OFFICE]};;
+		ods) APP=${_APP_EXE[OFFICE]};;
+		odt) APP=${_APP_EXE[OFFICE]};;
+		pdf) APP=${_APP_EXE[OKULAR]};;
+		png) APP=${_APP_EXE[IMAGE]};;
+		rtf) APP=${_APP_EXE[OFFICE]};;
+		svg) APP=${_APP_EXE[IMAGE]};;
+		txt) APP=${_APP_EXE[VIM]};;
+		wav) APP=${_APP_EXE[CLEM]};;
+		webm) APP=${_APP_EXE[MPV]};;
+		xls) APP=${_APP_EXE[OFFICE]};;
+		*) APP=?;;
+	esac
+
+	echo ${APP}
+}
+
 mark_unsupported () {
 	local NDX=$1
 	local SUPPORTED
 
 	SUPPORTED=$(get_app ${_LOCAL_LIST[${NDX}]})
 	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
-}
-
-max_win () {
-	local PID=${1}
-	local TRIES=0
-	local RETRIES=10
-	local HIT=false
-
-	while true;do
-		((TRIES++))
-		[[ ${TRIES} -gt ${RETRIES} ]] && break
-		wmctrl -lp | grep -q ${PID}
-		if [[ ${?} -eq 0 ]];then
-			HIT=true
-			break
-		fi
-		sleep .5
-	done
-
-	[[ ${HIT} == 'true' ]] && win_max -p ${PID}
 }
 
 lcase_mp4s () {

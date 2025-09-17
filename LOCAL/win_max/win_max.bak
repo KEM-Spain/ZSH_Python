@@ -12,6 +12,9 @@ typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5 MAX 6)
 typeset -a _CUR_WIN=()
 typeset -aU _WIN_LIST=()
 
+# Vars
+_QUICK=false
+
 # Constants
 _SCRIPT=${0:t}
 _LOG=/tmp/${_SCRIPT}.log
@@ -137,18 +140,14 @@ set_cur_win () {
 	local EXPECT=${1}
 	local F1 F2 F3 F4 F5 MAX
 	local TRIES=0
-	local RETRIES=0
+	local RETRIES=10
 	local L
 	local TERMS=$(terms -c)
 	local TERM_CNT=0
 
-	if [[ -n ${EXPECT} ]];then
-		RETRIES=10 # Let expected match drive the break
-		logit ${_LOG} "${0}: Expecting window:${EXPECT}, RETRIES:${RETRIES}"
-	else
-		RETRIES=3 # Minimize looping for unexpected windows
-		logit ${_LOG} "${0}: Unexpected window, RETRIES:${RETRIES}"
-	fi
+	logit ${_LOG} "${0}: Expecting window:${EXPECT}"
+
+	[[ ${_QUICK} == 'true' ]] && RETRIES=2
 
 	while true;do
 		((TRIES++))
@@ -156,6 +155,7 @@ set_cur_win () {
 			logit ${_LOG} "${0}: Reached maximum retries:${RETRIES}"
 			break
 		fi
+
 		_CUR_WIN=("${(f)$(wmctrl -lp | tr -s '[:space:]')}")
 
 		for L in ${_CUR_WIN};do
@@ -174,10 +174,10 @@ set_cur_win () {
 			_WIN_LIST+="${F1}|${F2}|${F3}|${F4}|${F5}|${MAX}"
 
 			if [[ -n ${EXPECT} && ${F5:l} =~ ${EXPECT} ]];then # Wait for any recently launched windows
+				[[ ${EXPECT} =~ 'terminal' && ${TERM_CNT} -ne ${TERMS} ]] && continue
 				logit ${_LOG} "${0}: Got expected window:${EXPECT}"
 				break 2
 			fi
-			[[ ${EXPECT} =~ 'terminal' && ${TERM_CNT} == ${TERMS} ]] && break 2 # Optimize terminal search
 		done
 		sleep .5
 	done
@@ -239,7 +239,9 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-i${RESET} return window id only - no maximization"
 	echo -e "${WHITE_FG}-p${RESET} $(opt_type p)"
+	echo -e "${WHITE_FG}-q${RESET} quick timeout"
 	echo -e "${WHITE_FG}-w${RESET} $(opt_type w)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
@@ -247,17 +249,20 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDp:w:"
+OPTSTR=":HDip:w:"
 OPTIND=0
 
 PID_ARG=''
 WID_ARG=''
+GET_ID=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     i) GET_ID=true;;
      p) PID_ARG=${OPTARG};;
+     q) _QUICK=true;;
      w) WID_ARG=${OPTARG};;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
@@ -296,13 +301,19 @@ WIN_ID=$(get_win_id ${WIN_ARG} ${ARG_TYPE})
 
 if [[ -n ${WIN_ID} ]];then
 	logit ${_LOG} "Got WID:${WIN_ID}"
-	if [[ -n ${WIN_ID} && $(is_maximized ${WIN_ID}) == 'false' ]];then
-		wmctrl -i -r ${WIN_ID} -b add,maximized_vert,maximized_horz >/dev/null 2>&1
-		wmctrl -i -a ${WIN_ID} # Focus
-		logit ${_LOG} "WID:${WIN_ID} was MAXIMIZED"
+	if [[ ${GET_ID} == 'true' ]];then
+		printf "%s|%d|%s" ${WIN_ID} ${WIN_ID} ${WIN_ARG}
 		return 0
 	else
-		logit ${_LOG} "WID:${WIN_ID} was already MAXIMIZED"
+		if [[ -n ${WIN_ID} && $(is_maximized ${WIN_ID}) == 'false' ]];then
+			wmctrl -i -r ${WIN_ID} -b add,maximized_vert,maximized_horz >/dev/null 2>&1
+			wmctrl -i -a ${WIN_ID} # Focus
+			logit ${_LOG} "WID:${WIN_ID} was MAXIMIZED"
+			return 0
+		else
+			logit ${_LOG} "WID:${WIN_ID} was already MAXIMIZED"
+			return 2
+		fi
 	fi
 else
 	logit ${_LOG} "Unable to get WIN_ID for ${WIN_ARG}"
