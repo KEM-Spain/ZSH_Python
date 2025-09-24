@@ -34,15 +34,13 @@ cursor_restore () {
 }
 
 cursor_row () {
-	local LINE
+	local ROW
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	echo -ne "\033[6n" > /dev/tty
-	read -t 1 -s -d 'R' LINE < /dev/tty
-	LINE="${LINE##*\[}"
-	LINE="${LINE%;*}"
-	echo $(( LINE - 2 ))
+	echo -ne "\033[6n" > /dev/tty # Voodoo to grab row
+	read -t1 -s -d'R' ROW < /dev/tty # Parse usable bit
+	ROW=$(cut -d';' -f1 <<<${ROW} | tr -dc '0-9') # Split and strip non digits (escape seq etc.)
+	((ROW--))
+	echo ${ROW}
 }
 
 cursor_save () {

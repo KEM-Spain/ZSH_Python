@@ -1,12 +1,13 @@
 #!/usr/bin/zsh
-# Vim: syntax off
+
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
+BLACK_BG="\033[40m"
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -14,6 +15,9 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -26,9 +30,27 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Declarations
 typeset -a MARKED
 typeset -a RS_OPTS
-typeset -a RS_EXCL
-typeset -a RS_INCL
+typeset -a RS_FLTR
 typeset -a BACKUP_DIRS
+
+# Dependencies
+_MOUNT=media
+_MOUNTPOINT="/${_MOUNT}/${USER}"
+_TAG=$(hostname)_RSYNC2
+_DEST_ID=KEM_Backup
+
+# Constants
+_CONF_DIR=${HOME}/.local/share/backup
+#_DBG_FILTER='--debug=FILTER'
+_DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
+_LOGFILE=${_CONF_DIR}/${_TAG}.log
+_MARKER=${_CONF_DIR}/${_TAG}.lastrun
+_TODAY=$(date +'%Y-%m-%d') 
+_VERBOSE='-vv' # Default verbose level
+
+# Globals
+g_LAST_RUN=?
+g_FOUND_EXT=false
 
 #--Option settings for rsync--
 # RS_OPTS+=('-n') # Dry run
@@ -38,7 +60,6 @@ typeset -a BACKUP_DIRS
 # RS_OPTS+=('-A') # Preserve ACLS
 # RS_OPTS+=('-X') # Preserve extended attributes
 
-RS_OPTS+=('-v') # Verbose
 RS_OPTS+=('-a') # Archive
 RS_OPTS+=('-z') # Compress
 RS_OPTS+=('--delete') # Delete if original no longer exists
@@ -47,36 +68,10 @@ RS_OPTS+=('--numeric-ids') # No translation of UID,GID - needed for flexible res
 RS_OPTS+=('--delete-excluded') # Exluded here; deleted there
 RS_OPTS+=('--ignore-errors') # Continue through errors
 
-#--Exclude settings for rsync--
-RS_EXCL+=(--exclude='lost+found')
-RS_EXCL+=(--exclude='Downloads')
-RS_EXCL+=(--exclude='Videos')
-RS_EXCL+=(--exclude='Virtual*')
-RS_EXCL+=(--exclude='.cache')
-RS_EXCL+=(--exclude='Cache')
-RS_EXCL+=(--exclude='cache')
-RS_EXCL+=(--exclude='/usr/local/src/yt-dlp/yt_dlp/__pycache__')
-RS_EXCL+=(--exclude='snap')
-RS_EXCL+=(--exclude='.local/share/flatpak')
-RS_EXCL+=(--exclude='.config/google-chrome')
-RS_EXCL+=(--exclude='.git')
+#--Filter file for rsync--
+RS_FLTR=${_CONF_DIR}/rsync-filter.rules
 
-RS_INCL+=(--include='Downloads/Torrents/Completed')
 BACKUP_DIRS=(/root ${HOME} /usr/local /etc /opt)
-
-# Constants
-_MOUNT=media
-_MOUNTPOINT="/${_MOUNT}/${USER}"
-_DEST_ID=KEM_Backup
-_TAG=$(hostname)_RSYNC2
-_DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
-_MARKER=~/.${_TAG}.lastrun
-_LOGFILE=${HOME}/.${_TAG}.log
-_TODAY=$(date +'%Y-%m-%d') 
-
-# Globals
-g_LAST_RUN=?
-g_FOUND_EXT=false
 
 # Functions
 datediff () {
@@ -101,7 +96,7 @@ last_backup () {
 		LB_LAST_RUN=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
 	else
 		touch ${_MARKER}
-		exit_leave $(msg_exit W "${_SCRIPT}: Last backup date is unknown")
+		exit_leave $(err_msg_exit W "${_SCRIPT}: Last backup date is unknown")
 	fi
 
 	[[ -e ${MARKER_ARG} ]] && LB_LAST_TIME=$(stat -c"%x" ${MARKER_ARG} | cut -d. -f1 | cut -d' ' -f2 | cut -d: -f1,2) 
@@ -128,8 +123,8 @@ is_mounted () {
 cleanup () {
 	local PID
 
-	clear
-	msg_box "Waiting for rsync process to finish..."
+	[[ -z ${DRYRUN} ]] && clear
+	msg_box -x0 "Waiting for rsync process to finish..."
 
 	while true;do
 		PID=$(pgrep -n rsync)
@@ -138,7 +133,19 @@ cleanup () {
 	done
 
 	[[ ${g_FOUND_EXT} == 'true' ]] && dut external -u
-	msg_box -t.8 "External drive ${_DEST_ID:l} was unmounted"
+	msg_box -x0 -t1 "External drive ${_DEST_ID:l} was unmounted"
+	clear
+}
+
+verbose_set_level () {
+	local LVL=''
+
+	LVL=${_VERBOSE[2,-1]}
+	if [[ ${#LVL} -lt 3 ]];then
+		LVL+='v'
+	fi
+
+	_VERBOSE="-${LVL}"
 }
 
 #--Begin GetOpts--
@@ -181,8 +188,10 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-d${RESET} dry run"
 	echo -e "${WHITE_FG}-f${RESET} force"
 	echo -e "${WHITE_FG}-s${RESET} status"
+	echo -e "${WHITE_FG}-v${RESET} verbose"
 	echo -e "${WHITE_FG}-i${RESET} date of last backup"
 	echo -e "\n${WHITE_FG}Desc${RESET}:Backup selected directories"
 	) >&2
@@ -190,18 +199,22 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDfis"
+OPTSTR=":HDdfisv"
 
 FORCE=false
 INFO=false
+DRYRUN=''
+VERBOSE=''
 
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     d) DRYRUN='--dry-run';;
      f) FORCE=true;;
      s) last_backup ${_MARKER};exit;;
+     v) verbose_set_level;;
      i) INFO=true;;
      :) print -u2 "${_SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
@@ -212,6 +225,13 @@ shift $(( OPTIND - 1 ))
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+if [[ ${PWD} =~ ${_MOUNTPOINT} ]];then
+	echo "${_SCRIPT} Cannot execute from ${_MOUNTPOINT}"
+	echo "Interferes with umount - change directories before executing"
+	exit 1
+fi
+
 g_LAST_RUN=$(last_backup ${_MARKER})
 
 if [[ -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
@@ -230,11 +250,11 @@ fi
 if [[ (-f ${_MARKER}) && (${FORCE} == "false") && (${g_LAST_RUN:l} =~ 'today') ]];then
 	msg_box -H1 -p -P"Enter 'F' to Force"  "Backup Status|Last backup was ${g_LAST_RUN}"
 	if [[ ${_MSG_KEY:l} != 'f' ]];then
-		exit_leave $(msg_exit I "Operation cancelled")
+		exit_leave $(err_msg_exit I "Operation cancelled")
 	fi
 fi
 
-clear
+[[ -z ${DRYRUN} ]] && clear
 msg_box -t.8 "Checking mounted drives..."
 while true;do
 	if is_mounted;then
@@ -248,22 +268,27 @@ while true;do
 		[[ ${?} -ne 0 ]] && exit_leave "\nNo external drives available"
 	fi
 done
-[[ g_FOUND_EXT == 'false' ]] && exit_leave $(msg_exit W "Failed to mount ${_DEST_ID:l}")
+[[ g_FOUND_EXT == 'false' ]] && exit_leave $(err_msg_exit W "Failed to mount ${_DEST_ID:l}")
 
 # Backup
+[[ -n ${DRYRUN} ]] && echo "\n${RED_ON_WHITE}THIS IS A DRY RUN${RESET}"
+FILTER="--filter=\"merge ${RS_FLTR}\"" # Set filter option
+
+echo "Backup started: $(date)" > ${_LOGFILE} # Start logging
+echo "Filter rules: ${RS_FLTR}" >> ${_LOGFILE}
+
 echo
-echo "Backup started: $(date)" | tee ${_LOGFILE}
-echo "Excluded files: ${RS_EXCL}" | tee -a ${_LOGFILE}
-
 for D in ${BACKUP_DIRS};do
-	echo "sudo rsync ${RS_OPTS} ${RS_EXCL} ${D} ${_DESTINATION}" | tee -a ${_LOGFILE}
-	sudo rsync ${RS_OPTS} ${RS_EXCL} ${D} ${_DESTINATION} 2>/dev/null | tee -a ${_LOGFILE}
+	echo "${WHITE_FG}Processing${RESET}:${D}..."
+	CMD="sudo rsync ${_DBG_FILTER} ${DRYRUN} ${_VERBOSE} ${RS_OPTS} ${FILTER} ${D} ${_DESTINATION} >> ${_LOGFILE} 2>&1"
+	echo ${CMD}
+	eval ${CMD}
 	RC=${?}
-	[[ ${RC} -ne 0 ]] && msg_box -p -PK "rsync had an error:${RC}"
+	[[ ${RC} -ne 0 ]] && echo "rsync had an error:${RC}" >> ${_LOGFILE}
 done
+echo "${WHITE_FG}Finished backup${RESET}..."
 
-echo "Finished backup..." | tee -a ${_LOGFILE}
-echo "Backup ended: $(date)" | tee -a ${_LOGFILE}
+echo "Backup ended: $(date)" >> ${_LOGFILE} # End logging
 
 touch ${_MARKER}
 cleanup

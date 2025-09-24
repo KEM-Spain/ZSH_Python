@@ -6,30 +6,323 @@ source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
+# Declarations
+typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
+typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5 MAX 6)
+typeset -a _CUR_WIN=()
+typeset -aU _WIN_LIST=()
+
+# Vars
+_QUICK=false
+
 # Constants
 _SCRIPT=${0:t}
 _LOG=/tmp/${_SCRIPT}.log
 
-# Execution
+# Functions
+get_app_tag () {
+	local APP=${1:l} # Lowercase
+	local APP_TAG=''
+
+	# Handle any alternate tags
+	if [[ -n ${_APP_TAGS[${APP}]} ]];then
+		APP_TAG=${_APP_TAGS[${APP}]}
+		logit ${_LOG} "${0}: APP:${APP} using APP_TAG:${APP_TAG}"
+	else
+		APP_TAG=${APP}
+	fi
+
+	echo ${APP_TAG}
+}
+
+get_id_title () {
+	local TITLE_ARG=${1}
+	local TITLE=''
+	local WID=''
+	local W
+
+	if [[ ${TITLE_ARG} == 'terminal' ]];then # Special handling of terminal to get most recent
+		WID=$(get_last_term)
+		logit ${_LOG} "${0}: Terminal has WID:${WID}"
+	else
+		for W in ${_WIN_LIST};do
+			WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+			TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+			if [[ ${TITLE:l} =~ ${TITLE_ARG:l} ]];then
+				logit ${_LOG} "${0}: TITLE:${TITLE} has WID:${WID}"
+				break
+			else
+				WID=''
+			fi
+		done
+	fi
+
+	echo ${WID}
+}
+
+get_id_pid () {
+	local PID_ARG=${1}
+	local PID=''
+	local TITLE=''
+	local WID=''
+	local W
+
+	for W in ${_WIN_LIST};do
+		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+		PID=$(cut -d'|' -f${_FLD_LIST[PID]} <<<${W})
+		TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+		if [[ ${PID_ARG} =~ ${PID} ]];then
+			logit ${_LOG} "${0}: PID:${PID} has WID:${WID}, TITLE:${TITLE}"
+			break
+		fi
+	done
+
+	echo ${WID}
+}
+
+get_id_wid () {
+	local WID_ARG=${1}
+	local TITLE=''
+	local WID=''
+	local W
+
+	for W in ${_WIN_LIST};do
+		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+		TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+		if [[ ${WID_ARG} =~ ${WID} ]];then
+			logit ${_LOG} "${0}: WID:${WID} has TITLE:${TITLE}"
+			break
+		fi
+	done
+
+	echo ${WID}
+}
+
+get_win_id () {
+	local ARG=${1}
+	local TYPE=${2}
+	local WID=''
+
+	logit ${_LOG} "${0}: Obtaining WID for ARG:${ARG}"
+
+	case ${TYPE} in
+		TITLE) WID=$(get_id_title $(get_app_tag ${ARG}));;
+		PID) WID=$(get_id_pid ${ARG});;
+		WID) WID=$(get_id_wid ${ARG});;
+	esac
+
+	echo ${WID}
+}
+
+get_last_term () {
+	wmctrl -l | grep -i terminal | sort -r | head -1 | tr -s '[:space:]' | cut -d' ' -f1
+}
+
+is_maximized () {
+	local WID_ARG=${1}
+	local MAX=''
+	local WID=''
+	local W
+
+	for W in ${_WIN_LIST};do
+		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+		MAX=$(cut -d'|' -f${_FLD_LIST[MAX]} <<<${W})
+		if [[ ${WID_ARG} =~ ${WID} ]];then
+			logit ${_LOG} "${0}: WID:${WID} maximized:${MAX}"
+			break
+		fi
+	done
+
+	echo ${MAX} # returns true or false
+}
+
+set_cur_win () {
+	local EXPECT=${1}
+	local F1 F2 F3 F4 F5 MAX
+	local RETRIES=5
+	local TERMS=$(terms -c)
+	local TERM_CNT=0
+	local TRIES=0
+	local L
+
+	logit ${_LOG} "${0}: Expecting window:${EXPECT}"
+
+	[[ ${_QUICK} == 'true' ]] && RETRIES=2
+
+	while true;do
+		((TRIES++))
+		if [[ ${TRIES} -gt ${RETRIES} ]];then
+			logit ${_LOG} "${0}: Reached maximum retries:${RETRIES}"
+			break
+		fi
+
+		_CUR_WIN=("${(f)$(wmctrl -lp | tr -s '[:space:]')}")
+
+		for L in ${_CUR_WIN};do
+			F1=$(cut -d' ' -f${_FLD_LIST[WID]} <<<${L})
+			F2=$(cut -d' ' -f${_FLD_LIST[DID]} <<<${L})
+			F3=$(cut -d' ' -f${_FLD_LIST[PID]} <<<${L})
+			F4=$(cut -d' ' -f${_FLD_LIST[CLIENT]} <<<${L})
+			F5=$(cut -d' ' -f${_FLD_LIST[TITLE]}- <<<${L})
+
+			[[ ${F2} == '-1' ]] && continue # Eliminate invisible
+			[[ ${F5:l} =~ "terminal" ]] && ((TERM_CNT++)) # Count terminal hits
+
+			xwininfo -wm -id ${F1} 2>/dev/null | grep -qi 'maximized'
+			[[ ${?} -eq 0 ]] && MAX=true || MAX=false
+
+			_WIN_LIST+="${F1}|${F2}|${F3}|${F4}|${F5}|${MAX}"
+
+			if [[ -n ${EXPECT} && ${F5:l} =~ ${EXPECT} ]];then # Hit expected window
+				[[ ${EXPECT} =~ 'terminal' && ${TERM_CNT} -ne ${TERMS} ]] && continue
+				logit ${_LOG} "${0}: Got expected window:${EXPECT}, wmctrl:${F5}"
+				break 2
+			fi
+		done
+		sleep .5
+	done
+
+	logit ${_LOG} "${0}: Created _WIN_LIST:${#_WIN_LIST} window(s)"
+}
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Maximize a window and focus or get window id
+\tBy default, the list of open windows is	queried
+\tuntil the expected title appears or until the 
+\tsearch times out. If option -q is used, the 
+\texpected window must be in the current list of 
+\topen windows and minimum waiting for the title to appear 
+\ttakes place. Optionally, a PID may be used to locate
+\ta window or a WID may be used to identify the window 
+\tdirectly. If option -i is used, a delimited string 
+\tis returned:HEX_ID|DEC_ID|TITLE and no maximizing 
+\ttakes place.
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		p) echo "<PID>";;
+		t) echo "<TITLE>";;
+		w) echo "<WID>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)]\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-i${RESET} return window info only - no maximization"
+	echo -e "${WHITE_FG}-p${RESET} $(opt_type p)"
+	echo -e "${WHITE_FG}-q${RESET} quick timeout"
+	echo -e "${WHITE_FG}-w${RESET} $(opt_type w)"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave ${PENDING_MSGS}
+}
+
+OPTSTR=":HDip:qw:"
+OPTIND=0
+
+PID_ARG=''
+WID_ARG=''
+GET_ID=false
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     i) GET_ID=true;;
+     p) PID_ARG=${OPTARG};;
+     q) _QUICK=true;;
+     w) WID_ARG=${OPTARG};;
+     :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
  
-# Args
-APP=${1}
-if [[ -z ${APP} ]];then
-	logit ${_LOG} "Missing argument:APP"
-	return 1
-else
-	logit ${_LOG} "Got APP:${APP}"
+# Execution
+WIN_ARG=${1:l} # Lowercase
+
+WID=''
+EXPECT=''
+if [[ -n ${1} ]];then
+	ARG_TYPE=TITLE
+	EXPECT=$(get_app_tag ${WIN_ARG})
+	WIN_ARG=${EXPECT}
+elif [[ -n ${PID_ARG} ]];then
+	ARG_TYPE=PID
+	WIN_ARG=${PID_ARG}
+elif [[ -n ${WID_ARG} ]];then
+	ARG_TYPE=WID
+	WIN_ARG=${WID_ARG}
 fi
 
-WIN_INFO=$(win_id ${APP})
-if [[ -n ${WIN_INFO} ]];then
-	logit ${_LOG} "Got WIN_INFO:${WIN_INFO} for APP:${APP}"
-	WID=$(cut -d'|' -f1 <<<${WIN_INFO})
-	logit ${_LOG} "Extracted WID:${WID}"
-	wmctrl -i -r ${WID} -b add,maximized_vert,maximized_horz >/dev/null 2>&1
-	logit ${_LOG} "${APP} WID:${WID} was MAXIMIZED"
-	return 0
+[[ -z ${ARG_TYPE} ]] && exit_leave $(err_msg_exit E "Missing argument:$(opt_type t)")
+
+logit ${_LOG} "-- Got ARG:${WIN_ARG}, TYPE:${ARG_TYPE} --"
+
+set_cur_win ${EXPECT} # Create list of open windows
+
+# Get WID
+WIN_ID=$(get_win_id ${WIN_ARG} ${ARG_TYPE})
+
+if [[ -n ${WIN_ID} ]];then
+	logit ${_LOG} "Got WID:${WIN_ID} (${WIN_ARG})"
+	if [[ ${GET_ID} == 'true' ]];then
+		logit ${_LOG} "Returning data for WID:${WIN_ID} (${WIN_ARG})"
+		printf "%s|%d|%s" ${WIN_ID} ${WIN_ID} ${WIN_ARG}
+		return 0
+	else
+		if [[ $(is_maximized ${WIN_ID}) == 'false' ]];then
+			wmctrl -i -r ${WIN_ID} -b add,maximized_vert,maximized_horz >/dev/null 2>&1
+			wmctrl -i -a ${WIN_ID} # Focus
+			logit ${_LOG} "WID:${WIN_ID} (${WIN_ARG}) was MAXIMIZED"
+			return 0
+		else
+			logit ${_LOG} "WID:${WIN_ID} (${WIN_ARG}) was already MAXIMIZED"
+			return 2
+		fi
+	fi
 else
-	logit ${_LOG} "Unable to get WIN_INFO for ${APP}"
+	logit ${_LOG} "Unable to get WIN_ID for ${WIN_ARG}"
 	return 1
 fi

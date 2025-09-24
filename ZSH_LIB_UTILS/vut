@@ -348,8 +348,9 @@ merge () {
 	local -A ORIGINALS=()
 	local APP=ffmpeg
 	local DESTINATION_FILE
-	local F FN
+	local F FN FTYPE CMD
 	local RESPONSE
+	local SAVEDIR=${PWD}/.originals
 
 	# Constants
 	local _OUT_FILE=vid_merge
@@ -434,51 +435,53 @@ ___EOF
 	#--End GetOpts--
 
 	#--Execution--
+
+	DESTINATION_FILE=${_OUT_FILE}.mp4
+	[[ -e ${DESTINATION_FILE} ]] && /bin/rm -f ${DESTINATION_FILE}
+	[[ -d ${SAVEDIR} ]] && /bin/rm -rf ${SAVEDIR}
+	mkdir ${SAVEDIR}
+
 	if [[ ${#} -eq 0 ]];then
-		FILELIST=(eval "${(f)$(find ${PWD} -maxdepth 1 -type f -regex "${_VID_REGEX_F}" ! -path ${PWD})}") # Pull list from current dir
+		echo "No file GLOB provided - defaulting to all media files in PWD"
+		CMD="find ${PWD} -regextype 'posix-basic' -maxdepth 1 -type f -regex '${_VID_REGEX_F}'"
+		FILELIST=("${(f)$(eval ${CMD})}")
 	else
 		local -a CMD=($(path_get_raw_cmdline))
 		local FGLOB=${CMD[-1]}
-		FILELIST=(eval "${(f)$(find ${PWD} -maxdepth 1 -type f -name ${FGLOB} ! -path ${PWD})}") # Pull list from current dir
+		echo "Adding all media files matching GLOB:${FGLOB}"
+		CMD="find ${PWD} -maxdepth 1 -type f -name '${FGLOB}' ! -path ${PWD}"
+		FILELIST=("${(f)$(eval ${CMD})}")
 	fi
 
 	[[ -z ${FILELIST} ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Missing required arguments${RESET}:<FILES_TO_MERGE>"
-	
+
+	echo "Backing up original files..."
 	for F in ${FILELIST};do
-		[[ ! ${$(file ${F}):l} =~ 'media' ]] && continue
-		grep -q "${_OUT_FILE}\|vid_merge" <<<${F}
-		[[ ${?} -eq 0 ]] && continue
-		# Merging has problems with some file names - simplify
-		FN=$(fsub -Cs <<<${F})
-		mv -f ${F} ${FN} >/dev/null 2>&1
-		FILES_TO_MERGE+=${FN:t}
-		ORIGINALS[${FN}]=${F}
+		cp ${F} ${SAVEDIR}
 	done
 
-	for F in ${FILES_TO_MERGE};do 
-		[[ ! -e ${F} ]] && exit_leave $(err_msg_exit E "file:${F} not found")
-		file ${F} | grep -qi 'media\|matroska\|video'
-		[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit E "file:${F} is not of type video")
+	echo "Formatting filelist..."
+	for F in ${(o)FILELIST};do
+		FTYPE=$(file -b ${F})
+		if [[ ${FTYPE:l} =~ 'media' ]];then
+			FN=$(fsub -Cs <<<${F}) # Compact file names to eliminate problematic spaces in file names
+			mv -f ${F} ${FN} >/dev/null 2>&1
+			FILES_TO_MERGE+=${FN:t}
+		else
+			echo "File:${F} not of type media - skipped" >&2
+		fi
 	done
-
-	[[ -z ${DESTINATION_FILE} ]] && DESTINATION_FILE=${_OUT_FILE}.${FILES_TO_MERGE[1]:e} || DESTINATION_FILE=${_OUT_FILE}
 
 	echo "Application for merge:${BOLD}${ITALIC}${APP}${RESET}"
-	echo "Files to merge:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
-	echo "Output file:${BOLD}${ITALIC}${DESTINATION_FILE}${RESET}"
+	echo "${CYAN_FG}Files to merge${RESET}:\n${BOLD}${ITALIC}$(for F in ${FILES_TO_MERGE};do echo ${F};done)${RESET}"
+	echo "${WHITE_FG}Output file${RESET}:${BOLD}${ITALIC}${DESTINATION_FILE}${RESET}"
+
 	respond "${CYAN_FG}Continue${RESET}"
 	if [[ ${?} -ne 0 ]];then
-		local K
-		for K in ${(k)ORIGINALS};do
-			mv -f "${K}" "${ORIGINALS[${K}]}"
-		done
+		/bin/rm -f ${FILES_TO_MERGE}
+		cp ${SAVEDIR}/* ${PWD}
+		/bin/rm -f ${SAVEDIR}
 		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
-	fi
-
-	if overwrite_file ${DESTINATION_FILE};then
-		/bin/rm -f ${DESTINATION_FILE} >/dev/null 2>&1
-	else
-		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}" || echo
 	fi
 
 	echo "\nMerging:${WHITE_FG}${#FILES_TO_MERGE} files ${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"

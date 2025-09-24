@@ -1,2 +1,2 @@
 #!/usr/bin/zsh
-/usr/bin/vlc --started-from-file ${@} &
+/usr/bin/vlc --started-from-file ${@} 2>/dev/null &

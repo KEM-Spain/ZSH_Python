@@ -129,11 +129,11 @@ else
 	APP_TAG=${APP:l}
 fi
 
-RETRIES=10
+RETRIES=50
 while true;do
 	((NDX++))
 	[[ ${NDX} -gt ${RETRIES} ]] && break
-	WIN_INFO=$(wmctrl -l | grep -i ${APP_TAG} | sort -r | head -1 | tr -s '[:space:]')
+	WIN_INFO=$(wmctrl -lx | grep -m1 -i ${APP_TAG} | sort -r | head -1 | tr -s '[:space:]')
 	if [[ -n ${WIN_INFO} ]];then
 		WIN_ID=$(cut -d' ' -f1 <<<${WIN_INFO})
 		WIN_TITLE=$(cut -d' ' -f3- <<<${WIN_INFO})

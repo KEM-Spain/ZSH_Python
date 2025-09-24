@@ -41,7 +41,10 @@ typeset -a _MARKED=()
 typeset -a _LOCAL_LIST=()
 typeset -A _FILE_APP
 typeset -A _FILE_NDX
+typeset -A _FILE_WIN
 typeset -A _APP_EXE
+typeset -A _APP_WIN
+typeset -a _FOREGROUND_ONLY=(vim)
 
 # Constants
 _APP_LOG=/tmp/${_SCRIPT}.log
@@ -58,6 +61,17 @@ _APP_EXE[HARUNA]=/snap/bin/haruna
 _APP_EXE[MPV]="/usr/bin/mpv --fs"
 _APP_EXE[VIM]=/usr/bin/vim
 
+_APP_WIN[EBOOK]="ebook-viewer"
+_APP_WIN[OKULAR]="okular"
+_APP_WIN[MUSE]="musescore"
+_APP_WIN[OFFICE]="libreoffice"
+_APP_WIN[IMAGE]="viewnior"
+_APP_WIN[VLC]="vlc"
+_APP_WIN[CLEM]="clementine"
+_APP_WIN[HARUNA]="haruna"
+_APP_WIN[MPV]="mpv"
+_APP_WIN[VIM]="vim"
+
 _MD_EXTERNAL="/media/${USER}/KEM_Misc/Music/KEM-B9"
 _MD_LOCAL="${HOME}/Documents/Music"
 _MD_MUSE="${HOME}/Documents/MuseScore4/Scores"
@@ -71,8 +85,13 @@ action_do () {
 	local -A FILE_APP=()
 	local -a FLIST=()
 	local APP_EXE_PATH
+	local APP_WIN
 	local CMD
+	local CMD_PID
 	local FN
+	local IN_APP=false
+	local LAST_APP=?
+	local RC=0
 	local M K
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -80,29 +99,35 @@ action_do () {
 	for M in ${_MARKED};do
 		FN=${(k)_FILE_NDX[(r)${M}]}
 		APP_EXE_PATH=${_FILE_APP[${FN}]}
+		APP_WIN=${_FILE_WIN[${FN}]}
 		FILE_APP[${FN}]=${APP_EXE_PATH}
 	done
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "CMD:${CMD}"
 
-	local LAST_APP=?
-	local IN_APP=false
 	for K in ${(k)FILE_APP};do # Allow each app to have a unique filelist
 		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
 			LAST_APP=${FILE_APP[${K}]}
 			FLIST=()
-			FLIST+=${K:q}
+			FLIST+=${K}
 		else
-			FLIST+=${K:q}
+			FLIST+=${K}
 		fi
 		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
 	done
 
 	for K in ${(k)RUN_LIST};do
-		eval "${K} ${RUN_LIST[${K}]} >${_APP_LOG} 2>&1 &"
-		RC=${?}
+		FN=$(realpath ${RUN_LIST[${K}]})
+		if is_foreground_only ${K};then
+			eval "${K} ${FN} 2>${_APP_LOG}"
+		else
+			eval "${K} ${FN:q} >${_APP_LOG} 2>&1 &"
+			CMD_PID=${!} && RC=${?}
+		fi
 		if [[ ${RC} -ne 0 ]];then
 			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
+		else
+			win_max -p ${CMD_PID}
 		fi
 	done
 
@@ -133,47 +158,38 @@ create_list () {
 	local NDX=0
 }
 
+
 get_app () {
 	local FN=${1}
 	local EXT=${FN:e:l}
-	local APP
-
-	case ${EXT} in
-		avi) APP=${_APP_EXE[MPV]};;
-		doc) APP=${_APP_EXE[OFFICE]};;
-		odg) APP=${_APP_EXE[OFFICE]};;
-		epub) APP=${_APP_EXE[EBOOK]};;
-		gif) APP=${_APP_EXE[IMAGE]};;
-		html) APP=${_APP_EXE[VIM]};;
-		jpeg) APP=${_APP_EXE[IMAGE]};;
-		jpg) APP=${_APP_EXE[IMAGE]};;
-		log) APP=${_APP_EXE[VIM]};;
-		markdown) APP=${_APP_EXE[MDLESS]};;
-		md) APP=${_APP_EXE[MDLESS]};;
-		mkv) APP=${_APP_EXE[MPV]};;
-		mp3) APP=${_APP_EXE[CLEM]};;
-		m4a) APP=${_APP_EXE[MPV]};;
-		mp4) APP=${_APP_EXE[MPV]};;
-		webm) APP=${_APP_EXE[MPV]};;
-		mscz) APP=${_APP_EXE[MUSE]};;
-		ods) APP=${_APP_EXE[OFFICE]};;
-		odt) APP=${_APP_EXE[OFFICE]};;
-		pdf) APP=${_APP_EXE[OKULAR]};;
-		png) APP=${_APP_EXE[IMAGE]};;
-		rtf) APP=${_APP_EXE[OFFICE]};;
-		svg) APP=${_APP_EXE[IMAGE]};;
-		xls) APP=${_APP_EXE[OFFICE]};;
-		txt) APP=${_APP_EXE[VIM]};;
-		wav) APP=${_APP_EXE[VLC]};;
-		flac) APP=${_APP_EXE[VLC]};;
-		*) APP=?;;
-	esac
+	local APP=$(map_ext ${EXT})
 	
 	if [[ ${APP} == '?' ]];then
 		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${_APP_EXE[VIM]} # Editable unknown extensions 
 	fi
 
 	echo ${APP}
+}
+
+get_win () {
+	local FN=${1}
+	local EXT=${FN:e:l}
+	local APP_WIN=$(map_ext ${EXT})
+	
+	if [[ ${APP_WIN} == '?' ]];then
+		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP_WIN=${_APP_WIN[VIM]} # Editable unknown extensions 
+	fi
+
+	echo ${APP_WIN}
+}
+
+is_foreground_only () {
+	local APP=${1}
+	local A
+
+	for A in ${_FOREGROUND_ONLY};do
+		[[ ${APP} =~ ${A} ]] && return 0 || return 1
+	done
 }
 
 item_decorate () {
@@ -185,6 +201,45 @@ item_decorate () {
 		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
 		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
 	esac
+}
+
+map_ext () {
+	local EXT=${1}
+	local APP=''
+
+	case ${EXT} in
+		avi) APP=${_APP_EXE[MPV]};;
+		doc) APP=${_APP_EXE[OFFICE]};;
+		epub) APP=${_APP_EXE[EBOOK]};;
+		flac) APP=${_APP_EXE[CLEM]};;
+		gif) APP=${_APP_EXE[IMAGE]};;
+		html) APP=${_APP_EXE[VIM]};;
+		jpeg) APP=${_APP_EXE[IMAGE]};;
+		jpg) APP=${_APP_EXE[IMAGE]};;
+		log) APP=${_APP_EXE[VIM]};;
+		m4a) APP=${_APP_EXE[MPV]};;
+		markdown) APP=${_APP_EXE[MDLESS]};;
+		md) APP=${_APP_EXE[MDLESS]};;
+		mov) APP=${_APP_EXE[VLC]};;
+		mkv) APP=${_APP_EXE[MPV]};;
+		mp3) APP=${_APP_EXE[CLEM]};;
+		mp4) APP=${_APP_EXE[MPV]};;
+		mscz) APP=${_APP_EXE[MUSE]};;
+		odg) APP=${_APP_EXE[OFFICE]};;
+		ods) APP=${_APP_EXE[OFFICE]};;
+		odt) APP=${_APP_EXE[OFFICE]};;
+		pdf) APP=${_APP_EXE[OKULAR]};;
+		png) APP=${_APP_EXE[IMAGE]};;
+		rtf) APP=${_APP_EXE[OFFICE]};;
+		svg) APP=${_APP_EXE[IMAGE]};;
+		txt) APP=${_APP_EXE[VIM]};;
+		wav) APP=${_APP_EXE[CLEM]};;
+		webm) APP=${_APP_EXE[MPV]};;
+		xls) APP=${_APP_EXE[OFFICE]};;
+		*) APP=?;;
+	esac
+
+	echo ${APP}
 }
 
 mark_unsupported () {
@@ -225,6 +280,7 @@ same_extension () {
 single_file_launch () {
 	local FN=${1}
 	local APP=$(get_app ${FN})
+	local APP_WIN=$(get_win ${FN})
 
 	[[ ${APP} == '?' ]] && exit_leave "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${FN}${RESET} of type: [$(file -b ${FN})]"
 
@@ -232,10 +288,12 @@ single_file_launch () {
 
 	_FILE_APP[${F}]=${APP}
 	_FILE_NDX[${F}]=1
+	_FILE_WIN[${F}]=${APP_WIN}
 
 	echo "_LIST:${_LIST}"
 	echo "_FILE_APP:${_FILE_APP}"
 	echo "_FILE_NDX:${_FILE_NDX}"
+	echo "_FILE_WIN:${_FILE_WIN}"
 
 	action_do 1
 }
@@ -368,6 +426,7 @@ NDX=0
 for F in ${(o)_RAWLIST};do
 	[[ -d ${F} ]] && continue # Skip any directories
 	APP=$(get_app ${F})
+	APP_WIN=$(get_win ${F})
 	[[ ${APP} == '?' && ${FILTER_UNSUPPORTED} == 'true' ]] && continue # Skip any unsupported
 	((NDX++))
 	if [[ ${MUSIC_DIRS} == 'true' ]];then
@@ -383,6 +442,7 @@ for F in ${(o)_RAWLIST};do
 	mark_unsupported ${NDX}
 	_FILE_APP[${F}]=${APP}
 	_FILE_NDX[${F}]=${NDX}
+	_FILE_WIN[${F}]=${APP_WIN}
 done
 
 if [[ -z ${_LOCAL_LIST} ]];then

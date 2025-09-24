@@ -20,6 +20,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/PATH.zsh
 source ${_LIB_DIR}/DATE.zsh
 source ${_LIB_DIR}/UTILS.zsh
@@ -82,7 +83,9 @@ _YTS_URL_LOG=/tmp/yts.url.log
 g_DISPLAY_KEY=''
 g_IND_FLIP=false
 g_LAST_CODE_UPD=?
-g_LTYPE=y
+g_LAST_SPEED=0
+g_LAST_STYPE=0
+g_LAST_FAV_TYPE=y
 g_MASK_NDX=1
 g_PID=?
 g_PREFER_LIVE=''
@@ -134,10 +137,11 @@ action_do () {
 	local RC1=0
 	local RC2=0
 	local SCAN_LIMIT=0
+	local SPEED=0
 	local TITLE=''
 	local URL=''
 	local WAIT=0
-	local L M S 
+	local L M S X
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -304,8 +308,8 @@ action_do () {
 			elif grep -qi 'error' <<<${LOG_LINE} 2>/dev/null;then
 				logit ${_YTS_DBG_LOG} "${0}: GOT ERROR:${LOG_LINE}"
 				ERR=${LOG_LINE}
-			elif grep -qi 'Fixing MPEG-TS' <<<${LOG_LINE} 2>/dev/null;then
-				logit ${_YTS_DBG_LOG} "${0}: GOT Fragmented completion:${LOG_LINE}"
+			elif grep -qi 'Fixing MPEG-TS\|FixupM3u8' <<<${LOG_LINE} 2>/dev/null;then
+				logit ${_YTS_DBG_LOG} "${0}: GOT Fragmention post-process:${LOG_LINE}"
 				ETA="100% of download completed"
 			elif grep -qi '100%' <<<${LOG_LINE} 2>/dev/null;then
 				logit ${_YTS_DBG_LOG} "${0}: GOT completion:${LOG_LINE}"
@@ -340,7 +344,8 @@ action_do () {
 			LINE_COLOR=''
 			if [[ -n ${ETA} && ${ETA_COMPLETE} == 'false' ]];then
 				ERROR_CNT=0 
-				download_indicator ${ETA}
+				SPEED=$(get_speed ${ETA})
+				download_indicator ${SPEED}
 				case ${ETA:l} in
 					*100*%*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;; # Stop parsing ETA
 					*mib/s*) LINE_COLOR='<w>';;
@@ -415,14 +420,6 @@ box_center () {
 	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT})
 }
 
-clean_author () {
-	local AUTHOR=${1}
-
-	[[ ${AUTHOR} =~ '[?]' ]] && AUTHOR=$(sed 's/[?].*//' <<< ${AUTHOR})
-
-	echo ${AUTHOR}
-}
-
 clean_title () {
 	local TITLE=${1}
 	local TITLE_LEN=${2:=${_MAX_TITLE}}
@@ -433,13 +430,11 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
-	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
 
 	STR=$(str_word_clip ${STR} ${TITLE_LEN})
-	#logit ${_YTS_DBG_LOG} "${0}: str_word_clip TITLE:${TITLE}"
+	logit ${_YTS_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"
 
 	TITLE=${STR}
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
@@ -516,7 +511,8 @@ dashed_line () {
 }
 
 download_indicator () {
-	local LINE=${@}
+	local SPEED=$(cut -d'|' -f1 <<<${1})
+	local STYPE=$(cut -d'|' -f2 <<<${1})
 	local L_OBJ="\\u23FA"
 	local M_OBJ="\\u25CF"
 	local R_OBJ="\\u2B24"
@@ -525,18 +521,44 @@ download_indicator () {
 	local -A OBJS_2=(1 ${R_OBJ} 2 ${M_OBJ} 3 ${L_OBJ})
 	local BORDER_COLOR=''
 	local DELAY=.3
+	local IND_X=$(( _ALERT_COORDS[X] + 1 ))
+	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
 	local L_SIDE="\\u2770"
 	local R_SIDE="\\u2771"
 	local MASK=""
-	local IND_X=$(( _ALERT_COORDS[X] + 1 ))
-	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
 	local OBJ_COLOR="${BOLD}${GREEN_FG}"
+	local SP_DIR=I
 
-	case ${LINE:l} in
-		*mib*) BORDER_COLOR="${BOLD}${MAGENTA_FG}";;
-		*kib*) BORDER_COLOR="${BOLD}${RED_FG}";;
-	esac
-	
+	[[ -z ${SPEED} ]] && SPEED=0
+	[[ -z ${g_LAST_SPEED} ]] && g_LAST_SPEED=0
+	[[ -z ${STYPE} ]] && STYPE=''
+	[[ -z ${g_LAST_STYPE} ]] && g_LAST_STYPE=''
+
+	if [[ ${SPEED} -gt ${g_LAST_SPEED} ]];then 
+		OBJ_COLOR="${BOLD}${GREEN_FG}"
+		SP_DIR=I # Increasing
+	elif [[ ${SPEED} -lt ${g_LAST_SPEED} ]];then 
+		OBJ_COLOR="${BOLD}${YELLOW_FG}"
+		SP_DIR=D # Decreasing
+	else
+		OBJ_COLOR="${BOLD}${WHITE_FG}"
+		SP_DIR=I # Stable
+	fi
+
+	if [[ ${STYPE} == 'M' && ${g_LAST_STYPE} == 'K' ]];then 
+		OBJ_COLOR="${BOLD}${GREEN_FG}"
+		SP_DIR=I # Increasing
+	elif [[ ${STYPE} == 'K' && ${g_LAST_STYPE} == 'M' ]];then 
+		OBJ_COLOR="${BOLD}${YELLOW_FG}"
+		SP_DIR=D # Decreasing
+	fi
+
+	if [[ ${SP_DIR} == 'I' ]];then 
+		BORDER_COLOR="${BOLD}${MAGENTA_FG}"
+	elif [[ ${SP_DIR} == 'D' ]];then 
+		BORDER_COLOR="${BOLD}${RED_FG}"
+	fi
+
 	OBJS=(${(kv)OBJS_1}) # Init
 
 	if [[ ${g_IND_FLIP} == 'true' ]];then
@@ -557,6 +579,9 @@ download_indicator () {
 	[[ ${g_MASK_NDX} -gt 3 ]] && g_MASK_NDX=1
 
  	tcup ${IND_X} ${IND_Y} && echo -n "${MASK}" && sleep ${DELAY}
+
+	g_LAST_SPEED=${SPEED}
+	g_LAST_STYPE=${STYPE}
 }
 
 download_select () {
@@ -693,20 +718,20 @@ fav_get () {
 			D_KEY=${L:gs/_/ /}
 			Q_KEY=$(cut -d: -f1 <<<${_FAV_LIST[${L}]})
 			Q_OPT=$(cut -d: -f2 <<<${_FAV_LIST[${L}]:l})
-			if [[ ${g_LTYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
+			if [[ ${g_LAST_FAV_TYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
 				O_COLOR=${RED_FG}
 				C_MSG=" <I>(Custom List)<N> "
-			elif [[ ${g_LTYPE} == 'y' && ${Q_OPT[1]} == 'y' ]];then
+			elif [[ ${g_LAST_FAV_TYPE} == 'y' && ${Q_OPT[1]} == 'y' ]];then
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
 				ENGINE=youtube
 				O_COLOR=${CYAN_FG}
 				C_MSG=''
-			elif [[ ${g_LTYPE} == 'r' && ${Q_OPT[1]} == 'r' ]];then
+			elif [[ ${g_LAST_FAV_TYPE} == 'r' && ${Q_OPT[1]} == 'r' ]];then
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
@@ -733,7 +758,7 @@ fav_get () {
 		msg_line_weight light
 
 		[[ ${_SEL_KEY} == 'd' ]] && fav_delete ${_SEL_VAL}
-		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && g_LTYPE=${_SEL_KEY}
+		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && g_LAST_FAV_TYPE=${_SEL_KEY}
 
 		if [[ ${_SEL_KEY} == '?' ]];then
 			g_QRY_ENGINE=${ENGINE}
@@ -882,21 +907,30 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'author' ]];then
-		if [[ ${g_SEARCH_TYPE} == 'general' ]];then
- 			TSTR=${(C)STR}
-		else
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Author:${STR} swapped with g_DISPLAY_KEY:${g_DISPLAY_KEY}"
-			TSTR=${g_DISPLAY_KEY:gs/_/ /}
-		fi
-		STR=${TSTR:=${STR}}
+		STR=${g_DISPLAY_KEY:gs/_/ /}
 	fi
-
-	#logit ${_YTS_DBG_LOG} "${0}: FIELD:${FIELD} STR:${STR}"
 
 	if [[ -n ${_FIELD_LEN[${FIELD}]} ]];then
 		echo -n ${STR[1,${_FIELD_LEN[${FIELD}]}]}
 	else
 		echo -n ${STR}
+	fi
+}
+
+get_speed () {
+	local SPEED=${@}
+	local TYPE=''
+
+	SPEED=$(sed -E 's/^.*at\s+//' <<<${SPEED:l} | cut -d' ' -f1 | sed 's/[/]s//')
+	[[ ${SPEED} =~ 'mib' ]] && TYPE=M || TYPE=K
+	SPEED=$(sed 's/.ib//' <<<${SPEED})
+
+	[[ ${SPEED} == '100%' ]] && SPEED=0 # Completed
+
+	if validate_is_number ${SPEED};then
+		echo "${SPEED}|${TYPE}"
+	else
+		echo "0|${TYPE}"
 	fi
 }
 
@@ -994,7 +1028,7 @@ last_code_update () {
 	fi
 }
 
-last_file () {
+last_file_downloaded () {
 	local ST=''
 	local FN=''
 	local IN=''
@@ -1023,7 +1057,7 @@ list_reset () {
 
 log_add () {
 	local NDX=${1}
-	local LF=$(last_file) # Filename|Inode
+	local LF=$(last_file_downloaded) # Filename|Inode
 	local FN=$(cut -d'|' -f1 <<<${LF}) # Filename
 	local IN=$(cut -d'|' -f2 <<<${LF}) # Inode
 	local TL=$(get_field title ${NDX}) # Title
@@ -1219,27 +1253,11 @@ post_process () {
 		[[ ${?} -eq 0 ]] && logit ${_YTS_DBG_LOG} "${0}: deleted ${F}"
 	done
 
-	LF=$(last_file) # Filename and Inode
+	LF=$(last_file_downloaded) # Filename and Inode
 	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
 	logit ${_YTS_DBG_LOG} "${0}: Last FN:${FN}"
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
-
-	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
-	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
-	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
-
-	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
-	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
-
-	if [[ ${FN} != ${NEW_FN} ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		logit ${_YTS_DBG_LOG} "${0}: Overwriting:${FN}"
-		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
-		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
-	fi
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
+	set_final_fn ${FN}
 }
 
 query_rumble () {
@@ -1280,7 +1298,7 @@ query_rumble () {
 	g_SEARCH_TYPE=channel
 	#Sort tag 
 	#&sort=date&section=sort 
-
+	 
 	if [[ ${g_PREFER_LIVE} == 'true' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 
@@ -1355,7 +1373,7 @@ query_rumble () {
 			g_SEARCH_TYPE=general
 
 			GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
-			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
+			QRY="https://rumble.com/search/all?q=${GEN_SEARCH}&sort=date&section=sort"
 			logit ${_YTS_URL_LOG} "${0}:${QRY}"
 			PG=$(wget -q -O - ${QRY})
 			if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
@@ -1397,11 +1415,15 @@ query_rumble () {
 
 	for V in ${_LOCAL_LIST};do
 		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${V})
-		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${V}) AUTHOR=$(clean_author ${AUTHOR})
+		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${V})
 		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${V}); TITLE=$(clean_title ${TITLE})
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${V}); URL="http://rumble.com${URL}"
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${V})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${V});	AGETIME="(${AGETIME:s/|/ /})"
+
+		[[ -z ${AGE} ]] && continue
+		[[ ${TIME:l} == 'live' ]] && continue
+		[[ ! ${TIME:l} =~ ':' ]] && continue
 
 		WORK_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done
@@ -1434,77 +1456,77 @@ query_youtube () {
 	if [[ ${g_STRICT} == 'true' ]];then # Strict requested
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER ACTIVE${RESET}"
 		g_PROXY_CMD="node ${_JS_SCRIPT} -s ${(qqq)g_QUERY_KEY}"
-	else
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER INACTIVE${RESET}"
-		g_PROXY_CMD="node ${_JS_SCRIPT} -a recent ${(qqq)g_QUERY_KEY}"
-	fi
-
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
-	fi
-
-	logit ${_YTS_DBG_LOG} "${0}:g_QUERY_KEY:${g_QUERY_KEY}, g_PROXY_CMD:${g_PROXY_CMD}"
-
-	_LOCAL_LIST=()
-
-	g_SEARCH_TYPE='general'
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
-
-	NDX=0
-	while read LINE;do
-		[[ ${LINE:l} =~ 'matched' ]] && DATA=true && continue
-
-		[[ ${LINE:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
-		[[ ${LINE:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
-
-		((NDX++))
-		[[ ${LINE:l} =~ 'rejected' ]] && _REJECTS[${NDX}]=true || _REJECTS[${NDX}]=false
-
-		STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
-		STR=${STR:s/Streamed //}
-
-		if [[ ${g_STRICT} == 'false' ]];then # Apply filtering to non strict results
-			HIT=false
-			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
-			TITLE=$(cut -d'|' -f3 <<<${LINE}) && TITLE=$(str_to_ascii ${TITLE})
-			[[ ${TITLE:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
-			[[ ${AUTHOR:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
-			[[ ${AUTHOR:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
-			[[ ${AUTHOR:gs/ //:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
-			if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
-				dbg "${0}:${LINENO} NON STRICT FILTERING, AUTHOR:${AUTHOR}, g_DISPLAY_KEY:${g_DISPLAY_KEY}, g_QUERY_KEY:${g_QUERY_KEY}, HIT:${HIT}"
-			fi
-			[[ ${HIT} == 'false' ]] && continue
-		fi
-		 
-		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}
-	done< <(eval ${g_PROXY_CMD})
-
-	[[ ${g_STRICT} == 'true' ]] && g_STRICT_MSG="$(total_rejects ${NDX})" || g_STRICT_MSG=''
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
-
-	[[ ${_SMCUP} == 'false' ]] && do_smcup
-
-	# Search failed
-	if ! arr_is_populated "${_LOCAL_LIST}";then
-		g_PROXY_CMD=$(str_trim ${(Q)g_PROXY_CMD})
-		if [[ ${g_STRICT} == 'true' ]];then
-			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<I>Strict filter is active<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
 		else
-			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER INACTIVE${RESET}"
+			g_PROXY_CMD="node ${_JS_SCRIPT} -a recent ${(qqq)g_QUERY_KEY}"
 		fi
-		return 1
-	fi
 
-	for F in ${_LOCAL_LIST};do
-		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${F})
-		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
-		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
-		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
-			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
-				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en)
+		if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+			dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
+		fi
+
+		logit ${_YTS_DBG_LOG} "${0}:g_QUERY_KEY:${g_QUERY_KEY}, g_PROXY_CMD:${g_PROXY_CMD}"
+
+		_LOCAL_LIST=()
+
+		g_SEARCH_TYPE='general'
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
+
+		NDX=0
+		while read LINE;do
+			[[ ${LINE:l} =~ 'matched' ]] && DATA=true && continue
+
+			[[ ${LINE:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
+			[[ ${LINE:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
+
+			((NDX++))
+			[[ ${LINE:l} =~ 'rejected' ]] && _REJECTS[${NDX}]=true || _REJECTS[${NDX}]=false
+
+			STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
+			STR=${STR:s/Streamed //}
+
+			if [[ ${g_STRICT} == 'false' ]];then # Apply filtering to non strict results
+				HIT=false
+				AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
+				TITLE=$(cut -d'|' -f3 <<<${LINE}) && TITLE=$(str_to_ascii ${TITLE})
+				[[ ${TITLE:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
+				[[ ${AUTHOR:l} =~ ${g_DISPLAY_KEY:l} ]] && HIT=true
+				[[ ${AUTHOR:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
+				[[ ${AUTHOR:gs/ //:l} =~ ${g_QUERY_KEY:l} ]] && HIT=true
+				if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
+					dbg "${0}:${LINENO} NON STRICT FILTERING, AUTHOR:${AUTHOR}, g_DISPLAY_KEY:${g_DISPLAY_KEY}, g_QUERY_KEY:${g_QUERY_KEY}, HIT:${HIT}"
+				fi
+				[[ ${HIT} == 'false' ]] && continue
+			fi
+			 
+			[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}
+		done< <(eval ${g_PROXY_CMD})
+
+		[[ ${g_STRICT} == 'true' ]] && g_STRICT_MSG="$(total_rejects ${NDX})" || g_STRICT_MSG=''
+
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
+
+		[[ ${_SMCUP} == 'false' ]] && do_smcup
+
+		# Search failed
+		if ! arr_is_populated "${_LOCAL_LIST}";then
+			g_PROXY_CMD=$(str_trim ${(Q)g_PROXY_CMD})
+			if [[ ${g_STRICT} == 'true' ]];then
+				msg_box -H2 -p -PK "<r>Query returned no rows<N>|<I>Strict filter is active<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
+			else
+				msg_box -H2 -p -PK "<r>Query returned no rows<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
+			fi
+			return 1
+		fi
+
+		for F in ${_LOCAL_LIST};do
+			AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${F})
+			AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${F})
+			TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
+			if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
+				if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
+					TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en)
 			fi
 		fi
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})
@@ -1516,6 +1538,29 @@ query_youtube () {
 	_LOCAL_LIST=(${WORK_LIST})
 
 	return 0
+}
+
+set_final_fn () {
+	local FN=${1}
+	local NEW_FN=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
+
+	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
+	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
+	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
+
+	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
+	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
+
+	if [[ ${FN} != ${NEW_FN} ]];then
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
+		logit ${_YTS_DBG_LOG} "${0}: Overwriting:${FN}"
+		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
+		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
+	fi
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
 }
 
 set_item_color () {

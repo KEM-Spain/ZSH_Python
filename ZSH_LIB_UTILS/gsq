@@ -256,7 +256,7 @@ if [[ ${DUMPLIST} == 'true' ]];then
 fi
 
 # Set headings
-list_set_header 'printf "Found:${WHITE_FG}%-d${RESET}  ${WHITE_FG}matching values in gsettings database${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${SELECTED_COUNT}'
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} matching values for ${WHITE_FG}${ITALIC}${SEARCHTERM}${RESET} in gsettings database  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${SELECTED_COUNT}'
 list_set_header 'printf " "'
 list_set_header 'printf "%5s %-${_MAX_FIELD}s %-${_MAX_FIELD}s %-${_MAX_FIELD}s" " " ${_TYPE_LABELS[u]} ${_TYPE_LABELS[k]} ${_TYPE_LABELS[v]}'
 list_set_header 'printf "%5s %-${_MAX_FIELD}s %-${_MAX_FIELD}s %-${_MAX_FIELD}s" " " "$(str_unicode_line ${_MAX_FIELD})" "$(str_unicode_line ${_MAX_FIELD})" "$(str_unicode_line ${_MAX_FIELD})"'

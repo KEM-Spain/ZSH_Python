@@ -1,0 +1,72 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+#RS_OPTS+=('-vvv') # Verbose
+RS_OPTS+=('-a') # Archive
+RS_OPTS+=('-z') # Compress
+RS_OPTS+=('--delete') # Delete if original no longer exists
+RS_OPTS+=('--inplace') # Update files directly (faster - no building temp copies)
+RS_OPTS+=('--numeric-ids') # No translation of UID,GID - needed for flexible restores
+RS_OPTS+=('--delete-excluded') # Exluded here; deleted there
+RS_OPTS+=('--ignore-errors') # Continue through errors
+
+#--Exclude settings for rsync--
+RS_FLTR='--filter="merge ./rsync-filter.rules"'
+
+/bin/rm -rf ./source
+/bin/rm -rf ./backup
+
+mkdir -p ./source/dir_1
+touch ./source/dir_1/file_1
+touch ./source/dir_1/file_2
+mkdir -p ./source/dir_2
+mkdir -p ./source/dir_2/dir_2_1
+touch ./source/dir_2/dir_2_1/file_1
+touch ./source/dir_2/dir_2_1/file_2
+mkdir -p ./source/dir_2/dir_2_2
+touch ./source/dir_2/dir_2_2/file_1
+touch ./source/dir_2/dir_2_2/file_2
+mkdir -p ./source/dir_3
+mkdir -p ./source/dir_3/dir_3_1
+touch ./source/dir_3/dir_3_1/file_1
+touch ./source/dir_3/dir_3_1/file_2
+mkdir -p ./source/dir_3/dir_3_2
+touch ./source/dir_3/dir_3_2/file_1
+touch ./source/dir_3/dir_3_2/file_2
+mkdir -p ./source/dir_3/dir_3_3
+touch ./source/dir_3/dir_3_3/file_1
+touch ./source/dir_3/dir_3_3/file_2
+mkdir -p ./source/dir_4
+mkdir -p ./source/dir_4/dir_4_1
+touch ./source/dir_4/dir_4_1/file_1
+touch ./source/dir_4/dir_4_1/file_2
+mkdir -p ./source/dir_4/dir_4_2
+touch ./source/dir_4/dir_4_2/file_1
+touch ./source/dir_4/dir_4_2/file_2
+mkdir -p ./source/dir_4/dir_4_3
+touch ./source/dir_4/dir_4_3/file_1
+touch ./source/dir_4/dir_4_3/file_2
+mkdir -p ./source/dir_4/dir_4_4
+touch ./source/dir_4/dir_4_4/file_1
+touch ./source/dir_4/dir_4_4/file_2
+
+CMD="rsync --debug=FILTER ${RS_OPTS} ${RS_FLTR} ./source/ backup"
+echo "${CMD}";read
+eval ${CMD} 2>&1 | mypager
+tree ./backup | mypager

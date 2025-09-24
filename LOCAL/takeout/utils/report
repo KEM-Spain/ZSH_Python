@@ -1,11 +1,22 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl -w
 use utf8;
 use open ':encoding(utf8)';
 binmode(STDOUT, ":utf8");
 
-open (my $file, '>', 'format.dat') or die "Could not open file: $!";
-my $output = `manage_db -s`; 
+my $ARG = $ARGV[0] || "null";
+my $output = '';
+
+open (my $file, '>', 'format.dat') or die "Could not open file for writing: $!";
 die "$!" if $?; 
+
+if ($ARG eq 'noun') {
+	$output = `nouns`; 
+} elsif ($ARG eq 'verb') {
+	$output = `verbs`; 
+} else {
+	$output = `manage_db -s`; 
+}
+
 print $file $output;
 
 open(FILE, "<format.dat");
@@ -13,9 +24,10 @@ my @lines = <FILE>;
 close(FILE);
 
 foreach (@lines) {
-    chop;
-    ($word, $trans) = (split(/\|/));
-	 write();
+	 print
+	 #    chop;
+	 #($word, $trans) = (split(/\|/));
+	 #write();
 }
 
 format =
@@ -27,7 +39,7 @@ format STDOUT_TOP =
   @||||||||||||||||||||||||||  Pg @<
   "Spanish Word Translations",    $%
 
-  Word                        Translation     
+  Spanish                     English     
   -------------------------   -------------------------
 .
 

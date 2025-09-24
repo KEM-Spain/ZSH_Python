@@ -133,7 +133,9 @@ RETRIES=50
 while true;do
 	((NDX++))
 	[[ ${NDX} -gt ${RETRIES} ]] && break
-	WIN_INFO=$(wmctrl -l | grep -i ${APP_TAG} | sort -r | head -1 | tr -s '[:space:]')
+	CNT=$(pgrep -c -i ${APP_TAG})
+	[[ ${CNT} -gt 1 ]] && logit ${_LOG} "${APP_TAG} returned ${CNT} processes - returning most recent window"
+	WIN_INFO=$(wmctrl -lx | grep -m1 -i ${APP_TAG} | sort -r | head -1 | tr -s '[:space:]')
 	if [[ -n ${WIN_INFO} ]];then
 		WIN_ID=$(cut -d' ' -f1 <<<${WIN_INFO})
 		WIN_TITLE=$(cut -d' ' -f3- <<<${WIN_INFO})
@@ -143,6 +145,7 @@ while true;do
 done
 
 if [[ -n ${WIN_ID} ]];then
+	logit ${_LOG} "Returning ${WIN_ID} for ${APP_TAG}"
 	printf "%s|%d|%s" ${WIN_ID} ${WIN_ID} ${WIN_TITLE}
 	return 0
 else

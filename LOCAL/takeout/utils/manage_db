@@ -1,0 +1,261 @@
+#!/usr/bin/env zsh
+RESET="\033[m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+BLUE_FG="\033[34m"
+MAGENTA_FG="\033[35m"
+CYAN_FG="\033[36m"
+WHITE_FG="\033[37m"
+
+# Constants
+_DEFAULT_DB=/home/kmiller/Code/LOCAL/takeout/.spanish_vocab.db
+_DEFAULT_TABLE=spanish_vocab
+
+# Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+
+for D in ${=_DEPS_};do
+	if [[ -e ${_LIB_DIR}/${D} ]];then
+		source ${_LIB_DIR}/${D}
+	else
+		echo "Cannot source:${_LIB_DIR}/${D} - not found"
+		exit 1
+	fi
+done
+
+#Functions
+create_db () {
+	local DB=${1}
+	local TABLE=${2}
+	local RC
+
+	[[ -z ${DB} ]] && echo "${0}: missing parameter db" && return 1
+	[[ -z ${TABLE} ]] && echo "${0}: missing parameter table" && return 1
+
+	if [[ -e ${DB} ]];then
+		msg_box -p -PP  "Creating NEW ${DB} database|$(str_unicode_line 40)| |This will <r>delete<N> <w><I>ALL<N> existing data<N>"
+		[[ ${_MSG_KEY} == "y" ]] && rm -f ${DB} || exit_leave "${WHITE_FG}Operation cancelled${RESET}"
+	fi
+
+	sqlite3 ${DB} <<____END_SQL
+	create table if not exists ${TABLE}
+	(	word varchar(20) not null,
+		trans varchar(20) not null,
+		primary key(word)
+	);
+____END_SQL
+
+	return ${?}
+}
+
+del_db_row () {
+	local WORD=${1}
+	local TABLE=${2}
+	local RC
+
+	[[ -z ${WORD} ]] && echo "${0}: missing parameter word" && return 1
+	[[ -z ${TABLE} ]] && echo "${0}: missing parameter table" && return 1
+
+	echo "${CYAN_FG}delete from ${TABLE} where word = ${WORD}${RESET}"
+
+	sqlite3 ${_DEFAULT_DB} <<____END_SQL
+	delete from ${TABLE} where word = "${WORD}";
+____END_SQL
+
+	return ${?}
+}
+
+db_get_all () {
+	local RC
+	local TABLE=${1}
+
+	[[ -z ${TABLE} ]] && echo "${0}: missing parameter table" && return 1
+
+	#echo "${CYAN_FG}select * from ${TABLE};${RESET}"
+
+	sqlite3 ${_DEFAULT_DB} <<____END_SQL
+	select * from ${TABLE} order by word;
+____END_SQL
+
+	return ${?}
+}
+
+db_count () {
+	local RC
+	local TABLE=${1}
+
+	[[ -z ${TABLE} ]] && echo "${0}: missing parameter table" && return 1
+
+	echo "${CYAN_FG}Counting rows in ${TABLE};${RESET}"
+
+	sqlite3 ${_DEFAULT_DB} <<____END_SQL
+	select count(word) from ${TABLE};
+____END_SQL
+
+	return ${?}
+}
+
+get_db_row () {
+	local WORD=$1
+	local TABLE=${2}
+	local RC
+
+	[[ -z ${WORD} ]] && echo "${0}: missing parameter word" && return 1
+	[[ -z ${TABLE} ]] && echo "${0}: missing parameter table" && return 1
+
+	echo "${CYAN_FG}select * from ${TABLE} where word = ${WORD};${RESET}"
+
+	sqlite3 ${_DEFAULT_DB} <<____END_SQL
+	select * from ${TABLE} where word = "${WORD}";
+____END_SQL
+
+	return ${?}
+}
+
+db_import () {
+	local IMPORT_FILE=${1}
+	local TABLE=${2}
+	local RC
+
+	[[ -z ${IMPORT_FILE} ]] && echo "${0}: missing import file" && return 1
+	[[ -z ${TABLE} ]] && echo "${0}: missing destination table" && return 1
+
+	sqlite3 ${_DEFAULT_DB} <<-END_SQL
+	.separator ''
+	select 'ROWS_BEFORE_IMPORT:',
+	count(word) from ${TABLE};
+	END_SQL
+
+	(
+	sqlite3 ${_DEFAULT_DB} <<-END_SQL
+	.separator '|'
+	.import ${IMPORT_FILE} ${TABLE}
+	END_SQL
+	) 2>&1 >/dev/null | grep -vi unique
+
+	sqlite3 ${_DEFAULT_DB} <<-END_SQL
+	.separator ''
+	select ' ROWS_AFTER_IMPORT:',
+	count(word) from ${TABLE};
+	END_SQL
+
+	return ${?}
+}
+
+#--Begin GetOpts--
+RESET="\033[m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+
+local SCRIPT=${0:t}
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTRING
+	local LETTER_OPT
+	local O 
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTRING+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTRING}
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		t) echo "${WHITE_FG}<TABLE>${RESET}";;
+		a|u|d) echo "${WHITE_FG}<IMPORT_FILE>${RESET}";;
+	esac
+}
+
+usage () {
+	tabs 5
+	local OPTS=$(parse_opts ${OPTSTR})
+	local -a PENDING_MSGS=(${@})
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} [${OPTS}] $(opt_type f)\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-c${RESET} Create new database"
+	echo -e "${WHITE_FG}-a${RESET} Append data to existing database from $(opt_type a) $(opt_type t)"
+	echo -e "${WHITE_FG}-u${RESET} Update data in existing database from $(opt_type u) $(opt_type t)"
+	echo -e "${WHITE_FG}-d${RESET} Delete data in existing database from $(opt_type d) $(opt_type t)"
+	echo -e "${WHITE_FG}-i${RESET} Show current info for DB,TABLE,DATA"
+	echo -e "${WHITE_FG}-s${RESET} Select data from existing database"
+	echo -e "\n${WHITE_FG}DESC${RESET}:Manage the spanish vocabulary database\n"
+	exit_leave ${PENDING_MSGS}
+}
+
+OPTSTR=":HDcaudis"
+
+CREATE=false
+APPEND=false
+UPDATE=false
+DELETE=false
+SELECT=false
+SHOW_INFO=false
+OPTIND=0
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) set_dbg_level;;
+     a) ACTION=APPEND;;
+     c) ACTION=CREATE;;
+     d) ACTION=DELETE;;
+     i) SHOW_CURRENT_DB=true;;
+     u) ACTION=UPDATE;;
+     s) ACTION=SELECT;;
+     :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${SCRIPT}: unknown option -${OPTARG}"; usage;;
+	esac
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+#Execution
+#[[ ${_DEBUG} -gt 0 ]] && do_smcup
+
+[[ ${OPTIND} -eq 1 ]] && usage "${RED_FG}No action specified${RESET}"
+VERIFY_IMPORT_FILE=false
+
+case ${ACTION} in
+	APPEND) IMPORT_FILE=${1:=null};TABLE=${2:=${_DEFAULT_TABLE}};VERIFY_IMPORT_FILE=true;;
+	CREATE) DB=${1:=${_DEFAULT_DB}};TABLE=${2:=${_DEFAULT_TABLE}};;
+	UPDATE) IMPORT_FILE=${1:=null};TABLE=${2:=${_DEFAULT_TABLE}};VERIFY_IMPORT_FILE=true;;
+	DELETE) IMPORT_FILE=${1:=null};TABLE=${2:=${_DEFAULT_TABLE}};VERIFY_IMPORT_FILE=true;;
+	SELECT) TABLE=${2:=${_DEFAULT_TABLE}};;
+	*) ACTION=NONE;;
+esac
+
+[[ ${VERIFY_IMPORT_FILE} == 'true' && ${IMPORT_FILE} == 'null'  ]] && usage "Import file required"
+
+DB=${DB:=${_DEFAULT_DB}} #if DB was not set
+TABLE=${TABLE:=${_DEFAULT_TABLE}} #if TABLE was not set
+
+if [[ ${SHOW_CURRENT_DB} == 'true' ]];then
+	echo "Current DB:${DB}"
+	echo "Current Table:${TABLE}"
+	db_count ${TABLE}
+	case ${ACTION} in
+		APPEND|UPDATE|DELETE) echo "Current Import file:${IMPORT_FILE}";;
+	esac
+	exit_leave
+fi
+
+
+case ${ACTION} in
+	APPEND) db_import ${IMPORT_FILE} ${TABLE};;
+	CREATE) create_db ${_DEFAULT_DB} ${TABLE};;
+	UPDATE) echo "NOT IMPLEMENTED";;
+	DELETE) echo "NOT IMPLEMENTED";;
+	SELECT) db_get_all ${TABLE};;
+esac
+
+exit_leave

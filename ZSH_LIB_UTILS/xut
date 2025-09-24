@@ -162,7 +162,6 @@ ___EOF
 		local WIN
 		local W
 
-		logit "Getting current WID..."
 		for W in ${WDW_LIST};do
 			WIN=$(echo ${W} | cut -d' ' -f1)
 			xprop -id ${WIN} | grep -qi focused
@@ -182,7 +181,7 @@ read -r -d '' DESC<<EOF
 Execute system utilities
 \t------------------------
 $(for K in ${(ok)_UTILS_DESC};do
-printf "${WHITE_FG}%-14s${RESET} %s\n" ${K} ${_UTILS_DESC[${K}]}
+printf "\t${WHITE_FG}%-6s${RESET} %s\n" ${K} "$(cut -d: -f2 <<<${_UTILS_DESC[${K}]})"
 done)
 EOF
 

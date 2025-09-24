@@ -30,16 +30,30 @@ validate_is_list_item () {
 }
 
 validate_is_number () {
-	local NDX=${1}
+	local ARG=${1}
+	local LEFT=0
+	local RIGHT=0
 
 	[[ ${#} -eq 0 ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARG:${ARG}"
 
-	if [[ -n ${NDX} && ${NDX} == ${NDX%%[!0-9]*} ]];then
-		return 0
+	[[ ${ARG} =~ '^[-]' || ${ARG} =~ '^[+]' ]] && ARG=${ARG[2,-1]}
+
+	if [[ ${ARG} =~ '[.]' ]];then
+		LEFT=$(cut -d'.' -f1 <<<${ARG})
+		RIGHT=$(cut -d'.' -f2 <<<${ARG})
+		if [[ ${LEFT} == ${LEFT%%[!0-9]*} && ${RIGHT} == ${RIGHT%%[!0-9]*} ]];then
+			return 0
+		else
+			return 1
+		fi
 	else
-		return 1
+		if [[ ${ARG} == ${ARG%%[!0-9]*} ]];then
+			return 0
+		else
+			return 1
+		fi
 	fi
 }
 

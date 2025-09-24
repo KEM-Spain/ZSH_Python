@@ -276,6 +276,9 @@ ___EOF
 perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
 }
 
+${E_WHITE_FG}Delete spaces in text between quotes${E_RESET}
+awk 'BEGIN{FS=OFS="\""} {for(i=2;i<NF;i+=2)gsub(" ","_",$i)} 1' file
+
 ${E_WHITE_FG}Reformat text with long lines${E_RESET}
 fold -w120 -s <(sed -e 's/^ *//g' -e 's/\t/ /g' -e 's/  / /g' zsh_redir.txt)
 

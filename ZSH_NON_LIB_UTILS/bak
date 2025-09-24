@@ -456,8 +456,8 @@ while getopts ${OPTSTR} OPTION;do
      b) BACKUP_LOCAL=true;;
      r) DEV_RELEASE=true;;
      s) SYNC_PROD_BAK=true;;
-     :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
-    \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+     :) print -u2 "${WHITE_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${WHITE_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done

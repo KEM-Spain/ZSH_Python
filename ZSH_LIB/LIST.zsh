@@ -621,12 +621,12 @@ list_search_new () {
 	local PAGE=${1}
 	local HDR=''
 	local HDR_LEN=0
+	local HEIGHT=8
 	local H_CTR=0
-	local HEIGHT=7
 	local PROMPT=''
 	local ROW=0
-	local V_CTR=0
 	local SEARCHTERM=''
+	local V_CTR=0
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
@@ -636,7 +636,7 @@ list_search_new () {
 	_TARGET_PAGE=''
 
 	HDR="<m>$(str_unicode_line 12) List Search (Next:<w>><m>, Prev:<w><<m>) $(str_unicode_line 12)<N>"
-	HDR=$(msg_nomarkup ${HDR});HDR_LEN=${#HDR}
+	HDR_LEN=$(msg_nomarkup ${HDR});HDR_LEN=${#HDR}
 
 	V_CTR=$(( _MAX_ROWS/2 - 4 )) # Vertical center
 	H_CTR=$(center -h${HDR_LEN}) # Horiz center
@@ -646,7 +646,7 @@ list_search_new () {
 		tput ech $(( ${#HDR} + 3 ))
 	done
 
-	msg_box -x${V_CTR} -y${H_CTR} -w${HL} "${HDR}" # Display header
+	msg_box -x$(( V_CTR - 1 )) -y${H_CTR} -h${HEIGHT} "${HDR}" # Display header
 
 	tcup $(( V_CTR + 4 )) $(( H_CTR + 2 )) # Position editor
 	PROMPT="${E_RESET}${E_BOLD}Find${E_RESET}:"

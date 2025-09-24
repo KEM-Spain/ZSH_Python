@@ -19,9 +19,8 @@ alias sc='sudo systemctl'
 alias spot='/usr/local/bin/system/launchers/run_spotify >/dev/null 2>&1 &'
 alias t='tz'
 alias templates='ls /usr/local/etc/*template'
-alias ten='trans -no-pager es:en'
-alias tes='trans -no-pager en:es'
-alias wim='mono /usr/local/src/RemoteMouse/RemoteMouse.exe >/dev/null 2>&1 &'
+alias te='trans -no-pager es:en'
+alias ts='trans -no-pager en:es'
 
 # misc
 alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"
@@ -99,8 +98,11 @@ alias ....='cd ../../..'
 alias ...='cd ../..'
 alias ..='cd ..'
 
-alias .z='cd /home/kmiller/.zsh'
-alias .zc='cd /home/kmiller/.zsh/completions'
+alias .c='cd ~/.config'
+alias .l='cd ~/.local'
+alias .s='cd ~/.local/share'
+alias .z='cd ~/.zsh'
+alias .zc='cd ~/.zsh/completions'
 
 alias B="cd /media/kmiller/KEM_Backup/$(hostname)_RSYNC2"
 alias C='cd ~/Downloads/Torrents/Completed'

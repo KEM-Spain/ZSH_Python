@@ -18,7 +18,7 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-# set as login shell
+# Set as login shell
 set -o login
 
 # Constants
@@ -34,7 +34,6 @@ _WIFI_PREF="WiFi_OliveNet-Casa 7_5G"
 _BATT_LIMIT=95
 _CAL_LINES=9
 _TERMS=$(terms -c)
-_TERM_MARKER=/tmp/term.init
 _THIS_WINDOW=$(xut wid | cut -d' ' -f1)
 
 # Declarations
@@ -66,10 +65,9 @@ export DISPLAY=:0
 _cursor_row () {
 	local ROW
 
-	echo -ne "\033[6n" > /dev/tty
-	read -t 1 -s -d 'R' ROW < /dev/tty
-	ROW="${ROW# #*\[}"
-	ROW="${ROW%;*}"
+	echo -ne "\033[6n" > /dev/tty # Voodoo to grab row
+	read -t1 -s -d'R' ROW < /dev/tty # Parse usable bit
+	ROW=$(cut -d';' -f1 <<<${ROW} | tr -dc '0-9') # Split and strip non digits (escape seq etc.)
 	((ROW--))
 	echo ${ROW}
 }
@@ -250,13 +248,15 @@ add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
 
 # Execution
-WIN_ID=$(wmctrl -lp | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
-if [[ ! -e ${_TERM_MARKER} ]];then
-	if [[ ${_TERMS} -eq 1 ]];then
+if [[ ${_TERMS} -eq 1 ]];then
+		WIN_ID=$(wmctrl -lp | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
+		if [[ -n ${WIN_ID} ]];then
 			wmctrl -i -r ${WIN_ID} -b add,maximized_vert,maximized_horz
-			wmctrl -i -a ${WIN_ID}
-	fi
+		else
+			echo "Unable to aquire WIN_ID for terminal"
+		fi
 fi
+
 if [[ ${_TERMS} -eq 1 ]];then
 	INTERACTIVE=''
 	if [[ -o interactive ]]; then
@@ -306,6 +306,7 @@ if [[ ${_TERMS} -eq 1 ]];then
 		sudo iwconfig wlo1 power off # Turn off power mgt for wifi
 
 		[[ ${CAM_DEFAULT} == 'off' ]] && sut cam off # Kill cam - show status
+		C_POS=$(_cursor_row)
 
 		# show calendar
 		if [[ ${_TERMS} -eq 1 ]];then
@@ -324,7 +325,17 @@ if [[ ${_TERMS} -eq 1 ]];then
 		remind # post any reminders
 
 		xdotool mousemove $((1920/2)) $((1080/2)) # center the mouse  pointer
+
+		PID=$(ps aux | grep -v grep | grep -i enpass)
+		if [[ ${?} -ne 0 ]];then
+			wmctrl -i -a ${WIN_ID} # Focus
+			run_enpass
+		else
+			tput cup ${C_POS} 0 # Cursor position following last info 
+			echo "Enpass is running..."
+			tput cup $(tput lines) 0 # Cursor last line
+		fi
 	fi
 fi
-touch ${_TERM_MARKER}
-wmctrl -i -a ${WIN_ID}
+
+[[ ${_TERMS} -eq 1 && -n ${WIN_ID} ]] && wmctrl -i -a ${WIN_ID} # Focus

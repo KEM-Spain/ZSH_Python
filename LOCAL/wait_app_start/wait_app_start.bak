@@ -8,13 +8,15 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Constants
 _LOG=/tmp/${0:t}.log
+_SCRIPT=${0:t}
 _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
-typeset -a _APPS_TO_SCAN=()
-typeset -a _APPS_NON_DOCK=(chrome enpass)
-typeset -a _BLACKLIST=(pyts org.gnome.terminal libreoffice)
+typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
 typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
+typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
+typeset -a _APPS_TO_SCAN=()
+typeset -a _BLACKLIST=(pyts org.gnome.terminal libreoffice)
 
 # Functions
 apps_to_scan () {
@@ -45,7 +47,6 @@ get_val () {
 		if [[ ${L} =~ '[=]' && ${L:l} =~ ${VAR:l} ]];then
 			VAL=$(cut -d= -f2 <<< ${L})
 			[[ ! ${VAL:l} =~ ${SEARCHTERM:l} ]] && continue # Ignore non SEARCHTERM
-			logit ${_LOG} "KEY:${KEY} VAR:${VAR} VAL:${VAL}"
 		fi
 	done
 
@@ -78,87 +79,104 @@ is_blacklisted () {
 	return 1
 }
 
+is_maximized () {
+	local APP=${1}
+	local ID=''
+
+	ID=$(wmctrl -lp | grep -i ${APP})
+
+	if [[ -n ${ID} ]];then
+		ID=$(tr -s '[:space:]' <<<${ID} | cut -d' ' -f1)
+
+		xwininfo -wm -id ${ID:s/0x0/0x/} 2>/dev/null | grep -qi 'maximized'
+		return ${?}
+	else
+		return 1
+	fi
+}
+
 scan_string () {
 	local LINE=${@}
+	local APP=''
 	local F
 
 	for F in ${_APPS_TO_SCAN};do
 		grep -q -i ${F:l} <<<${LINE:l}
 		if [[ ${?} -eq 0 ]];then
-			echo ${F:s/.desktop//}
+			APP=${F:s/.desktop//}
+			if is_blacklisted ${APP};then
+				APP=''
+			else
+				break
+			fi
 		fi
 	done
-}
-
-win_focus () {
-	local APP=${1}
-	local WIN_INFO=''
-	local WID=''
-
-	WIN_INFO=$(win_id ${APP})
-
-	if [[ -n ${WIN_INFO} ]];then
-		WID=$(cut -d '|' -f1 <<<${WIN_INFO})
-		logit ${_LOG} "Setting focus to ${APP} window:${WID}"
-		wmctrl -i -a ${WID}
-	else
-		logit ${_LOG} "Unable to get WIN_INFO for ${APP}"
-	fi
+	echo ${APP}
 }
 
 win_maximize () {
 	local APP=${1}
 
+	echo "${0}: Calling win_max with:${APP}" >> /tmp/was.dbg
+
 	win_max ${APP}
-	if [[ ${?} -eq 0 ]];then
-		logit ${_LOG} "Maximizing ${APP} window"
-	else
-		logit ${_LOG} "Unable to maximize ${APP}"
-	fi
+	case ${?} in
+		0) logit ${_LOG} "Maximized ${APP} window";;
+		1) logit ${_LOG} "Unable to maximize ${APP}";;
+		2) logit ${_LOG} "${APP} window was already maximized";;
+	esac
 }
 
 # Execution
 _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
-_APPS_TO_SCAN+=${_APPS_NON_DOCK}
+_APPS_TO_SCAN+=(${_APPS_NON_DOCK})
 
 logit ${_LOG} "Started scan for new windows"
 
 GOT_SIG=false
+GOT_DICT_ENTRY=false
 VAL=''
 STR=''
 while IFS= read -ru3 LINE;do
-	[[ ${LINE:l} =~ 'signal' ]] && GOT_SIG=true
+	echo "LINE: ${LINE}" >> /tmp/was.dbg
 
-	if [[ ${GOT_SIG} == 'true' && ${LINE:l} =~ 'array of bytes' ]];then
-		STR=$(scan_string ${LINE})
-		GOT_SIG=false
+	STR='' && APP='' && VAL=''
+
+	if [[ ${LINE:l} =~ 'method' ]];then
+		VAL=$(get_val method path window ${LINE})
 	fi
 
-	[[ ${LINE:l} =~ 'method' ]] && VAL=$(get_val method path window ${LINE})
 
-	if [[ ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
-		logit ${_LOG} "GOT NEW TERMINAL WINDOW"
-		win_maximize terminal
-		win_focus terminal
-		VAL=''
+	[[ ${LINE:l} =~ 'signal' ]] && GOT_SIG=true
+
+	[[ ${LINE:l} =~ 'dict entry' ]] && GOT_DICT_ENTRY=true && continue # Go to next line
+
+	if [[ -n ${VAL} && ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
+		TERMS=$(terms -c)
+		if [[ ${TERMS} -gt 1 ]];then
+			logit ${_LOG} "GOT NEW TERMINAL WINDOW"
+			win_maximize terminal
+		fi
 	else
+		[[ ${GOT_SIG} == 'true' && ${LINE:l} =~ 'array of bytes' ]] && STR=$(scan_string ${LINE}) && GOT_SIG=false
+
+		if [[ ${GOT_DICT_ENTRY} == 'true' && ${LINE:l} =~ 'string' && ${LINE:l} =~ '\.desktop' ]];then
+			# TODO: only call on first instance and must contain .desktop
+			echo "Calling scan_string with:${LINE}" >> /tmp/was.dbg
+			STR=$(scan_string ${LINE}) && GOT_DICT_ENTRY=false
+		fi
+
 		if [[ -n ${STR} ]];then
 			APP=${STR}
-			logit ${_LOG} "GOT APP:${APP}"
-
-			if is_blacklisted ${APP};then
-				logit ${_LOG} "APP:${APP} is blacklisted"
-				STR=''
-			else
+			[[ -n ${_APP_TAGS[${APP}]} ]] && APP=${_APP_TAGS[${APP}]}
+			if ! is_maximized ${APP};then
+				logit ${_LOG} "-- GOT APP:${APP} --"
 				WT=$(has_waittime ${APP})
 				if [[ ${WT} -ne 0 ]];then
-					logit ${_LOG} "Waiting ${WT} for APP:${APP} to launch"
+					logit ${_LOG} "Waiting ${WT} seconds for APP:${APP} to launch"
 					sleep ${WT}
 				fi
-
 				win_maximize ${APP}
-				win_focus ${APP}
-				STR=''
 			fi
 		fi
 	fi

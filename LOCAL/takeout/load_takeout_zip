@@ -37,15 +37,19 @@ if [[ -n ${OLD_VOCAB} ]];then
 fi
 
 ext ${ZIP}
-parse_gmail_mbox
+./utils/parse_gmail_mbox
 
 VOCAB_DATA=$(find . -type f -name '*vocab.dat')
 if [[ -n ${VOCAB_DATA} ]];then
 	echo "Appending ${WHITE_FG}${VOCAB_DATA}${RESET} to database"
-	manage_db -a ${VOCAB_DATA}
+	./utils/manage_db -a ${VOCAB_DATA}
+	mv ${VOCAB_DATA} ./utils
 fi
 
 if [[ -f MBOX.clean ]];then
 	echo "Clearing MBOX.clean"
 	rm -f MBOX.clean
 fi
+
+ZIPDIR=("${(f)$(find -type d -name 'takeout*')}")
+[[ -n ${ZIPDIR} ]] && /bin/rm -rf ${ZIPDIR}

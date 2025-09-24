@@ -1,0 +1,26 @@
+#!/usr/bin/zsh
+NDX=0
+LIST=("${(f)$(find . -type f -name '*vocab.dat')}")
+if [[ -z ${LIST} ]];then
+	echo "No vocabulary file(s) found"
+	exit 1
+elif [[ ${#LIST} -eq 1 ]];then
+	echo "${LIST}"
+	FN=${LIST}
+else
+	echo "Multiple vocab files detected. Enter vocab file to view..."
+	for L in ${LIST};do
+		((NDX++))
+		echo "${NDX}) ${L}"
+	done
+	echo -n "Enter file to use:"
+	read NUM
+	[[ -z ${NUM} ]] && echo "Operation cancelled" && exit
+	if [[ ${NUM} -le ${#LIST} ]];then
+		FN=${LIST[${NUM}]}
+	else
+		echo "Invalid selection:${NUM}" && exit
+	fi
+fi
+
+[[ -e ${FN} ]] && grep -E -v '(ar|er|ir|se)\|' ${FN} | grep -Ev 'estar'
