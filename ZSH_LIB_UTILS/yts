@@ -430,6 +430,7 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
+	logit ${_YTS_DBG_LOG} "${0}: DISPLAY KEY:${g_DISPLAY_KEY}"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 
@@ -1546,16 +1547,18 @@ set_final_fn () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
 
+	logit ${_YTS_DBG_LOG} "${0}: Received:${FN}"
+
 	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
 	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
 	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
-
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
+
 	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
 
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		logit ${_YTS_DBG_LOG} "${0}: Overwriting:${FN}"
+		logit ${_YTS_DBG_LOG} "${0}: Overwriting\nFile:${FN:t} \nwith:${NEW_FN:t}"
 		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
 		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
 	fi

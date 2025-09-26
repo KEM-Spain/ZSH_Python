@@ -310,7 +310,7 @@ if [[ -n ${WIN_ID} ]];then
 	if [[ ${GET_ID} == 'true' ]];then
 		logit ${_LOG} "Returning data for WID:${WIN_ID} (${WIN_ARG})"
 		printf "%s|%d|%s" ${WIN_ID} ${WIN_ID} ${WIN_ARG}
-		return 0
+		return 3
 	else
 		if [[ $(is_maximized ${WIN_ID}) == 'false' ]];then
 			wmctrl -i -r ${WIN_ID} -b add,maximized_vert,maximized_horz >/dev/null 2>&1

@@ -14,9 +14,12 @@ _SYS_APPS=/usr/local/bin/system/launchers
 # Declarations
 typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
 typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
+typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
+typeset -aU _WIN_LIST=()
 typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
 typeset -a _APPS_TO_SCAN=()
-typeset -a _BLACKLIST=(enpass pyts org.gnome.terminal libreoffice)
+typeset -a _BLACKLIST=(enpass pyts libreoffice org.gnome.terminal)
+typeset -A _SEEN=()
 
 # Functions
 apps_to_scan () {
@@ -31,7 +34,45 @@ apps_to_scan () {
 	APPS=(${STR})
 
 	for L in ${=APPS};do
-		echo ${L}
+		echo ${L:s/.desktop//}
+	done
+}
+
+get_app_tag () {
+	local APP=${1:l} # Lowercase
+	local APP_TAG=''
+
+	# Handle any alternate tags
+	if [[ -n ${_APP_TAGS[${APP}]} ]];then
+		APP_TAG=${_APP_TAGS[${APP}]}
+	else
+		APP_TAG=${APP}
+	fi
+
+	echo ${APP_TAG}
+}
+
+get_cur_win () {
+	local -a CUR_WIN=()
+	local F1 F2 F3 F4 F5 MAX
+	local L
+
+	sleep 1 # wait for windows to settle
+
+	_WIN_LIST=()
+
+	CUR_WIN=("${(f)$(wmctrl -lp | tr -s '[:space:]')}")
+
+	for L in ${CUR_WIN};do
+		F1=$(cut -d' ' -f${_FLD_LIST[WID]} <<<${L})
+		F2=$(cut -d' ' -f${_FLD_LIST[DID]} <<<${L})
+		F3=$(cut -d' ' -f${_FLD_LIST[PID]} <<<${L})
+		F4=$(cut -d' ' -f${_FLD_LIST[CLIENT]} <<<${L})
+		F5=$(cut -d' ' -f${_FLD_LIST[TITLE]}- <<<${L})
+
+		[[ ${F2} == '-1' ]] && continue # Eliminate invisible
+
+		_WIN_LIST+="${F1}|${F2}|${F3}|${F4}|${F5}"
 	done
 }
 
@@ -51,6 +92,23 @@ get_val () {
 	done
 
 	echo ${VAL}
+}
+
+get_wid () {
+	local APP=${1}
+	local TITLE=''
+	local WID=''
+	local HIT=false
+	local W
+
+	for W in ${_WIN_LIST};do
+		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+		TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+		grep -qi ${APP} <<<${TITLE}
+		[[ ${?} -eq 0 ]] && HIT=true
+	done
+
+	[[ ${HIT} == 'true' ]] && echo ${WID} || echo ''
 }
 
 has_waittime () {
@@ -81,50 +139,63 @@ is_blacklisted () {
 
 is_maximized () {
 	local APP=${1}
-	local ID=''
+	local WID=''
 
-	ID=$(wmctrl -lp | grep -i ${APP})
+	get_cur_win 
 
-	if [[ -n ${ID} ]];then
-		ID=$(tr -s '[:space:]' <<<${ID} | cut -d' ' -f1)
+	logit ${_LOG} "${0} GOT APP:${APP}"
 
-		xwininfo -wm -id ${ID:s/0x0/0x/} 2>/dev/null | grep -qi 'maximized'
-		return ${?}
-	else
-		return 1
-	fi
-}
+	WID=$(get_wid ${APP})
+	[[ -z ${WID} ]] && logit ${_LOG} "${0} FAILED TO GET WID" && return 2
 
-scan_string () {
-	local LINE=${@}
-	local APP=''
-	local F
+	logit ${_LOG} "${0} GOT WID:${WID}"
 
-	for F in ${_APPS_TO_SCAN};do
-		grep -q -i ${F:l} <<<${LINE:l}
-		if [[ ${?} -eq 0 ]];then
-			APP=${F:s/.desktop//}
-			if is_blacklisted ${APP};then
-				APP=''
-			else
-				break
-			fi
-		fi
-	done
-	echo ${APP}
+	xwininfo -wm -id ${WID} 2>/dev/null | grep -qi 'maximized'
+	return ${?}
 }
 
 win_maximize () {
 	local APP=${1}
 
-	#echo "${0}: Calling win_max with:${APP}" >> /tmp/was.dbg
-
 	win_max ${APP}
+
 	case ${?} in
 		0) logit ${_LOG} "Maximized ${APP} window";;
 		1) logit ${_LOG} "Unable to maximize ${APP}";;
 		2) logit ${_LOG} "${APP} window was already maximized";;
+		3) logit ${_LOG} "${APP} was sent win data";;
 	esac
+}
+
+scan_apps () {
+	local S
+	local APP=''
+	local RC=0
+
+	for S in ${(k)_SEEN};do
+		logit ${_LOG} "SEEKING:${S:l}"
+		if [[ ${_APPS_TO_SCAN[(i)${S:l}]} -le ${#_APPS_TO_SCAN} ]];then
+			if [[ ${_BLACKLIST[(i)${S:l}]} -le ${#_BLACKLIST} ]];then
+				logit ${_LOG} "BLACKLISTED ${S}"
+			else
+				APP=$(get_app_tag ${S})
+				
+				is_maximized ${APP}
+				RC=${?}
+
+				logit ${_LOG} "is_maximized returned ${RC}"
+				case ${RC} in
+					0) logit ${_LOG} logit ${_LOG} "${APP} ALREADY MAXIMIZED";;
+					1) logit ${_LOG} logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP};;
+					2) logit ${_LOG} logit ${_LOG} "${APP} NO WINDOW EXISTS";;
+				esac
+			fi
+		else
+			logit ${_LOG} "NO ACTION ${S}"
+		fi
+	done
+
+	_SEEN=()
 }
 
 # Execution
@@ -135,49 +206,18 @@ logit ${_LOG} "Started scan for new windows"
 
 GOT_SIG=false
 GOT_DICT_ENTRY=false
-VAL=''
-STR=''
 while IFS= read -ru3 LINE;do
-	# echo "LINE: ${LINE}" >> /tmp/was.dbg
-
-	STR='' && APP='' && VAL=''
-
 	if [[ ${LINE:l} =~ 'method' ]];then
 		VAL=$(get_val method path window ${LINE})
-	fi
-
-
-	[[ ${LINE:l} =~ 'signal' ]] && GOT_SIG=true
-
-	[[ ${LINE:l} =~ 'dict entry' ]] && GOT_DICT_ENTRY=true && continue # Go to next line
-
-	if [[ -n ${VAL} && ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
-		TERMS=$(terms -c)
-		if [[ ${TERMS} -gt 1 ]];then
-			logit ${_LOG} "GOT NEW TERMINAL WINDOW"
-			win_maximize terminal
+		if [[ ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
+			logit ${_LOG} "GOT TERMINAL - Calling win_max"
+			win_max terminal
 		fi
 	else
-		[[ ${GOT_SIG} == 'true' && ${LINE:l} =~ 'array of bytes' ]] && STR=$(scan_string ${LINE}) && GOT_SIG=false
-
-		if [[ ${GOT_DICT_ENTRY} == 'true' && ${LINE:l} =~ 'string' && ${LINE:l} =~ '\.desktop' ]];then
-			# TODO: DICT is too loose - find alternative to identify apps like losslesscut.desktop
-			#echo "Calling scan_string with:${LINE}" >> /tmp/was.dbg
-			STR=$(scan_string ${LINE}) && GOT_DICT_ENTRY=false
-		fi
-
-		if [[ -n ${STR} ]];then
-			APP=${STR}
-			[[ -n ${_APP_TAGS[${APP}]} ]] && APP=${_APP_TAGS[${APP}]}
-			if ! is_maximized ${APP};then
-				logit ${_LOG} "-- GOT APP:${APP} --"
-				WT=$(has_waittime ${APP})
-				if [[ ${WT} -ne 0 ]];then
-					logit ${_LOG} "Waiting ${WT} seconds for APP:${APP} to launch"
-					sleep ${WT}
-				fi
-				win_maximize ${APP}
-			fi
+		if [[ ${LINE:l} =~ 'string' && ${LINE:l} =~ '\.desktop' ]];then
+			STR=$(grep --color=never -o -E '["].*.desktop["]' <<<${LINE} | tr -d '["]' | sed 's/.desktop//')
+			_SEEN[${STR}]=1
+			scan_apps
 		fi
 	fi
 done 3< <(dbus-monitor)

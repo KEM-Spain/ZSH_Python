@@ -33,8 +33,6 @@ _SYS_ZSHRC=/etc/zsh/zshrc
 _WIFI_PREF="WiFi_OliveNet-Casa 7_5G"
 _BATT_LIMIT=95
 _CAL_LINES=9
-_TERMS=$(terms -c)
-_THIS_WINDOW=$(xut wid | cut -d' ' -f1)
 
 # Declarations
 typeset -a _MOTD=()
@@ -62,6 +60,10 @@ export DISPLAY=:0
 [[ -o login ]] && LOGIN=login || LOGIN=''
 
 # Functions 
+_term_wid () {
+	wmctrl -l | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1
+}
+
 _cursor_row () {
 	local ROW
 
@@ -211,6 +213,10 @@ _set_ssid () {
 	fi
 }
 
+_term_count () {
+	terms -c
+}
+
 stty -ixon
 umask 002 # Standard
 alias sudo='sudo ' # Sudo tweak
@@ -248,18 +254,12 @@ add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
 
 # Execution
-if [[ ${_TERMS} -eq 1 ]];then
-		WIN_ID=$(wmctrl -lp | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
-		if [[ -n ${WIN_ID} ]];then
-			wmctrl -i -r ${WIN_ID} -b add,maximized_vert,maximized_horz
-		else
-			echo "Unable to aquire WIN_ID for terminal"
-		fi
-fi
-
-if [[ ${_TERMS} -eq 1 ]];then
+if [[ $(_term_count) -eq 1 ]];then
 	INTERACTIVE=''
 	if [[ -o interactive ]]; then
+		if [[ $(_term_count) -eq 1 ]];then
+			wmctrl -i -r $(_term_wid) -b add,maximized_vert,maximized_horz
+		fi
 		INTERACTIVE=interactive
 		tput cup 0 0
 		tput ed
@@ -309,26 +309,26 @@ if [[ ${_TERMS} -eq 1 ]];then
 		C_POS=$(_cursor_row)
 
 		# show calendar
-		if [[ ${_TERMS} -eq 1 ]];then
+		if [[ $(_term_count) -eq 1 ]];then
 			TERM_LINES=$(tput lines)
 			CAL_TOP_ROW=$(( TERM_LINES - _CAL_LINES ))
 			tput cup ${CAL_TOP_ROW} 0
 			cal_clr
 		fi
 
-		# background dbus job - maximize new windows (gnome doesn't track win coords)
+		# background dbus monitor - maximize new windows (gnome doesn't track win coords)
 		INSTANCE=$(pgrep -c wait_app_start)
 		if [[ ${INSTANCE} -eq 0 ]];then
-			( wait_app_start & ) >/dev/null 2>&1
+			( nohup wait_app_start & ) >/dev/null 2>&1
 		fi
 
 		remind # post any reminders
 
 		xdotool mousemove $((1920/2)) $((1080/2)) # center the mouse  pointer
 
-		PID=$(ps aux | grep -v grep | grep -i enpass)
-		if [[ ${?} -ne 0 ]];then
-			wmctrl -i -a ${WIN_ID} # Focus
+		CNT=$(pgrep -ic enpass)
+		if [[ ${CNT} -eq 0 ]];then
+			wmctrl -i -a $(_term_wid) # Focus
 			run_enpass
 		else
 			tput cup ${C_POS} 0 # Cursor position following last info 
@@ -338,4 +338,4 @@ if [[ ${_TERMS} -eq 1 ]];then
 	fi
 fi
 
-[[ ${_TERMS} -eq 1 && -n ${WIN_ID} ]] && wmctrl -i -a ${WIN_ID} # Focus
+[[ $(_term_count) -eq 1 ]] && wmctrl -i -a $(_term_wid) # Focus

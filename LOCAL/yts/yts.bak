@@ -1028,7 +1028,7 @@ last_code_update () {
 	fi
 }
 
-last_file () {
+last_file_downloaded () {
 	local ST=''
 	local FN=''
 	local IN=''
@@ -1057,7 +1057,7 @@ list_reset () {
 
 log_add () {
 	local NDX=${1}
-	local LF=$(last_file) # Filename|Inode
+	local LF=$(last_file_downloaded) # Filename|Inode
 	local FN=$(cut -d'|' -f1 <<<${LF}) # Filename
 	local IN=$(cut -d'|' -f2 <<<${LF}) # Inode
 	local TL=$(get_field title ${NDX}) # Title
@@ -1253,27 +1253,11 @@ post_process () {
 		[[ ${?} -eq 0 ]] && logit ${_YTS_DBG_LOG} "${0}: deleted ${F}"
 	done
 
-	LF=$(last_file) # Filename and Inode
+	LF=$(last_file_downloaded) # Filename and Inode
 	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
 	logit ${_YTS_DBG_LOG} "${0}: Last FN:${FN}"
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
-
-	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
-	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
-	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
-
-	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
-	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
-
-	if [[ ${FN} != ${NEW_FN} ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		logit ${_YTS_DBG_LOG} "${0}: Overwriting:${FN}"
-		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
-		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
-	fi
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
+	set_final_fn ${FN}
 }
 
 query_rumble () {
@@ -1554,6 +1538,31 @@ query_youtube () {
 	_LOCAL_LIST=(${WORK_LIST})
 
 	return 0
+}
+
+set_final_fn () {
+	local FN=${1}
+	local NEW_FN=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
+
+	logit ${_YTS_DBG_LOG} "${0}: Received:${FN}"
+
+	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
+	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
+	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
+	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
+
+	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
+
+	if [[ ${FN} != ${NEW_FN} ]];then
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
+		logit ${_YTS_DBG_LOG} "${0}: Overwriting\nFile:${FN:t} \nwith:${NEW_FN:t}"
+		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
+		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
+	fi
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
 }
 
 set_item_color () {

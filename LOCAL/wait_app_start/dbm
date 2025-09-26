@@ -17,8 +17,47 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-ARG=${1}
+/bin/rm -f dbg
+
+get_val () {
+	local KEY=${1};shift
+	local VAR=${1};shift
+	local SEARCHTERM=${1};shift
+	local LINE=${@}
+	local VAL=''
+	local L
+
+	for L in ${=LINE};do
+		if [[ ${L} =~ '[=]' && ${L:l} =~ ${VAR:l} ]];then
+			VAL=$(cut -d= -f2 <<< ${L})
+			[[ ! ${VAL:l} =~ ${SEARCHTERM:l} ]] && continue # Ignore non SEARCHTERM
+		fi
+	done
+
+	echo ${VAL}
+}
+
+do_dbg () {
+	local LINE=${@}
+	[[ ${LINE:l} =~ 'window' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT window - ${LINE}">>dbg
+	[[ ${LINE:l} =~ 'signal' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT signal - ${LINE}">>dbg
+	[[ ${LINE:l} =~ 'method' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT method - ${LINE}">>dbg
+	[[ ${LINE:l} =~ ${_ARG:l} ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT ${_ARG} - ${LINE}">>dbg
+}
+
+_ARG=${1}
+
 while IFS= read -ru3 LINE;do
-	 echo "LINE: ${LINE}"
-	 [[ ${LINE:l} =~ ${ARG:l} ]] && echo "HIT: ${1}" 
+	if [[ ${LINE:l} =~ 'method' ]];then
+		VAL=$(get_val method path window ${LINE})
+		if [[ -n ${VAL} && ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
+			echo "GOT TERMINAL WINDOW"
+		fi
+	fi
+
+	if [[ ${LINE:l} =~ 'array of bytes' ]];then
+		echo "array	of bytes:${LINE}" >>dbg
+	elif [[ 'string' && ${LINE:l} =~ '\.desktop' ]];then
+		echo "string desktop:${LINE}" >>dbg
+	fi
 done 3< <(dbus-monitor)

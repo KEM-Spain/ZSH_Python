@@ -1,0 +1,183 @@
+#!/usr/bin/zsh
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Constants
+_LOG=/tmp/${0:t}.log
+_SCRIPT=${0:t}
+_SYS_APPS=/usr/local/bin/system/launchers
+
+# Declarations
+typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
+typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
+typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
+typeset -a _APPS_TO_SCAN=()
+typeset -a _BLACKLIST=(enpass pyts org.gnome.terminal libreoffice)
+
+# Functions
+apps_to_scan () {
+	local -a APPS=()
+	local STR
+	local L
+
+	STR=$(gsq -l favorite-apps) # Grab gsettings for dock apps
+	STR=${STR:gs/,//}
+	STR=$(perl -pe 's/^.*\[//;s/\]//;s/\x27//g' <<<${STR})
+
+	APPS=(${STR})
+
+	for L in ${=APPS};do
+		echo ${L}
+	done
+}
+
+get_val () {
+	local KEY=${1};shift
+	local VAR=${1};shift
+	local SEARCHTERM=${1};shift
+	local LINE=${@}
+	local VAL=''
+	local L
+
+	for L in ${=LINE};do
+		if [[ ${L} =~ '[=]' && ${L:l} =~ ${VAR:l} ]];then
+			VAL=$(cut -d= -f2 <<< ${L})
+			[[ ! ${VAL:l} =~ ${SEARCHTERM:l} ]] && continue # Ignore non SEARCHTERM
+		fi
+	done
+
+	echo ${VAL}
+}
+
+has_waittime () {
+	local APP=${1}
+	local A
+	local WT=0
+
+	for A in ${(k)_WAITTIMES};do
+		if [[ ${A:l} =~ ${APP:l} ]];then
+			WT=${_WAITTIMES[${A}]}
+			break
+		fi
+	done
+
+	echo ${WT}
+}
+
+is_blacklisted () {
+	local APP=${1}
+	local A
+
+	for A in ${_BLACKLIST};do
+		[[ ${APP:l} =~ ${A:l} ]] && return 0 
+	done
+
+	return 1
+}
+
+is_maximized () {
+	local APP=${1}
+	local ID=''
+
+	ID=$(wmctrl -lp | grep -i ${APP})
+
+	if [[ -n ${ID} ]];then
+		ID=$(tr -s '[:space:]' <<<${ID} | cut -d' ' -f1)
+
+		xwininfo -wm -id ${ID:s/0x0/0x/} 2>/dev/null | grep -qi 'maximized'
+		return ${?}
+	else
+		return 1
+	fi
+}
+
+scan_string () {
+	local LINE=${@}
+	local APP=''
+	local F
+
+	for F in ${_APPS_TO_SCAN};do
+		grep -q -i ${F:l} <<<${LINE:l}
+		if [[ ${?} -eq 0 ]];then
+			APP=${F:s/.desktop//}
+			if is_blacklisted ${APP};then
+				APP=''
+			else
+				break
+			fi
+		fi
+	done
+	echo ${APP}
+}
+
+win_maximize () {
+	local APP=${1}
+
+	#echo "${0}: Calling win_max with:${APP}" >> /tmp/was.dbg
+
+	win_max ${APP}
+	case ${?} in
+		0) logit ${_LOG} "Maximized ${APP} window";;
+		1) logit ${_LOG} "Unable to maximize ${APP}";;
+		2) logit ${_LOG} "${APP} window was already maximized";;
+	esac
+}
+
+# Execution
+_APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
+_APPS_TO_SCAN+=(${_APPS_NON_DOCK})
+
+logit ${_LOG} "Started scan for new windows"
+
+GOT_SIG=false
+GOT_DICT_ENTRY=false
+VAL=''
+STR=''
+while IFS= read -ru3 LINE;do
+	# echo "LINE: ${LINE}" >> /tmp/was.dbg
+
+	STR='' && APP='' && VAL=''
+
+	if [[ ${LINE:l} =~ 'method' ]];then
+		VAL=$(get_val method path window ${LINE})
+	fi
+
+
+	[[ ${LINE:l} =~ 'signal' ]] && GOT_SIG=true
+
+	[[ ${LINE:l} =~ 'dict entry' ]] && GOT_DICT_ENTRY=true && continue # Go to next line
+
+	if [[ -n ${VAL} && ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
+		TERMS=$(terms -c)
+		if [[ ${TERMS} -gt 1 ]];then
+			logit ${_LOG} "GOT NEW TERMINAL WINDOW"
+			win_maximize terminal
+		fi
+	else
+		[[ ${GOT_SIG} == 'true' && ${LINE:l} =~ 'array of bytes' ]] && STR=$(scan_string ${LINE}) && GOT_SIG=false
+
+		if [[ ${GOT_DICT_ENTRY} == 'true' && ${LINE:l} =~ 'string' && ${LINE:l} =~ '\.desktop' ]];then
+			# TODO: DICT is too loose - find alternative to identify apps like losslesscut.desktop
+			#echo "Calling scan_string with:${LINE}" >> /tmp/was.dbg
+			STR=$(scan_string ${LINE}) && GOT_DICT_ENTRY=false
+		fi
+
+		if [[ -n ${STR} ]];then
+			APP=${STR}
+			[[ -n ${_APP_TAGS[${APP}]} ]] && APP=${_APP_TAGS[${APP}]}
+			if ! is_maximized ${APP};then
+				logit ${_LOG} "-- GOT APP:${APP} --"
+				WT=$(has_waittime ${APP})
+				if [[ ${WT} -ne 0 ]];then
+					logit ${_LOG} "Waiting ${WT} seconds for APP:${APP} to launch"
+					sleep ${WT}
+				fi
+				win_maximize ${APP}
+			fi
+		fi
+	fi
+done 3< <(dbus-monitor)
