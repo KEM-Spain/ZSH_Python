@@ -194,6 +194,8 @@ scan_apps () {
 			logit ${_LOG} "NO ACTION ${S}"
 		fi
 	done
+
+	_SEEN=()
 }
 
 # Execution
