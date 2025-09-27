@@ -13,13 +13,13 @@ _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
 typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
-typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
-typeset -aU _WIN_LIST=()
+typeset -A _SEEN=()
+typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
 typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(enpass pyts libreoffice org.gnome.terminal)
-typeset -A _SEEN=()
+typeset -aU _WIN_LIST=()
 
 # Functions
 apps_to_scan () {
@@ -57,7 +57,7 @@ get_cur_win () {
 	local F1 F2 F3 F4 F5 MAX
 	local L
 
-	sleep 1 # wait for windows to settle
+	sleep 1 # Wait for windows to settle
 
 	_WIN_LIST=()
 
@@ -77,7 +77,7 @@ get_cur_win () {
 }
 
 get_val () {
-	local KEY=${1};shift
+	local KEY=${1};shift 
 	local VAR=${1};shift
 	local SEARCHTERM=${1};shift
 	local LINE=${@}
@@ -98,29 +98,24 @@ get_wid () {
 	local APP=${1}
 	local TITLE=''
 	local WID=''
-	local HIT=false
 	local W
 
 	for W in ${_WIN_LIST};do
-		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
 		TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
 		grep -qi ${APP} <<<${TITLE}
-		[[ ${?} -eq 0 ]] && HIT=true
+		[[ ${?} -eq 0 ]] && WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W}) && break
 	done
 
-	[[ ${HIT} == 'true' ]] && echo ${WID} || echo ''
+	echo ${WID}
 }
 
 has_waittime () {
 	local APP=${1}
-	local A
 	local WT=0
+	local A
 
 	for A in ${(k)_WAITTIMES};do
-		if [[ ${A:l} =~ ${APP:l} ]];then
-			WT=${_WAITTIMES[${A}]}
-			break
-		fi
+		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAITTIMES[${A}]} && break
 	done
 
 	echo ${WT}
@@ -144,19 +139,19 @@ is_maximized () {
 	get_cur_win 
 
 	WID=$(get_wid ${APP})
-	[[ -z ${WID} ]] && logit ${_LOG} "${0} FAILED TO GET WID" && return 2
+	[[ -z ${WID} ]] && return 2
 
 	xwininfo -wm -id ${WID} 2>/dev/null | grep -qi 'maximized'
 	return ${?}
 }
 
 scan_apps () {
-	local S
 	local APP=''
 	local RC=0
+	local S
 
 	for S in ${(k)_SEEN};do
-		logit ${_LOG} "SEEKING:${S:l}"
+		#logit ${_LOG} "SEEKING:${S:l}"
 		if [[ ${_APPS_TO_SCAN[(i)${S:l}]} -le ${#_APPS_TO_SCAN} ]];then
 			if [[ ${_BLACKLIST[(i)${S:l}]} -le ${#_BLACKLIST} ]];then
 				logit ${_LOG} "BLACKLISTED ${S}"
@@ -166,11 +161,10 @@ scan_apps () {
 				is_maximized ${APP}
 				RC=${?}
 
-				logit ${_LOG} "is_maximized returned ${RC}"
 				case ${RC} in
-					0) logit ${_LOG} logit ${_LOG} "${APP} ALREADY MAXIMIZED";;
-					1) logit ${_LOG} logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP};;
-					2) logit ${_LOG} logit ${_LOG} "${APP} NO WINDOW EXISTS";;
+					0) logit ${_LOG} "${APP} ALREADY MAXIMIZED";;
+					1) logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP};;
+					2) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
 				esac
 			fi
 		else
@@ -187,8 +181,6 @@ _APPS_TO_SCAN+=(${_APPS_NON_DOCK})
 
 logit ${_LOG} "Started scan for new windows"
 
-GOT_SIG=false
-GOT_DICT_ENTRY=false
 while IFS= read -ru3 LINE;do
 	if [[ ${LINE:l} =~ 'method' ]];then
 		VAL=$(get_val method path window ${LINE})

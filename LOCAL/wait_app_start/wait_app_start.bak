@@ -143,28 +143,11 @@ is_maximized () {
 
 	get_cur_win 
 
-	logit ${_LOG} "${0} GOT APP:${APP}"
-
 	WID=$(get_wid ${APP})
-	[[ -z ${WID} ]] && logit ${_LOG} "${0} FAILED TO GET WID" && return 2
-
-	logit ${_LOG} "${0} GOT WID:${WID}"
+	[[ -z ${WID} ]] && return 2
 
 	xwininfo -wm -id ${WID} 2>/dev/null | grep -qi 'maximized'
 	return ${?}
-}
-
-win_maximize () {
-	local APP=${1}
-
-	win_max ${APP}
-
-	case ${?} in
-		0) logit ${_LOG} "Maximized ${APP} window";;
-		1) logit ${_LOG} "Unable to maximize ${APP}";;
-		2) logit ${_LOG} "${APP} window was already maximized";;
-		3) logit ${_LOG} "${APP} was sent win data";;
-	esac
 }
 
 scan_apps () {
@@ -173,7 +156,7 @@ scan_apps () {
 	local RC=0
 
 	for S in ${(k)_SEEN};do
-		logit ${_LOG} "SEEKING:${S:l}"
+		#logit ${_LOG} "SEEKING:${S:l}"
 		if [[ ${_APPS_TO_SCAN[(i)${S:l}]} -le ${#_APPS_TO_SCAN} ]];then
 			if [[ ${_BLACKLIST[(i)${S:l}]} -le ${#_BLACKLIST} ]];then
 				logit ${_LOG} "BLACKLISTED ${S}"
@@ -183,11 +166,10 @@ scan_apps () {
 				is_maximized ${APP}
 				RC=${?}
 
-				logit ${_LOG} "is_maximized returned ${RC}"
 				case ${RC} in
-					0) logit ${_LOG} logit ${_LOG} "${APP} ALREADY MAXIMIZED";;
-					1) logit ${_LOG} logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP};;
-					2) logit ${_LOG} logit ${_LOG} "${APP} NO WINDOW EXISTS";;
+					0) logit ${_LOG} "${APP} ALREADY MAXIMIZED";;
+					1) logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP};;
+					2) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
 				esac
 			fi
 		else
