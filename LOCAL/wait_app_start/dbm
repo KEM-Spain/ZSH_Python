@@ -45,6 +45,9 @@ do_dbg () {
 	[[ ${LINE:l} =~ ${_ARG:l} ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT ${_ARG} - ${LINE}">>dbg
 }
 
+/bin/rm -f ./dbg
+echo "Output is redirected to ./dbg" >&2
+
 _ARG=${1}
 
 while IFS= read -ru3 LINE;do

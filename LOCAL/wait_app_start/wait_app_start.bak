@@ -13,13 +13,13 @@ _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
 typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
-typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
-typeset -aU _WIN_LIST=()
+typeset -A _SEEN=()
+typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
 typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(enpass pyts libreoffice org.gnome.terminal)
-typeset -A _SEEN=()
+typeset -aU _WIN_LIST=()
 
 # Functions
 apps_to_scan () {
@@ -34,7 +34,7 @@ apps_to_scan () {
 	APPS=(${STR})
 
 	for L in ${=APPS};do
-		echo ${L:s/.desktop//}
+		echo ${L:l:s/.desktop//}
 	done
 }
 
@@ -57,7 +57,7 @@ get_cur_win () {
 	local F1 F2 F3 F4 F5 MAX
 	local L
 
-	sleep 1 # wait for windows to settle
+	sleep 1 # Wait for windows to settle
 
 	_WIN_LIST=()
 
@@ -77,7 +77,7 @@ get_cur_win () {
 }
 
 get_val () {
-	local KEY=${1};shift
+	local KEY=${1};shift 
 	local VAR=${1};shift
 	local SEARCHTERM=${1};shift
 	local LINE=${@}
@@ -98,29 +98,24 @@ get_wid () {
 	local APP=${1}
 	local TITLE=''
 	local WID=''
-	local HIT=false
 	local W
 
 	for W in ${_WIN_LIST};do
-		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
 		TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
 		grep -qi ${APP} <<<${TITLE}
-		[[ ${?} -eq 0 ]] && HIT=true
+		[[ ${?} -eq 0 ]] && WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W}) && break
 	done
 
-	[[ ${HIT} == 'true' ]] && echo ${WID} || echo ''
+	echo ${WID}
 }
 
 has_waittime () {
 	local APP=${1}
-	local A
 	local WT=0
+	local A
 
 	for A in ${(k)_WAITTIMES};do
-		if [[ ${A:l} =~ ${APP:l} ]];then
-			WT=${_WAITTIMES[${A}]}
-			break
-		fi
+		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAITTIMES[${A}]} && break
 	done
 
 	echo ${WT}
@@ -151,9 +146,9 @@ is_maximized () {
 }
 
 scan_apps () {
-	local S
 	local APP=''
 	local RC=0
+	local S
 
 	for S in ${(k)_SEEN};do
 		#logit ${_LOG} "SEEKING:${S:l}"
@@ -185,9 +180,8 @@ _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
 _APPS_TO_SCAN+=(${_APPS_NON_DOCK})
 
 logit ${_LOG} "Started scan for new windows"
+logit ${_LOG} "_APPS_TO_SCAN:\n$(for A in ${(o)_APPS_TO_SCAN};do echo ${A};done)"
 
-GOT_SIG=false
-GOT_DICT_ENTRY=false
 while IFS= read -ru3 LINE;do
 	if [[ ${LINE:l} =~ 'method' ]];then
 		VAL=$(get_val method path window ${LINE})
@@ -196,9 +190,9 @@ while IFS= read -ru3 LINE;do
 			win_max terminal
 		fi
 	else
-		if [[ ${LINE:l} =~ 'string' && ${LINE:l} =~ '\.desktop' ]];then
+		if [[ (${LINE:l} =~ 'string' || ${LINE:l} =~ 'array') && ${LINE:l} =~ '\.desktop' ]];then
 			STR=$(grep --color=never -o -E '["].*.desktop["]' <<<${LINE} | tr -d '["]' | sed 's/.desktop//')
-			_SEEN[${STR}]=1
+			_SEEN[${STR:t}]=1
 			scan_apps
 		fi
 	fi
