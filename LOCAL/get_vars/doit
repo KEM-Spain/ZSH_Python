@@ -1,0 +1,60 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+ 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# All
+typeset -aU _ALL_VARS=("${(f)$(grep -v '^#' ${1} | grep --color=never -o -P '(([$]{?[[:word:]]+})|.?([[:word:]]+[+]?=))' | sed -E -e 's/^[[:space:]]*//' -e '/^[\x2D\\].*/d' -e 's/(([${}])|\+?=$)//g')}")
+
+# Assigned
+# The only valid right side types of the = are number, text in s|d quotes, variable, and left paren
+typeset -aU _ASGN_VARS=("${(f)$(grep -v '^#' ${1} | grep --color=never -o -P "((for \w+)|(\w+(=|\+=)([0-9\$\(]|\x22|\x27)))" | sed -E -e 's/(\$|=|\+=).*//' -e 's/for //')}")
+
+# Referenced
+# check for == =~ != -lt -gt var between quotes, etc.
+
+#echo "---------"
+#echo "_ALL_VARS"
+#echo "---------"
+#for L in ${(o)_ALL_VARS};do
+#	printf "%s\n" ${L}
+#done
+#
+#echo "---------"
+#echo "_ASGN_VARS"
+#echo "---------"
+#for L in ${(o)_ASGN_VARS};do
+#	printf "%s\n" ${L}
+#done
+#
+#echo "---------"
+#echo "No Intersect"
+#echo "---------"
+#for L in ${(o)_ALL_VARS};do
+#	if ! arr_in_array "_ASGN_VARS" ${L};then
+#		printf "%s\n" ${L}
+#	fi
+#done
+
+grep --color=always -P '(( =. )|( \x2D.{1,} )(\[{2}\s+\x2D.\s+\$))' ${1}

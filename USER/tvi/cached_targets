@@ -2,6 +2,7 @@ acronyms.txt|/usr/local/etc/acronyms.txt
 aliases|/etc/zsh/aliases
 ANSI.zsh|/usr/local/lib/ANSI.zsh
 apps|/usr/local/bin/apps
+app_skeleton.template|/usr/local/etc/templates/app_skeleton.template
 app.template|/usr/local/etc/app.template
 ARRAY.zsh|/usr/local/lib/ARRAY.zsh
 audio-convert|/usr/local/bin/audio-convert
@@ -50,7 +51,7 @@ gal|/usr/local/bin/gal
 gd|/usr/local/bin/gd
 genv|/usr/local/bin/genv
 getopt.template|/usr/local/etc/getopt.template
-get_vars|/usr/local/bin/get_vars
+get_vars|/usr/local/bin/system/get_vars
 ghis|/usr/local/bin/ghis
 git_clones|/usr/local/bin/git_clones
 gitlog|/usr/local/bin/gitlog

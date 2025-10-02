@@ -430,10 +430,12 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
+	logit ${_YTS_DBG_LOG} "${0}: DISPLAY KEY:${g_DISPLAY_KEY}"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 
-	STR=$(str_word_clip ${STR} ${TITLE_LEN})
+	# TODO: str_word_clip returning a line too long to fit inside download box
+	STR=$(str_word_clip ${STR} ${TITLE_LEN}) 
 	logit ${_YTS_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"
 
 	TITLE=${STR}

@@ -180,7 +180,7 @@ _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
 _APPS_TO_SCAN+=(${_APPS_NON_DOCK})
 
 logit ${_LOG} "Started scan for new windows"
-logit ${_LOG} "_APPS_TO_SCAN:\n$(for A in ${(o)_APPS_TO_SCAN};do echo ${A};done)"
+logit ${_LOG} "_APPS_TO_SCAN:\n$(for A in ${(o)_APPS_TO_SCAN};do echo "DBUS:${A} TAG:$(get_app_tag ${A})";done)"
 
 while IFS= read -ru3 LINE;do
 	if [[ ${LINE:l} =~ 'method' ]];then

@@ -6,9 +6,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -16,91 +14,123 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
-
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-BLACK_LIST='?\|!\|BOLD\|ITALIC\|RESET\|REVERSE\|STRIKE\|UNDER\|BLACK\|BLUE\|CYAN\|GREEN\|MAGENTA\|RED\|WHITE\|YELLOW'
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
-typeset -aU _VARS
-typeset -aU _BARE_VARS
-typeset -aU _ASSIGNED
-typeset -aU _REFERENCED
+# Declarations
+typeset -a COLORS=(BOLD ITALIC RESET REVERSE STRIKE UNDER BLACK BLUE CYAN GREEN MAGENTA RED WHITE YELLOW CSR WHITE_ON_GREY)
+typeset -aU _ALL_VARS=()
+typeset -aU _DECL_VARS=()
+typeset -aU _REFD_VARS=()
+typeset -aU _ASGN_VARS=()
+typeset -aU _UNSD_VARS=()
+typeset -a _TMP=()
 
-LOG=/tmp/${0:t}_explode
-[[ -e ${LOG} ]] && /bin/rm ${LOG}
+g_UNUSED_VAR_1="nothing"
+g_UNUSED_VAR_2=$g_UNUSED_VAR_1
+
+# Functions
+custom_sort () {
+	local CHAR=${1[1,1]}
+
+	case ${CHAR} in
+		_) echo 0;;
+		g) echo 1;;
+		*) echo 2;;
+	esac
+}
+
+var_filter () {
+	local ARG=${1}
+
+	ARG=$(sed -E "s/(^E_|_FG$|_BG$)//g" <<<${ARG})
+
+	[[ ${COLORS[(i)${ARG}]} -le ${#COLORS} ]] && echo 'true' || echo 'false'
+}
+
+# Execute
+clear
 
 [[ -z ${1} ]] && echo "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<ZSH_SCRIPT>" && exit
-SCRIPT=${1}
+TARGET_SCRIPT=${1}
+TYPE=$(file -b ${TARGET_SCRIPT})
+[[ ! ${TYPE} =~ 'zsh' ]] && echo "${_SCRIPT_TAG} ${RED_FG}Unsupported file type${RESET}:${TARGET_SCRIPT} (zsh scripts only!)" && exit
 
-EXPLODE=$(sed -e 's/\$/\n\$/g' -e 's/:.*}/}/' -e 's/{[#=]/{/' ${1}) 
-_REFS=("${(f)$(perl -ne '/\${[()_A-Za-z0-9].*/m && print "$&\n"' <<<${EXPLODE} | perl -pe 's/}.*/}/;s/:.*}/}/' | sort -u)}")
-_VARS=("${(f)$(perl -ne '/^[_A-Za-z0-9].*\+?=/m && print "$&\n"' <<<${EXPLODE} | perl -pe 's/\+?=.*//' | perl -pe 's/typeset( \-?[a-zA-Z])? //' | sort -u)}")
-_VARS+=(${_REFS})
+_ALL_VARS=("${(f)$(sed 's/\-\-[^\x27]*=//' ${TARGET_SCRIPT} | grep -o -P '(\w+=|\$\w+|\${\w+})' | sed -E -e 's/(=|\+=)//' -e 's/[\${}]//g')}")
+_ASGN_VARS=("${(f)$(grep --color=never -o -P '(^| )\w+(=|\+=)' ${TARGET_SCRIPT} | sed -E -e 's/[[:space:]]*//' -e 's/(=|\+=)$//')}")
+_DECL_VARS=("${(f)$(sed 's/[[:space:]]*//' ${TARGET_SCRIPT} | grep --color=never -P '^(typeset|local)' | sed -E -e 's/(typeset|local) //' -e 's/^[-]\w+ //' -e 's/=.*//')}")
+_DECL_VARS=(${=_DECL_VARS}) # Verticalize any linear declarations
 
-STMT=$(grep --color=never -oP 'read\s.*;' ${SCRIPT})
-GRP=$(perl -p -e 's/read\s+(-.*?)\s(.+?)[ <;|](.*)/\2/' <<<${STMT})
-echo "STMT:${STMT} GRP:${GRP}" >>${LOG}
- 
-echo "Initial extract of variables" >>${LOG}
-
-echo "Clearing variables of modifiers and tags" >>${LOG}
-for V in ${(o)_VARS};do
-	VAR=("${(f)$(perl -pe 's/((?<={))([(][A-Za-z].*[)])(.*)(?=})/\1\3\4/' <<<${V})}") # Strip modifiers
-	[[ ${VAR} =~ "\[" ]] && VAR=$(cut -d'[' -f1 <<<${VAR}) || VAR=${V} # Strip element refs
-	VAR=$(tr -d '${}' <<<${VAR}) # Prefix, braces
-	[[ -z ${VAR} ]] && continue # Null
-	[[ ${VAR} =~ "^ *$" ]] && continue # Spaces
-	[[ ${VAR} =~ "^\(" ]] && continue # Remnant
-	if $(grep -q "${BLACK_LIST}" <<<${VAR});then # Blacklisted
-		echo "BLACKLISTED:${VAR}"
-		continue
-	fi
-	echo "WHITELISTED:${VAR}"
-	_BARE_VARS+=${VAR}
-done >> ${LOG}
-
-echo "Assigned and Referenced vars" >>${LOG}
-for B in ${(o)_BARE_VARS};do
-	OUT=$(grep -m1 -io "\b${B}=\|\b${B}+=\|\b${B}\[.*\]=\|\b${B}\[.*\]+=\|for\s.*${B}.*in\|read\s.*${B}" ${SCRIPT})
-	if [[ ${?} -eq 0 ]];then
-		_ASSIGNED+=${B}
-		echo "ASSIGNED:[${B}] -> $(tr -d '\n'  <<<${OUT})"
-	else
-		echo "REFERENCED:[${B}]"
-		_REFERENCED+=${B}
-	fi
-done >> ${LOG}
-
-echo "${CYAN_FG}Assigned and Referenced vars for app${RESET}:${WHITE_FG}${SCRIPT}${RESET}"
-if [[ ${#_ASSIGNED} -ne 0 ]];then
-	echo "${WHITE_ON_GREY}Assigned Variables${RESET}"
-	for A in ${_ASSIGNED};do
-		echo ${A}
-	done
-	echo
-fi
-
-if [[ ${#_REFERENCED} -ne 0 ]];then
-	echo "${WHITE_ON_GREY}Referenced Variables${RESET}"
-	for R in ${_REFERENCED};do
-		echo "\${${R}}"
-	done
-	echo
-fi
-
-_UNREF=("${(f)$(
-for U in ${_REFERENCED};do
-	grep -qP "local ${U}" ${SCRIPT}
-	[[ ${?} -eq 0 ]] && echo ${U}
+for V in ${_ALL_VARS};do
+	[[ $(var_filter ${V}) == 'true' ]] && continue
+	_TMP+=${V}
 done
-)}")
+_ALL_VARS=(${_TMP}) # Apply filter
 
-if [[ ${#_UNREF} -ne 0 ]];then
-	if [[ -n ${_UNREF} ]];then
-		echo "${WHITE_ON_GREY}Unused Variables${RESET}"
-		for L in ${_UNREF};do
-			echo ${L}
-		done
-	fi
-	echo
-fi
+#_TMP=()
+#for V in ${_ASGN_VARS};do
+#	[[ $(var_filter ${V}) -eq 0 ]] && continue
+#	_TMP+=${V}
+#done
+#_ASGN_VARS=(${_TMP}) # Apply filter
+#
+#for V in ${_ALL_VARS};do
+#	#[[ ${_ASGN_VARS[(i)${V}]} -lt ${#_ASGN_VARS} ]] && continue
+#	#[[ ${_DECL_VARS[(i)${V}]} -lt ${#_DECL_VARS} ]] && continue
+#	_REFD_VARS+=${V} # Not in declared = referenced vars
+#done
+#
+#for V in ${_ALL_VARS};do
+#	[[ ${_REFD_VARS[(i)${V}]} -lt ${#_REFD_VARS} ]] && continue
+#	_UNSD_VARS+=${V} # Collect unused vars
+#done
+
+# TODO: get unused vars
+
+(
+echo "ALL VARS"
+echo "--------"
+for L in ${_ALL_VARS};do
+	printf "%d %s\n" $(custom_sort ${L}) ${L}
+done | sort -n | sed 's/[0-9] //'
+echo "--------\n"
+
+#HDR="Declared, Assigned, Referenced, Unused vars for app"
+#echo "${CYAN_FG}${HDR}${RESET}:${WHITE_ON_GREY}${TARGET_SCRIPT}${RESET}"
+#echo $(str_unicode_line ${#HDR})
+#
+#HDR="Declared Variables"
+#echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+#echo $(str_unicode_line ${#HDR})
+#for L in ${(o)_DECL_VARS};do
+#	printf "%d %s\n" $(custom_sort ${L}) ${L}
+#done | sort -n | sed 's/[0-9] //'
+#
+#HDR="Assigned Variables"
+#echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+#echo $(str_unicode_line ${#HDR})
+#for L in ${(o)_ASGN_VARS};do
+#	printf "%d %s\n" $(custom_sort ${L}) ${L}
+#done | sort -n | sed 's/[0-9] //'
+#
+#HDR="Referenced Variables"
+#echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+#echo $(str_unicode_line ${#HDR})
+#for L in ${(o)_REFD_VARS};do
+#	printf "%d %s\n" $(custom_sort ${L}) ${L}
+#done | sort -n | sed 's/[0-9] //'
+
+#HDR="Unused Variables"
+#echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+#echo $(str_unicode_line ${#HDR})
+#for L in ${(o)_UNSD_VARS};do
+#	printf "%d %s\n" $(custom_sort ${L}) ${L}
+#done | sort -n | sed 's/[0-9] //'
+) | mypager

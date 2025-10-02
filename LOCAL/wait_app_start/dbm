@@ -17,7 +17,11 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-/bin/rm -f dbg
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 get_val () {
 	local KEY=${1};shift
@@ -45,10 +49,12 @@ do_dbg () {
 	[[ ${LINE:l} =~ ${_ARG:l} ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT ${_ARG} - ${LINE}">>dbg
 }
 
+# Execution
 /bin/rm -f ./dbg
-echo "Output is redirected to ./dbg" >&2
+[[ ${#} -eq 0 ]] && echo "${_SCRIPT_TAG} Missing argument: <SEARCHTERM>" && exit
 
 _ARG=${1}
+echo "Output is redirected to ./dbg" >&2
 
 while IFS= read -ru3 LINE;do
 	if [[ ${LINE:l} =~ 'method' ]];then

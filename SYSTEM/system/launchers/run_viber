@@ -1,2 +1,3 @@
 #!/usr/bin/zsh
-/opt/viber/Viber &
+CNT=$(pgrep -c viber)
+[[ ${CNT} -ne 0 ]] && /opt/viber/Viber &
