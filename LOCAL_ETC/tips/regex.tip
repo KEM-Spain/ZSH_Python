@@ -2,6 +2,36 @@
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_regex_EOF_1
 
+${E_WHITE_FG}Collected POSIX/GNU:${E_RESET}
+
+# file: 'test.txt'
+foobar bash 1
+bash
+foobar happy
+foobar
+
+GNU grep has the -P option for perl-style regexes, and the -o option to ${E_WHITE_FG}print only${E_RESET}
+${E_WHITE_FG}what matches the pattern${E_RESET}. These can be combined using look-around assertions 
+(described under Extended Patterns in the perlre manpage) to remove part of the grep 
+pattern from what is determined to have matched for the purposes of -o.
+
+#: grep -oP 'foobar \K\w+' test.txt
+bash
+happy
+
+The \K is the short-form (and more efficient form) of (?<=pattern) which you use as a 
+zero-width look-behind assertion before the text you want to output. (?=pattern) can be 
+used as a zero-width look-ahead assertion after the text you want to output.
+
+For instance, if you wanted to match the word between foo and bar, you could use:
+
+#: grep -oP 'foo \K\w+(?= bar)' test.txt
+
+or (for symmetry)
+
+#: grep -oP '(?<=foo )\w+(?= bar)' test.txt
+
+
 ${E_WHITE_FG}Regular expressions in Perl${E_RESET}
 
 This document presents a tabular summary of the regular expression

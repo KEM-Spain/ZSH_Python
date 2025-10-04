@@ -434,8 +434,7 @@ clean_title () {
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 
-	# TODO: str_word_clip returning a line too long to fit inside download box
-	STR=$(str_word_clip ${STR} ${TITLE_LEN}) 
+	STR=$(str_word_clip ${STR} ${TITLE_LEN})
 	logit ${_YTS_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"
 
 	TITLE=${STR}

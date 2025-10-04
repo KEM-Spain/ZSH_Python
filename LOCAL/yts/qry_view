@@ -5,6 +5,8 @@ typeset -a LINKS
 typeset -a AGES
 typeset -a DURATIONS
 
+[[ ! -e "./Rumble-channel.qry" ]] && echo "First run Rumble query using yts with -DDDD to generate qry file" && exit
+
 # Tie titles to links to age to duration
 TITLES_1=("${(f)$(pup --charset utf8 '.title__link text{}' < ./Rumble-channel.qry | tut blank_lines | sed 's/|//g')}")
 LINKS_1=("${(f)$(pup --charset utf8 '.title__link attr{href}' < ./Rumble-channel.qry)}")
