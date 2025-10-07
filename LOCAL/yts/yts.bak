@@ -65,13 +65,13 @@ _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
 _FIELD_LEN[title]=80
-_JS_SCRIPT=/usr/local/etc/yts.js
+_JS_SCRIPT="/usr/local/etc/yts.js"
 _MAX_ERRORS=10
 _MAX_FLEN=85
 _MAX_HDR=70
 _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
-_OBJECT=video
+_OBJECT="video"
 _PAUSE_TM=2
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
@@ -430,22 +430,21 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
-	logit ${_YTS_DBG_LOG} "${0}: DISPLAY KEY:${g_DISPLAY_KEY}"
+	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}, DISPLAY KEY:${g_DISPLAY_KEY}, QUERY KEY:${g_QUERY_KEY}"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
+
+	STR=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${STR})
 
 	STR=$(str_word_clip ${STR} ${TITLE_LEN})
 	logit ${_YTS_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"
 
-	TITLE=${STR}
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
 	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
 
-	TITLE=${STR}
 	STR=$(sed 's/[ _]\(d\|l\|s\|t\|re\|ve\)[ _]/\o047\1 /Ig' <<<${STR}) # Fix any yt-dlp contraction gaps
 	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Contraction gap:${STR}"
 	 
-	TITLE=${STR}
 	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
 	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
 	 
@@ -455,19 +454,15 @@ clean_title () {
 	done
 	#[[ -n ${UCASE_WORDS} ]] && logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
-	TITLE=${STR}
 	STR=$(perl -pe  's/\o{47}(?![rstv].?\b)//g' <<<${STR}) # Remove any sentence quotes, leave contractions
 	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Sentence quotes:${STR}"
 
-	TITLE=${STR}
 	STR=$(sed -E -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' -e 's/(\S)([-])(\S)/\1 \3/g' <<<${STR}) # Trim
 	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Trim and separate hyphenated words:${STR}"
 	 
-	TITLE=${STR}
 	STR=${(C)STR} # Proper case
 	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
 
-	TITLE=${STR}
 	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
 	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
 
@@ -491,11 +486,13 @@ clean_title () {
 		STR=$(sed "s/${W}//I" <<<${STR})
 	done
 	#logit ${_YTS_DBG_LOG} "${0}: Scrubbed keywords"
+	
 
 	TITLE=${STR[1,${_MAX_TITLE}]} # Title length
 
-	logit ${_YTS_DBG_LOG} "${0}: Final:${STR}"
-	echo ${STR}
+	logit ${_YTS_DBG_LOG} "${0}: Final:${TITLE}"
+
+	echo ${TITLE}
 }
 
 dashed_line () {
@@ -1550,9 +1547,11 @@ set_final_fn () {
 	logit ${_YTS_DBG_LOG} "${0}: Received:${FN}"
 
 	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
+	NEW_FN=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${NEW_FN})
 	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
 	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
+
 
 	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
 

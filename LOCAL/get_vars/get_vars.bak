@@ -56,12 +56,13 @@ var_filter () {
 clear
 
 [[ -z ${1} ]] && echo "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<ZSH_SCRIPT>" && exit
+[[ ! -e ${1} ]] && echo "${_SCRIPT_TAG} ${RED_FG}File Not Found${RESET}:${1}" && exit
 TARGET_SCRIPT=${1}
 TYPE=$(file -b ${TARGET_SCRIPT})
 [[ ! ${TYPE} =~ 'zsh' && ${TARGET_SCRIPT:e} != 'zsh' ]] && echo "${_SCRIPT_TAG} ${RED_FG}Unsupported file type${RESET}:${TARGET_SCRIPT} (zsh scripts only!)" && exit
 
 # All
-typeset -aU _ALL_VARS=("${(f)$(grep -v '^#' ${TARGET_SCRIPT} | grep --color=never -o -P '(([$]{?[[:word:]]+})|.?([[:word:]]+[+]?="))' | sed -E -e 's/^[[:space:]]*//' -e '/^[\x2D\\].*/d' -e 's/([${}\"=\+])//g')}")
+typeset -aU _ALL_VARS=("${(f)$(grep -v '^#' ${TARGET_SCRIPT} | grep --color=never -o -P '(([$]{?[[:word:]]+})|.?([[:word:]]+[+]?="))' | sed -E -e 's/^[[:space:]]*//' -e '/^[\x2D\\].*/d' -e 's/([${}\"=\+\;])//g')}")
 
 # Assigned
 # The only valid right side types of the = are number, text in s|d quotes, variable, and left paren

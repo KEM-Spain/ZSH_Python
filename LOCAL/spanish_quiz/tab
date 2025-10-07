@@ -1,0 +1,176 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Declarations
+typeset -A V_MAP=(VB 1 TY 2 CX 3 YO 4 YF 5 EL 6 WE 7 YP 8 TH 9)
+typeset -a V_TYPES=(indicative perfect progressive imperative subjunctive perfect_subj all)
+typeset -A IND_CONTEXT_SORT=(present 1 preterite 2 imperfect 3 future 4 conditional 5 all 6)
+typeset -A IMP_CONTEXT_SORT=(affirmative 1 negative 2 all 3)
+typeset -A SUB_CONTEXT_SORT=(present 1 future 2 imperfect 3 imperfect2 4 all 5)
+typeset -A PSUB_CONTEXT_SORT=(future 1 past 2 present 3 all 4)
+typeset -A HDR_DATA=(GR 2 PR 3 IR 4 DF 5)
+typeset -A SP_TERMS=(
+"indicative present" "presente"
+"indicative preterite" "pretérito indefinido"
+"indicative imperfect" "pretérito imperfecto"
+"indicative future" "futuro simple"
+"indicative conditional" "condicional simple"
+"perfect present" "pretérito perfecto"
+"perfect preterite" "pretérito anterior"
+"perfect imperfect" "pretérito pluscuamperfecto"
+"perfect future" "futuro perfecto"
+"perfect conditional" "condicional perfecto"
+"progressive present" "presente progresivo"
+"progressive preterite" "pretérito perfecto simple"
+"progressive imperfect" "pasado progresivo"
+"progressive future" "futuro progresivo"
+"progressive conditional" "condicional progresivo"
+"imperative affirmative" "imperativo afirmativo"
+"imperative negative" "imperativo negativo"
+"subjunctive present" "presente de subjuntivo"
+"subjunctive future" "futuro simple de subjuntivo"
+"subjunctive imperfect" "pretérito imperfecto de subjuntivo"
+"subjunctive imperfect2" "pretérito imperfecto2 de subjuntivo"
+"perfect_subj future" "futuro perfecto de subjuntivo"
+"perfect_subj past" "pretérito pluscuamperfecto de subjuntivo"
+"perfect_subj present" "pretérito perfecto subjuntivo"
+)
+
+# Execution
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ -n ${1} ]] && VERB=${1:l}
+[[ -n ${2} ]] && V_TYPE=${2:l} || V_TYPE=''
+[[ -n ${3} ]] && V_CONTEXT=${3:l} || V_CONTEXT=''
+
+[[ -z ${VERB} ]] && echo "Missing argument:<VERB>" && exit
+VERB_DATA=("${(f)$(verb_dump ${VERB})}")
+
+if [[ -z ${V_TYPE} ]];then
+	clear
+	sel_set_list ${(C)V_TYPES}
+	sel_list -O ${CYAN_FG} -F"<w>Select Verb Type or <h>(q)uit<N>" -H"Verb Types"
+	V_TYPE=${_SEL_VAL:l}
+fi
+
+if [[ -z ${V_CONTEXT} ]];then
+	clear
+	if [[ ${V_TYPE:l} == 'indicative' ]];then
+		sel_set_list ${(Ck)IND_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
+	elif [[ ${V_TYPE:l} == 'subjunctive' ]];then
+		sel_set_list ${(Ck)SUB_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Subjunctive Context or <h>(q)uit<N>" -H"Subjunctive Contexts"
+	elif [[ ${V_TYPE:l} == 'perfect_subj' ]];then
+		sel_set_list ${(Ck)PSUB_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Perfect Subjunctive Context or <h>(q)uit<N>" -H"Perfect Subjunctive Contexts"
+	elif [[ ${V_TYPE:l} == 'imperative' ]];then
+		sel_set_list ${(Ck)IMP_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Imperative Context or <h>(q)uit<N>" -H"Imperative Contexts"
+	fi
+	V_CONTEXT=${_SEL_VAL:l}
+fi
+
+OUT=false
+for L in ${VERB_DATA};do
+	VB=$(cut -d'|' -f${V_MAP[VB]} <<<${L})
+	TY=$(cut -d'|' -f${V_MAP[TY]} <<<${L})
+	CX=$(cut -d'|' -f${V_MAP[CX]} <<<${L})
+	YO=$(cut -d'|' -f${V_MAP[YO]} <<<${L})
+	YF=$(cut -d'|' -f${V_MAP[YF]} <<<${L})
+	EL=$(cut -d'|' -f${V_MAP[EL]} <<<${L})
+	WE=$(cut -d'|' -f${V_MAP[WE]} <<<${L})
+	YP=$(cut -d'|' -f${V_MAP[YP]} <<<${L})
+	TH=$(cut -d'|' -f${V_MAP[TH]} <<<${L})
+	IR=$(cut -d'|' -f10 <<<${L})
+	GR=$(cut -d'|' -f6 <<<${L})
+
+	if [[ ${OUT} == 'false' && -z ${EL} ]];then
+		GRND=$(cut -d'|' -f${HDR_DATA[GR]} <<<${L})
+		PART=$(cut -d'|' -f${HDR_DATA[PR]} <<<${L})
+		IRRG=$(cut -d'|' -f${HDR_DATA[IR]} <<<${L})
+		DEFN=$(cut -d'|' -f${HDR_DATA[DF]} <<<${L})
+		continue
+	fi
+
+	if [[ ${OUT} == 'false' ]];then
+		[[ ${IRRG} == '1' ]] && IRRG='(irregular)' || IRRG='(regular)'
+		VB_HDR="${VB} ${IRRG}"
+		echo "1    Verb:${VB_HDR}"
+		echo "2    Gerund:${GRND}"
+		echo "3    Past Participle:${PART}"
+		echo "4    Definition:${DEFN}"
+		OUT=true
+	fi
+
+	[[ (-n ${V_TYPE} && ${V_TYPE:l} != 'all') && ${TY:l} != ${V_TYPE:l} ]] && continue
+	[[ (-n ${V_CONTEXT} && ${V_CONTEXT:l} != 'all') && ${CX:l} != ${V_CONTEXT:l} ]] && continue
+
+	EN_HDR="${TY} ${CX}"
+	SP_HDR="${SP_TERMS[${EN_HDR}]}"
+
+	case ${TY} in
+		indicative) T_NDX=1;;
+		perfect) T_NDX=2;;
+		progressive) T_NDX=3;;
+		*) T_NDX=0;;
+	esac
+
+	if [[ ${TY:l} == 'indicative' || ${TY} == 'perfect' || ${TY} == 'progressive' ]];then
+		echo "${T_NDX}${IND_CONTEXT_SORT[${CX}]}00 LF ${(C)SP_HDR}"
+		printf "%d%d10    Yo %s\n" ${T_NDX} ${IND_CONTEXT_SORT[${CX}]} ${YO}
+		printf "%d%d20    Tú %s\n" ${T_NDX} ${IND_CONTEXT_SORT[${CX}]} ${YF}
+		printf "%d%d30    Él %s\n" ${T_NDX} ${IND_CONTEXT_SORT[${CX}]} ${EL}
+		printf "%d%d40   Nos %s\n" ${T_NDX} ${IND_CONTEXT_SORT[${CX}]} ${WE}
+		printf "%d%d50   Vos %s\n" ${T_NDX} ${IND_CONTEXT_SORT[${CX}]} ${YP}
+		printf "%d%d60 Ellos %s\n" ${T_NDX} ${IND_CONTEXT_SORT[${CX}]} ${TH}
+	elif [[ ${TY:l} == 'imperative' ]];then
+		echo "44${IMP_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
+		printf "44%d1    Yo %s\n" ${IMP_CONTEXT_SORT[${CX}]} ${YO}
+		printf "44%d2    Tú %s\n" ${IMP_CONTEXT_SORT[${CX}]} ${YF}
+		printf "44%d3    Él %s\n" ${IMP_CONTEXT_SORT[${CX}]} ${EL}
+		printf "44%d4   Nos %s\n" ${IMP_CONTEXT_SORT[${CX}]} ${WE}
+		printf "44%d5   Vos %s\n" ${IMP_CONTEXT_SORT[${CX}]} ${YP}
+		printf "44%d6 Ellos %s\n" ${IMP_CONTEXT_SORT[${CX}]} ${TH}
+	elif [[ ${TY:l} == 'subjunctive' ]];then
+		echo "55${SUB_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
+		printf "55%d1    Yo %s\n" ${SUB_CONTEXT_SORT[${CX}]} ${YO}
+		printf "55%d2    Tú %s\n" ${SUB_CONTEXT_SORT[${CX}]} ${YF}
+		printf "55%d3    Él %s\n" ${SUB_CONTEXT_SORT[${CX}]} ${EL}
+		printf "55%d4   Nos %s\n" ${SUB_CONTEXT_SORT[${CX}]} ${WE}
+		printf "55%d5   Vos %s\n" ${SUB_CONTEXT_SORT[${CX}]} ${YP}
+		printf "55%d6 Ellos %s\n" ${SUB_CONTEXT_SORT[${CX}]} ${TH}
+	elif [[ ${TY:l} == 'perfect_subj' ]];then
+		echo "65${PSUB_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
+		printf "65%d1    Yo %s\n" ${PSUB_CONTEXT_SORT[${CX}]} ${YO}
+		printf "65%d2    Tú %s\n" ${PSUB_CONTEXT_SORT[${CX}]} ${YF}
+		printf "65%d3    Él %s\n" ${PSUB_CONTEXT_SORT[${CX}]} ${EL}
+		printf "65%d4   Nos %s\n" ${PSUB_CONTEXT_SORT[${CX}]} ${WE}
+		printf "65%d5   Vos %s\n" ${PSUB_CONTEXT_SORT[${CX}]} ${YP}
+		printf "65%d6 Ellos %s\n" ${PSUB_CONTEXT_SORT[${CX}]} ${TH}
+	fi
+done | sort -n | sed -e 's/^....//' -e 's/LF/\n/' | mypager
+
+exit_leave

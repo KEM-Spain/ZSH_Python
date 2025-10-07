@@ -22,10 +22,11 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
-typeset -a BLACKLIST=(BOLD ITALIC RESET REVERSE STRIKE UNDER BLACK BLUE CYAN GREEN MAGENTA RED WHITE YELLOW CSR WHITE_ON_GREY OPT OPTS OPTION OPTIONS OPTSTR OPTIND)
+typeset -a BLACKLIST=(BOLD ITALIC RESET REVERSE STRIKE UNDER BLACK BLUE CYAN GREEN MAGENTA RED WHITE YELLOW CSR WHITE_ON_GREY LETTER_OPT OPT OPTS OPTION OPTIONS OPTSTR OPTIND)
 typeset -aU _ALL_VARS=()
 typeset -aU _DECL_VARS=()
 typeset -aU _REFD_VARS=()
@@ -52,6 +53,81 @@ var_filter () {
 	[[ ${BLACKLIST[(i)${ARG}]} -le ${#BLACKLIST} ]] && echo 'true' || echo 'false'
 }
 
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Introspect scripts to expose variables
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-d${RESET} detail view"
+	echo -e "${WHITE_FG}-O $(opt_type O)${RESET} $(opt_type O) requires an argument"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave ${PENDING_MSGS}
+}
+
+OPTSTR=":HDd"
+OPTIND=0
+
+DETAIL=false
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     d) DETAIL=true;;
+     :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
 # Execute
 clear
 
@@ -62,14 +138,14 @@ TYPE=$(file -b ${TARGET_SCRIPT})
 [[ ! ${TYPE} =~ 'zsh' && ${TARGET_SCRIPT:e} != 'zsh' ]] && echo "${_SCRIPT_TAG} ${RED_FG}Unsupported file type${RESET}:${TARGET_SCRIPT} (zsh scripts only!)" && exit
 
 # All
-typeset -aU _ALL_VARS=("${(f)$(grep -v '^#' ${TARGET_SCRIPT} | grep --color=never -o -P '(([$]{?[[:word:]]+})|.?([[:word:]]+[+]?="))' | sed -E -e 's/^[[:space:]]*//' -e '/^[\x2D\\].*/d' -e 's/([${}\"=\+\;])//g')}")
+_ALL_VARS=("${(f)$(grep -v '^#' ${TARGET_SCRIPT} | grep --color=never -o -P '(([$]{?[[:word:]]+})|.?([[:word:]]+[+]?="))' | sed -E -e 's/^[[:space:]]*//' -e '/^[\x2D\\].*/d' -e 's/([${}\"=\+\;])//g')}")
 
 # Assigned
 # The only valid right side types of the = are number, text in s|d quotes, variable, and left paren
-typeset -aU _ASGN_VARS=("${(f)$(grep -v '^#' ${TARGET_SCRIPT} | grep --color=never -o -P "((for \w+)|(\w+(=|\+=)([0-9\$\(]|\x22|\x27)))" | sed -E -e 's/(\$|=|\+=).*//' -e 's/for //')}")
+_ASGN_VARS=("${(f)$(grep -v '^#' ${TARGET_SCRIPT} | grep --color=never -o -P "((for \w+)|(\w+(=|\+=)([0-9\$\(]|\x22|\x27)))" | sed -E -e 's/(\$|=|\+=).*//' -e 's/for //')}")
 
 # Declared
-typeset -aU _DECL_VARS=("${(f)$(grep -v '^#' ${TARGET_SCRIPT} | sed -E 's/^[[:space:]]*//' | grep --color=never -oP '^(typeset\s+|local\s+)(\x2D\w+\s+)?\K(.*)' | sed 's/=.*//')}")
+_DECL_VARS=("${(f)$(grep -v '^#' ${TARGET_SCRIPT} | sed -E 's/^[[:space:]]*//' | grep --color=never -oP '^(typeset\s+|local\s+)(\x2D\w+\s+)?\K(.*)' | sed 's/=.*//')}")
 _DECL_VARS=(${=_DECL_VARS}) # Some declarations are stacked horiz - verticalize
 
 for V in ${_ALL_VARS};do
@@ -78,48 +154,104 @@ for V in ${_ALL_VARS};do
 done
 _ALL_VARS=(${_TMP}) # Filter out any unecessary elements
 
-(
-HDR="Declared, Assigned, and Referenced"
-echo "${CYAN_FG}${HDR}${RESET}:${TARGET_SCRIPT}"
-echo ${WHITE_FG}$(str_unicode_line ${#HDR})${RESET}
+if [[ ${DETAIL} == 'false' ]];then
+	# Summary View
+	(
+	HDR="Declared, Assigned, and Referenced"
+	echo "${CYAN_FG}${HDR}${RESET}:${TARGET_SCRIPT}"
+	echo ${WHITE_FG}$(str_unicode_line ${#HDR})${RESET}
 
-HDR="Declared Variables"
-echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
-echo ${CYAN_FG}$(str_unicode_line ${#HDR})${RESET}
+	HDR="Declared Variables"
+	echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+	echo ${CYAN_FG}$(str_unicode_line ${#HDR})${RESET}
+	if arr_is_populated "${_DECL_VARS}";then
+		for L in ${(o)_DECL_VARS};do
+			if arr_in_array "_ALL_VARS" ${L};then # Limit to values in master list
+				printf "%d %s\n" $(custom_sort ${L}) ${L}
+			fi
+		done | sort -n | sed 's/[0-9] //'
+	else
+		echo "None"
+	fi
 
-if arr_is_populated "${_DECL_VARS}";then
-	for L in ${(o)_DECL_VARS};do
-		if arr_in_array "_ALL_VARS" ${L};then # Limit to values in master list
-			printf "%d %s\n" $(custom_sort ${L}) ${L}
-		fi
-	done | sort -n | sed 's/[0-9] //'
+	HDR="Assigned Variables"
+	echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+	echo $(str_unicode_line ${#HDR})
+	if arr_is_populated "${_ASGN_VARS}";then
+		for L in ${(o)_ASGN_VARS};do
+			if arr_in_array "_ALL_VARS" ${L};then # Limit to values in master list
+				printf "%d %s\n" $(custom_sort ${L}) ${L}
+			fi
+		done | sort -n | sed 's/[0-9] //'
+	else
+		echo "None"
+	fi
+
+	HDR="Referenced Variables"
+	echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+	echo $(str_unicode_line ${#HDR})
+	if arr_is_populated "${_ALL_VARS}";then
+		for L in ${(o)_ALL_VARS};do
+			if ! arr_in_array "_ASGN_VARS" ${L};then # Not in assigned - designate as referenced
+				printf "%d %s\n" $(custom_sort ${L}) ${L}
+			fi
+		done | sort -n | sed 's/[0-9] //'
+	else
+		echo "None"
+	fi
+	) | mypager
 else
-	echo "None"
-fi
+	# TODO: grep line number and matches into an array so ansi won't interfere with display formatting
+	(
+	# Detail View
+	HDR="Declared Variables"
+	echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+	echo ${CYAN_FG}$(str_unicode_line ${#HDR})${RESET}
+	if arr_is_populated "${_DECL_VARS}";then
+		for L in ${(o)_DECL_VARS};do
+			if arr_in_array "_ALL_VARS" ${L};then # Limit to values in master list
+				grep --color=never ${L} ${TARGET_SCRIPT} | grep --color=always -P "typeset" | sort -t' ' -k2
+			fi
+		done
+	else
+		echo "None"
+	fi
 
-HDR="Assigned Variables"
-echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
-echo $(str_unicode_line ${#HDR})
-if arr_is_populated "${_ASGN_VARS}";then
-	for L in ${(o)_ASGN_VARS};do
-		if arr_in_array "_ALL_VARS" ${L};then # Limit to values in master list
-			printf "%d %s\n" $(custom_sort ${L}) ${L}
-		fi
-	done | sort -n | sed 's/[0-9] //'
-else
-	echo "None"
-fi
+	HDR="Assigned Variables"
+	echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+	echo $(str_unicode_line ${#HDR})
+	if arr_is_populated "${_ASGN_VARS}";then
+		for L in ${(o)_ASGN_VARS};do
+			if arr_in_array "_ALL_VARS" ${L};then # Limit to values in master list
+				echo "\n${MAGENTA_FG}${L}${RESET}"
+				REGEX="^.*\b\K${L}"
+				grep --color=always -n -w -P ${REGEX} ${TARGET_SCRIPT} | tr -s '[:space:]'
+			fi
+		done
+	else
+		echo "None"
+	fi
 
-HDR="Referenced Variables"
-echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
-echo $(str_unicode_line ${#HDR})
-if arr_is_populated "${_ALL_VARS}";then
-	for L in ${(o)_ALL_VARS};do
-		if ! arr_in_array "_ASGN_VARS" ${L};then # Not in assigned - designate as referenced
-			printf "%d %s\n" $(custom_sort ${L}) ${L}
-		fi
-	done | sort -n | sed 's/[0-9] //'
-else
-	echo "None"
+	HDR="Referenced Variables"
+	echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
+	echo $(str_unicode_line ${#HDR})
+	if arr_is_populated "${_ALL_VARS}";then
+		for L in ${(o)_ALL_VARS};do
+			if ! arr_in_array "_ASGN_VARS" ${L};then # Not in assigned - designate as referenced
+				if validate_is_number ${L};then
+					echo "\n${MAGENTA_FG}${L}${RESET}"
+					REGEX="=[$]{?[0-9]+}[}:]?"
+					grep --color=always -n -P ${REGEX} ${TARGET_SCRIPT} | tr -s '[:space:]'
+				else
+					echo "\n${MAGENTA_FG}${L}${RESET}"
+					REGEX="^.*\K${L}"
+					grep --color=always -n -w -P ${REGEX} ${TARGET_SCRIPT} | tr -s '[:space:]' 
+					#grep --color=never -w -P ${L} ${TARGET_SCRIPT} | sort -u | grep --color=always -n -w ${L} ${TARGET_SCRIPT} | tr -s '[:space:]' 
+				fi
+			fi
+		done
+	else
+		echo "None"
+	fi
+	) | mypager
 fi
-) | mypager

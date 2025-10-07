@@ -86,7 +86,6 @@ echo ${WHITE_FG}$(str_unicode_line ${#HDR})${RESET}
 HDR="Declared Variables"
 echo "\n${WHITE_ON_GREY}${HDR}${RESET}"
 echo ${CYAN_FG}$(str_unicode_line ${#HDR})${RESET}
-
 if arr_is_populated "${_DECL_VARS}";then
 	for L in ${(o)_DECL_VARS};do
 		if arr_in_array "_ALL_VARS" ${L};then # Limit to values in master list
