@@ -60,7 +60,7 @@ typeset -A SP_TERMS=(
 )
 
 # Execution
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -n ${1} ]] && VERB=${1:l}
 [[ -n ${2} ]] && V_TYPE=${2:l} || V_TYPE=''
 [[ -n ${3} ]] && V_CONTEXT=${3:l} || V_CONTEXT=''
