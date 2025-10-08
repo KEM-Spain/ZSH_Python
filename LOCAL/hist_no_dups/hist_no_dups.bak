@@ -65,6 +65,7 @@ while
 )
 
 # Vars
+_FORCE=?
 _PROD=?
 _DEEP=?
 _FREQ=?
@@ -75,7 +76,7 @@ size_diff () {
 	local LAST_SIZE=$(stat -c"%s" ${HIST_BAK})
 	local DIFF=0
 	local -F PCT=0
-	local -F THRESHOLD=5
+	local -F THRESHOLD=4
 	local -F AVG=0
 
 	[[ ${CUR_SIZE} -gt ${LAST_SIZE} ]] && DIFF=$(( CUR_SIZE - LAST_SIZE )) || DIFF=$(( LAST_SIZE - CUR_SIZE ))
@@ -132,6 +133,7 @@ cmd_filter () {
 
 	for K in ${(k)${(P)ARRAY}};do
 		((NDX++))
+		[[ ${NDX} -eq 476 ]] && continue
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
 		CMD_IN=$(cut -d';' -f2 <<<${K})
 		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN})
@@ -167,18 +169,18 @@ cmd_filter () {
 			fi
 		fi
 
-		if [[ ${VALID} == 'false' ]];then
-			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
-			CMD_OUT=$(locate -b -e ${CMD_MSK})
-			if [[ ${?} -eq 0 ]];then
-				if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
-					VALID='true'
-					((LOC++))
-					printf '%s\n' "${K}"
-					printf '%s\n' "${CMD_OUT}">>${_HIST_CACHE}
-				fi
-			fi
-		fi
+#		if [[ ${VALID} == 'false' ]];then
+#			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
+#			CMD_OUT=$(locate -b -e ${CMD_MSK})
+#			if [[ ${?} -eq 0 ]];then
+#				if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
+#					VALID='true'
+#					((LOC++))
+#					printf '%s\n' "${K}"
+#					printf '%s\n' "${CMD_OUT}">>${_HIST_CACHE}
+#				fi
+#			fi
+#		fi
 
 		if [[ ${VALID} == 'false' ]];then
 			((RJT++))
@@ -254,6 +256,7 @@ usage () {
 	(
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} [-p -d -f]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-F${RESET} force"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-f${RESET} frequent commands w/o arguments"
 	echo -e "${WHITE_FG}-d${RESET} unique commands w/o arguments"
@@ -269,16 +272,19 @@ usage () {
 # Execution
 [[ $(got_opt H ${@}) -eq 0 ]] && usage
 [[ $(got_opt D ${@}) -eq 0 ]] && _DEBUG=1 || _DEBUG=0
+[[ $(got_opt F ${@}) -eq 0 ]] && _FORCE=true || _FORCE=false
 [[ $(got_opt p ${@}) -eq 0 ]] && _PROD=true || _PROD=false
 [[ $(got_opt d ${@}) -eq 0 ]] && _DEEP=true || _DEEP=false
 [[ $(got_opt f ${@}) -eq 0 ]] && _FREQ=true || _FREQ=false
 [[ $(got_opt v ${@}) -eq 0 ]] && _VERBOSE=true || _VERBOSE=false
 [[ $(got_opt t ${@}) -eq 0 ]] && _TESTING=true || _TESTING=false
 
-MSG=$(size_diff)
-if [[ ${?} -ne 0 ]];then
-	echo -n "History rebuild not required / ${MSG}"
-	exit_leave
+if [[ ${_FORCE} == 'false' ]];then
+	MSG=$(size_diff)
+	if [[ ${?} -ne 0 ]];then
+		echo -n "History rebuild not required / ${MSG}"
+		exit_leave
+	fi
 fi
 
 [[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"

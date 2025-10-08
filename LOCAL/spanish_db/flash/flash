@@ -4,30 +4,16 @@ typeset -A _T_DEFS
 typeset -A _Q_NDX
 typeset -a _QTEXT
 
-
 #Constants
-QFILE=/home/kmiller/Code/LOCAL/spanish_quiz/flash/test_questions
-TENSE_DEFS=/home/kmiller/Code/LOCAL/spanish_quiz/flash/tense_defs
+QFILE=/home/kmiller/Code/LOCAL/spanish_db/flash/test_questions
+TENSE_DEFS=/home/kmiller/Code/LOCAL/spanish_db/flash/tense_defs
 
-#Globals
-
-#Imports
-_LIB_DIR=/usr/local/lib
-source ${_LIB_DIR}/LIB_INIT.zsh
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/STR.zsh
-
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB_DIR}/${D} ]];then
-		source ${_LIB_DIR}/${D}
-	else
-		echo "Cannot source:${_LIB_DIR}/${D} - not found"
-		exit 1
-	fi
-done
-
-#Functions
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 #--Begin GetOpts--
 local -a OPTIONS
@@ -83,7 +69,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err "${PENDING_MSGS}")
+	exit_leave $(err_msg_err "${PENDING_MSGS}")
 }
 
 OPTSTR=":HD"
@@ -145,18 +131,17 @@ for K in ${(onk)_Q_NDX};do
 	echo "${K_CNT} of ${Q_CNT}"
 	if [[ ! ${K} =~ '_A' ]];then
 		MSG_READY=false
-		MSG+="${_Q_NDX[${K}]}"
+		[[ ! "${_Q_NDX[${K}]}" =~ 'ANSWER' ]] && Q="${_Q_NDX[${K}]}"
+		[[ "${_Q_NDX[${K}]}" =~ 'ANSWER' ]] && A="${_Q_NDX[${K}]}"
 		continue
 	else
 		MSG_READY=true
 	fi
 
-	ANS=$(sed 's/\(<ANSWER:\)\(.*\)\(:>\)/\2/' <<<${MSG[2]})
-	MSG[2]=$(sed 's/<ANSWER:.*:>/<?>/' <<<${MSG[2]})
-	MSG[2]=$(sed "s/<?>/${ANS}/" <<<${MSG[2]})
+	A=$(sed -E -e 's/ANSWER://' -e 's/\:>/>/' <<<${A})
 
 	if [[ ${MSG_READY} == 'true' ]];then
-		msg_box -c -q -p -x2 -y1 -w${MSG_W} -h${MSG_H} ${MSG}
+		msg_box -c -q -p -x2 -y1 -w${MSG_W} -h${MSG_H} "${Q}|${A}"
 	fi
 
 	[[ ${_MSG_KEY} == 'q' ]] && exit_leave

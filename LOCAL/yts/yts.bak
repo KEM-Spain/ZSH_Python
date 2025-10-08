@@ -1239,7 +1239,7 @@ post_process () {
 		if [[ ${?} -ne 0 ]];then
 			sleep 2 && break
 		fi
-		msg_box -x14 "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish..."
+		msg_box -x14 "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish postprocessing..."
 		sleep 1
 	done
 

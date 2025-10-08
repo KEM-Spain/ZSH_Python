@@ -67,6 +67,10 @@ typeset -A SP_TERMS=(
 
 [[ -z ${VERB} ]] && echo "Missing argument:<VERB>" && exit
 VERB_DATA=("${(f)$(verb_dump ${VERB})}")
+if ! arr_is_populated "${VERB_DATA}";then
+	do_rmcup
+	exit_leave $(err_msg_exit W "Verb ${VERB}:not found")
+fi
 
 if [[ -z ${V_TYPE} ]];then
 	clear
@@ -112,6 +116,7 @@ for L in ${VERB_DATA};do
 		PART=$(cut -d'|' -f${HDR_DATA[PR]} <<<${L})
 		IRRG=$(cut -d'|' -f${HDR_DATA[IR]} <<<${L})
 		DEFN=$(cut -d'|' -f${HDR_DATA[DF]} <<<${L})
+		DEFN=$(html2text <<<${DEFN})
 		continue
 	fi
 
