@@ -130,7 +130,7 @@ function usage {
 	echo -e "${WHITE_FG}-s${RESET} simulation - download but do not load database"
 	echo -e "${WHITE_FG}-u${RESET} update data in database"
 	echo -e "\n${WHITE_FG}DESC${RESET}:Pull verb conjugation data from spanishconjugation.net and save to database\n"
-	exit
+	exit 1
 
 }
 
@@ -158,10 +158,10 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #Execution
-[[ -z ${DB_OPT} ]] && DB_OPT='-a' #default to append
-[[ -z ${1} ]] && echo "Need verb" && exit
+[[ -z ${DB_OPT} ]] && DB_OPT='-a' # Default to append
+[[ -z ${1} ]] && echo "Need verb" && exit 1
 
-if [[ ${LOCAL_FILES} == 'false' ]];then #go straight to data load
+if [[ ${LOCAL_FILES} == 'false' ]];then # Go straight to data load
 	get_data ${1}
 
 	#create verb master
@@ -173,13 +173,13 @@ if [[ ${LOCAL_FILES} == 'false' ]];then #go straight to data load
 		grep -q ${1:l} < ${IRREGULAR_LIST}
 		[[ ${?} -eq 0 ]] && IRR=1 || IRR=0
 	fi
-	echo -n "${1}," > ${1}_verb.dat #add verb
-	echo -n "${GER}," >> ${1}_verb.dat #add gerund
-	echo -n "${PP}," >> ${1}_verb.dat #add participle
-	echo -n "${IRR}," >> ${1}_verb.dat #add irregular placeholder
-	echo \"${TRANS}\" >> ${1}_verb.dat #add translation
+	echo -n "${1}," > ${1}_verb.dat #Add verb
+	echo -n "${GER}," >> ${1}_verb.dat #Add gerund
+	echo -n "${PP}," >> ${1}_verb.dat #Add participle
+	echo -n "${IRR}," >> ${1}_verb.dat #Add irregular placeholder
+	echo \"${TRANS}\" >> ${1}_verb.dat #Add translation
 
-	#tweak for haber
+	# Tweak for haber
 	[[ ${1} == 'haber' ]] && IND_PRES=$(sed 's# ha # ha/hay #' <<<${IND_PRES})
 
 	echo ${IND_PRES}>>${1}_temp.dat
@@ -316,6 +316,7 @@ fi
 if [[ ${SIMULATION} == 'false' ]];then
 	make_spanish_db ${DB_OPT} ${1}
 
-	#cleanup
+	# Cleanup
 	[[ ${DEBUG} == "false" ]] && rm -f *${1}*
 fi
+exit 0

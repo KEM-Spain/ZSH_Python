@@ -30,7 +30,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 typeset -A ALIASES=()
 
 # Constants
-FN=/etc/zsh/aliases
+ALIAS_FN=/etc/zsh/aliases
 
 # Vars
 SEARCHTERM=''
@@ -124,7 +124,7 @@ shift $(( OPTIND - 1 ))
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1}
 
 if [[ -n ${SEARCHTERM} ]];then
-	TAG="${WHITE_FG}(${RESET}FILTER = \"${WHITE_FG}${SEARCHTERM}${RESET}\"${WHITE_FG})${RESET}"
+	TAG="${WHITE_FG}(${RESET}SEARCH FILTER = \"${WHITE_FG}${SEARCHTERM}${RESET}\"${WHITE_FG})${RESET}"
 else
 	TAG="${WHITE_FG}(${RESET}UNFILTERED${WHITE_FG})${RESET}"
 fi
@@ -134,7 +134,7 @@ while read LINE;do
 	ALIAS=$(cut -d'=' -f1 <<<${LINE} | sed 's/alias//' | str_trim)
 	CMD=$(cut -d'=' -f2 <<<${LINE} | sed -e "s/'//g" -e 's/"//g')
 	ALIASES[${ALIAS}]=${CMD}
-done < ${FN}
+done < ${ALIAS_FN}
 
 if [[ ${QUIET} == 'true' ]];then
 	[[ -n ${ALIASES[${SEARCHTERM}]} ]] && return 0 || return 1
@@ -142,7 +142,8 @@ fi
 
 if [[ ${ECHO} == 'true' ]];then
 	for K in ${(k)ALIASES};do
-		[[ ${K} == ${SEARCHTERM} ]] && printf "%s|%s\n" ${K} ${ALIASES[${K}]} && return 0
+		[[ ${ALIASES[${K}]} =~ ${SEARCHTERM} ]] && printf "%s|%s\n" ${K} ${ALIASES[${K}]} && return 0
+		[[ ${K} =~ ${SEARCHTERM} ]] && printf "%s|%s\n" ${K} ${ALIASES[${K}]} && return 0
 	done
 	return 1
 fi
@@ -173,8 +174,8 @@ fi
 
 		HIT=false
 		for A in ${(ok)ALIASES};do
-			[[ ${ALIASES[${A}]} =~ 'cd' ]] && continue
-			[[ ! ${A} =~ "^${SEARCHTERM}.*" ]] && continue
+			[[ ${ALIASES[${A}]} =~ 'cd' ]] && continue # skip dir change aliases
+			[[ ! ${A} =~ "^${SEARCHTERM}.*" && ! ${ALIASES[${A}]} =~ ${SEARCHTERM} ]] && continue
 			HIT=true
 			if [[ ${A} =~ '[[:alpha:]]' && -z ${SEARCHTERM} ]];then
 				[[ ${A[1,2]:l} =~ '\.[a-z]' ]] && TOKEN=${A[2]:l} || TOKEN=${A[1]:l}

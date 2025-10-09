@@ -16,6 +16,7 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+RED_ON_GREY="\033[0m\033[0;1;31;100m"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -533,7 +534,9 @@ download_indicator () {
 	[[ -z ${g_LAST_STYPE} ]] && g_LAST_STYPE=''
 
 	if [[ ${SPEED} -gt ${g_LAST_SPEED} ]];then 
-		if [[ ${SPEED} -gt 30 ]];then 
+		if [[ ${SPEED} -gt 40 ]];then 
+			OBJ_COLOR="${RED_ON_GREY}"
+		elif [[ ${SPEED} -gt 30 ]];then 
 			OBJ_COLOR="${WHITE_ON_GREY}"
 		else
 			OBJ_COLOR="${BOLD}${GREEN_FG}"
