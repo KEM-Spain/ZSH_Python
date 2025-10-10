@@ -534,10 +534,12 @@ download_indicator () {
 	[[ -z ${g_LAST_STYPE} ]] && g_LAST_STYPE=''
 
 	if [[ ${SPEED} -gt ${g_LAST_SPEED} ]];then 
-		if [[ ${SPEED} -gt 40 ]];then 
-			OBJ_COLOR="${RED_ON_GREY}"
-		elif [[ ${SPEED} -gt 30 ]];then 
-			OBJ_COLOR="${WHITE_ON_GREY}"
+		if [[ ${SPEED} -ge 30 ]];then 
+			OBJ_COLOR="${BOLD}${WHITE_FG}"
+		elif [[ ${SPEED} -ge 35 ]];then 
+			OBJ_COLOR="${BOLD}${CYAN_FG}"
+		elif [[ ${SPEED} -ge 40 ]];then 
+			OBJ_COLOR="${BOLD}${RED_FG}"
 		else
 			OBJ_COLOR="${BOLD}${GREEN_FG}"
 		fi
