@@ -9,28 +9,20 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 BOLD="\033[1m"
 
-#Declarations
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Declarations
 DB=.spanish.db
 LIB=/usr/local/lib
 
-#Globals
+# Globals
 DELIM=' '
 
-#Imports
-_LIB_DIR=/usr/local/lib
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/UTILS.zsh
-
-for D in ${=_DEPS_};do
-	if [[ -e ${_LIB_DIR}/${D} ]];then
-		source ${_LIB_DIR}/${D}
-	else
-		echo "Cannot source:${_LIB_DIR}/${D} - not found"
-		exit 1
-	fi
-done
-
-#Functions
+# Functions
 query () {
 	local SQL=(${@})
 	sqlite3 -separator ${DELIM} ${DB} <<____END_SQL
@@ -72,10 +64,8 @@ opt_exists () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		d) echo "<DIR>";;
-		f) echo "<FILE>";;
-		s) echo "<SEPARATOR>";;
-		t) echo "<FILE_TYPE>";;
+		d) echo "<DELIM>";;
+		s) echo "<SQL>";;
 	esac
 }
 
@@ -83,23 +73,23 @@ usage () {
 	tabs 5
 	local OPTS=$(parse_opts ${OPTSTR})
 	local -a PENDING_MSGS=(${@})
-	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type s)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-s $(opt_type s)${RESET} separator"
+	echo -e "${WHITE_FG}-d $(opt_type s)${RESET} separator"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	exit_leave "\n${PENDING_MSGS}\n"
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDs:"
+OPTSTR=":HDd:"
 OPTIND=0
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     s) DELIM=${OPTARG};;
+     d) DELIM=${OPTARG};;
      :) print -u2 "${RED_FG}${SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -109,6 +99,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #Execution
+[[ ${#} -eq 0 ]] && exit_leave $(err_msg_exit E "Missing argument:$(opt_type s)")
 query ${@}
 
 exit_leave

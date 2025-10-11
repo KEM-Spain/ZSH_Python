@@ -463,7 +463,7 @@ ___EOF
 	echo "Formatting filelist..."
 	for F in ${(o)FILELIST};do
 		FTYPE=$(file -b ${F})
-		if [[ ${FTYPE:l} =~ 'media' ]];then
+		if [[ ${FTYPE:l} =~ 'media|matroska' ]];then
 			FN=$(fsub -Cs <<<${F}) # Compact file names to eliminate problematic spaces in file names
 			mv -f ${F} ${FN} >/dev/null 2>&1
 			FILES_TO_MERGE+=${FN:t}

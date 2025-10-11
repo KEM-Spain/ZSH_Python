@@ -24,95 +24,88 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 #Declarations
-typeset _VERB=''
-typeset _FIELDS=0
+typeset _VERB_ARG=''
 typeset -a _VERB_DATA
 typeset -A _MOODS=(indicative 1 subjunctive 2 perfect 3 perfect_subj 4 progressive 5 imperative 6)
 typeset -A _CONTEXT_LABELS=(1 yo 2 tu 3 el 4 nosotros 5 vosotros 6 ellos)
 
 translation () {
-	local TRANS=$(do_query -s '|' "select translation from spanish_verb where verb = '${_VERB}'")
+	local TRANS=$(do_query -d '|' "select translation from spanish_verb where verb = '${_VERB_ARG}'")
 	echo ${TRANS}
 }
 
 participle () {
-	local PART=$(do_query -s '|' "select past_participle from spanish_verb where verb = '${_VERB}'")
+	local PART=$(do_query -d '|' "select past_participle from spanish_verb where verb = '${_VERB_ARG}'")
 	echo ${PART}
 }
 
 gerund () {
-	local PART=$(do_query -s '|' "select gerund from spanish_verb where verb = '${_VERB}'")
+	local PART=$(do_query -d '|' "select gerund from spanish_verb where verb = '${_VERB_ARG}'")
 	echo ${PART}
 }
 
 indicative () {
-	_FIELDS=5
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'present'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'preterite'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'future'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'conditional'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'indicative' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'preterite'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'future'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'conditional'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'imperfect'")
 }
 
 subjunctive () {
-	_FIELDS=4
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'subjunctive' and tense = 'present'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'subjunctive' and tense = 'imperfect'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'subjunctive' and tense = 'imperfect2'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'subjunctive' and tense = 'future'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect2'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'future'")
 }
 
 perfect () {
-	_FIELDS=5
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'present'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'preterite'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'imperfect'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'conditional'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect' and tense = 'future'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'preterite'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'conditional'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'future'")
 }
 
 perfect_subj () {
-	_FIELDS=3
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect_subj' and tense = 'present'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect_subj' and tense = 'past'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'perfect_subj' and tense = 'future'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect_subj' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect_subj' and tense = 'past'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect_subj' and tense = 'future'")
 }
 
 progressive () {
-	_FIELDS=5
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'present'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'preterite'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'imperfect'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'conditional'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'progressive' and tense = 'future'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'preterite'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'conditional'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'future'")
 }
 
 imperative () {
-	_FIELDS=2
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'imperative' and tense = 'affirmative'")
-	_VERB_DATA+=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' and mood = 'imperative' and tense = 'negative'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'affirmative'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'negative'")
 }
 
 format () {
 	local MOOD_NDX=${1}
-	local MOOD=${(k)_MOODS[(r)${MOOD_NDX}]} 
-	local FIELD=4
 	local FIELD_MAX=10
+	local FIELD_NDX=4
 	local IRR
 	local I_MSG
-	local L H
+	local MOOD=${(k)_MOODS[(r)${MOOD_NDX}]} 
 	local NDX
 	local P1 P2 P3 P4 P5
 	local TENSE
 	local VERB
+	local L H
 
 	local MOOD_6_HDRS=("Context" "Present" "Preterite" "Imperfect" "Conditional" "Future")
 	local MOOD_5_HDRS=("Context" "Present" "Imperfect" "Imperfect2" "Future")
 	local MOOD_4_HDRS=("Context" "Present" "Past" "Future")
 	local MOOD_3_HDRS=("Context" "Affirmative" "Negative")
 	local -A MOOD_HEADERS=(1 MOOD_6_HDRS 2 MOOD_5_HDRS 3 MOOD_6_HDRS 4 MOOD_4_HDRS 5 MOOD_6_HDRS 6 MOOD_3_HDRS)
-	local -A MOOD_FIELDS=(1 6 2 5 3 6 4 4 5 6 6 3)
-	local -A MOOD_WIDTH=(1 12 2 14 3 22 4 22 5 23 6 12)
+	local -A MOOD_FIELD_NDXS=(1 6 2 5 3 6 4 4 5 6 6 3)
+	local -A MOOD_WIDTH=(1 14 2 14 3 22 4 22 5 23 6 12)
 
 	local MOOD_HDR=${MOOD_HEADERS[${_MOODS[${MOOD}]}]}
 
@@ -125,7 +118,7 @@ format () {
 	local PF_LN_VALS=''
 	local PF_HD_VALS=''
 	
-	for (( H=1; H<=${MOOD_FIELDS[${_MOODS[${MOOD}]}]}; H++ ));do
+	for (( H=1; H<=${MOOD_FIELD_NDXS[${_MOODS[${MOOD}]}]}; H++ ));do
 		PF_LINE_1+=" %-${MOOD_WIDTH[${_MOODS[${MOOD}]}]}s"
 		PF_LINE_2+=" %-${MOOD_WIDTH[${_MOODS[${MOOD}]}]}s"
 		PF_LINE_3+=" %-${MOOD_WIDTH[${_MOODS[${MOOD}]}]}s"
@@ -140,7 +133,7 @@ format () {
 	eval "${PF_LINE_1} ${PF_LN_VALS}"
 	#eval "${PF_LINE_2} ${PF_HD_VALS}"
 
-	${MOOD}
+	${MOOD} # Extract data
 
 	# Assign detail vars
 	NDX=0
@@ -154,40 +147,40 @@ format () {
 			[[ ${IRR} -eq 0 ]] && I_MSG='(regular)' || I_MSG='(irregular)'
 			case ${_MOODS[${MOOD}]} in
 				1)
-					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD_NDX} <<<${L})
 					;;
 				2)
-					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'imperfect' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'imperfect2' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'future' ]] && P4=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'imperfect' ]] && P2=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'imperfect2' ]] && P3=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P4=$(cut -d'|' -f${FIELD_NDX} <<<${L})
 					;;
 				3)
-					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD_NDX} <<<${L})
 					;;
 				4)
-					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'past' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'future' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'past' ]] && P2=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P3=$(cut -d'|' -f${FIELD_NDX} <<<${L})
 					;;
 				5)
-					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'present' ]] && P1=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'preterite' ]] && P2=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'imperfect' ]] && P3=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'conditional' ]] && P4=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'future' ]] && P5=$(cut -d'|' -f${FIELD_NDX} <<<${L})
 					;;
 				6)
-					[[ ${TENSE} == 'affirmative' ]] && P1=$(cut -d'|' -f${FIELD} <<<${L})
-					[[ ${TENSE} == 'negative' ]] && P2=$(cut -d'|' -f${FIELD} <<<${L})
+					[[ ${TENSE} == 'affirmative' ]] && P1=$(cut -d'|' -f${FIELD_NDX} <<<${L})
+					[[ ${TENSE} == 'negative' ]] && P2=$(cut -d'|' -f${FIELD_NDX} <<<${L})
 					;;
 			esac
 		done
@@ -202,8 +195,8 @@ format () {
 			6) eval ${PF_LINE_3} ${_CONTEXT_LABELS[${NDX}]} ${P1} ${P2};;
 		esac
 
-		((FIELD++))
-		[[ ${FIELD} -eq ${FIELD_MAX} ]] && break
+		((FIELD_NDX++))
+		[[ ${FIELD_NDX} -eq ${FIELD_MAX} ]] && break
 	done
 	printf "\n%-10s\n\n" ${I_MSG}
 }
@@ -288,15 +281,32 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
-#Execution
+
+# Execution
 if [[ ${#} -eq 0 ]];then
 	usage "Missing arg:$(opt_type v)"
 else
-	_VERB=${1}
+	_VERB_ARG=${1}
 fi
 
-VERB_CHECK=$(do_query -s '|' "select * from spanish_tense where verb = '${_VERB}' limit 1")
-[[ -z ${VERB_CHECK} ]] && exit_leave $(err_msg_exit W "Verb \"${_VERB}\":not found")
+while true;do
+	VERB_CHECK=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' limit 1")
+
+	if [[ -z ${VERB_CHECK} ]];then
+		clear
+		msg_box -p -H1 -P"${RESET}Fetch data for verb:${WHITE_FG}${_VERB_ARG}|${RESET}(Y/N)?" "Add Missing Verb|Verb <w>${_VERB_ARG}<N>:<r>not found<N>"
+		if [[ ${_MSG_KEY} != 'y' ]];then
+			do_rmcup
+			exit_leave $(err_msg_exit W "Verb ${_VERB_ARG}:not found")
+		fi
+		msg_box -x10 "Fetching data..."
+		get_verb ${_VERB_ARG} >/dev/null 2>&1
+		[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit E "Unable to fetch verb:${_VERB_ARG}")
+		sleep 1
+	else
+		break
+	fi
+done
 
 clear
 
@@ -305,7 +315,7 @@ PART=$(participle)
 GER=$(gerund)
 
 (
-printf "\n${CYAN_FG}Verb${RESET}:${WHITE_FG}%s${RESET} - ${ITALIC}%s${RESET}\n" ${(C)_VERB} ${(C)TRANS}
+printf "\n${CYAN_FG}Verb${RESET}:${WHITE_FG}%s${RESET} - ${ITALIC}%s${RESET}\n" ${(C)_VERB_ARG} ${(C)TRANS}
 printf "${CYAN_FG}Past Participle${RESET}:${WHITE_FG}%s${RESET}\n" ${(C)PART}
 printf "${CYAN_FG}Gerund${RESET}:${WHITE_FG}%s${RESET}\n\n" ${(C)GER}
 
