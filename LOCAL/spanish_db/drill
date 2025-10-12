@@ -253,26 +253,27 @@ TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${ROW})
 START_ROW=$(( _MAX_ROWS - 4 ))
 
 clear
-tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${SELECTED}${RESET}"
 for C in ${(v)_CONJ};do
 	VAL=${(P)${(k)_CONJ[(r)${${C}}]}}
 	[[ ${VAL} == '---' ]] && continue
 	VAL=$(sed 's/_/ /' <<<${VAL})
 	PLAIN=$(iconv -t ASCII//TRANSLIT <<<${VAL})
-	tcup $(( START_ROW + 2 )) 0
-	tcup $(( START_ROW + 1 )) 0
-	tcup ${START_ROW} 0
+	tcup $(( START_ROW - 3 )) 0
 	tput ed
+	tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${SELECTED}${RESET}"
 	echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
 	if [[ ${ANS} == ${VAL} || ${ANS} == ${PLAIN} ]];then
-		echo "Correct"
+		ACCMSG=''
+		if [[ ${VAL} != ${ANS} ]];then
+			ACCMSG="(${ITALIC}${CYAN_FG}Watch those accents${RESET}:${WHITE_FG}${VAL}${RESET})"
+		fi
+		echo "${GREEN_FG}Correct${RESET} ${ACCMSG}"
 	else
 		echo "${BOLD}${RED_FG}Incorrect${RESET}: Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
-		echo "Press any key..."; read -s
 	fi
-	[[ -n ${ANS} && ${VAL} != ${PLAIN} ]] && echo "${WHITE_FG}Watch those accents...${RESET}"
+	echo "Press any key..."; read -s
 done
-tcup $(( START_ROW - 1 )) 0
+tcup $(( START_ROW - 2 )) 0
 tput ed
 tcup ${_MAX_ROWS} 0
 
