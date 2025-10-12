@@ -28,6 +28,7 @@ query () {
 	sqlite3 -separator ${DELIM} ${DB} <<____END_SQL
 ${SQL}
 ____END_SQL
+return ${?}
 }
 
 #--Begin GetOpts--

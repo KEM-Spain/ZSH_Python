@@ -3,11 +3,20 @@ _DEPS_+=(DBG.zsh)
 
 # LIB functions
 err_msg_exit () {
-	local E_TYPE=${1}
-	local E_MSG=${2}
-
+	local E_MSG
+	local E_TYPE
 	local LABEL=''
 	local LCOLOR=''
+
+	if [[ ${#} -eq 1 ]];then
+		E_MSG=${1}
+		E_TYPE=E
+	elif [[ ${#} -eq 2 ]];then
+		E_MSG=${1}
+		E_TYPE=${2}
+	else
+		echo "${0}: Insufficient args" >&2
+	fi
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 

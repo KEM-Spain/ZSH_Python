@@ -16,9 +16,11 @@ typeset -A USER_PARAMS
 typeset -A VERB_DATA
 typeset -A SEEN
 
+# TODO: Use HTML and CSS for text to enlarge font
+
 #Constants
-BOX_HEIGHT=500
-BOX_WIDTH=500
+BOX_HEIGHT=600
+BOX_WIDTH=600
 ALIGN=center
 CMD='yad --center --width ${BOX_WIDTH} --height ${BOX_HEIGHT} --list --radiolist --column "Select" --column "Conjugation" --text-align=${ALIGN} --text "${SELECTION}\n\n${QUESTION}" --title "Spanish Verb Conjugation"'
 SPAN_DB=.spanish.db

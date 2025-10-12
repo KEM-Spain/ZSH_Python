@@ -201,6 +201,21 @@ format () {
 	printf "\n%-10s\n\n" ${I_MSG}
 }
 
+finalize () {
+	local ANSI_FILTER=${1}
+	local LINE
+
+	if [[ ${ANSI_FILTER} == 'true' ]];then
+		while read LINE;do
+			echo ${LINE}
+		done | tut strip_ansi
+	else
+		while read LINE;do
+			echo ${LINE}
+		done
+	fi
+}
+
 #--Begin GetOpts--
 local -a OPTIONS
 local OPTION
@@ -258,21 +273,24 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-a output contains no ansi"
 	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDm:"
+OPTSTR=":HDam:"
 OPTIND=0
 
 MOOD_SELECT=''
+NO_ANSI=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     a) NO_ANSI=true;;
      m) MOOD_SELECT=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -331,6 +349,6 @@ else
 		format ${NDX}
 	done
 fi
-) | sed 's/_/ /g' | mypager
+) | sed 's/_/ /g' | finalize ${NO_ANSI}
 
 exit_leave

@@ -107,8 +107,7 @@ stack_tab () {
 
 		if [[ ${OUT} == 'false' ]];then
 			[[ ${IRRG} == '1' ]] && IRRG='(irregular)' || IRRG='(regular)'
-			VB_HDR="${VB} ${IRRG}"
-			echo "1    Verb:${VB_HDR}"
+			echo "1    Verb:${VB} ${IRRG}"
 			echo "2    Gerund:${GRND}"
 			echo "3    Past Participle:${PART}"
 			echo "4    Definition:${DEFN}"

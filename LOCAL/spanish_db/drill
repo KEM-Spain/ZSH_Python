@@ -1,0 +1,278 @@
+#!/usr/bin/zsh
+
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+ 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Declarations
+typeset -a _VERB_DATA=()
+typeset -A _CONJ=(YO Yo YF Tú EL Él WE Nos YP Vos TH Ellos)
+typeset -A _V_MAP=(VB 1 TY 2 CX 3 YO 4 YF 5 EL 6 WE 7 YP 8 TH 9 IR 10)
+typeset -A _V_TYPES=(1 indicative 2 perfect 3 progressive 4 imperative 5 subjunctive 6 perfect_subj 7 all)
+typeset -A _CONTEXTS=(1 _IND_CONTEXT 2 _IND_CONTEXT 3 _IND_CONTEXT 4 _IMP_CONTEXT 5 _SUB_CONTEXT 6 _PSUB_CONTEXT)
+typeset -A _IND_CONTEXT=(1 present 2 preterite 3 imperfect 4 future 5 conditional 6 all)
+typeset -A _IMP_CONTEXT=(1 affirmative 2 negative 3 all)
+typeset -A _SUB_CONTEXT=(1 present 2 future 3 imperfect 4 imperfect2 5 all)
+typeset -A _PSUB_CONTEXT=(1 future 2 past 3 present 4 all)
+typeset -A _SP_TERMS=(
+"indicative present" "presente"
+"indicative preterite" "pret indefinido"
+"indicative imperfect" "pret imperf"
+"indicative future" "futuro simp"
+"indicative conditional" "cond simp"
+"perfect present" "pret perf"
+"perfect preterite" "pret anterior"
+"perfect imperfect" "pret pcp"
+"perfect future" "futuro perf"
+"perfect conditional" "cond perf"
+"progressive present" "presente prog"
+"progressive preterite" "pret perf simp"
+"progressive imperfect" "pasado prog"
+"progressive future" "futuro prog"
+"progressive conditional" "cond prog"
+"imperative affirmative" "imper afirmativo"
+"imperative negative" "imper negativo"
+"subjunctive present" "presente de subj"
+"subjunctive future" "futuro simp de subj"
+"subjunctive imperfect" "pret imperf de subj"
+"subjunctive imperfect2" "pret imperf2 de subj"
+"perfect_subj future" "futuro perf de subj"
+"perfect_subj past" "pret pcp de subj"
+"perfect_subj present" "pret perf subj"
+)
+
+# Vars
+_VERB_ARG=''
+_RESPONSE=''
+
+# Functions
+translation () {
+	do_query -d '|' "select translation from spanish_verb where verb = '${_VERB_ARG}'"
+}
+
+participle () {
+	do_query -d '|' "select past_participle from spanish_verb where verb = '${_VERB_ARG}'"
+}
+
+gerund () {
+	do_query -d '|' "select gerund from spanish_verb where verb = '${_VERB_ARG}'"
+}
+
+irregular () {
+	do_query -d '|' "select irregular from spanish_verb where verb = '${_VERB_ARG}'"
+}
+
+indicative () {
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'preterite'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'future'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'conditional'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'imperfect'")
+}
+
+subjunctive () {
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect2'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'future'")
+}
+
+perfect () {
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'preterite'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'conditional'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect' and tense = 'future'")
+}
+
+perfect_subj () {
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect_subj' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect_subj' and tense = 'past'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'perfect_subj' and tense = 'future'")
+}
+
+progressive () {
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'preterite'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'conditional'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'future'")
+}
+
+imperative () {
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'affirmative'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'negative'")
+}
+
+stack_tab () {
+	local V_TYPE=${1}
+	local V_CONTEXT=${2}
+	local	VB TY CX YO YF EL WE YP TH IR GR
+	local DEFN GRND PART IRRG
+	local EN_HDR SP_HDR VB_HDR
+	local OUT=false
+	local T_NDX=0
+	local L
+
+	for L in ${_VERB_DATA};do
+		VB=$(cut -d'|' -f${_V_MAP[VB]} <<<${L})
+		TY=$(cut -d'|' -f${_V_MAP[TY]} <<<${L})
+		CX=$(cut -d'|' -f${_V_MAP[CX]} <<<${L})
+		YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${L})
+		YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${L})
+		EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${L})
+		WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${L})
+		YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${L})
+		TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${L})
+		IR=$(cut -d'|' -f10 <<<${L})
+		GR=$(cut -d'|' -f6 <<<${L})
+
+		[[ (-n ${V_TYPE} && ${V_TYPE:l} != 'all') && ${TY:l} != ${V_TYPE:l} ]] && continue
+		[[ (-n ${V_CONTEXT} && ${V_CONTEXT:l} != 'all') && ${CX:l} != ${V_CONTEXT:l} ]] && continue
+
+		EN_HDR="${TY} ${CX}"
+		SP_HDR="${_SP_TERMS[${EN_HDR}]}"
+
+		case ${TY} in
+			indicative) T_NDX=1;;
+			perfect) T_NDX=2;;
+			progressive) T_NDX=3;;
+			*) T_NDX=0;;
+		esac
+
+		if [[ ${OUT} == 'false' ]];then
+			IRRG=$(irregular)
+			[[ ${IRRG} -eq 1 ]] && IRRG="(irregular)" || IRRG="regular"
+			GRND=$(gerund)
+			PART=$(participle)
+			DEFN=$(translation)
+			[[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
+			echo "1    Verb:${VB} ${IRRG}"
+			echo "2    Gerund:${GRND}"
+			echo "3    Past Participle:${PART}"
+			echo "4    Definition:${DEFN}"
+			OUT=true
+		fi
+
+		case ${TY} in
+			indicative)
+				echo "10  indicative";;
+			perfect)
+				echo "20  perfect";;
+			progressive)
+				echo "30  progressive";;
+			imperative)
+				echo "40  imperative";;
+			subjunctive)
+				echo "50  subjunctive";;
+			perfect_subj)
+				echo "60  perfect_subj";;
+		esac
+	done | sort -n 
+}
+
+select_list () {
+	local TITLE=${1}; shift
+	local -A LIST=(${@})
+	local HEIGHT=$(( ${#LIST} + 4))
+	local K
+
+	while true;do
+		clear
+		tcup $(( _MAX_ROWS - HEIGHT ))  0
+		tput ed
+		printf "%s\n" ${TITLE}
+		echo $(str_unicode_line ${#TITLE})
+		for K in ${(onk)LIST};do
+			printf "%s) %s\n" ${K} ${LIST[${K}]}
+		done
+		echo $(str_unicode_line ${#TITLE})
+		echo -n "Select:"
+		read -s -k1 _RESPONSE
+		_RESPONSE=$(tr -d '[:space:]' <<<${_RESPONSE})
+		[[ ${_RESPONSE} =~ '^\x1b$' ]] && _RESPONSE='' || echo ${_RESPONSE}
+		if [[ ${_RESPONSE} -ge 1 && ${_RESPONSE} -le 7 ]];then
+			break
+		elif [[ -z ${_RESPONSE} || ${_RESPONSE:l} == 'q' ]];then
+			exit_leave "${RED_FG}Operation cancelled${RESET}..."
+		fi
+	done
+}
+
+# Execution
+_VERB_ARG=${1}
+
+typeset -A CONTEXT=()
+
+select_list "Select Verb Type" ${(kv)_V_TYPES}
+VTYPE=${_RESPONSE}
+
+CLIST=${_CONTEXTS[${_RESPONSE}]}
+CONTEXT=(${(kv)${(P)CLIST}})
+
+select_list "Select Context" ${(kv)CONTEXT}
+CTYPE=${_RESPONSE}
+
+${_V_TYPES[${VTYPE}]} # Build dataset
+
+SELECTED="${(C)_V_TYPES[${VTYPE}]} ${(C)CONTEXT[${CTYPE}]}" # Show selected type & context
+echo ${SELECTED}
+for L in ${_VERB_DATA};do
+	VT=$(cut -d'|' -f2 <<<${L})
+	CX=$(cut -d'|' -f3 <<<${L})
+	[[ ${VT} == ${_V_TYPES[${VTYPE}]} && ${CX} == ${CONTEXT[${CTYPE}]} ]] && ROW=${L} # Match type & context
+done
+
+YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${ROW})
+YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${ROW})
+EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${ROW})
+WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${ROW})
+YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${ROW})
+TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${ROW})
+
+START_ROW=$(( _MAX_ROWS - 4 ))
+
+clear
+tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${SELECTED}${RESET}"
+for C in ${(v)_CONJ};do
+	VAL=${(P)${(k)_CONJ[(r)${${C}}]}}
+	[[ ${VAL} == '---' ]] && continue
+	VAL=$(sed 's/_/ /' <<<${VAL})
+	PLAIN=$(iconv -t ASCII//TRANSLIT <<<${VAL})
+	tcup $(( START_ROW + 2 )) 0
+	tcup $(( START_ROW + 1 )) 0
+	tcup ${START_ROW} 0
+	tput ed
+	echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
+	if [[ ${ANS} == ${VAL} || ${ANS} == ${PLAIN} ]];then
+		echo "Correct"
+	else
+		echo "${BOLD}${RED_FG}Incorrect${RESET}: Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
+		echo "Press any key..."; read -s
+	fi
+	[[ -n ${ANS} && ${VAL} != ${PLAIN} ]] && echo "${WHITE_FG}Watch those accents...${RESET}"
+done
+tcup $(( START_ROW - 1 )) 0
+tput ed
+tcup ${_MAX_ROWS} 0
+
