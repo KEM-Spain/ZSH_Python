@@ -25,15 +25,16 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
-typeset -a _VERB_DATA=()
 typeset -A _CONJ=(YO Yo YF Tú EL Él WE Nos YP Vos TH Ellos)
+typeset -A _CONTEXTS=(1 _IND_CONTEXT 2 _IND_CONTEXT 3 _IND_CONTEXT 4 _IMP_CONTEXT 5 _SUB_CONTEXT 6 _PSUB_CONTEXT)
+typeset -A _CONTEXT_ARR=()
+typeset -A _IMP_CONTEXT=(1 affirmative 2 negative 3 all)
+typeset -A _IND_CONTEXT=(1 present 2 preterite 3 imperfect 4 future 5 conditional 6 all)
+typeset -A _PSUB_CONTEXT=(1 future 2 past 3 present 4 all)
+typeset -A _SUB_CONTEXT=(1 present 2 future 3 imperfect 4 imperfect2 5 all)
 typeset -A _V_MAP=(VB 1 TY 2 CX 3 YO 4 YF 5 EL 6 WE 7 YP 8 TH 9 IR 10)
 typeset -A _V_TYPES=(1 indicative 2 perfect 3 progressive 4 imperative 5 subjunctive 6 perfect_subj 7 all)
-typeset -A _CONTEXTS=(1 _IND_CONTEXT 2 _IND_CONTEXT 3 _IND_CONTEXT 4 _IMP_CONTEXT 5 _SUB_CONTEXT 6 _PSUB_CONTEXT)
-typeset -A _IND_CONTEXT=(1 present 2 preterite 3 imperfect 4 future 5 conditional 6 all)
-typeset -A _IMP_CONTEXT=(1 affirmative 2 negative 3 all)
-typeset -A _SUB_CONTEXT=(1 present 2 future 3 imperfect 4 imperfect2 5 all)
-typeset -A _PSUB_CONTEXT=(1 future 2 past 3 present 4 all)
+typeset -a _VERB_DATA=()
 typeset -A _SP_TERMS=(
 "indicative present" "presente"
 "indicative preterite" "pret indefinido"
@@ -219,61 +220,72 @@ select_list () {
 	done
 }
 
+drill () {
+	local VTYPE=${1}
+	local CTYPE=${2}
+	local ACCMSG=''
+	local ANS=''
+	local PLAIN=''
+	local ROW=''
+	local START_ROW=0
+	local VAL=''
+	local VT CX YO YF EL WE YP TH
+	local C L
+	local REPLY=''
+
+	for L in ${_VERB_DATA};do
+		VT=$(cut -d'|' -f2 <<<${L})
+		CX=$(cut -d'|' -f3 <<<${L})
+		[[ ${VT} == ${_V_TYPES[${VTYPE}]} && ${CX} == ${_CONTEXT_ARR[${CTYPE}]} ]] && ROW=${L} # Match type & context
+	done
+
+	YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${ROW})
+	YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${ROW})
+	EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${ROW})
+	WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${ROW})
+	YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${ROW})
+	TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${ROW})
+
+	START_ROW=$(( _MAX_ROWS - 4 ))
+
+	clear
+	for C in ${(v)_CONJ};do
+		VAL=${(P)${(k)_CONJ[(r)${${C}}]}} # Reverse lookup
+		[[ ${VAL} == '---' ]] && continue
+		VAL=$(sed 's/_/ /' <<<${VAL})
+		PLAIN=$(iconv -t ASCII//TRANSLIT <<<${VAL}) # Strip diacritics
+		tcup $(( START_ROW - 3 )) 0
+		tput ed
+		tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${(C)_V_TYPES[${VTYPE}]} ${(C)_CONTEXT_ARR[${CTYPE}]}${RESET}" # Show keys
+		echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
+		if [[ ${ANS} == ${VAL} || ${ANS} == ${PLAIN} ]];then
+			ACCMSG=''
+			if [[ ${VAL} != ${ANS} ]];then
+				ACCMSG="(${ITALIC}${CYAN_FG}Watch those accents${RESET}:${WHITE_FG}${VAL}${RESET})" # Missing diacritic
+			fi
+			echo "${GREEN_FG}Correct${RESET} ${ACCMSG}"
+		else
+			echo "${BOLD}${RED_FG}Incorrect${RESET}: Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
+		fi
+		echo "Press any key..."; read -s
+	done
+	tcup $(( START_ROW - 2 )) 0
+	tput ed
+	tcup ${_MAX_ROWS} 0
+}
+
 # Execution
 _VERB_ARG=${1}
-
-typeset -A CONTEXT=()
 
 select_list "Select Verb Type" ${(kv)_V_TYPES}
 VTYPE=${_RESPONSE}
 
-CLIST=${_CONTEXTS[${_RESPONSE}]}
-CONTEXT=(${(kv)${(P)CLIST}})
-
-select_list "Select Context" ${(kv)CONTEXT}
-CTYPE=${_RESPONSE}
-
-${_V_TYPES[${VTYPE}]} # Build dataset
-
-SELECTED="${(C)_V_TYPES[${VTYPE}]} ${(C)CONTEXT[${CTYPE}]}" # Show selected type & context
-echo ${SELECTED}
-for L in ${_VERB_DATA};do
-	VT=$(cut -d'|' -f2 <<<${L})
-	CX=$(cut -d'|' -f3 <<<${L})
-	[[ ${VT} == ${_V_TYPES[${VTYPE}]} && ${CX} == ${CONTEXT[${CTYPE}]} ]] && ROW=${L} # Match type & context
-done
-
-YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${ROW})
-YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${ROW})
-EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${ROW})
-WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${ROW})
-YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${ROW})
-TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${ROW})
-
-START_ROW=$(( _MAX_ROWS - 4 ))
-
-clear
-for C in ${(v)_CONJ};do
-	VAL=${(P)${(k)_CONJ[(r)${${C}}]}}
-	[[ ${VAL} == '---' ]] && continue
-	VAL=$(sed 's/_/ /' <<<${VAL})
-	PLAIN=$(iconv -t ASCII//TRANSLIT <<<${VAL})
-	tcup $(( START_ROW - 3 )) 0
-	tput ed
-	tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${SELECTED}${RESET}"
-	echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
-	if [[ ${ANS} == ${VAL} || ${ANS} == ${PLAIN} ]];then
-		ACCMSG=''
-		if [[ ${VAL} != ${ANS} ]];then
-			ACCMSG="(${ITALIC}${CYAN_FG}Watch those accents${RESET}:${WHITE_FG}${VAL}${RESET})"
-		fi
-		echo "${GREEN_FG}Correct${RESET} ${ACCMSG}"
-	else
-		echo "${BOLD}${RED_FG}Incorrect${RESET}: Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
-	fi
-	echo "Press any key..."; read -s
-done
-tcup $(( START_ROW - 2 )) 0
-tput ed
-tcup ${_MAX_ROWS} 0
+if [[ ${_V_TYPES[${VTYPE}]} != 'all' ]];then
+	CLIST=${_CONTEXTS[${VTYPE}]}
+	_CONTEXT_ARR=(${(kv)${(P)CLIST}})
+	select_list "Select Context" ${(kv)_CONTEXT_ARR}
+	CTYPE=${_RESPONSE}
+	${_V_TYPES[${VTYPE}]} # Build dataset
+	drill ${VTYPE} ${CTYPE}
+fi
 
