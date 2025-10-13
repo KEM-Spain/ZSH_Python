@@ -67,20 +67,91 @@ _VERB_ARG=''
 _RESPONSE=''
 
 # Functions
-translation () {
-	do_query -d '|' "select translation from spanish_verb where verb = '${_VERB_ARG}'"
+cycle_vtype () {
+	local V
+
+	for V in ${(onk)_V_TYPES};do
+		[[ ${_V_TYPES[${V}]} == 'all' ]] && continue
+		cycle_context ${V}
+	done
 }
 
-participle () {
-	do_query -d '|' "select past_participle from spanish_verb where verb = '${_VERB_ARG}'"
+cycle_context () {
+	local V_NDX=${1}
+	local C
+	local CLIST
+	local VTYPE=${_V_TYPES[${V_NDX}]}
+
+	CLIST=${_CONTEXTS[${V_NDX}]}
+	_CONTEXT_ARR=(${(kv)${(P)CLIST}})
+	for C in ${(k)_CONTEXT_ARR};do
+		[[ ${_CONTEXT_ARR[${C}]} == 'all' ]] && continue
+		drill ${V_NDX} ${C}
+	done
+}
+
+drill () {
+	local V_NDX=${1}
+	local C_NDX=${2}
+	local ACCMSG=''
+	local ANS=''
+	local PLAIN=''
+	local ROW=''
+	local START_ROW=$(( _MAX_ROWS - 8 ))
+	local VAL=''
+	local VT CX YO YF EL WE YP TH
+	local C L
+	local REPLY=''
+	local HEIGHT=10
+
+	tcup ${START_ROW} 0
+	tput ed
+
+	${_V_TYPES[${V_NDX}]} # Build dataset
+
+	for L in ${_VERB_DATA};do
+		VT=$(cut -d'|' -f2 <<<${L})
+		CX=$(cut -d'|' -f3 <<<${L})
+		[[ ${VT} == ${_V_TYPES[${V_NDX}]} && ${CX} == ${_CONTEXT_ARR[${C_NDX}]} ]] && ROW=${L} # Match type & context
+	done
+
+	YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${ROW})
+	YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${ROW})
+	EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${ROW})
+	WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${ROW})
+	YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${ROW})
+	TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${ROW})
+
+	for C in ${(v)_CONJ};do
+		VAL=${(P)${(k)_CONJ[(r)${${C}}]}} # Reverse lookup
+		[[ ${VAL} == '---' ]] && continue
+		VAL=$(sed 's/_/ /' <<<${VAL})
+		PLAIN=$(iconv -t ASCII//TRANSLIT <<<${VAL}) # Strip diacritics
+		tcup $(( START_ROW - 3 )) 0
+		tput ed
+		tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${(C)_V_TYPES[${V_NDX}]} ${(C)_CONTEXT_ARR[${C_NDX}]}${RESET}" # Show keys
+		echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
+		if [[ -n ${ANS} && (${ANS} == ${VAL} || ${ANS} == ${PLAIN}) ]];then
+			ACCMSG=''
+			if [[ ${VAL} != ${ANS} ]];then
+				ACCMSG="(${ITALIC}${CYAN_FG}Watch those accents${RESET}:${WHITE_FG}${VAL}${RESET})" # Missing diacritic
+			fi
+			echo "${GREEN_FG}Correct${RESET} ${ACCMSG}"
+		else
+			echo "${BOLD}${RED_FG}Incorrect${RESET}: Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
+		fi
+		echo "Press any key..."; read -s
+	done
+	tcup ${_MAX_ROWS} 0
 }
 
 gerund () {
 	do_query -d '|' "select gerund from spanish_verb where verb = '${_VERB_ARG}'"
 }
 
-irregular () {
-	do_query -d '|' "select irregular from spanish_verb where verb = '${_VERB_ARG}'"
+imperative () {
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'affirmative'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'negative'")
 }
 
 indicative () {
@@ -91,11 +162,12 @@ indicative () {
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'imperfect'")
 }
 
-subjunctive () {
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'present'")
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect'")
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect2'")
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'future'")
+irregular () {
+	do_query -d '|' "select irregular from spanish_verb where verb = '${_VERB_ARG}'"
+}
+
+participle () {
+	do_query -d '|' "select past_participle from spanish_verb where verb = '${_VERB_ARG}'"
 }
 
 perfect () {
@@ -120,9 +192,35 @@ progressive () {
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'progressive' and tense = 'future'")
 }
 
-imperative () {
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'affirmative'")
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'negative'")
+select_list () {
+	local TITLE=${1}; shift
+	local -A LIST=(${@})
+	local HEIGHT=$(( ${#LIST} + 4))
+	local CLEAN_TITLE=$(str_no_ansi ${TITLE})
+	local K
+
+	tcup $(( START_ROW - ${HEIGHT} )) 0
+	tput ed
+
+	while true;do
+		tcup $(( _MAX_ROWS - HEIGHT ))  0
+		tput ed
+		echo ${TITLE}
+		echo $(str_unicode_line ${#CLEAN_TITLE})
+		for K in ${(onk)LIST};do
+			printf "%s) %s\n" ${K} ${LIST[${K}]}
+		done
+		echo $(str_unicode_line ${#CLEAN_TITLE})
+		echo -n "Select:"
+		read -s -k1 _RESPONSE
+		_RESPONSE=$(tr -d '[:space:]' <<<${_RESPONSE})
+		[[ ${_RESPONSE} =~ '^\x1b$' ]] && _RESPONSE='' || echo ${_RESPONSE}
+		if [[ ${_RESPONSE} -ge 1 && ${_RESPONSE} -le 7 ]];then
+			break
+		elif [[ -z ${_RESPONSE} || ${_RESPONSE:l} == 'q' ]];then
+			exit_leave "${RED_FG}Operation cancelled${RESET}..."
+		fi
+	done
 }
 
 stack_tab () {
@@ -192,100 +290,35 @@ stack_tab () {
 	done | sort -n 
 }
 
-select_list () {
-	local TITLE=${1}; shift
-	local -A LIST=(${@})
-	local HEIGHT=$(( ${#LIST} + 4))
-	local K
-
-	while true;do
-		clear
-		tcup $(( _MAX_ROWS - HEIGHT ))  0
-		tput ed
-		printf "%s\n" ${TITLE}
-		echo $(str_unicode_line ${#TITLE})
-		for K in ${(onk)LIST};do
-			printf "%s) %s\n" ${K} ${LIST[${K}]}
-		done
-		echo $(str_unicode_line ${#TITLE})
-		echo -n "Select:"
-		read -s -k1 _RESPONSE
-		_RESPONSE=$(tr -d '[:space:]' <<<${_RESPONSE})
-		[[ ${_RESPONSE} =~ '^\x1b$' ]] && _RESPONSE='' || echo ${_RESPONSE}
-		if [[ ${_RESPONSE} -ge 1 && ${_RESPONSE} -le 7 ]];then
-			break
-		elif [[ -z ${_RESPONSE} || ${_RESPONSE:l} == 'q' ]];then
-			exit_leave "${RED_FG}Operation cancelled${RESET}..."
-		fi
-	done
+subjunctive () {
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect2'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'future'")
 }
 
-drill () {
-	local VTYPE=${1}
-	local CTYPE=${2}
-	local ACCMSG=''
-	local ANS=''
-	local PLAIN=''
-	local ROW=''
-	local START_ROW=0
-	local VAL=''
-	local VT CX YO YF EL WE YP TH
-	local C L
-	local REPLY=''
-
-	for L in ${_VERB_DATA};do
-		VT=$(cut -d'|' -f2 <<<${L})
-		CX=$(cut -d'|' -f3 <<<${L})
-		[[ ${VT} == ${_V_TYPES[${VTYPE}]} && ${CX} == ${_CONTEXT_ARR[${CTYPE}]} ]] && ROW=${L} # Match type & context
-	done
-
-	YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${ROW})
-	YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${ROW})
-	EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${ROW})
-	WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${ROW})
-	YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${ROW})
-	TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${ROW})
-
-	START_ROW=$(( _MAX_ROWS - 4 ))
-
-	clear
-	for C in ${(v)_CONJ};do
-		VAL=${(P)${(k)_CONJ[(r)${${C}}]}} # Reverse lookup
-		[[ ${VAL} == '---' ]] && continue
-		VAL=$(sed 's/_/ /' <<<${VAL})
-		PLAIN=$(iconv -t ASCII//TRANSLIT <<<${VAL}) # Strip diacritics
-		tcup $(( START_ROW - 3 )) 0
-		tput ed
-		tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${(C)_V_TYPES[${VTYPE}]} ${(C)_CONTEXT_ARR[${CTYPE}]}${RESET}" # Show keys
-		echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
-		if [[ ${ANS} == ${VAL} || ${ANS} == ${PLAIN} ]];then
-			ACCMSG=''
-			if [[ ${VAL} != ${ANS} ]];then
-				ACCMSG="(${ITALIC}${CYAN_FG}Watch those accents${RESET}:${WHITE_FG}${VAL}${RESET})" # Missing diacritic
-			fi
-			echo "${GREEN_FG}Correct${RESET} ${ACCMSG}"
-		else
-			echo "${BOLD}${RED_FG}Incorrect${RESET}: Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
-		fi
-		echo "Press any key..."; read -s
-	done
-	tcup $(( START_ROW - 2 )) 0
-	tput ed
-	tcup ${_MAX_ROWS} 0
+translation () {
+	do_query -d '|' "select translation from spanish_verb where verb = '${_VERB_ARG}'"
 }
 
 # Execution
+clear
 _VERB_ARG=${1}
 
 select_list "Select Verb Type" ${(kv)_V_TYPES}
-VTYPE=${_RESPONSE}
+V_NDX=${_RESPONSE}
 
-if [[ ${_V_TYPES[${VTYPE}]} != 'all' ]];then
-	CLIST=${_CONTEXTS[${VTYPE}]}
+if [[ ${_V_TYPES[${V_NDX}]} == 'all' ]];then
+	cycle_vtype
+else
+	CLIST=${_CONTEXTS[${V_NDX}]}
 	_CONTEXT_ARR=(${(kv)${(P)CLIST}})
-	select_list "Select Context" ${(kv)_CONTEXT_ARR}
-	CTYPE=${_RESPONSE}
-	${_V_TYPES[${VTYPE}]} # Build dataset
-	drill ${VTYPE} ${CTYPE}
+	select_list "Select Context for: ${BOLD}${(C)${_V_TYPES[${V_NDX}]}}${RESET}" ${(kv)_CONTEXT_ARR}
+	C_NDX=${_RESPONSE}
+	if [[ ${_CONTEXT_ARR[${C_NDX}]} == 'all' ]];then
+		cycle_context ${V_NDX}
+	else
+		drill ${V_NDX} ${C_NDX}
+	fi
 fi
 
