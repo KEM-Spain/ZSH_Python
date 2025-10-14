@@ -1,0 +1,5 @@
+#!/usr/bin/zsh
+ cd /etc/profile.d/
+sudo touch chrome-default-browser-check-disabled.sh
+echo "export CHROME_DEFAULT_BROWSER_CHECK_ENABLED=0" | sudo tee -a /etc/profile.d/chrome-default-browser-check-disabled.sh
+source /etc/profile.d/chrome-default-browser-check-disabled.sh

@@ -1,0 +1,13 @@
+#!/usr/bin/zsh
+
+
+#Execution
+if [[ ${#} -eq 0 ]];then
+	echo "Missing arg: <VERB>"
+	exit
+else
+	VERB=${1}
+fi
+
+do_query -d '|' "select * from spanish_verb where verb = '${VERB}'"
+do_query -d '|' "select * from spanish_tense where verb = '${VERB}'"

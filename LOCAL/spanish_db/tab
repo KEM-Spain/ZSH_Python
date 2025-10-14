@@ -37,26 +37,26 @@ typeset -A _SP_TERMS=(
 "indicative present" "presente"
 "indicative preterite" "pret indefinido"
 "indicative imperfect" "pret imperf"
-"indicative future" "futuro simp"
-"indicative conditional" "cond simp"
+"indicative future" "futuro simple"
+"indicative conditional" "cond simple"
 "perfect present" "pret perf"
 "perfect preterite" "pret anterior"
-"perfect imperfect" "pret pcp"
+"perfect imperfect" "pret pluscuam"
 "perfect future" "futuro perf"
 "perfect conditional" "cond perf"
 "progressive present" "presente prog"
-"progressive preterite" "pret perf simp"
+"progressive preterite" "pret perf simple"
 "progressive imperfect" "pasado prog"
 "progressive future" "futuro prog"
 "progressive conditional" "cond prog"
-"imperative affirmative" "imper afirmativo"
-"imperative negative" "imper negativo"
+"imperative affirmative" "imperativo afirmativo"
+"imperative negative" "imperativo negativo"
 "subjunctive present" "presente de subj"
-"subjunctive future" "futuro simp de subj"
+"subjunctive future" "futuro simple de subj"
 "subjunctive imperfect" "pret imperf de subj"
 "subjunctive imperfect2" "pret imperf2 de subj"
 "perfect_subj future" "futuro perf de subj"
-"perfect_subj past" "pret pcp de subj"
+"perfect_subj past" "pret pluscuam de subj"
 "perfect_subj present" "pret perf subj"
 )
 
@@ -294,7 +294,6 @@ opt_type () {
 	case ${OPT} in
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
-		t) echo "<TAB_TYPE>";;
 	esac
 }
 
@@ -309,23 +308,19 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-t${RESET} table type: s = stack, w = wide"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDt:"
+OPTSTR=":HD"
 OPTIND=0
-
-TAB_TYPE=s
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     t) TAB_TYPE=${OPTARG};;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
@@ -340,7 +335,6 @@ shift $((OPTIND -1))
 [[ -n ${2} ]] && V_TYPE=${2:l} || V_TYPE=''
 [[ -n ${3} ]] && V_CONTEXT=${3:l} || V_CONTEXT=''
 [[ -z ${VERB_ARG} ]] && do_rmcup && exit_leave $(err_msg_exit E "Missing argument:<VERB>")
-[[ ! ${TAB_TYPE} =~ "s|w" ]] && do_rmcup && exit_leave $(err_msg_exit E "Invalid table type:${TAB_TYPE}")
 
 while true;do
 	_VERB_DATA=("${(f)$(verb_dump ${VERB_ARG})}")
@@ -391,9 +385,6 @@ if [[ -z ${V_CONTEXT} ]];then
 	V_CONTEXT=${_SEL_VAL:l}
 fi
 
-case ${TAB_TYPE} in
-	s) stack_tab ${V_TYPE} ${V_CONTEXT};;
-	w) wide_tab ${V_TYPE} ${V_CONTEXT};;
-esac
+stack_tab ${V_TYPE} ${V_CONTEXT}
 
 exit_leave

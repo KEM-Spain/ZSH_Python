@@ -97,17 +97,32 @@ drill () {
 	local ANS=''
 	local PLAIN=''
 	local ROW=''
-	local START_ROW=$(( _MAX_ROWS - 8 ))
+	local START_ROW=$(( _MAX_ROWS - 4 ))
 	local VAL=''
 	local VT CX YO YF EL WE YP TH
 	local C L
 	local REPLY=''
 	local HEIGHT=10
 
+	cursor_off
+
 	tcup ${START_ROW} 0
 	tput ed
 
 	${_V_TYPES[${V_NDX}]} # Build dataset
+
+	local IRRG=$(irregular)
+	[[ ${IRRG} -eq 1 ]] && IRRG="(irregular)" || IRRG="regular"
+	local GRND=$(gerund)
+	local PART=$(participle)
+	local DEFN=$(translation)
+
+	[[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
+	tcup 0 0
+	echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} ${IRRG}"
+	echo "Gerund:${WHITE_FG}${GRND}${RESET}"
+	echo "Past Participle:${WHITE_FG}${PART}${RESET}"
+	echo "Definition:${WHITE_FG}${DEFN}${RESET}"
 
 	for L in ${_VERB_DATA};do
 		VT=$(cut -d'|' -f2 <<<${L})
@@ -124,12 +139,12 @@ drill () {
 
 	for C in ${(v)_CONJ};do
 		VAL=${(P)${(k)_CONJ[(r)${${C}}]}} # Reverse lookup
-		[[ ${VAL} == '---' ]] && continue
+		[[ ${VAL} =~ '-' ]] && continue
 		VAL=$(sed 's/_/ /' <<<${VAL})
 		PLAIN=$(iconv -t ASCII//TRANSLIT <<<${VAL}) # Strip diacritics
 		tcup $(( START_ROW - 3 )) 0
 		tput ed
-		tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${(C)_V_TYPES[${V_NDX}]} ${(C)_CONTEXT_ARR[${C_NDX}]}${RESET}" # Show keys
+		tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${(C)_V_TYPES[${V_NDX}]} ${CYAN_FG}${(C)_CONTEXT_ARR[${C_NDX}]}${RESET}" # Show keys
 		echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
 		if [[ -n ${ANS} && (${ANS} == ${VAL} || ${ANS} == ${PLAIN}) ]];then
 			ACCMSG=''
@@ -138,11 +153,13 @@ drill () {
 			fi
 			echo "${GREEN_FG}Correct${RESET} ${ACCMSG}"
 		else
-			echo "${BOLD}${RED_FG}Incorrect${RESET}: Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
+			[[ -n ${ANS} ]] && echo "${BOLD}${RED_FG}Incorrect${RESET}:${STRIKE}${ANS}${RESET}"
+			echo "Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
 		fi
-		echo "Press any key..."; read -s
+		echo -n "${GREEN_FG}Press any key${RESET}..."; read -s
 	done
 	tcup ${_MAX_ROWS} 0
+	cursor_on
 }
 
 gerund () {
@@ -221,6 +238,8 @@ select_list () {
 			exit_leave "${RED_FG}Operation cancelled${RESET}..."
 		fi
 	done
+	tcup $(( START_ROW - ${HEIGHT} )) 0
+	tput ed
 }
 
 stack_tab () {
@@ -303,7 +322,7 @@ translation () {
 
 # Execution
 clear
-_VERB_ARG=${1}
+[[ ${#} -ne 0 ]] && _VERB_ARG=${1} || exit_leave $(err_msg_exit "Missing argument:<VERB>")
 
 select_list "Select Verb Type" ${(kv)_V_TYPES}
 V_NDX=${_RESPONSE}
@@ -322,3 +341,5 @@ else
 	fi
 fi
 
+clear
+exit_leave
