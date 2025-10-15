@@ -1,0 +1,196 @@
+﻿#!/usr/bin/zsh
+(
+cat << tip_zsh_EOF_1
+Prerequisite
+
+Prepend this to your ~/.zshrc
+
+fpath=(~/my-zsh-completions \$fpath)autoload -U compinitcompinit
+
+    \$fpath is zsh variable that is a list of directories. We above add an extra folder called `~/my-zsh-completions`. You can run echo \$fpath to check it out.
+
+Create your auto complete function
+
+    create a file called _hello in ~/my-zsh-completions.
+    copy the following content into it.
+
+Load the function
+
+source ~/.zshrc
+Let’s test it out!
+
+    type “hello” in the command line.
+    then do <TAB>, so it will look like: hello <TAB> in the command line.
+
+➜  my-zsh-completions \$ hello <TAB>loudly   quietly
+
+Woo! Your auto complete function _hello is working. It is tied to the command hello. Thats is because you wrote #compdef hello in the first line. And the reason why it knows to call _hello function is because you named your file _hello. Cool! That was a lot, let’s take a moment to look at this beautiful sunset!
+Lets play a bit more
+
+Lets type “hello -<TAB>”. Notice the hyphen. It should output this.
+
+my-zsh-completions \$  hello -<TAB>
+--h  -h  -- use 'loudly' or 'quietly' options
+
+The reason you are seeing this output is because -h and--h follow a specific pattern called optspec[explanation] .
+
+    optspec[explanation]: An explanation string may be appended to any of the preceding forms of optspec by enclosing it in brackets, as in ‘-q[query operation]’.
+
+Also try this. Execute this hello loudly -<TAB> .
+
+my-zsh-completions \$ hello loudly -<TAB>
+--h  -h  -- use 'loudly' or 'quietly' options
+
+What you are seeing here is -h and--h only being suggested whenever you start expression with at least one hyphen.
+
+Let’s play with another optspec . Before moving on to play with another optspec let’s observe one more thing. Execute this
+
+hello loudly -h --h -<TAB>
+
+This should do nothing. Ok. Go back to your _hello function file and make sure your _arguments section looks like this. (Basically add *, a wild card, before -h[use ‘loudly’ or ‘quietly’ options] → *-h[use ‘loudly’ or ‘quietly’ options] )
+
+Reload the function. (You need to start a new terminal source ~/.zshrc won’t work)
+
+Execute this.
+
+hello loudly -h --h -<TAB>
+
+The outcome is that hitting the <TAB> autocomplete it to another -h . You can keep doing -<TAB> as many times and it will autocomplete to -h . This is because this
+
+*-h[use 'loudly' or 'quietly' options]
+
+is in the form of *-optname (— also known as one the ways to write an optspec). optname here is everything but the star (*). Star enables the argument to be used anywhere in the command line processing. For example, in etlStep -exec clean -exec transform datayour etlStep command executes clean, and then executes transformation of your data. Hope that helps hehe
+
+optname = -h[use 'loudly' or 'quietly' options]
+
+    *optspec : Here optspec is one of the remaining forms below. This indicates the following optspec (here it is also called optname) may be repeated. Otherwise if the corresponding option is already present on the command line to the left of the cursor it will not be offered again.
+
+So what is going on? What is optspec?
+
+Well. I am not very articulate with my words so I am going to try to explain this as a noob — bare with me. The way I understand optspec is like this…
+Get Karan Gupta’s stories in your inbox
+
+Join Medium for free to get updates from this writer.
+
+So it’s kind of like this in pseudo code:
+
+_arguments [options of _arguments function] [specs]
+
+options of _arguments function
+
+_arguments [options of _arguments function] [specs]
+
+    -n
+    -s
+    -w
+    -W
+    -C: ← we are using this in our example. I haven’t played much with others yet
+    -R
+    -S
+    -A pat
+    -O name
+    -M matchspec
+
+specs
+
+_arguments [options of _arguments function] [specs]
+
+So in our example _hello function, our specs would be these:
+
+-h[use 'loudly' or 'quietly' options]
+--h[use 'loudly' or 'quietly' options]
+1:my message:(quietly loudly)
+2:my message:(boo foo)
+*::arg:->args
+
+There are various “types” or “patterns” of specs:
+
+    n:message:action ← we are using this in our example. I haven’t played much with others yet. But I think they are pretty similar..?
+    n::message:action
+    :message:action
+    ::message:action
+    *:message:action*
+    ::message:action*
+    :::message:action
+    optspec : And we just witnessed this one.
+
+*-h[use ‘loudly’ or ‘quietly’ options] is an optspec as explained above. Here is a list all types of optspec:
+
+    -optname
+    +optname
+    -optname-
+    -optname+
+    -optname=
+    -optname=-
+
+You can checkout each’s definition here — search for optspec: . Let’s play with one of the other optspec type, -optname- . According to it’s definition:
+
+The first argument of the option must come directly after the option name in the same word. For example, ‘-foo-:…’ specifies that the completed option and argument will look like ‘-fooarg’.
+
+-optname-
+
+Add this to your arguments function in _hello file.
+
+Relaunch the terminal and execute. hello -bopt<TAB><TAB>
+
+my-zsh-completions \$ hello -boptarg
+arg1  arg2
+
+    We get two options arg1 and arg2.
+    Also, notice “arg” getting auto-completed and also concatenated.
+
+Hmm. I don’t like the that it’s concatenated.
+-optname+
+
+Add this to your arguments function in _hello file. Basically turn that - to + as below.
+
+Relaunch the terminal and execute hello -bo<TAB><TAB><TAB> . One <TAB> for completing bopt , then one <TAB> for completing arg , and final <TAB> for showing the suggestions to finish the rest of the word after arg.
+
+my-zsh-completions \$ hello -bopt arg
+arg1  arg2
+
+Now, its separated!
+Put some description to your argument
+
+Relaunch terminal and execute hello -<TAB> .
+
+my-zsh-completions \$ hello -<TAB>
+--h    -h  -- use 'loudly' or 'quietly' options                                                                                                          
+-bopt      -- boppity description
+
+So that’s how you get to put descriptions to your options! ❤
+
+Oh, maybe now is a good time to talk about ordering…
+Ordering
+
+Let look at out last example.
+
+Here arguments that start with a number, so these two lines:
+
+    “1:my message:(quietly loudly)” \
+    “2:my message:(boo foo)” \
+
+These are of type n:message:action . This describes the n’th normal argument. Let’s play.
+
+my-zsh-completions \$ hello <TAB>
+loudly   quietly
+
+After typing hello (then space) and then <TAB> executes what is indexed as the first normal argument. In here that is one of these two args — loudly and quietly .
+
+Ok cool.
+
+Now execute this.
+
+my-zsh-completions \$ hello -h <TAB>
+loudly   quietly
+
+Even after writing -h then <TAB> produced the same suggestion — that is because loudly and quietly are specified as the first “normal” argument. I guess the definition of the normal argument is, especially in this context:
+
+Unlike -bopt that takes two additional arguments of it’s own arg1 or arg2 , -h doesn’t. In other words, it is ready to take next TAB completions — so when you hit <TAB> after it, first normal suggestion is loudly or quickly . This same effect can be see if you tried following:
+
+my-zsh-completions \$ hello -bopt arg1 <TAB>
+loudly   quietly
+
+We finished dealing with -bopt by supplying all of it’s (internal) arguments and then it moved to first normal argument.
+tip_zsh_EOF_1
+) | mypager

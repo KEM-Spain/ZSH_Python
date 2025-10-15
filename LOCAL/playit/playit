@@ -28,7 +28,7 @@ typeset -aU _ARTISTS
 _AUDIO_FILES='\(\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\)$'
 _MUSIC_DIRS+="${PWD}"
 _MUSIC_DIRS+="${HOME}/Documents/Music"
-_MUSIC_DIRS+="/media/${_USER_NAME}/KEM_Misc/Music/KEM-B9"
+_MUSIC_DIRS+="/media/${USER}/KEM_Misc/Music/KEM-B9"
 _PLAYLIST_FILE=${HOME}/.tmp/playlist.m3u
 _DEFAULT_PLAYER=/usr/bin/clementine
 
@@ -254,7 +254,7 @@ shift $(( OPTIND - 1 ))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 RAWPATH=$(path_get_raw)
-[[ ${?} -ne 0 ]] && exit_leave $(msg_exit W "path_get_raw had errors:${@}")
+[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit W "path_get_raw had errors:${@}")
 
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
 FPATH=${FPATH:q}
@@ -286,9 +286,9 @@ fi
 # Early exit if no rows
 if ! arr_is_populated "${_RAW_LIST}";then
 	if [[ -n ${SEARCHTERM} ]];then
-		exit_leave $(msg_exit W "No audio files matching:${SEARCHTERM} were found")
+		exit_leave $(err_msg_exit W "No audio files matching:${SEARCHTERM} were found")
 	else
-		exit_leave $(msg_exit W "No audio files were found")
+		exit_leave $(err_msg_exit W "No audio files were found")
 	fi
 fi
 
@@ -338,7 +338,7 @@ if [[ -n ${g_ARTIST} ]];then
 	fi
 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
-		exit_leave $(msg_exit W "No artists matching:${g_ARTIST} found")
+		exit_leave $(err_msg_exit W "No artists matching:${g_ARTIST} found")
 	fi
 fi
 
@@ -351,16 +351,16 @@ if [[ -n ${g_TITLE} ]];then
 	_LOCAL_LIST=(${T_LIST})
 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
-		exit_leave $(msg_exit W "No titles matching:${g_TITLE} found")
+		exit_leave $(err_msg_exit W "No titles matching:${g_TITLE} found")
 	fi
 fi
 
 # Early exit if no rows
 if ! arr_is_populated "${_LOCAL_LIST}";then
 	if [[ -n ${SEARCHTERM} ]];then
-		exit_leave $(msg_exit W "No audio files matching:${SEARCHTERM} were found")
+		exit_leave $(err_msg_exit W "No audio files matching:${SEARCHTERM} were found")
 	else
-		exit_leave $(msg_exit W "No audio files were found")
+		exit_leave $(err_msg_exit W "No audio files were found")
 	fi
 fi
 

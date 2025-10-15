@@ -11,9 +11,16 @@ MAGENTA_FG="\033[35m"
 CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Constants
+_TVI_DIR=~/.local/share/tvi
 _ADD_PATH=/usr/local/bin/system/launchers
-_CACHE=~/.${0:t}/cached_targets
+_CACHE=${_TVI_DIR}/cached_targets
 _EDITABLE='ascii\|text\|script\|json'
 _EDITOR_CMD="/usr/local/bin/system/launchers/run_vim"
 _FUNCTIONS=/etc/zsh/system_wide/functions
@@ -27,12 +34,6 @@ typeset -a FILES
 typeset -aU CANDIDATES
 typeset -a BLOCKED_DIRS=(snap flatpak)
 typeset -A CACHED_TARGETS=()
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 need_sudo () {
@@ -370,8 +371,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDiu"
@@ -390,12 +390,14 @@ while getopts ${OPTSTR} OPTION;do
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 #--Execution--
 fc -R
 RAW_CMD_LINE=($(fc -lnr | head -1)) # Unexpanded command line
+
+[[ ! -d ${_TVI_DIR} ]] && mkdir -p ${_TVI_DIR}
 
 # Validate editor
 if [[ ! -x ${_EDITOR_CMD} ]];then
@@ -403,7 +405,7 @@ if [[ ! -x ${_EDITOR_CMD} ]];then
 fi
 
 # Catch missing argument
-[[ $# -eq 0 ]] && usage "missing argument:$(opt_type f)"
+[[ $# -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type f)"
 
 # Catch excessive arguments
 if [[ $# -gt 1 ]];then

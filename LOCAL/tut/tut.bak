@@ -67,8 +67,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -79,7 +78,7 @@ ___EOF
 			echo ${LINE} | perl -pe 's/\$([0-9A-Za-z?#@_:]*)(\b|$|")/\${$1}$2/g'
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "missing required argument or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing arguments or piped input${RESET}"
 		perl -pe 's/\$([0-9A-Za-z?#@_:]*)(\b|$|")/\${$1}$2/g' <${FN}
 	fi
 }
@@ -117,7 +116,7 @@ ___EOF
 			echo ${LINE} | perl -pe 's/[^[:ascii:]]//g' 
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "missing required argument or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<FN> or piped input"
 		sed -r '/^\s*$/d' <${FN}
 	fi
 }
@@ -154,7 +153,7 @@ ___EOF
 			echo ${LINE} | sed -r '/^\s*$/d'
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "missing required argument or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<FN> or piped input"
 		sed -r '/^\s*$/d' <${FN}
 	fi
 }
@@ -197,7 +196,7 @@ ___EOF
 	elif [[ -e ${FN} ]];then
 		perl -pne 's/(\e|\\C-\[)\[+[\d;]*[mK]//g' <${FN}
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "missing required argument, piped input, or valid file name"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<FN> or piped input"
 	fi
 }
 
@@ -232,7 +231,7 @@ ___EOF
 			echo ${LINE} | tr '[:upper:]' '[:lower:]'
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "missing required argument or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<FN> or piped input"
 		tr '[:upper:]' '[:lower:]' < ${FN}
 	fi
 }
@@ -308,7 +307,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 # Execution
 

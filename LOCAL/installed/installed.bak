@@ -153,7 +153,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave ${PENDING_MSGS}
 }
  
 OPTIND=0
@@ -169,7 +169,7 @@ while getopts ${OPTS} OPTION;do
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} ${OPTARG}"; exit_leave;;
 	esac
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 # End getopts
 
 # Execution
@@ -187,25 +187,25 @@ for I in ${_INSTALLED};do
 	[[ -n ${SEARCHTERM} ]] && [[ ! ${I} =~ "^${SEARCHTERM}" ]] && continue
 	((NDX++))
 	_PKG_KEYS+=$(sed 's/:/-/g' <<< ${I})
-	[[ -n ${_PKG_KEYS[1]} && ${#_PKG_KEYS} -gt 50 ]] && tput cup 0 0 && printf "\rCreating Keys:%s          " ${NDX}
+	[[ -n ${_PKG_KEYS[1]} && ${#_PKG_KEYS} -gt 50 ]] && tput cup 0 0 && printf "\rCreating Keys:${WHITE_FG}%s${RESET}          " ${NDX}
 done
 
 if [[ ${NDX} -eq 0 ]];then
 	exit_leave $(msg_exit W "No package matching:${SEARCHTERM} (excluding snap and flatpak) was found")
 else
-	msg_box -t 1.5 "Found ${#_PKG_KEYS} packages. Gathering data. Please wait..."
+	msg_box -x15 -t2  "Found <w>${#_PKG_KEYS}<N> packages. Gathering data. Please wait..."
 	msg_box_clear
 fi
 
 [[ -z ${_PKG_KEYS} ]] && exit_leave $(msg_exit W "No package matching:${SEARCHTERM} was found")
 
-[[ -n ${SEARCHTERM} ]] && _INFO_MSG+="Searching for:<B><I>${SEARCHTERM}<N>" || _INFO_MSG+="Showing <B><I>ALL<N> installed packages..."
+[[ -n ${SEARCHTERM} ]] && _INFO_MSG+="Searching for:<w><I>${SEARCHTERM}<N>" || _INFO_MSG+="Showing <w><I>ALL<N> installed packages..."
 
-[[ ${ALL} == 'false' ]] && _INFO_MSG+="|<B><I>Skipping<N> all libraries and fonts..." || _INFO_MSG+="|<B><I>Including<N> all libraries and fonts..."
+[[ ${ALL} == 'false' ]] && _INFO_MSG+="|<B><I>Skipping<N> libraries and fonts..." || _INFO_MSG+="|<B><I>Including<N> libraries and fonts..."
 
-[[ ${AWHY} == "false" ]] && _INFO_MSG+="|Dependency info is:<B><I>OFF<N>" || _INFO_MSG+="|Dependency info is:<B><I>ON<N>"
+[[ ${AWHY} == "false" ]] && _INFO_MSG+="|Dependency info is:<w><I>OFF<N>" || _INFO_MSG+="|Dependency info is:<w><I>ON<N>"
 
-msg_box -t 1.5 ${_INFO_MSG}
+msg_box -x10 -t2  ${_INFO_MSG}
 
 tput cup 0 0
 echo "Installed package query results\tFound:${WHITE_FG}${#_PKG_KEYS}${RESET} packages\n"
@@ -215,8 +215,10 @@ typeset -A DESC
 LONGEST_PKG=0
 LONGEST_DESC=0
 tput cup 1 0
+NDX=0
 for K in ${_PKG_KEYS};do
-	printf "\rGetting info:%-50s Remaining packages:%-5s        " ${K} ${PNDX}
+	((NDX++))
+	printf "\rGetting info:${CYAN_FG}%-50s${RESET} Remaining packages:${WHITE_FG}%-5s${RESET} Pct:${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${K} ${PNDX} $(( NDX * 100. / ${#_PKG_KEYS} )) 
 	((PNDX--))
 	_LOCAL_LIST+=${K}
 	[[ ${#K} -gt ${LONGEST_PKG} ]] && LONGEST_PKG=${#K}

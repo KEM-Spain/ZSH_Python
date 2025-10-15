@@ -161,7 +161,7 @@ CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE}"
 
 LIST=("${(f)$(eval ${CMD})}")
 if ! arr_is_populated "${LIST}" ;then
-	exit_leave $(msg_exit W "No results for query")
+	exit_leave $(err_msg_exit W "No results for query")
 fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"

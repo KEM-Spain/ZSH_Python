@@ -197,7 +197,7 @@ msg_box_clear
 
 if ! arr_is_populated "${_LOCAL_LIST}";then
 	if [[ ${KEYWORD} != '?' ]];then
-		exit_leave $(msg_exit W ${MSG})
+		exit_leave $(err_msg_exit W ${MSG})
 	else
 		exit_leave
 	fi

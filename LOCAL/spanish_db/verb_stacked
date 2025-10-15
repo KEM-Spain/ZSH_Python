@@ -83,6 +83,10 @@ stack_tab () {
 	local T_NDX=0
 	local L
 
+	do_rmcup
+
+	[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: V_TYPE:${V_TYPE}, V_CONTEXT:${V_CONTEXT}"
+
 	for L in ${_VERB_DATA};do
 		VB=$(cut -d'|' -f${_V_MAP[VB]} <<<${L})
 		TY=$(cut -d'|' -f${_V_MAP[TY]} <<<${L})
@@ -102,8 +106,10 @@ stack_tab () {
 			IRRG=$(cut -d'|' -f${_HDR_DATA[IR]} <<<${L})
 			DEFN=$(cut -d'|' -f${_HDR_DATA[DF]} <<<${L})
 			DEFN=$(html2text <<<${DEFN})
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: GRND:${GRND}, PART:${PART}, IRRG:${IRRG}, DEFN:${DEFN}"
 			continue
 		fi
+
 
 		if [[ ${OUT} == 'false' ]];then
 			[[ ${IRRG} == '1' ]] && IRRG='(irregular)' || IRRG='(regular)'
@@ -128,6 +134,7 @@ stack_tab () {
 		esac
 
 		if [[ ${TY:l} == 'indicative' || ${TY} == 'perfect' || ${TY} == 'progressive' ]];then
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: VERB_TYPE matches:${TY} _IND_CONTEXT_SORT:${CX} YO:${YO} YF:${YF} EL:${EL} WE:${WE} YP:${YP} TH:${TH}"
 			echo "${T_NDX}${_IND_CONTEXT_SORT[${CX}]}00 LF ${(C)SP_HDR}"
 			printf "%d%d10    Yo %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${YO}
 			printf "%d%d20    Tú %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${YF}
@@ -136,6 +143,7 @@ stack_tab () {
 			printf "%d%d50   Vos %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${YP}
 			printf "%d%d60 Ellos %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${TH}
 		elif [[ ${TY:l} == 'imperative' ]];then
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: VERB_TYPE matches:${TY} _IMP_CONTEXT_SORT:${CX} YO:${YO} YF:${YF} EL:${EL} WE:${WE} YP:${YP} TH:${TH}"
 			echo "44${_IMP_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
 			printf "44%d1    Yo %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${YO}
 			printf "44%d2    Tú %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${YF}
@@ -144,6 +152,7 @@ stack_tab () {
 			printf "44%d5   Vos %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${YP}
 			printf "44%d6 Ellos %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${TH}
 		elif [[ ${TY:l} == 'subjunctive' ]];then
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: VERB_TYPE matches:${TY} _SUB_CONTEXT_SORT:${CX} YO:${YO} YF:${YF} EL:${EL} WE:${WE} YP:${YP} TH:${TH}"
 			echo "55${_SUB_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
 			printf "55%d1    Yo %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${YO}
 			printf "55%d2    Tú %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${YF}
@@ -152,6 +161,7 @@ stack_tab () {
 			printf "55%d5   Vos %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${YP}
 			printf "55%d6 Ellos %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${TH}
 		elif [[ ${TY:l} == 'perfect_subj' ]];then
+			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: VERB_TYPE matches:${TY} _PSUB_CONTEXT_SORT:${CX} YO:${YO} YF:${YF} EL:${EL} WE:${WE} YP:${YP} TH:${TH}"
 			echo "65${_PSUB_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
 			printf "65%d1    Yo %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${YO}
 			printf "65%d2    Tú %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${YF}
@@ -267,6 +277,19 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Generate conjugation table for a given verb
+
+
+VERB_TYPES\tVERB_CONTEXTS
+-----------\t------------ 
+imperative\taffirmative 
+indicative\tconditional 
+perfect\t\tfuture 
+perfect_subj\timperfect 
+progressive\timperfect2 
+subjunctive\tnegative 
+present\t\tall
+preterite 
+all
 EOF
 
 parse_opts () {
@@ -294,6 +317,9 @@ opt_type () {
 	case ${OPT} in
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
+		t) echo "<VERB_TYPE>";;
+		c) echo "<VERB_CONTEXT>";;
+		v) echo "<VERB>";;
 	esac
 }
 
@@ -305,7 +331,7 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v) [$(opt_type t)] [$(opt_type c)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -334,7 +360,7 @@ shift $((OPTIND -1))
 [[ -n ${1} ]] && VERB_ARG=${1:l}
 [[ -n ${2} ]] && V_TYPE=${2:l} || V_TYPE=''
 [[ -n ${3} ]] && V_CONTEXT=${3:l} || V_CONTEXT=''
-[[ -z ${VERB_ARG} ]] && do_rmcup && exit_leave $(err_msg_exit E "Missing argument:<VERB>")
+[[ -z ${VERB_ARG} ]] && do_rmcup && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)"
 
 while true;do
 	_VERB_DATA=("${(f)$(verb_dump ${VERB_ARG})}")
@@ -347,7 +373,7 @@ while true;do
 		fi
 		msg_box -x10 "Fetching data..."
 		get_verb ${VERB_ARG} >/dev/null 2>&1
-		[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit E "Unable to fetch verb:${VERB_ARG}")
+		[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Unable to fetch verb:${VERB_ARG}")
 		sleep 1
 	else
 		break

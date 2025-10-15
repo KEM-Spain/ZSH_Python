@@ -158,43 +158,6 @@ create_list () {
 	local NDX=0
 }
 
-map_ext () {
-	local EXT=${1}
-	local APP=''
-
-	case ${EXT} in
-		avi) APP=${_APP_EXE[MPV]};;
-		doc) APP=${_APP_EXE[OFFICE]};;
-		epub) APP=${_APP_EXE[EBOOK]};;
-		flac) APP=${_APP_EXE[CLEM]};;
-		gif) APP=${_APP_EXE[IMAGE]};;
-		html) APP=${_APP_EXE[VIM]};;
-		jpeg) APP=${_APP_EXE[IMAGE]};;
-		jpg) APP=${_APP_EXE[IMAGE]};;
-		log) APP=${_APP_EXE[VIM]};;
-		m4a) APP=${_APP_EXE[MPV]};;
-		markdown) APP=${_APP_EXE[MDLESS]};;
-		md) APP=${_APP_EXE[MDLESS]};;
-		mkv) APP=${_APP_EXE[MPV]};;
-		mp3) APP=${_APP_EXE[CLEM]};;
-		mp4) APP=${_APP_EXE[MPV]};;
-		mscz) APP=${_APP_EXE[MUSE]};;
-		odg) APP=${_APP_EXE[OFFICE]};;
-		ods) APP=${_APP_EXE[OFFICE]};;
-		odt) APP=${_APP_EXE[OFFICE]};;
-		pdf) APP=${_APP_EXE[OKULAR]};;
-		png) APP=${_APP_EXE[IMAGE]};;
-		rtf) APP=${_APP_EXE[OFFICE]};;
-		svg) APP=${_APP_EXE[IMAGE]};;
-		txt) APP=${_APP_EXE[VIM]};;
-		wav) APP=${_APP_EXE[CLEM]};;
-		webm) APP=${_APP_EXE[MPV]};;
-		xls) APP=${_APP_EXE[OFFICE]};;
-		*) APP=?;;
-	esac
-
-	echo ${APP}
-}
 
 get_app () {
 	local FN=${1}
@@ -241,6 +204,44 @@ item_decorate () {
 		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
 		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
 	esac
+}
+
+map_ext () {
+	local EXT=${1}
+	local APP=''
+
+	case ${EXT} in
+		avi) APP=${_APP_EXE[MPV]};;
+		doc) APP=${_APP_EXE[OFFICE]};;
+		epub) APP=${_APP_EXE[EBOOK]};;
+		flac) APP=${_APP_EXE[CLEM]};;
+		gif) APP=${_APP_EXE[IMAGE]};;
+		html) APP=${_APP_EXE[VIM]};;
+		jpeg) APP=${_APP_EXE[IMAGE]};;
+		jpg) APP=${_APP_EXE[IMAGE]};;
+		log) APP=${_APP_EXE[VIM]};;
+		m4a) APP=${_APP_EXE[MPV]};;
+		markdown) APP=${_APP_EXE[MDLESS]};;
+		md) APP=${_APP_EXE[MDLESS]};;
+		mkv) APP=${_APP_EXE[MPV]};;
+		mp3) APP=${_APP_EXE[CLEM]};;
+		mp4) APP=${_APP_EXE[MPV]};;
+		mscz) APP=${_APP_EXE[MUSE]};;
+		odg) APP=${_APP_EXE[OFFICE]};;
+		ods) APP=${_APP_EXE[OFFICE]};;
+		odt) APP=${_APP_EXE[OFFICE]};;
+		pdf) APP=${_APP_EXE[OKULAR]};;
+		png) APP=${_APP_EXE[IMAGE]};;
+		rtf) APP=${_APP_EXE[OFFICE]};;
+		svg) APP=${_APP_EXE[IMAGE]};;
+		txt) APP=${_APP_EXE[VIM]};;
+		wav) APP=${_APP_EXE[CLEM]};;
+		webm) APP=${_APP_EXE[MPV]};;
+		xls) APP=${_APP_EXE[OFFICE]};;
+		*) APP=?;;
+	esac
+
+	echo ${APP}
 }
 
 mark_unsupported () {

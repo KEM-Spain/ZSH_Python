@@ -328,11 +328,11 @@ REGEX="${SEARCHTERM}"
 	if [[ ${_HIT} == 'false' ]];then
 		durable_set EXV EV 1
 		if [[ ${MATCH_MODE} == "alias" ]];then
-			msg_exit W "No alias matches for:${SEARCHTERM}"
+			err_msg_exit W "No alias matches for:${SEARCHTERM}"
 		elif [[ ${MATCH_MODE} == "cmd" ]];then
-			msg_exit W "No command matches for:${SEARCHTERM}"
+			err_msg_exit W "No command matches for:${SEARCHTERM}"
 		else
-			msg_exit W "No matches for:${SEARCHTERM}"
+			err_msg_exit W "No matches for:${SEARCHTERM}"
 		fi
 	fi
 
