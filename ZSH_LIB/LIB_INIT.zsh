@@ -21,13 +21,13 @@ mend=''
 # Constants
 _MY_PID="$$"
 
-_SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
+[[ -z ${_SCRIPT} ]] && _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
+_SCRIPT_TAG="[${WHITE_FG}${_SCRIPT}${RESET}]:"
 _DEBUG_FILE=/tmp/${_MY_PID}.${_SCRIPT}_debug.out
 _GEO_KEY="key=uMibiyDeEGlYxeK3jx6J"
 _GEO_PROVIDER="https://extreme-ip-lookup.com"
 _MAX_COLS=$(tput -T xterm cols)
 _MAX_ROWS=$(tput -T xterm lines)
-_SCRIPT_TAG="[${WHITE_FG}${_SCRIPT}${RESET}]:"
 _TERM=xterm
 _XSET_DEFAULT_RATE="r rate 500 33" # Default <delay> <repeat>
 _XSET_MENU_RATE="r rate 600 20" # Menu rate <delay> <repeat>

@@ -535,9 +535,9 @@ download_indicator () {
 
 	if [[ ${SPEED} -gt ${g_LAST_SPEED} ]];then 
 		if [[ ${SPEED} -ge 30 ]];then 
-			OBJ_COLOR="${WHITE_ON_GREY}"
+			OBJ_COLOR="${BOLD}${WHITE_FG}"
 		elif [[ ${SPEED} -ge 35 ]];then 
-			OBJ_COLOR="${RED_ON_GREY}"
+			OBJ_COLOR="${BOLD}${CYAN_FG}"
 		elif [[ ${SPEED} -ge 40 ]];then 
 			OBJ_COLOR="${BOLD}${RED_FG}"
 		else
@@ -760,7 +760,7 @@ fav_get () {
 		FTR="<w>Run ${(C)ENGINE} query from history or <h>(q)uit<N>"
 
 		msg_line_weight heavy
-		list_set_restore_pos_reset # Fresh list - position at top
+		list_set_pos_reset # Fresh list - position at top
 		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
 		msg_line_weight light
 

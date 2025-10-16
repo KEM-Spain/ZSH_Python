@@ -168,7 +168,7 @@ cache_select () {
 		esac
 	done
 
-	list_set_restore_pos_reset
+	list_set_pos_reset
 	sel_set_app_keys d
 	sel_set_list ${(k)_CACHE_LIST}
 	sel_list -R -S -T"CACHE" -sa -O ${GREEN_FG} -C -H"Cached Favorites" -F"<w>Select from cache or <h>(q)uit<N>" -M ${MAP}

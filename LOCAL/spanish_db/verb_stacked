@@ -170,104 +170,22 @@ stack_tab () {
 			printf "65%d5   Vos %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${YP}
 			printf "65%d6 Ellos %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${TH}
 		fi
-	done | sort -n | sed -e 's/^....//' -e 's/LF/\n/' | mypager
+	done | sort -n | sed -e 's/^....//' -e 's/LF/\n/' | do_pager ${PAGE_OPT}
 }
 
-wide_tab () {
-	local V_TYPE=${1}
-	local V_CONTEXT=${2}
-	local -A SECT_LEN=()
-	local -A TL_LEN=()
-	local -a LIST=()
-	local	CX EL TH TL TY WE YF YO YP 
-	local EN_HDR SP_HDR
-	local HDR
-	local IRR=''
-	local LAST_NDX=0
-	local LEN=0
-	local NDX=0
-	local OUT=false
-	local T_NDX=0
-	local VB GR PP IR DF
-	local L
+do_pager () {
+	local PAGING=${1}
+	local LINE
 
-	do_rmcup
-
-	for L in ${_VERB_DATA};do
-		TY=$(cut -d'|' -f${_V_MAP[TY]} <<<${L})
-		CX=$(cut -d'|' -f${_V_MAP[CX]} <<<${L})
-		YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${L})
-		YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${L})
-		EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${L})
-		WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${L})
-		YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${L})
-		TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${L})
-
-		[[ (-n ${V_TYPE} && ${V_TYPE:l} != 'all') && ${TY:l} != ${V_TYPE:l} ]] && continue
-		[[ (-n ${V_CONTEXT} && ${V_CONTEXT:l} != 'all') && ${CX:l} != ${V_CONTEXT:l} ]] && continue
-
-		EN_HDR="${TY} ${CX}"
-		SP_HDR="${(C)${_SP_TERMS[${EN_HDR}]}}"
-
-		case ${TY} in
-			indicative) T_NDX=1;;
-			perfect) T_NDX=2;;
-			progressive) T_NDX=3;;
-			imperative) T_NDX=4;;
-			subjunctive) T_NDX=5;;
-			perfect_subj) T_NDX=6;;
-			*) T_NDX=0;;
-		esac
-
-		if [[ ${TY:l} == 'indicative' ]];then
-			LIST+="${T_NDX}${_IND_CONTEXT_SORT[${CX}]}|${SP_HDR}|${YO}|${YF}|${EL}|${WE}|${YP}|${TH}"
-		elif [[ ${TY:l} == 'perfect' ]];then
-			LIST+="${T_NDX}${_IND_CONTEXT_SORT[${CX}]}|${SP_HDR}|${YO}|${YF}|${EL}|${WE}|${YP}|${TH}"
-		elif [[ ${TY:l} == 'progressive' ]];then
-			LIST+="${T_NDX}${_IND_CONTEXT_SORT[${CX}]}|${SP_HDR}|${YO}|${YF}|${EL}|${WE}|${YP}|${TH}"
-		elif [[ ${TY:l} == 'imperative' ]];then
-			LIST+="${T_NDX}${_IMP_CONTEXT_SORT[${CX}]}|${SP_HDR}|${YO}|${YF}|${EL}|${WE}|${YP}|${TH}"
-		elif [[ ${TY:l} == 'subjunctive' ]];then
-			LIST+="${T_NDX}${_SUB_CONTEXT_SORT[${CX}]}|${SP_HDR}|${YO}|${YF}|${EL}|${WE}|${YP}|${TH}"
-		elif [[ ${TY:l} == 'perfect_subj' ]];then
-			LIST+="${T_NDX}${_PSUB_CONTEXT_SORT[${CX}]}|${SP_HDR}|${YO}|${YF}|${EL}|${WE}|${YP}|${TH}"
-		else
-			LIST+="0|HEADER|${L}"
-			continue
-		fi
-		LEN=$(get_longest "${YO} ${YF} ${EL} ${WE} ${YP} ${TH}")
-		[[ ${LEN} -gt ${SECT_LEN[${T_NDX}]} ]] && SECT_LEN[${T_NDX}]=${LEN}
-		[[ ${#SP_HDR} -gt ${TL_LEN[${T_NDX}]} ]] && TL_LEN[${T_NDX}]=${#SP_HDR}
-	done
-
-	LAST_NDX=?
-	for L in ${(on)LIST};do
-		NDX=${L[1,1]}
-		if [[ ${NDX} -eq 0 ]];then
-			VB=$(cut -d'|' -f3 <<<${L})
-			GR=$(cut -d'|' -f4 <<<${L})
-			PP=$(cut -d'|' -f5 <<<${L})
-			IR=$(cut -d'|' -f6 <<<${L})
-			[[ ${IR} -eq 1 ]] && IR="(irregular)" || IR="(regular)"
-			DF=$(cut -d'|' -f7 <<<${L})
-			DF=$(html2text <<<${DF})
-			printf "Verb:%s %s\n" ${VB} ${IR}
-			printf "Gerund:%s\n" ${GR}
-			printf "Past Participle:%s\n" ${PP}
-			printf "Definition:%s\n" ${DF}
-			continue
-		fi
-
-		TL=$(cut -d'|' -f2 <<<${L})
-		YO=$(cut -d'|' -f3 <<<${L})
-		YF=$(cut -d'|' -f4 <<<${L})
-		EL=$(cut -d'|' -f5 <<<${L})
-		WE=$(cut -d'|' -f6 <<<${L})
-		YP=$(cut -d'|' -f7 <<<${L})
-		TH=$(cut -d'|' -f8 <<<${L})
-		[[ ${NDX} -ne ${LAST_NDX} ]] && LAST_NDX=${NDX} && echo 
-		printf "%-*s: %*s %*s %*s %*s %*s %*s\n" ${TL_LEN[${NDX}]} ${TL} ${SECT_LEN[${NDX}]} ${YO} ${SECT_LEN[${NDX}]} ${YF} ${SECT_LEN[${NDX}]} ${EL} ${SECT_LEN[${NDX}]} ${WE} ${SECT_LEN[${NDX}]} ${YP} ${SECT_LEN[${NDX}]} ${TH}
-	done
+	if [[ ${PAGING} == 'false' ]];then
+		while read LINE;do
+			echo ${LINE}
+		done
+	else
+		while read LINE;do
+			echo ${LINE}
+		done | mypager
+	fi
 }
 
 #--Begin GetOpts--
@@ -334,19 +252,22 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v) [$(opt_type t)] [$(opt_type c)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-p${RESET} page output"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HD"
+OPTSTR=":HDp"
 OPTIND=0
+PAGE_OPT=true
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     p) PAGE_OPT=false;;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac

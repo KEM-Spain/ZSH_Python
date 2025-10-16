@@ -725,7 +725,7 @@ fav_get () {
 			D_KEY=${L:gs/_/ /}
 			Q_KEY=$(cut -d: -f1 <<<${_FAV_LIST[${L}]})
 			Q_OPT=$(cut -d: -f2 <<<${_FAV_LIST[${L}]:l})
-			if [[ ${g_LAST_FAV_TYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
+			if [[ ${g_LAST_FAV_TYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then 
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
@@ -753,14 +753,14 @@ fav_get () {
 
 		clear
 
+		TAG="${ENGINE}.${g_LAST_FAV_TYPE}.query"
 		HDR="<B>${(C)ENGINE} <B>Query<N>"
-		TAG=$(tr -d '[:space:]' <<<${HDR}) # TAG w/o C_MSG
 		[[ -n ${C_MSG} ]] && HDR="<B>${(C)ENGINE}${C_MSG} <B>Query<N>"
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)ENGINE} query from history or <h>(q)uit<N>"
 
 		msg_line_weight heavy
-		list_set_restore_pos_reset # Fresh list - position at top
+		list_set_pos_reset # Fresh list - position at top
 		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
 		msg_line_weight light
 

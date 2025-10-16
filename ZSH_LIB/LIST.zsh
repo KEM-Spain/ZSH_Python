@@ -865,7 +865,7 @@ list_select () {
 						break
 					fi;;
 				0) SELECTED_COUNT=$(list_get_selected_count); # Enter key
-					[[ ${_LIST_RESTORE_POS} == 'true' ]] && list_set_position
+					[[ ${_LIST_RESTORE_POS} == 'true' ]] && 
 					_PAGE_DATA[PAGE_STATE]='hold';
 					if [[ ${SELECTED_COUNT} -eq 0 ]];then
 						break 2
@@ -1034,7 +1034,7 @@ list_set_pages () {
 	echo "${(kv)PAGES}"
 }
 
-list_set_position () {
+ () {
 	local POS=${@}
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
@@ -1054,7 +1054,7 @@ list_set_restore_pos () {
 	_LIST_RESTORE_POS=${1}
 }
 
-list_set_restore_pos_reset () {
+list_set_pos_reset () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_LIST_RESTORE_POS_RESET=true
