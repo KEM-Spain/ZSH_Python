@@ -196,7 +196,6 @@ local DESC
 read -r -d '' DESC<<EOF
 Generate conjugation table for a given verb
 
-
 VERB_TYPES\tVERB_CONTEXTS
 -----------\t------------ 
 imperative\taffirmative 
@@ -252,7 +251,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v) [$(opt_type t)] [$(opt_type c)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-p${RESET} page output"
+	echo -e "${WHITE_FG}-p${RESET} paged output"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
@@ -261,13 +260,13 @@ usage () {
 
 OPTSTR=":HDp"
 OPTIND=0
-PAGE_OPT=true
+PAGE_OPT=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     p) PAGE_OPT=false;;
+     p) PAGE_OPT=true;;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
