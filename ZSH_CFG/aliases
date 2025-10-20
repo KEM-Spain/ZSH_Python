@@ -22,6 +22,8 @@ alias t='tz'
 alias templates='ls /usr/local/etc/*template'
 alias te='trans -no-pager es:en'
 alias ts='trans -no-pager en:es'
+alias cdef='compdef -a '
+alias unf='unfunction '
 
 # misc
 alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"

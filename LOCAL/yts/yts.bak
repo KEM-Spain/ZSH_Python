@@ -630,7 +630,6 @@ download_select () {
 	list_set_barlines true
 	list_set_page_callback log_find 
 	list_set_sort_defaults ARRAY "_LIST" COL 1 ORDER "a" DELIM ${_LIST_DELIM} TYPE "flat" TABLE "${(kv)_SORT_TABLE}" MAXCOL 3
-	list_set_restore_pos true
 
 	while true;do
 		# Generate list for selected title
@@ -725,7 +724,7 @@ fav_get () {
 			D_KEY=${L:gs/_/ /}
 			Q_KEY=$(cut -d: -f1 <<<${_FAV_LIST[${L}]})
 			Q_OPT=$(cut -d: -f2 <<<${_FAV_LIST[${L}]:l})
-			if [[ ${g_LAST_FAV_TYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then # (Future: change favorite code to 'c')
+			if [[ ${g_LAST_FAV_TYPE} == 'c' && ${Q_OPT[1]} == 'p' ]];then 
 				LIST+=${D_KEY}
 				QUERY_KEYS[${D_KEY}]=${Q_KEY}
 				QUERY_OPTS[${D_KEY}]=${Q_OPT}
@@ -753,8 +752,8 @@ fav_get () {
 
 		clear
 
+		TAG="${ENGINE}.${g_LAST_FAV_TYPE}.query"
 		HDR="<B>${(C)ENGINE} <B>Query<N>"
-		TAG=$(tr -d '[:space:]' <<<${HDR}) # TAG w/o C_MSG
 		[[ -n ${C_MSG} ]] && HDR="<B>${(C)ENGINE}${C_MSG} <B>Query<N>"
 		MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
 		FTR="<w>Run ${(C)ENGINE} query from history or <h>(q)uit<N>"
@@ -1115,6 +1114,7 @@ log_find () {
 	_PARTIALS=()
 
 	[[ ${DBG} == 'true' ]] && /bin/rm -f ${0}.dbg
+
 
 	for ((R=${TOP}; R <= ${BOT}; R++));do
 		LINE_NUM=''
@@ -1533,7 +1533,7 @@ query_youtube () {
 			TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
 			if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
 				if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
-					TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en)
+					TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
 			fi
 		fi
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})

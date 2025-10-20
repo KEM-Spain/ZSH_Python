@@ -248,7 +248,7 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v) [$(opt_type t)] [$(opt_type c)]\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)] [$(opt_type c)] $(opt_type v)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-p${RESET} paged output"
@@ -276,10 +276,11 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+# TODO: if less than 3 args are entered respond accrodingly: verb only - prompt for type and context, etc
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
-[[ -n ${1} ]] && VERB_ARG=${1:l}
-[[ -n ${2} ]] && V_TYPE=${2:l} || V_TYPE=''
-[[ -n ${3} ]] && V_CONTEXT=${3:l} || V_CONTEXT=''
+[[ -n ${1} ]] && V_TYPE=${1:l} || V_TYPE=''
+[[ -n ${2} ]] && V_CONTEXT=${2:l} || V_CONTEXT=''
+[[ -n ${3} ]] && VERB_ARG=${3:l}
 [[ -z ${VERB_ARG} ]] && do_rmcup && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)"
 
 while true;do

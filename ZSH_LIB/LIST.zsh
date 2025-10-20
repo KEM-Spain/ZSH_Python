@@ -49,7 +49,7 @@ _OFF_SCREEN_ROWS_MSG=''
 _PAGE_CALLBACK_FUNC=''
 _PROMPT_KEYS=''
 _LIST_RESTORE_POS=false
-_LIST_RESTORE_POS_RESET=false
+_LIST_POS_RESET=false
 _SEARCH_MARKER="${BOLD}${RED_FG}\u25CF${RESET}"
 _USED_MARKER="${BOLD}${MAGENTA_FG}\u25CA${RESET}"
 _LIST_IS_SELECTABLE=true
@@ -87,10 +87,10 @@ list_display_page () {
 	local -A PG_LIMITS=($(list_get_page_limits))
 	local R=0
 	local X_POS=0
+	local RC_1=0
+	local RC_2=0
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${_LIST_RESTORE_POS} == 'true' ]] && list_get_position
 
 	if [[ ${_PAGE_DATA[RESTORE]} == 'true' ]];then
 		_PAGE_DATA[PAGE]=$(list_find_page ${_PAGE_DATA[POS_NDX]})
@@ -105,7 +105,9 @@ list_display_page () {
 
 	_LIST_NDX=$(( PG_LIMITS[TOP] - 1 )) # Initialize page top
 
-	[[ -n ${_PAGE_CALLBACK_FUNC} ]] && ${_PAGE_CALLBACK_FUNC} ${PG_LIMITS[TOP]} ${PG_LIMITS[BOT]}
+	if [[ -n ${_PAGE_CALLBACK_FUNC} ]];then
+		${_PAGE_CALLBACK_FUNC} ${PG_LIMITS[TOP]} ${PG_LIMITS[BOT]}
+	fi
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}DISPLAYING LIST FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
 
@@ -243,25 +245,6 @@ list_get_page_limits () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	echo "TOP ${TOP} BOT ${BOT} MAX_CURSOR ${MAX_CURSOR} MIN_CURSOR ${MIN_CURSOR}"
-}
-
-list_get_position () {
-	local NDX=0
-	local CUR=0
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
-
-	if [[ ${_LIST_RESTORE_POS_RESET} == 'true' ]];then
-		_PAGE_DATA[POS_NDX]=''
-		_PAGE_DATA[POS_CUR]=''
-		_LIST_RESTORE_POS_RESET='false'
-	elif [[ -e ${_LIST_TAG_FILE} ]];then
-		IFS='|' read -r NDX CUR < ${_LIST_TAG_FILE} # Retrieve stored position
-		[[ -n ${NDX} ]] && _PAGE_DATA[POS_NDX]=${NDX} || _PAGE_DATA[POS_NDX]=''
-		[[ -n ${CUR} ]] && _PAGE_DATA[POS_CUR]=${CUR} || _PAGE_DATA[POS_CUR]=''
-		[[ -n ${_PAGE_DATA[POS_NDX]} && -n ${_PAGE_DATA[POS_CUR]} ]] && _PAGE_DATA[RESTORE]=true || _PAGE_DATA[RESTORE]=false
-		/bin/rm -f ${_LIST_TAG_FILE}
-	fi
 }
 
 list_get_selected () {
@@ -1057,7 +1040,7 @@ list_set_restore_pos () {
 list_set_pos_reset () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	_LIST_RESTORE_POS_RESET=true
+	_LIST_POS_RESET=true
 }
 
 list_set_prompt_msg () {

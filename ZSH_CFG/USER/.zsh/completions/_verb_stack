@@ -1,0 +1,50 @@
+#compdef verb_stack
+
+
+_verb_stack() {
+	local line state
+
+	local v_types=(
+		"indicative" "perfect" "progressive" "imperative" "subjunctive" "perfect_subj" "all"
+	)
+
+	local ind_context=(
+		"present" "preterite" "imperfect" "future" "conditional" "all"
+	)
+
+	local imp_context=(
+		"affirmative" "negative" "all"
+	)
+
+	local sub_context=(
+		"present" "future" "imperfect" "imperfect2" "all"
+	)
+
+	local psub_context=(
+		"future" "past" "present" "all"
+	)
+
+    _arguments -C \
+               '1: :->cmds' \
+					'-H[help]' \
+					'-D[debug]' \
+               '*::arg:->args'
+
+    case "$state" in
+        cmds)
+				_values 'Verb Types:' $v_types
+				;;
+        args)
+            case $line[1] in
+                indicative) _values 'Verb Context:' $ind_context;;
+                perfect) _values 'Verb Context:' $ind_context;;
+                progressive) _values 'Verb Context:' $ind_context;;
+                imperative) _values 'Verb Context:' $imp_context;;
+                subjunctive) _values 'Verb Context:' $sub_context;;
+                perfect_subj) _values 'Verb Context:' $psub_context;;
+                all) _values 'Verb Context:' $ind_context;;
+            esac
+            ;;
+    esac
+}
+

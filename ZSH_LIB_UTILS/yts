@@ -535,13 +535,13 @@ download_indicator () {
 
 	if [[ ${SPEED} -gt ${g_LAST_SPEED} ]];then 
 		if [[ ${SPEED} -ge 30 ]];then 
-			OBJ_COLOR="${BOLD}${WHITE_FG}"
-		elif [[ ${SPEED} -ge 35 ]];then 
 			OBJ_COLOR="${BOLD}${CYAN_FG}"
+		elif [[ ${SPEED} -ge 35 ]];then 
+			OBJ_COLOR="${BOLD}${GREEN_FG}"
 		elif [[ ${SPEED} -ge 40 ]];then 
 			OBJ_COLOR="${BOLD}${RED_FG}"
 		else
-			OBJ_COLOR="${BOLD}${GREEN_FG}"
+			OBJ_COLOR="${BOLD}${WHITE_FG}"
 		fi
 		SP_DIR=I # Increasing
 	elif [[ ${SPEED} -lt ${g_LAST_SPEED} ]];then 
@@ -630,7 +630,6 @@ download_select () {
 	list_set_barlines true
 	list_set_page_callback log_find 
 	list_set_sort_defaults ARRAY "_LIST" COL 1 ORDER "a" DELIM ${_LIST_DELIM} TYPE "flat" TABLE "${(kv)_SORT_TABLE}" MAXCOL 3
-	list_set_restore_pos true
 
 	while true;do
 		# Generate list for selected title
@@ -1116,6 +1115,7 @@ log_find () {
 
 	[[ ${DBG} == 'true' ]] && /bin/rm -f ${0}.dbg
 
+
 	for ((R=${TOP}; R <= ${BOT}; R++));do
 		LINE_NUM=''
 
@@ -1533,7 +1533,7 @@ query_youtube () {
 			TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
 			if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
 				if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
-					TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en)
+					TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
 			fi
 		fi
 		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${F})

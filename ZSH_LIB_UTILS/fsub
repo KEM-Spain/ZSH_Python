@@ -231,7 +231,7 @@ do_finalize () {
 				continue
 			fi
 		else
-			exit_leave $(msg_err "Failed to resolve:_IN_LIST[K], K=${K}, _IN_LIST COUNT:${#_IN_LIST}")
+			exit_leave $(err_msg_exit "Failed to resolve:_IN_LIST[K], K=${K}, _IN_LIST COUNT:${#_IN_LIST}")
 			continue
 		fi
 

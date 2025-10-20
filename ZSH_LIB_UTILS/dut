@@ -450,7 +450,7 @@ ___EOF
 			fi
 		done
 
-		[[ ${NDX} -eq 0 ]] && exit_leave $(msg_err "Unknown partition:${PARTITION}")
+		[[ ${NDX} -eq 0 ]] && exit_leave $(err_msg_exit "Unknown partition:${PARTITION}")
 
 		if [[ ${_MOUNT_POINTS[${PARTITION:t}]} == 'unmounted' ]];then
 			do_mount ${NDX}
