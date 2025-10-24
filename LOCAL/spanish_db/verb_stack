@@ -69,6 +69,16 @@ stack_tab () {
 	local EN_HDR SP_HDR VB_HDR
 	local OUT=false
 	local T_NDX=0
+	local	LBL1="   yo:"
+	local	LBL2="   tú:"
+	local	LBL3="   él:"
+	local	LBL4="  nos:"
+	local	LBL5="  vos:"
+	local	LBL6="ellos:"
+	local HLBL1="       Verb:"
+	local HLBL2="     Gerund:"
+	local HLBL3=" Participle:"
+	local HLBL4=" Definition:"
 	local L
 
 	do_rmcup
@@ -76,17 +86,17 @@ stack_tab () {
 	[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: V_TYPE:${V_TYPE}, V_CONTEXT:${V_CONTEXT}"
 
 	for L in ${_VERB_DATA};do
-		VB=$(cut -d'|' -f${_V_MAP[VB]} <<<${L})
-		TY=$(cut -d'|' -f${_V_MAP[TY]} <<<${L})
-		CX=$(cut -d'|' -f${_V_MAP[CX]} <<<${L})
-		YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${L})
-		YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${L})
-		EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${L})
-		WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${L})
-		YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${L})
-		TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${L})
-		IR=$(cut -d'|' -f10 <<<${L})
-		GR=$(cut -d'|' -f6 <<<${L})
+		VB=$(cut -d'|' -f${_V_MAP[VB]} <<<${L}) # verb
+		TY=$(cut -d'|' -f${_V_MAP[TY]} <<<${L}) # type
+		CX=$(cut -d'|' -f${_V_MAP[CX]} <<<${L}) # context
+		YO=$(cut -d'|' -f${_V_MAP[YO]} <<<${L}) # yo
+		YF=$(cut -d'|' -f${_V_MAP[YF]} <<<${L}) # tú
+		EL=$(cut -d'|' -f${_V_MAP[EL]} <<<${L}) # él
+		WE=$(cut -d'|' -f${_V_MAP[WE]} <<<${L}) # nos
+		YP=$(cut -d'|' -f${_V_MAP[YP]} <<<${L}) # vos
+		TH=$(cut -d'|' -f${_V_MAP[TH]} <<<${L}) # ellos
+		IR=$(cut -d'|' -f10 <<<${L}) # irregular
+		GR=$(cut -d'|' -f6 <<<${L}) # gerund
 
 		if [[ ${OUT} == 'false' && -z ${EL} ]];then
 			GRND=$(cut -d'|' -f${_HDR_DATA[GR]} <<<${L})
@@ -101,10 +111,11 @@ stack_tab () {
 
 		if [[ ${OUT} == 'false' ]];then
 			[[ ${IRRG} == '1' ]] && IRRG='(irregular)' || IRRG='(regular)'
-			echo "1    Verb:${VB} ${IRRG}"
-			echo "2    Gerund:${GRND}"
-			echo "3    Past Participle:${PART}"
-			echo "4    Definition:${DEFN}"
+			printf "0    %s\n" "Resumen"
+			printf "1    %s %s\n" ${HLBL1:q} "${VB} ${IRRG}"
+			printf "2    %s %s\n" ${HLBL2:q} ${GRND}
+			printf "3    %s %s\n" ${HLBL3:q} ${PART}
+			printf "4    %s %s\n" ${HLBL4:q} ${DEFN}
 			OUT=true
 		fi
 		
@@ -124,39 +135,39 @@ stack_tab () {
 		if [[ ${TY:l} == 'indicative' || ${TY} == 'perfect' || ${TY} == 'progressive' ]];then
 			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: VERB_TYPE matches:${TY} _IND_CONTEXT_SORT:${CX} YO:${YO} YF:${YF} EL:${EL} WE:${WE} YP:${YP} TH:${TH}"
 			echo "${T_NDX}${_IND_CONTEXT_SORT[${CX}]}00 LF ${(C)SP_HDR}"
-			printf "%d%d10    Yo %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${YO}
-			printf "%d%d20    Tú %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${YF}
-			printf "%d%d30    Él %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${EL}
-			printf "%d%d40   Nos %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${WE}
-			printf "%d%d50   Vos %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${YP}
-			printf "%d%d60 Ellos %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${TH}
+			printf "%d%d10 %s %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${LBL1:q} ${YO:s/_/ /}
+			printf "%d%d20 %s %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${LBL2:q} ${YF:s/_/ /}
+			printf "%d%d30 %s %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${LBL3:q} ${EL:s/_/ /}
+			printf "%d%d40 %s %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${LBL4:q} ${WE:s/_/ /}
+			printf "%d%d50 %s %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${LBL5:q} ${YP:s/_/ /}
+			printf "%d%d60 %s %s\n" ${T_NDX} ${_IND_CONTEXT_SORT[${CX}]} ${LBL6:q} ${TH:s/_/ /}
 		elif [[ ${TY:l} == 'imperative' ]];then
 			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: VERB_TYPE matches:${TY} _IMP_CONTEXT_SORT:${CX} YO:${YO} YF:${YF} EL:${EL} WE:${WE} YP:${YP} TH:${TH}"
 			echo "44${_IMP_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
-			printf "44%d1    Yo %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${YO}
-			printf "44%d2    Tú %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${YF}
-			printf "44%d3    Él %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${EL}
-			printf "44%d4   Nos %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${WE}
-			printf "44%d5   Vos %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${YP}
-			printf "44%d6 Ellos %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${TH}
+			printf "44%d1 %s %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${LBL1:q} ${YO:s/_/ /}
+			printf "44%d2 %s %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${LBL2:q} ${YF:s/_/ /}
+			printf "44%d3 %s %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${LBL3:q} ${EL:s/_/ /}
+			printf "44%d4 %s %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${LBL4:q} ${WE:s/_/ /}
+			printf "44%d5 %s %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${LBL5:q} ${YP:s/_/ /}
+			printf "44%d6 %s %s\n" ${_IMP_CONTEXT_SORT[${CX}]} ${LBL6:q} ${TH:s/_/ /}
 		elif [[ ${TY:l} == 'subjunctive' ]];then
 			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: VERB_TYPE matches:${TY} _SUB_CONTEXT_SORT:${CX} YO:${YO} YF:${YF} EL:${EL} WE:${WE} YP:${YP} TH:${TH}"
 			echo "55${_SUB_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
-			printf "55%d1    Yo %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${YO}
-			printf "55%d2    Tú %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${YF}
-			printf "55%d3    Él %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${EL}
-			printf "55%d4   Nos %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${WE}
-			printf "55%d5   Vos %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${YP}
-			printf "55%d6 Ellos %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${TH}
+			printf "55%d1 %s %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${LBL1:q} ${YO:s/_/ /}
+			printf "55%d2 %s %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${LBL2:q} ${YF:s/_/ /}
+			printf "55%d3 %s %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${LBL3:q} ${EL:s/_/ /}
+			printf "55%d4 %s %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${LBL4:q} ${WE:s/_/ /}
+			printf "55%d5 %s %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${LBL5:q} ${YP:s/_/ /}
+			printf "55%d6 %s %s\n" ${_SUB_CONTEXT_SORT[${CX}]} ${LBL6:q} ${TH:s/_/ /}
 		elif [[ ${TY:l} == 'perfect_subj' ]];then
 			[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: VERB_TYPE matches:${TY} _PSUB_CONTEXT_SORT:${CX} YO:${YO} YF:${YF} EL:${EL} WE:${WE} YP:${YP} TH:${TH}"
 			echo "65${_PSUB_CONTEXT_SORT[${CX}]}0 LF ${(C)SP_HDR}"
-			printf "65%d1    Yo %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${YO}
-			printf "65%d2    Tú %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${YF}
-			printf "65%d3    Él %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${EL}
-			printf "65%d4   Nos %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${WE}
-			printf "65%d5   Vos %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${YP}
-			printf "65%d6 Ellos %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${TH}
+			printf "65%d1 %s %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${LBL1:q} ${YO:s/_/ /}
+			printf "65%d2 %s %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${LBL2:q} ${YF:s/_/ /}
+			printf "65%d3 %s %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${LBL3:q} ${EL:s/_/ /}
+			printf "65%d4 %s %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${LBL4:q} ${WE:s/_/ /}
+			printf "65%d5 %s %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${LBL5:q} ${YP:s/_/ /}
+			printf "65%d6 %s %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${LBL6:q} ${TH:s/_/ /}
 		fi
 	done | sort -n | sed -e 's/^....//' -e 's/LF/\n/' | do_pager ${PAGE_OPT}
 }
