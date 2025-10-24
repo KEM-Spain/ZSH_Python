@@ -1,7 +1,6 @@
 #compdef verb_stack
 
-
-_arg_example() {
+_verb_stack () {
 	local line state
 
 	local v_types=(

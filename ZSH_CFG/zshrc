@@ -1,18 +1,27 @@
-FUNCTIONS=/etc/zsh/system_wide/functions
-fpath=(${FUNCTIONS} $fpath)
+#FPATH_COPY=${fpath}
+#typeset -a MY_FPATH=()
+#typeset -a OMIT=(AIX BSD Cygwin Darwin Mandriva Redhat Solaris openSUSE)
+#for F in ${=FPATH_COPY};do 
+#	if [[ ${OMIT[(i)${F:t}]} -gt ${#OMIT} ]];then
+#		MY_FPATH+=${F}
+#	fi
+#done
+#fpath=${MY_FPATH}
+
+SW_FUNCS=/etc/zsh/system_wide/functions
+fpath=(${SW_FUNCS} $fpath)
 
 eval "$(dircolors /etc/zsh/DIR_COLORS)"
 
 zle -N edit-command-line #register widget
 
-autoload -Uz ${FUNCTIONS}/*(:t)
+autoload -Uz ${SW_FUNCS}/*(:t)
 autoload -Uz colors && colors
-autoload -Uz compinit 
+autoload -Uz compinit && compinit
 autoload -Uz add-zsh-hook
 autoload -Uz run-help
 autoload -Uz edit-command-line #load widget
 
-compinit -C
 
 #Options
 setopt hist_find_no_dups	#don't recall dups

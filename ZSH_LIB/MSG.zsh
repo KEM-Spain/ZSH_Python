@@ -15,6 +15,7 @@ _CONT_BOX_TAG=CONT_BOX
 _DELIM='|'
 _LAST_MSG_TAG=''
 _REPAINT=true
+_HDR_SECTION=false
 
 # LIB Functions
 msg_box () {
@@ -320,6 +321,7 @@ msg_box () {
 		dbg "${0}: BOX_X,Y:${WHITE_FG}(${BOX_X_COORD},${BOX_Y_COORD})${RESET}"
 		dbg "${0}: BOX_HEIGHT:${WHITE_FG}${BOX_HEIGHT}${RESET}"
 		dbg "${0}: BOX_WIDTH:${WHITE_FG}${BOX_WIDTH}${RESET}"
+		dbg "${0}: BOX_STYLE:${WHITE_FG}${TEXT_STYLE}${RESET}"
 	fi
 
 	# Prepare display
@@ -416,6 +418,7 @@ msg_box () {
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}PRINTING MSG HEADER${RESET}"
 			SCR_NDX=${BOX_X_COORD} 
 			DTL_NDX=0
+			_HDR_SECTION=true
 			for H in ${MSG_HEADER};do
 				(( SCR_NDX++))
 				(( DTL_NDX++))
@@ -426,6 +429,7 @@ msg_box () {
 				echo -n "${MSG_OUT}"
 				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}HEADER SCR_NDX${RESET}:${SCR_NDX}"
 			done
+			_HDR_SECTION=false
 		fi
 
 		# Body
@@ -516,6 +520,8 @@ msg_box_align () {
 	local TEXT=''
 	local LBL=''
 	local VAL=''
+
+	[[ ${_HDR_SECTION} == 'true' ]] && BOX_STYLE=c # Override any style for headers
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO} TAG:${TAG} COORDS:${BOX_COORDS} MSG LEN:${#MSG}"
 

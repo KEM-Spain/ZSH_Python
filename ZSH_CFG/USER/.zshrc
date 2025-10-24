@@ -223,7 +223,6 @@ alias sudo='sudo ' # Sudo tweak
 
 # Completions
 fpath=(/home/kmiller/.zsh/completions ${fpath})
-fpath=(/home/kmiller/Code/LOCAL/completions ${fpath}) # for testing
 autoload -Uz compinit && compinit
 
 precmd () {

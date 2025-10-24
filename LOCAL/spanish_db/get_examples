@@ -37,7 +37,7 @@ get_examples () {
 		VERBS[${NDX}]=$V
 	done
 
-	echo "Retrieving examples..." >&2
+	#echo "Retrieving examples..." >&2
 	[[ ${DEBUG} == 'true' ]] && echo "VERB count is ${#VERBS}, VERB:${VERBS}" >&2
 
 	COMPOUND_VERB=false

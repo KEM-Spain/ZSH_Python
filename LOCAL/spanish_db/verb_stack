@@ -61,18 +61,6 @@ typeset -A _SP_TERMS=(
 )
 
 # Functions
-get_longest () {
-	local LONGEST=0
-	local -a FIELDS=(${=@})
-	local F
-
-	for F in ${FIELDS};do
-		[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F}
-	done
-
-	echo  ${LONGEST}
-}
-
 stack_tab () {
 	local V_TYPE=${1}
 	local V_CONTEXT=${2}
@@ -119,7 +107,7 @@ stack_tab () {
 			echo "4    Definition:${DEFN}"
 			OUT=true
 		fi
-
+		
 		[[ (-n ${V_TYPE} && ${V_TYPE:l} != 'all') && ${TY:l} != ${V_TYPE:l} ]] && continue
 		[[ (-n ${V_CONTEXT} && ${V_CONTEXT:l} != 'all') && ${CX:l} != ${V_CONTEXT:l} ]] && continue
 
@@ -186,6 +174,51 @@ do_pager () {
 			echo ${LINE}
 		done | mypager
 	fi
+}
+
+select_verb_type () {
+	sel_set_list ${(C)_V_TYPES}
+	sel_list -O ${CYAN_FG} -F"<w>Select Verb Type or <h>(q)uit<N>" -H"Verb Types"
+}
+
+select_verb_context () {
+	local VTYPE=${1}
+
+	if [[ ${V_TYPE:l} == 'indicative' ]];then
+		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
+	elif [[ ${V_TYPE:l} == 'perfect' ]];then
+		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
+	elif [[ ${V_TYPE:l} == 'progressive' ]];then
+		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
+	elif [[ ${V_TYPE:l} == 'subjunctive' ]];then
+		sel_set_list ${(Ck)_SUB_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Subjunctive Context or <h>(q)uit<N>" -H"Subjunctive Contexts"
+	elif [[ ${V_TYPE:l} == 'perfect_subj' ]];then
+		sel_set_list ${(Ck)_PSUB_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Perfect Subjunctive Context or <h>(q)uit<N>" -H"Perfect Subjunctive Contexts"
+	elif [[ ${V_TYPE:l} == 'imperative' ]];then
+		sel_set_list ${(Ck)_IMP_CONTEXT_SORT}
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Imperative Context or <h>(q)uit<N>" -H"Imperative Contexts"
+	fi
+}
+
+validate_type () {
+	local ${V_TYPE}=${1}
+
+	[[ ${_V_TYPES[(i)${V_TYPE}]} -le ${#_V_TYPES} ]] && return 0 || return 1
+}
+
+validate_context () {
+	local ${V_CONTEXT}=${1}
+
+	[[ -n ${_IND_CONTEXT_SORT[${V_CONTEXT}]} ]] && return 0
+	[[ -n ${_IMP_CONTEXT_SORT[${V_CONTEXT}]} ]] && return 0
+	[[ -n ${_SUB_CONTEXT_SORT[${V_CONTEXT}]} ]] && return 0
+	[[ -n ${_PSUB_CONTEXT_SORT[${V_CONTEXT}]} ]] && return 0
+	return 1
 }
 
 #--Begin GetOpts--
@@ -276,12 +309,37 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-# TODO: if less than 3 args are entered respond accrodingly: verb only - prompt for type and context, etc
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
-[[ -n ${1} ]] && V_TYPE=${1:l} || V_TYPE=''
-[[ -n ${2} ]] && V_CONTEXT=${2:l} || V_CONTEXT=''
-[[ -n ${3} ]] && VERB_ARG=${3:l}
+
+V_TYPE=''
+V_CONTEXT=''
+VERB_ARG=''
+
+[[ ${#} -eq 1 ]] && VERB_ARG=${1:l}
+[[ ${#} -gt 1 ]] && V_TYPE=${1:l}
+[[ ${#} -eq 2 ]] && VERB_ARG=${2:l}
+[[ ${#} -gt 2 ]] && V_CONTEXT=${2:l} && VERB_ARG=${3:l}
+
 [[ -z ${VERB_ARG} ]] && do_rmcup && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)"
+
+TEST=$(do_query "select verb from spanish_tense where verb='${VERB_ARG}'")
+[[ -z ${TEST} ]] && do_rmcup && exit_leave $(err_msg_exit W "Verb:${CYAN_FG}${VERB_ARG}${RESET} not in database")
+
+if [[ -n ${V_TYPE} ]];then
+	validate_type ${V_TYPE}
+	[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Invalid verb type:${V_TYPE}")
+else
+	select_verb_type # Sets SEL_VAL
+	V_TYPE=${_SEL_VAL}
+fi
+
+if [[ -n ${V_TYPE} && -n ${V_CONTEXT} ]];then
+	validate_context ${V_CONTEXT}
+	[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Invalid verb context:${V_CONTEXT}")
+elif [[ -z ${V_CONTEXT} ]];then
+	select_verb_context ${V_TYPE} # Sets SEL_VAL
+	V_CONTEXT=${_SEL_VAL}
+fi
 
 while true;do
 	_VERB_DATA=("${(f)$(verb_dump ${VERB_ARG})}")
@@ -300,37 +358,6 @@ while true;do
 		break
 	fi
 done
-
-if [[ -z ${V_TYPE} ]];then
-	clear
-	sel_set_list ${(C)_V_TYPES}
-	sel_list -O ${CYAN_FG} -F"<w>Select Verb Type or <h>(q)uit<N>" -H"Verb Types"
-	V_TYPE=${_SEL_VAL:l}
-fi
-
-if [[ -z ${V_CONTEXT} ]];then
-	clear
-	if [[ ${V_TYPE:l} == 'indicative' ]];then
-		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
-	elif [[ ${V_TYPE:l} == 'perfect' ]];then
-		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
-	elif [[ ${V_TYPE:l} == 'progressive' ]];then
-		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
-	elif [[ ${V_TYPE:l} == 'subjunctive' ]];then
-		sel_set_list ${(Ck)_SUB_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Subjunctive Context or <h>(q)uit<N>" -H"Subjunctive Contexts"
-	elif [[ ${V_TYPE:l} == 'perfect_subj' ]];then
-		sel_set_list ${(Ck)_PSUB_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Perfect Subjunctive Context or <h>(q)uit<N>" -H"Perfect Subjunctive Contexts"
-	elif [[ ${V_TYPE:l} == 'imperative' ]];then
-		sel_set_list ${(Ck)_IMP_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Imperative Context or <h>(q)uit<N>" -H"Imperative Contexts"
-	fi
-	V_CONTEXT=${_SEL_VAL:l}
-fi
 
 stack_tab ${V_TYPE} ${V_CONTEXT}
 
