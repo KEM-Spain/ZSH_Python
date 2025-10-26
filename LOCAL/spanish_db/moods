@@ -15,15 +15,16 @@ MAGENTA_FG="\033[35m"
 CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
-#Declarations
+# Declarations
 
-#Constants
+# Constants
 LIB=/usr/local/lib
 
-#Globals
+# Vars
 DELIM=' '
+_VERB_ARG=''
 
-#Imports
+# Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/UTILS.zsh
@@ -37,7 +38,11 @@ for D in ${=_DEPS_};do
 	fi
 done
 
-#Functions
+# Functions
+translation () {
+	local TRANS=$(do_query -d '|' "select translation from spanish_verb where verb = '${_VERB_ARG}'")
+	echo ${TRANS}
+}
 
 #--Begin GetOpts--
 RESET="\033[m"
@@ -119,19 +124,25 @@ shift $((OPTIND -1))
 clear
 
 [[ ${#} -eq 0 ]] && usage
-VERB=${1}
+_VERB_ARG=${1}
 
 typeset -A MTITLES=(IND Indicative SUB Subjunctive IMP Imperative)
 typeset -a MTEXT=()
 
 [[ ${QUIET} == 'false' ]] && echo "${WHITE_FG}Moods with example${RESET}"
 
-QRY="SELECT distinct 'IND',verb,tense,p1 from spanish_tense where verb = '${VERB}' and mood='indicative' order by tense;"
+QRY="SELECT distinct 'IND',verb,tense,p1 from spanish_tense where verb = '${_VERB_ARG}' and mood='indicative' order by tense;"
 MTEXT=("${(f)$(do_query -d"${DELIM}" ${QRY})}")
-QRY="SELECT distinct 'SUB',verb,tense,p1 from spanish_tense where verb = '${VERB}' and mood='subjunctive' order by tense;"
+QRY="SELECT distinct 'SUB',verb,tense,p1 from spanish_tense where verb = '${_VERB_ARG}' and mood='subjunctive' order by tense;"
 MTEXT+=("${(f)$(do_query -d"${DELIM}" ${QRY})}")
-QRY="SELECT distinct 'IMP',verb,tense,p2 from spanish_tense where verb = '${VERB}' and mood='imperative' order by tense;"
+QRY="SELECT distinct 'IMP',verb,tense,p2 from spanish_tense where verb = '${_VERB_ARG}' and mood='imperative' order by tense;"
 MTEXT+=("${(f)$(do_query -d"${DELIM}" ${QRY})}")
+
+local DEFN=$(translation)
+[[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
+echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET}"
+echo "Definition:${WHITE_FG}${DEFN}${RESET}"
+
 LAST_TYPE=?
 for L in ${MTEXT};do
 	TYPE=$(cut -d'|' -f1 <<<${L})

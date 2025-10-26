@@ -19,5 +19,5 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-do_query 'select verb from spanish_verb' | cols
+do_query 'select verb from spanish_verb' | cols -c6
 

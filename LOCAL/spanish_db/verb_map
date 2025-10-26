@@ -68,9 +68,9 @@ indicative () {
 
 subjunctive () {
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'present'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'future'")
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect'")
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'imperfect2'")
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'subjunctive' and tense = 'future'")
 }
 
 perfect () {
@@ -272,7 +272,6 @@ local IRRG=$(irregular)
 local GRND=$(gerund)
 local PART=$(participle)
 local DEFN=$(translation)
-
 [[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
 
 typeset -a FIELD_LIST=()
@@ -290,7 +289,7 @@ for (( B=1; B<=6; B++ ));do
 	echo "${ITALIC}${UNDER}${BOLD}${WHITE_FG}${(C)_MOOD_LBLS[${B}]}${RESET}"
 	for (( R=1; R<=6; R++ ));do
 		FIELD_LIST+=" ${_PRONOUN_LBLS[${R}]} "
-		PF="printf \" ${CYAN_FG}%-8s${RESET} " # Initialize PF
+		PF="printf \" ${CYAN_FG}%-12s${RESET} " # Initialize PF
 		HPF=${PF} # Initialize Header PF
 		DIV=${PF} # Initialize Header DIV
 		for (( C=1; C<=5; C++ ));do

@@ -61,6 +61,28 @@ typeset -A _SP_TERMS=(
 )
 
 # Functions
+check_verb () {
+	local VERB_ARG=${1}
+
+	while true;do
+		_VERB_DATA=("${(f)$(verb_dump ${VERB_ARG})}")
+
+		if ! arr_is_populated "${_VERB_DATA}";then
+			msg_box -p -H1 -P"${RESET}Fetch data for verb:${WHITE_FG}${VERB_ARG}|${RESET}(Y/N)?" "Add Missing Verb|Verb <w>${VERB_ARG}<N>:<r>not found<N>"
+			if [[ ${_MSG_KEY} != 'y' ]];then
+				do_rmcup
+				exit_leave "${_SCRIPT_TAG}${RED_FG}Operation cancelled${RESET}"
+			fi
+			msg_box -x10 "Fetching data..."
+			get_verb ${VERB_ARG} >/dev/null 2>&1
+			[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Unable to fetch verb:${VERB_ARG}")
+			sleep 1
+		else
+			break
+		fi
+	done
+}
+
 stack_tab () {
 	local V_TYPE=${1}
 	local V_CONTEXT=${2}
@@ -335,8 +357,9 @@ VERB_ARG=''
 [[ -z ${VERB_ARG} ]] && do_rmcup && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)"
 
 # Check verb exists
-TEST=$(do_query "select verb from spanish_tense where verb='${VERB_ARG}'")
-[[ -z ${TEST} ]] && do_rmcup && exit_leave $(err_msg_exit W "Verb:${CYAN_FG}${VERB_ARG}${RESET} not in database")
+check_verb ${VERB_ARG}
+#TEST=$(do_query "select verb from spanish_tense where verb='${VERB_ARG}'")
+#[[ -z ${TEST} ]] && do_rmcup && exit_leave $(err_msg_exit W "Verb:${CYAN_FG}${VERB_ARG}${RESET} not in database")
 
 # Validate type
 if [[ -n ${V_TYPE} ]];then
@@ -355,26 +378,6 @@ elif [[ -z ${V_CONTEXT} ]];then
 	select_verb_context ${V_TYPE} # Sets SEL_VAL
 	V_CONTEXT=${_SEL_VAL}
 fi
-
-# TODO: Funtionalize and place after TEST
- 
-while true;do
-	_VERB_DATA=("${(f)$(verb_dump ${VERB_ARG})}")
-
-	if ! arr_is_populated "${_VERB_DATA}";then
-		msg_box -p -H1 -P"${RESET}Fetch data for verb:${WHITE_FG}${VERB_ARG}|${RESET}(Y/N)?" "Add Missing Verb|Verb <w>${VERB_ARG}<N>:<r>not found<N>"
-		if [[ ${_MSG_KEY} != 'y' ]];then
-			do_rmcup
-			exit_leave $(err_msg_exit W "Verb ${VERB_ARG}:not found")
-		fi
-		msg_box -x10 "Fetching data..."
-		get_verb ${VERB_ARG} >/dev/null 2>&1
-		[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Unable to fetch verb:${VERB_ARG}")
-		sleep 1
-	else
-		break
-	fi
-done
 
 stack_tab ${V_TYPE} ${V_CONTEXT}
 
