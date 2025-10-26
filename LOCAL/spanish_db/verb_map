@@ -29,7 +29,7 @@ typeset -a _VERB_DATA
 typeset -A _MOOD_LBLS=(1 indicative 2 subjunctive 3 perfect 4 perfect_subj 5 progressive 6 imperative)
 typeset -A _PRONOUN_LBLS=(1 yo 2 tú 3 él 4 nosotros 5 vosotros 6 ellos 7 irregular)
 typeset -A _IND_COL_LBLS=(1 present 2 preterite 3 imperfect 4 conditional 5 future)
-typeset -A _SUB_COL_LBLS=(1 present 2 future 3 imperfect2 4 imperfect)
+typeset -A _SUB_COL_LBLS=(1 present 2 future 3 imperfect 4 imperfect2)
 typeset -A _PSUB_COL_LBLS=(1 present 2 past 3 future)
 typeset -A _IMP_COL_LBLS=(1 affirmative 2 negative)
 typeset -A _LBL_MAP=(1 _IND_COL_LBLS 2 _SUB_COL_LBLS 3 _IND_COL_LBLS 4 _PSUB_COL_LBLS 5 _IND_COL_LBLS 6 _IMP_COL_LBLS)
@@ -61,9 +61,9 @@ irregular () {
 indicative () {
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'present'")
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'preterite'")
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'future'")
-	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'conditional'")
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'imperfect'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'conditional'")
+	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'indicative' and tense = 'future'")
 }
 
 subjunctive () {
