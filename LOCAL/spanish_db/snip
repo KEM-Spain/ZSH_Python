@@ -1,0 +1,34 @@
+BLOCK=0
+COL_NDX=0
+CON_NDX=0
+LONGEST=0
+ROW_LBL=''
+for V in ${(onk)_MOOD_LBLS};do
+	PF='printf "%-8s ' # Initialize printf statement
+	(( BLOCK++ ))
+	for K in ${(onk)INLINE};do
+		(( COL_NDX++ )) # Horizontal across row
+		#echo "COL_NDX:${COL_NDX}"
+		for (( F=${_FIRST_VERB_FIELD}; F<=${_LAST_VERB_FIELD}; F++ ));do
+			(( CON_NDX++ )) # Vertical through block
+			#echo "CON_NDX:${CON_NDX}"
+			FIELD=$(cut -d'|' -f${F} <<<${INLINE[${K}]})
+			FIELD_LIST[${COL_NDX}]+="'${FIELD}' " # Data for printf slots
+			[[ ${#FIELD} -gt ${LONGEST} ]] && LONGEST=${#FIELD}
+		done
+		CON_NDX=0
+	done
+	echo "______ ${BLOCK} ______"
+	for (( F=${_FIRST_VERB_FIELD}; F<=${_LAST_VERB_FIELD}; F++ ));do
+		PF+="%-${LONGEST}s " # Build field slots for printf
+	done
+	LONGEST=0 # Longest string in block
+	PF[(( ${#PF} - 1 ))]+='\\n"' # Finish printf slots
+	#echo "FIELD_LIST:${FIELD_LIST}"
+	echo "${PF} ${FIELD_LIST}" # Execute printf
+	COL_NDX=0
+	FIELD_LIST=()
+	_VERB_DATA=()
+	break
+done
+

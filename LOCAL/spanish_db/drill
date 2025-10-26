@@ -119,7 +119,7 @@ drill () {
 
 	[[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
 	tcup 0 0
-	echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} ${IRRG}"
+	echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} (${IRRG})"
 	echo "Gerund:${WHITE_FG}${GRND}${RESET}"
 	echo "Past Participle:${WHITE_FG}${PART}${RESET}"
 	echo "Definition:${WHITE_FG}${DEFN}${RESET}"

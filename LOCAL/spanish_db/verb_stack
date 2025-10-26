@@ -35,29 +35,29 @@ typeset -A _PSUB_CONTEXT_SORT=(future 1 past 2 present 3 all 4)
 typeset -A _HDR_DATA=(GR 2 PR 3 IR 4 DF 5)
 typeset -A _SP_TERMS=(
 "indicative present" "presente"
-"indicative preterite" "pret indefinido"
-"indicative imperfect" "pret imperf"
+"indicative preterite" "pretérito indefinido"
+"indicative imperfect" "pretérito imperfecto"
 "indicative future" "futuro simple"
-"indicative conditional" "cond simple"
-"perfect present" "pret perf"
-"perfect preterite" "pret anterior"
-"perfect imperfect" "pret pluscuam"
-"perfect future" "futuro perf"
-"perfect conditional" "cond perf"
-"progressive present" "presente prog"
-"progressive preterite" "pret perf simple"
-"progressive imperfect" "pasado prog"
-"progressive future" "futuro prog"
-"progressive conditional" "cond prog"
+"indicative conditional" "condicíonal simple"
+"perfect present" "pretérito perfecto"
+"perfect preterite" "pretérito anterior"
+"perfect imperfect" "pretérito pluscuamperfecto"
+"perfect future" "futuro perfecto"
+"perfect conditional" "condicíonal perfecto"
+"progressive present" "presente progressivo"
+"progressive preterite" "pretérito perfecto simple"
+"progressive imperfect" "pasado progressivo"
+"progressive future" "futuro progressivo"
+"progressive conditional" "condicíonal progressivo"
 "imperative affirmative" "imperativo afirmativo"
 "imperative negative" "imperativo negativo"
-"subjunctive present" "presente de subj"
-"subjunctive future" "futuro simple de subj"
-"subjunctive imperfect" "pret imperf de subj"
-"subjunctive imperfect2" "pret imperf2 de subj"
-"perfect_subj future" "futuro perf de subj"
-"perfect_subj past" "pret pluscuam de subj"
-"perfect_subj present" "pret perf subj"
+"subjunctive present" "presente de subjuntivo"
+"subjunctive future" "futuro simple de subjuntivo"
+"subjunctive imperfect" "pretérito imperfecto de subjuntivo"
+"subjunctive imperfect2" "pretérito imperf2 de subjuntivo"
+"perfect_subj future" "futuro perfecto de subjuntivo"
+"perfect_subj past" "pretérito pluscuamperfecto de subjuntivo"
+"perfect_subj present" "pretérito perfecto subjuntivo"
 )
 
 # Functions
@@ -326,6 +326,7 @@ V_TYPE=''
 V_CONTEXT=''
 VERB_ARG=''
 
+# Handle args
 [[ ${#} -eq 1 ]] && VERB_ARG=${1:l}
 [[ ${#} -gt 1 ]] && V_TYPE=${1:l}
 [[ ${#} -eq 2 ]] && VERB_ARG=${2:l}
@@ -333,9 +334,11 @@ VERB_ARG=''
 
 [[ -z ${VERB_ARG} ]] && do_rmcup && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)"
 
+# Check verb exists
 TEST=$(do_query "select verb from spanish_tense where verb='${VERB_ARG}'")
 [[ -z ${TEST} ]] && do_rmcup && exit_leave $(err_msg_exit W "Verb:${CYAN_FG}${VERB_ARG}${RESET} not in database")
 
+# Validate type
 if [[ -n ${V_TYPE} ]];then
 	validate_type ${V_TYPE}
 	[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Invalid verb type:${V_TYPE}")
@@ -344,6 +347,7 @@ else
 	V_TYPE=${_SEL_VAL}
 fi
 
+# Validate context
 if [[ -n ${V_TYPE} && -n ${V_CONTEXT} ]];then
 	validate_context ${V_CONTEXT}
 	[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Invalid verb context:${V_CONTEXT}")
@@ -352,6 +356,8 @@ elif [[ -z ${V_CONTEXT} ]];then
 	V_CONTEXT=${_SEL_VAL}
 fi
 
+# TODO: Funtionalize and place after TEST
+ 
 while true;do
 	_VERB_DATA=("${(f)$(verb_dump ${VERB_ARG})}")
 

@@ -23,4 +23,4 @@ else
 	fi
 fi
 
-[[ -e ${FN} ]] && grep -E -v '(ar|er|ir|se)\|' ${FN} | grep -Ev 'estar'
+[[ -e ${FN} ]] && grep -E -v '(ar|er|ir|se)\|' ${FN} | grep -Ev 'estar' | grep -Ev 'vocab.dat'
