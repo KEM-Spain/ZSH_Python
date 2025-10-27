@@ -24,19 +24,24 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 #Declarations
-typeset _VERB_ARG=''
-typeset -a _VERB_DATA
+typeset -A FLD_WIDTH=()
+typeset -A INLINE=()
+typeset -A _IMP_COL_LBLS=(1 affirmative 2 negative)
+typeset -A _IND_COL_LBLS=(1 present 2 preterite 3 imperfect 4 conditional 5 future)
+typeset -A _LBL_MAP=(1 _IND_COL_LBLS 2 _SUB_COL_LBLS 3 _IND_COL_LBLS 4 _PSUB_COL_LBLS 5 _IND_COL_LBLS 6 _IMP_COL_LBLS)
 typeset -A _MOOD_LBLS=(1 indicative 2 subjunctive 3 perfect 4 perfect_subj 5 progressive 6 imperative)
 typeset -A _PRONOUN_LBLS=(1 yo 2 tú 3 él 4 nosotros 5 vosotros 6 ellos 7 irregular)
-typeset -A _IND_COL_LBLS=(1 present 2 preterite 3 imperfect 4 conditional 5 future)
-typeset -A _SUB_COL_LBLS=(1 present 2 future 3 imperfect 4 imperfect2)
 typeset -A _PSUB_COL_LBLS=(1 present 2 past 3 future)
-typeset -A _IMP_COL_LBLS=(1 affirmative 2 negative)
-typeset -A _LBL_MAP=(1 _IND_COL_LBLS 2 _SUB_COL_LBLS 3 _IND_COL_LBLS 4 _PSUB_COL_LBLS 5 _IND_COL_LBLS 6 _IMP_COL_LBLS)
+typeset -A _SUB_COL_LBLS=(1 present 2 future 3 imperfect 4 imperfect2)
+typeset -a DIVS=()
+typeset -a FIELD_LIST=()
+typeset -a HDRS=()
+typeset -a _VERB_DATA
 
 # Vars
 _FIRST_VERB_FIELD=4
 _LAST_VERB_FIELD=9
+_VERB_ARG=''
 
 # Functions
 translation () {
@@ -232,13 +237,13 @@ while true;do
 	fi
 done
 
-typeset -A INLINE=()
-typeset -A FLD_WIDTH=()
 
+# Index verb data
 COL_NDX=0
 CON_NDX=0
 BLOCK=0
 LONGEST=0
+
 for V in ${(onk)_MOOD_LBLS};do
 	(( BLOCK++ ))
 	${${_MOOD_LBLS[${V}]}:l} # Call function to populate _VERB_DATA
@@ -258,6 +263,7 @@ for V in ${(onk)_MOOD_LBLS};do
 	LONGEST=0
 done
 
+# Ensure minimum widths equal header text
 for W in ${(onk)FLD_WIDTH};do
 	MAP=${_LBL_MAP[$W]}
 	for M in ${(P)MAP};do
@@ -267,17 +273,15 @@ for W in ${(onk)FLD_WIDTH};do
 	done
 done
 
-local IRRG=$(irregular)
-[[ ${IRRG} -eq 1 ]] && IRRG="(irregular)" || IRRG="regular"
-local GRND=$(gerund)
-local PART=$(participle)
-local DEFN=$(translation)
+# Top header data
+IRRG=$(irregular)
+GRND=$(gerund)
+PART=$(participle)
+DEFN=$(translation)
+[[ ${IRRG} -eq 1 ]] && IRRG="irregular" || IRRG="regular"
 [[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
 
-typeset -a FIELD_LIST=()
-typeset -a HDRS=()
-typeset -a DIVS=()
-
+# Construct printf statements and print
 (
 tcup 0 0
 echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} (${IRRG})"
