@@ -169,10 +169,6 @@ action_do () {
 		msg_box -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "Download requested..."
 		sleep 3
 
-		if [[ ! -e ${g_YTS_LOG} ]];then # Detect missing log
-			[[ ${NDX} -gt 10 ]] && exit_leave "${g_YTS_LOG} not detected" # No activity
-		fi
-
 		ETA_COMPLETE=false
 		while true;do
 			((NDX++))

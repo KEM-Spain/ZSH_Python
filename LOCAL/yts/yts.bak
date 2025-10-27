@@ -69,7 +69,7 @@ _FIELD_LEN[title]=80
 _JS_SCRIPT="/usr/local/etc/yts.js"
 _MAX_ERRORS=10
 _MAX_FLEN=85
-_MAX_HDR=76
+_MAX_HDR=70
 _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
@@ -168,6 +168,10 @@ action_do () {
 		job_start ${URL}
 		msg_box -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "Download requested..."
 		sleep 3
+
+		if [[ ! -e ${g_YTS_LOG} ]];then # Detect missing log
+			[[ ${NDX} -gt 10 ]] && exit_leave "${g_YTS_LOG} not detected" # No activity
+		fi
 
 		ETA_COMPLETE=false
 		while true;do
@@ -533,9 +537,12 @@ download_indicator () {
 		SP_DIR=D # Decreasing
 	fi
 
-	if [[ ${SPEED} -ge 40 ]];then 
+	if [[ ${SPEED} -ge 50 ]];then 
+		OBJ_COLOR="${BOLD}${WHITE_FG}"
+		SP_DIR=M # Max
+	elif [[ ${SPEED} -ge 40 ]];then 
 		OBJ_COLOR="${BOLD}${RED_FG}"
-		SP_DIR=M # Maxxed
+		SP_DIR=H # High
 	elif [[ ${SPEED} -ge 35 ]];then 
 		OBJ_COLOR="${BOLD}${GREEN_FG}"
 	elif [[ ${SPEED} -ge 30 ]];then 
@@ -545,7 +552,8 @@ download_indicator () {
 	case ${SP_DIR} in
 		I) BORDER_COLOR="${BOLD}${MAGENTA_FG}";;
 		D) BORDER_COLOR="${BOLD}${RED_FG}";;
-		M) BORDER_COLOR="${BOLD}${WHITE_FG}";;
+		H) BORDER_COLOR="${BOLD}${WHITE_FG}";;
+		M) BORDER_COLOR="${BOLD}${GREEN_FG}";;
 	esac
 
 	OBJS=(${(kv)OBJS_1}) # Init
