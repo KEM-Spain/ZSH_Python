@@ -48,7 +48,10 @@ exit_pre_exit () {
 	_PRE_EXIT_RAN=true
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
-	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}"
+	if [[ -n ${_EXIT_MSGS} ]];then
+		[[ ${_SMCUP} == 'true' ]] && do_rmcup # Screen restore if not usage
+		echo "\n${_EXIT_MSGS}"
+	fi
 
 	if [[ -n ${_EXIT_CALLBACKS} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
