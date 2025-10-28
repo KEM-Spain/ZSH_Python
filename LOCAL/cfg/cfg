@@ -74,16 +74,20 @@ item_decorate () {
 }
 
 # Execution
+[[ ${#} -eq 0 ]] && exit_leave $(err_msg_exit "Missing argument:<SEARCHTERM>") || SEARCHTERM=${1}
+
 for L in ${_CFGDIRS};do
-	DIR_MATCHES+=("${(f)$(eval "sudo find ${L} -type d -name '*${1}*'")}")
-	FN_MATCHES+=("${(f)$(eval "sudo find ${L} -type f -name '*${1}*'")}")
+	DIR_MATCHES+=("${(f)$(eval "sudo find ${L} -type d -name '*${SEARCHTERM}*'" 2>/dev/null)}")
+	FN_MATCHES+=("${(f)$(eval "sudo find ${L} -type f -name '*${SEARCHTERM}*'" 2>/dev/null)}")
 done
 
 for L in ${DIR_MATCHES};do
-	FN_MATCHES+=("${(f)$(eval "sudo find ${L} -maxdepth 1 -type f")}")
+	FN_MATCHES+=("${(f)$(eval "sudo find ${L} -maxdepth 1 -type f" 2>/dev/null)}")
 done
 
 for L in ${(o)FN_MATCHES};do
+	grep -qw ${SEARCHTERM} <<<${L}
+	[[ ${?} -ne 0 ]] && continue
 	[[ ! $(file -b ${L}) =~ 'text' ]] && continue
 	[[ ${L} =~ 'bak' ]] && continue
 	[[ ${L} =~ 'cache' ]] && continue

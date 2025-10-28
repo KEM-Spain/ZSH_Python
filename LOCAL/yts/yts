@@ -184,7 +184,7 @@ action_do () {
 			fi
 
 			# Ensure log activity
-			LOG_SIZE=$(wc -c < ${g_YTS_LOG})
+			LOG_SIZE=$(wc -c < ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${LOG_SIZE} -ne ${LAST_LOG_SIZE} ]];then
 				LOG_STALLS=0 # Log is growing
 			else
@@ -281,7 +281,7 @@ action_do () {
 				HDRS_OUT=true
 			fi
 
-			LOG_LINE=$(sed -e 's//\n/g' -e '/./!d' ${g_YTS_LOG} | tail -1 | str_trim) 
+			{ LOG_LINE=$(sed -e 's//\n/g' -e '/./!d' ${g_YTS_LOG} | tail -1 | str_trim) } 2>/dev/null
 
 			if grep -qi 'chunklist' <<<${LOG_LINE} 2>/dev/null;then # Block live braodcasts
 				msg_box -p -PK "<r>Warning<N>This is an ongoing live broadcast|Not suitable for download"
@@ -994,11 +994,13 @@ job_start () {
 		CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
 	fi
 
-	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} # Log command
+	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
+	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG:=yt.log}")
+
 	logit ${_YTS_DBG_LOG} "${0}: QUERY KEY:${g_QUERY_KEY}"
 	logit ${_YTS_DBG_LOG} "${0}:       CMD:${CMD}"
 
-	eval "${CMD} >> ${g_YTS_LOG} 2>&1" & # Start background job
+	eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
 	g_PID=$!
 
 	echo "${0}: PID:${g_PID}" >> ${g_YTS_LOG} # Log pid

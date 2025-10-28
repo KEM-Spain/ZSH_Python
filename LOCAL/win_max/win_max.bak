@@ -37,8 +37,8 @@ get_app_tag () {
 
 get_id_title () {
 	local TITLE_ARG=${1}
-	local WID=''
 	local TITLE=''
+	local WID=''
 	local W
 
 	if [[ ${TITLE_ARG} == 'terminal' ]];then # Special handling of terminal to get most recent
@@ -62,9 +62,9 @@ get_id_title () {
 
 get_id_pid () {
 	local PID_ARG=${1}
-	local WID=''
 	local PID=''
 	local TITLE=''
+	local WID=''
 	local W
 
 	for W in ${_WIN_LIST};do
@@ -82,8 +82,8 @@ get_id_pid () {
 
 get_id_wid () {
 	local WID_ARG=${1}
-	local WID=''
 	local TITLE=''
+	local WID=''
 	local W
 
 	for W in ${_WIN_LIST};do
@@ -101,17 +101,17 @@ get_id_wid () {
 get_win_id () {
 	local ARG=${1}
 	local TYPE=${2}
-	local WIN_ID=''
+	local WID=''
 
 	logit ${_LOG} "${0}: Obtaining WID for ARG:${ARG}"
 
 	case ${TYPE} in
-		TITLE) WIN_ID=$(get_id_title $(get_app_tag ${ARG}));;
-		PID) WIN_ID=$(get_id_pid ${ARG});;
-		WID) WIN_ID=$(get_id_wid ${ARG});;
+		TITLE) WID=$(get_id_title $(get_app_tag ${ARG}));;
+		PID) WID=$(get_id_pid ${ARG});;
+		WID) WID=$(get_id_wid ${ARG});;
 	esac
 
-	echo ${WIN_ID}
+	echo ${WID}
 }
 
 get_last_term () {
@@ -120,17 +120,15 @@ get_last_term () {
 
 is_maximized () {
 	local WID_ARG=${1}
-	local W_ID=''
-	local W_MAX=''
 	local MAX=''
+	local WID=''
 	local W
 
 	for W in ${_WIN_LIST};do
-		W_ID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
-		W_MAX=$(cut -d'|' -f${_FLD_LIST[MAX]} <<<${W})
-		if [[ ${WID_ARG} =~ ${W_ID} ]];then
-			MAX=${W_MAX} 
-			logit ${_LOG} "${0}: WID_ARG:${WID_ARG} maximized:${MAX}"
+		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+		MAX=$(cut -d'|' -f${_FLD_LIST[MAX]} <<<${W})
+		if [[ ${WID_ARG} =~ ${WID} ]];then
+			logit ${_LOG} "${0}: WID:${WID} maximized:${MAX}"
 			break
 		fi
 	done
@@ -141,11 +139,11 @@ is_maximized () {
 set_cur_win () {
 	local EXPECT=${1}
 	local F1 F2 F3 F4 F5 MAX
-	local TRIES=0
 	local RETRIES=5
-	local L
 	local TERMS=$(terms -c)
 	local TERM_CNT=0
+	local TRIES=0
+	local L
 
 	logit ${_LOG} "${0}: Expecting window:${EXPECT}"
 
@@ -193,14 +191,14 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-Maximize a window or get window id
+Maximize a window and focus or get window id
 \tBy default, the list of open windows is	queried
 \tuntil the expected title appears or until the 
 \tsearch times out. If option -q is used, the 
 \texpected window must be in the current list of 
-\topen windows and no waiting for the title to appear 
+\topen windows and minimum waiting for the title to appear 
 \ttakes place. Optionally, a PID may be used to locate
-\twindows or a WID may be used to identify the window 
+\ta window or a WID may be used to identify the window 
 \tdirectly. If option -i is used, a delimited string 
 \tis returned:HEX_ID|DEC_ID|TITLE and no maximizing 
 \ttakes place.

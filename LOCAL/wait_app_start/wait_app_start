@@ -14,6 +14,7 @@ _SYS_APPS=/usr/local/bin/system/launchers
 # Declarations
 typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna simple-scan "document scanner")
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
+typeset -A _SCAN=()
 typeset -A _SEEN=()
 typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
 typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
@@ -150,7 +151,9 @@ scan_apps () {
 	local RC=0
 	local S
 
-	for S in ${(k)_SEEN};do
+	# TODO: Use _SEEN to avoid maximizing more than once.  Problem is clearing _SEEN if app is closed.  
+	# TODO: Possibly run scan on seen to eliminate _SEEN entries if no process id running to catch closed apps
+	for S in ${(k)_SCAN};do
 		#logit ${_LOG} "SEEKING:${S:l}"
 		if [[ ${_APPS_TO_SCAN[(i)${S:l}]} -le ${#_APPS_TO_SCAN} ]];then
 			if [[ ${_BLACKLIST[(i)${S:l}]} -le ${#_BLACKLIST} ]];then
@@ -162,7 +165,7 @@ scan_apps () {
 				RC=${?}
 
 				case ${RC} in
-					0) logit ${_LOG} "${APP} ALREADY MAXIMIZED";;
+					0) logit ${_LOG} "${APP} ALREADY MAXIMIZED" && _SEEN[${APP}]=1;;
 					1) logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP};;
 					2) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
 				esac
@@ -172,7 +175,7 @@ scan_apps () {
 		fi
 	done
 
-	_SEEN=()
+	_SCAN=()
 }
 
 # Execution
@@ -192,7 +195,7 @@ while IFS= read -ru3 LINE;do
 	else
 		if [[ (${LINE:l} =~ 'string' || ${LINE:l} =~ 'array') && ${LINE:l} =~ '\.desktop' ]];then
 			STR=$(grep --color=never -o -E '["].*.desktop["]' <<<${LINE} | tr -d '["]' | sed 's/.desktop//')
-			_SEEN[${STR:t}]=1
+			_SCAN[${STR:t}]=1
 			scan_apps
 		fi
 	fi
