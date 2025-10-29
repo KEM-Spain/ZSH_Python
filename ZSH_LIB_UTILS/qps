@@ -1,0 +1,53 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${#} -eq 0 ]] && exit_leave "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:<APP>" || APP=${1}
+
+PS=("${(f)$(ps --headers -aux | grep --color=never -i ${APP} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
+[[ -z ${PS} ]] && exit_leave "${_SCRIPT_TAG}Process:${WHITE_FG}${APP}${RESET} ${RED_FG}not found${RESET}"
+
+(
+printf "[${WHITE_FG}%s${RESET}]:${WHITE_FG} %d${RESET} %s found matching:${WHITE_FG}${APP}${RESET}\n\n" ${0:t} ${#PS} $(str_pluralize "process" ${#PS})
+printf "${WHITE_FG}%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s${RESET}\n" "User" "PID" "CPU" "MEM" "TTY" "Start" "Duration" "Command"
+printf "${MAGENTA_FG}%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s${RESET}\n" $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 70) 
+for P in ${(O)PS};do
+	F1=$(cut -d' ' -f1 <<<${P})
+	F2=$(cut -d' ' -f2 <<<${P})
+	F3=$(cut -d' ' -f3 <<<${P})
+	F4=$(cut -d' ' -f4 <<<${P})
+	F5=$(cut -d' ' -f5 <<<${P})
+	F6=$(cut -d' ' -f6 <<<${P})
+	F7=$(cut -d' ' -f7 <<<${P})
+	F8=$(cut -d' ' -f8 <<<${P})
+	F9=$(cut -d' ' -f9 <<<${P})
+	F10=$(cut -d' ' -f10 <<<${P})
+	F11=$(cut -d' ' -f11- <<<${P})
+	printf "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s\n" ${F1} ${F2} ${F3} ${F4} ${F7} ${F9} ${F10} ${F11[1,70]}
+done
+) | mypager wait
+
+exit_leave

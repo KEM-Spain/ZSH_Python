@@ -14,8 +14,9 @@ _SYS_APPS=/usr/local/bin/system/launchers
 # Declarations
 typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna simple-scan "document scanner")
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
+typeset -A _SCAN=()
 typeset -A _SEEN=()
-typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 4)
+typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 12 viber 2)
 typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(enpass pyts libreoffice org.gnome.terminal)
@@ -49,7 +50,7 @@ get_app_tag () {
 		APP_TAG=${APP}
 	fi
 
-	echo ${APP_TAG}
+	echo ${APP_TAG:l}
 }
 
 get_cur_win () {
@@ -118,7 +119,7 @@ has_waittime () {
 		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAITTIMES[${A}]} && break
 	done
 
-	echo ${WT}
+	[[ -z ${WT} ]] && echo 0 || echo ${WT}
 }
 
 is_blacklisted () {
@@ -149,30 +150,41 @@ scan_apps () {
 	local APP=''
 	local RC=0
 	local S
+	local WT
 
-	for S in ${(k)_SEEN};do
+	for S in ${(k)_SCAN};do
 		#logit ${_LOG} "SEEKING:${S:l}"
 		if [[ ${_APPS_TO_SCAN[(i)${S:l}]} -le ${#_APPS_TO_SCAN} ]];then
 			if [[ ${_BLACKLIST[(i)${S:l}]} -le ${#_BLACKLIST} ]];then
 				logit ${_LOG} "BLACKLISTED ${S}"
 			else
 				APP=$(get_app_tag ${S})
-				
+
 				is_maximized ${APP}
 				RC=${?}
 
-				case ${RC} in
-					0) logit ${_LOG} "${APP} ALREADY MAXIMIZED";;
-					1) logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP};;
-					2) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
-				esac
+				if [[ -z ${_SEEN[${APP}]} ]];then
+					case ${RC} in
+						0) logit ${_LOG} "${APP} ALREADY MAXIMIZED";;
+						1) WT=$(has_waittime ${APP})
+							logit ${_LOG} "${APP} has ${WT} second waittime, waiting..."
+							[[ ${WT} -ne 0 ]] && sleep ${WT}
+							logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP}
+							;;
+						2) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
+					esac
+					_SEEN[${APP}]=1
+					logit ${_LOG} "ADDED ${APP} TO SEEN"
+				else
+					logit ${_LOG} "NO ACTION - ALREADY SEEN:${APP}"
+				fi
 			fi
 		else
-			logit ${_LOG} "NO ACTION ${S}"
+			logit ${_LOG} "NO ACTION ${APP}"
 		fi
 	done
 
-	_SEEN=()
+	_SCAN=()
 }
 
 # Execution
@@ -190,9 +202,27 @@ while IFS= read -ru3 LINE;do
 			win_max terminal
 		fi
 	else
+		if [[ ${LINE:l} =~ "runningapplicationschanged" ]];then
+			if [[ ${#_SEEN} -ne 0 ]];then
+				for A in ${(k)_APPS_TO_SCAN};do
+					APP=$(get_app_tag ${A})
+					PIDS=$(pgrep -ic ${APP})
+					if [[ ${PIDS} -eq 0 ]];then
+						if [[ -n ${_SEEN[${APP}]} ]];then
+							unset "_SEEN[${APP}]"
+							logit ${_LOG} "${APP} NOT RUNNING - CLEARED FROM SEEN"
+						fi
+					elif [[ ${PIDS} -ne 0 ]];then
+						logit ${_LOG} "GOT:RunningApplicationsChanged, SEEN is populated, SCANNING APPS:${APP} PID COUNT FOR:${APP}:${PIDS}"
+					fi
+				done
+			else
+				logit ${_LOG} "NO SEEN APPS"
+			fi
+		fi
 		if [[ (${LINE:l} =~ 'string' || ${LINE:l} =~ 'array') && ${LINE:l} =~ '\.desktop' ]];then
 			STR=$(grep --color=never -o -E '["].*.desktop["]' <<<${LINE} | tr -d '["]' | sed 's/.desktop//')
-			_SEEN[${STR:t}]=1
+			_SCAN[${STR:t}]=1
 			scan_apps
 		fi
 	fi

@@ -23,6 +23,8 @@ source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
+_SEARCHTERM=''
+
 get_val () {
 	local KEY=${1};shift
 	local VAR=${1};shift
@@ -42,31 +44,35 @@ get_val () {
 }
 
 do_dbg () {
+	local NDX=${1} && shift
 	local LINE=${@}
-	[[ ${LINE:l} =~ 'window' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT window - ${LINE}">>dbg
-	[[ ${LINE:l} =~ 'signal' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT signal - ${LINE}">>dbg
-	[[ ${LINE:l} =~ 'method' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT method - ${LINE}">>dbg
-	[[ ${LINE:l} =~ ${_ARG:l} ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT ${_ARG} - ${LINE}">>dbg
+	[[ ${LINE:l} =~ ${_SEARCHTERM:l} ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "NDX:${NDX} HIT:${_SEARCHTERM} - ${LINE}">>dbg
+	#[[ ${LINE:l} =~ 'window' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT window - ${LINE}">>dbg
+	#[[ ${LINE:l} =~ 'signal' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT signal - ${LINE}">>dbg
+	#[[ ${LINE:l} =~ 'method' ]] && echo "${WHITE_FG}HIT${RESET}: ${1}" && echo "HIT method - ${LINE}">>dbg
 }
 
 # Execution
 /bin/rm -f ./dbg
 [[ ${#} -eq 0 ]] && echo "${_SCRIPT_TAG} Missing argument: <SEARCHTERM>" && exit
 
-_ARG=${1}
+_SEARCHTERM=${1}
 echo "Output is redirected to ./dbg" >&2
 
+NDX=0
 while IFS= read -ru3 LINE;do
-	if [[ ${LINE:l} =~ 'method' ]];then
-		VAL=$(get_val method path window ${LINE})
-		if [[ -n ${VAL} && ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
-			echo "GOT TERMINAL WINDOW"
-		fi
-	fi
-
-	if [[ ${LINE:l} =~ 'array of bytes' ]];then
-		echo "array	of bytes:${LINE}" >>dbg
-	elif [[ 'string' && ${LINE:l} =~ '\.desktop' ]];then
-		echo "string desktop:${LINE}" >>dbg
-	fi
-done 3< <(dbus-monitor)
+	((NDX++))
+	do_dbg ${NDX} ${LINE}
+#	if [[ ${LINE:l} =~ 'method' ]];then
+#		VAL=$(get_val method path window ${LINE})
+#		if [[ -n ${VAL} && ${VAL:l} =~ 'terminal' && ${VAL:l} =~ 'window' ]];then
+#			echo "GOT TERMINAL WINDOW"
+#		fi
+#	fi
+#
+#	if [[ ${LINE:l} =~ 'array of bytes' ]];then
+#		echo "array	of bytes:${LINE}" >>dbg
+#	elif [[ 'string' && ${LINE:l} =~ '\.desktop' ]];then
+#		echo "string desktop:${LINE}" >>dbg
+#	fi
+done 3< <(dbus-monitor --session)

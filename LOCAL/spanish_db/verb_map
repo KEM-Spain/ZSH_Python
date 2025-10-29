@@ -24,8 +24,8 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 #Declarations
-typeset -A FLD_WIDTH=()
-typeset -A INLINE=()
+typeset -A _FLD_WIDTH=()
+typeset -A _INLINE=()
 typeset -A _IMP_COL_LBLS=(1 affirmative 2 negative)
 typeset -A _IND_COL_LBLS=(1 present 2 preterite 3 imperfect 4 conditional 5 future)
 typeset -A _LBL_MAP=(1 _IND_COL_LBLS 2 _SUB_COL_LBLS 3 _IND_COL_LBLS 4 _PSUB_COL_LBLS 5 _IND_COL_LBLS 6 _IMP_COL_LBLS)
@@ -33,9 +33,9 @@ typeset -A _MOOD_LBLS=(1 indicative 2 subjunctive 3 perfect 4 perfect_subj 5 pro
 typeset -A _PRONOUN_LBLS=(1 yo 2 tú 3 él 4 nosotros 5 vosotros 6 ellos 7 irregular)
 typeset -A _PSUB_COL_LBLS=(1 present 2 past 3 future)
 typeset -A _SUB_COL_LBLS=(1 present 2 future 3 imperfect 4 imperfect2)
-typeset -a DIVS=()
-typeset -a FIELD_LIST=()
-typeset -a HDRS=()
+typeset -a _DIVS=()
+typeset -a _FIELD_LIST=()
+typeset -a _HDRS=()
 typeset -a _VERB_DATA
 
 # Vars
@@ -121,6 +121,133 @@ do_pager () {
 	fi
 }
 
+markdown_table () {
+	local DEFN
+	local DIV
+	local GRND
+	local HPF
+	local IRRG
+	local PART
+	local PF
+	local B R C
+
+	# Top header data
+	IRRG=$(irregular)
+	GRND=$(gerund)
+	PART=$(participle)
+	DEFN=$(translation)
+	[[ ${IRRG} -eq 1 ]] && IRRG="irregular" || IRRG="regular"
+	[[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
+
+	(
+	echo "Verb:${_VERB_ARG} (${IRRG})"
+	echo "Gerund:${GRND}"
+	echo "Past Participle:${PART}"
+	echo "Definition:${DEFN}\n"
+
+	# Construct printf statements and print
+	for (( B=1; B<=6; B++ ));do
+		#echo "${(C)_MOOD_LBLS[${B}]}"
+		for (( R=1; R<=6; R++ ));do
+			_FIELD_LIST+=" ${_PRONOUN_LBLS[${R}]} "
+			PF="printf \"|%s" # Initialize PF
+			HPF=${PF} # Initialize Header PF
+			DIV=${PF} # Initialize Header DIV
+			for (( C=1; C<=5; C++ ));do
+				if [[ -n ${_INLINE[${B}${C}${R}]} ]];then
+					PF+="|%s" # Add PF slots
+					HPF+="|%s" # Add HPF slots
+					DIV+="|%s" # Add DIV slots
+					_FIELD_LIST+=" ${_INLINE[${B}${C}${R}]} "
+				fi
+			done # Cols
+			PF+='|\\n"' # Finish PF
+			HPF+='|\\n"' # Finish HPF
+			DIV+='|\\n"' # Finish DIV
+			if [[ ${R} -eq 1 ]];then
+				for (( C=1; C<=5; C++ ));do
+					if [[ -n ${_INLINE[${B}${C}${R}]} ]];then
+						_HDRS+=${${(P)_LBL_MAP[${B}]}[${C}]} # Pull indexed order
+						_DIVS+="\$(str_rep_char '-' ${_FLD_WIDTH[${B}]})"
+					fi
+				done
+				eval "${HPF} 'Context' ${(C)_HDRS}"
+				eval "${DIV} '----------' ${_DIVS}"
+				_HDRS=()
+				_DIVS=()
+			fi
+			eval "${PF} ${_FIELD_LIST}"
+			_FIELD_LIST=()
+		done # Rows
+		echo # Block separator
+	done
+	) 
+}
+
+pretty_table () {
+	local DEFN
+	local DIV
+	local GRND
+	local HPF
+	local IRRG
+	local PART
+	local PF
+	local B R C
+
+	# Top header data
+	IRRG=$(irregular)
+	GRND=$(gerund)
+	PART=$(participle)
+	DEFN=$(translation)
+	[[ ${IRRG} -eq 1 ]] && IRRG="irregular" || IRRG="regular"
+	[[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
+
+	# Construct printf statements and print
+	(
+	tcup 0 0
+	echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} (${IRRG})"
+	echo "Gerund:${WHITE_FG}${GRND}${RESET}"
+	echo "Past Participle:${WHITE_FG}${PART}${RESET}"
+	echo "Definition:${WHITE_FG}${DEFN}${RESET}\n"
+
+	for (( B=1; B<=6; B++ ));do
+		echo "${ITALIC}${UNDER}${BOLD}${WHITE_FG}${(C)_MOOD_LBLS[${B}]}${RESET}"
+		for (( R=1; R<=6; R++ ));do
+			_FIELD_LIST+=" ${_PRONOUN_LBLS[${R}]} "
+			PF="printf \" ${CYAN_FG}%-12s${RESET} " # Initialize PF
+			HPF=${PF} # Initialize Header PF
+			DIV=${PF} # Initialize Header DIV
+			for (( C=1; C<=5; C++ ));do
+				if [[ -n ${_INLINE[${B}${C}${R}]} ]];then
+					PF+=" %-${_FLD_WIDTH[${B}]}s " # Add PF slots
+					HPF+=" ${CYAN_FG}%-${_FLD_WIDTH[${B}]}s${RESET} " # Add HPF slots
+					DIV+=" ${MAGENTA_FG}%-${_FLD_WIDTH[${B}]}s${RESET} " # Add DIV slots
+					_FIELD_LIST+=" ${_INLINE[${B}${C}${R}]} "
+				fi
+			done # Cols
+			PF[(( ${#PF} - 1 ))]+='\\n"' # Finish PF
+			HPF[(( ${#HPF} - 1 ))]+='\\n"' # Finish HPF
+			DIV[(( ${#DIV} - 1 ))]+='\\n"' # Finish DIV
+			if [[ ${R} -eq 1 ]];then
+				for (( C=1; C<=5; C++ ));do
+					if [[ -n ${_INLINE[${B}${C}${R}]} ]];then
+						_HDRS+=${${(P)_LBL_MAP[${B}]}[${C}]} # Pull indexed order
+						_DIVS+="\$(str_unicode_line ${_FLD_WIDTH[${B}]})"
+					fi
+				done
+				eval "${HPF} ' ' ${(C)_HDRS}"
+				eval "${DIV} ' ' ${_DIVS}"
+				_HDRS=()
+				_DIVS=()
+			fi
+			eval "${PF} ${_FIELD_LIST}"
+			_FIELD_LIST=()
+		done # Rows
+		echo # Block separator
+	done
+	) | sed 's/_/ /g' | do_pager ${PAGE_OPT} ${ANSI}
+}
+
 #--Begin GetOpts--
 local -a OPTIONS
 local OPTION
@@ -165,7 +292,6 @@ opt_type () {
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
 		t) echo "<FILE_TYPE>";;
-		m) echo "<MOOD NUMBER>";;
 		v) echo "<VERB>";;
 	esac
 }
@@ -181,17 +307,17 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} output contains no ansi"
-	echo -e "${WHITE_FG}-m${RESET} $(opt_type m)${RESET}"
+	echo -e "${WHITE_FG}-m${RESET} markdown output"
 	echo -e "${WHITE_FG}-p${RESET} paged output"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDam:p"
+OPTSTR=":HDamp"
 OPTIND=0
 
-MOOD_SELECT=''
+MARKDOWN=false
 ANSI=true
 PAGE_OPT=false
 
@@ -200,7 +326,7 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
      D) dbg_set_level;;
      a) ANSI=false;;
-     m) MOOD_SELECT=${OPTARG};;
+     m) MARKDOWN=true;;
      p) PAGE_OPT=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -215,14 +341,14 @@ if [[ ${#} -eq 0 ]];then
 	usage "Missing arg:$(opt_type v)"
 else
 	_VERB_ARG=${1}
-	clear
+	clear >&2
 fi
 
 while true;do
 	VERB_CHECK=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' limit 1")
 
 	if [[ -z ${VERB_CHECK} ]];then
-		clear
+		clear >&2
 		msg_box -p -H1 -P"${RESET}Fetch data for verb:${WHITE_FG}${_VERB_ARG}|${RESET}(Y/N)?" "Add Missing Verb|Verb <w>${_VERB_ARG}<N>:<r>not found<N>"
 		if [[ ${_MSG_KEY} != 'y' ]];then
 			do_rmcup
@@ -237,13 +363,13 @@ while true;do
 	fi
 done
 
-
 # Index verb data
 COL_NDX=0
 CON_NDX=0
 BLOCK=0
 LONGEST=0
 
+# Index table data 
 for V in ${(onk)_MOOD_LBLS};do
 	(( BLOCK++ ))
 	${${_MOOD_LBLS[${V}]}:l} # Call function to populate _VERB_DATA
@@ -252,76 +378,25 @@ for V in ${(onk)_MOOD_LBLS};do
 		for (( F=${_FIRST_VERB_FIELD}; F<=${_LAST_VERB_FIELD}; F++ ));do
 			(( CON_NDX++ )) # Vertical through block
 			FIELD=$(cut -d'|' -f${F} <<<${L})
-			INLINE[${BLOCK}${COL_NDX}${CON_NDX}]=${FIELD}
+			_INLINE[${BLOCK}${COL_NDX}${CON_NDX}]=${FIELD} # Add index for blocks, columns, and rows
 			[[ ${#FIELD} -gt ${LONGEST} ]] && LONGEST=${#FIELD}
 		done
 		CON_NDX=0
 	done
 	COL_NDX=0
 	_VERB_DATA=()
-	FLD_WIDTH[${BLOCK}]=${LONGEST}
+	_FLD_WIDTH[${BLOCK}]=${LONGEST}
 	LONGEST=0
 done
 
 # Ensure minimum widths equal header text
-for W in ${(onk)FLD_WIDTH};do
+for W in ${(onk)_FLD_WIDTH};do
 	MAP=${_LBL_MAP[$W]}
 	for M in ${(P)MAP};do
-		if [[ ${#M} -gt ${FLD_WIDTH[${W}]} ]];then
-			FLD_WIDTH[${W}]=${#M}
+		if [[ ${#M} -gt ${_FLD_WIDTH[${W}]} ]];then
+			_FLD_WIDTH[${W}]=${#M}
 		fi
 	done
 done
 
-# Top header data
-IRRG=$(irregular)
-GRND=$(gerund)
-PART=$(participle)
-DEFN=$(translation)
-[[ ${IRRG} -eq 1 ]] && IRRG="irregular" || IRRG="regular"
-[[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
-
-# Construct printf statements and print
-(
-tcup 0 0
-echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} (${IRRG})"
-echo "Gerund:${WHITE_FG}${GRND}${RESET}"
-echo "Past Participle:${WHITE_FG}${PART}${RESET}"
-echo "Definition:${WHITE_FG}${DEFN}${RESET}\n"
-
-for (( B=1; B<=6; B++ ));do
-	echo "${ITALIC}${UNDER}${BOLD}${WHITE_FG}${(C)_MOOD_LBLS[${B}]}${RESET}"
-	for (( R=1; R<=6; R++ ));do
-		FIELD_LIST+=" ${_PRONOUN_LBLS[${R}]} "
-		PF="printf \" ${CYAN_FG}%-12s${RESET} " # Initialize PF
-		HPF=${PF} # Initialize Header PF
-		DIV=${PF} # Initialize Header DIV
-		for (( C=1; C<=5; C++ ));do
-			if [[ -n ${INLINE[${B}${C}${R}]} ]];then
-				PF+=" %-${FLD_WIDTH[${B}]}s " # Add PF slots
-				HPF+=" ${CYAN_FG}%-${FLD_WIDTH[${B}]}s${RESET} " # Add HPF slots
-				DIV+=" ${MAGENTA_FG}%-${FLD_WIDTH[${B}]}s${RESET} " # Add DIV slots
-				FIELD_LIST+=" ${INLINE[${B}${C}${R}]} "
-			fi
-		done # Cols
-		PF[(( ${#PF} - 1 ))]+='\\n"' # Finish PF
-		HPF[(( ${#HPF} - 1 ))]+='\\n"' # Finish HPF
-		DIV[(( ${#DIV} - 1 ))]+='\\n"' # Finish DIV
-		if [[ ${R} -eq 1 ]];then
-			for (( C=1; C<=5; C++ ));do
-				if [[ -n ${INLINE[${B}${C}${R}]} ]];then
-					HDRS+=${${(P)_LBL_MAP[${B}]}[${C}]} # Pull indexed order
-					DIVS+="\$(str_unicode_line ${FLD_WIDTH[${B}]})"
-				fi
-			done
-			eval "${HPF} ' ' ${(C)HDRS}"
-			eval "${DIV} ' ' ${DIVS}"
-			HDRS=()
-			DIVS=()
-		fi
-		eval "${PF} ${FIELD_LIST}"
-		FIELD_LIST=()
-	done # Rows
-	echo # Block separator
-done
-) | sed 's/_/ /g' | do_pager ${PAGE_OPT} ${ANSI}
+[[ ${MARKDOWN} == 'true' ]] && markdown_table || pretty_table
