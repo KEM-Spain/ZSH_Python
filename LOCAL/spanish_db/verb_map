@@ -317,6 +317,7 @@ usage () {
 	echo -e "${WHITE_FG}-M${RESET} select MOOD"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} output contains no ansi"
+	echo -e "${WHITE_FG}-m${RESET} output markdown"
 	echo -e "${WHITE_FG}-p${RESET} paged output"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 

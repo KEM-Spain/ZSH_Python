@@ -499,6 +499,7 @@ ___EOF
 	done
 
 	printf "${WHITE_FG}${DEV_CNT} known devices found\n${RESET}"
+	local REPLY
 	[[ ${INLINE} == 'false' ]] && echo -n "\nPress any key..." && read -sk1
 
 	exit_leave
