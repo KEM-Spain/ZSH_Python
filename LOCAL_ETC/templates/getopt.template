@@ -47,7 +47,6 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-O $(opt_type O)${RESET} $(opt_type O) requires an argument"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 

@@ -79,7 +79,7 @@ fi
 if [[ -n ${LOCAL_FILES} ]];then
 	for F in ${LOCAL_FILES};do
 		PROD=$(fut findexe ${F} 2>&1)
-		[[ ${PROD:l} =~ "not found" ]] && continue # No production version exists
+		[[ -z ${PROD} || ${PROD:l} =~ "not found" ]] && continue # No production version exists
 		if [[ ! ${PROD:l} =~ 'code/local' ]];then
 			diff -b ${F} ${PROD} >/dev/null 2>&1
 			if [[ ${?} -ne 0 ]];then

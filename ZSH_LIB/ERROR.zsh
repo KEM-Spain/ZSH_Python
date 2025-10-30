@@ -8,6 +8,8 @@ err_msg_exit () {
 	local LABEL=''
 	local LCOLOR=''
 
+	[[ -z ${E_MSG} ]] && return # Nothing to do
+
 	if [[ ${#} -eq 1 ]];then
 		E_TYPE=E
 		E_MSG=${1}

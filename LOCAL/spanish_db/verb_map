@@ -33,12 +33,18 @@ typeset -A _MOOD_LBLS=(1 indicative 2 subjunctive 3 perfect 4 perfect_subj 5 pro
 typeset -A _PRONOUN_LBLS=(1 yo 2 tú 3 él 4 nosotros 5 vosotros 6 ellos 7 irregular)
 typeset -A _PSUB_COL_LBLS=(1 present 2 past 3 future)
 typeset -A _SUB_COL_LBLS=(1 present 2 future 3 imperfect 4 imperfect2)
-typeset -a _DIVS=()
+typeset -a _HDR_DIVS=()
 typeset -a _FIELD_LIST=()
 typeset -a _HDRS=()
 typeset -a _VERB_DATA
 
 # Vars
+_FIRST_BLOCK=1
+_LAST_BLOCK=6
+_FIRST_ROW=1
+_LAST_ROW=6
+_FIRST_COL=1
+_LAST_COL=5
 _FIRST_VERB_FIELD=4
 _LAST_VERB_FIELD=9
 _VERB_ARG=''
@@ -123,13 +129,15 @@ do_pager () {
 
 markdown_table () {
 	local DEFN
-	local DIV
+	local HDR_DIV
 	local GRND
 	local HPF
 	local IRRG
 	local PART
 	local PF
 	local B R C
+
+	[[ ${MOOD_SELECT} -ne 0 ]] && _FIRST_BLOCK=${MOOD_SELECT} && _LAST_BLOCK=${MOOD_SELECT}
 
 	# Top header data
 	IRRG=$(irregular)
@@ -146,35 +154,34 @@ markdown_table () {
 	echo "Definition:${DEFN}\n"
 
 	# Construct printf statements and print
-	for (( B=1; B<=6; B++ ));do
-		#echo "${(C)_MOOD_LBLS[${B}]}"
-		for (( R=1; R<=6; R++ ));do
+	for (( B=${_FIRST_BLOCK}; B<=${_LAST_BLOCK}; B++ ));do
+		for (( R=${_FIRST_ROW}; R<=${_LAST_ROW}; R++ ));do # Move through rows
 			_FIELD_LIST+=" ${_PRONOUN_LBLS[${R}]} "
 			PF="printf \"|%s" # Initialize PF
 			HPF=${PF} # Initialize Header PF
-			DIV=${PF} # Initialize Header DIV
-			for (( C=1; C<=5; C++ ));do
+			HDR_DIV=${PF} # Initialize Header HDR_DIV
+			for (( C=${_FIRST_COL}; C<=${_LAST_COL}; C++ ));do # Move through columns
 				if [[ -n ${_INLINE[${B}${C}${R}]} ]];then
 					PF+="|%s" # Add PF slots
 					HPF+="|%s" # Add HPF slots
-					DIV+="|%s" # Add DIV slots
+					HDR_DIV+="|%s" # Add HDR_DIV slots
 					_FIELD_LIST+=" ${_INLINE[${B}${C}${R}]} "
 				fi
 			done # Cols
 			PF+='|\\n"' # Finish PF
 			HPF+='|\\n"' # Finish HPF
-			DIV+='|\\n"' # Finish DIV
+			HDR_DIV+='|\\n"' # Finish HDR_DIV
 			if [[ ${R} -eq 1 ]];then
-				for (( C=1; C<=5; C++ ));do
+				for (( C=${_FIRST_COL}; C<=${_LAST_COL}; C++ ));do # Move through columns
 					if [[ -n ${_INLINE[${B}${C}${R}]} ]];then
 						_HDRS+=${${(P)_LBL_MAP[${B}]}[${C}]} # Pull indexed order
-						_DIVS+="\$(str_rep_char '-' ${_FLD_WIDTH[${B}]})"
+						_HDR_DIVS+="\$(str_rep_char '-' ${_FLD_WIDTH[${B}]})"
 					fi
 				done
 				eval "${HPF} 'Context' ${(C)_HDRS}"
-				eval "${DIV} '----------' ${_DIVS}"
+				eval "${HDR_DIV} '----------' ${_HDR_DIVS}"
 				_HDRS=()
-				_DIVS=()
+				_HDR_DIVS=()
 			fi
 			eval "${PF} ${_FIELD_LIST}"
 			_FIELD_LIST=()
@@ -186,13 +193,15 @@ markdown_table () {
 
 pretty_table () {
 	local DEFN
-	local DIV
+	local HDR_DIV
 	local GRND
 	local HPF
 	local IRRG
 	local PART
 	local PF
 	local B R C
+
+	[[ ${MOOD_SELECT} -ne 0 ]] && _FIRST_BLOCK=${MOOD_SELECT} && _LAST_BLOCK=${MOOD_SELECT}
 
 	# Top header data
 	IRRG=$(irregular)
@@ -210,35 +219,35 @@ pretty_table () {
 	echo "Past Participle:${WHITE_FG}${PART}${RESET}"
 	echo "Definition:${WHITE_FG}${DEFN}${RESET}\n"
 
-	for (( B=1; B<=6; B++ ));do
+	for (( B=${_FIRST_BLOCK}; B<=${_LAST_BLOCK}; B++ ));do
 		echo "${ITALIC}${UNDER}${BOLD}${WHITE_FG}${(C)_MOOD_LBLS[${B}]}${RESET}"
-		for (( R=1; R<=6; R++ ));do
+		for (( R=${_FIRST_ROW}; R<=${_LAST_ROW}; R++ ));do # Move through rows
 			_FIELD_LIST+=" ${_PRONOUN_LBLS[${R}]} "
 			PF="printf \" ${CYAN_FG}%-12s${RESET} " # Initialize PF
 			HPF=${PF} # Initialize Header PF
-			DIV=${PF} # Initialize Header DIV
-			for (( C=1; C<=5; C++ ));do
+			HDR_DIV=${PF} # Initialize Header HDR_DIV
+			for (( C=${_FIRST_COL}; C<=${_LAST_COL}; C++ ));do # Move through columns
 				if [[ -n ${_INLINE[${B}${C}${R}]} ]];then
 					PF+=" %-${_FLD_WIDTH[${B}]}s " # Add PF slots
 					HPF+=" ${CYAN_FG}%-${_FLD_WIDTH[${B}]}s${RESET} " # Add HPF slots
-					DIV+=" ${MAGENTA_FG}%-${_FLD_WIDTH[${B}]}s${RESET} " # Add DIV slots
+					HDR_DIV+=" ${MAGENTA_FG}%-${_FLD_WIDTH[${B}]}s${RESET} " # Add HDR_DIV slots
 					_FIELD_LIST+=" ${_INLINE[${B}${C}${R}]} "
 				fi
 			done # Cols
 			PF[(( ${#PF} - 1 ))]+='\\n"' # Finish PF
 			HPF[(( ${#HPF} - 1 ))]+='\\n"' # Finish HPF
-			DIV[(( ${#DIV} - 1 ))]+='\\n"' # Finish DIV
+			HDR_DIV[(( ${#HDR_DIV} - 1 ))]+='\\n"' # Finish HDR_DIV
 			if [[ ${R} -eq 1 ]];then
-				for (( C=1; C<=5; C++ ));do
+				for (( C=${_FIRST_COL}; C<=${_LAST_COL}; C++ ));do # Move through columns
 					if [[ -n ${_INLINE[${B}${C}${R}]} ]];then
 						_HDRS+=${${(P)_LBL_MAP[${B}]}[${C}]} # Pull indexed order
-						_DIVS+="\$(str_unicode_line ${_FLD_WIDTH[${B}]})"
+						_HDR_DIVS+="\$(str_unicode_line ${_FLD_WIDTH[${B}]})"
 					fi
 				done
 				eval "${HPF} ' ' ${(C)_HDRS}"
-				eval "${DIV} ' ' ${_DIVS}"
+				eval "${HDR_DIV} ' ' ${_HDR_DIVS}"
 				_HDRS=()
-				_DIVS=()
+				_HDR_DIVS=()
 			fi
 			eval "${PF} ${_FIELD_LIST}"
 			_FIELD_LIST=()
@@ -305,19 +314,20 @@ usage () {
 	tabs 5
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-M${RESET} select MOOD"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} output contains no ansi"
-	echo -e "${WHITE_FG}-m${RESET} markdown output"
 	echo -e "${WHITE_FG}-p${RESET} paged output"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDamp"
+OPTSTR=":HDM:amp"
 OPTIND=0
 
 MARKDOWN=false
+MOOD_SELECT=0
 ANSI=true
 PAGE_OPT=false
 
@@ -325,6 +335,7 @@ while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     M) MOOD_SELECT=${OPTARG};;
      a) ANSI=false;;
      m) MARKDOWN=true;;
      p) PAGE_OPT=true;;
@@ -371,22 +382,23 @@ LONGEST=0
 
 # Index table data 
 for V in ${(onk)_MOOD_LBLS};do
-	(( BLOCK++ ))
+	[[ ${MOOD_SELECT} -ne 0 && ${V} -ne ${MOOD_SELECT} ]] && continue
 	${${_MOOD_LBLS[${V}]}:l} # Call function to populate _VERB_DATA
 	for L in ${_VERB_DATA};do
-		(( COL_NDX++ )) # Horizontal across row
+		(( COL_NDX++ )) # Move horizontally across row
 		for (( F=${_FIRST_VERB_FIELD}; F<=${_LAST_VERB_FIELD}; F++ ));do
-			(( CON_NDX++ )) # Vertical through block
+			(( CON_NDX++ )) # Move vertically through block
 			FIELD=$(cut -d'|' -f${F} <<<${L})
-			_INLINE[${BLOCK}${COL_NDX}${CON_NDX}]=${FIELD} # Add index for blocks, columns, and rows
+			_INLINE[${V}${COL_NDX}${CON_NDX}]=${FIELD} # Add index for blocks, columns, and rows
 			[[ ${#FIELD} -gt ${LONGEST} ]] && LONGEST=${#FIELD}
 		done
 		CON_NDX=0
 	done
 	COL_NDX=0
 	_VERB_DATA=()
-	_FLD_WIDTH[${BLOCK}]=${LONGEST}
+	_FLD_WIDTH[${V}]=${LONGEST}
 	LONGEST=0
+	[[ ${MOOD_SELECT} -ne 0 ]] && break
 done
 
 # Ensure minimum widths equal header text

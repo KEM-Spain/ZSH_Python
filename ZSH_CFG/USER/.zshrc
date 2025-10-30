@@ -223,7 +223,12 @@ alias sudo='sudo ' # Sudo tweak
 
 # Completions
 fpath=(/home/kmiller/.zsh/completions ${fpath})
-autoload -Uz compinit && compinit
+autoload -Uz compinit
+if [ "$(date +%j)" != "$(stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null)" ]; then
+  compinit
+else
+  compinit -C
+fi
 
 precmd () {
 	local HIT=false
