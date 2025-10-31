@@ -3061,7 +3061,7 @@ return s(text, code, width - Option["indent"] * level)
 return replicate(" ", Option["indent"] * level) text
 }
 function parseLang(lang,    code, group) {
-match(lang, /^([a-z][a-z][a-z]?)(_|$)/, group)
+match(lang, /^([A-Za-z][a-z][a-z]?)(_|$)/, group)
 code = getCode(group[1])
 if (lang ~ /^zh_(CN|SG)/) code = "zh-CN"
 else if (lang ~ /^zh_(TW|HK)/) code = "zh-TW"
@@ -5712,7 +5712,7 @@ Option["engine"] = value
 initHttpService()
 } else if (command ~ /^:reset$/) {
 } else {
-match(command, /^[{(\[]?((@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?\+)*(@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?)?)?(:|=)((@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?\+)*(@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?)?)[})\]]?$/, group)
+match(command, /^[{(\[]?((@?[A-Za-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?\+)*(@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?)?)?(:|=)((@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?\+)*(@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?)?)[})\]]?$/, group)
 if (RSTART) {
 if (group[1]) {
 split(group[1], Option["sls"], "+")
@@ -6266,7 +6266,7 @@ if (group[6]) split(group[6], Option["tl"], "+")
 split(ARGV[++pos], Option["tl"], "+")
 continue
 }
-match(ARGV[pos], /^[{(\[]?((@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?\+)*(@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?)?)?(:|=)((@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?\+)*(@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?)?)[})\]]?$/, group)
+match(ARGV[pos], /^[{(\[]?((@?[A-Za-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?\+)*(@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?)?)?(:|=)((@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?\+)*(@?[a-z][a-z][a-z]?(-[[:alpha:]][[:alpha:]][[:alpha:]]?[[:alpha:]]?)?)?)[})\]]?$/, group)
 if (RSTART) {
 if (group[1]) {
 split(group[1], Option["sls"], "+")

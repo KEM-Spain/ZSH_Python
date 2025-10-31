@@ -262,7 +262,7 @@ local -a OPTIONS
 local OPTION
 local DESC
 
-MSG="Limit mood selection with the -m option:"
+MSG="Limit mood selection with the -M <MOOD> option:"
 read -r -d '' DESC<<EOF
 Display a verb conjugation map
 \tMood selection is optional. Default
@@ -282,7 +282,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTRING+="-${OPTS[${O}]}"
@@ -302,6 +302,7 @@ opt_type () {
 		f) echo "<FILE>";;
 		t) echo "<FILE_TYPE>";;
 		v) echo "<VERB>";;
+		M) echo "<MOOD>";;
 	esac
 }
 
@@ -314,7 +315,7 @@ usage () {
 	tabs 5
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type v)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
-	echo -e "${WHITE_FG}-M${RESET} select MOOD"
+	echo -e "${WHITE_FG}-M $(opt_type M)${RESET} select MOOD"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} output contains no ansi"
 	echo -e "${WHITE_FG}-m${RESET} output markdown"

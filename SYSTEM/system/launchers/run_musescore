@@ -1,2 +1,10 @@
 #!/usr/bin/zsh
-/opt/musescore/run_app_image ${@} &
+_DELAY=1
+
+CNT=$(pgrep -i -c -f /opt/musescore/musescore)
+if [[ ${CNT} -eq 0 ]];then
+	/opt/musescore/run_app_image ${@} &
+else
+	send-notification ${_DELAY} "musescore is already running..."
+fi
+

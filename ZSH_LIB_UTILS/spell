@@ -38,7 +38,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -118,7 +118,7 @@ if [[ ${RC} -eq 0 ]];then
 	echo "\"${WORD}\" is ${GREEN_FG}correct${RESET}"
 else
 	echo "\"${WORD}\" is ${RED_FG}mispelled${RESET}\n"
-	echo -n "${WHITE_FG}Suggestions${RESET}:";echo ${OUT} | grep '&' | cut -d':' -f2- | fold -80 -s | tr '[A-Z]' '[a-z]'
+	echo -n "${WHITE_FG}Suggestions${RESET}:";echo ${OUT} | grep '&' | cut -d':' -f2- | fold -80 -s | tr '[A-Z]' '[A-Za-z]'
 fi
 
 set_exit_value ${RC}
