@@ -188,7 +188,7 @@ markdown_table () {
 		done # Rows
 		echo # Block separator
 	done
-	) 
+	) | sed 's/_/ /g'
 }
 
 pretty_table () {

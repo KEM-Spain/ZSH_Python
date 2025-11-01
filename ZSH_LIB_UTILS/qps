@@ -118,6 +118,6 @@ for P in ${(O)PS};do
 	F11=$(cut -d' ' -f11- <<<${P})
 	printf "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s\n" ${F1} ${F2} ${F3} ${F4} ${F7} ${F9} ${F10} ${F11[1,70]}
 done
-) | mypager wait
+) | sort -n -t' ' -k6 | mypager wait
 
 exit_leave
