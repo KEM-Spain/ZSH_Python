@@ -1,4 +1,16 @@
 #!/usr/bin/zsh
+(
+cat << tip_nouns_gender
+Gender
+
+1. Words that end in “o” are usually masculine
+2. Most words ending in “a” are feminine
+3. If a word ends with an accented vowel (e.g. “í”) or a consonant other than “d” or “z”, it is probably masculine
+4. Certain endings like “ión”, “d” and “z” are likely to be feminine
+5. Some words you have to learn that they're masculine or feminine
+
+tip_nouns_gender
+
 NDX=0
 LIST=("${(f)$(find . -type f -name '*vocab.dat')}")
 if [[ -z ${LIST} ]];then
@@ -24,3 +36,4 @@ else
 fi
 
 [[ -e ${FN} ]] && grep -E -v '(ar|er|ir|se)\|' ${FN} | grep -Ev 'estar' | grep -Ev 'vocab.dat'
+) | mypager
