@@ -27,6 +27,7 @@ exit_leave () {
 
 	exit_pre_exit
 
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup # If messages haven't triggered rmcup do it before exit
 	exit ${_EXIT_VALUE}
 }
 
