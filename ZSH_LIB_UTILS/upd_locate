@@ -173,6 +173,8 @@ UPDATE=false
 if [[ (! ${g_LAST_RUN:l} =~ 'today') || ${FORCE} == 'true' ]];then
 	UPDATE=true
 	if [[ ${UTILITY} == 'true' ]];then
+		tcup 0 0
+		echo "Updating locate database..."
 		echo "locate database update started: $(date)" >> ${_LOGFILE}
 		echo "Options: ${LOCATE_OPTS}" >> ${_LOGFILE}
 

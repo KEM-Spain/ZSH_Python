@@ -143,15 +143,15 @@ function parse_opts {
 
 function usage {
 	local OPTS=$(parse_opts $OPTSTR)
-    echo -e "\n${WHITE_FG}Usage${RESET}: $SCRIPT ${WHITE_FG}[${RESET} $OPTS ${WHITE_FG}]${RESET}\n"
-    echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "\n${WHITE_FG}Usage${RESET}: $SCRIPT ${WHITE_FG}[${RESET} $OPTS ${WHITE_FG}]${RESET}\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-c${RESET} Create new database"
 	echo -e "${WHITE_FG}-a${RESET} Append data to existing database"
 	echo -e "${WHITE_FG}-u${RESET} Update data in existing database"
 	echo -e "${WHITE_FG}-d${RESET} Delete data in existing database"
 	echo -e "${WHITE_FG}-s${RESET} Select data from existing database"
-    echo -e "\n${WHITE_FG}DESC${RESET}:Manage the spanish database\n"
+	echo -e "\n${WHITE_FG}DESC${RESET}:Manage the spanish database\n"
 	exit
 }
 
@@ -180,7 +180,8 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $((OPTIND -1))
 #--End GetOpts--
-#Execution
+
+# Execution
 
 if [[ ${CREATE} == "true" ]];then
 	echo "Creating new spanish database"

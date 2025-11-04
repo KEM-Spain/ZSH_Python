@@ -11,11 +11,10 @@ _EXIT_MSGS=''
 # LIB Functions
 exit_leave () {
 	local OPT=''
-	local -a MSGS=()
+
+	_EXIT_MSGS=(${@})
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	MSGS=(${@})
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
@@ -23,14 +22,8 @@ exit_leave () {
 		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
 		dbg_msg | mypager -n wait
 	fi
-	
-	[[ -n ${MSGS} ]] && _EXIT_MSGS=${MSGS}
 
-	if [[ ${functrace[1]} =~ 'usage' && -z ${MSGS} ]];then
-		set_exit_value 1
-	else
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup # Screen restore if not usage
-	fi
+	[[ ${functrace[1]} =~ 'usage' && -z ${MSGS} ]] && set_exit_value 1
 
 	exit_pre_exit
 
@@ -46,12 +39,6 @@ exit_pre_exit () {
 	[[ ${_PRE_EXIT_RAN} == 'true' ]] && return
 	
 	_PRE_EXIT_RAN=true
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
-	if [[ -n ${_EXIT_MSGS} ]];then
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup # Screen restore if not usage
-		echo "\n${_EXIT_MSGS}"
-	fi
 
 	if [[ -n ${_EXIT_CALLBACKS} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
@@ -85,6 +72,13 @@ exit_pre_exit () {
 
 	[[ ${$(tabs -d | grep --color=never -o "tabs 8")} != 'tabs 8' ]] && tabs 8
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset tabstops"
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
+
+	if [[ -n ${_EXIT_MSGS} ]];then
+		do_rmcup # Screen restore
+		echo "\n${_EXIT_MSGS}" # Display any exit messages
+	fi
 }
 
 exit_request () {
@@ -111,7 +105,6 @@ exit_request () {
 	if [[ ${_MSG_KEY} == 'y' ]];then
 		if [[ ${_FUNC_TRAP} == 'true' ]];then
 			exit_pre_exit
-			[[ ${_SMCUP} == 'true' ]] && do_rmcup
 			exit 0
 		else
 			exit_leave

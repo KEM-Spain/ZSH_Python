@@ -147,7 +147,7 @@ do_copy () {
 	local RESPONSE
 	local MSG OP
 
-	# TODO: For initial copies of execs to production backup should be delayed until the original is in place
+	# TODO: For initial copies of execs to production, backup should be delayed until the original is in place
 
 	[[ ${DEST_FN} =~ "\.bak$" ]] && OP="Backup" || OP="Copy"
 	[[ -e ${DEST_FN} ]] && MSG="Overwriting ${_EM}existing${RESET} ${OP:l}" || MSG="${OP} to"
@@ -397,7 +397,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTRING+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTRING+="-${OPTS[${O}]}"
@@ -468,8 +468,8 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${LIB_TESTING} == 'true' ]] && exit_leave $(msg_err "Set LIB_TESTING off")
-[[ -n ${TESTING} ]] && exit_leave $(msg_err "TESTING is set - unset before continuing")
+[[ ${LIB_TESTING} == 'true' ]] && exit_leave $(err_msg_exit "Set LIB_TESTING off")
+[[ -n ${TESTING} ]] && exit_leave $(err_msg_exit "TESTING is set - unset before continuing")
 
 FILE_ARG=${1}
 [[ -z ${FILE_ARG} ]] && usage "Missing argument:$(opt_type f)"
@@ -496,7 +496,7 @@ else
 				*) echo; exit_leave $(msg_warn "Operation Cancelled");;
 			esac
 		else
-			exit_leave $(msg_err "No production version of file:${FILE_ARG}${RESET} was found")
+			exit_leave $(err_msg_exit "No production version of file:${FILE_ARG}${RESET} was found")
 		fi
 	fi
 

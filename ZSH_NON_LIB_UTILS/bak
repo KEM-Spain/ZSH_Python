@@ -147,8 +147,6 @@ do_copy () {
 	local RESPONSE
 	local MSG OP
 
-	# TODO: For initial copies of execs to production, backup should be delayed until the original is in place
-
 	[[ ${DEST_FN} =~ "\.bak$" ]] && OP="Backup" || OP="Copy"
 	[[ -e ${DEST_FN} ]] && MSG="Overwriting ${_EM}existing${RESET} ${OP:l}" || MSG="${OP} to"
 

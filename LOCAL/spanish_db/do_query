@@ -17,7 +17,6 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
 DB=.spanish.db
-LIB=/usr/local/lib
 
 # Globals
 DELIM=' '
@@ -39,7 +38,7 @@ WHITE_FG="\033[37m"
 SCRIPT=${0:t}
 
 read -r -d '' DESC<<EOF
-Perform sqlite3 SQL query
+Query ${DB}
 EOF
 
 parse_opts () {

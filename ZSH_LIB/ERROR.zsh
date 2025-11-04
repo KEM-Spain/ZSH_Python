@@ -8,7 +8,7 @@ err_msg_exit () {
 	local LABEL=''
 	local LCOLOR=''
 
-	[[ -z ${E_MSG} ]] && return # Nothing to do
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ ${#} -eq 1 ]];then
 		E_TYPE=E
@@ -16,11 +16,7 @@ err_msg_exit () {
 	elif [[ ${#} -eq 2 ]];then
 		E_TYPE=${1}
 		E_MSG=${2}
-	else
-		echo "${0}: Insufficient args" >&2
 	fi
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	case ${E_TYPE} in 
 		W) LABEL="Warning";LCOLOR=${ITALIC}${BOLD}${MAGENTA_FG};;
@@ -29,8 +25,7 @@ err_msg_exit () {
 		*) LABEL="Unknown E_TYPE:${E_TYPE}";;
 	esac
 
-	if [[ ${E_MSG} != 'null' ]];then
-		[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe "s/^(.*:)(.*)$/\1\e[37m\2\e[m/" <<<${E_MSG})
-		printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "$(echo ${E_MSG})" >&2
-	fi
+	[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe "s/^(.*:)(.*)$/\1\e[37m\2\e[m/" <<<${E_MSG})
+
+	printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "$(echo ${E_MSG})"
 }

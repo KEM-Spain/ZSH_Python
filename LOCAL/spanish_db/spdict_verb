@@ -1,0 +1,83 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Declarations
+typeset -a LINE_MAP=(2 5 5 5 5 5 5 4 4 4 4 4 4 2 2 2 2 2 5 5 5 5 5 5 5 5 5 5 5 5 4 4 4 4 4 4 6)
+typeset -a BLOCKS=()
+typeset -A BLOCK_HDRS=(GP "Gerund & Participle" IND "Indicative" SUBJ "Subjunctive" IMP "Imperative" PROG "Progressive" PERF "Perfect" PERFSUBJ "Perfect Subjunctive" INFFUT "Informal Future")
+typeset -A ROW_HDRS=(GP HDR1 IND HDR2 SUBJ HDR3 IMP HDR4 PROG HDR2 PERF HDR2 PERFSUBJ HDR5 INFFUT HDR6)
+typeset -A HDR_DEFS=(HDR1 "Gerund|Participle" HDR2 "Present|Preterite|Imperfect|Conditional|Future" HDR3 "Present|Imperfect|Future" HDR4 "Affirmative|Negative" HDR5 "Present|Past|Future" HDR6 "Yo|Tú|El|Nosotros|Vosotros|Ellos")
+
+# Execution
+[[ ${#} -ne 0 ]] && VERB=${1} || exit_leave "Missing arg:<VERB>"
+
+curl -sA "Chrome" -L  "https://www.spanishdict.com/conjugate/${VERB}" > ${VERB}.html
+ 
+if [[ -e ${VERB}.html ]];then
+	TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${VERB}.html)
+	grep -q -m1 '"isIrregular":true' ${VERB}.html
+	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
+	echo "Translation:${TRANS}"
+	echo "Conjugation:${V_TYPE}"
+
+	LIST=("${(f)$(pup --charset utf8 'a attr{aria-label}' < ${VERB}.html | grep '^[a-z]' | head -n -1 )}")
+
+	BLOCK=1
+	LAST_SECTION=?
+	LAST_NDX=1
+	NDX=0
+	for L in ${LINE_MAP};do
+		for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
+			(( NDX++ ))
+			BLOCKS+="${LIST[${NDX}]}|"
+		done
+
+		case ${BLOCK} in
+			1) SECTION=GP;;
+			<2-7>) SECTION=IND;;
+			<8-13>) SECTION=SUBJ;;
+			<14-18>) SECTION=IMP;;
+			<19-24>) SECTION=PROG;;
+			<25-30>) SECTION=PERF;;
+			<31-36>) SECTION=PERFSUBJ;;
+			37) SECTION=INFFUT;;
+		esac
+
+		if [[ ${LAST_SECTION} != ${SECTION} ]];then
+			echo "\n${BLOCK_HDRS[${SECTION}]}"
+			echo "${HDR_DEFS[${ROW_HDRS[${SECTION}]}]}"
+			LAST_SECTION=${SECTION}
+		fi
+
+		echo "${BLOCKS}"
+
+		(( BLOCK++ ))
+		BLOCKS=()
+	done
+
+	/bin/rm ${VERB}.html
+else
+	echo "${VERB} not found"
+fi

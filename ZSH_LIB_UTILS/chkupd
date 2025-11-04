@@ -22,13 +22,14 @@ TODAY=$(date +'%Y-%m-%d')
 LOG=~/.${0:t}.log
 MOTD=/etc/update-motd.d
 
+
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/STR.zsh
 source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 need_boot () {
    [[ -e /var/run/reboot-required ]] && return 0 || return 1

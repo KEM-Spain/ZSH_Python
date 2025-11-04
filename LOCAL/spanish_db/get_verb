@@ -1,8 +1,8 @@
 #!/usr/bin/zsh
-#Declarations
+# Declarations
 typeset -A MOOD_TENSE
 
-#Constants
+# Constants
 MOODS=(indicative subjunctive imperative progressive perfect perfect_subj)
 IND_TENSES=(present preterite imperfect conditional future)
 SUBJ_TENSES=(present imperfect imperfect2 future)
@@ -13,7 +13,7 @@ PERFSUBJ_TENSES=(present past future)
 MOOD_TENSE=(indicative IND_TENSES subjunctive SUBJ_TENSES imperative IMP_TENSES progressive PROG_TENSES perfect PERF_TENSES perfect_subj PERFSUBJ_TENSES)
 IRREGULAR_LIST=/usr/local/etc/spanish_irregular_verbs.txt
 
-#Declarations
+# Declarations
 typeset -a ESTAR_PRES
 typeset -a ESTAR_PRET
 typeset -a ESTAR_IMPE
@@ -44,18 +44,18 @@ typeset -a PSUB_PRES
 typeset -a PSUB_PAST
 typeset -a PSUB_FUTU
 
-#Functions
+# Functions
 get_data () {
 	local VERB=${1}
 
 	echo "getting translation, participle, gerund..."
-	#Trans/Part/Ger
+	# Trans/Part/Ger
 	TRANSLATION=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-tense/${VERB}/" | pup '.verb-translation text{}'))
 	[[ ${#TRANSLATION} -eq 0 ]] && echo "Verb:${WHITE_FG}${VERB} ${RED_FG}NOT${RESET} found" && exit 1
 	PART_GERUND=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/participle-gerund/${VERB}/" | pup '.verb-entry text{}'))
 
 	echo "getting estar..."
-	#Needed for Progressive
+	# Needed for Progressive
 	ESTAR_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-tense/estar/" | pup '.verb-entry text{}' ))
 	ESTAR_PRET=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/preterite/estar/" | pup '.verb-entry text{}' ))
 	ESTAR_IMPE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/imperfect/estar/" | pup '.verb-entry text{}' ))
@@ -63,7 +63,7 @@ get_data () {
 	ESTAR_FUTU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-tense/estar/" | pup '.verb-entry text{}' ))
 
 	echo "getting indicative..."
-	#Indicative
+	# Indicative
 	IND_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-tense/${VERB}/" | pup '.verb-entry text{}' ))
 	IND_PRET=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/preterite/${VERB}/" | pup '.verb-entry text{}' ))
 	IND_IMPE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/imperfect/${VERB}/" | pup '.verb-entry text{}' ))
@@ -71,17 +71,17 @@ get_data () {
 	IND_FUTU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-tense/${VERB}/" | pup '.verb-entry text{}' ))
 
 	echo "getting subjunctive..."
-	#Subjunctive
+	# Subjunctive
 	SUB_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
 	SUB_IMPE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/imperfect-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
 	SUB_FITU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
 
 	echo "getting imperative..."
-	#Imperative
+	# Imperative
 	IMPERATIVE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/imperative-command/${VERB}/" | pup '.verb-entry text{}' ))
 
 	echo "getting progressive..."
-	#Progressive
+	# Progressive
 	PROG_PRES=($(for W in ${ESTAR_PRES};do echo "${W}_${PART_GERUND[2]}";done))
 	PROG_PREt=($(for W in ${ESTAR_PRET};do echo "${W}_${PART_GERUND[2]}";done))
 	PROG_IMPE=($(for W in ${ESTAR_IMPE};do echo "${W}_${PART_GERUND[2]}";done))
@@ -89,7 +89,7 @@ get_data () {
 	PROG_FUTU=($(for W in ${ESTAR_FUTU};do echo "${W}_${PART_GERUND[2]}";done))
 
 	echo "getting perfect..."
-	#Perfect
+	# Perfect
 	PERF_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-perfect/${VERB}/" | pup '.verb-entry text{}' ))
 	PERF_PRET=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/past-anterior/${VERB}/" | pup '.verb-entry text{}' ))
 	PERF_IMPE=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/past-perfect/${VERB}/" | pup '.verb-entry text{}' ))
@@ -97,7 +97,7 @@ get_data () {
 	PERF_FUTU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-perfect/${VERB}/" | pup '.verb-entry text{}' ))
 
 	echo "getting perfect subjunctive..."
-	#Perfect Subjunctive
+	# Perfect Subjunctive
 	PSUB_PRES=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/present-perfect-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
 	PSUB_PAST=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/pluperfect-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
 	PSUB_FUTU=($(curl -sA "Chrome" -L  "https://www.spanishconjugation.net/future-perfect-subjunctive/${VERB}/" | pup '.verb-entry text{}' ))
@@ -157,7 +157,7 @@ done
 shift $((OPTIND -1))
 #--End GetOpts--
 
-#Execution
+# Execution
 [[ -z ${DB_OPT} ]] && DB_OPT='-a' # Default to append
 [[ -z ${1} ]] && echo "Need verb" && exit 1
 
@@ -173,11 +173,11 @@ if [[ ${LOCAL_FILES} == 'false' ]];then # Go straight to data load
 		grep -q ${1:l} < ${IRREGULAR_LIST}
 		[[ ${?} -eq 0 ]] && IRR=1 || IRR=0
 	fi
-	echo -n "${1}," > ${1}_verb.dat #Add verb
-	echo -n "${GER}," >> ${1}_verb.dat #Add gerund
-	echo -n "${PP}," >> ${1}_verb.dat #Add participle
-	echo -n "${IRR}," >> ${1}_verb.dat #Add irregular placeholder
-	echo \"${TRANS}\" >> ${1}_verb.dat #Add translation
+	echo -n "${1}," > ${1}_verb.dat # Add verb
+	echo -n "${GER}," >> ${1}_verb.dat # Add gerund
+	echo -n "${PP}," >> ${1}_verb.dat # Add participle
+	echo -n "${IRR}," >> ${1}_verb.dat # Add irregular placeholder
+	echo \"${TRANS}\" >> ${1}_verb.dat # Add translation
 
 	# Tweak for haber
 	[[ ${1} == 'haber' ]] && IND_PRES=$(sed 's# ha # ha/hay #' <<<${IND_PRES})
@@ -293,12 +293,10 @@ if [[ ${LOCAL_FILES} == 'false' ]];then # Go straight to data load
 	done
 	echo ${PF8}>>${1}_temp.dat
 
-	sed -i 's/ /,/g' ${1}_temp.dat #delimit
+	sed -i 's/ /,/g' ${1}_temp.dat # Delimit
 
-	#parse/create verb tenses
+	# Parse/create verb tenses
 	WORDLIST=("${(f)$(<${1}_temp.dat)}")
-
-	rm -f debug.out
 
 	(
 	NDX=0
