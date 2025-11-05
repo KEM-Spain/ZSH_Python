@@ -63,12 +63,13 @@ while true;do
 	break
 done
 
+MSG=''
 if [[ ${COUNT_ONLY} == 'true' ]];then
-	 echo ${#_LIST}
+	echo ${#_LIST}
 else
 	echo "${#_LIST} ${TAG}"
 	for T in ${(no)_LIST};do
 		[[ "${THIS_TTY:t}" == "${T:t}" ]] && FLAG='*' || FLAG=''
-		echo ${T} ${FLAG}
+		echo ${T} ${MSG} ${FLAG}
 	done
 fi

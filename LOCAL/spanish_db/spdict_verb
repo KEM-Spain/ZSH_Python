@@ -24,60 +24,410 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
-typeset -a LINE_MAP=(2 5 5 5 5 5 5 4 4 4 4 4 4 2 2 2 2 2 5 5 5 5 5 5 5 5 5 5 5 5 4 4 4 4 4 4 6)
-typeset -a BLOCKS=()
-typeset -A BLOCK_HDRS=(GP "Gerund & Participle" IND "Indicative" SUBJ "Subjunctive" IMP "Imperative" PROG "Progressive" PERF "Perfect" PERFSUBJ "Perfect Subjunctive" INFFUT "Informal Future")
-typeset -A ROW_HDRS=(GP HDR1 IND HDR2 SUBJ HDR3 IMP HDR4 PROG HDR2 PERF HDR2 PERFSUBJ HDR5 INFFUT HDR6)
-typeset -A HDR_DEFS=(HDR1 "Gerund|Participle" HDR2 "Present|Preterite|Imperfect|Conditional|Future" HDR3 "Present|Imperfect|Future" HDR4 "Affirmative|Negative" HDR5 "Present|Past|Future" HDR6 "Yo|Tú|El|Nosotros|Vosotros|Ellos")
+typeset -a _LINE_MAP=(2 5 5 5 5 5 5 4 4 4 4 4 4 2 2 2 2 2 5 5 5 5 5 5 5 5 5 5 5 5 4 4 4 4 4 4 6)
+typeset -a _BLOCKS=()
+typeset -A _BLOCK_HDRS=(GP "Gerund & Participle" IND "Indicative" SUBJ "Subjunctive" IMP "Imperative" PROG "Progressive" PERF "Perfect" PSUBJ "Perfect Subjunctive" INFFUT "Informal Future")
+typeset -A _ROW_HDRS=(GP HDR1 IND HDR2 SUBJ HDR3 IMP HDR4 PROG HDR2 PERF HDR2 PSUBJ HDR5 INFFUT HDR6)
+typeset -A _HDR_DEFS=(HDR1 "Gerund|Participle" HDR2 "Present|Preterite|Imperfect|Conditional|Future" HDR3 "Present|Imperfect|Imperfect2|Future" HDR4 "Affirmative|Negative" HDR5 "Present|Past|Past2|Future" HDR6 "Yo|Tú|El|Nosotros|Vosotros|Ellos")
+typeset -A _SECTION_LONGEST=()
+typeset -a _LIST
 
-# Execution
-[[ ${#} -ne 0 ]] && VERB=${1} || exit_leave "Missing arg:<VERB>"
+# Vars
+_VERB_ARG=''
 
-curl -sA "Chrome" -L  "https://www.spanishdict.com/conjugate/${VERB}" > ${VERB}.html
- 
-if [[ -e ${VERB}.html ]];then
-	TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${VERB}.html)
-	grep -q -m1 '"isIrregular":true' ${VERB}.html
+# Functions
+md_hdr () {
+	local COLS=${1}
+	local WIDTH=${2}
+	local COL
+	local -a MARKDOWN=('|')
+
+	for (( COL=1; COL<=${COLS}; COL++ ));do
+		MARKDOWN+="$(str_rep_char "-" ${WIDTH})|"
+	done
+
+	tr -d '[:space:]' <<<${MARKDOWN};echo
+}
+
+pretty_format () {
+	# TODO: Prettify
+
+	local BLOCK=1
+	local LAST_NDX=1
+	local LAST_SECTION=?
+	local LOOP=0
+	local LNDX=0
+	local NDX=0
+	local PRE_SCAN=true
+	local SECTION=''
+	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
+	local V_TYPE=''
+	local L
+
+	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
 	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
+
 	echo "Translation:${TRANS}"
 	echo "Conjugation:${V_TYPE}"
 
-	LIST=("${(f)$(pup --charset utf8 'a attr{aria-label}' < ${VERB}.html | grep '^[a-z]' | head -n -1 )}")
+	for (( LOOP=1; LOOP<=2; LOOP++ ));do # Pre-scan needed to establish lengths of fields
+		if [[ ${LOOP} -eq 2 ]];then
+			_BLOCKS=()
+			_BLOCKS+="|"
+			BLOCK=1
+			LAST_NDX=1
+			LAST_SECTION=?
+			NDX=0
+			PRE_SCAN=false
+		fi
+		for L in ${_LINE_MAP};do
+			case ${BLOCK} in
+				1) SECTION=GP;;
+				<2-7>) SECTION=IND;;
+				<8-13>) SECTION=SUBJ;;
+				<14-18>) SECTION=IMP;;
+				<19-24>) SECTION=PROG;;
+				<25-30>) SECTION=PERF;;
+				<31-36>) SECTION=PSUBJ;;
+				37) SECTION=INFFUT;;
+			esac
 
-	BLOCK=1
-	LAST_SECTION=?
-	LAST_NDX=1
-	NDX=0
-	for L in ${LINE_MAP};do
-		for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
-			(( NDX++ ))
-			BLOCKS+="${LIST[${NDX}]}|"
+			for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
+				(( NDX++ ))
+				_BLOCKS+="${_LIST[${NDX}]}|"
+				[[ ${PRE_SCAN} == 'true' && ${#_LIST[${NDX}]} -gt ${_SECTION_LONGEST[${SECTION}]} ]] && _SECTION_LONGEST[${SECTION}]=${#_LIST[${NDX}]}
+			done
+
+			if [[ ${LAST_SECTION} != ${SECTION} ]];then
+				[[ ${PRE_SCAN} == 'false' && -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
+				[[ ${PRE_SCAN} == 'false' ]] && echo "\n${_BLOCK_HDRS[${SECTION}]}"
+				[[ ${PRE_SCAN} == 'false' ]] && echo "|${_HDR_DEFS[${_ROW_HDRS[${SECTION}]}]}|"
+				[[ ${PRE_SCAN} == 'false' ]] && md_hdr $(( ${#_BLOCKS} - 1 )) ${_SECTION_LONGEST[${SECTION}]}
+				LAST_SECTION=${SECTION}
+			fi
+
+			[[ ${PRE_SCAN} == 'false' ]] && echo "${_BLOCKS}" | sed 's/| /|/g'
+
+			(( BLOCK++ ))
+			_BLOCKS=()
+			_BLOCKS+="|"
 		done
+	done
 
-		case ${BLOCK} in
+	/bin/rm ${_VERB_ARG}.html
+}
+
+markdown_format () {
+
+	local BLOCK=1
+	local LAST_NDX=1
+	local LAST_SECTION=?
+	local LOOP=0
+	local LNDX=0
+	local NDX=0
+	local PRE_SCAN=true
+	local SECTION=''
+	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
+	local V_TYPE=''
+	local L
+
+	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
+	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
+
+	echo "Translation:${TRANS}"
+	echo "Conjugation:${V_TYPE}"
+
+	for (( LOOP=1; LOOP<=2; LOOP++ ));do # Pre-scan needed to establish lengths of fields
+		if [[ ${LOOP} -eq 2 ]];then
+			_BLOCKS=()
+			_BLOCKS+="|"
+			BLOCK=1
+			LAST_NDX=1
+			LAST_SECTION=?
+			NDX=0
+			PRE_SCAN=false
+		fi
+		for L in ${_LINE_MAP};do
+			case ${BLOCK} in
+				1) SECTION=GP;;
+				<2-7>) SECTION=IND;;
+				<8-13>) SECTION=SUBJ;;
+				<14-18>) SECTION=IMP;;
+				<19-24>) SECTION=PROG;;
+				<25-30>) SECTION=PERF;;
+				<31-36>) SECTION=PSUBJ;;
+				37) SECTION=INFFUT;;
+			esac
+
+			for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
+				(( NDX++ ))
+				_BLOCKS+="${_LIST[${NDX}]}|"
+				[[ ${PRE_SCAN} == 'true' && ${#_LIST[${NDX}]} -gt ${_SECTION_LONGEST[${SECTION}]} ]] && _SECTION_LONGEST[${SECTION}]=${#_LIST[${NDX}]}
+			done
+
+			if [[ ${LAST_SECTION} != ${SECTION} ]];then
+				[[ ${PRE_SCAN} == 'false' && -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
+				[[ ${PRE_SCAN} == 'false' ]] && echo "\n${_BLOCK_HDRS[${SECTION}]}"
+				[[ ${PRE_SCAN} == 'false' ]] && echo "|${_HDR_DEFS[${_ROW_HDRS[${SECTION}]}]}|"
+				[[ ${PRE_SCAN} == 'false' ]] && md_hdr $(( ${#_BLOCKS} - 1 )) ${_SECTION_LONGEST[${SECTION}]}
+				LAST_SECTION=${SECTION}
+			fi
+
+			[[ ${PRE_SCAN} == 'false' ]] && echo "${_BLOCKS}" | sed 's/| /|/g'
+
+			(( BLOCK++ ))
+			_BLOCKS=()
+			_BLOCKS+="|"
+		done
+	done
+
+	/bin/rm ${_VERB_ARG}.html
+}
+
+section_break () {
+	local SECTION=${1}
+
+	[[ ${SECTION} == 'GP' || ${SECTION} == 'INFFUT' ]] && return || echo
+}
+
+col_out () {
+	local SECTION=${1} && shift
+	local ROW=${1} && shift
+	local -a COL_DATA=(${@})
+	local -A ROW_LBLS=(1 Yo 2 Tú 3 El 4 Nosotros 5 Vosotros 6 Ellos)
+	local -A INF_LBLS=(voy Yo vas Tú va El vamos Nosotros vais Vosotros van Ellos)
+	local -A GP_LBLS=(1 Gerund 2 Participle)
+	local NDX=0
+	local KEY=''
+	local X
+	local -A SECTION_LBLS=(	IND1 Present IND2 Preterite IND3 Imperfect IND4 Conditional IND5 Future
+									SUBJ1 Present SUBJ2 Imperfect SUBJ3 Imperfect2 SUBJ4 Future
+									IMP1 Affirmative IMP2 Negative 
+									PROG1 Present PROG2 Preterite PROG3 Imperfect PROG4 Conditional PROG5 Future
+									PERF1 Present PERF2 Preterite PERF3 Imperfect PERF4 Conditional PERF5 Future
+									PSUBJ1 Present PSUBJ2 Imperfect PSUBJ3 Imperfect2 PSUBJ4 Future)
+
+	if [[ ${SECTION} == 'GP' ]];then # Special handler
+		printf "%-10s: %s\n"  "${GP_LBLS[${ROW}]}" "${COL_DATA}"
+		return
+	fi
+
+	if [[ ${SECTION} == 'INFFUT' ]];then # Special handler
+		KEY=$(cut -d' ' -f1 <<<${COL_DATA})
+		for X in ${COL_DATA};do
+			printf "%-10s: %s\n"  "${INF_LBLS[${KEY}]}" "${COL_DATA}"
+		done
+		return
+	fi
+
+	echo "${ITALIC}${SECTION_LBLS[${SECTION}${ROW}]}${RESET}"
+	if [[ -n ${COL_DATA} ]];then
+		for X in ${COL_DATA};do 
+			(( NDX++ )) 
+			printf "%-10s: %s\n" ${ROW_LBLS[${NDX}]} "${X}"
+		done
+		section_break ${SECTION}
+	fi
+}
+
+block_out () {
+	local SECTION=${1}
+	local B 
+
+	echo "${BOLD}${UNDER}${_BLOCK_HDRS[${SECTION}]}${RESET}"
+	for (( B=1; B<=${SECTION_ROWS[${SECTION}]}; B++ ));do # Output blocks
+		case ${B} in
+			1) [[ -n ${COL1} ]] && col_out ${SECTION} ${B} ${COL1};;
+			2) [[ -n ${COL2} ]] && col_out ${SECTION} ${B} ${COL2};;
+			3) [[ -n ${COL3} ]] && col_out ${SECTION} ${B} ${COL3};;
+			4) [[ -n ${COL4} ]] && col_out ${SECTION} ${B} ${COL4};;
+			5) [[ -n ${COL5} ]] && col_out ${SECTION} ${B} ${COL5};;
+			6) [[ -n ${COL6} ]] && col_out ${SECTION} ${B} ${COL6};;
+		esac
+	done
+}
+
+vertical_format () {
+	local LINE_NO=1
+	local -a COL1=()
+	local -a COL2=()
+	local -a COL3=()
+	local -a COL4=()
+	local -a COL5=()
+	local -a COL6=()
+	local -A SECTION_COLS=(GP 2 IND 5 SUBJ 4 IMP 2 PROG 5 PERF 5 PSUBJ 4 INFFUT 6)
+	local -A SECTION_ROWS=(GP 2 IND 6 SUBJ 6 IMP 5 PROG 6 PERF 6 PSUBJ 6 INFFUT 6)
+	local LAST_NDX=1
+	local LAST_SECTION=?
+	local LOOP=0
+	local LNDX=0
+	local NDX=0
+	local PRE_SCAN=true
+	local SECTION=''
+	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
+	local V_TYPE=''
+	local C L R X B
+	local COL_ARR=''
+
+	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
+	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
+
+	echo "Translation:${TRANS}"
+	echo "Conjugation:${V_TYPE}\n"
+
+	_BLOCKS=()
+	LINE_NO=1
+	LAST_NDX=1
+	LAST_SECTION=?
+	NDX=0
+	R=1
+
+	for L in ${_LINE_MAP};do
+		case ${LINE_NO} in
 			1) SECTION=GP;;
 			<2-7>) SECTION=IND;;
 			<8-13>) SECTION=SUBJ;;
 			<14-18>) SECTION=IMP;;
 			<19-24>) SECTION=PROG;;
 			<25-30>) SECTION=PERF;;
-			<31-36>) SECTION=PERFSUBJ;;
+			<31-36>) SECTION=PSUBJ;;
 			37) SECTION=INFFUT;;
 		esac
+		#echo "LINE_NO:${LINE_NO} L:${L} R:${R} SECTION:${SECTION}"
+
+		(( R++ ))
+		for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
+			(( NDX++ ))
+			_BLOCKS+="${_LIST[${NDX}]}"
+		done
 
 		if [[ ${LAST_SECTION} != ${SECTION} ]];then
-			echo "\n${BLOCK_HDRS[${SECTION}]}"
-			echo "${HDR_DEFS[${ROW_HDRS[${SECTION}]}]}"
 			LAST_SECTION=${SECTION}
+			COL1=()
+			COL2=()
+			COL3=()
+			COL4=()
+			COL5=()
+			COL6=()
 		fi
 
-		echo "${BLOCKS}"
+		for (( C=1; C<=${SECTION_COLS[${SECTION}]}; C++ ));do # Marshall columns
+			case ${C} in
+				1) COL1+=${_BLOCKS[${C}]};;
+				2) COL2+=${_BLOCKS[${C}]};;
+				3) COL3+=${_BLOCKS[${C}]};;
+				4) COL4+=${_BLOCKS[${C}]};;
+				5) COL5+=${_BLOCKS[${C}]};;
+				6) COL6+=${_BLOCKS[${C}]};;
+			esac
+		done
 
-		(( BLOCK++ ))
-		BLOCKS=()
+		if [[ ${R} -eq ${SECTION_ROWS[${SECTION}]} ]];then
+			block_out ${SECTION} ${R}
+			echo
+			R=0
+		fi
+
+		(( LINE_NO++ ))
+		_BLOCKS=()
 	done
+	block_out ${SECTION} # Last section
 
-	/bin/rm ${VERB}.html
-else
-	echo "${VERB} not found"
-fi
+	/bin/rm ${_VERB_ARG}.html
+}
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+This script does...
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-m${RESET} markdown output"
+	echo -e "${WHITE_FG}-p${RESET} prettified output"
+	echo -e "${WHITE_FG}-v${RESET} vertical output"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave ${PENDING_MSGS}
+}
+
+OPTSTR=":HDmpv"
+OPTIND=0
+
+PRETTY=false
+MARKDOWN=false
+VERTICAL=false
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     m) MARKDOWN=true;;
+     p) PRETTY=true;;
+     v) VERTICAL=true;;
+     :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+[[ ${#} -ne 0 ]] && _VERB_ARG=${1} || exit_leave "Missing arg:<VERB>"
+[[ -z ${OPTIONS} ]] && VERTICAL=true # Default format
+
+curl -sA "Chrome" -L  "https://www.spanishdict.com/conjugate/${_VERB_ARG}" > ${_VERB_ARG}.html
+grep -q 'data-is_found="0"\|mismatch-spelling-suggestion' ${_VERB_ARG}.html
+[[ ${?} -eq 0 ]] && exit_leave $(err_msg_exit "Unable to find verb:${_VERB_ARG}")
+ 
+_LIST=("${(f)$(pup --charset utf8 'a attr{aria-label}' < ${_VERB_ARG}.html | grep '^[a-z]' | head -n -1 )}")
+
+[[ ${MARKDOWN} == 'true' ]] && markdown_format
+[[ ${PRETTY} == 'true' ]] && pretty_format
+[[ ${VERTICAL} == 'true' ]] && vertical_format
+
+exit_leave
