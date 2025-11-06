@@ -37,6 +37,126 @@ typeset -a _LIST
 _VERB_ARG=''
 
 # Functions
+block_out () {
+	local SECTION=${1}
+	local B 
+
+	echo "${BOLD}${UNDER}${_BLOCK_HDRS[${SECTION}]}${RESET}"
+	for (( B=1; B<=${SECTION_ROWS[${SECTION}]}; B++ ));do # Output blocks
+		case ${B} in
+			1) [[ -n ${COL1} ]] && col_out ${SECTION} ${B} ${COL1};;
+			2) [[ -n ${COL2} ]] && col_out ${SECTION} ${B} ${COL2};;
+			3) [[ -n ${COL3} ]] && col_out ${SECTION} ${B} ${COL3};;
+			4) [[ -n ${COL4} ]] && col_out ${SECTION} ${B} ${COL4};;
+			5) [[ -n ${COL5} ]] && col_out ${SECTION} ${B} ${COL5};;
+			6) [[ -n ${COL6} ]] && col_out ${SECTION} ${B} ${COL6};;
+		esac
+	done
+}
+
+col_out () {
+	local SECTION=${1} && shift
+	local ROW=${1} && shift
+	local -a COL_DATA=(${@})
+	local -A ROW_LBLS=(1 Yo 2 Tú 3 El 4 Nosotros 5 Vosotros 6 Ellos)
+	local -A INF_LBLS=(voy Yo vas Tú va El vamos Nosotros vais Vosotros van Ellos)
+	local -A GP_LBLS=(1 Gerund 2 Participle)
+	local NDX=0
+	local KEY=''
+	local IMP_OFF=false
+	local X
+	local -A SECTION_LBLS=(	IND1 Present IND2 Preterite IND3 Imperfect IND4 Conditional IND5 Future
+									SUBJ1 Present SUBJ2 Imperfect SUBJ3 Imperfect2 SUBJ4 Future
+									IMP1 Affirmative IMP2 Negative 
+									PROG1 Present PROG2 Preterite PROG3 Imperfect PROG4 Conditional PROG5 Future
+									PERF1 Present PERF2 Preterite PERF3 Imperfect PERF4 Conditional PERF5 Future
+									PSUBJ1 Present PSUBJ2 Past PSUBJ3 Past2 PSUBJ4 Future)
+
+	if [[ ${SECTION} == 'GP' ]];then # Special handler
+		printf "%-10s: %s\n"  "${GP_LBLS[${ROW}]}" "${COL_DATA}"
+		return
+	fi
+
+	if [[ ${SECTION} == 'INFFUT' ]];then # Special handler
+		KEY=$(cut -d' ' -f1 <<<${COL_DATA})
+		for X in ${COL_DATA};do
+			printf "%-10s: %s\n"  "${INF_LBLS[${KEY}]}" "${COL_DATA}"
+		done
+		return
+	fi
+
+	echo "${ITALIC}${SECTION_LBLS[${SECTION}${ROW}]}${RESET}"
+	if [[ -n ${COL_DATA} ]];then
+		for X in ${COL_DATA};do 
+			(( NDX++ )) 
+			[[ ${SECTION} == 'IMP' && ${IMP_OFF} == 'false' ]] && (( NDX++ )) && IMP_OFF=true
+			printf "%-10s: %s\n" ${ROW_LBLS[${NDX}]} "${X}"
+		done
+		section_break ${SECTION}
+	fi
+}
+
+markdown_format () {
+
+	local BLOCK=1
+	local LAST_NDX=1
+	local LAST_SECTION=?
+	local LOOP=0
+	local LNDX=0
+	local NDX=0
+	local SECTION=''
+	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
+	local V_TYPE=''
+	local L
+
+	set_section_longest # Find longest text per section
+
+	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
+	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
+
+	echo "Translation:${TRANS}"
+	echo "Conjugation:${V_TYPE}"
+
+	_BLOCKS=()
+	_BLOCKS+="|"
+	BLOCK=1
+	LAST_NDX=1
+	LAST_SECTION=?
+	NDX=0
+
+	for L in ${_LINE_MAP};do
+		case ${BLOCK} in
+			1) SECTION=GP;;
+			<2-7>) SECTION=IND;;
+			<8-13>) SECTION=SUBJ;;
+			<14-18>) SECTION=IMP;;
+			<19-24>) SECTION=PROG;;
+			<25-30>) SECTION=PERF;;
+			<31-36>) SECTION=PSUBJ;;
+			37) SECTION=INFFUT;;
+		esac
+
+		for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
+			(( NDX++ ))
+			_BLOCKS+="${_LIST[${NDX}]}|"
+		done
+
+		if [[ ${LAST_SECTION} != ${SECTION} ]];then
+			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
+			echo "\n${_BLOCK_HDRS[${SECTION}]}"
+			echo "|${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]}|"
+			md_hdr $(( ${#_BLOCKS} - 1 )) ${_SECTION_LONGEST[${SECTION}]}
+			LAST_SECTION=${SECTION}
+		fi
+
+		echo "${_BLOCKS}" | sed 's/| /|/g'
+
+		(( BLOCK++ ))
+		_BLOCKS=()
+		_BLOCKS+="|"
+	done
+}
+
 md_hdr () {
 	local COLS=${1}
 	local WIDTH=${2}
@@ -48,46 +168,6 @@ md_hdr () {
 	done
 
 	tr -d '[:space:]' <<<${MARKDOWN};echo
-}
-
-set_section_longest () {
-	local COL_NDX=0
-	local LONGEST_HDR=0
-	local LAST_NDX=1
-	local LAST_SECTION=?
-	local LINE_NO=1
-	local NDX=0
-	local SECTION=''
-	local -a SECTION_HDRS=()
-	local L
-
-	for L in ${_LINE_MAP};do
-		case ${LINE_NO} in
-			1) SECTION=GP;;
-			<2-7>) SECTION=IND;;
-			<8-13>) SECTION=SUBJ;;
-			<14-18>) SECTION=IMP;;
-			<19-24>) SECTION=PROG;;
-			<25-30>) SECTION=PERF;;
-			<31-36>) SECTION=PSUBJ;;
-			37) SECTION=INFFUT;;
-		esac
-
-		SECTION_HDRS=($(sed -e 's/|/ /g' <<<${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]}))
-		LONGEST_HDR=$(arr_long_elem_len ${SECTION_HDRS})
-
-		for (( COL_NDX=LAST_NDX; COL_NDX<=L; COL_NDX++ ));do
-			(( NDX++ ))
-			[[ ${#_LIST[${NDX}]} -gt ${_SECTION_LONGEST[${SECTION}]} ]] && _SECTION_LONGEST[${SECTION}]=${#_LIST[${NDX}]}
-			[[ ${LONGEST_HDR} -gt ${_SECTION_LONGEST[${SECTION}]} ]] &&  _SECTION_LONGEST[${SECTION}]=${LONGEST_HDR}
-		done
-
-		if [[ ${LAST_SECTION} != ${SECTION} ]];then
-			LAST_SECTION=${SECTION}
-		fi
-
-		(( LINE_NO++ ))
-	done
 }
 
 pretty_format () {
@@ -188,39 +268,27 @@ pretty_format () {
 		HDR_SEP='" " '
 	done
 
-	/bin/rm ${_VERB_ARG}.html
 }
 
-markdown_format () {
+section_break () {
+	local SECTION=${1}
 
-	local BLOCK=1
+	[[ ${SECTION} == 'GP' || ${SECTION} == 'INFFUT' ]] && return || echo
+}
+
+set_section_longest () {
+	local COL_NDX=0
+	local LONGEST_HDR=0
 	local LAST_NDX=1
 	local LAST_SECTION=?
-	local LOOP=0
-	local LNDX=0
+	local LINE_NO=1
 	local NDX=0
 	local SECTION=''
-	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
-	local V_TYPE=''
+	local -a SECTION_HDRS=()
 	local L
 
-	set_section_longest # Find longest text per section
-
-	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
-	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
-
-	echo "Translation:${TRANS}"
-	echo "Conjugation:${V_TYPE}"
-
-	_BLOCKS=()
-	_BLOCKS+="|"
-	BLOCK=1
-	LAST_NDX=1
-	LAST_SECTION=?
-	NDX=0
-
 	for L in ${_LINE_MAP};do
-		case ${BLOCK} in
+		case ${LINE_NO} in
 			1) SECTION=GP;;
 			<2-7>) SECTION=IND;;
 			<8-13>) SECTION=SUBJ;;
@@ -231,91 +299,20 @@ markdown_format () {
 			37) SECTION=INFFUT;;
 		esac
 
-		for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
+		SECTION_HDRS=($(sed -e 's/|/ /g' <<<${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]}))
+		LONGEST_HDR=$(arr_long_elem_len ${SECTION_HDRS})
+
+		for (( COL_NDX=LAST_NDX; COL_NDX<=L; COL_NDX++ ));do
 			(( NDX++ ))
-			_BLOCKS+="${_LIST[${NDX}]}|"
+			[[ ${#_LIST[${NDX}]} -gt ${_SECTION_LONGEST[${SECTION}]} ]] && _SECTION_LONGEST[${SECTION}]=${#_LIST[${NDX}]}
+			[[ ${LONGEST_HDR} -gt ${_SECTION_LONGEST[${SECTION}]} ]] &&  _SECTION_LONGEST[${SECTION}]=${LONGEST_HDR}
 		done
 
 		if [[ ${LAST_SECTION} != ${SECTION} ]];then
-			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
-			echo "\n${_BLOCK_HDRS[${SECTION}]}"
-			echo "|${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]}|"
-			md_hdr $(( ${#_BLOCKS} - 1 )) ${_SECTION_LONGEST[${SECTION}]}
 			LAST_SECTION=${SECTION}
 		fi
 
-		echo "${_BLOCKS}" | sed 's/| /|/g'
-
-		(( BLOCK++ ))
-		_BLOCKS=()
-		_BLOCKS+="|"
-	done
-
-	/bin/rm ${_VERB_ARG}.html
-}
-
-section_break () {
-	local SECTION=${1}
-
-	[[ ${SECTION} == 'GP' || ${SECTION} == 'INFFUT' ]] && return || echo
-}
-
-col_out () {
-	local SECTION=${1} && shift
-	local ROW=${1} && shift
-	local -a COL_DATA=(${@})
-	local -A ROW_LBLS=(1 Yo 2 Tú 3 El 4 Nosotros 5 Vosotros 6 Ellos)
-	local -A INF_LBLS=(voy Yo vas Tú va El vamos Nosotros vais Vosotros van Ellos)
-	local -A GP_LBLS=(1 Gerund 2 Participle)
-	local NDX=0
-	local KEY=''
-	local IMP_OFF=false
-	local X
-	local -A SECTION_LBLS=(	IND1 Present IND2 Preterite IND3 Imperfect IND4 Conditional IND5 Future
-									SUBJ1 Present SUBJ2 Imperfect SUBJ3 Imperfect2 SUBJ4 Future
-									IMP1 Affirmative IMP2 Negative 
-									PROG1 Present PROG2 Preterite PROG3 Imperfect PROG4 Conditional PROG5 Future
-									PERF1 Present PERF2 Preterite PERF3 Imperfect PERF4 Conditional PERF5 Future
-									PSUBJ1 Present PSUBJ2 Past PSUBJ3 Past2 PSUBJ4 Future)
-
-	if [[ ${SECTION} == 'GP' ]];then # Special handler
-		printf "%-10s: %s\n"  "${GP_LBLS[${ROW}]}" "${COL_DATA}"
-		return
-	fi
-
-	if [[ ${SECTION} == 'INFFUT' ]];then # Special handler
-		KEY=$(cut -d' ' -f1 <<<${COL_DATA})
-		for X in ${COL_DATA};do
-			printf "%-10s: %s\n"  "${INF_LBLS[${KEY}]}" "${COL_DATA}"
-		done
-		return
-	fi
-
-	echo "${ITALIC}${SECTION_LBLS[${SECTION}${ROW}]}${RESET}"
-	if [[ -n ${COL_DATA} ]];then
-		for X in ${COL_DATA};do 
-			(( NDX++ )) 
-			[[ ${SECTION} == 'IMP' && ${IMP_OFF} == 'false' ]] && (( NDX++ )) && IMP_OFF=true
-			printf "%-10s: %s\n" ${ROW_LBLS[${NDX}]} "${X}"
-		done
-		section_break ${SECTION}
-	fi
-}
-
-block_out () {
-	local SECTION=${1}
-	local B 
-
-	echo "${BOLD}${UNDER}${_BLOCK_HDRS[${SECTION}]}${RESET}"
-	for (( B=1; B<=${SECTION_ROWS[${SECTION}]}; B++ ));do # Output blocks
-		case ${B} in
-			1) [[ -n ${COL1} ]] && col_out ${SECTION} ${B} ${COL1};;
-			2) [[ -n ${COL2} ]] && col_out ${SECTION} ${B} ${COL2};;
-			3) [[ -n ${COL3} ]] && col_out ${SECTION} ${B} ${COL3};;
-			4) [[ -n ${COL4} ]] && col_out ${SECTION} ${B} ${COL4};;
-			5) [[ -n ${COL5} ]] && col_out ${SECTION} ${B} ${COL5};;
-			6) [[ -n ${COL6} ]] && col_out ${SECTION} ${B} ${COL6};;
-		esac
+		(( LINE_NO++ ))
 	done
 }
 
@@ -404,8 +401,6 @@ vertical_format () {
 		_BLOCKS=()
 	done
 	block_out ${SECTION} # Last section
-
-	/bin/rm ${_VERB_ARG}.html
 }
 
 #--Begin GetOpts--
@@ -501,5 +496,7 @@ _LIST=("${(f)$(pup --charset utf8 'a attr{aria-label}' < ${_VERB_ARG}.html | gre
 [[ ${MARKDOWN} == 'true' ]] && markdown_format
 [[ ${PRETTY} == 'true' ]] && pretty_format
 [[ ${VERTICAL} == 'true' ]] && vertical_format
+
+[[ ${VERB}.html ]] && /bin/rm ${_VERB_ARG}.html
 
 exit_leave
