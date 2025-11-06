@@ -133,7 +133,6 @@ cmd_filter () {
 
 	for K in ${(k)${(P)ARRAY}};do
 		((NDX++))
-		[[ ${NDX} -eq 476 ]] && continue
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
 		CMD_IN=$(cut -d';' -f2 <<<${K})
 		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN})
@@ -169,18 +168,18 @@ cmd_filter () {
 			fi
 		fi
 
-#		if [[ ${VALID} == 'false' ]];then
-#			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
-#			CMD_OUT=$(locate -b -e ${CMD_MSK})
-#			if [[ ${?} -eq 0 ]];then
-#				if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
-#					VALID='true'
-#					((LOC++))
-#					printf '%s\n' "${K}"
-#					printf '%s\n' "${CMD_OUT}">>${_HIST_CACHE}
-#				fi
-#			fi
-#		fi
+		if [[ ${VALID} == 'false' ]];then
+			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
+			CMD_OUT=$(locate -b -e ${CMD_MSK})
+			if [[ ${?} -eq 0 ]];then
+				if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
+					VALID='true'
+					((LOC++))
+					printf '%s\n' "${K}"
+					printf '%s\n' "${CMD_OUT}">>${_HIST_CACHE}
+				fi
+			fi
+		fi
 
 		if [[ ${VALID} == 'false' ]];then
 			((RJT++))

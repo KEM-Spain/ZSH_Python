@@ -27,9 +27,10 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 typeset -a _LINE_MAP=(2 5 5 5 5 5 5 4 4 4 4 4 4 2 2 2 2 2 5 5 5 5 5 5 5 5 5 5 5 5 4 4 4 4 4 4 6)
 typeset -a _BLOCKS=()
 typeset -A _BLOCK_HDRS=(GP "Gerund & Participle" IND "Indicative" SUBJ "Subjunctive" IMP "Imperative" PROG "Progressive" PERF "Perfect" PSUBJ "Perfect Subjunctive" INFFUT "Informal Future")
-typeset -A _ROW_HDRS=(GP HDR1 IND HDR2 SUBJ HDR3 IMP HDR4 PROG HDR2 PERF HDR2 PSUBJ HDR5 INFFUT HDR6)
+typeset -A _COL_HDRS=(GP HDR1 IND HDR2 SUBJ HDR3 IMP HDR4 PROG HDR2 PERF HDR2 PSUBJ HDR5 INFFUT HDR6)
 typeset -A _HDR_DEFS=(HDR1 "Gerund|Participle" HDR2 "Present|Preterite|Imperfect|Conditional|Future" HDR3 "Present|Imperfect|Imperfect2|Future" HDR4 "Affirmative|Negative" HDR5 "Present|Past|Past2|Future" HDR6 "Yo|Tú|El|Nosotros|Vosotros|Ellos")
 typeset -A _SECTION_LONGEST=()
+typeset -A _HEADER_LONGEST=()
 typeset -a _LIST
 
 # Vars
@@ -49,20 +50,67 @@ md_hdr () {
 	tr -d '[:space:]' <<<${MARKDOWN};echo
 }
 
-pretty_format () {
-	# TODO: Prettify
-
-	local BLOCK=1
+set_section_longest () {
+	local COL_NDX=0
+	local LONGEST_HDR=0
 	local LAST_NDX=1
 	local LAST_SECTION=?
-	local LOOP=0
-	local LNDX=0
+	local LINE_NO=1
 	local NDX=0
-	local PRE_SCAN=true
+	local SECTION=''
+	local -a SECTION_HDRS=()
+	local L
+
+	for L in ${_LINE_MAP};do
+		case ${LINE_NO} in
+			1) SECTION=GP;;
+			<2-7>) SECTION=IND;;
+			<8-13>) SECTION=SUBJ;;
+			<14-18>) SECTION=IMP;;
+			<19-24>) SECTION=PROG;;
+			<25-30>) SECTION=PERF;;
+			<31-36>) SECTION=PSUBJ;;
+			37) SECTION=INFFUT;;
+		esac
+
+		SECTION_HDRS=($(sed -e 's/|/ /g' <<<${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]}))
+		LONGEST_HDR=$(arr_long_elem_len ${SECTION_HDRS})
+
+		for (( COL_NDX=LAST_NDX; COL_NDX<=L; COL_NDX++ ));do
+			(( NDX++ ))
+			[[ ${#_LIST[${NDX}]} -gt ${_SECTION_LONGEST[${SECTION}]} ]] && _SECTION_LONGEST[${SECTION}]=${#_LIST[${NDX}]}
+			[[ ${LONGEST_HDR} -gt ${_SECTION_LONGEST[${SECTION}]} ]] &&  _SECTION_LONGEST[${SECTION}]=${LONGEST_HDR}
+		done
+
+		if [[ ${LAST_SECTION} != ${SECTION} ]];then
+			LAST_SECTION=${SECTION}
+		fi
+
+		(( LINE_NO++ ))
+	done
+}
+
+pretty_format () {
+	local -A ROW_LBLS=(1 Yo 2 Tú 3 El 4 Nosotros 5 Vosotros 6 Ellos)
+	local -a HDR_SEP=()
+	local CNT=1
+	local COL_NDX=0
+	local HDR_PARSE=''
+	local HPF=''
+	local LAST_NDX=1
+	local LAST_SECTION=?
+	local LINE_NO=1
+	local LOOP=0
+	local NDX=0
+	local PF=''
+	local ROW_NDX=0
 	local SECTION=''
 	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
 	local V_TYPE=''
+	local IMP_OFF=false
 	local L
+
+	set_section_longest # Find longest text per section
 
 	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
 	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
@@ -70,48 +118,74 @@ pretty_format () {
 	echo "Translation:${TRANS}"
 	echo "Conjugation:${V_TYPE}"
 
-	for (( LOOP=1; LOOP<=2; LOOP++ ));do # Pre-scan needed to establish lengths of fields
-		if [[ ${LOOP} -eq 2 ]];then
-			_BLOCKS=()
-			_BLOCKS+="|"
-			BLOCK=1
-			LAST_NDX=1
-			LAST_SECTION=?
-			NDX=0
-			PRE_SCAN=false
-		fi
-		for L in ${_LINE_MAP};do
-			case ${BLOCK} in
-				1) SECTION=GP;;
-				<2-7>) SECTION=IND;;
-				<8-13>) SECTION=SUBJ;;
-				<14-18>) SECTION=IMP;;
-				<19-24>) SECTION=PROG;;
-				<25-30>) SECTION=PERF;;
-				<31-36>) SECTION=PSUBJ;;
-				37) SECTION=INFFUT;;
-			esac
+	_BLOCKS=()
+	LINE_NO=1
+	LAST_NDX=1
+	LAST_SECTION=?
+	NDX=0
+	ROW_NDX=0
 
-			for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
-				(( NDX++ ))
-				_BLOCKS+="${_LIST[${NDX}]}|"
-				[[ ${PRE_SCAN} == 'true' && ${#_LIST[${NDX}]} -gt ${_SECTION_LONGEST[${SECTION}]} ]] && _SECTION_LONGEST[${SECTION}]=${#_LIST[${NDX}]}
-			done
+	for L in ${_LINE_MAP};do
+		case ${LINE_NO} in
+			1) SECTION=GP;;
+			<2-7>) SECTION=IND;;
+			<8-13>) SECTION=SUBJ;;
+			<14-18>) SECTION=IMP;;
+			<19-24>) SECTION=PROG;;
+			<25-30>) SECTION=PERF;;
+			<31-36>) SECTION=PSUBJ;;
+			37) SECTION=INFFUT;;
+		esac
 
-			if [[ ${LAST_SECTION} != ${SECTION} ]];then
-				[[ ${PRE_SCAN} == 'false' && -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
-				[[ ${PRE_SCAN} == 'false' ]] && echo "\n${_BLOCK_HDRS[${SECTION}]}"
-				[[ ${PRE_SCAN} == 'false' ]] && echo "|${_HDR_DEFS[${_ROW_HDRS[${SECTION}]}]}|"
-				[[ ${PRE_SCAN} == 'false' ]] && md_hdr $(( ${#_BLOCKS} - 1 )) ${_SECTION_LONGEST[${SECTION}]}
-				LAST_SECTION=${SECTION}
-			fi
+		[[ ${LAST_SECTION} != ${SECTION} ]] && ROW_NDX=1 || (( ROW_NDX++ ))
+		PF="printf \"${WHITE_FG}%-10s${RESET} " # Retain label
+		HPF="printf \"${WHITE_FG}%-10s " # Retain label
+		HDR_SEP='" " '
+		case ${SECTION} in
+				 GP) PF='printf "'
+					  HPF='printf "${WHITE_FG}'
+					  HDR_SEP=''
+					  HDR_PARSE="$(sed -e 's/|/\" \"/g' -e 's/^/\"/' -e 's/$/\"/' <<<${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]})"
+					  ;; # Remove label 
 
-			[[ ${PRE_SCAN} == 'false' ]] && echo "${_BLOCKS}" | sed 's/| /|/g'
+			INFFUT) PF='printf "'
+					  HPF='printf "${WHITE_FG}'
+					  HDR_SEP=''
+					  HDR_PARSE="$(sed -e 's/|/\" \"/g' -e 's/^/\"/' -e 's/$/\"/' <<<${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]})"
+					  ;; # Remove label 
 
-			(( BLOCK++ ))
-			_BLOCKS=()
-			_BLOCKS+="|"
+				  *) [[ ${SECTION} == 'IMP' && ${IMP_OFF} == 'false' ]] && (( ROW_NDX++ )) && IMP_OFF=true
+					  _BLOCKS="\"${ROW_LBLS[${ROW_NDX}]}\" "
+					  HDR_PARSE="$(sed -e 's/|/\" \"/g' -e 's/^/\" \" \"/' -e 's/$/\"/' <<<${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]})"
+					  ;;
+		esac
+
+		for (( COL_NDX=LAST_NDX; COL_NDX<=L; COL_NDX++ ));do
+			(( NDX++ ))
+			_BLOCKS+="\"${_LIST[${NDX}]}\" "
+			HDR_SEP+="\$(str_unicode_line $(( ${_SECTION_LONGEST[${SECTION}]} + 1 ))) "
+			PF+="%$(( ${_SECTION_LONGEST[${SECTION}]} + 1 ))s " # Add PF slots
+			HPF+="%$(( ${_SECTION_LONGEST[${SECTION}]} + 1 ))s " # Add HPF slots
 		done
+
+		PF+="\\\n\"" # Terminate PF
+		HPF+="${RESET}\\\n\"" # Terminate HPF
+
+		if [[ ${LAST_SECTION} != ${SECTION} ]];then
+			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
+			echo "\n${BOLD}${CYAN_FG}${_BLOCK_HDRS[${SECTION}]}${RESET}"
+			eval "${HPF} ${HDR_PARSE}"
+			eval "${HPF} ${HDR_SEP}"
+			LAST_SECTION=${SECTION}
+		fi
+
+		eval "${PF} ${_BLOCKS}"
+
+		(( LINE_NO++ ))
+		_BLOCKS=()
+		PF='printf "${WHITE_FG}%-10s${RESET} ' # Initialize PF
+		HPF='printf "%-10s ' # Initialize HPF
+		HDR_SEP='" " '
 	done
 
 	/bin/rm ${_VERB_ARG}.html
@@ -125,11 +199,12 @@ markdown_format () {
 	local LOOP=0
 	local LNDX=0
 	local NDX=0
-	local PRE_SCAN=true
 	local SECTION=''
 	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
 	local V_TYPE=''
 	local L
+
+	set_section_longest # Find longest text per section
 
 	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
 	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
@@ -137,48 +212,43 @@ markdown_format () {
 	echo "Translation:${TRANS}"
 	echo "Conjugation:${V_TYPE}"
 
-	for (( LOOP=1; LOOP<=2; LOOP++ ));do # Pre-scan needed to establish lengths of fields
-		if [[ ${LOOP} -eq 2 ]];then
-			_BLOCKS=()
-			_BLOCKS+="|"
-			BLOCK=1
-			LAST_NDX=1
-			LAST_SECTION=?
-			NDX=0
-			PRE_SCAN=false
-		fi
-		for L in ${_LINE_MAP};do
-			case ${BLOCK} in
-				1) SECTION=GP;;
-				<2-7>) SECTION=IND;;
-				<8-13>) SECTION=SUBJ;;
-				<14-18>) SECTION=IMP;;
-				<19-24>) SECTION=PROG;;
-				<25-30>) SECTION=PERF;;
-				<31-36>) SECTION=PSUBJ;;
-				37) SECTION=INFFUT;;
-			esac
+	_BLOCKS=()
+	_BLOCKS+="|"
+	BLOCK=1
+	LAST_NDX=1
+	LAST_SECTION=?
+	NDX=0
 
-			for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
-				(( NDX++ ))
-				_BLOCKS+="${_LIST[${NDX}]}|"
-				[[ ${PRE_SCAN} == 'true' && ${#_LIST[${NDX}]} -gt ${_SECTION_LONGEST[${SECTION}]} ]] && _SECTION_LONGEST[${SECTION}]=${#_LIST[${NDX}]}
-			done
+	for L in ${_LINE_MAP};do
+		case ${BLOCK} in
+			1) SECTION=GP;;
+			<2-7>) SECTION=IND;;
+			<8-13>) SECTION=SUBJ;;
+			<14-18>) SECTION=IMP;;
+			<19-24>) SECTION=PROG;;
+			<25-30>) SECTION=PERF;;
+			<31-36>) SECTION=PSUBJ;;
+			37) SECTION=INFFUT;;
+		esac
 
-			if [[ ${LAST_SECTION} != ${SECTION} ]];then
-				[[ ${PRE_SCAN} == 'false' && -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
-				[[ ${PRE_SCAN} == 'false' ]] && echo "\n${_BLOCK_HDRS[${SECTION}]}"
-				[[ ${PRE_SCAN} == 'false' ]] && echo "|${_HDR_DEFS[${_ROW_HDRS[${SECTION}]}]}|"
-				[[ ${PRE_SCAN} == 'false' ]] && md_hdr $(( ${#_BLOCKS} - 1 )) ${_SECTION_LONGEST[${SECTION}]}
-				LAST_SECTION=${SECTION}
-			fi
-
-			[[ ${PRE_SCAN} == 'false' ]] && echo "${_BLOCKS}" | sed 's/| /|/g'
-
-			(( BLOCK++ ))
-			_BLOCKS=()
-			_BLOCKS+="|"
+		for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
+			(( NDX++ ))
+			_BLOCKS+="${_LIST[${NDX}]}|"
 		done
+
+		if [[ ${LAST_SECTION} != ${SECTION} ]];then
+			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
+			echo "\n${_BLOCK_HDRS[${SECTION}]}"
+			echo "|${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]}|"
+			md_hdr $(( ${#_BLOCKS} - 1 )) ${_SECTION_LONGEST[${SECTION}]}
+			LAST_SECTION=${SECTION}
+		fi
+
+		echo "${_BLOCKS}" | sed 's/| /|/g'
+
+		(( BLOCK++ ))
+		_BLOCKS=()
+		_BLOCKS+="|"
 	done
 
 	/bin/rm ${_VERB_ARG}.html
@@ -199,13 +269,14 @@ col_out () {
 	local -A GP_LBLS=(1 Gerund 2 Participle)
 	local NDX=0
 	local KEY=''
+	local IMP_OFF=false
 	local X
 	local -A SECTION_LBLS=(	IND1 Present IND2 Preterite IND3 Imperfect IND4 Conditional IND5 Future
 									SUBJ1 Present SUBJ2 Imperfect SUBJ3 Imperfect2 SUBJ4 Future
 									IMP1 Affirmative IMP2 Negative 
 									PROG1 Present PROG2 Preterite PROG3 Imperfect PROG4 Conditional PROG5 Future
 									PERF1 Present PERF2 Preterite PERF3 Imperfect PERF4 Conditional PERF5 Future
-									PSUBJ1 Present PSUBJ2 Imperfect PSUBJ3 Imperfect2 PSUBJ4 Future)
+									PSUBJ1 Present PSUBJ2 Past PSUBJ3 Past2 PSUBJ4 Future)
 
 	if [[ ${SECTION} == 'GP' ]];then # Special handler
 		printf "%-10s: %s\n"  "${GP_LBLS[${ROW}]}" "${COL_DATA}"
@@ -224,6 +295,7 @@ col_out () {
 	if [[ -n ${COL_DATA} ]];then
 		for X in ${COL_DATA};do 
 			(( NDX++ )) 
+			[[ ${SECTION} == 'IMP' && ${IMP_OFF} == 'false' ]] && (( NDX++ )) && IMP_OFF=true
 			printf "%-10s: %s\n" ${ROW_LBLS[${NDX}]} "${X}"
 		done
 		section_break ${SECTION}
