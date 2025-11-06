@@ -23,7 +23,7 @@ _fut() {
 				;;
         args)
             case $line[1] in
-                comments) _do_fcom;;
+                comments) _do_comments;;
                 findexe) _do_findexe;;
                 extensions) _do_extensions;;
                 generate) _do_generate;;

@@ -115,8 +115,8 @@ pretty_format () {
 	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
 	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
 
-	echo "Translation:${TRANS}"
-	echo "Conjugation:${V_TYPE}"
+	echo "${WHITE_FG}Translation${RESET}:${TRANS}"
+	echo "${WHITE_FG}Conjugation${RESET}:${V_TYPE}"
 
 	_BLOCKS=()
 	LINE_NO=1
@@ -344,8 +344,8 @@ vertical_format () {
 	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
 	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
 
-	echo "Translation:${TRANS}"
-	echo "Conjugation:${V_TYPE}\n"
+	echo "${WHITE_FG}Translation${RESET}:${TRANS}"
+	echo "${WHITE_FG}Conjugation${RESET}:${V_TYPE}\n"
 
 	_BLOCKS=()
 	LINE_NO=1
