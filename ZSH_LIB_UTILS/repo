@@ -165,7 +165,7 @@ copy_user_files () {
 
 copy_vim_cfg_files () {
 	echo "${GREEN_FG}VIM CONFIG FILES${RESET}" >&2
-	sudo rsync -a --no-links --exclude='undo' --exclude='start' ${_SRC_VIM_CFG} ${_REPO_VIM_CFG}
+	sudo rsync -a --no-links --exclude='undo' --exclude='pack' ${_SRC_VIM_CFG} ${_REPO_VIM_CFG}
 	cp ~/.vimrc ${_REPO_VIM_CFG_USER}
 }
 
