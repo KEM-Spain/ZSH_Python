@@ -1,14 +1,4 @@
 if !has("gui_running")
-
-	call plug#begin()
-	Plug 'https://github.com/liuchengxu/vim-which-key.git'
-	Plug 'https://github.com/tpope/vim-sensible.git'
-	Plug 'https://github.com/powerman/vim-plugin-AnsiEsc.git'
-	Plug 'https://github.com/adelarsq/vim-matchit.git'
-	Plug 'https://github.com/frazrepo/vim-rainbow.git'
-	Plug 'https://github.com/preservim/vim-colors-pencil.git'
-	call plug#end()
-
 	" rainbow brackets settings
 	let g:rainbow_active = 1
 	let g:rainbow_guifgs = ['RoyalBlue3', 'DarkOrange3', 'DarkOrchid3', 'FireBrick']
@@ -136,16 +126,19 @@ if !has("gui_running")
 	set t_Co=256 "color numbers
 	set tabstop=3 "Force tabs to be displayed/expanded to 3 spaces (instead of default 8).
 	set tags=~/.vim/mytags/framework
-	set termencoding=utf-8
 	set textwidth=120 "text width
 	set undodir=~/.vim/undo
 	set undofile 
 	set viminfo='500,f1,<500,:100,/100 
 	set whichwrap+=<,>,[,] "where to wrap long lines
 	set wmh=0 "minimum window height
-
-	colorscheme pencil
-	let g:pencil_terminal_italics = 1
-	let g:pencil_neutral_code_bg = 1
 	set background=dark
+	set laststatus=2
+	set t_Co=256
+	if !has('nvim')
+		set termencoding=utf-8
+		colorscheme pencil
+		let g:pencil_terminal_italics = 1
+		let g:pencil_neutral_code_bg = 1
+	endif
 endif

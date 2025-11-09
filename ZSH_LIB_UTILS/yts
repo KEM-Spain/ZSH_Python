@@ -430,6 +430,7 @@ clean_title () {
 	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}, DISPLAY KEY:${g_DISPLAY_KEY}, QUERY KEY:${g_QUERY_KEY}"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
+	STR=$(iconv -f UTF-8 -t ASCII//TRANSLIT <<<${TITLE}) # Convert any UTF-8 
 
 	STR=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${STR})
 

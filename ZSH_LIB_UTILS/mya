@@ -87,20 +87,18 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-c${RESET} show aliases that execute commands"
 	echo -e "${WHITE_FG}-d${RESET} show aliases that execute directory changes"
-	echo -e "${WHITE_FG}-e${RESET} echo alias corresponding to $(opt_type s)"
-	echo -e "${WHITE_FG}-q${RESET} return true/false exit code for $(opt_type s)"
+	echo -e "${WHITE_FG}-q${RESET} no output - return codes only"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDcdeq"
+OPTSTR=":HDcdq"
 OPTIND=0
 
 DIRCHANGE=true
 CMDS=true
-ECHO=false
 OPTS=false
 QUIET=false
 
@@ -110,7 +108,6 @@ while getopts ${OPTSTR} OPTION;do
      D) dbg_set_level;;
      c) CMDS=true;DIRCHANGE=false;;
      d) CMDS=false;DIRCHANGE=true;;
-     e) ECHO=true;;
      q) QUIET=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
@@ -136,16 +133,28 @@ while read LINE;do
 	ALIASES[${ALIAS}]=${CMD}
 done < ${ALIAS_FN}
 
-if [[ ${QUIET} == 'true' ]];then
-	[[ -n ${ALIASES[${SEARCHTERM}]} ]] && return 0 || return 1
-fi
-
-if [[ ${ECHO} == 'true' ]];then
-	for K in ${(k)ALIASES};do
-		[[ ${ALIASES[${K}]} =~ ${SEARCHTERM} ]] && printf "%s|%s\n" ${K} ${ALIASES[${K}]} && return 0
-		[[ ${K} =~ ${SEARCHTERM} ]] && printf "%s|%s\n" ${K} ${ALIASES[${K}]} && return 0
+typeset -a MATCHED=()
+if [[ -n ${SEARCHTERM} ]];then
+	for K in ${(ok)ALIASES};do
+		grep -q -i ${SEARCHTERM} <<< ${K}
+		RC1=${?}
+		grep -q -i ${SEARCHTERM} <<< ${ALIASES[${K}]}
+		RC2=${?}
+		[[ ${RC1} -eq 0 || ${RC2} -eq 0 ]] && MATCHED+="${K} -> ${ALIASES[${K}]}"
 	done
-	return 1
+	if [[ ${QUIET} == 'true' ]];then
+		[[ -z ${MATCHED} ]] && return 1 || return 0
+	else
+		if [[ -z ${MATCHED} ]];then
+			echo "No matches for SEARCHTERM:${WHITE_FG}${SEARCHTERM}${RESET}"
+			return 1
+		else
+			for M in ${MATCHED};do
+				echo "SEARCHTERM:${WHITE_FG}${SEARCHTERM}${RESET} matched:$(grep -i --color=always ${SEARCHTERM} <<<${M})"
+			done
+			return 0
+		fi
+	fi
 fi
 
 {

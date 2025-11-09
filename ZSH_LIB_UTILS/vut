@@ -480,20 +480,24 @@ ___EOF
 	if [[ ${?} -ne 0 ]];then
 		/bin/rm -f ${FILES_TO_MERGE}
 		cp ${SAVEDIR}/* ${PWD}
-		/bin/rm -f ${SAVEDIR}
-		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
+		/bin/rm -f ${SAVEDIR} >/dev/null 2>71
+		set_exit_value 1
+		exit_leave 1 "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
 	fi
 
 	echo "\nMerging:${WHITE_FG}${#FILES_TO_MERGE} files ${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
 	case ${APP} in
 		ffmpeg)		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}"
 						ffmpeg -loglevel error -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}
+						set_exit_value ${?}
 						;;
 		melt)			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
 						melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress
+						set_exit_value ${?}
 						;;
 		mkvmerge)	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
 						eval "mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
+						set_exit_value ${?}
 						;;
 	esac
 }

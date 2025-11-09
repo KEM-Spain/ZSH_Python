@@ -11,11 +11,7 @@ validate_is_integer () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	RET=$( echo "${VAL}" | sed 's/^[-+]*[0-9]*//g' )
-	if [[ -z ${RET} ]];then
-		return 0
-	else
-		return 1
-	fi
+	[[ -z ${RET} ]] && return 0 || return 1
 }
 
 validate_is_list_item () {

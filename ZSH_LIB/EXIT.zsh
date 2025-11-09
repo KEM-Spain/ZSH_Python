@@ -11,6 +11,12 @@ _EXIT_MSGS=''
 # LIB Functions
 exit_leave () {
 	local OPT=''
+	local RET=''
+
+	if [[ -n ${1} ]];then
+		RET=$( echo "${1}" | sed 's/^[-+]*[0-9]*//g' )
+		[[ -z ${RET} ]] && set_exit_value ${1} && shift
+	fi
 
 	_EXIT_MSGS=(${@})
 

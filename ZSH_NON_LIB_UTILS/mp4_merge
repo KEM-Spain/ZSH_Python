@@ -1,0 +1,56 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+WORKDIR=./.merge
+
+if [[ ! -e ${WORKDIR} ]];then
+	mkdir ${WORKDIR}
+	[[ ${?} -ne 0 ]] && echo "Error creating ${WORKDIR}" && exit
+fi
+
+[[ ${#} -ne 0 ]] && ARG=${1} || echo "Missing arg <SEARCHTERM>"
+
+LIST=("${(f)$(eval "find . -type f -name '${ARG}*'")}")
+[[ -z ${LIST} ]] && echo "No files found matching:${ARG}" && exit
+
+echo "Found ${#LIST} matching files..."
+
+NDX=0
+for L in ${LIST};do
+	if [[ ! ${$(file -b ${L}):l} =~ 'matroska|media' ]];then
+		echo "${L} not a media file - skipping..."
+		continue
+	fi
+	(( NDX++ ))
+	mv ${L} ${WORKDIR}
+done
+[[ ${NDX} -eq 0 ]] && echo "No media files found - exiting" && exit
+
+pushd ${WORKDIR}
+vut merge -o ${ARG}
+RC=${?}
+popd
+
+if [[ ${RC} -eq 0 ]];then
+	[[ -e ${WORKDIR}/${ARG}.mp4 ]] && mv ${WORKDIR}/${ARG}.mp4 .
+else
+	mv ${WORKDIR}/*mp4 . # Undo previous move
+fi
+
+/bin/rm -rf ${WORKDIR} >/dev/null 2>&1

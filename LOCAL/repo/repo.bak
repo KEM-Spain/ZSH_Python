@@ -52,6 +52,7 @@ _SRC_USR_LOCAL_BIN_SYS=${_SRC_USR_LOCAL_BIN}/system
 _SRC_CODE=${HOME}/Code/LOCAL
 _SRC_LIB=/usr/local/lib
 _SRC_LOCAL_ETC=/usr/local/etc
+_SRC_LOCAL_SHARE=${HOME}/.local/share
 _SRC_PYTHON=${HOME}/Code/LANG/Python/PROJECTS/ts
 _SRC_VIM_CFG=${HOME}/.vim
 _SRC_ZSH_CFG=/etc/zsh
@@ -154,8 +155,10 @@ copy_sys_files () {
 
 copy_user_files () {
 	echo "${GREEN_FG}USER FILES${RESET}" >&2
-	cp -R ${HOME}/.mvq ${_REPO_USER} 2>/dev/null
-	cp -R ${HOME}/.yts ${_REPO_USER} 2>/dev/null
+	cp -R ${_SRC_LOCAL_SHARE}/mvq ${_REPO_USER} 2>/dev/null
+	cp -R ${_SRC_LOCAL_SHARE}/yts ${_REPO_USER} 2>/dev/null
+	cp -R ${_SRC_LOCAL_SHARE}/tvi ${_REPO_USER} 2>/dev/null
+	cp -R ${_SRC_LOCAL_SHARE}/hist_no_dups ${_REPO_USER} 2>/dev/null
 	cp -R ${HOME}/.openvpn3 ${_REPO_USER} 2>/dev/null
 	cp -R ${HOME}/Code/LOCAL/ovpn/ovpn ${_REPO_USER} 2>/dev/null
 }
@@ -223,8 +226,8 @@ collect_modifed () {
 }
 
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
-tcup 0 0
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#tcup 0 0
 
 # Build repo
 echo "${WHITE_FG}Building repo${RESET}..."
@@ -323,12 +326,17 @@ collect_modifed ${_SRC_USR_LOCAL_BIN_CONV} 1
 collect_modifed ${_SRC_USR_LOCAL_BIN_SYS} 1
 collect_modifed ${_SRC_CODE} 3
 collect_modifed ${_SRC_LOCAL_ETC} 3
+collect_modifed ${_SRC_LOCAL_SHARE}/mvq 1
+collect_modifed ${_SRC_LOCAL_SHARE}/yts 1
+collect_modifed ${_SRC_LOCAL_SHARE}/tvi 1
+collect_modifed ${_SRC_LOCAL_SHARE}/hist_no_dups 1
 collect_modifed ${_SRC_LIB} 3
 collect_modifed ${_SRC_PYTHON} 3
 collect_modifed ${_SRC_VIM_CFG} 3 sum
 collect_modifed ${_SRC_ZSH_CFG} 3
 collect_modifed ${_SRC_ZSH_CFG_USER} 3
 
+(
 echo "\n${GREEN_FG}File[s] modified since last run${RESET}"
 echo $(str_unicode_line 36)
 if arr_is_populated "${_MODIFIED}";then
@@ -337,11 +345,12 @@ if arr_is_populated "${_MODIFIED}";then
 		[[ ${M} =~ '.bak' ]] && continue
 		((NDX++))
 		echo "${NDX}) ${M}"
-	done | mypager
+	done
 else
 	echo "No modified files"
 fi
 echo $(str_unicode_line 36)
+) | mypager
   
 echo -n "\nCommit repo? (y/n):"
 read -q RESPONSE
