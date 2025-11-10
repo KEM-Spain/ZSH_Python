@@ -33,7 +33,10 @@ exit_leave () {
 
 	exit_pre_exit
 
-	[[ ${_SMCUP} == 'true' ]] && do_rmcup # If messages haven't triggered rmcup do it before exit
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup # Restore if needed
+
+	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" # Display any exit messages
+
 	exit ${_EXIT_VALUE}
 }
 
@@ -81,11 +84,6 @@ exit_pre_exit () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset tabstops"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
-
-	if [[ -n ${_EXIT_MSGS} ]];then
-		do_rmcup # Screen restore
-		echo "\n${_EXIT_MSGS}" # Display any exit messages
-	fi
 }
 
 exit_request () {

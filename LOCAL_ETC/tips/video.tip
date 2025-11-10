@@ -1,0 +1,15 @@
+#!/usr/bin/zsh
+(
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_video_EOF
+
+To reset all /dev/video devices, you can either reboot the system or, for a softer reset of individual cameras, unload
+and re-load the camera driver. A full reboot is the simplest way, but if you need to avoid one, identify the specific
+camera driver with lsmod and reload it using sudo modprobe -r <driver_name> && sudo modprobe <driver_name> v4l2-ctl
+
+To view driver for /dev/video/0
+
+v4l2-ctl -d0 -D 
+
+tip_video_EOF
+) | mypager wait

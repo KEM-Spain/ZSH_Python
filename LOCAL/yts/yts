@@ -427,12 +427,12 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
+	TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
+	TITLE=$(iconv -f UTF-8 -t ASCII//TRANSLIT <<<${TITLE}) # Convert any UTF-8 
+
 	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}, DISPLAY KEY:${g_DISPLAY_KEY}, QUERY KEY:${g_QUERY_KEY}"
 
-	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
-	STR=$(iconv -f UTF-8 -t ASCII//TRANSLIT <<<${TITLE}) # Convert any UTF-8 
-
-	STR=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${STR})
+	STR=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${TITLE})
 
 	STR=$(str_word_clip ${STR} ${TITLE_LEN})
 	logit ${_YTS_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"

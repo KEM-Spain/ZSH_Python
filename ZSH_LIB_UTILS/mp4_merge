@@ -17,12 +17,11 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-WORKDIR=./.merge
-
-if [[ ! -e ${WORKDIR} ]];then
-	mkdir ${WORKDIR}
-	[[ ${?} -ne 0 ]] && echo "Error creating ${WORKDIR}" && exit
-fi
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 [[ ${#} -ne 0 ]] && ARG=${1} || echo "Missing arg <SEARCHTERM>"
 
@@ -32,25 +31,20 @@ LIST=("${(f)$(eval "find . -type f -name '${ARG}*'")}")
 echo "Found ${#LIST} matching files..."
 
 NDX=0
+OFN=${ARG}
+FNSET=false
 for L in ${LIST};do
+	[[ ${FNSET} == 'false' && ${L} =~ '-' ]] && OFN=$(cut -d'-' -f1 <<<${L}) && FNSET=true
 	if [[ ! ${$(file -b ${L}):l} =~ 'matroska|media' ]];then
 		echo "${L} not a media file - skipping..."
 		continue
 	fi
 	(( NDX++ ))
-	mv ${L} ${WORKDIR}
 done
 [[ ${NDX} -eq 0 ]] && echo "No media files found - exiting" && exit
 
-pushd ${WORKDIR}
-vut merge -o ${ARG}
-RC=${?}
-popd
+OFN=$(str_trim ${OFN:t})
+OFN=${OFN:gs/ /_/}
 
-if [[ ${RC} -eq 0 ]];then
-	[[ -e ${WORKDIR}/${ARG}.mp4 ]] && mv ${WORKDIR}/${ARG}.mp4 .
-else
-	mv ${WORKDIR}/*mp4 . # Undo previous move
-fi
+vut merge -o "${OFN}" ${ARG}
 
-/bin/rm -rf ${WORKDIR} >/dev/null 2>&1

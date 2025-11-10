@@ -135,9 +135,10 @@ if !has("gui_running")
 	set background=dark
 	set laststatus=2
 	set t_Co=256
+	colorscheme gruvbox
 	if !has('nvim')
 		set termencoding=utf-8
-		colorscheme pencil
+		"colorscheme pencil
 		let g:pencil_terminal_italics = 1
 		let g:pencil_neutral_code_bg = 1
 	endif
