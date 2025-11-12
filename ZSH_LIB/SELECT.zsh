@@ -99,15 +99,15 @@ sel_clear_region () {
 
 	if	[[ ${R_COORDS[OB_W]} -ne 0 ]];then
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: HAS OUTER BOX"
-		((X_ARG-=1))
+		(( X_ARG-=1 ))
 		Y_ARG=$(( R_COORDS[OB_Y] - 4 ))
 		W_ARG=$(( R_COORDS[OB_W] + 8 ))
 		((H_ARG+=5))
 	else
-		((X_ARG-=1))
-		((Y_ARG-=2))
-		((W_ARG+=4))
-		((H_ARG+=2))
+		(( X_ARG-=1 ))
+		(( Y_ARG-=2 ))
+		(( W_ARG+=4 ))
+		(( H_ARG+=2 ))
 	fi
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ADJUSTMENTS X_ARG:${X_ARG}  Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
 

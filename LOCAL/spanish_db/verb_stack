@@ -214,31 +214,34 @@ do_pager () {
 }
 
 select_verb_context () {
-	local V_TYPE=${1}
+	local V_TYPE_ARG=${1}
 	local ERR_MSG=${2}
 	local HDR='Verb Contexts'
 
+	clear 
+
 	[[ -n ${ERR_MSG} ]] && HDR="<B><r>${ERR_MSG}<N>"
 
-	if [[ ${V_TYPE:l} == 'indicative' ]];then
-		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Indicative Context or <h>(q)uit<N>" -H${HDR}
-	elif [[ ${V_TYPE:l} == 'perfect' ]];then
-		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Perfect Context or <h>(q)uit<N>" -H${HDR}
-	elif [[ ${V_TYPE:l} == 'progressive' ]];then
-		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Progressive Context or <h>(q)uit<N>" -H${HDR}
-	elif [[ ${V_TYPE:l} == 'subjunctive' ]];then
-		sel_set_list ${(Ck)_SUB_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Subjunctive Context or <h>(q)uit<N>" -H${HDR}
-	elif [[ ${V_TYPE:l} == 'perfect_subj' ]];then
-		sel_set_list ${(Ck)_PSUB_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Perfect Subjunctive Context or <h>(q)uit<N>" -H${HDR}
-	elif [[ ${V_TYPE:l} == 'imperative' ]];then
-		sel_set_list ${(Ck)_IMP_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Imperative Context or <h>(q)uit<N>" -H${HDR}
-	fi
+	case ${V_TYPE_ARG} in
+		indicative)		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
+							sel_list -c -R -O ${CYAN_FG} -F"<w>Select Indicative Context or <h>(q)uit<N>" -H${HDR}
+							;;
+		perfect)			sel_set_list ${(Ck)_IND_CONTEXT_SORT}
+							sel_list -c -R -O ${CYAN_FG} -F"<w>Select Perfect Context or <h>(q)uit<N>" -H${HDR}
+							;;
+		progressive)	sel_set_list ${(Ck)_IND_CONTEXT_SORT}
+							sel_list -c -R -O ${CYAN_FG} -F"<w>Select Progressive Context or <h>(q)uit<N>" -H${HDR}
+							;;
+		subjunctive)	sel_set_list ${(Ck)_SUB_CONTEXT_SORT}
+							sel_list -c -R -O ${CYAN_FG} -F"<w>Select Subjunctive Context or <h>(q)uit<N>" -H${HDR}
+							;;
+		perfect_subj)	sel_set_list ${(Ck)_PSUB_CONTEXT_SORT}
+							sel_list -c -R -O ${CYAN_FG} -F"<w>Select Perfect Subjunctive Context or <h>(q)uit<N>" -H${HDR}
+							;;
+		imperative)		sel_set_list ${(Ck)_IMP_CONTEXT_SORT}
+							sel_list -c -R -O ${CYAN_FG} -F"<w>Select Imperative Context or <h>(q)uit<N>" -H${HDR}
+							;;
+	esac
 }
 
 select_verb_type () {
@@ -252,9 +255,19 @@ select_verb_type () {
 }
 
 validate_context () {
-	local V_CONTEXT_ARG=${1}
+	local V_TYPE_ARG=${1}
+	local V_CONTEXT_ARG=${2}
 
-	[[ ${_V_CONTEXTS[(i)${V_CONTEXT_ARG}]} -le ${#_V_CONTEXTS} ]] && return 0 || return 1
+	[[ ${_V_CONTEXTS[(i)${V_CONTEXT_ARG}]} -gt ${#_V_CONTEXTS} ]] && return 1 # Invalid context
+
+	case ${V_TYPE_ARG} in # Check against type
+		indicative) [[ -n ${_IND_CONTEXT_SORT[${V_CONTEXT_ARG}]} ]] && return 0 || return 1;;
+		perfect) [[ -n ${_IND_CONTEXT_SORT[${V_CONTEXT_ARG}]} ]] && return 0 || return 1;;
+		progressive) [[ -n ${_IND_CONTEXT_SORT[${V_CONTEXT_ARG}]} ]] && return 0 || return 1;;
+		subjunctive) [[ -n ${_SUB_CONTEXT_SORT[${V_CONTEXT_ARG}]} ]] && return 0 || return 1;;
+		perfect_subj) [[ -n ${_PSUB_CONTEXT_SORT[${V_CONTEXT_ARG}]} ]] && return 0 || return 1;;
+		imperative) [[ -n ${_IMP_CONTEXT_SORT[${V_CONTEXT_ARG}]} ]] && return 0 || return 1;;
+	esac
 }
 
 validate_type () {
@@ -379,44 +392,31 @@ if ! verb_exists ${VERB_ARG};then
 fi
 
 if [[ ${SELECT_ALL} == 'true' ]];then
-	select_verb_type
-	[[ -n ${_SEL_VAL} ]] && V_TYPE=${_SEL_VAL}
+	[[ ${#} -gt 1 ]] && MSG="<N>Option [-s] selected - <r>extra arguments <N>(${@[1,$(( ${#@} - 1 ))]}) <r>ignored<N>" || MSG=''
+	select_verb_type ${MSG}
+	V_TYPE=${_SEL_VAL:l} # Lower case
 		select_verb_context ${V_TYPE}
-		[[ -n ${_SEL_VAL} ]] && V_CONTEXT=${_SEL_VAL}
+		V_CONTEXT=${_SEL_VAL:l} # Lower case
 else
 	# Validate type
 	if [[ -n ${V_TYPE_ARG} ]];then
 		validate_type ${V_TYPE_ARG}
 		if [[ ${?} -ne 0 ]];then
-			select_verb_type "Invalid Type"
-			if [[ -n ${_SEL_VAL} ]];then
-				V_TYPE=${_SEL_VAL}
-			else
-				exit_leave "${RED_FG}Operation Cancelled"
-			fi
-		else
-			V_TYPE=${V_TYPE_ARG}
+			select_verb_type "Invalid Type<N>:${@[1,1]}"
+			V_TYPE_ARG=${_SEL_VAL:l} # Lower case
 		fi
 	fi
-
-	# TODO: It is possible that an invalid type forces selection
-	# TODO: while a valid context was passed. However, the context
-	# TODO: is not verified for the type that was selected
+	V_TYPE=${V_TYPE_ARG}
 	 
 	# Validate context
 	if [[ -n ${V_CONTEXT_ARG} ]];then
-		validate_context ${V_CONTEXT_ARG}
+		validate_context ${V_TYPE} ${V_CONTEXT_ARG}
 		if [[ ${?} -ne 0 ]];then
-			select_verb_context ${V_TYPE_ARG} "Invalid Context"
-			if [[ -n ${_SEL_VAL} ]];then
-				V_CONTEXT=${_SEL_VAL}
-			else
-				exit_leave "${RED_FG}Operation Cancelled"
-			fi
-		else
-			V_CONTEXT=${V_CONTEXT_ARG}
+			select_verb_context ${V_TYPE_ARG} "Invalid context<N>:<w>${V_CONTEXT_ARG}<N> for type:<w>${V_TYPE}<N>"
+			V_CONTEXT_ARG=${_SEL_VAL:l} # Lower case
 		fi
 	fi
+	V_CONTEXT=${V_CONTEXT_ARG}
 fi
 
 stack_tab ${V_TYPE} ${V_CONTEXT}
