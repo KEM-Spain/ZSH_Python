@@ -28,6 +28,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 typeset -a _VERB_DATA=()
 typeset -A _V_MAP=(VB 1 TY 2 CX 3 YO 4 YF 5 EL 6 WE 7 YP 8 TH 9 IR 10)
 typeset -a _V_TYPES=(indicative perfect progressive imperative subjunctive perfect_subj all)
+typeset -a _V_CONTEXTS=(affirmative conditional future imperfect imperfect2 negative past present preterite all)
 typeset -A _IND_CONTEXT_SORT=(present 1 preterite 2 imperfect 3 future 4 conditional 5 all 6)
 typeset -A _IMP_CONTEXT_SORT=(affirmative 1 negative 2 all 3)
 typeset -A _SUB_CONTEXT_SORT=(present 1 future 2 imperfect 3 imperfect2 4 all 5)
@@ -61,26 +62,29 @@ typeset -A _SP_TERMS=(
 )
 
 # Functions
-check_verb () {
+verb_add () {
 	local VERB_ARG=${1}
 
-	while true;do
-		_VERB_DATA=("${(f)$(verb_dump ${VERB_ARG})}")
+	msg_box -p -H1 "Verb:<w>${VERB_ARG}<N> not in database|Add this verb (y/n)?"
+	[[ ${_MSG_KEY} != 'y' ]] && return 1
+	
+	msg_box -x10 "Fetching data..."
+	
+	get_verb ${VERB_ARG} >/dev/null 2>&1
+	[[ ${?} -ne 0 ]] && return 1
 
-		if ! arr_is_populated "${_VERB_DATA}";then
-			msg_box -p -H1 -P"${RESET}Fetch data for verb:${WHITE_FG}${VERB_ARG}|${RESET}(Y/N)?" "Add Missing Verb|Verb <w>${VERB_ARG}<N>:<r>not found<N>"
-			if [[ ${_MSG_KEY} != 'y' ]];then
-				do_rmcup
-				exit_leave "${_SCRIPT_TAG}${RED_FG}Operation cancelled${RESET}"
-			fi
-			msg_box -x10 "Fetching data..."
-			get_verb ${VERB_ARG} >/dev/null 2>&1
-			[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Unable to fetch verb:${VERB_ARG}")
-			sleep 1
-		else
-			break
-		fi
-	done
+	return 0
+}
+
+verb_exists () {
+	local VERB_ARG=${1}
+
+	_VERB_DATA=("${(f)$(verb_dump ${VERB_ARG})}")
+	if ! arr_is_populated "${_VERB_DATA}";then
+		return 1
+	else
+		return 0
+	fi
 }
 
 stack_tab () {
@@ -209,49 +213,54 @@ do_pager () {
 	fi
 }
 
-select_verb_type () {
-	sel_set_list ${(C)_V_TYPES}
-	sel_list -O ${CYAN_FG} -F"<w>Select Verb Type or <h>(q)uit<N>" -H"Verb Types"
-}
-
 select_verb_context () {
-	local VTYPE=${1}
+	local V_TYPE=${1}
+	local ERR_MSG=${2}
+	local HDR='Verb Contexts'
+
+	[[ -n ${ERR_MSG} ]] && HDR="<B><r>${ERR_MSG}<N>"
 
 	if [[ ${V_TYPE:l} == 'indicative' ]];then
 		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Indicative Context or <h>(q)uit<N>" -H${HDR}
 	elif [[ ${V_TYPE:l} == 'perfect' ]];then
 		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Perfect Context or <h>(q)uit<N>" -H${HDR}
 	elif [[ ${V_TYPE:l} == 'progressive' ]];then
 		sel_set_list ${(Ck)_IND_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Verb Context or <h>(q)uit<N>" -H"Verb Contexts"
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Progressive Context or <h>(q)uit<N>" -H${HDR}
 	elif [[ ${V_TYPE:l} == 'subjunctive' ]];then
 		sel_set_list ${(Ck)_SUB_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Subjunctive Context or <h>(q)uit<N>" -H"Subjunctive Contexts"
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Subjunctive Context or <h>(q)uit<N>" -H${HDR}
 	elif [[ ${V_TYPE:l} == 'perfect_subj' ]];then
 		sel_set_list ${(Ck)_PSUB_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Perfect Subjunctive Context or <h>(q)uit<N>" -H"Perfect Subjunctive Contexts"
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Perfect Subjunctive Context or <h>(q)uit<N>" -H${HDR}
 	elif [[ ${V_TYPE:l} == 'imperative' ]];then
 		sel_set_list ${(Ck)_IMP_CONTEXT_SORT}
-		sel_list -R -O ${CYAN_FG} -F"<w>Select Imperative Context or <h>(q)uit<N>" -H"Imperative Contexts"
+		sel_list -R -O ${CYAN_FG} -F"<w>Select Imperative Context or <h>(q)uit<N>" -H${HDR}
 	fi
 }
 
-validate_type () {
-	local ${V_TYPE}=${1}
+select_verb_type () {
+	local ERR_MSG="<B><r>${1}<N>"
+	local HDR='Verb Types'
 
-	[[ ${_V_TYPES[(i)${V_TYPE}]} -le ${#_V_TYPES} ]] && return 0 || return 1
+	[[ -n ${ERR_MSG} ]] && HDR=${ERR_MSG}
+
+	sel_set_list ${(C)_V_TYPES}
+	sel_list -O ${CYAN_FG} -F"<w>Select Verb Type or <h>(q)uit<N>" -H${HDR}
 }
 
 validate_context () {
-	local ${V_CONTEXT}=${1}
+	local V_CONTEXT_ARG=${1}
 
-	[[ -n ${_IND_CONTEXT_SORT[${V_CONTEXT}]} ]] && return 0
-	[[ -n ${_IMP_CONTEXT_SORT[${V_CONTEXT}]} ]] && return 0
-	[[ -n ${_SUB_CONTEXT_SORT[${V_CONTEXT}]} ]] && return 0
-	[[ -n ${_PSUB_CONTEXT_SORT[${V_CONTEXT}]} ]] && return 0
-	return 1
+	[[ ${_V_CONTEXTS[(i)${V_CONTEXT_ARG}]} -le ${#_V_CONTEXTS} ]] && return 0 || return 1
+}
+
+validate_type () {
+	local V_TYPE_ARG=${1}
+
+	[[ ${_V_TYPES[(i)${V_TYPE_ARG}]} -le ${#_V_TYPES} ]] && return 0 || return 1
 }
 
 #--Begin GetOpts--
@@ -318,21 +327,24 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-p${RESET} paged output"
+	echo -e "${WHITE_FG}-s${RESET} select both type and context from a list"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDp"
+OPTSTR=":HDps"
 OPTIND=0
 PAGE_OPT=false
+SELECT_ALL=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      p) PAGE_OPT=true;;
+     s) SELECT_ALL=true;;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
@@ -344,39 +356,67 @@ shift $((OPTIND -1))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-V_TYPE=''
-V_CONTEXT=''
+V_TYPE_ARG=''
+V_CONTEXT_ARG=''
 VERB_ARG=''
 
 # Handle args
 [[ ${#} -eq 1 ]] && VERB_ARG=${1:l}
-[[ ${#} -gt 1 ]] && V_TYPE=${1:l}
+[[ ${#} -gt 1 ]] && V_TYPE_ARG=${1:l}
 [[ ${#} -eq 2 ]] && VERB_ARG=${2:l}
-[[ ${#} -gt 2 ]] && V_CONTEXT=${2:l} && VERB_ARG=${3:l}
+[[ ${#} -eq 3 ]] && V_CONTEXT_ARG=${2:l} && VERB_ARG=${3:l}
 
 [[ -z ${VERB_ARG} ]] && do_rmcup && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)"
+[[ -z ${V_TYPE_ARG} ]] && V_TYPE_ARG=all
+[[ -z ${V_CONTEXT_ARG} ]] && V_CONTEXT_ARG=all
 
 # Check verb exists
-check_verb ${VERB_ARG}
-#TEST=$(do_query "select verb from spanish_tense where verb='${VERB_ARG}'")
-#[[ -z ${TEST} ]] && do_rmcup && exit_leave $(err_msg_exit W "Verb:${CYAN_FG}${VERB_ARG}${RESET} not in database")
-
-# Validate type
-if [[ -n ${V_TYPE} ]];then
-	validate_type ${V_TYPE}
-	[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Invalid verb type:${V_TYPE}")
-else
-	select_verb_type # Sets SEL_VAL
-	V_TYPE=${_SEL_VAL}
+if ! verb_exists ${VERB_ARG};then
+	verb_add ${VERB_ARG}
+	if [[ ${?} -ne 0 ]];then
+		exit_leave $(err_msg_exit W "Unable to find verb:${CYAN_FG}${VERB_ARG}${RESET}")
+	fi
 fi
 
-# Validate context
-if [[ -n ${V_TYPE} && -n ${V_CONTEXT} ]];then
-	validate_context ${V_CONTEXT}
-	[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit "Invalid verb context:${V_CONTEXT}")
-elif [[ -z ${V_CONTEXT} ]];then
-	select_verb_context ${V_TYPE} # Sets SEL_VAL
-	V_CONTEXT=${_SEL_VAL}
+if [[ ${SELECT_ALL} == 'true' ]];then
+	select_verb_type
+	[[ -n ${_SEL_VAL} ]] && V_TYPE=${_SEL_VAL}
+		select_verb_context ${V_TYPE}
+		[[ -n ${_SEL_VAL} ]] && V_CONTEXT=${_SEL_VAL}
+else
+	# Validate type
+	if [[ -n ${V_TYPE_ARG} ]];then
+		validate_type ${V_TYPE_ARG}
+		if [[ ${?} -ne 0 ]];then
+			select_verb_type "Invalid Type"
+			if [[ -n ${_SEL_VAL} ]];then
+				V_TYPE=${_SEL_VAL}
+			else
+				exit_leave "${RED_FG}Operation Cancelled"
+			fi
+		else
+			V_TYPE=${V_TYPE_ARG}
+		fi
+	fi
+
+	# TODO: It is possible that an invalid type forces selection
+	# TODO: while a valid context was passed. However, the context
+	# TODO: is not verified for the type that was selected
+	 
+	# Validate context
+	if [[ -n ${V_CONTEXT_ARG} ]];then
+		validate_context ${V_CONTEXT_ARG}
+		if [[ ${?} -ne 0 ]];then
+			select_verb_context ${V_TYPE_ARG} "Invalid Context"
+			if [[ -n ${_SEL_VAL} ]];then
+				V_CONTEXT=${_SEL_VAL}
+			else
+				exit_leave "${RED_FG}Operation Cancelled"
+			fi
+		else
+			V_CONTEXT=${V_CONTEXT_ARG}
+		fi
+	fi
 fi
 
 stack_tab ${V_TYPE} ${V_CONTEXT}

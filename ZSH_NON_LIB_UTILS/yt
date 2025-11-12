@@ -6,6 +6,8 @@ typeset -a AUDIO=()
 typeset -a VIDEO=()
 typeset -a LIST=()
 
+_YTS_URL_LOG=~/.local/share/yts/yts.url.log
+
 if [[ ${GET_AV} == 'true' ]];then
 	LIST=("${(f)$(
 		while read LINE;do
@@ -44,4 +46,4 @@ for L in ${LIST};do
 	[[ ${?} -eq 0 ]] && fsub -y -Y ${L} && fsub -y '_' ' ' ${L} && fsub -y ' [st] ' '\x27s ' ${L}
 done
 
-echo "yt download:${@}" >> /tmp/yts.url.log
+echo "yt download:${@}" >> ${_YTS_URL_LOG}

@@ -2,100 +2,9 @@
 GET_AV=false
 [[ ${1} == '-A' ]] && GET_AV=true && shift
 
-# Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/STR.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
-
-# Declarations
 typeset -a AUDIO=()
 typeset -a VIDEO=()
 typeset -a LIST=()
-typeset -a _MODIFIED=()
-
-# Constants
-_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_TSTAMP=/tmp/.yt_last_run
-_YTS_DBG_LOG=/tmp/yt.dbg.log
-_MAX_FLEN=85
-_MAX_TITLE=75
-_ACRONYMS_FN=/usr/local/etc/acronyms.txt
-
-# Functions
-clean_title () {
-	local TYPE=${1}
-	local TITLE=${2}
-	local STR=''
-	local -A SEEN=()
-	local -a UCASE_WORDS=()
-	local UCASE_LIMIT=4
-	local W U
-
-	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}"
-
-	STR=$(sed 's/_/ /g' <<<${TITLE})
-	logit ${_YTS_DBG_LOG} "${0}: Clear any underscores:${STR}"
-
-	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
-	logit ${_YTS_DBG_LOG} "${0}: HTML -> ascii:${STR}"
-
-	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
-	logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
-
-	STR=$(sed -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' <<<${STR}) # Trim
-	logit ${_YTS_DBG_LOG} "${0}: Trim:${STR}"
-	 
-	STR=$(sed 's/[ _]\([Dd]\|[Ss]\|[REre]\|[VEve]\|[LLll]\)[ _]/\o047\1 /g' <<<${STR}) # Fix any yt-dlp contraction gaps
-	logit ${_YTS_DBG_LOG} "${0}: Apostrophe gap:${STR}"
-	 
-	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
-	logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
-	 
-	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9]|[-])+\b')}") # Allow alpha,digits, and hyphen
-	for U in ${UCASE_WORDS};do
-		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
-	done
-	logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
-
-	STR=$(sed -E 's/(^\o047|.\o047[^stvr])/ /g' <<<${STR})
-	STR=${(C)STR} # Proper case
-	STR=$(str_trim <<<${STR}) # Proper case
-	logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
-
-	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
-	logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
-
-	for W in ${=STR};do
-		W=$(tr -dc '[:alnum:][\-][\047]' <<<${W}) # Strip other than alpha,digits,single quotes, and hyphen
-		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
-			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acromyns
-			SEEN[${W}]=1
-		elif [[ ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
-			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
-				SEEN[${W}]=1
-			fi
-		fi
-	done
-
-	case ${TYPE} in
-		file) STR=${STR[1,${_MAX_FLEN}]};; # Filename
-		text) STR=${STR[1,${_MAX_TITLE}]};; # Title
-	esac
-	logit ${_YTS_DBG_LOG} "${0}: TYPE:${TYPE} STR:${STR}"
-
-	logit ${_YTS_DBG_LOG} "${0}: Final:${STR}"
-	echo ${STR}
-}
-
-# Execution
-touch ${_TSTAMP}
-while read LINE;do
-	_ACRONYMS+=${LINE}
-done < ${_ACRONYMS_FN}
 
 if [[ ${GET_AV} == 'true' ]];then
 	LIST=("${(f)$(
@@ -129,12 +38,10 @@ else
 	/usr/local/bin/yt-dlp -Rinfinite "$@"
 fi
 
-_MODIFIED+=("${(f)$(find ${_DOWNLOAD_DIR} -maxdepth 1 -type f -cnewer ${_TSTAMP})}")
-for L in ${_MODIFIED};do
-	fsub -y -Y ${L}
-	#STR=$(fsub -y -Y <<<${L})
-	#STR=$(clean_title "file" ${STR:t:r})
-	#mv ${L} ${_DOWNLOAD_DIR}/${STR}${L:e}
+LIST=("${(f)$(ls -1 --color=never)}")
+for L in ${LIST};do
+	grep -q -P '\-\[' <<<${L}
+	[[ ${?} -eq 0 ]] && fsub -y -Y ${L} && fsub -y '_' ' ' ${L} && fsub -y ' [st] ' '\x27s ' ${L}
 done
 
 echo "yt download:${@}" >> /tmp/yts.url.log

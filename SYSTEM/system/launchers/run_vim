@@ -26,22 +26,23 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 typeset -a FILES
 
 #Constants
-TEMPLATES=/usr/local/etc/templates
-COLORS=${TEMPLATES}/color.template
-HEADERS=${TEMPLATES}/app.template
-APPEXEC=${TEMPLATES}/app_exec.template
-GETOPTS=${TEMPLATES}/getopt.template
-CURSOR=${TEMPLATES}/list_cursor.template
-
-#Vars
+_TEMPLATES=/usr/local/etc/templates
+_APPEXEC=${_TEMPLATES}/app_exec.template
+_COLORS=${_TEMPLATES}/color.template
 _COLS=$(tput cols)
+_CURSOR=${_TEMPLATES}/list_cursor.template
 _DIR_GROUP=$(id -ng)
 _DIR_USER=$(id -nu)
 _EDITABLE='ascii\|text\|script\|empty\|regular'
-_FTYPE=''
+_GETOPTS=${_TEMPLATES}/getopt.template
+_HEADERS=${_TEMPLATES}/app.template
 _ROWS=$(tput lines)
 _VIM=/usr/bin/vim
+#_VIM=/usr/local/bin/nvim
 _VIM_RC=~/.vimrc
+
+#Vars
+_FTYPE=''
 
 #Functions
 is_text () {
@@ -94,21 +95,21 @@ make_zsh () {
 
 	case ${MAKE_TYPE} in
 		ZSH_LIST)	echo '#!/usr/bin/zsh' > ${FN}
-						cat ${COLORS} >> ${FN} 
-						cat ${CURSOR} >> ${FN} 
+						cat ${_COLORS} >> ${FN} 
+						cat ${_CURSOR} >> ${FN} 
 						;;
 		ZSH_FULL)	echo '#!/usr/bin/zsh' > ${FN}
-						cat ${COLORS} >> ${FN} 
+						cat ${_COLORS} >> ${FN} 
 						echo >> ${FN}
-						cat ${HEADERS} >> ${FN} 
+						cat ${_HEADERS} >> ${FN} 
 						echo >> ${FN}
-						cat ${GETOPTS} >> ${FN} 
+						cat ${_GETOPTS} >> ${FN} 
 						echo >> ${FN}
-						cat ${APPEXEC} >> ${FN} 
+						cat ${_APPEXEC} >> ${FN} 
 						echo >> ${FN}
 						;;
 		  ZSH)		echo '#!/usr/bin/zsh' > ${FN}
-						cat ${COLORS} >> ${FN} 
+						cat ${_COLORS} >> ${FN} 
 						;;
 	esac
 	return ${?}
