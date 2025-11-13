@@ -12,9 +12,12 @@ WHITE_FG="\033[37m"
 DB=.spanish.db
 _SCRIPT_TAG="${WHITE_FG}[${RESET}${0:t}${WHITE_FG}]${RESET}"
 
-#DB DEF
+# Vars
+typeset -a _SQL_OUT=()
+
+# Functions
 create_spanish_db () {
-	echo "${WHITE_FG}Entered ${0}${RESET}" >&2
+	[[ ${DEBUG} == 'true' ]] && echo "${WHITE_FG}Executing ${0}${RESET}" >&2
 	sqlite3 ${DB} <<____END_SQL
 	create table if not exists spanish_tense
 	(	verb varchar(20) not null,
@@ -38,90 +41,80 @@ create_spanish_db () {
 		primary key(verb)
 	);
 ____END_SQL
-RC=${?}
-echo "${WHITE_FG}Exited ${0} with ${RC}${RESET}" >&2
-return ${?}
-}
-
-#VERB DETAIL
-get_spanish_tense_row () {
-	echo "${WHITE_FG}Entered ${0} with ${@}${RESET}" >&2
-	local VERB=$1
-
-	[[ -z ${VERB} ]] && echo "${0:missing} parameter verb" >&2 
-
-	echo "${CYAN_FG}select * from spanish_tense where verb = ${VERB};${RESET}"
-
-	sqlite3 ${DB} <<____END_SQL
-	select * from spanish_tense where verb = "${VERB}";
-____END_SQL
-RC=${?}
-echo "${WHITE_FG}Exited ${0} with ${RC}${RESET}" >&2
 return ${?}
 }
 
 del_spanish_tense_row () {
-	echo "${WHITE_FG}Entered ${0} with ${@}${RESET}" >&2
+	[[ ${DEBUG} == 'true' ]] && echo "${WHITE_FG}Executing ${0} with ${@}${RESET}" >&2
 
 	local VERB=$(echo ${@} | cut -d'|' -f1)
 
 	[[ -z ${VERB} ]] && echo "${0:missing} parameter verb" >&2 
 
-	echo "${CYAN_FG}delete from spanish_tense where verb = ${VERB}${RESET}"
+	[[ ${DEBUG} == 'true' ]] && echo "${CYAN_FG}delete from spanish_tense where verb = ${VERB}${RESET}"
 
 	sqlite3 ${DB} <<____END_SQL
 	delete from spanish_tense where verb = "${VERB}";
 ____END_SQL
-RC=${?}
-echo "${WHITE_FG}Exited ${0} with ${RC}${RESET}" >&2
-return ${?}
-}
-
-#VERB MASTER
-get_spanish_verb_row () {
-	echo "${WHITE_FG}Entered ${0} with ${@}${RESET}" >&2
-	local VERB=${1}
-
-	[[ -z ${VERB} ]] && echo "${0}:missing spanish verb" >&2 
-
-	echo "${CYAN_FG}select * from spanish_verb where verb = ${VERB};${RESET}"
-
-	sqlite3 ${DB} <<____END_SQL
-	select * from spanish_verb where verb = "${VERB}";
-____END_SQL
-RC=${?}
-echo "${WHITE_FG}Exited ${0} with ${RC}${RESET}" >&2
 return ${?}
 }
 
 del_spanish_verb_row () {
-	echo "${WHITE_FG}Entered ${0} with ${@}${RESET}" >&2
+	[[ ${DEBUG} == 'true' ]] && echo "${WHITE_FG}Executing ${0} with ${@}${RESET}" >&2
 	local VERB=${1}
 
 	[[ -z ${VERB} ]] && echo "${0}:missing spanish verb" >&2 
 
-	echo "${CYAN_FG}delete from spanish_verb where verb = ${VERB};${RESET}"
+	[[ ${DEBUG} == 'true' ]] && echo "${CYAN_FG}delete from spanish_verb where verb = ${VERB};${RESET}"
 
 	sqlite3 ${DB} <<____END_SQL
 	delete from spanish_verb where verb = "${VERB}";
 ____END_SQL
-RC=${?}
-echo "${WHITE_FG}Exited ${0} with ${RC}${RESET}" >&2
 return ${?}
 }
 
-#IMPORT
+get_spanish_tense_row () {
+	[[ ${DEBUG} == 'true' ]] && echo "${WHITE_FG}Executing ${0} with ${@}${RESET}" >&2
+	local VERB=$1
+
+	[[ -z ${VERB} ]] && echo "${0:missing} parameter verb" >&2 
+
+	[[ ${DEBUG} == 'true' ]] && echo "${CYAN_FG}select * from spanish_tense where verb = ${VERB};${RESET}"
+
+	_SQL_OUT=("${(f)$(
+	sqlite3 ${DB} <<____END_SQL
+	select * from spanish_tense where verb = "${VERB}";
+____END_SQL
+	)}")
+	return ${?}
+}
+
+get_spanish_verb_row () {
+	[[ ${DEBUG} == 'true' ]] && echo "${WHITE_FG}Executing ${0} with ${@}${RESET}" >&2
+	local VERB=${1}
+	local -a SQL_OUT=()
+
+	[[ -z ${VERB} ]] && echo "${0}:missing spanish verb" >&2 
+
+	[[ ${DEBUG} == 'true' ]] && echo "${CYAN_FG}select * from spanish_verb where verb = ${VERB};${RESET}"
+
+	_SQL_OUT=("${(f)$(
+	sqlite3 ${DB} <<____END_SQL
+	select * from spanish_verb where verb = "${VERB}";
+____END_SQL
+	)}")
+	return ${?}
+}
+
 import () {
 	local VERB=${1}
 
-	echo "${WHITE_FG}Entered ${0} with ${@}${RESET}" >&2
+	[[ ${DEBUG} == 'true' ]] && echo "${WHITE_FG}Executing ${0} with ${@}${RESET}" >&2
 	sqlite3 ${DB} <<____END_SQL
 .mode csv
 .import ${VERB}_tense.dat spanish_tense
 .import ${VERB}_verb.dat spanish_verb
 ____END_SQL
-RC=${?}
-echo "${WHITE_FG}Exited ${0} with ${RC}${RESET}" >&2
 return ${?}
 }
 
@@ -195,36 +188,90 @@ if [[ ${CREATE} == "true" ]];then
 	rm -f ${DB} && create_spanish_db
 fi
 
+if [[ ${UPDATE} == "true" || ${APPEND} == "true" ]];then
+	[[ ! -e ${VERB}_tense.dat ]] && echo "${_SCRIPT_TAG} ${RED_FG}Data file not found:${WHITE_FG}${VERB}_tense.dat${RESET}" && exit
+	[[ ! -e ${VERB}_verb.dat ]] && echo "${_SCRIPT_TAG} ${RED_FG}Data file not found:${WHITE_FG}${VERB}_verb.dat${RESET}" && exit
+fi
+
 if [[ ${DELETE} == "true" ]];then
+	get_spanish_verb_row ${VERB}
+	if [[ -z ${_SQL_OUT} ]];then
+		echo "${_SCRIPT_TAG} ${RED_FG}Delete failed${RESET} for verb:${WHITE_FG}${VERB}${RESET}. No data exists."
+		exit
+	else
+		for L in ${_SQL_OUT};do
+			printf "%s\n" ${L}
+		done
+	fi
+
 	echo "Deleting ${VERB} from spanish database"
 	del_spanish_verb_row ${VERB}
-	del_spanish_tense_row ${VERB} #provide feedback
+	echo "Returned code:${?}"
+
+	del_spanish_tense_row ${VERB}
+	echo "Returned code:${?}"
 fi
 
 if [[ ${UPDATE} == "true" ]];then
-	[[ ! -e ${VERB}_tense.dat ]] && echo "File not found:${WHITE_FG}${VERB}_tense.dat${RESET}" && exit
-	[[ ! -e ${VERB}_verb.dat ]] && echo "File not found:${WHITE_FG}${VERB}_verb.dat${RESET}" && exit
+	get_spanish_verb_row ${VERB}
+	if [[ -z ${_SQL_OUT} ]];then
+		echo "${_SCRIPT_TAG} ${RED_FG}Update failed${RESET} for verb:${WHITE_FG}${VERB}${RESET}. No data exists."
+		exit
+	else
+		for L in ${_SQL_OUT};do
+			printf "%s\n" ${L}
+		done
+	fi
+
 	echo "Updating ${VERB} in spanish database"
 	del_spanish_verb_row ${VERB}
+	echo "Returned code:${?}"
+
 	del_spanish_tense_row ${VERB}
+	echo "Returned code:${?}"
+
 	import ${VERB}
-	get_spanish_verb_row ${VERB} #provide feedback
-	get_spanish_tense_row ${VERB} #provide feedback
+
+	get_spanish_verb_row ${VERB}
+	echo "Returned code:${?}"
+
+	get_spanish_tense_row ${VERB}
+	echo "Returned code:${?}"
 fi
 
 if [[ ${APPEND} == "true" ]];then
-	[[ ! -e ${VERB}_tense.dat ]] && echo "File not found:${WHITE_FG}${VERB}_tense.dat${RESET}" && exit
-	[[ ! -e ${VERB}_verb.dat ]] && echo "File not found:${WHITE_FG}${VERB}_verb.dat${RESET}" && exit
 	echo "Appending ${VERB} to spanish database"
 	import ${VERB}
-	get_spanish_verb_row ${VERB} #provide feedback
-	get_spanish_tense_row ${VERB} #provide feedback
+	echo "Returned code:${?}"
+
+	get_spanish_verb_row ${VERB}
+	echo "Returned code:${?}"
+
+	get_spanish_tense_row ${VERB}
+	echo "Returned code:${?}"
 fi
 
 if [[ ${SELECT} == "true" ]];then
-	echo "Selecting ${VERB} data from spanish database"
-	get_spanish_verb_row ${VERB} #provide feedback
-	get_spanish_tense_row ${VERB} #provide feedback
+	clear
+	echo "${CYAN_FG}Selecting data for${WHITE_FG}:${VERB}${RESET} from ${WHITE_FG}${DB}${RESET}\n"
+
+	get_spanish_verb_row ${VERB}
+	if [[ -z ${_SQL_OUT} ]];then
+		echo "Verb master query for:${VERB} was unsucessful..."
+	else
+		for L in ${_SQL_OUT};do
+			printf "%s\n" ${L}
+		done
+	fi
+
+	get_spanish_tense_row ${VERB}
+	if [[ -z ${_SQL_OUT} ]];then
+		echo "Verb tense query for:${VERB} was unsucessful..."
+	else
+		for L in ${_SQL_OUT};do
+			printf "%s\n" ${L}
+		done
+	fi
 fi
 
 # Cleanup

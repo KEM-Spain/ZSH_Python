@@ -145,6 +145,7 @@ drill () {
 		tcup $(( START_ROW - 3 )) 0
 		tput ed
 		tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${(C)_V_TYPES[${V_NDX}]} ${CYAN_FG}${(C)_CONTEXT_ARR[${C_NDX}]}${RESET}" # Show keys
+		cursor_on
 		echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
 		if [[ -n ${ANS} && (${ANS} == ${VAL} || ${ANS} == ${PLAIN}) ]];then
 			ACCMSG=''
@@ -156,6 +157,7 @@ drill () {
 			[[ -n ${ANS} ]] && echo "${BOLD}${RED_FG}Incorrect${RESET}:${STRIKE}${ANS}${RESET}"
 			echo "Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
 		fi
+		cursor_off
 		echo -n "${GREEN_FG}Press any key${RESET}..."; read -s
 	done
 	tcup ${_MAX_ROWS} 0
