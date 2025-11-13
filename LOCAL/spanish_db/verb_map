@@ -319,7 +319,7 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} output contains no ansi"
 	echo -e "${WHITE_FG}-m${RESET} output markdown"
-	echo -e "${WHITE_FG}-p${RESET} paged output"
+	echo -e "${WHITE_FG}-p${RESET} no paged output"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
@@ -331,7 +331,7 @@ OPTIND=0
 MARKDOWN=false
 MOOD_SELECT=0
 ANSI=true
-PAGE_OPT=false
+PAGE_OPT=true
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -340,7 +340,7 @@ while getopts ${OPTSTR} OPTION;do
      M) MOOD_SELECT=${OPTARG};;
      a) ANSI=false;;
      m) MARKDOWN=true;;
-     p) PAGE_OPT=true;;
+     p) PAGE_OPT=false;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -351,7 +351,7 @@ shift $((OPTIND -1))
 
 # Execution
 if [[ ${#} -eq 0 ]];then
-	usage "Missing arg:$(opt_type v)"
+	usage "Missing argument:$(opt_type v)"
 else
 	_VERB_ARG=${1}
 	clear >&2

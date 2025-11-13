@@ -1762,7 +1762,7 @@ if [[ (! -f ${_YTS_UPD_MARKER}) || (-f ${_YTS_UPD_MARKER} && (! ${g_LAST_CODE_UP
 		MSG="yt-dlp is <g>CURRENT<N> at version:<r>${CUR_VER}<N>"
 		msg_box -c -t2 ${MSG}
 	else
-		MSG="yt-dlp was <w>UPDD<N> from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
+		MSG="yt-dlp was <w>Updated<N> from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
 		msg_box -p -PK -c -t2 ${MSG}
 	fi
 fi

@@ -54,14 +54,12 @@ _BREAK_COORDS=(X $((_CONT_COORDS[X] + 3 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CON
 
 # Constants
 _CFG_DIR=~/.local/share/yts
-_ACRONYMS_FN=${_CFG_DIR}/yts.acronyms
 _ACTION=download
 _ALERT_TM=.2
 _CMD_LINE_ARGS=false
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _ERROR_LIMIT=5
-_ERROR_LOG=/tmp/yts.err
+_ERROR_LOG=~/.local/share/yts/yts.err
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
@@ -75,10 +73,13 @@ _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve a
 _OBJECT="video"
 _PAUSE_TM=2
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
-_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
-_YTS_DBG_LOG=/tmp/yt.dbg.log
+_YTS_ACRONYMS=${_CFG_DIR}/yts.acronyms
+_YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
-_YTS_URL_LOG=/tmp/yts.url.log
+_YTS_FAV_NEW=${_CFG_DIR}/yts.favorites.new
+_YTS_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
+_YTS_URL_LOG=${_CFG_DIR}/yts.url.log
+_YT_DBG_LOG=${_CFG_DIR}/yt.dbg.log
 
 # Globals
 g_DISPLAY_KEY=''
@@ -198,7 +199,7 @@ action_do () {
 			# Scan for downloaded
 			LOG_LINE=$(grep -m1 -i "already been downloaded" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<g>Has already been downloaded<N>" 
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_DOWNLOADS[${M}]=true
@@ -208,7 +209,7 @@ action_do () {
 			# Scan for not available
 			LOG_LINE=$(grep -m1 -i "will begin\|premieres\|upcoming" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Not yet available<N>|<g>${LOG_LINE}<N>"
 				[[ ! ${LOG_LINE} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
@@ -220,7 +221,7 @@ action_do () {
 			# Scan for format not available
 			LOG_LINE=$(grep -m1 -i "format is not available" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				EMSG="<w>${TITLE[1,65]}<N>|<r>Format not available (Check:yt-dlp.conf)<N>" 
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 				_DOWNLOADS[${M}]=true
@@ -232,13 +233,13 @@ action_do () {
 			if [[ ${?} -eq 0 ]];then
 				if [[ ${ERROR_CNT} -eq 0 ]];then # Attempt recovery
 					((ERROR_CNT++))
-					logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+					logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Retrying...<N>"
 					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 					job_reset
 					job_start ${URL}
 				else
-					logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+					logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 					EMSG="<w>${TITLE[1,65]}<N>|<r>Hard Error - Unable to download<N>"
 					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 					_FAILED[${M}]=true
@@ -252,7 +253,7 @@ action_do () {
 			INFO_TAG=''
 			LOG_LINE=$(grep -m1 -i "resuming download" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
-				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				INFO_TAG=' (<w>resumed<N>)'
 			fi
 
@@ -297,22 +298,22 @@ action_do () {
 				((OPENING++))
 				[[ ${OPENING} -gt 4 ]] && ERR="hung connection" && OPENING=0
 			elif grep -qi 'eta.*unknown' <<<${LOG_LINE} 2>/dev/null;then # Contains both - split
-				logit ${_YTS_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
 				continue # Skip
 			elif grep -q 'ETA' <<<${LOG_LINE} 2>/dev/null;then # Uppercase ETA
-				logit ${_YTS_DBG_LOG} "${0}: GOT ETA:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: GOT ETA:${LOG_LINE}"
 				ETA=${LOG_LINE}
 			elif grep -qi 'error' <<<${LOG_LINE} 2>/dev/null;then
-				logit ${_YTS_DBG_LOG} "${0}: GOT ERROR:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: GOT ERROR:${LOG_LINE}"
 				ERR=${LOG_LINE}
 			elif grep -qi 'Fixing MPEG-TS\|FixupM3u8' <<<${LOG_LINE} 2>/dev/null;then
-				logit ${_YTS_DBG_LOG} "${0}: GOT Fragmention post-process:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: GOT Fragmention post-process:${LOG_LINE}"
 				ETA="100% of download completed"
 			elif grep -qi '100%' <<<${LOG_LINE} 2>/dev/null;then
-				logit ${_YTS_DBG_LOG} "${0}: GOT completion:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: GOT completion:${LOG_LINE}"
 				ETA="100% of download completed"
 			else
-				logit ${_YTS_DBG_LOG} "${0}: GOT OTHER:${LOG_LINE}"
+				logit ${_YT_DBG_LOG} "${0}: GOT OTHER:${LOG_LINE}"
 				OTH=${LOG_LINE}
 			fi
 
@@ -430,50 +431,50 @@ clean_title () {
 	TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 	TITLE=$(iconv -f UTF-8 -t ASCII//TRANSLIT <<<${TITLE}) # Convert any UTF-8 
 
-	logit ${_YTS_DBG_LOG} "${0}: TITLE:${TITLE}, DISPLAY KEY:${g_DISPLAY_KEY}, QUERY KEY:${g_QUERY_KEY}"
+	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}, DISPLAY KEY:${g_DISPLAY_KEY}, QUERY KEY:${g_QUERY_KEY}"
 
 	STR=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${TITLE})
 
 	STR=$(str_word_clip ${STR} ${TITLE_LEN})
-	logit ${_YTS_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"
+	logit ${_YT_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"
 
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Strip newline:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YT_DBG_LOG} "${0}: Strip newline:${STR}"
 
 	STR=$(sed 's/[ _]\(d\|l\|s\|t\|re\|ve\)[ _]/\o047\1 /Ig' <<<${STR}) # Fix any yt-dlp contraction gaps
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Contraction gap:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YT_DBG_LOG} "${0}: Contraction gap:${STR}"
 	 
 	STR=$(sed 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any yt-dlp W/ gaps
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: w/ (with):${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YT_DBG_LOG} "${0}: w/ (with):${STR}"
 	 
 	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9])+\b')}") # Allow alpha,digits, and hyphen
 	for U in ${UCASE_WORDS};do
 		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
 	done
-	#[[ -n ${UCASE_WORDS} ]] && logit ${_YTS_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
+	#[[ -n ${UCASE_WORDS} ]] && logit ${_YT_DBG_LOG} "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
 	STR=$(perl -pe  's/\o{47}(?![rstv].?\b)//g' <<<${STR}) # Remove any sentence quotes, leave contractions
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Sentence quotes:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YT_DBG_LOG} "${0}: Sentence quotes:${STR}"
 
 	STR=$(sed -E -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' -e 's/(\S)([-])(\S)/\1 \3/g' <<<${STR}) # Trim
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Trim and separate hyphenated words:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YT_DBG_LOG} "${0}: Trim and separate hyphenated words:${STR}"
 	 
 	STR=${(C)STR} # Proper case
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: Proper case:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YT_DBG_LOG} "${0}: Proper case:${STR}"
 
 	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
-	#[[ ${TITLE} != ${STR} ]] && logit ${_YTS_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
+	#[[ ${TITLE} != ${STR} ]] && logit ${_YT_DBG_LOG} "${0}: UC letter following apostrophe:${STR}"
 
 	for W in ${=STR};do
 		W=$(tr -dc '[:alnum:][\047]' <<<${W}) # Strip other than alpha,digits,single quotes, and hyphen
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
-			#logit ${_YTS_DBG_LOG} "${0}: Found acronym:${W:u}"
+			#logit ${_YT_DBG_LOG} "${0}: Found acronym:${W:u}"
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acromyns
 			SEEN[${W}]=1
 		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				#logit ${_YTS_DBG_LOG} "${0}: Found uppercase:${W:u}"
+				#logit ${_YT_DBG_LOG} "${0}: Found uppercase:${W:u}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
 				SEEN[${W}]=1
 			fi
@@ -483,12 +484,12 @@ clean_title () {
 	for W in ${KEYWORDS};do # Scrub keywords
 		STR=$(sed "s/${W}//I" <<<${STR})
 	done
-	#logit ${_YTS_DBG_LOG} "${0}: Scrubbed keywords"
+	#logit ${_YT_DBG_LOG} "${0}: Scrubbed keywords"
 	
 
 	TITLE=${STR[1,${_MAX_TITLE}]} # Title length
 
-	logit ${_YTS_DBG_LOG} "${0}: Final:${TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: Final:${TITLE}"
 
 	echo ${TITLE}
 }
@@ -648,30 +649,30 @@ fav_delete () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	cp ${_YTS_FAVORITES} ${_YTS_FAVORITES}.bak
-	logit ${_YTS_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was copied"
+	logit ${_YT_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was copied"
 
 	[[ ${g_QRY_ENGINE} == 'rumble' ]] && ENG="R" || ENG="Y"
-	logit ${_YTS_DBG_LOG} "${0}: engine:${g_QRY_ENGINE}"
+	logit ${_YT_DBG_LOG} "${0}: engine:${g_QRY_ENGINE}"
 
 	msg_box -p -PD "Deleting: ${FAV} for ${(C)g_QRY_ENGINE}?"
-	logit ${_YTS_DBG_LOG} "${0}: deleting ${FAV} decoded to ${FAV}"
+	logit ${_YT_DBG_LOG} "${0}: deleting ${FAV}"
 
 	if [[ ${_MSG_KEY} == 'y' ]];then
 		if [[ -s ${_YTS_FAVORITES} ]];then
-			[[ -e /tmp/favlist.new ]] && /bin/rm -f /tmp/favlist.new
+			[[ -e ${_YTS_FAV_NEW} ]] && /bin/rm -f ${_YTS_FAV_NEW}
 			while read LINE;do
 				F1=$(cut -d '|' -f1 <<<${LINE})
 				F2=$(cut -d '|' -f2 <<<${LINE})
 				F3=$(cut -d '|' -f3 <<<${LINE})
 				[[ ${F1:l} == ${FAV} && ${F3:l} =~ ${ENG:l} ]] && continue
-				echo ${LINE} >> /tmp/favlist.new
+				echo ${LINE} >> ${_YTS_FAV_NEW}
 			done < ${_YTS_FAVORITES}
-			diff -q /tmp/favlist.new ${_YTS_FAVORITES} >/dev/null 2>&1
+			diff -q ${_YTS_FAV_NEW} ${_YTS_FAVORITES} >/dev/null 2>&1
 			if [[ ${?} -eq 0 ]];then
-				logit ${_YTS_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was NOT updated - ${FAV} not found"
+				logit ${_YT_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was NOT updated - ${FAV} not found"
 			else
-				mv -f /tmp/favlist.new ${_YTS_FAVORITES}
-				logit ${_YTS_DBG_LOG} "${0}: log ${_YTS_FAVORITES} updated"
+				mv -f ${_YTS_FAV_NEW} ${_YTS_FAVORITES}
+				logit ${_YT_DBG_LOG} "${0}: log ${_YTS_FAVORITES} updated"
 				fav_load
 			fi
 		else
@@ -960,10 +961,10 @@ job_kill () {
 		for P in ${PIDS};do
 			kill -9 ${P} >/dev/null 2>&1
 			find ${_DOWNLOAD_DIR} -maxdepth 1 \( -name '*part' -or -name '*ytdl' \) -exec rm -rf {} \;
-			logit ${_YTS_DBG_LOG} "${0}: Killed ${P}"
+			logit ${_YT_DBG_LOG} "${0}: Killed ${P}"
 		done
 	else
-		logit ${_YTS_DBG_LOG} "${0}: No processes found"
+		logit ${_YT_DBG_LOG} "${0}: No processes found"
 	fi
 
 	if [[ ! ${functrace[1]} =~ "job_reset" ]];then # Exit unless called by reset
@@ -977,7 +978,7 @@ job_reset () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	job_kill
-	logit ${_YTS_DBG_LOG} "${0}: Killed"
+	logit ${_YT_DBG_LOG} "${0}: Killed"
 }
 
 job_start () {
@@ -986,7 +987,7 @@ job_start () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	g_YTS_LOG=$(mktemp /tmp/yt.log.XXXXXX)
+	g_YTS_LOG=$(mktemp ${_CFG_DIR}/yt.log.XXXXXX)
 
 	if [[ ${g_FIX_AUDIO} == 'true' ]];then
 		msg_box -H1 -x${_CONT_COORDS[X]} -h${_CONT_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
@@ -996,10 +997,10 @@ job_start () {
 	fi
 
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
-	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG:=yt.log}")
+	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
 
-	logit ${_YTS_DBG_LOG} "${0}: QUERY KEY:${g_QUERY_KEY}"
-	logit ${_YTS_DBG_LOG} "${0}:       CMD:${CMD}"
+	logit ${_YT_DBG_LOG} "${0}: QUERY KEY:${g_QUERY_KEY}"
+	logit ${_YT_DBG_LOG} "${0}:       CMD:${CMD}"
 
 	eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
 	g_PID=$!
@@ -1064,7 +1065,7 @@ log_add () {
 
 	[[ ${FN:e} == 'part' || ${FN:e} == 'temp' ]] && return # No partials in log
 
-	echo "${IN}|${TL}|${FN:t}|${TM}|${AU}" >> ${_DOWNLOAD_LOG}
+	echo "${IN}|${TL}|${FN:t}|${TM}|${AU}" >> ${_YTS_DOWNLOAD_LOG}
 }
 
 log_clear () {
@@ -1074,9 +1075,9 @@ log_clear () {
 
 	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
 		rm -f ${g_YTS_LOG}
-		logit ${_YTS_DBG_LOG} "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}"
+		logit ${_YT_DBG_LOG} "log ${g_YTS_LOG} was cleared for:${g_QUERY_KEY} from:${FROM}"
 	else
-		logit ${_YTS_DBG_LOG} "DEBUG TRIGGERED - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}"
+		logit ${_YT_DBG_LOG} "DEBUG TRIGGERED - log ${g_YTS_LOG} was retained for:${g_QUERY_KEY}"
 	fi
 }
 
@@ -1118,10 +1119,10 @@ log_find () {
 		[[ ${DBG} == 'true' ]] && echo "LIST_TM:${LIST_TM}" >>${0}.dbg
 		[[ ${DBG} == 'true' ]] && echo "\nAttempting TITLE match on:${LIST_TITLE[1,50]}" >>${0}.dbg 
 
-		LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE[1,50]} ${_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
+		LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE[1,50]} ${_YTS_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
 		if [[ ${?} -eq 0 ]];then
 			LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Fetch line number
-			LOG_LINE=$(sed -n "${LINE_NUM}p" ${_DOWNLOAD_LOG}) # Fetch log line
+			LOG_LINE=$(sed -n "${LINE_NUM}p" ${_YTS_DOWNLOAD_LOG}) # Fetch log line
 			LOG_AU=$(grep -i -o -m1 "${LIST_AU}$" <<<${LOG_LINE}) # Match author in log line
 			LOG_TM=$(grep -o ${LIST_TM} <<<${LOG_LINE}) # Match time in log line
 
@@ -1160,7 +1161,7 @@ log_to_file () {
 	for ((R=${TOP}; R <= ${BOT}; R++));do
 		LIST_AU=$(get_field author ${R}) # Author from list
 		LIST_TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R}) | tr -d '[()]' | sed 's/undefined//') # Video length from list
-		LINE=$(grep -i ${LIST_AU} ${_DOWNLOAD_LOG} 2>/dev/null | grep ${LIST_TM} 2>/dev/null) # Match on author/time
+		LINE=$(grep -i ${LIST_AU} ${_YTS_DOWNLOAD_LOG} 2>/dev/null | grep ${LIST_TM} 2>/dev/null) # Match on author/time
 		if [[ -n ${LINE} ]];then 
 			FN=$(cut -d '|' -f3 <<<${LINE})
 			if [[ -e ${_DOWNLOAD_DIR}/${FN} ]];then
@@ -1179,40 +1180,40 @@ log_update () {
 	local INODE=''
 	local LINE=''
 	local LOG_LINE=''
-	local NEW_LOG=/tmp/log.new
+	local NEW_LOG=${_CFG_DIR}/log.new
 	local L
 
 	{
-		[[ -e /tmp/log.new ]] && /bin/rm -f ${NEW_LOG}
-		logit ${_YTS_DBG_LOG} "${0}: LOG lines BEFORE update:$(wc -l ${_DOWNLOAD_LOG})"
+		[[ -e ${_CFG_DIR}/log.new ]] && /bin/rm -f ${NEW_LOG}
+		logit ${_YT_DBG_LOG} "${0}: LOG lines BEFORE update:$(wc -l ${_YTS_DOWNLOAD_LOG})"
 
 		HAS_NEW_LOG=false
 		while read -u3 LINE;do
 			INODE=$(cut -d'|' -f1 <<<${LINE})
 			if [[ ${SEEN[${INODE}]} -eq 1 ]];then
-				logit ${_YTS_DBG_LOG} "${0}: ERROR Got duplicate inode:${INODE} - skipping duplicates"
+				logit ${_YT_DBG_LOG} "${0}: ERROR Got duplicate inode:${INODE} - skipping duplicates"
 				continue
 			fi
 			SEEN[${INODE}]=1
 			FN_HIT=$(find ${_DOWNLOAD_DIR} -maxdepth 1 -inum ${INODE})
 			if [[ -n ${FN_HIT} ]];then
 				HAS_NEW_LOG=true
-				LOG_LINE=$(grep -m1 ${INODE} ${_DOWNLOAD_LOG} 2>/dev/null)
-				[[ ${?} -eq 0 ]] && echo ${LOG_LINE} >> ${NEW_LOG} || logit ${_YTS_DBG_LOG} "${0}: ERROR Log line for:${INODE} not found"
+				LOG_LINE=$(grep -m1 ${INODE} ${_YTS_DOWNLOAD_LOG} 2>/dev/null)
+				[[ ${?} -eq 0 ]] && echo ${LOG_LINE} >> ${NEW_LOG} || logit ${_YT_DBG_LOG} "${0}: ERROR Log line for:${INODE} not found"
 			else
-				logit ${_YTS_DBG_LOG} "${0}: Skipping expired inode:${INODE}"
+				logit ${_YT_DBG_LOG} "${0}: Skipping expired inode:${INODE}"
 				SEEN[${INODE}]=1
 				continue
 			fi
-		done 3< ${_DOWNLOAD_LOG}
+		done 3< ${_YTS_DOWNLOAD_LOG}
 
 		if [[ ${HAS_NEW_LOG} == 'true' ]];then
-			cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
-			mv -f ${NEW_LOG} ${_DOWNLOAD_LOG}
-			logit ${_YTS_DBG_LOG} "${0}: LOG lines AFTER update:$(wc -l ${_DOWNLOAD_LOG})"
+			cp ${_YTS_DOWNLOAD_LOG} ${_YTS_DOWNLOAD_LOG}.bak
+			mv -f ${NEW_LOG} ${_YTS_DOWNLOAD_LOG}
+			logit ${_YT_DBG_LOG} "${0}: LOG lines AFTER update:$(wc -l ${_YTS_DOWNLOAD_LOG})"
 		else
-			/bin/rm -f ${_DOWNLOAD_LOG} && touch ${_DOWNLOAD_LOG} # No files present - initialize new log
-			logit ${_YTS_DBG_LOG} "${0}: Empty log - initializing new log"
+			/bin/rm -f ${_YTS_DOWNLOAD_LOG} && touch ${_YTS_DOWNLOAD_LOG} # No files present - initialize new log
+			logit ${_YT_DBG_LOG} "${0}: Empty log - initializing new log"
 		fi
 	} 2>/dev/null
 }
@@ -1246,12 +1247,12 @@ post_process () {
 	TEMP_FILES=("${(f)$(find ${_DOWNLOAD_DIR} -name '*temp.mp4')}")
 	for F in ${TEMP_FILES};do
 		/bin/rm -f ${F} >/dev/null 2>&1
-		[[ ${?} -eq 0 ]] && logit ${_YTS_DBG_LOG} "${0}: deleted ${F}"
+		[[ ${?} -eq 0 ]] && logit ${_YT_DBG_LOG} "${0}: deleted ${F}"
 	done
 
 	LF=$(last_file_downloaded) # Filename and Inode
 	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
-	logit ${_YTS_DBG_LOG} "${0}: Last FN:${FN}"
+	logit ${_YT_DBG_LOG} "${0}: Last FN:${FN}"
 
 	set_final_fn ${FN}
 }
@@ -1302,8 +1303,8 @@ query_rumble () {
 		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-livestream.qry${RESET}"
-			wget -q -O - ${QRY} > /tmp/Rumble-livestream.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to ${_CFG_DIR}/Rumble-livestream.qry${RESET}"
+			wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble-livestream.qry
 		fi
 	else
 		msg_box -c "Requesting <c><I>channel<N> search..."
@@ -1312,8 +1313,8 @@ query_rumble () {
 		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-channel.qry${RESET}"
-			wget -q -O - ${QRY} > /tmp/Rumble-channel.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to ${_CFG_DIR}/Rumble-channel.qry${RESET}"
+			wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble-channel.qry
 		fi
 	fi
 
@@ -1342,8 +1343,8 @@ query_rumble () {
 		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-user-livestream.qry${RESET}"
-			wget -q -O - ${QRY} > /tmp/Rumble-user-livestream.qry
+			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to ${_CFG_DIR}/Rumble-user-livestream.qry${RESET}"
+			wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble-user-livestream.qry
 		fi
 
 		[[ -z ${PG} || ${PG:l} =~ "no videos found" ]] && DO_GENERAL=true || DO_GENERAL=false
@@ -1373,8 +1374,8 @@ query_rumble () {
 			logit ${_YTS_URL_LOG} "${0}:${QRY}"
 			PG=$(wget -q -O - ${QRY})
 			if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-				dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to /tmp/Rumble-general.qry${RESET}"
-				wget -q -O - ${QRY} > /tmp/Rumble-general.qry
+				dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to ${_CFG_DIR}/Rumble-general.qry${RESET}"
+				wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble-general.qry
 			fi
 
 			TITLES=("${(f)$(pup --charset utf8 '.video-item--title text{}' <<<${PG} | sed 's/|//g')}")
@@ -1384,7 +1385,7 @@ query_rumble () {
 			CHANNELS=("${(f)$(pup --charset utf8 '.video-item--by-a attr{href}' <<<${PG})}")
 
 			for ((T=1; T<=${#TITLES}; T++));do
-				[[ ${CHANNELS[${T}]} =~ 'user' ]] && echo "Query:${g_QUERY_KEY} Skipped ${TITLES[${T}]} ${CHANNELS[${T}]}" >> /tmp/gen_filter.dbg && continue # Filter
+				[[ ${CHANNELS[${T}]} =~ 'user' ]] && echo "Query:${g_QUERY_KEY} Skipped ${TITLES[${T}]} ${CHANNELS[${T}]}" >> ${_CFG_DIR}/gen_filter.dbg && continue # Filter
 				AGE=$(sed 's/T.*//' <<<${AGES[${T}]})
 				CHANNEL=$(sed 's#^.*/##' <<<${CHANNELS[${T}]})
 				VID_LIST+="${CHANNEL}|${TITLES[${T}]}|${AGE}|${LINKS[${T}]}|${DURATIONS[${T}]}" # Unique rows
@@ -1461,7 +1462,7 @@ query_youtube () {
 			dbg "${0}:${LINENO} ${CYAN_FG}g_QUERY_KEY${RESET}:${g_QUERY_KEY}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 		fi
 
-		logit ${_YTS_DBG_LOG} "${0}:g_QUERY_KEY:${g_QUERY_KEY}, g_PROXY_CMD:${g_PROXY_CMD}"
+		logit ${_YT_DBG_LOG} "${0}:g_QUERY_KEY:${g_QUERY_KEY}, g_PROXY_CMD:${g_PROXY_CMD}"
 
 		_LOCAL_LIST=()
 
@@ -1542,7 +1543,7 @@ set_final_fn () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
 
-	logit ${_YTS_DBG_LOG} "${0}: Received:${FN}"
+	logit ${_YT_DBG_LOG} "${0}: Received:${FN}"
 
 	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
 	NEW_FN=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${NEW_FN})
@@ -1551,11 +1552,11 @@ set_final_fn () {
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
 
 
-	logit ${_YTS_DBG_LOG} "${0}: Formatted:${NEW_FN}"
+	logit ${_YT_DBG_LOG} "${0}: Formatted:${NEW_FN}"
 
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		logit ${_YTS_DBG_LOG} "${0}: Overwriting\nFile:${FN:t} \nwith:${NEW_FN:t}"
+		logit ${_YT_DBG_LOG} "${0}: Overwriting\nFile:${FN:t} \nwith:${NEW_FN:t}"
 		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
 		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
 	fi
@@ -1747,21 +1748,21 @@ else
 fi
 
 # Check for updates
-g_LAST_CODE_UPD=$(last_code_update ${_UPD_MARKER})
-if [[ (! -f ${_UPD_MARKER}) || (-f ${_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 'today')) ]];then
+g_LAST_CODE_UPD=$(last_code_update ${_YTS_UPD_MARKER})
+if [[ (! -f ${_YTS_UPD_MARKER}) || (-f ${_YTS_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 'today')) ]];then
 	clear
 	msg_box "Checking for yt-dlp updates..."
 	{
 		CUR_VER=$(yt-dlp --version)
 		yt-dlp -U
-		touch ${_UPD_MARKER}
+		touch ${_YTS_UPD_MARKER}
 		UPD_VER=$(yt-dlp --version)
 	} >/dev/null 2>&1
 	if [[ ${CUR_VER} == ${UPD_VER} ]];then
 		MSG="yt-dlp is <g>CURRENT<N> at version:<r>${CUR_VER}<N>"
 		msg_box -c -t2 ${MSG}
 	else
-		MSG="yt-dlp was <w>UPDATED<N> from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
+		MSG="yt-dlp was <w>UPDD<N> from: <r>${CUR_VER}<N> to <g>${UPD_VER}<N>"
 		msg_box -p -PK -c -t2 ${MSG}
 	fi
 fi
@@ -1774,10 +1775,10 @@ clear
 fav_load ${_FAV_TAB}
 
 # Load acronyms
-if [[ -e ${_ACRONYMS_FN} ]];then
+if [[ -e ${_YTS_ACRONYMS} ]];then
 	while read LINE;do
 		_ACRONYMS+=${LINE}
-	done < ${_ACRONYMS_FN}
+	done < ${_YTS_ACRONYMS}
 fi
 
 # Run Query

@@ -2,7 +2,7 @@
 Name=Losslesscut
 Comment=Video Editor
 TryExec=/usr/local/bin/system/launchers/run_losslesscut
-Exec=/usr/local/bin/system/launchers/run_losslesscut
+Exec=/usr/local/bin/system/launchers/run_losslesscut %u
 Icon=/opt/losslesscut/LosslessCut_icon.png
 Type=Application
 Categories=video

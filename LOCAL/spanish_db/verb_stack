@@ -379,7 +379,7 @@ VERB_ARG=''
 [[ ${#} -eq 2 ]] && VERB_ARG=${2:l}
 [[ ${#} -eq 3 ]] && V_CONTEXT_ARG=${2:l} && VERB_ARG=${3:l}
 
-[[ -z ${VERB_ARG} ]] && do_rmcup && usage "${RED_FG}Missing argument${RESET}:$(opt_type v)"
+[[ -z ${VERB_ARG} ]] && do_rmcup && usage "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:$(opt_type v)"
 [[ -z ${V_TYPE_ARG} ]] && V_TYPE_ARG=all
 [[ -z ${V_CONTEXT_ARG} ]] && V_CONTEXT_ARG=all
 
