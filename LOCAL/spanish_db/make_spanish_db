@@ -10,6 +10,7 @@ WHITE_FG="\033[37m"
 
 #Constants
 DB=.spanish.db
+_SCRIPT_TAG="${WHITE_FG}[${RESET}${0:t}${WHITE_FG}]${RESET}"
 
 #DB DEF
 create_spanish_db () {
@@ -147,10 +148,10 @@ function usage {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-c${RESET} Create new database"
-	echo -e "${WHITE_FG}-a${RESET} Append data to existing database"
-	echo -e "${WHITE_FG}-u${RESET} Update data in existing database"
-	echo -e "${WHITE_FG}-d${RESET} Delete data in existing database"
-	echo -e "${WHITE_FG}-s${RESET} Select data from existing database"
+	echo -e "${WHITE_FG}-a${RESET} Append data"
+	echo -e "${WHITE_FG}-u${RESET} Update data"
+	echo -e "${WHITE_FG}-d${RESET} Delete data"
+	echo -e "${WHITE_FG}-s${RESET} Select data"
 	echo -e "\n${WHITE_FG}DESC${RESET}:Manage the spanish database\n"
 	exit
 }
@@ -182,6 +183,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+[[ ${VERB} == '?' ]] && echo "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<VERB>" && exit
 
 if [[ ${CREATE} == "true" ]];then
 	echo "Creating new spanish database"
@@ -224,4 +226,8 @@ if [[ ${SELECT} == "true" ]];then
 	get_spanish_verb_row ${VERB} #provide feedback
 	get_spanish_tense_row ${VERB} #provide feedback
 fi
+
+# Cleanup
+[[ ${DEBUG} == 'false' && -e ${VERB}_tense.dat ]] && /bin/rm -f ${VERB}_tense.dat 
+[[ ${DEBUG} == 'false' && -e ${VERB}_verb.dat ]] && /bin/rm -f ${VERB}_verb.dat
 

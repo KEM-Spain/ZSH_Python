@@ -169,6 +169,7 @@ if [[ ${LOCAL_FILES} == 'false' ]];then # Go straight to data load
 	GER=${PART_GERUND[2]}
 	TRANS=${TRANSLATION}
 	IRR=0
+	# TODO: This is unreliable - modify method and source
 	if [[ -e irregular.txt ]];then
 		grep -q ${1:l} < ${IRREGULAR_LIST}
 		[[ ${?} -eq 0 ]] && IRR=1 || IRR=0

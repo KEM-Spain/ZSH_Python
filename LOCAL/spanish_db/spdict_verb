@@ -35,10 +35,144 @@ typeset -a _LIST
 
 # Vars
 _VERB_ARG=''
+_V_TYPE=''
+_V_TYPE_LBL=''
 
 # Functions
-format_markdown () {
+export_block () {
+	local SECTION=${1}
+	local B 
 
+	for (( B=1; B<=${SECTION_ROWS[${SECTION}]}; B++ ));do # Output blocks
+		[[ ${SECTION} == 'GP' ]] && continue
+		[[ ${SECTION} == 'INFFUT' ]] && continue
+		case ${B} in
+			1) [[ -n ${COL1} ]] && export_col_out ${SECTION} ${B} ${COL1};;
+			2) [[ -n ${COL2} ]] && export_col_out ${SECTION} ${B} ${COL2};;
+			3) [[ -n ${COL3} ]] && export_col_out ${SECTION} ${B} ${COL3};;
+			4) [[ -n ${COL4} ]] && export_col_out ${SECTION} ${B} ${COL4};;
+			5) [[ -n ${COL5} ]] && export_col_out ${SECTION} ${B} ${COL5};;
+			6) [[ -n ${COL6} ]] && export_col_out ${SECTION} ${B} ${COL6};;
+		esac
+	done
+}
+
+export_col_out () {
+	local SECTION=${1} && shift
+	local ROW=${1} && shift
+	local -a COL_DATA=(${@})
+	local -a IMP_ELEM=()
+	local NDX=0
+	local KEY=''
+	local EXP_LBL=''
+	local X
+	local -A SECTION_LBLS=(	IND1 Present IND2 Preterite IND3 Imperfect IND4 Conditional IND5 Future
+									SUBJ1 Present SUBJ2 Imperfect SUBJ3 Imperfect2 SUBJ4 Future
+									IMP1 Affirmative IMP2 Negative 
+									PROG1 Present PROG2 Preterite PROG3 Imperfect PROG4 Conditional PROG5 Future
+									PERF1 Present PERF2 Preterite PERF3 Imperfect PERF4 Conditional PERF5 Future
+									PSUBJ1 Present PSUBJ2 Past PSUBJ3 Past2 PSUBJ4 Future)
+
+	EXP_LBL=${${_BLOCK_HDRS[${SECTION}]}:l} # Label default
+	[[ ${${_BLOCK_HDRS[${SECTION}]}:l} == 'perfect subjunctive' ]] && EXP_LBL='perfect_subj' # Patch label
+
+	if [[ ${EXP_LBL} == 'imperative' ]];then
+		COL_DATA=('---' ${COL_DATA[1]} ${COL_DATA[2]} ${COL_DATA[3]} ${COL_DATA[4]} ${COL_DATA[5]}) # Patch imperative
+	fi
+
+	printf "%s,%s,%s," ${_VERB_ARG} ${EXP_LBL} ${${SECTION_LBLS[${SECTION}${ROW}]}:l}
+	if [[ -n ${COL_DATA} ]];then
+		for X in ${COL_DATA};do 
+			(( NDX++ )) 
+			printf "%s," "${X:s/ /_/}"
+		done
+		printf "%s\n" "${_V_TYPE}"
+	fi
+}
+
+format_export () {
+	local LINE_NO=1
+	local -a COL1=()
+	local -a COL2=()
+	local -a COL3=()
+	local -a COL4=()
+	local -a COL5=()
+	local -a COL6=()
+	local -A SECTION_COLS=(GP 2 IND 5 SUBJ 4 IMP 2 PROG 5 PERF 5 PSUBJ 4 INFFUT 6)
+	local -A SECTION_ROWS=(GP 2 IND 6 SUBJ 6 IMP 5 PROG 6 PERF 6 PSUBJ 6 INFFUT 6)
+	local LAST_NDX=1
+	local LAST_SECTION=?
+	local LOOP=0
+	local LNDX=0
+	local NDX=0
+	local PRE_SCAN=true
+	local SECTION=''
+	local C L R X B
+	local COL_ARR=''
+	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
+
+	_BLOCKS=()
+	LINE_NO=1
+	LAST_NDX=1
+	LAST_SECTION=?
+	NDX=0
+	R=1
+
+	for L in ${_LINE_MAP};do
+		case ${LINE_NO} in
+			1) SECTION=GP;;
+			<2-7>) SECTION=IND;;
+			<8-13>) SECTION=SUBJ;;
+			<14-18>) SECTION=IMP;;
+			<19-24>) SECTION=PROG;;
+			<25-30>) SECTION=PERF;;
+			<31-36>) SECTION=PSUBJ;;
+			37) SECTION=INFFUT;;
+		esac
+
+		(( R++ ))
+		for (( LNDX=LAST_NDX; LNDX<=L; LNDX++ ));do
+			(( NDX++ ))
+			_BLOCKS+="${_LIST[${NDX}]}"
+		done
+
+		if [[ ${LAST_SECTION} != ${SECTION} ]];then
+			LAST_SECTION=${SECTION}
+			COL1=()
+			COL2=()
+			COL3=()
+			COL4=()
+			COL5=()
+			COL6=()
+		fi
+
+		for (( C=1; C<=${SECTION_COLS[${SECTION}]}; C++ ));do # Marshall columns
+			case ${C} in
+				1) COL1+=${_BLOCKS[${C}]};;
+				2) COL2+=${_BLOCKS[${C}]};;
+				3) COL3+=${_BLOCKS[${C}]};;
+				4) COL4+=${_BLOCKS[${C}]};;
+				5) COL5+=${_BLOCKS[${C}]};;
+				6) COL6+=${_BLOCKS[${C}]};;
+			esac
+		done
+
+		if [[ ${SECTION} == 'GP' ]];then # Create ${_VERB_ARG}_verb.dat
+			echo "${_VERB_ARG},${COL1},${COL2},${_V_TYPE},${(qqq)TRANS}" > ${_VERB_ARG}_verb.dat
+		fi
+
+		if [[ ${R} -eq ${SECTION_ROWS[${SECTION}]} ]];then
+			export_block ${SECTION}
+			R=0
+		fi
+
+		(( LINE_NO++ ))
+		_BLOCKS=()
+	done
+	export_block ${SECTION} # Last section
+}
+
+format_markdown () {
 	local BLOCK=1
 	local LAST_NDX=1
 	local LAST_SECTION=?
@@ -47,17 +181,13 @@ format_markdown () {
 	local NDX=0
 	local SECTION=''
 	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
-	local V_TYPE=''
 	local L
 
 	set_section_longest # Find longest text per section
 
-	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
-	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
-
 	echo "#### Verb: ${(C)_VERB_ARG}"
 	echo "**Translation**: ${(C)TRANS}"
-	echo "**Conjugation**: ${(C)V_TYPE}"
+	echo "**Conjugation**: ${(C)_V_TYPE_LBL}"
 
 	_BLOCKS=()
 	_BLOCKS+="|"
@@ -115,18 +245,14 @@ format_pretty () {
 	local ROW_NDX=0
 	local SECTION=''
 	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
-	local V_TYPE=''
 	local IMP_OFF=false
 	local L
 
 	set_section_longest # Find longest text per section
 
-	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
-	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
-
 	echo "${WHITE_FG}Verb${RESET}:${(C)_VERB_ARG}"
-	echo "${WHITE_FG}Translation${RESET}:${TRANS}"
-	echo "${WHITE_FG}Conjugation${RESET}:${V_TYPE}"
+	echo "${WHITE_FG}Translation${RESET}:${(C)TRANS}"
+	echo "${WHITE_FG}Conjugation${RESET}:${(C)_V_TYPE_LBL}"
 
 	_BLOCKS=()
 	LINE_NO=1
@@ -218,16 +344,13 @@ format_vertical () {
 	local PRE_SCAN=true
 	local SECTION=''
 	local TRANS=$(pup --charset utf8 'div[id="quickdef1-es"] text{}' < ${_VERB_ARG}.html)
-	local V_TYPE=''
 	local C L R X B
 	local COL_ARR=''
 
-	grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html
-	[[ ${?} -eq 0 ]] && V_TYPE="Irregular" || V_TYPE="Regular"
 
 	echo "${WHITE_FG}Verb${RESET}:${(C)_VERB_ARG}"
-	echo "${WHITE_FG}Translation${RESET}:${TRANS}"
-	echo "${WHITE_FG}Conjugation${RESET}:${V_TYPE}\n"
+	echo "${WHITE_FG}Translation${RESET}:${(C)TRANS}"
+	echo "${WHITE_FG}Conjugation${RESET}:${(C)_V_TYPE_LBL}\n"
 
 	_BLOCKS=()
 	LINE_NO=1
@@ -412,7 +535,7 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-This script does...
+Various output formats for spanish verb data
 EOF
 
 parse_opts () {
@@ -455,6 +578,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-e${RESET} data export output"
 	echo -e "${WHITE_FG}-m${RESET} markdown output"
 	echo -e "${WHITE_FG}-p${RESET} prettified output"
 	echo -e "${WHITE_FG}-v${RESET} vertical output"
@@ -464,17 +588,19 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDmpv"
+OPTSTR=":HDempv"
 OPTIND=0
 
-PRETTY=false
+EXPORT=false
 MARKDOWN=false
+PRETTY=false
 VERTICAL=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     e) EXPORT=true;;
      m) MARKDOWN=true;;
      p) PRETTY=true;;
      v) VERTICAL=true;;
@@ -496,12 +622,31 @@ grep -q 'data-is_found="0"\|mismatch-spelling-suggestion' ${_VERB_ARG}.html
  
 _LIST=("${(f)$(pup --charset utf8 'a attr{aria-label}' < ${_VERB_ARG}.html | grep '^[a-z]' | head -n -1 )}")
 
+# TODO: create a data format to create: ${VERB}_verb.dat ${VERB}_tense.dat for compatability with make_spanish_db
+
+if grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html;then
+	_V_TYPE=1
+	_V_TYPE_LBL="Irregular" 
+else
+	_V_TYPE=0
+	_V_TYPE_LBL="Regular"
+fi
+
 (
+[[ ${EXPORT} == 'true' ]] && format_export > "${_VERB_ARG}_tense.dat"
 [[ ${MARKDOWN} == 'true' ]] && format_markdown
 [[ ${PRETTY} == 'true' ]] && format_pretty
 [[ ${VERTICAL} == 'true' ]] && format_vertical
 ) | mypager
 
-[[ ${VERB}.html ]] && /bin/rm ${_VERB_ARG}.html
+
+if [[ ${EXPORT} == 'true' && -s ${_VERB_ARG}_tense.dat && -s ${_VERB_ARG}_verb.dat ]];then
+	echo "Exported data for:${WHITE_FG}${_VERB_ARG}${RESET}"
+	echo "Verb data:${WHITE_FG}${_VERB_ARG}_verb.dat${RESET}"
+	echo "Verb tenses:${WHITE_FG}${_VERB_ARG}_tense.dat${RESET}"
+	echo "Import with:${WHITE_FG}make_spanish_db -a ${_VERB_ARG}${RESET}"
+fi
+
+[[ -e ${_VERB_ARG}.html ]] && /bin/rm ${_VERB_ARG}.html
 
 exit_leave
