@@ -65,6 +65,8 @@ typeset -A _SP_TERMS=(
 # Vars
 _VERB_ARG=''
 _RESPONSE=''
+#_START_ROW=$(( _MAX_ROWS - 4 ))
+_START_ROW=5
 
 # Functions
 cycle_vtype () {
@@ -97,7 +99,6 @@ drill () {
 	local ANS=''
 	local PLAIN=''
 	local ROW=''
-	local START_ROW=$(( _MAX_ROWS - 4 ))
 	local VAL=''
 	local VT CX YO YF EL WE YP TH
 	local C L
@@ -105,19 +106,19 @@ drill () {
 	local HEIGHT=10
 
 	cursor_off
-
-	tcup ${START_ROW} 0
+	tcup ${_START_ROW} 0
 	tput ed
 
 	${_V_TYPES[${V_NDX}]} # Build dataset
 
 	local IRRG=$(irregular)
-	[[ ${IRRG} -eq 1 ]] && IRRG="(irregular)" || IRRG="regular"
 	local GRND=$(gerund)
 	local PART=$(participle)
 	local DEFN=$(translation)
 
+	[[ ${IRRG} -eq 1 ]] && IRRG="irregular" || IRRG="regular"
 	[[ -n ${DEFN} ]] && DEFN=$(html2text <<<${DEFN})
+
 	tcup 0 0
 	echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} (${IRRG})"
 	echo "Gerund:${WHITE_FG}${GRND}${RESET}"
@@ -142,10 +143,13 @@ drill () {
 		[[ ${VAL} =~ '-' ]] && continue
 		VAL=$(sed 's/_/ /' <<<${VAL})
 		PLAIN=$(iconv -t ASCII//TRANSLIT <<<${VAL}) # Strip diacritics
-		tcup $(( START_ROW - 3 )) 0
+
+		tcup ${_START_ROW}
 		tput ed
-		tcup $(( START_ROW - 1 )) 0 && echo "${BOLD}${(C)_V_TYPES[${V_NDX}]} ${CYAN_FG}${(C)_CONTEXT_ARR[${C_NDX}]}${RESET}" # Show keys
 		cursor_on
+
+		tcup ${_START_ROW} && echo "${BOLD}${(C)_V_TYPES[${V_NDX}]} ${CYAN_FG}${(C)_CONTEXT_ARR[${C_NDX}]}${RESET}" # Show keys
+
 		echo -n "Enter ${WHITE_FG}${C}${RESET} for ${WHITE_FG}${_VERB_ARG}${RESET}:" && read ANS
 		if [[ -n ${ANS} && (${ANS} == ${VAL} || ${ANS} == ${PLAIN}) ]];then
 			ACCMSG=''
@@ -157,9 +161,11 @@ drill () {
 			[[ -n ${ANS} ]] && echo "${BOLD}${RED_FG}Incorrect${RESET}:${STRIKE}${ANS}${RESET}"
 			echo "Answer:${ITALIC}${WHITE_FG}${VAL}${RESET}"
 		fi
+
 		cursor_off
 		echo -n "${GREEN_FG}Press any key${RESET}..."; read -s
 	done
+
 	tcup ${_MAX_ROWS} 0
 	cursor_on
 }
@@ -218,7 +224,7 @@ select_list () {
 	local CLEAN_TITLE=$(str_no_ansi ${TITLE})
 	local K
 
-	tcup $(( START_ROW - ${HEIGHT} )) 0
+	tcup $(( _START_ROW - ${HEIGHT} )) 0
 	tput ed
 
 	while true;do
@@ -240,7 +246,7 @@ select_list () {
 			exit_leave "${RED_FG}Operation cancelled${RESET}..."
 		fi
 	done
-	tcup $(( START_ROW - ${HEIGHT} )) 0
+	tcup $(( _START_ROW - ${HEIGHT} )) 0
 	tput ed
 }
 
@@ -255,9 +261,17 @@ translation () {
 	do_query -d '|' "select translation from spanish_verb where verb = '${_VERB_ARG}'"
 }
 
+usage () {
+	local MSG=${@}
+	
+	echo "Usage:${_SCRIPT} <VERB>"
+	echo ${MSG}
+	exit
+}
+
 # Execution
-clear
-[[ ${#} -ne 0 ]] && _VERB_ARG=${1} || exit_leave $(err_msg_exit "Missing argument:<VERB>")
+do_smcup
+[[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage $(err_msg_exit "Missing argument:<VERB>")
 
 select_list "Select Verb Type" ${(kv)_V_TYPES}
 V_NDX=${_RESPONSE}
@@ -276,5 +290,4 @@ else
 	fi
 fi
 
-clear
 exit_leave

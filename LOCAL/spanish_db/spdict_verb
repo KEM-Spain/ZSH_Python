@@ -535,7 +535,8 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-Various output formats for spanish verb data
+Extract data from spanishdict.com
+\tOutput formats vary per option selected
 EOF
 
 parse_opts () {
@@ -613,7 +614,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${#} -ne 0 ]] && _VERB_ARG=${1} || exit_leave "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:<VERB>"
+[[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:<VERB>"
 [[ -z ${OPTIONS} ]] && VERTICAL=true # Default format
 
 curl -sA "Chrome" -L  "https://www.spanishdict.com/conjugate/${_VERB_ARG}" > ${_VERB_ARG}.html
@@ -621,8 +622,6 @@ grep -q 'data-is_found="0"\|mismatch-spelling-suggestion' ${_VERB_ARG}.html
 [[ ${?} -eq 0 ]] && exit_leave $(err_msg_exit "Unable to find verb:${_VERB_ARG}")
  
 _LIST=("${(f)$(pup --charset utf8 'a attr{aria-label}' < ${_VERB_ARG}.html | grep '^[a-z]' | head -n -1 )}")
-
-# TODO: create a data format to create: ${VERB}_verb.dat ${VERB}_tense.dat for compatability with make_spanish_db
 
 if grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html;then
 	_V_TYPE=1
@@ -639,12 +638,21 @@ fi
 [[ ${VERTICAL} == 'true' ]] && format_vertical
 ) | mypager
 
-
 if [[ ${EXPORT} == 'true' && -s ${_VERB_ARG}_tense.dat && -s ${_VERB_ARG}_verb.dat ]];then
 	echo "Exported data for:${WHITE_FG}${_VERB_ARG}${RESET}"
-	echo "Verb data:${WHITE_FG}${_VERB_ARG}_verb.dat${RESET}"
-	echo "Verb tenses:${WHITE_FG}${_VERB_ARG}_tense.dat${RESET}"
-	echo "Import with:${WHITE_FG}make_spanish_db -a ${_VERB_ARG}${RESET}"
+	echo "Verb data:${WHITE_FG}${_VERB_ARG}_verb.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_verb.dat)) line(s)"
+	echo "Verb tenses:${WHITE_FG}${_VERB_ARG}_tense.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_tense.dat)) line(s)"
+	DATA=$(make_spanish_db -s ${_VERB_ARG})
+	if [[ -n ${DATA} ]];then
+		echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} exists"
+		OPT='-u'
+		OP='Update'
+	else
+		OPT='-a'
+		OP='Append'
+	fi
+	respond "${OP} database"
+	[[ ${?} -eq 0 ]] && make_spanish_db ${OPT} ${_VERB_ARG}
 fi
 
 [[ -e ${_VERB_ARG}.html ]] && /bin/rm ${_VERB_ARG}.html
