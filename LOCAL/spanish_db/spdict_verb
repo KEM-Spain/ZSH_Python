@@ -37,6 +37,8 @@ typeset -a _LIST
 _VERB_ARG=''
 _V_TYPE=''
 _V_TYPE_LBL=''
+_PASTE=false
+_EXIT_MSG=''
 
 # Functions
 export_block () {
@@ -424,6 +426,21 @@ markdown_header () {
 	tr -d '[:space:]' <<<${MARKDOWN};echo
 }
 
+output_vector () {
+	local LINE=''
+
+	if [[ ${_PASTE} == 'true' ]];then
+		while read LINE;do
+			echo ${LINE}
+		done | gpaste-client
+		_EXIT_MSG="Output was sent to clipboard"
+	else
+		while read LINE;do
+			echo ${LINE}
+		done | mypager
+	fi
+}
+
 section_break () {
 	local SECTION=${1}
 
@@ -576,9 +593,10 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} <VERB>\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-c${RESET} send output to clipboard"
 	echo -e "${WHITE_FG}-e${RESET} data export output"
 	echo -e "${WHITE_FG}-m${RESET} markdown output"
 	echo -e "${WHITE_FG}-p${RESET} prettified output"
@@ -589,7 +607,7 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDempv"
+OPTSTR=":HDcempv"
 OPTIND=0
 
 EXPORT=false
@@ -601,6 +619,7 @@ while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     c) _PASTE=true;;
      e) EXPORT=true;;
      m) MARKDOWN=true;;
      p) PRETTY=true;;
@@ -636,7 +655,7 @@ fi
 [[ ${MARKDOWN} == 'true' ]] && format_markdown
 [[ ${PRETTY} == 'true' ]] && format_pretty
 [[ ${VERTICAL} == 'true' ]] && format_vertical
-) | mypager
+) | output_vector
 
 if [[ ${EXPORT} == 'true' && -s ${_VERB_ARG}_tense.dat && -s ${_VERB_ARG}_verb.dat ]];then
 	echo "Exported data for:${WHITE_FG}${_VERB_ARG}${RESET}"
@@ -657,4 +676,4 @@ fi
 
 [[ -e ${_VERB_ARG}.html ]] && /bin/rm ${_VERB_ARG}.html
 
-exit_leave
+exit_leave ${_EXIT_MSG}

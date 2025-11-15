@@ -114,7 +114,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-clear
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ ${#} -ge 1 ]] && TYPE_ARG=${1:l}
 [[ ${#} -ge 2 ]] && CONTEXT_ARG=${2:l}
@@ -128,9 +128,10 @@ esac
 
 V_LIST=("${(f)$(do_query "select verb from spanish_verb where irregular=${OPT}")}")
 sel_set_list ${V_LIST}
-sel_list -H"${V_TYPE} Verbs" -F"Select Verb" -O${MAGENTA_FG}
 
-clear
-verb_stack ${TYPE_ARG} ${CONTEXT_ARG} ${_SEL_VAL}
+while true;do
+	sel_list -S -H"${V_TYPE} Verbs" -F"Select Verb" -O${MAGENTA_FG}
+	verb_map ${TYPE_ARG} ${CONTEXT_ARG} ${_SEL_VAL}
+done
 
 exit_leave

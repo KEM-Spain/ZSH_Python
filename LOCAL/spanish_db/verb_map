@@ -40,16 +40,36 @@ typeset -a _VERB_DATA
 
 # Vars
 _FIRST_BLOCK=1
-_LAST_BLOCK=6
-_FIRST_ROW=1
-_LAST_ROW=6
 _FIRST_COL=1
-_LAST_COL=5
+_FIRST_ROW=1
 _FIRST_VERB_FIELD=4
+_LAST_BLOCK=6
+_LAST_COL=5
+_LAST_ROW=6
 _LAST_VERB_FIELD=9
+_PASTE=false
 _VERB_ARG=''
+_EXIT_MSG=''
 
 # Functions
+output_vector () {
+	local ANSI=${1}
+	local LINE=''
+
+	if [[ ${_PASTE} == 'true' ]];then
+		while read LINE;do
+			echo ${LINE}
+			[[ ${ANSI} == 'false' ]] && LINE=$(str_no_ansi ${LINE})
+		done | gpaste-client
+		_EXIT_MSG="${_SCRIPT_TAG} Output was sent to clipboard"
+	else
+		while read LINE;do
+			[[ ${ANSI} == 'false' ]] && LINE=$(str_no_ansi ${LINE})
+			echo ${LINE}
+		done | mypager
+	fi
+}
+
 translation () {
 	local TRANS=$(do_query -d '|' "select translation from spanish_verb where verb = '${_VERB_ARG}'")
 	echo ${TRANS}
@@ -109,22 +129,6 @@ progressive () {
 imperative () {
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'affirmative'")
 	_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}' and mood = 'imperative' and tense = 'negative'")
-}
-
-do_pager () {
-	local PAGING=${1}
-	local ANSI=${2}
-	local LINE
-
-	if [[ ${PAGING} == 'false' ]];then
-		while read LINE;do
-			[[ ${ANSI} == 'false' ]] && str_strip_ansi <<<${LINE} || echo ${LINE}
-		done
-	else
-		while read LINE;do
-			[[ ${ANSI} == 'false' ]] && str_strip_ansi <<<${LINE} || echo ${LINE}
-		done | mypager
-	fi
 }
 
 markdown_table () {
@@ -254,7 +258,7 @@ pretty_table () {
 		done # Rows
 		echo # Block separator
 	done
-	) | sed 's/_/ /g' | do_pager ${PAGE_OPT} ${ANSI}
+	) | sed 's/_/ /g' | output_vector ${ANSI}
 }
 
 #--Begin GetOpts--
@@ -317,21 +321,20 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-M $(opt_type M)${RESET} select MOOD"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-a${RESET} output contains no ansi"
+	echo -e "${WHITE_FG}-a${RESET} no ansi"
+	echo -e "${WHITE_FG}-c${RESET} send output to clipboard"
 	echo -e "${WHITE_FG}-m${RESET} output markdown"
-	echo -e "${WHITE_FG}-p${RESET} no paged output"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDM:amp"
+OPTSTR=":HDM:acm"
 OPTIND=0
 
 MARKDOWN=false
 MOOD_SELECT=0
 ANSI=true
-PAGE_OPT=true
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -339,8 +342,8 @@ while getopts ${OPTSTR} OPTION;do
      D) dbg_set_level;;
      M) MOOD_SELECT=${OPTARG};;
      a) ANSI=false;;
+     c) _PASTE=true;;
      m) MARKDOWN=true;;
-     p) PAGE_OPT=false;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -364,12 +367,11 @@ while true;do
 		clear >&2
 		msg_box -p -H1 -P"${RESET}Fetch data for verb:${WHITE_FG}${_VERB_ARG}|${RESET}(Y/N)?" "Add Missing Verb|Verb <w>${_VERB_ARG}<N>:<r>not found<N>"
 		if [[ ${_MSG_KEY} != 'y' ]];then
-			do_rmcup
 			exit_leave $(err_msg_exit W "Verb ${_VERB_ARG}:not found")
 		fi
 		msg_box -x10 "Fetching data..."
 		get_verb ${_VERB_ARG} >/dev/null 2>&1
-		[[ ${?} -ne 0 ]] && do_rmcup && exit_leave $(err_msg_exit E "Unable to fetch verb:${_VERB_ARG}")
+		[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit E "Unable to fetch verb:${_VERB_ARG}")
 		sleep 1
 	else
 		break
@@ -414,3 +416,5 @@ for W in ${(onk)_FLD_WIDTH};do
 done
 
 [[ ${MARKDOWN} == 'true' ]] && markdown_table || pretty_table
+
+exit_leave ${_EXIT_MSG}

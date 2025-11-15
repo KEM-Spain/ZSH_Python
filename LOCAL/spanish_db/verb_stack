@@ -61,7 +61,26 @@ typeset -A _SP_TERMS=(
 "perfect_subj present" "pretérito perfecto subjuntivo"
 )
 
+# Vars
+_PASTE=false
+_EXIT_MSG=''
+
 # Functions
+output_vector () {
+	local LINE=''
+
+	if [[ ${_PASTE} == 'true' ]];then
+		while read LINE;do
+			echo ${LINE}
+		done | gpaste-client
+		_EXIT_MSG="${_SCRIPT_TAG} Output was sent to clipboard"
+	else
+		while read LINE;do
+			echo ${LINE}
+		done | mypager
+	fi
+}
+
 verb_add () {
 	local VERB_ARG=${1}
 
@@ -106,8 +125,6 @@ stack_tab () {
 	local HLBL3=" Participle:"
 	local HLBL4=" Definition:"
 	local L
-
-	do_rmcup
 
 	[[ ${_DEBUG} -ne 0 ]] && dbg "${0}: V_TYPE:${V_TYPE}, V_CONTEXT:${V_CONTEXT}"
 
@@ -195,22 +212,7 @@ stack_tab () {
 			printf "65%d5 %s %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${LBL5:q} ${YP:s/_/ /}
 			printf "65%d6 %s %s\n" ${_PSUB_CONTEXT_SORT[${CX}]} ${LBL6:q} ${TH:s/_/ /}
 		fi
-	done | sort -n | sed -e 's/^....//' -e 's/LF/\n/' | do_pager ${PAGE_OPT}
-}
-
-do_pager () {
-	local PAGING=${1}
-	local LINE
-
-	if [[ ${PAGING} == 'false' ]];then
-		while read LINE;do
-			echo ${LINE}
-		done
-	else
-		while read LINE;do
-			echo ${LINE}
-		done | mypager
-	fi
+	done | sort -n | sed -e 's/^....//' -e 's/LF/\n/' | output_vector
 }
 
 select_verb_context () {
@@ -339,7 +341,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)] [$(opt_type c)] $(opt_type v)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-p${RESET} paged output"
+	echo -e "${WHITE_FG}-c${RESET} send output to clipboard"
 	echo -e "${WHITE_FG}-s${RESET} select both type and context from a list"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
@@ -347,16 +349,15 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDps"
+OPTSTR=":HDcs"
 OPTIND=0
-PAGE_OPT=false
 SELECT_ALL=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     p) PAGE_OPT=true;;
+     c) _PASTE=true;;
      s) SELECT_ALL=true;;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
@@ -379,7 +380,7 @@ VERB_ARG=''
 [[ ${#} -eq 2 ]] && VERB_ARG=${2:l}
 [[ ${#} -eq 3 ]] && V_CONTEXT_ARG=${2:l} && VERB_ARG=${3:l}
 
-[[ -z ${VERB_ARG} ]] && do_rmcup && usage "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:$(opt_type v)"
+[[ -z ${VERB_ARG} ]] && usage "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:$(opt_type v)"
 [[ -z ${V_TYPE_ARG} ]] && V_TYPE_ARG=all
 [[ -z ${V_CONTEXT_ARG} ]] && V_CONTEXT_ARG=all
 
@@ -421,4 +422,4 @@ fi
 
 stack_tab ${V_TYPE} ${V_CONTEXT}
 
-exit_leave
+exit_leave ${_EXIT_MSG}
