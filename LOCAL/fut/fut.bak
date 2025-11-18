@@ -60,11 +60,13 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 findexe () {
-	local -a LIST
-	local -a RAWLINE
-	local L R
+	local -aU LIST
+	local -aU RAWLINE
 	local FN
+	local WI
 	local LOCAL
+	local VERBOSE
+	local L R
 
 	read -r -d '' DESC<<______EOF
 Find files based on priority
@@ -82,7 +84,7 @@ ______EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -111,22 +113,25 @@ ______EOF
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-l${RESET} local files have priority"
+		echo -e "${WHITE_FG}-v${RESET} verbose output"
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
 		exit_leave ${PENDING_MSGS}
 	}
 
-	OPTSTR=":HDl"
+	OPTSTR=":HDlv"
 	OPTIND=0
 
 	LOCAL=false
+	VERBOSE=false
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 		  H) usage;;
 		  D) dbg_set_level;;
 		  l) LOCAL=true;;
+		  v) VERBOSE=true;;
 		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 		esac
@@ -137,12 +142,31 @@ ______EOF
 	# Execution
 	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FILE>" || FN=${1}
 
-	RAWLINE=("${(f)$(whereis -bf ${FN} | cut -d: -f2-)}")
-	RAWLINE+=("${(f)$(whereis -B ~/Code -f ${FN} | cut -d: -f2-)}")
+	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Seeking${RESET}: ${FN}" >&2
 
-	for R in ${=RAWLINE};do
-		LIST+=${R}
-	done
+	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in any location${RESET}" >&2
+	WI=("${(f)$(whereis -b -f ${FN} | cut -d: -f2-)}")
+	RAWLINE=(${=WI})
+	if [[ ${VERBOSE} == 'true' ]];then
+		for R in ${RAWLINE};do
+			echo "Found:${R}" >&2
+		done
+	fi
+
+	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ~/Code${RESET}" >&2
+	LIST+=("${(f)$(find ~/Code -type f -executable | grep -w ${FN})}")
+	if [[ ${VERBOSE} == 'true' ]];then
+		if [[ -n ${LIST} ]];then
+			RAWLINE+=${LIST}
+			for L in ${LIST};do
+				echo "${WHITE_FG}Found${RESET}:${L}" >&2
+			done
+		else
+			echo "${WHITE_FG}Nothing found${RESET}" >&2
+		fi
+	fi
+
+	LIST=(${RAWLINE})
 
 	if ! arr_is_populated "${LIST}";then
 		set_exit_value 1
@@ -151,6 +175,8 @@ ______EOF
 
 	if [[ ${#LIST} -gt 1 ]];then
 		for L in ${LIST};do
+			[[ ${L:l} =~ 'etc' ]] &&  continue
+			[[ ${L:l} =~ 'repo' ]] &&  continue
 			[[ ! -f ${L} ]] && continue
 			if [[ ${LOCAL} == 'true' ]];then
 				if [[ ${L:h} == ${PWD} ]];then
@@ -386,7 +412,7 @@ _____EOF
 			local O
 
 			for O in {1..${#OPTS}};do
-				[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+				[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 				[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 				[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 				OPTSTR+="-${OPTS[${O}]}"
@@ -576,7 +602,7 @@ ______EOF
 			local O
 
 			for O in {1..${#OPTS}};do
-				[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+				[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 				[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 				[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 				OPTSTR+="-${OPTS[${O}]}"
@@ -667,7 +693,7 @@ ______EOF
 			local O
 
 			for O in {1..${#OPTS}};do
-				[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+				[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 				[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 				[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 				OPTSTR+="-${OPTS[${O}]}"
@@ -766,7 +792,7 @@ ______EOF
 			local O
 
 			for O in {1..${#OPTS}};do
-				[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+				[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 				[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 				[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 				OPTSTR+="-${OPTS[${O}]}"
@@ -902,7 +928,7 @@ ______EOF
 			local O
 
 			for O in {1..${#OPTS}};do
-				[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+				[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 				[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 				[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 				OPTSTR+="-${OPTS[${O}]}"
@@ -1069,7 +1095,7 @@ ______EOF
 			local D O
 
 			for O in {1..${#OPTS}};do
-				[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+				[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 				[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 				[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 				OPTSTR+="-${OPTS[${O}]}"
@@ -1230,7 +1256,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"

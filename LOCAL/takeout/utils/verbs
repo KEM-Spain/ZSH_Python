@@ -1,6 +1,6 @@
 #!/usr/bin/zsh
 NDX=0
-LIST=("${(f)$(find . -type f -name '*vocab.dat')}")
+LIST=("${(f)$(find ~/Code/LOCAL/takeout -type f -name '*vocab*')}")
 if [[ -z ${LIST} ]];then
 	echo "No vocabulary file(s) found"
 	exit 1

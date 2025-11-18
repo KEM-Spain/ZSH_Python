@@ -73,8 +73,8 @@ clean_media () {
 		logit "${0} No videos found at DEST:${DEST}"
 	fi
 
-	logit "${0} Cleaned movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
-	logit "${0} Cleaned series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
+	logit "${0} Cleaned Movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
+	logit "${0} Cleaned Series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
 }
 
 clear_deluge_state () {
@@ -333,11 +333,15 @@ logit "\nProcessing ${#VIDEOS} videos"
 for V in ${VIDEOS};do
 	((NDX++))
 
-	logit "\nVID ${NDX}:${V}"
+	logit "\nVIDEO ${NDX}:${V}"
 
 	echo "\n${CYAN_FG}$(str_unicode_line 10) Media File ${NDX} ${CYAN_FG}$(str_unicode_line 10)${RESET}"
 
 	MEDIA_FN=${${V}##${_COMPLETED_DIR}/}
+	if [[ -n ${MEDIA_FN} ]];then
+		logit "MEDIA_FN:${MEDIA_FN}"
+	fi
+
 	FN_HEAD=${MEDIA_FN:h} # With _COMPLETED_DIR clipped ${FN_HEAD:h} will be . unless it's in a subdir
 	MEDIA_FQFN=${_COMPLETED_DIR}/${MEDIA_FN}
 
@@ -346,21 +350,13 @@ for V in ${VIDEOS};do
 		SUB_FILES=("${(f)$(find ${_COMPLETED_DIR}/${FN_HEAD} -maxdepth 1 -type f -name '*srt')}")
 		if [[ -n ${SUB_FILES} ]];then
 			logit "SUB_FILES COUNT:${#SUB_FILES}"
-			logit "SUB_FILE:${SUB_FILES[1]}"
-			logit "MEDIA_FN:${MEDIA_FN}"
-			logit "MEDIA FQFN w/o EXTENSION:${MEDIA_FN:r}"
-			logit "SUB FILE w/o EXTENSION: ${SUB_FILE[1]:r}"
-			if [[ ${#SUB_FILES} -eq 1 && ${MEDIA_FQFN:r} != ${SUB_FILE[1]:r} ]];then
-				logit "POSSIBLE SUB FILE RENAME"
-			fi
+			logit "SUB_FILE:${SUB_FILES}"
 		fi
 	fi
 
 	if [[ ${_DEBUG} -gt 0 ]];then
 		 dbg "${0}: ${WHITE_FG}NDX${RESET}:${NDX}: V:${V}"
 		 dbg "${0}: MEDIA_FN:${MEDIA_FN}"
-		 dbg "${0}: FN_HEAD:${FN_HEAD}"
-		 dbg "${0}: MEDIA_FQFN:${MEDIA_FQFN}"
 		 if [[ ${#SUB_FILES} -gt 1 ]];then
 			 for S in ${SUB_FILES};do
 				dbg "${0}: SUB_FILE:${S}"

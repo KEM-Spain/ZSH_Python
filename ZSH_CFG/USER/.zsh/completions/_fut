@@ -96,6 +96,7 @@ _do_findexe() {
 			'-H[help]' \
 			'-d[increase depth of scan (repeats increase level)]' \
 			'-l[local files have priority]' \
+			'-v[verbose]' \
 
 	_files -W ${PWD} ${0}
 }

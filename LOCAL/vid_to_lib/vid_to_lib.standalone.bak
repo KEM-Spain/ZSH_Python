@@ -276,6 +276,8 @@ title_info () {
 
 	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${SHORT_TITLE} ${YEAR} ${SERIES} ${RES}" | tr -s '[:space:]')
 
+	[[ -z ${LONG_TITLE} ]] && LONG_TITLE=${SHORT_TITLE} # Don't return an empty string
+
 	case ${INFO_TYPE} in
 		short) echo ${SHORT_TITLE:gs/\./ /};;
 		long) echo ${LONG_TITLE:gs/\./ /};;
@@ -308,8 +310,8 @@ clean_media () {
 		logit "${0} No videos found at DEST:${DEST}"
 	fi
 
-	logit "${0} Cleaned movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
-	logit "${0} Cleaned series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
+	logit "${0} Cleaned Movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
+	logit "${0} Cleaned Series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
 }
 
 clear_deluge_state () {
@@ -573,6 +575,11 @@ for V in ${VIDEOS};do
 	echo "\n${CYAN_FG}$(str_unicode_line 10) Media File ${NDX} ${CYAN_FG}$(str_unicode_line 10)${RESET}"
 
 	MEDIA_FN=${${V}##${_COMPLETED_DIR}/}
+	if [[ -n ${MEDIA_FN} ]];then
+		logit "MEDIA_FN:${MEDIA_FN}"
+		logit "MEDIA FQFN w/o EXTENSION:${MEDIA_FN:r}"
+	fi
+
 	FN_HEAD=${MEDIA_FN:h} # With _COMPLETED_DIR clipped ${FN_HEAD:h} will be . unless it's in a subdir
 	MEDIA_FQFN=${_COMPLETED_DIR}/${MEDIA_FN}
 
@@ -582,13 +589,12 @@ for V in ${VIDEOS};do
 		if [[ -n ${SUB_FILES} ]];then
 			logit "SUB_FILES COUNT:${#SUB_FILES}"
 			logit "SUB_FILE:${SUB_FILES[1]}"
-			logit "MEDIA_FN:${MEDIA_FN}"
-			logit "MEDIA FQFN w/o EXTENSION:${MEDIA_FN:r}"
 			logit "SUB FILE w/o EXTENSION: ${SUB_FILE[1]:r}"
-			if [[ ${#SUB_FILES} -eq 1 && ${MEDIA_FQFN:r} != ${SUB_FILE[1]:r} ]];then
-				logit "POSSIBLE SUB FILE RENAME"
-			fi
 		fi
+	fi
+
+	if [[ ${#SUB_FILES} -eq 1 && ${MEDIA_FQFN:r} != ${SUB_FILE[1]:r} ]];then
+		logit "POSSIBLE SUB FILE RENAME"
 	fi
 
 	if [[ ${_DEBUG} -gt 0 ]];then
@@ -625,8 +631,6 @@ for V in ${VIDEOS};do
 	fi
 
 	[[ ${IS_SERIES} == 'true' ]] && echo "${BOLD}${MAGENTA_FG}Identified Series${RESET}:${WHITE_FG}${SERIES_TITLE_SUB} (${SERIES_TITLE})${RESET}"
-
-	#vut info ${MEDIA_FQFN}
 
 	move_media "${MEDIA_FQFN}" "${MEDIA_DEST}" ${EXTRACT}
 
