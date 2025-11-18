@@ -42,6 +42,7 @@ g_LIST_METHOD=''
 g_NO_PROMPTING=false
 g_TO_TEXT=''
 g_VERBOSE=false
+g_MEDIA_ARG_TYPE=''
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -439,13 +440,13 @@ inode_ndx () {
 	local NDX_FN=${1}
 	local FILE_OR_PATH=${2}
 	local DEPTH=${3:=1}
-	local HEAD
-	local LIST=()
-	local L
-	local INODE
-	local P
-	local FN
+	local -a LIST=()
+	local FN=''
+	local FNP=''
+	local HEAD=''
+	local INODE=''
 	local TYPE=f
+	local L
 
 	[[ -f ${FILE_OR_PATH} || -d ${FILE_OR_PATH} ]] && HEAD=${FILE_OR_PATH:h} || HEAD="."
 	[[ ${g_ALLOW_DIRS} == 'true' ]] && TYPE=d
@@ -455,11 +456,10 @@ inode_ndx () {
 
 	for L in ${LIST};do
 		INODE=$(cut -d '|' -f1 <<<${L})
-		P=$(cut -d '|' -f2 <<<${L:h})
-		P=$(realpath ${P})
+		FNP=$(cut -d '|' -f2 <<<${L:h})
 		FN=$(cut -d '|' -f2 <<<${L:t})
-		FN="${P}/${FN}"
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} \n${WHITE_FG}L${RESET}:${L} \n${WHITE_FG}INODE${RESET}:${INODE} \n${WHITE_FG}P${RESET}:${P} \n${WHITE_FG}FN${RESET}:${FN} \n${NDX_FN}[${INODE}]=${(qqq)FN}"
+		FN="${FNP}/${FN}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: INODE:${INODE} FN:${FN}"
 		eval "${NDX_FN}[${INODE}]=${(qqq)FN}"
 	done
 }
@@ -473,6 +473,7 @@ clean_show_fn () {
 
 	CLEANED=$(title_info long ${TITLE:r})
 	CLEANED=$(sed 's/[\._]/ /g' <<<${CLEANED} | tr -s '[:space:]') # Strip dots and underscores
+	CLEANED=$(str_trim <<<${CLEANED}) # Trim any whitespace
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Name w/o dots, underscores, or extra spaces:${CLEANED}" >&2
 
 	echo "${CLEANED}.${TITLE:e}"
@@ -580,7 +581,7 @@ do_finalize () {
 		} | dbg
 	fi
 
-	logit ${_LOG} "${0}:${LINENO} Found ${#FINAL} $(str_pluralize candidate ${#FINAL})"
+	logit ${_LOG} "${0} Found ${#FINAL} $(str_pluralize candidate ${#FINAL})"
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
@@ -1166,7 +1167,7 @@ while getopts ${OPTSTR} OPT;do
      d) g_ALLOW_DIRS=true;;
      e) g_LIMIT_TO_EXT=true;g_EXT_TEXT=${OPTARG};;
      i) CASE=I; GREP_OPTS='-Eiq';;
-     m) MEDIA_FILE=true;MEDIA_FILES_PATH=${OPTARG};;
+     m) MEDIA_FILE=true;MEDIA_FILE_OR_PATH=${OPTARG};;
      n) CLEAN_LEADING_DIGITS=true;;
      p) PREPEND=true;PREPEND_TAG=${OPTARG};;
      s) SPACES=true;;
@@ -1187,6 +1188,14 @@ shift $(( OPTIND - 1 ))
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
+
+if [[ ${MEDIA_FILE} == "true" ]];then
+	[[ -f ${MEDIA_FILE_OR_PATH} ]] && g_MEDIA_ARG_TYPE="file"
+	[[ -d ${MEDIA_FILE_OR_PATH} ]] && g_MEDIA_ARG_TYPE="path"
+	[[ -z ${MEDIA_FILE_OR_PATH} ]] && exit_leave "Media argument is neither a file or a path"
+	MEDIA_FILE_OR_PATH=$(realpath ${MEDIA_FILE_OR_PATH}) # Translate any meta chars
+	logit ${_LOG} "Media argument is a ${g_MEDIA_ARG_TYPE}"
+fi
 
 # Handle input method
 _PIPED=false
@@ -1213,8 +1222,6 @@ if [[ ${#} -ne 0 ]];then
 			echo "Found text:${WHITE_FG}${OBJ}${RESET}"
 		fi
 	done
-else
-	echo "No arguments passed"
 fi
 } >> ${_LOG}
 
@@ -1268,12 +1275,11 @@ if [[ ${_PIPED} == 'true' ]];then
 	# Grab piped input
 	_IN_LIST[1]=${_PIPELINE}
 else
-	if [[ -n ${MEDIA_FILES_PATH} ]];then
+	if [[ -n ${MEDIA_FILE_OR_PATH} ]];then
 		# Get list of media
 		g_LIST_METHOD="media"
 		logit ${_LOG} "g_LIST_METHOD is media"
-		MEDIA_FILES_PATH=$(eval echo ${MEDIA_FILES_PATH}) # Translate any meta chars
-		inode_ndx "_IN_LIST" "${MEDIA_FILES_PATH}"
+		inode_ndx "_IN_LIST" "${MEDIA_FILE_OR_PATH}"
 		PATHLBL=${_FIND_PATH:h}
 	elif [[ -f ${_FIND_PATH} ]];then
 		# Convert file name to list member
@@ -1305,7 +1311,7 @@ if ! arr_is_populated "${_IN_LIST}";then
 	exit_leave $(err_msg_exit W "${_SCRIPT}:Can't continue - ${g_LIST_METHOD} failed - _IN_LIST is empty")
 fi
 
-#if [[ ${_DEBUG} -gt 0 ]];then
+if [[ ${_DEBUG} -gt 0 ]];then
 	{
 	echo "COMMAND LINE AND OPTIONS"
 	echo "----------------------- "
@@ -1341,11 +1347,11 @@ fi
 		printf "TYPE:%s VALUE:%s\n" ${K} ${_ARG_LIST[${K}]}
 	done
 	} >> ${_LOG}
-#fi
+fi
 
 # Media
 if [[ ${MEDIA_FILE} == "true" ]];then
-	logit ${_LOG} "Media file path was passed:${MEDIA_FILES_PATH}"
+	logit ${_LOG} "Media file path was passed:${MEDIA_FILE_OR_PATH}"
 	logit ${_LOG} "_IN_LIST contains ${#_IN_LIST} rows"
 	for K in ${(ok)_IN_LIST};do
 		logit ${_LOG} "calling do_media with ${K} ${_IN_LIST[${K}]}"

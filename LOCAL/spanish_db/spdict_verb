@@ -659,6 +659,7 @@ fi
 ) | output_vector
 
 if [[ ${EXPORT} == 'true' && -s ${_VERB_ARG}_tense.dat && -s ${_VERB_ARG}_verb.dat ]];then
+	# TODO: This failed when last tested on verb fingir
 	echo "Exported data for:${WHITE_FG}${_VERB_ARG}${RESET}"
 	echo "Verb data:${WHITE_FG}${_VERB_ARG}_verb.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_verb.dat)) line(s)"
 	echo "Verb tenses:${WHITE_FG}${_VERB_ARG}_tense.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_tense.dat)) line(s)"
