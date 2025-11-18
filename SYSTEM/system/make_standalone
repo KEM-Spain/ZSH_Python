@@ -123,6 +123,7 @@ shift $(( OPTIND - 1 ))
 
 # Execution
 [[ ${#} -eq 1 ]] && FN=${1} || usage "Missing argument:$(opt_type f)"
+[[ ! -e ${FN} ]] && exit_leave "File:${FN} not found"
 
 [[ -e ${_LIB_FUNCS} ]] && /bin/rm -f ${_LIB_FUNCS}
 LOCAL_FUNC_LIST=FUNCS_FOR_${(U)FN:t}

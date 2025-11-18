@@ -15,7 +15,6 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-sed -i 's#_VW=/usr/local/bin#_VW=/usr/local/bin/system/vid_watch#' vid_to_lib.standalone
-sed -i 's/fsub/fsub.standalone/' vid_to_lib.standalone
+sed -E -i 's/fsub\s/fsub.standalone /' vid_to_lib.standalone
 
 

@@ -370,8 +370,10 @@ while true;do
 			exit_leave $(err_msg_exit W "Verb ${_VERB_ARG}:not found")
 		fi
 		msg_box -x10 "Fetching data..."
-		get_verb ${_VERB_ARG} >/dev/null 2>&1
+
+		spdict_verb -e ${_VERB_ARG}
 		[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit E "Unable to fetch verb:${_VERB_ARG}")
+
 		sleep 1
 	else
 		break

@@ -67,15 +67,15 @@ inode_ndx () {
 	local NDX_FN=${1}
 	local FILE_OR_PATH=${2}
 	local DEPTH=${3:=1}
-	local HEAD
-	local LIST=()
-	local L
-	local INODE
-	local P
-	local FN
+	local -a LIST=()
+	local FN=''
+	local FNP=''
+	local HEAD=''
+	local INODE=''
 	local TYPE=f
+	local L
 
-	[[ -f ${FILE_OR_PATH} ]] && HEAD=${FILE_OR_PATH:h} || HEAD="."
+	[[ -f ${FILE_OR_PATH} || -d ${FILE_OR_PATH} ]] && HEAD=${FILE_OR_PATH:h} || HEAD="."
 	[[ ${g_ALLOW_DIRS} == 'true' ]] && TYPE=d
 	[[ ${g_LIMIT_TO_EXT} == 'true' ]] && g_EXT_TEXT="*${g_EXT_TEXT}" || g_EXT_TEXT='*'
 
@@ -83,109 +83,27 @@ inode_ndx () {
 
 	for L in ${LIST};do
 		INODE=$(cut -d '|' -f1 <<<${L})
-		P=$(cut -d '|' -f2 <<<${L:h})
-		P=$(realpath ${P})
+		FNP=$(cut -d '|' -f2 <<<${L:h})
 		FN=$(cut -d '|' -f2 <<<${L:t})
-		FN="${P}/${FN}"
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} \n${WHITE_FG}L${RESET}:${L} \n${WHITE_FG}INODE${RESET}:${INODE} \n${WHITE_FG}P${RESET}:${P} \n${WHITE_FG}FN${RESET}:${FN} \n${NDX_FN}[${INODE}]=${(qqq)FN}"
+		FN="${FNP}/${FN}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} L:${L} INODE:${INODE} FN:${FN}"
+		logit ${_LOG} "${0}:L:${L} INODE:${INODE} FN:${FN}"
 		eval "${NDX_FN}[${INODE}]=${(qqq)FN}"
 	done
 }
 
 clean_show_fn () {
-	local -a TITLE=(${1})
-	local RES=${2}
-	local GREP_REGEX
-	local K L N S D R Y
-	local FN
+	local TITLE=${1}
+	local CLEANED=''
 
-	[[ -z ${TITLE} ]] && echo "${_SCRIPT_TAG}: ${RED_FG}Missing argument${RESET}:<TITLE>" >&2 && return 1
+	[[ -z ${TITLE} ]] && echo "${0}: ${RED_FG}Missing argument${RESET}:<TITLE>" >&2 && return 1
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: received TITLE:${TITLE}" >&2
 
-	GREP_REGEX=$(csf_set_search ${TITLE})
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} GREP_REGEX:${GREP_REGEX}"
+	CLEANED=$(title_info long ${TITLE:r})
+	CLEANED=$(sed 's/[\._]/ /g' <<<${CLEANED} | tr -s '[:space:]') # Strip dots and underscores
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Name w/o dots, underscores, or extra spaces:${CLEANED}" >&2
 
-	for L in ${(k)_IN_LIST};do
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} L:${_IN_LIST[${L}]:t}"
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} grep -io ${GREP_REGEX} | sed 's/\./ /g'"
-
-		N=$(echo "${_IN_LIST[${L}]:t}" | grep -io "${GREP_REGEX}" | sed 's/[\._]/ /g') # Get name, strip dots and underscores
-		[[ -z ${N} ]] && continue
-
-		for K in ${_KEYWORDS};do
-			N=$(sed "s/${K}//gi" <<<${N})
-		done
-
-		S=$(csf_get_series ${_IN_LIST[${L}]}) # Get series
-		D=$(csf_get_date ${_IN_LIST[${L}]}) # Get date
-
-		[[ ${RES} == 'true' ]] && R=$(csf_get_res ${_IN_LIST[${L}]}) # Get res
-		[[ (-z ${S} && -z ${D}) ]] && Y=$(csf_get_year ${_IN_LIST[${L}]}) # Get year
-
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} NAME:${N} SERIES:${S} DATE:${D} YEAR:${Y} RES:${R}"
-
-		FN=$(echo "${(C)N} ${S:u} ${D} ${Y} ${R:l}" | tr -s '[:space:]' | str_trim)
-
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} RETURN_VAL: ${_IN_LIST[${L}]:t}|${FN}.${_IN_LIST[${L}]:e}"
-
-		echo "${_IN_LIST[${L}]:t}|${FN}.${_IN_LIST[${L}]:e}"
-	done
-	return 0
-}
-
-csf_get_date () {
-	local DATE_ARG=${1}
-	local DATE_PATTERN='[0-9][0-9][0-9][0-9][ -.][0-9][0-9][ -.][0-9][0-9]'
-	local DATE=$(echo ${DATE_ARG} | grep -o ${DATE_PATTERN})
-
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} DATE_ARG:${DATE_ARG} DATE:${DATE}"
-	[[ -n ${DATE} ]] && echo ${DATE} || echo ''
-}
-
-csf_get_res () {
-	local RES_ARG=${1}
-	local RES_PATTERN='720p\|1080p'
-	local RES=$(echo ${RES_ARG} | grep -io ${RES_PATTERN})
-
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} RES_ARG:${RES_ARG} RES:${RES}"
-	[[ -n ${RES} ]] && echo ${RES} || echo ''
-}
-
-csf_set_search () {
-	local NDX=0
-	local -a TITLE=(${@})
-	local SEARCH_PATTERN
-	local A
-
-	TITLE=($(echo ${=TITLE} | perl -p -e 's/([\[\]])/\[$1\]/g; s/([()])/\[$1\]/g')) # Bracket (escape) any bracket or paren char
-
-	[[ ${#TITLE} -eq 1 ]] && echo ${TITLE} && return
-
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} TITLE:${#TITLE} ${TITLE}"
-
-	for A in ${=TITLE};do
-		((NDX++))
-		[[ ${NDX} -eq ${#TITLE} ]] && SEARCH_PATTERN+=${A} || SEARCH_PATTERN+="${A}[ .]"
-	done
-
-	echo ${SEARCH_PATTERN:Q}
-}
-
-csf_get_series () {
-	local SERIES_ARG=${1}
-	local SERIES_PATTERN='[s][0-9][0-9][e][0-9][0-9]'
-	local SERIES=$(echo ${SERIES_ARG:l} | grep -io ${SERIES_PATTERN})
-
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} SERIES_ARG:${SERIES_ARG} SERIES:${SERIES:u}"
-	[[ -n ${SERIES} ]] && echo ${SERIES:u} || echo ''
-}
-
-csf_get_year () {
-	local YEAR_ARG=${1:t}
-	local MOVIE_YEAR_PATTERN='(?<!^)\d{4}(?=[^A-Za-z])'
-	local YEAR=$(echo ${YEAR_ARG} | grep -P -io ${MOVIE_YEAR_PATTERN})
-
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} YEAR_ARG:${YEAR_ARG} YEAR:${YEAR}"
-	[[ -n ${YEAR} ]] && echo ${YEAR} || echo ''
+	echo "${CLEANED}.${TITLE:e}"
 }
 
 do_finalize () {
@@ -263,12 +181,12 @@ do_finalize () {
 	done
 
 	if ! arr_is_populated "${FINAL}";then
+		MSG="No files qualified as candidates"
+		echo "${0}: ${MSG}" >> ${_LOG}
 		if [[ ${g_VERBOSE} == 'true' ]];then
-			MSG="No files qualified as candidates"
-			exit_leave $(err_msg_exit W ${MSG})
+			echo "${0}: ${MSG}" >&2
 		else
-			set_exit_value 1
-			exit_leave
+			exit_leave 1 $(err_msg_exit W ${MSG})
 		fi
 	fi
 
@@ -290,7 +208,7 @@ do_finalize () {
 		} | dbg
 	fi
 
-	logit "${0}:${LINENO} Found ${#FINAL} $(str_pluralize candidate ${#FINAL})"
+	logit ${_LOG} "${0}:${LINENO} Found ${#FINAL} $(str_pluralize candidate ${#FINAL})"
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
@@ -323,7 +241,7 @@ do_clean_leading_digits () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
 	if ! arr_is_populated "${_CHAIN_LIST}";then
-		logit "${0}:${LINENO} Error: _CHAIN_LIST not populated, _OUT_LIST:${#_OUT_LIST}, _IN_LIST:${#_IN_LIST}"
+		logit ${_LOG} "${0}:${LINENO} Error: _CHAIN_LIST not populated, _OUT_LIST:${#_OUT_LIST}, _IN_LIST:${#_IN_LIST}"
 		return 1
 	fi
 
@@ -342,7 +260,7 @@ do_clean_leading_digits () {
 	if [[ ${HIT} == 'true' ]];then
 		return 0
 	else
-		logit "${0}:${LINENO} No candidates"
+		logit ${_LOG} "${0}:${LINENO} No candidates"
 		return 1
 	fi
 }
@@ -358,7 +276,7 @@ do_add_leading_digits () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
 	if ! arr_is_populated "${_CHAIN_LIST}";then
-		logit "${0}:${LINENO} Error: _CHAIN_LIST not populated, _OUT_LIST:${#_OUT_LIST}, _IN_LIST:${#_IN_LIST}"
+		logit ${_LOG} "${0}:${LINENO} Error: _CHAIN_LIST not populated, _OUT_LIST:${#_OUT_LIST}, _IN_LIST:${#_IN_LIST}"
 		return 1
 	fi
 
@@ -380,7 +298,7 @@ do_add_leading_digits () {
 	if [[ ${HIT} == 'true' ]];then
 		return 0
 	else
-		logit "${0}:${LINENO} No candidates"
+		logit ${_LOG} "${0}:${LINENO} No candidates"
 		return 1
 	fi
 }
@@ -394,7 +312,7 @@ do_strip_leading_digits () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
 	if ! arr_is_populated "${_CHAIN_LIST}";then
-		logit "${0}:${LINENO} Error: _CHAIN_LIST not populated, _OUT_LIST:${#_OUT_LIST}, _IN_LIST:${#_IN_LIST}"
+		logit ${_LOG} "${0}:${LINENO} Error: _CHAIN_LIST not populated, _OUT_LIST:${#_OUT_LIST}, _IN_LIST:${#_IN_LIST}"
 		return 1
 	fi
 
@@ -413,95 +331,31 @@ do_strip_leading_digits () {
 	if [[ ${HIT} == 'true' ]];then
 		return 0
 	else
-		logit "${0}:${LINENO} No candidates"
+		logit ${_LOG} "${0}:${LINENO} No candidates"
 		return 1
 	fi
 }
 
 do_media () {
-	local RES=${1}; shift
-	local -a TITLE=(${@})
-	local -a DUPS
-	local -a LIST
-	local -a SEQ_FNS
-	local D L S
-	local FN_SEQ=0
+	local INODE=${1}
+	local FQFN=${2}
+	local TITLE=${FQFN:t}
+	local CLEANED=''
 	local OLD NEW
-	local MAX_NEW=''
-	local MAX_SEQ=0
-	local TITLE_OUT
-	local NDX=0
 	
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} TITLE:${TITLE}"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
 
-	LIST=("${(f)$(clean_show_fn "${TITLE}" ${RES})}")
-	[[ ${?} -ne 0 ]] && logit "${0}:${LINENO} clean_show_fn failed" && return 1
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: calling clean_show_fn with TITLE:${TITLE}"
+	CLEANED=$(clean_show_fn "${TITLE}")
 
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST:${#LIST} ${LIST}"
-
-	_IN_LIST=() # Replace _IN_LIST w/ values from clean_show_fn
-
-	DUPS=("${(f)$(find . -type f -iregex ".*${TITLE}.*")}")
-	if [[ ${#DUPS} -ne 0 ]];then
-		for D in ${(ou)DUPS};do
-			FN_SEQ=$(perl -ne '/(?<=[(])\d+(?=[)]$)/ && print "$&"' <<<${D:r})
-			if [[ -n ${FN_SEQ} ]] && validate_is_integer ${FN_SEQ} ]];then
-				SEQ_FNS+=${D:t}
-				[[ ${FN_SEQ} -gt ${MAX_SEQ} ]] && MAX_SEQ=${FN_SEQ}
-			else
-				continue
-			fi
-		done
+	if [[ -n ${CLEANED} ]];then
+		_OUT_LIST[${INODE}]=${FQFN:h}/${CLEANED}
+		[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: _OUT_LIST updated" >&2
+		return 0
+	else
+		return 1
 	fi
-
-	if [[ ${MAX_SEQ} -ne 0 ]];then
-		((MAX_SEQ++))
-		MAX_NEW="$(perl -p -e "s/(?<=[(])\d+(?=[)]$)/${MAX_SEQ}/" <<<${SEQ_FNS[1]:r})"
-
-		# Eliminate any previously sequenced files
-		for L in ${LIST};do
-			OLD=$(echo ${L} | cut -d'|' -f1)
-			NEW=$(echo ${L} | cut -d'|' -f2)
-			for S in ${SEQ_FNS};do
-				[[ ${OLD} == ${S} ]] && LIST=("${(@)LIST:#${OLD}|${NEW}}")
-			done
-		done
-	fi
-
-	for L in ${LIST};do
-		((NDX++))
-		OLD=$(echo ${L} | cut -d'|' -f1)
-		NEW=$(echo ${L} | cut -d'|' -f2)
-
-		[[ ${OLD} == ${NEW} ]] && continue
-
-		[[ ${OLD} =~ 'orphan' ]] && NEW=${OLD}
-
-		TITLE_OUT=${NEW}
-
-		if [[ -n ${MAX_NEW} ]];then
-			TITLE_OUT=${(C)${MAX_NEW}}
-		else
-			if [[ -e ${NEW} ]];then
-				TITLE_OUT="${NEW:r} (2)"
-			fi
-		fi
-
-		TITLE_OUT=$(str_trim <<<${TITLE_OUT})
-
-		# Misc Oddities
-		TITLE_OUT=$(sed -E 's/\s([Ii]+)\s/ \U\1 /g' <<<${TITLE_OUT}) # Uppercase any roman I's
-		TITLE_OUT=$(tr -s '[:space:]' <<<${TITLE_OUT}) # Excess spaces
-
-		[[ ${g_ALLOW_DIRS} == 'true' ]] && TITLE_OUT="${TITLE_OUT:r}" # Extension append for files only
-
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} h ${NEW:h} - TITLE_OUT:${TITLE_OUT} :e ${NEW:e}"
-
-		_IN_LIST[${NDX}]=${OLD}
-		_OUT_LIST[${NDX}]=${TITLE_OUT}
-	done
-
-	return 0
 }
 
 do_proper_case () {
@@ -514,7 +368,7 @@ do_proper_case () {
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
 	if ! arr_is_populated "${_CHAIN_LIST}";then
-		logit "${0}:${LINENO} Error: _CHAIN_LIST not populated, _OUT_LIST:${#_OUT_LIST}, _IN_LIST:${#_IN_LIST}"
+		logit ${_LOG} "${0}:${LINENO} Error: _CHAIN_LIST not populated, _OUT_LIST:${#_OUT_LIST}, _IN_LIST:${#_IN_LIST}"
 		return 1
 	fi
 
@@ -535,7 +389,7 @@ do_proper_case () {
 	if [[ ${HIT} == 'true' ]];then
 		return 0
 	else
-		logit "${0}:${LINENO} No candidates"
+		logit ${_LOG} "${0}:${LINENO} No candidates"
 		return 1
 	fi
 }
@@ -620,7 +474,7 @@ do_sdc () {
 	if [[ ${HIT} == 'true' ]];then
 		return 0
 	else
-		logit "${0}:${LINENO} No candidates"
+		logit ${_LOG} "${0}:${LINENO} No candidates"
 		return 1
 	fi
 }
@@ -654,7 +508,7 @@ do_subs () {
 	# No match
 	if ! arr_is_populated "${_OUT_LIST}";then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
-		logit "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
+		logit ${_LOG} "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		[[ ${g_VERBOSE} == 'true' ]] && echo "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		return 1 
 	fi
@@ -707,7 +561,7 @@ do_truncate () {
 	if [[ ${HIT} == 'true' ]];then
 		return 0
 	else
-		logit "${0}:${LINENO} No candidates"
+		logit ${_LOG} "${0}:${LINENO} No candidates"
 		return 1
 	fi
 }
@@ -740,7 +594,7 @@ do_trim () {
 	if [[ ${HIT} == 'true' ]];then
 		return 0
 	else
-		logit "${0}:${LINENO} No candidates"
+		logit ${_LOG} "${0}:${LINENO} No candidates"
 		return 1
 	fi
 }
@@ -854,13 +708,10 @@ Modify file names. Remove or change arbitrary text in file names.
 \tSubstitutions are ${ITALIC}${BOLD}case sensitive${RESET} by default.  Missing ${ITALIC}${BOLD}${UNDER}FileList${RESET} will default to ${ITALIC}${BOLD}${UNDER}ALL${RESET} files in current 
 \tdirectory.  You are prompted before any action is final (${ITALIC}${UNDER}unless input is piped${RESET}). If filenames are piped,
 \t${ITALIC}${BOLD}${UNDER}fsub${RESET} functions as an inline filter and the resulting list is returned to the caller; no actual file name is altered.
-\t${ITALIC}${BOLD}${UNDER}Media Files${RESET}: Cleaning media file names requires ${ITALIC}${BOLD}${UNDER}keywords${RESET} that match the title. Any file containing a title match 
+\t${ITALIC}${BOLD}${UNDER}Media Files${RESET}: Cleaning media files requires the path where the files are located  
 \twill be scrubbed of any content other than the matched portion and renamed to ${ITALIC}${BOLD}${UNDER}<title>-<pattern>${RESET} with <pattern>
 \tbeing any detected ${ITALIC}${BOLD}${UNDER}series or date pattern${RESET} Currently, piping is not implemented for media.
-\t${ITALIC}${BOLD}${UNDER}Media Example${RESET}: Given the file: "An Example Media File and_other_junk s01e05.mkv" and the arguments 
-\tare: "an example media file", then the resulting file name would be modified to:"An Example Media File-S01E05.mkv". 
-\tFiles not containing a matching title pattern are ignored.${RESET} Media file operations will NOT ${ITALIC}chain${RESET} with other 
-\toperations. If other operations are desired, run them subsequent to media file conversion.
+\tIf other operations are desired, run them subsequent to media file conversion.
 EOF
 
 usage () {
@@ -886,10 +737,9 @@ usage () {
 	echo -e "${WHITE_FG}-d${RESET} allow directories as candidates"
 	echo -e "${WHITE_FG}-e $(opt_type e)${RESET} limit operations to files having $(opt_type e)"
 	echo -e "${WHITE_FG}-i${RESET} case insensitive"
-	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} operate on matching media title ('enclose multiword args in quotes')"
+	echo -e "${WHITE_FG}-m $(opt_type m)${RESET} operate on matching media path ('enclose multiword args in quotes')"
 	echo -e "${WHITE_FG}-n${RESET} clean leading numbers (remove dots between numbers and text) (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} prepend text to filenames"
-	echo -e "${WHITE_FG}-r${RESET} preserve resolution (720p/1080p) in media titles (only valid with -m)"
 	echo -e "${WHITE_FG}-s${RESET} eliminate spaces (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-t $(opt_type t)${RESET} truncate filenames to arbitrary length $(opt_type t) (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-u${RESET} unCamelCase (${CYAN_FG}M${RESET})"
@@ -917,7 +767,6 @@ INTERACTIVE=false
 MEDIA_FILE=false
 PREPEND_TAG=''
 PROPER_CASE=false
-RES=false
 SPACES=false
 STRIP_LEADING_DIGITS=false
 SERVICE_MODE=false
@@ -945,10 +794,9 @@ while getopts ${OPTSTR} OPT;do
      d) g_ALLOW_DIRS=true;;
      e) g_LIMIT_TO_EXT=true;g_EXT_TEXT=${OPTARG};;
      i) CASE=I; GREP_OPTS='-Eiq';;
-     m) MEDIA_FILE=true;MEDIA_FILE_TITLE=${OPTARG};;
+     m) MEDIA_FILE=true;MEDIA_FILES_PATH=${OPTARG};;
      n) CLEAN_LEADING_DIGITS=true;;
      p) PREPEND=true;PREPEND_TAG=${OPTARG};;
-     r) RES=true;;
      s) SPACES=true;;
      t) TRUNC_FN_LEN=${OPTARG};TRUNCATE=true;;
      u) UNCAMEL=true;;
@@ -1001,7 +849,6 @@ fi
 # Validate args and options
 [[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing minimum arguments or options${RESET}"
 [[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
-[[ $(( $OPTIONS[(Ie)r] )) -ne 0 && ${MEDIA_FILE} == 'false' ]] && usage "Option: -r only valid for media files"
 
 if [[ ${TRUNCATE} == 'true' && -n ${TRUNC_FN_LEN} ]];then
 	validate_is_integer ${TRUNC_FN_LEN}
@@ -1011,11 +858,11 @@ fi
 if [[ ${#OPTIONS} -ge 1 && $(( $OPTIONS[(Ie)m] )) -ne 0 ]];then
 	for O in ${OPTIONS};do
 		case ${O} in
-			S|m|r|d|y) HIT=true;;
-			*) HIT=false;break;;
+			S|m|r|d|y|v) HIT=true;;
+			*) HIT=false && break;;
 		esac
 	done
-	[[ ${HIT} == 'false' ]] && usage "Option: -m only compatible with -S -r -d -y"
+	[[ ${HIT} == 'false' ]] && usage "Option: -m only compatible with options:-S -r -d -y -v"
 fi
 
 # Prep for space dot camel
@@ -1049,19 +896,29 @@ if [[ ${_PIPED} == 'true' ]];then
 	# Grab piped input
 	_IN_LIST[1]=${_PIPELINE}
 else
-	if [[ -f ${_FIND_PATH} ]];then
+	if [[ -n ${MEDIA_FILES_PATH} ]];then
+		# Get list of media
+		g_LIST_METHOD="media"
+		logit ${_LOG} "g_LIST_METHOD is media"
+		MEDIA_FILES_PATH=$(eval echo ${MEDIA_FILES_PATH}) # Translate any meta chars
+		inode_ndx "_IN_LIST" "${MEDIA_FILES_PATH}"
+		PATHLBL=${_FIND_PATH:h}
+	elif [[ -f ${_FIND_PATH} ]];then
 		# Convert file name to list member
 		g_LIST_METHOD="file to path"
+		logit ${_LOG} "g_LIST_METHOD is file to path"
 		inode_ndx "_IN_LIST" "${_FIND_PATH}"
 		PATHLBL=${_FIND_PATH:h}
 	elif [[ ${_FIND_PATH} != 'null' ]];then
 		# Find files in path
 		g_LIST_METHOD="find in path"
+		logit ${_LOG} "g_LIST_METHOD is file in path"
 		PATHLBL=${_FIND_PATH}
 		inode_ndx "_IN_LIST" "${_FIND_PATH}" 2
 	else
 		# Find files in current directory
 		g_LIST_METHOD="find in pwd"
+		logit ${_LOG} "g_LIST_METHOD is find in pwd"
 		PATHLBL=${PWD}
 		inode_ndx "_IN_LIST" "${PWD}"
 	fi
@@ -1099,7 +956,6 @@ fi
 	echo CLEAN_LEADING_DIGITS=${CLEAN_LEADING_DIGITS}
 	echo MEDIA_FILE=${MEDIA_FILE}
 	echo PREPEND_TAG=${PREPEND_TAG}
-	echo RESOLUTION=${RES}
 	echo SPACES=${SPACES}
 	echo EXTENDED=${EXTENDED}
 	echo TRIM=${TRIM}
@@ -1115,8 +971,27 @@ fi
 	} >> ${_LOG}
 #fi
 
+# Media
+if [[ ${MEDIA_FILE} == "true" ]];then
+	logit ${_LOG} "Media file path was passed:${MEDIA_FILES_PATH}"
+	logit ${_LOG} "_IN_LIST contains ${#_IN_LIST} rows"
+	for K in ${(ok)_IN_LIST};do
+		logit ${_LOG} "calling do_media with ${K} ${_IN_LIST[${K}]}"
+		do_media ${K} "${_IN_LIST[${K}]}"
+		if [[ ${?} -ne 0 ]];then
+			echo "Error processing:${_IN_LIST[${K}]}" && return 1
+			logit ${_LOG} "Error processing:${_IN_LIST[${K}]}" && return 1
+		fi
+	done
+	logit ${_LOG} "calling do_finalize"
+	logit ${_LOG} "_OUT_LIST contains ${#_OUT_LIST} rows"
+	do_finalize
+	return 0
+fi
+
 # Prepend
 if [[ ${PREPEND} == "true" ]];then
+	logit ${_LOG} "Prepend was called with:${PREPEND_TAG}"
 	[[ ! -e ${1} ]] && echo "${_SCRIPT_TAG} ${RED_FG}File not found${RESET}:${1}" >&2 && return 1
 	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Prepending file names" | tee -a ${_LOG} } >&2
 	do_prepend ${PREPEND_TAG}
@@ -1125,6 +1000,7 @@ fi
 
 # Substitutions
 if [[ ${SEARCH_REPLACE} == 'true' ]];then
+	logit ${_LOG} "Search and Replace was called with:${g_FROM_TEXT} -> ${g_TO_TEXT}"
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_subs${RESET}..."
 	[[ ${g_VERBOSE} == 'true' ]] && { echo "${WHITE_ON_GREY}Substituting \"${g_FROM_TEXT}\" with \"${g_TO_TEXT}\"${RESET}" | tee -a ${_LOG} } >&2
 	do_subs
@@ -1136,10 +1012,11 @@ fi
 
 # Space_Dot_Camel
 if [[ ${#_SPACE_DOT} -gt 0 ]];then
+	logit ${_LOG} "Space Dot Camel was called with:${_SPACE_DOT}"
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_sdc with _SPACE_DOT:${_SPACE_DOT}${RESET}..."
 	if [[ ${g_VERBOSE} == 'true' ]];then
 		{
-			for X in ${(o)_SPACE_DOT};do
+		for X in ${(o)_SPACE_DOT};do
 			case ${X} in
 				B) echo "${CYAN_FG}Eliminating extended/non-ascii...${RESET}";;
 				C) echo "${CYAN_FG}Camel casing...${RESET}";;
@@ -1216,13 +1093,6 @@ if [[ ${YT_TAGS} == "true" ]];then
 	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Eliminating YouTube tags" | tee -a ${_LOG} } >&2
 	do_yt_tag
 	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 | tee -a ${_LOG}
-fi
-
-# Media
-if [[ ${MEDIA_FILE} == "true" ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Cleaning media file names matching${RESET}:[${WHITE_FG}${MEDIA_FILE_TITLE}${RESET}]" | tee -a ${_LOG} } >&2
-	do_media ${RES} "${MEDIA_FILE_TITLE}" # Creates it's own list
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No media files were processed " | tee -a ${_LOG} } >&2
 fi
 
 # Finalize

@@ -33,6 +33,7 @@ on_exit () {
 	ps -p ${_INOT_PID} >/dev/null 2>&1
 	[[ ${?} -eq 0 ]] && kill ${_INOT_PID}
 
+	echo "Deleting ${_PID_FN}" | tee -a >>${_LOG}
 	/bin/rm -f ${_PID_FN}
 
 	exit
@@ -94,7 +95,7 @@ while true;do
 	AUD_CNT=$(find ${_COMPLETED} -type f -iregex "${_MUSIC_REGEX}" ! -path ${_COMPLETED} | wc -l) 
 
 	if [[ ${#_QUEUE} -ne 0 || ${VID_CNT} -ne 0 ]];then
-		echo "Calling vid_to_lib.standalone with ${VID_CNT} files..."
+		echo "Calling ${_VW}/vid_to_lib.standalone with ${VID_CNT} files..."
 		${_VW}/vid_to_lib.standalone -S 2>&1 # Designate as system service
 		_QUEUE=()
 		EVENT=0

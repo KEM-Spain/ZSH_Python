@@ -767,3 +767,71 @@ respond () {
 	eval "read -q ${TIMEOUT} RESPONSE" && echo >&2
 	[[ ${RESPONSE} == 'y' ]] && return 0 || return 1
 }
+
+title_info () {
+	local -a TITLE_ARG=(${@})
+	local INFO_TYPE=${1}
+	local INFO_TITLE=${2}
+	local TITLE_REGEX
+	local LONG_INFO
+	local YEAR SERIES RES
+	local SHORT_TITLE
+	local LONG_TITLE
+	local NDX
+
+	# Find regexes (posix-basic syntax)
+	local _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
+
+	# Perl regexes (extended syntax)
+	local _SERIES_REGEX='((?<!^)[Ss]\d{2}[Ee]\d{2}|\d{4}.\d{2}.\d{2})'
+	local _YEAR_REGEX='(?<!^)(?<=[(. ])(\d{4})(?=[). ])'
+	local _RES_REGEX='(?<!^)(720p|1080p)'
+	local _SHORT_TITLE_REGEX='s/^([^.]*[.][^.]*)[.].*$'
+
+	# Sed regexes (posix-basic syntax)
+	local _TITLE_JUNK_REGEX='[.(_ ]'
+
+	YEAR=$(perl -p -e "s/(.*)(${_YEAR_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
+	[[ ${YEAR} == ${INFO_TITLE} ]] && YEAR=''
+
+	SERIES=$(perl -p -e "s/(.*)(${_SERIES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
+	[[ ${SERIES} == ${INFO_TITLE} ]] && SERIES=''
+
+	RES=$(perl -p -e "s/(.*)(${_RES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
+	[[ ${RES} == ${INFO_TITLE} ]] && RES=''
+
+	LONG_INFO=true
+	if [[ -n ${YEAR} ]];then
+		TITLE_REGEX=${_YEAR_REGEX}
+	elif [[ -n ${SERIES} ]];then
+		TITLE_REGEX=${_SERIES_REGEX}
+	elif [[ -n ${RES} ]];then
+		TITLE_REGEX=${_RES_REGEX}
+	else
+		TITLE_REGEX='(.*)'
+		LONG_INFO=false
+	fi
+
+	SHORT_TITLE=$(perl -p -e "s/^(.*)(${TITLE_REGEX})(.*)/\$1/" <<<${INFO_TITLE})
+
+	NDX=0
+	while true;do
+		((NDX++))
+		if [[ ${SHORT_TITLE[-1]} =~ "${_TITLE_JUNK_REGEX}$" ]];then
+			SHORT_TITLE=$(sed "s/${_TITLE_JUNK_REGEX}$//" <<<${SHORT_TITLE})
+			[[ ${NDX} -ge 5 ]] && break # Safety break
+		else
+			break
+		fi
+	done
+
+	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${SHORT_TITLE} ${YEAR} ${SERIES} ${RES}" | tr -s '[:space:]')
+
+	[[ -z ${LONG_TITLE} ]] && LONG_TITLE=${SHORT_TITLE} # Don't return an empty string
+
+	case ${INFO_TYPE} in
+		short) echo ${SHORT_TITLE:gs/\./ /};;
+		long) echo ${LONG_TITLE:gs/\./ /};;
+		series) echo ${SERIES:gs/\./ /};;
+	esac
+}

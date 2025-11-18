@@ -31,7 +31,7 @@ _MOTD_DIR=/etc/update-motd.d
 _SYS_ALIASES=/etc/zsh/aliases
 _SYS_ZSHRC=/etc/zsh/zshrc
 _WIFI_PREF="WiFi_OliveNet-Casa 7_5G"
-_BATT_LIMIT=95
+_BATT_LIMIT=96
 _CAL_LINES=9
 
 # Declarations

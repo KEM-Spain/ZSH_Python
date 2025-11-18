@@ -23,6 +23,8 @@ typeset -AU TITLES_PROCESSED
 # Constants
 _LIB=/usr/local/lib
 _VW=/usr/local/bin/system/vid_watch
+_VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
+_TITLE_JUNK_REGEX='[.(_ ]'
 
 #_BASEDIR=${PWD} # Test mode
 _BASEDIR=~/Downloads/Torrents # All target dirs are relative to BASEDIR
@@ -35,17 +37,8 @@ _LOG=/tmp/${0:t}.log
 _MOVIES_SUB=movies
 _SERIES_SUB=series
 
-# Find regexes (posix-basic syntax)
-_VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
-
-# Perl regexes (extended syntax)
-_SERIES_REGEX='((?<!^)[Ss]\d{2}[Ee]\d{2}|\d{4}.\d{2}.\d{2})'
-_YEAR_REGEX='(?<!^)(?<=[(. ])(\d{4})(?=[). ])'
-_RES_REGEX='(?<!^)(720p|1080p)'
-_SHORT_TITLE_REGEX='s/^([^.]*[.][^.]*)[.].*$'
-
-# Sed regexes (posix-basic syntax)
-_TITLE_JUNK_REGEX='[.(_ ]'
+# Vars 
+_SERVICE_MODE=''
 
 # Imports
 _LIB_DIR=/usr/local/lib
@@ -78,9 +71,6 @@ exit_pre_exit () {
 	
 	_PRE_EXIT_RAN=true
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
-	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}"
-
 	if [[ -n ${_EXIT_CALLBACKS} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
 		for C in ${_EXIT_CALLBACKS};do
@@ -90,11 +80,13 @@ exit_pre_exit () {
 
 	if [[ ${_EXIT_SCRUB} == 'true' ]];then
 		{
-			SCRUB=("${(f)$(find /tmp/*${_PID}* -type f)}")
-			for F in ${SCRUB};do
-				[[ ${F:e} == 'log' ]] && continue # Retain any logs
-				/bin/rm -f ${F}
-			done
+			if [[ -n ${_MY_PID} ]];then
+				SCRUB=("${(f)$(find /tmp/*${_MY_PID}* -type f)}")
+				for F in ${SCRUB};do
+					echo "${0}: Scrubbed: ${F}" >> /tmp/scrub.log
+					/bin/rm -f ${F}
+				done
+			fi
 		} >/dev/null 2>&1
 	fi
 
@@ -111,6 +103,8 @@ exit_pre_exit () {
 
 	[[ ${$(tabs -d | grep --color=never -o "tabs 8")} != 'tabs 8' ]] && tabs 8
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset tabstops"
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
 }
 
 set_exit_value () {
@@ -136,11 +130,16 @@ arr_is_populated () {
 
 exit_leave () {
 	local OPT=''
-	local -a MSGS=()
+	local RET=''
+
+	if [[ -n ${1} ]];then
+		RET=$( echo "${1}" | sed 's/^[-+]*[0-9]*//g' )
+		[[ -z ${RET} ]] && set_exit_value ${1} && shift
+	fi
+
+	_EXIT_MSGS=(${@})
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	MSGS=(${@})
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
@@ -148,30 +147,34 @@ exit_leave () {
 		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
 		dbg_msg | mypager -n wait
 	fi
-	
-	[[ -n ${MSGS} ]] && _EXIT_MSGS=${MSGS}
 
-	if [[ ${functrace[1]} =~ 'usage' && -z ${MSGS} ]];then
-		set_exit_value 1
-	else
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup # Screen restore if not usage
-	fi
+	[[ ${functrace[1]} =~ 'usage' && -z ${MSGS} ]] && set_exit_value 1
 
 	exit_pre_exit
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup # Restore if needed
+
+	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" # Display any exit messages
 
 	exit ${_EXIT_VALUE}
 }
 
 logit () {
-	local LOG
-	local MSG
+	local LOG=''
+	local MSG=''
 	local STAMP=$(date +'%Y-%m-%d_%H:%M:')
 
+	# Collect args
 	[[ ${#} -gt 1 ]] && LOG=${1} && shift
 	MSG=${@}
 
-	[[ -z ${LOG} ]] && LOG=${_LOG} # _LOG was defined
-	[[ -z ${LOG} ]] && LOG=/tmp/${0}.log} # fall back to default
+	if [[ -z ${LOG} ]];then # No log passed
+		if [[ -n ${_LOG} ]];then
+			LOG=${_LOG} # Log is defined
+		else
+			LOG=/tmp/${0}.log # Define log
+		fi
+	fi
 
 	echo "${STAMP} ${MSG}" >> ${LOG}
 }
@@ -214,39 +217,99 @@ str_unicode_line () {
 	printf "\\u2500%.0s" {1..$(( ${LENGTH} ))}
 }
 
-clean_media () {
-	local -a VIDEOS=("${(f)$(find ${_LIBRARY_DIR}/movies -regex "${_VIDEO_REGEX}")}")
-	local TITLE
-	local LAST_TITLE=?
-	local V
-	local MSG="Cleaning media file names..."
-	local FSUB_OPTS
+title_info () {
+	local -a TITLE_ARG=(${@})
+	local INFO_TYPE=${1}
+	local INFO_TITLE=${2}
+	local TITLE_REGEX
+	local LONG_INFO
+	local YEAR SERIES RES
+	local SHORT_TITLE
+	local LONG_TITLE
+	local NDX
 
-	echo "\n${WHITE_FG}${MSG}${RESET}"
-	echo "${CYAN_FG}$(str_unicode_line ${#MSG})${RESET}"
+	# Find regexes (posix-basic syntax)
+	local _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
 
-	for V in ${(on)VIDEOS};do
-		TITLE=$(title_info "short" "${V:t:r}")
-		[[ ${TITLES_PROCESSED[${TITLE}]} -ne 1 ]] && continue # Only videos from this session
-		[[ ${LAST_TITLE} == ${TITLE} ]] && continue
+	# Perl regexes (extended syntax)
+	local _SERIES_REGEX='((?<!^)[Ss]\d{2}[Ee]\d{2}|\d{4}.\d{2}.\d{2})'
+	local _YEAR_REGEX='(?<!^)(?<=[(. ])(\d{4})(?=[). ])'
+	local _RES_REGEX='(?<!^)(720p|1080p)'
+	local _SHORT_TITLE_REGEX='s/^([^.]*[.][^.]*)[.].*$'
 
-		if [[ -n ${TITLE} ]];then
-			pushd ${V:h}
-			echo "Cleaning title:DIR:${V:h}, FILE:${V:t}, TITLE:${WHITE_FG}${TITLE}${RESET}"
-			[[ ${SERVICE_MODE} == 'true' ]] && FSUB_OPTS="-Syrm" || FSUB_OPTS="-yrm"
-			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: Calling: ${_VW}/fsub.standalone ${FSUB_OPTS} ${TITLE}"
-			logit "${0} calling fsub.standalone ${FSUB_OPTS} ${TITLE}"
-			${_VW}/fsub.standalone "${FSUB_OPTS} ${TITLE}"
-			[[ ${?} -ne 0 ]] && logit "${0}: fsub.standalone returned an error"
-			popd
+	# Sed regexes (posix-basic syntax)
+	local _TITLE_JUNK_REGEX='[.(_ ]'
+
+	YEAR=$(perl -p -e "s/(.*)(${_YEAR_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
+	[[ ${YEAR} == ${INFO_TITLE} ]] && YEAR=''
+
+	SERIES=$(perl -p -e "s/(.*)(${_SERIES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
+	[[ ${SERIES} == ${INFO_TITLE} ]] && SERIES=''
+
+	RES=$(perl -p -e "s/(.*)(${_RES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
+	[[ ${RES} == ${INFO_TITLE} ]] && RES=''
+
+	LONG_INFO=true
+	if [[ -n ${YEAR} ]];then
+		TITLE_REGEX=${_YEAR_REGEX}
+	elif [[ -n ${SERIES} ]];then
+		TITLE_REGEX=${_SERIES_REGEX}
+	elif [[ -n ${RES} ]];then
+		TITLE_REGEX=${_RES_REGEX}
+	else
+		TITLE_REGEX='(.*)'
+		LONG_INFO=false
+	fi
+
+	SHORT_TITLE=$(perl -p -e "s/^(.*)(${TITLE_REGEX})(.*)/\$1/" <<<${INFO_TITLE})
+
+	NDX=0
+	while true;do
+		((NDX++))
+		if [[ ${SHORT_TITLE[-1]} =~ "${_TITLE_JUNK_REGEX}$" ]];then
+			SHORT_TITLE=$(sed "s/${_TITLE_JUNK_REGEX}$//" <<<${SHORT_TITLE})
+			[[ ${NDX} -ge 5 ]] && break # Safety break
 		else
-			echo "${0}: Failed to extract a title from: ${V:t:r}"
+			break
 		fi
-
-		[[ ${TITLE} != ${LAST_TITLE} ]] && LAST_TITLE=${TITLE}
 	done
 
-	logit "${0} Cleaned titles\n $(tree ${_LIBRARY_DIR})"
+	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${SHORT_TITLE} ${YEAR} ${SERIES} ${RES}" | tr -s '[:space:]')
+
+	case ${INFO_TYPE} in
+		short) echo ${SHORT_TITLE:gs/\./ /};;
+		long) echo ${LONG_TITLE:gs/\./ /};;
+		series) echo ${SERIES:gs/\./ /};;
+	esac
+}
+
+clean_media () {
+	local DEST=${1}
+	local WORKDIR=''
+	local FSUB_OPTS=''
+
+	[[ ${_SERVICE_MODE} == 'true' ]] && FSUB_OPTS="-Syrm" || FSUB_OPTS="-yrm"
+
+	logit "${0} Got DEST:${DEST}"
+
+	VIDEOS=("${(f)$(find ${DEST} -regex "${_VIDEO_REGEX}")}")
+	logit "${0} Found ${#VIDEOS} videos at DEST:${DEST}"
+
+	if [[ -n ${VIDEOS} ]];then
+		echo "\n${WHITE_FG}Cleaning ${#VIDEOS} media file names in ${DEST}...${RESET}"
+		echo "${CYAN_FG}$(str_unicode_line ${#MSG})${RESET}"
+
+		WORKDIR=${VIDEOS[1]:h}
+		logit "${0} calling ${_VW}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
+		echo "${0} calling ${_VW}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
+		${_VW}/fsub.standalone "${FSUB_OPTS} ${WORKDIR}"
+		[[ ${?} -ne 0 ]] && logit "${0}: ${_VW}/fsub.standalone returned an error"
+	else
+		logit "${0} No videos found at DEST:${DEST}"
+	fi
+
+	logit "${0} Cleaned movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
+	logit "${0} Cleaned series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
 }
 
 clear_deluge_state () {
@@ -402,60 +465,6 @@ sub_rename () {
 	[[ ${HIT} == 'true' ]] && echo "Subtitles verified" || echo "No subtitle files"
 }
 
-title_info () {
-	local -a TITLE_ARG=(${@})
-	local INFO_TYPE=${1}
-	local INFO_TITLE=${2}
-	local TITLE_REGEX
-	local LONG_INFO
-	local YEAR SERIES RES
-	local SHORT_TITLE
-	local LONG_TITLE
-	local NDX
-
-	YEAR=$(perl -p -e "s/(.*)(${_YEAR_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${YEAR} == ${INFO_TITLE} ]] && YEAR=''
-
-	SERIES=$(perl -p -e "s/(.*)(${_SERIES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${SERIES} == ${INFO_TITLE} ]] && SERIES=''
-
-	RES=$(perl -p -e "s/(.*)(${_RES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${RES} == ${INFO_TITLE} ]] && RES=''
-
-	LONG_INFO=true
-	if [[ -n ${YEAR} ]];then
-		TITLE_REGEX=${_YEAR_REGEX}
-	elif [[ -n ${SERIES} ]];then
-		TITLE_REGEX=${_SERIES_REGEX}
-	elif [[ -n ${RES} ]];then
-		TITLE_REGEX=${_RES_REGEX}
-	else
-		TITLE_REGEX='(.*)'
-		LONG_INFO=false
-	fi
-
-	SHORT_TITLE=$(perl -p -e "s/^(.*)(${TITLE_REGEX})(.*)/\$1/" <<<${INFO_TITLE})
-
-	NDX=0
-	while true;do
-		((NDX++))
-		if [[ ${SHORT_TITLE[-1]} =~ "${_TITLE_JUNK_REGEX}$" ]];then
-			SHORT_TITLE=$(sed "s/${_TITLE_JUNK_REGEX}$//" <<<${SHORT_TITLE})
-			[[ ${NDX} -ge 5 ]] && break # Safety break
-		else
-			break
-		fi
-	done
-
-	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${SHORT_TITLE} ${YEAR} ${SERIES} ${RES}" | tr -s '[:space:]')
-
-	case ${INFO_TYPE} in
-		short) echo ${SHORT_TITLE};;
-		long) echo ${LONG_TITLE};;
-		series) echo ${SERIES};;
-	esac
-}
-
 #--Begin GetOpts--
 RESET="\033[m"
 RED_FG="\033[31m"
@@ -519,14 +528,14 @@ typeset -a OPTIONS
 OPTSTR=":HDcS"
 OPTIND=0
 
-SERVICE_MODE=false
+_SERVICE_MODE=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      c) clear_deluge_state;;
-     S) SERVICE_MODE=true;;
+     S) _SERVICE_MODE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -538,7 +547,7 @@ shift $((OPTIND -1))
 # Execution
 [[ -e ${_LOG} ]] && rm -f ${_LOG}
 logit "start"
-logit "SERVICE_MODE:${SERVICE_MODE}"
+logit "_SERVICE_MODE:${_SERVICE_MODE}"
 
 [[ ! -e ${_LIBRARY_DIR}/movies ]] && mkdir ${_LIBRARY_DIR}/movies 
 [[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
@@ -555,6 +564,7 @@ fi
 NDX=0
 HIT=false
 
+logit "\nProcessing ${#VIDEOS} videos"
 for V in ${VIDEOS};do
 	((NDX++))
 
@@ -569,13 +579,15 @@ for V in ${VIDEOS};do
 	# This section is testing subtitle file rename before library move
 	if [[ -d ${_COMPLETED_DIR}/${FN_HEAD} ]];then
 		SUB_FILES=("${(f)$(find ${_COMPLETED_DIR}/${FN_HEAD} -maxdepth 1 -type f -name '*srt')}")
-		logit "SUB_FILES COUNT:${#SUB_FILES}"
-		logit "SUB_FILE:${SUB_FILES[1]}"
-		logit "MEDIA_FN:${MEDIA_FN}"
-		logit "MEDIA FQFN w/o EXTENSION:${MEDIA_FN:r}"
-		logit "SUB FILE w/o EXTENSION: ${SUB_FILE[1]:r}"
-		if [[ ${#SUB_FILES} -eq 1 && ${MEDIA_FQFN:r} != ${SUB_FILE[1]:r} ]];then
-			logit "POSSIBLE RENAME"
+		if [[ -n ${SUB_FILES} ]];then
+			logit "SUB_FILES COUNT:${#SUB_FILES}"
+			logit "SUB_FILE:${SUB_FILES[1]}"
+			logit "MEDIA_FN:${MEDIA_FN}"
+			logit "MEDIA FQFN w/o EXTENSION:${MEDIA_FN:r}"
+			logit "SUB FILE w/o EXTENSION: ${SUB_FILE[1]:r}"
+			if [[ ${#SUB_FILES} -eq 1 && ${MEDIA_FQFN:r} != ${SUB_FILE[1]:r} ]];then
+				logit "POSSIBLE SUB FILE RENAME"
+			fi
 		fi
 	fi
 
@@ -614,7 +626,7 @@ for V in ${VIDEOS};do
 
 	[[ ${IS_SERIES} == 'true' ]] && echo "${BOLD}${MAGENTA_FG}Identified Series${RESET}:${WHITE_FG}${SERIES_TITLE_SUB} (${SERIES_TITLE})${RESET}"
 
-	vut info ${MEDIA_FQFN}
+	#vut info ${MEDIA_FQFN}
 
 	move_media "${MEDIA_FQFN}" "${MEDIA_DEST}" ${EXTRACT}
 
@@ -625,7 +637,7 @@ done
 
 if [[ ${HIT} == 'true' ]];then
 	# Clean media file names
-	clean_media
+	clean_media ${MEDIA_DEST}
 
 	# Validate/Correct subtitle file names
 	sub_rename

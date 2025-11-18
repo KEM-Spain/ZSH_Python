@@ -39,6 +39,7 @@ _V_TYPE=''
 _V_TYPE_LBL=''
 _PASTE=false
 _EXIT_MSG=''
+_EXIT_CODE=0
 
 # Functions
 export_block () {
@@ -672,8 +673,11 @@ if [[ ${EXPORT} == 'true' && -s ${_VERB_ARG}_tense.dat && -s ${_VERB_ARG}_verb.d
 	fi
 	respond "${OP} database"
 	[[ ${?} -eq 0 ]] && make_spanish_db ${OPT} ${_VERB_ARG}
+	_EXIT_CODE=0
+else
+	_EXIT_CODE=1
 fi
 
 [[ -e ${_VERB_ARG}.html ]] && /bin/rm ${_VERB_ARG}.html
 
-exit_leave ${_EXIT_MSG}
+exit_leave ${_EXIT_CODE} ${_EXIT_MSG}
