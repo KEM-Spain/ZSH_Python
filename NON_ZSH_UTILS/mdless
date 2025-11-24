@@ -4,7 +4,6 @@
 #
 # The application 'mdless' is installed as part of a gem, and
 # this file is here to facilitate running it.
-#
 
 require 'rubygems'
 
@@ -22,8 +21,8 @@ if str
 end
 
 if Gem.respond_to?(:activate_bin_path)
-load Gem.activate_bin_path('mdless', 'mdless', version)
+  load Gem.activate_bin_path('mdless', 'mdless', version)
 else
-gem "mdless", version
-load Gem.bin_path("mdless", "mdless", version)
+  gem "mdless", version
+  load Gem.bin_path("mdless", "mdless", version)
 end

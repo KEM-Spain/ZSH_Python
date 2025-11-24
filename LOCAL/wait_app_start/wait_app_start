@@ -7,6 +7,7 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Constants
+_CFG_DIR=~/.local/share/${0:t}
 _LOG=/tmp/${0:t}.log
 _SCRIPT=${0:t}
 _SYS_APPS=/usr/local/bin/system/launchers
@@ -16,7 +17,7 @@ typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_fire
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
 typeset -A _SCAN=()
 typeset -A _SEEN=()
-typeset -A _WAITTIMES=(haruna 10 musescore 4 audacity 10 viber 3)
+typeset -A _WAITTIMES=()
 typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(enpass pyts libreoffice org.gnome.terminal)
@@ -57,6 +58,49 @@ clear_idle_apps () {
 		logit ${_LOG} "Clearing any idle applications"
 		unset "_SEEN[${S}]"
 		logit ${_LOG} "${S} NOT RUNNING - CLEARED FROM SEEN"
+	done
+}
+
+cfg_create () {
+	[[ ! -e ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
+
+	if [[ ! -e ${_CFG_DIR}/${_SCRIPT}.xml ]];then
+		{ cat << ______cfg_EOF
+		<wait_app_start>
+		<entry> 
+		  <app>haruna</app>
+		  <waittime>10</waittime>
+		</entry>
+		<entry>
+		  <app>musescore</app>
+		  <waittime>4</waittime>
+		</entry>
+		<entry>
+		  <app>audacity</app>
+		  <waittime>10</waittime>
+		</entry>
+		<entry>
+		  <app>viber</app>
+		  <waittime>3</waittime>
+		</entry>
+		</wait_app_start>
+______cfg_EOF
+		} > ${_CFG_DIR}/${_SCRIPT}.xml
+	fi 
+}
+
+cfg_load () {
+	local APP=''
+	local WT=''
+	local LINE=''
+	local FN=${_CFG_DIR}/${_SCRIPT}.xml
+	local MAX=$(xmllint --xpath "count(wait_app_start/entry)" ${FN})
+	local X=0
+
+	for (( X=1; X<=${MAX}; X++ ));do
+		APP=$(xmllint --xpath "wait_app_start/entry[${X}]/app//text()" ${FN})
+		WT=$(xmllint --xpath "wait_app_start/entry[${X}]/waittime//text()" ${FN})
+		_WAITTIMES=[${APP}]=${WT}
 	done
 }
 
@@ -135,6 +179,8 @@ has_waittime () {
 	local APP=${1}
 	local WT=0
 	local A
+
+	cfg_load
 
 	for A in ${(k)_WAITTIMES};do
 		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAITTIMES[${A}]} && break
@@ -216,6 +262,8 @@ scan_apps () {
 }
 
 # Execution
+cfg_create
+
 _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
 _APPS_TO_SCAN+=(${_APPS_NON_DOCK})
 

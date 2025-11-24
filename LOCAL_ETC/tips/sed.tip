@@ -32,11 +32,120 @@ together on a single line of output
 2) ${E_WHITE_FG}Append${E_RESET} the current and next line to the pattern space via ${E_CYAN_FG}N${E_RESET}
 3) If we are ${E_WHITE_FG}NOT LAST LINE${E_RESET} ${E_CYAN_FG}\$!${E_RESET}, branch to the created label ${E_CYAN_FG}ba${E_RESET}
 4) Finally, the substitution ${E_WHITE_FG}replaces every newline with a space${E_RESET} on the pattern space
+
+${E_WHITE_FG}Example 3${E_RESET}
+
+This pattern will find a line ending with a % sign and join it with the line above adding a pipe delimiter
+
+Example data:
+
+${E_WHITE_FG}BEFORE:${E_RESET}
+Holiday Touchdown: A Bills Love Story
+Streaming Nov 22, 2025
+ 95%
+ 83%
+Train Dreams
+Streaming Nov 21, 2025
+ 88%
+The Age of Disclosure
+
+${E_WHITE_FG}AFTER:${E_RESET}
+Holiday Touchdown: A Bills Love Story
+Streaming Nov 22, 2025 95%|83%
+Train Dreams
+Streaming Nov 21, 2025|88%
+
+${E_WHITE_FG}CODE:${E_RESET}
+sed -E ':start;N;s/\n(.*%)/|\1/;t start;P;D' 
+
+N - copy line to pattern space
+P - print pattern space
+D - clear pattern space up to first embedded newline
+
+SED PROGRAM:
+  :start
+  N
+  s/\n(.*%)/|\1/
+  t start
+  P
+  D
+INPUT:   'STDIN' line 1
+PATTERN: Holiday Touchdown: A Bills Love Story
+COMMAND: :start
+COMMAND: N
+PATTERN: Holiday Touchdown: A Bills Love Story\nStreaming Nov 22, 2025
+COMMAND: s/\n(.*%)/|\1/
+PATTERN: Holiday Touchdown: A Bills Love Story\nStreaming Nov 22, 2025
+COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
+COMMAND: P
+> Holiday Touchdown: A Bills Love Story     ${E_WHITE_FG}# PRINTED${E_RESET}
+COMMAND: D
+PATTERN: Streaming Nov 22, 2025
+COMMAND: :start
+COMMAND: N
+PATTERN: Streaming Nov 22, 2025\n95%
+COMMAND: s/\n(.*%)/|\1/
+MATCHED REGEX REGISTERS
+  regex[0] = 22-26 '
+95%'
+  regex[1] = 23-26 '95%'
+PATTERN: Streaming Nov 22, 2025|95%
+COMMAND: t start     ${E_WHITE_FG}# TRUE - BRANCH${E_RESET}
+COMMAND: :start
+COMMAND: N
+PATTERN: Streaming Nov 22, 2025|95%\n83%
+COMMAND: s/\n(.*%)/|\1/
+MATCHED REGEX REGISTERS
+  regex[0] = 26-30 '
+83%'
+  regex[1] = 27-30 '83%'
+PATTERN: Streaming Nov 22, 2025|95%|83%
+COMMAND: t start     ${E_WHITE_FG}# TRUE - BRANCH${E_RESET}
+COMMAND: :start
+COMMAND: N
+PATTERN: Streaming Nov 22, 2025|95%|83%\nTrain Dreams
+COMMAND: s/\n(.*%)/|\1/
+PATTERN: Streaming Nov 22, 2025|95%|83%\nTrain Dreams
+COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
+COMMAND: P
+> Streaming Nov 22, 2025|95%|83%     ${E_WHITE_FG}# PRINTED${E_RESET}
+COMMAND: D
+PATTERN: Train Dreams
+COMMAND: :start
+COMMAND: N
+PATTERN: Train Dreams\nStreaming Nov 21, 2025
+COMMAND: s/\n(.*%)/|\1/
+PATTERN: Train Dreams\nStreaming Nov 21, 2025
+COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
+COMMAND: P
+> Train Dreams     ${E_WHITE_FG}# PRINTED${E_RESET}
+COMMAND: D
+PATTERN: Streaming Nov 21, 2025
+COMMAND: :start
+COMMAND: N
+PATTERN: Streaming Nov 21, 2025\n88%
+COMMAND: s/\n(.*%)/|\1/
+MATCHED REGEX REGISTERS
+  regex[0] = 22-26 '
+88%'
+  regex[1] = 23-26 '88%'
+PATTERN: Streaming Nov 21, 2025|88%
+COMMAND: t start     ${E_WHITE_FG}# TRUE - BRANCH${E_RESET}
+COMMAND: :start
+COMMAND: N
+PATTERN: Streaming Nov 21, 2025|88%\nThe Age of Disclosure
+COMMAND: s/\n(.*%)/|\1/
+PATTERN: Streaming Nov 21, 2025|88%\nThe Age of Disclosure
+COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
+COMMAND: P
+> Streaming Nov 21, 2025|88%     ${E_WHITE_FG}# PRINTED${E_RESET}
+
 tip_sed_EOF
+) | mypager wait
 
 local RESPONSE
 
-echo -n "\n${E_WHITE_FG}Further in-depth reading${E_RESET}"
+echo -n "\n${E_WHITE_FG}Further in-depth documentation${E_RESET}"
 echo -n "\n${E_MAGENTA_FG}---------------------------------------------${E_RESET}"
 echo -n "\nPress (${E_WHITE_FG}a${E_RESET}) to read sed basic commands tutorial"
 echo -n "\nPress (${E_WHITE_FG}b${E_RESET}) to read sed advanced tutorial"
@@ -47,4 +156,3 @@ case ${RESPONSE} in
 	a) { run_okular --page 1 ${_EXTERNAL_FILES[sed_a]} 2>/dev/null & };;
 	b) { run_okular --page 1 ${_EXTERNAL_FILES[sed_b]} 2>/dev/null & };;
 esac
-) | mypager

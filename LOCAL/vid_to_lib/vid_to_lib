@@ -16,9 +16,8 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Declarations
-typeset -a VIDEOS
-typeset -A VID_DESTS
-typeset -AU TITLES_PROCESSED
+typeset -a _VIDEOS=()
+typeset -a _MOVELIST=()
 
 # Constants
 _LIB=/usr/local/lib
@@ -57,14 +56,14 @@ clean_media () {
 
 	logit "${0} Got DEST:${DEST}"
 
-	VIDEOS=("${(f)$(find ${DEST} -regex "${_VIDEO_REGEX}")}")
-	logit "${0} Found ${#VIDEOS} videos at DEST:${DEST}"
+	_VIDEOS=("${(f)$(find ${DEST} -regex "${_VIDEO_REGEX}")}")
+	logit "${0} Found ${#_VIDEOS} videos at DEST:${DEST}"
 
-	if [[ -n ${VIDEOS} ]];then
-		echo "\n${WHITE_FG}Cleaning ${#VIDEOS} media file names in ${DEST}...${RESET}"
+	if [[ -n ${_VIDEOS} ]];then
+		echo "\n${WHITE_FG}Cleaning ${#_VIDEOS} media file names in ${DEST}...${RESET}"
 		echo "${CYAN_FG}$(str_unicode_line ${#MSG})${RESET}"
 
-		WORKDIR=${VIDEOS[1]:h}
+		WORKDIR=${_VIDEOS[1]:h}
 		logit "${0} calling ${_VW}/fsub ${FSUB_OPTS} ${WORKDIR}"
 		echo "${0} calling ${_VW}/fsub ${FSUB_OPTS} ${WORKDIR}"
 		${_VW}/fsub "${FSUB_OPTS} ${WORKDIR}"
@@ -310,6 +309,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
  
 # Execution
+# TODO: Investigate receiving a list of files
 [[ -e ${_LOG} ]] && rm -f ${_LOG}
 logit "start"
 logit "_SERVICE_MODE:${_SERVICE_MODE}"
@@ -318,10 +318,10 @@ logit "_SERVICE_MODE:${_SERVICE_MODE}"
 [[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
 
 echo "Scanning ${_COMPLETED_DIR} for video..."
-VIDEOS=("${(f)$(find ${_COMPLETED_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_COMPLETED_DIR})}")
+_VIDEOS=("${(f)$(find ${_COMPLETED_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_COMPLETED_DIR})}")
 
-if arr_is_populated "${VIDEOS}";then
-	echo "Processing ${WHITE_FG}${#VIDEOS}${RESET} media file(s)..."
+if arr_is_populated "${_VIDEOS}";then
+	echo "Processing ${WHITE_FG}${#_VIDEOS}${RESET} media file(s)..."
 else
 	echo "No videos found" && HIT=false 
 fi
@@ -329,8 +329,8 @@ fi
 NDX=0
 HIT=false
 
-logit "\nProcessing ${#VIDEOS} videos"
-for V in ${VIDEOS};do
+logit "\nProcessing ${#_VIDEOS} videos"
+for V in ${_VIDEOS};do
 	((NDX++))
 
 	logit "\nVIDEO ${NDX}:${V}"
@@ -373,10 +373,10 @@ for V in ${VIDEOS};do
 
 	EXTRACT=false
 	if [[ ${IS_SERIES} == 'true' ]];then
-		MEDIA_DEST=${_LIBRARY_DIR}/${_SERIES_SUB}/${(C)SERIES_TITLE_SUB} # Dest is series directory to house series files
+		MEDIA_DEST=${_LIBRARY_DIR}/${_SERIES_SUB}/${(C)SERIES_TITLE_SUB} # Dest is series directory
 		[[ ${FN_HEAD} != '.' ]] && EXTRACT=true
 	else
-		MEDIA_DEST=${_LIBRARY_DIR}/${_MOVIES_SUB} # Dest is movies directory to house movie files
+		MEDIA_DEST=${_LIBRARY_DIR}/${_MOVIES_SUB} # Dest is movies directory
 		[[ ${FN_HEAD} != '.' ]] && EXTRACT=true
 	fi
 
@@ -391,10 +391,17 @@ for V in ${VIDEOS};do
 
 	HIT=true
 	TITLE=$(title_info "short" "${V:t:r}")
-	TITLES_PROCESSED[${TITLE}]=1
+	_MOVELIST+=${MEDIA_FQFN}
 done
 
 if [[ ${HIT} == 'true' ]];then
+	# TODO: Modify fsub to accecpt this list
+	logit ${_LOG} "=========================="
+	for M in ${_MOVELIST};do
+		logit ${_LOG} "Moved ${M} to ${MEDIA_DEST}"
+	done
+	logit ${_LOG} "=========================="
+
 	# Clean media file names
 	clean_media ${MEDIA_DEST}
 

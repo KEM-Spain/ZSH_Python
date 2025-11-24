@@ -128,6 +128,8 @@ cmd_filter () {
 	local CACHE=0
 	local K
 
+	[[ ${_VERBOSE} == 'true' ]] && echo "Entered ${0}..." >&2
+
 	[[ ! -e ${_CACHE_DIR} ]] && md ${_CACHE_DIR}
 	[[ ! -e ${_HIST_CACHE} ]] && touch ${_HIST_CACHE}
 
@@ -137,8 +139,12 @@ cmd_filter () {
 		CMD_IN=$(cut -d';' -f2 <<<${K})
 		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN})
 		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
+		[[ -z ${CMD_TGT} ]] && continue
+
+		[[ ${_VERBOSE} == 'true' ]] && echo "Processing command:${CMD_TGT}" >&2
 
 		VALID=false
+		[[ ${_VERBOSE} == 'true' ]] && echo "Calling grep..." >&2
 		if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
 			VALID='true'
 			((CACHE++))
@@ -147,6 +153,7 @@ cmd_filter () {
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
+			[[ ${_VERBOSE} == 'true' ]] && echo "Calling which..." >&2
 			which -s ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
@@ -158,6 +165,7 @@ cmd_filter () {
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
+			[[ ${_VERBOSE} == 'true' ]] && echo "Calling mya..." >&2
 			mya -q -- ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
@@ -169,6 +177,7 @@ cmd_filter () {
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
+			[[ ${_VERBOSE} == 'true' ]] && echo "Calling locate..." >&2
 			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
 			CMD_OUT=$(locate -b -e ${CMD_MSK})
 			if [[ ${?} -eq 0 ]];then
@@ -200,6 +209,8 @@ hist_parse () {
 	local TS
 	local TS_NDX
 
+	[[ ${_VERBOSE} == 'true' ]] && echo "Entered ${0}..." >&2
+
 	for L in ${(on)${(P)ARRAY}};do
 		[[ -z ${L} ]] && continue # Blank hist line
 		#[[ ${L} =~ ';\[\[' ]] && continue # test commands
@@ -207,6 +218,7 @@ hist_parse () {
 		LINE=$(tr -d '\n' <<<${L})
 		TS=$(cut -d';' -f1 <<<${LINE})
 		TS_NDX=$(cut -d':' -f2 <<<${TS} | str_trim)
+
 		if [[ ${_DEEP} == 'true' ]];then
 			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
 			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
@@ -220,6 +232,7 @@ hist_parse () {
 		else
 			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
 		fi
+
 		RECENT[${CMD}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time key as they are hit
 	done
 
@@ -234,6 +247,8 @@ build_hist () {
 	local -a _CMD_LIST
 	local -a _VALID_CMDS
 	local K
+
+	[[ ${_VERBOSE} == 'true' ]] && echo "Entered ${0}..." >&2
 
 	#echo "ARRAY:${ARRAY} ${#${(P)ARRAY}}" >&2
 
@@ -278,6 +293,8 @@ usage () {
 [[ $(got_opt v ${@}) -eq 0 ]] && _VERBOSE=true || _VERBOSE=false
 [[ $(got_opt t ${@}) -eq 0 ]] && _TESTING=true || _TESTING=false
 
+[[ ${_VERBOSE} == 'true' && ${_FORCE} == 'true' ]] && echo "Forcing rebuild..." >&2
+
 if [[ ${_FORCE} == 'false' ]];then
 	MSG=$(size_diff)
 	if [[ ${?} -ne 0 ]];then
@@ -291,21 +308,21 @@ cp ${_HIST_FILE} ${_HIST_BAK}
 
 echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
 upd_locate -u 2>/dev/null
-echo "${ITALIC}collating history...${RESET}" >&2
 
+echo "${ITALIC}collating history...${RESET}" >&2
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
-_VALID_HIST=("${(f)$(build_hist _HIST_IN)}")
+_REBUILT_HIST=("${(f)$(build_hist _HIST_IN)}")
 
-if ! arr_is_populated "_VALID_HIST";then
+if ! arr_is_populated "_REBUILT_HIST";then
 	echo "No valid history found"
 	exit_leave
 fi
  
 NDX=0
-for L in ${_VALID_HIST};do
+for L in ${_REBUILT_HIST};do
 	((NDX++))
 	printf "%s\n" "${L}" >> ${_HIST_NEW}
 done
@@ -326,7 +343,7 @@ if [[ ${_PROD} == 'false' ]];then
 	echo " LOCATE:${WHITE_FG}$(cut -d'|' -f3 <<<${ACC})${RESET}"
 	echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
 	echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
-	echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_VALID_HIST}${RESET}"
+	echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_REBUILT_HIST}${RESET}"
 	echo "${WHITE_ON_GREY}Done.${RESET}\n"
 else
 	tput el

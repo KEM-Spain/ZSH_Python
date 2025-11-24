@@ -28,19 +28,18 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
-imdb () {
-	local STR=${@}
+do_imdb () {
+	local ARG=${@}
 	local URL
 
 	msg_box "Querying imdb..."
 
-	STR=$(sed 's/ /%20/g' <<<${STR})
+	ARG=$(sed 's/ /%20/g' <<<${ARG})
+	URL="http://www.imdb.com/find?q=${ARG}"
 
 	{
-	URL=$(wget --user-agent=${AGENT} --quiet -O - "http://www.imdb.com/find?q=${STR}" | pup 'div' .ipc-metadata-list-summary-item__t attr{href} | grep 'ttl_1' | sed 's#/?ref.*##')
-	URL="http://www.imdb.com${URL}"
 	if [[ ! $(curl --connect-timeout 2 -Is "${URL}" | head -1) =~ "404" ]];then
-		nohup /usr/bin/firefox "${URL}" >/dev/null &
+		nohup /usr/bin/google-chrome-stable "${URL}" >/dev/null &
 		win_max chrome &
 	else
 		msg_box -p -PK "${0}: Could not obtain a valid URL:${URL}"
@@ -48,9 +47,11 @@ imdb () {
 	} 2>/dev/null
 }
 
+
 do_smcup
 
-imdb ${@}
+ARG=${@}
+do_imdb ${ARG}
 
 exit_leave
 

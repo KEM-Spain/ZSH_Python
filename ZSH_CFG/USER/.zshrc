@@ -261,10 +261,16 @@ add-zsh-hook precmd _cursor_on
 # Execution
 if [[ $(_term_count) -eq 1 ]];then
 	INTERACTIVE=''
+
+	xdotool key "ctrl+J"
+	tput sgr0
+	xdotool key "ctrl+J"
+
 	if [[ -o interactive ]]; then
 		if [[ $(_term_count) -eq 1 ]];then
 			wmctrl -i -r $(_term_wid) -b add,maximized_vert,maximized_horz
 		fi
+
 		INTERACTIVE=interactive
 		tput cup 0 0
 		tput ed

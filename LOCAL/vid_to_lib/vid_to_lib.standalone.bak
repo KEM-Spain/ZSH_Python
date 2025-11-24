@@ -16,9 +16,8 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Declarations
-typeset -a VIDEOS
-typeset -A VID_DESTS
-typeset -AU TITLES_PROCESSED
+typeset -a _VIDEOS=()
+typeset -a _MOVELIST=()
 
 # Constants
 _LIB=/usr/local/lib
@@ -294,14 +293,14 @@ clean_media () {
 
 	logit "${0} Got DEST:${DEST}"
 
-	VIDEOS=("${(f)$(find ${DEST} -regex "${_VIDEO_REGEX}")}")
-	logit "${0} Found ${#VIDEOS} videos at DEST:${DEST}"
+	_VIDEOS=("${(f)$(find ${DEST} -regex "${_VIDEO_REGEX}")}")
+	logit "${0} Found ${#_VIDEOS} videos at DEST:${DEST}"
 
-	if [[ -n ${VIDEOS} ]];then
-		echo "\n${WHITE_FG}Cleaning ${#VIDEOS} media file names in ${DEST}...${RESET}"
+	if [[ -n ${_VIDEOS} ]];then
+		echo "\n${WHITE_FG}Cleaning ${#_VIDEOS} media file names in ${DEST}...${RESET}"
 		echo "${CYAN_FG}$(str_unicode_line ${#MSG})${RESET}"
 
-		WORKDIR=${VIDEOS[1]:h}
+		WORKDIR=${_VIDEOS[1]:h}
 		logit "${0} calling ${_VW}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
 		echo "${0} calling ${_VW}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
 		${_VW}/fsub.standalone "${FSUB_OPTS} ${WORKDIR}"
@@ -555,10 +554,10 @@ logit "_SERVICE_MODE:${_SERVICE_MODE}"
 [[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
 
 echo "Scanning ${_COMPLETED_DIR} for video..."
-VIDEOS=("${(f)$(find ${_COMPLETED_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_COMPLETED_DIR})}")
+_VIDEOS=("${(f)$(find ${_COMPLETED_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_COMPLETED_DIR})}")
 
-if arr_is_populated "${VIDEOS}";then
-	echo "Processing ${WHITE_FG}${#VIDEOS}${RESET} media file(s)..."
+if arr_is_populated "${_VIDEOS}";then
+	echo "Processing ${WHITE_FG}${#_VIDEOS}${RESET} media file(s)..."
 else
 	echo "No videos found" && HIT=false 
 fi
@@ -566,18 +565,17 @@ fi
 NDX=0
 HIT=false
 
-logit "\nProcessing ${#VIDEOS} videos"
-for V in ${VIDEOS};do
+logit "\nProcessing ${#_VIDEOS} videos"
+for V in ${_VIDEOS};do
 	((NDX++))
 
-	logit "\nVID ${NDX}:${V}"
+	logit "\nVIDEO ${NDX}:${V}"
 
 	echo "\n${CYAN_FG}$(str_unicode_line 10) Media File ${NDX} ${CYAN_FG}$(str_unicode_line 10)${RESET}"
 
 	MEDIA_FN=${${V}##${_COMPLETED_DIR}/}
 	if [[ -n ${MEDIA_FN} ]];then
 		logit "MEDIA_FN:${MEDIA_FN}"
-		logit "MEDIA FQFN w/o EXTENSION:${MEDIA_FN:r}"
 	fi
 
 	FN_HEAD=${MEDIA_FN:h} # With _COMPLETED_DIR clipped ${FN_HEAD:h} will be . unless it's in a subdir
@@ -588,20 +586,13 @@ for V in ${VIDEOS};do
 		SUB_FILES=("${(f)$(find ${_COMPLETED_DIR}/${FN_HEAD} -maxdepth 1 -type f -name '*srt')}")
 		if [[ -n ${SUB_FILES} ]];then
 			logit "SUB_FILES COUNT:${#SUB_FILES}"
-			logit "SUB_FILE:${SUB_FILES[1]}"
-			logit "SUB FILE w/o EXTENSION: ${SUB_FILE[1]:r}"
+			logit "SUB_FILE:${SUB_FILES}"
 		fi
-	fi
-
-	if [[ ${#SUB_FILES} -eq 1 && ${MEDIA_FQFN:r} != ${SUB_FILE[1]:r} ]];then
-		logit "POSSIBLE SUB FILE RENAME"
 	fi
 
 	if [[ ${_DEBUG} -gt 0 ]];then
 		 dbg "${0}: ${WHITE_FG}NDX${RESET}:${NDX}: V:${V}"
 		 dbg "${0}: MEDIA_FN:${MEDIA_FN}"
-		 dbg "${0}: FN_HEAD:${FN_HEAD}"
-		 dbg "${0}: MEDIA_FQFN:${MEDIA_FQFN}"
 		 if [[ ${#SUB_FILES} -gt 1 ]];then
 			 for S in ${SUB_FILES};do
 				dbg "${0}: SUB_FILE:${S}"
@@ -618,10 +609,10 @@ for V in ${VIDEOS};do
 
 	EXTRACT=false
 	if [[ ${IS_SERIES} == 'true' ]];then
-		MEDIA_DEST=${_LIBRARY_DIR}/${_SERIES_SUB}/${(C)SERIES_TITLE_SUB} # Dest is series directory to house series files
+		MEDIA_DEST=${_LIBRARY_DIR}/${_SERIES_SUB}/${(C)SERIES_TITLE_SUB} # Dest is series directory
 		[[ ${FN_HEAD} != '.' ]] && EXTRACT=true
 	else
-		MEDIA_DEST=${_LIBRARY_DIR}/${_MOVIES_SUB} # Dest is movies directory to house movie files
+		MEDIA_DEST=${_LIBRARY_DIR}/${_MOVIES_SUB} # Dest is movies directory
 		[[ ${FN_HEAD} != '.' ]] && EXTRACT=true
 	fi
 
@@ -636,10 +627,16 @@ for V in ${VIDEOS};do
 
 	HIT=true
 	TITLE=$(title_info "short" "${V:t:r}")
-	TITLES_PROCESSED[${TITLE}]=1
+	_MOVELIST+=${MEDIA_FQFN}
 done
 
 if [[ ${HIT} == 'true' ]];then
+	logit ${_LOG} "=========================="
+	for M in ${_MOVELIST};do
+		logit ${_LOG} "Moved ${M} to ${MEDIA_DEST}"
+	done
+	logit ${_LOG} "=========================="
+
 	# Clean media file names
 	clean_media ${MEDIA_DEST}
 

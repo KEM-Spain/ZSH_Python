@@ -38,11 +38,9 @@ g_ALLOW_DIRS=false
 g_EXT_TEXT=''
 g_FROM_TEXT=''
 g_LIMIT_TO_EXT=false
-g_LIST_METHOD=''
 g_NO_PROMPTING=false
 g_TO_TEXT=''
 g_VERBOSE=false
-g_MEDIA_ARG_TYPE=''
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -437,30 +435,32 @@ get_fn_ext () {
 }
 
 inode_ndx () {
-	local NDX_FN=${1}
-	local FILE_OR_PATH=${2}
-	local DEPTH=${3:=1}
+	local FILE_OR_PATH=${1}
+	local DEPTH=${2:=1}
 	local -a LIST=()
 	local FN=''
-	local FNP=''
 	local HEAD=''
 	local INODE=''
 	local TYPE=f
 	local L
 
+	logit "${0}: Received FILE_OR_PATH:${FILE_OR_PATH}"
+
 	[[ -f ${FILE_OR_PATH} || -d ${FILE_OR_PATH} ]] && HEAD=${FILE_OR_PATH:h} || HEAD="."
 	[[ ${g_ALLOW_DIRS} == 'true' ]] && TYPE=d
 	[[ ${g_LIMIT_TO_EXT} == 'true' ]] && g_EXT_TEXT="*${g_EXT_TEXT}" || g_EXT_TEXT='*'
 
+	logit "${0}: HEAD:${HEAD}, g_ALLOW_DIRS:${g_ALLOW_DIRS}, g_LIMIT_TO_EXT:${g_LIMIT_TO_EXT}"
+
 	LIST=("${(f)$(find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf "%i|%p\n")}")
+	logit "${0}: find COMMAND:find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf %i|%p\n"
+	logit "${0}: LIST contains ${#LIST} elements"
 
 	for L in ${LIST};do
 		INODE=$(cut -d '|' -f1 <<<${L})
-		FNP=$(cut -d '|' -f2 <<<${L:h})
-		FN=$(cut -d '|' -f2 <<<${L:t})
-		FN="${FNP}/${FN}"
+		FN=$(cut -d '|' -f2 <<<${L})
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: INODE:${INODE} FN:${FN}"
-		eval "${NDX_FN}[${INODE}]=${(qqq)FN}"
+		_IN_LIST[${INODE}]=${FN}
 	done
 }
 
@@ -469,14 +469,18 @@ clean_show_fn () {
 	local CLEANED=''
 
 	[[ -z ${TITLE} ]] && echo "${0}: ${RED_FG}Missing argument${RESET}:<TITLE>" >&2 && return 1
+
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: received TITLE:${TITLE}" >&2
 
 	CLEANED=$(title_info long ${TITLE:r})
 	CLEANED=$(sed 's/[\._]/ /g' <<<${CLEANED} | tr -s '[:space:]') # Strip dots and underscores
 	CLEANED=$(str_trim <<<${CLEANED}) # Trim any whitespace
-	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Name w/o dots, underscores, or extra spaces:${CLEANED}" >&2
+	
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Cleaned:${CLEANED}" >&2
 
-	echo "${CLEANED}.${TITLE:e}"
+	echo "${(C)CLEANED}.${TITLE:e}"
+
+	return 0
 }
 
 do_finalize () {
@@ -717,10 +721,12 @@ do_media () {
 	local OLD NEW
 	
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
+	logit "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
 
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: calling clean_show_fn with TITLE:${TITLE}"
 	CLEANED=$(clean_show_fn "${TITLE}")
+	logit "clean_show_fn returned: $?"
 
 	if [[ -n ${CLEANED} ]];then
 		_OUT_LIST[${INODE}]=${FQFN:h}/${CLEANED}
@@ -899,7 +905,7 @@ do_subs () {
 		CPATH=${_OUT_LIST[${C}]:h} # Path
 		CANDIDATE=${_OUT_LIST[${C}]:t} # W/o path
 		[[ -n ${_OUT_LIST[${C}]:e} ]] && CEXT=.${_OUT_LIST[${C}]:e} || CEXT='' # Set extension
-		CANDIDATE=$(eval "${SED_CMD} <<<${(qqq)CANDIDATE}")
+		CANDIDATE=$(eval "${SED_CMD} <<<${CANDIDATE}")
 		_OUT_LIST[${C}]="${CPATH}/${CANDIDATE:r}${CEXT}"
 	done
 
@@ -1081,10 +1087,8 @@ Modify file names. Remove or change arbitrary text in file names.
 \tSubstitutions are ${ITALIC}${BOLD}case sensitive${RESET} by default.  Missing ${ITALIC}${BOLD}${UNDER}FileList${RESET} will default to ${ITALIC}${BOLD}${UNDER}ALL${RESET} files in current 
 \tdirectory.  You are prompted before any action is final (${ITALIC}${UNDER}unless input is piped${RESET}). If filenames are piped,
 \t${ITALIC}${BOLD}${UNDER}fsub${RESET} functions as an inline filter and the resulting list is returned to the caller; no actual file name is altered.
-\t${ITALIC}${BOLD}${UNDER}Media Files${RESET}: Cleaning media files requires the path where the files are located  
-\twill be scrubbed of any content other than the matched portion and renamed to ${ITALIC}${BOLD}${UNDER}<title>-<pattern>${RESET} with <pattern>
-\tbeing any detected ${ITALIC}${BOLD}${UNDER}series or date pattern${RESET} Currently, piping is not implemented for media.
-\tIf other operations are desired, run them subsequent to media file conversion.
+\t${ITALIC}${BOLD}${UNDER}Media Files${RESET}: Cleaning media files requires a path or filename. File name(s) will be scrubbed of any extraneous content.
+\tPiping is not implemented for media.
 EOF
 
 usage () {
@@ -1137,7 +1141,7 @@ EXTENDED=false
 TRUNC_FN_LEN=0
 GREP_OPTS='-Eq'
 INTERACTIVE=false
-MEDIA_FILE=false
+MEDIA=false
 PREPEND_TAG=''
 PROPER_CASE=false
 SPACES=false
@@ -1167,7 +1171,7 @@ while getopts ${OPTSTR} OPT;do
      d) g_ALLOW_DIRS=true;;
      e) g_LIMIT_TO_EXT=true;g_EXT_TEXT=${OPTARG};;
      i) CASE=I; GREP_OPTS='-Eiq';;
-     m) MEDIA_FILE=true;MEDIA_FILE_OR_PATH=${OPTARG};;
+     m) MEDIA=true;MEDIA_ARG=${OPTARG};;
      n) CLEAN_LEADING_DIGITS=true;;
      p) PREPEND=true;PREPEND_TAG=${OPTARG};;
      s) SPACES=true;;
@@ -1189,13 +1193,17 @@ shift $(( OPTIND - 1 ))
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
-if [[ ${MEDIA_FILE} == "true" ]];then
-	[[ ! -e ${MEDIA_FILE_OR_PATH} ]] && exit_leave "${_SCRIPT_TAG} Media argument (file or path) not found" 
-	[[ -f ${MEDIA_FILE_OR_PATH} ]] && g_MEDIA_ARG_TYPE="file"
-	[[ -d ${MEDIA_FILE_OR_PATH} ]] && g_MEDIA_ARG_TYPE="path"
-	[[ -z ${MEDIA_FILE_OR_PATH} ]] && exit_leave "${_SCRIPT_TAG} Media argument is neither file nor path"
-	MEDIA_FILE_OR_PATH=$(realpath ${MEDIA_FILE_OR_PATH}) # Translate any meta chars
-	logit ${_LOG} "Media argument is a ${g_MEDIA_ARG_TYPE}"
+MEDIA_ARG_TYPE=''
+MEDIA_ARG=$(str_trim <<<${MEDIA_ARG})
+if [[ ${MEDIA} == "true" ]];then
+	logit ${_LOG} "MEDIA_ARG:${MEDIA_ARG}"
+
+	[[ -f ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="file"
+	[[ -d ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="path"
+	[[ -z ${MEDIA_ARG} ]] && exit_leave "${_SCRIPT_TAG} Media argument:${MEDIA_ARG} is neither file nor path"
+
+	MEDIA_ARG=$(realpath ${MEDIA_ARG}) # Translate any meta chars
+	logit ${_LOG} "MEDIA_ARG_TYPE:${MEDIA_ARG_TYPE}, realpath:${MEDIA_ARG}"
 fi
 
 # Handle input method
@@ -1227,7 +1235,7 @@ fi
 } >> ${_LOG}
 
 # Validate args and options
-[[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing minimum arguments or options${RESET}"
+[[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing arguments or options${RESET}"
 [[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
 
 if [[ ${TRUNCATE} == 'true' && -n ${TRUNC_FN_LEN} ]];then
@@ -1270,36 +1278,32 @@ fi
 # Get candidate data
 if [[ ${_PIPED} == 'true' ]];then 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${0} ${WHITE_ON_GREY}INPUT IS PIPED${RESET}"
-	g_LIST_METHOD="piped input"
 	[[ ${g_VERBOSE} == 'true' && ${_FIND_PATH} != 'null' ]] && echo "${MAGENTA_FG}Warning${RESET}:${YELLOW_FG}File path ignored for piped input${RESET}" >&2
 
 	# Grab piped input
 	_IN_LIST[1]=${_PIPELINE}
 else
-	if [[ -n ${MEDIA_FILE_OR_PATH} ]];then
-		# Get list of media
-		g_LIST_METHOD="media"
-		logit ${_LOG} "LIST_METHOD is media"
-		inode_ndx "_IN_LIST" "${MEDIA_FILE_OR_PATH}"
+	logit ${_LOG} "Populating _IN_LIST..."
+	if [[ -n ${MEDIA_ARG} ]];then
+		# Get media
+		logit ${_LOG} "MEDIA_ARG:${MEDIA_ARG}"
+		inode_ndx "${MEDIA_ARG}"
 		PATHLBL=${_FIND_PATH:h}
 	elif [[ -f ${_FIND_PATH} ]];then
 		# Convert file name to list member
-		g_LIST_METHOD="file to path"
-		logit ${_LOG} "LIST_METHOD is file to path"
-		inode_ndx "_IN_LIST" "${_FIND_PATH}"
+		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
+		inode_ndx "${_FIND_PATH}"
 		PATHLBL=${_FIND_PATH:h}
 	elif [[ ${_FIND_PATH} != 'null' ]];then
 		# Find files in path
-		g_LIST_METHOD="find in path"
-		logit ${_LOG} "LIST_METHOD is file in path"
+		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
 		PATHLBL=${_FIND_PATH}
-		inode_ndx "_IN_LIST" "${_FIND_PATH}" 2
+		inode_ndx "${_FIND_PATH}" 2
 	else
 		# Find files in current directory
-		g_LIST_METHOD="find in pwd"
-		logit ${_LOG} "LIST_METHOD is find in pwd"
+		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
 		PATHLBL=${PWD}
-		inode_ndx "_IN_LIST" "${PWD}"
+		inode_ndx "${PWD}"
 	fi
 
 	if [[ ${g_VERBOSE} == 'true' ]];then
@@ -1309,7 +1313,7 @@ else
 fi
 
 if ! arr_is_populated "${_IN_LIST}";then
-	exit_leave $(err_msg_exit W "${_SCRIPT}:Can't continue - ${g_LIST_METHOD} failed - _IN_LIST is empty")
+	exit_leave $(err_msg_exit W "${_SCRIPT}:No candidates found")
 fi
 
 if [[ ${_DEBUG} -gt 0 ]];then
@@ -1322,7 +1326,6 @@ if [[ ${_DEBUG} -gt 0 ]];then
 	echo _FIND_PATH=${_FIND_PATH}
 	echo g_ALLOW_DIRS=${g_ALLOW_DIRS}
 	echo g_FROM_TEXT=${g_FROM_TEXT}
-	echo g_LIST_METHOD=${g_LIST_METHOD}
 	echo g_NO_PROMPTING=${g_NO_PROMPTING}
 	echo g_TO_TEXT=${g_TO_TEXT}
 	echo SEARCH_REPLACE=${SEARCH_REPLACE}
@@ -1333,7 +1336,7 @@ if [[ ${_DEBUG} -gt 0 ]];then
 	echo TRUNC_FN_LEN=${TRUNC_FN_LEN}
 	echo GREP_OPTS=${GREP_OPTS}
 	echo CLEAN_LEADING_DIGITS=${CLEAN_LEADING_DIGITS}
-	echo MEDIA_FILE=${MEDIA_FILE}
+	echo MEDIA=${MEDIA}
 	echo PREPEND_TAG=${PREPEND_TAG}
 	echo SPACES=${SPACES}
 	echo EXTENDED=${EXTENDED}
@@ -1351,10 +1354,10 @@ if [[ ${_DEBUG} -gt 0 ]];then
 fi
 
 # Media
-if [[ ${MEDIA_FILE} == "true" ]];then
+if [[ ${MEDIA} == "true" ]];then
 	logit ${_LOG} "_IN_LIST contains ${#_IN_LIST} rows"
 	for K in ${(ok)_IN_LIST};do
-		logit ${_LOG} "calling do_media"
+		logit ${_LOG} "calling do_media with:${K} ${_IN_LIST[${K}]}"
 		do_media ${K} "${_IN_LIST[${K}]}"
 		if [[ ${?} -ne 0 ]];then
 			echo "Error processing:${_IN_LIST[${K}]}" && return 1
@@ -1370,22 +1373,18 @@ fi
 # Prepend
 if [[ ${PREPEND} == "true" ]];then
 	logit ${_LOG} "Prepend was called with:${PREPEND_TAG}"
-	[[ ! -e ${1} ]] && echo "${_SCRIPT_TAG} ${RED_FG}File not found${RESET}:${1}" >&2 && return 1
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Prepending file names" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Prepending file names" >&2
 	do_prepend ${PREPEND_TAG}
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for prepend" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for prepend" >&2
 fi
 
 # Substitutions
 if [[ ${SEARCH_REPLACE} == 'true' ]];then
 	logit ${_LOG} "Search and Replace was called with:${g_FROM_TEXT} -> ${g_TO_TEXT}"
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_subs${RESET}..."
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${WHITE_ON_GREY}Substituting \"${g_FROM_TEXT}\" with \"${g_TO_TEXT}\"${RESET}" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${WHITE_ON_GREY}Substituting \"${g_FROM_TEXT}\" with \"${g_TO_TEXT}\"${RESET}" >&2
 	do_subs
-	RC=${?}
-	if [[ ${g_VERBOSE} == 'true' && ${RC} -ne 0 ]];then
-		echo "No matches for substitution" | tee -a ${_LOG} >&2
-	fi
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for substitution" >&2
 fi
 
 # Space_Dot_Camel
@@ -1403,7 +1402,7 @@ if [[ ${#_SPACE_DOT} -gt 0 ]];then
 				U) echo "${CYAN_FG}UnCamel casing...${RESET}";;
 			esac
 		done
-		} | tee -a ${_LOG} >&2
+		} >&2
 	fi
 
 	do_sdc
@@ -1420,57 +1419,65 @@ if [[ ${#_SPACE_DOT} -gt 0 ]];then
 					U) echo "No matches for uncamel casing";;
 				esac
 			done
-			} | tee -a ${_LOG} >&2
+			} >&2
 		fi
 	fi
 fi
 
 # Proper case
 if [[ ${PROPER_CASE} == "true" ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Proper casing files${RESET}" | tee -a ${_LOG} } >&2
+	logit ${_LOG} "Proper Case was called"
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Proper casing files${RESET}" >&2
 	do_proper_case
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for proper case" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for proper case" >&2
 fi
+
 # Clean leading digits (usually for audio files)
 if [[ ${CLEAN_LEADING_DIGITS} == "true" ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Cleaning leading digits with hyphen${RESET}" | tee -a ${_LOG} } >&2
+	logit ${_LOG} "Clean Leading Digits was called"
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Cleaning leading digits with hyphen${RESET}" >&2
 	do_clean_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for clean leading digits" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for clean leading digits" >&2
 fi
 
 # Add leading digits (usually for audio files)
 if [[ ${ADD_LEADING_DIGITS} == "true" ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Adding leading digits with hyphen${RESET}" | tee -a ${_LOG} } >&2
+	logit ${_LOG} "All leading digits was called"
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Adding leading digits with hyphen${RESET}" >&2
 	do_add_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for add leading digits" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for add leading digits" >&2
 fi
 
 # Strip leading digits (usually for audio files)
 if [[ ${STRIP_LEADING_DIGITS} == "true" ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Stripping leading digits with hyphen${RESET}" | tee -a ${_LOG} } >&2
+	logit ${_LOG} "Strip Leading Digits was called"
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Stripping leading digits with hyphen${RESET}" >&2
 	do_strip_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for strip leading digits" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for strip leading digits" >&2
 fi
 
 # Truncations
 if [[ ${TRUNC_FN_LEN} -gt 0 ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Limiting file names to:${WHITE_FG}${TRUNC_FN_LEN}${CYAN_FG} characters${RESET}" | tee -a ${_LOG} } >&2
+	logit ${_LOG} "Truncation called - Length:${TRUNC_FN_LEN} chars"
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Truncating file names to:${TRUNC_FN_LEN} chars" >&2
 	do_truncate
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for truncation" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for truncation" >&2
 fi
 
 # Trimming
 if [[ ${TRIM} == "true" ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Trimming file names" | tee -a ${_LOG} } >&2
+	logit ${_LOG} "Trim was called"
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Trimming file names" >&2
 	do_trim
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && { echo "No matches for trim" | tee -a ${_LOG} } >&2
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for trim" >&2
 fi
 
 # YouTube tags
 if [[ ${YT_TAGS} == "true" ]];then
-	[[ ${g_VERBOSE} == 'true' ]] && { echo "${CYAN_FG}Eliminating YouTube tags" | tee -a ${_LOG} } >&2
+	logit ${_LOG} "Youtube Tags was called"
+	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Eliminating YouTube tags" >&2
 	do_yt_tag
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 | tee -a ${_LOG}
+	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 
 fi
 
 # Finalize

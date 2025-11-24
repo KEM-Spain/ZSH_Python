@@ -144,12 +144,13 @@ cmd_filter () {
 		[[ ${_VERBOSE} == 'true' ]] && echo "Processing command:${CMD_TGT}" >&2
 
 		VALID=false
-		[[ ${_VERBOSE} == 'true' ]] && echo "Calling grep..." >&2
-		if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
-			VALID='true'
-			((CACHE++))
-			printf '%s\n' "${K}"
-			[[ ${_VERBOSE} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
+		if [[ -n ${CMD_TGT} && -n ${_HIST_CACHE} ]];then
+			if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
+				VALID='true'
+				((CACHE++))
+				printf '%s\n' "${K}"
+				[[ ${_VERBOSE} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
+			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
