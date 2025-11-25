@@ -153,7 +153,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -321,6 +321,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] on|off\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -350,6 +351,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -374,6 +376,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -404,6 +407,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -541,7 +545,7 @@ info () {
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -573,7 +577,9 @@ info () {
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
+
+		exit_leave
 	}
 
 	OPTSTR=":HDv"
@@ -725,7 +731,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -762,7 +768,9 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
+
+		exit_leave
 	}
 
 	OPTSTR=":HDr"
@@ -821,7 +829,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -859,7 +867,9 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
+
+		exit_leave
 	}
 
 	OPTSTR=":HDbs"
@@ -904,6 +914,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -950,6 +961,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -1134,6 +1146,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -1229,6 +1242,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -1277,6 +1291,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -1365,6 +1380,7 @@ mkinitscript () {
 		echo "[${WHITE_FG}-d${RESET} script_name - delete existing script_name"
 		echo -e "\n${WHITE_FG}Ensure switch arguments with spaces are \"double quoted\"${RESET}!\n"
 		) >&2
+
 		exit_leave
 	}
 
@@ -1608,8 +1624,7 @@ ___EOF
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	function status {
@@ -1625,6 +1640,7 @@ ___EOF
 		 [[ ${S} == hold ]] && echo "${1} ${S} (updates will NOT be applied)"
 		 echo ${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
 		 sudo dpkg -s ${1} | egrep 'Package:|Status:|Maintainer:|Version:|Description:'
+
 		 exit_leave
 	}
 
@@ -1660,6 +1676,7 @@ ___EOF
 				[[ ${P} =~ ${APP}  ]] && echo ${P}
 			done
 			echo ${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
+
 			exit_leave
 		fi
 	else
@@ -1800,11 +1817,11 @@ ppamgr () {
 	list_ppa () {
 		local PPA_ARG=$1
 		local -A PPAS
-		local -a FILE_CONTENT=()
-		local -a _LOCAL_LIST=()
 		local ALL=false
+		local FILE_CONTENT
 		local HDR_LBL
 		local LINE
+		local _LOCAL_LIST
 		local L S
 
 		if [[ -n ${PPA_ARG} ]];then
@@ -1821,16 +1838,17 @@ ppamgr () {
 				_LOCAL_LIST=("${(f)$(find ${S})}") 
 				for L in ${_LOCAL_LIST};do
 					if [[ ${L:e} == "list" ]];then
-						FILE_CONTENT=("${(f)$(/usr/bin/cat ${L})}")
+						FILE_CONTENT=("${(f)$(cat ${L})}")
 						for LINE in ${FILE_CONTENT};do
 							[[ ${LINE} =~ "^#" ]] && continue # Ignore commented out 
 							PPAS[${LINE}]=${L}
+
 						done
 					fi
 				done
 			else
 				if [[ ${ALL} == "true" ]];then
-					FILE_CONTENT=("${(f)$(/usr/bin/cat ${S})}")
+					FILE_CONTENT=("${(f)$(cat ${S})}")
 					for LINE in ${FILE_CONTENT};do
 						[[ ${LINE} =~ "^#" ]] && continue # Ignore commented out 
 						PPAS[${LINE}]=${S}
@@ -1848,6 +1866,7 @@ ppamgr () {
 			PPA=$(echo ${P} | grep -oP 'launchpad.net/\K.*?(?=/ubuntu)')
 			if [[ -n ${PPA_ARG} ]];then
 				echo ${PPA} | grep -qi ${PPA_ARG}
+
 				[[ $? -ne 0 ]] && continue
 			fi
 			[[ -n ${PPA} ]] && PPA_LBL=${PPA} || PPA_LBL="${BOLD}${RED_FG}Not a Launchpad PPA${RESET} (possibly added manually)"
@@ -1894,7 +1913,7 @@ ppamgr () {
 		local LETTER_OPT
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -1936,7 +1955,7 @@ ppamgr () {
 		echo -e "\n${WHITE_FG}Desc${RESET}:Manage/show PPA repositories or show package with PPA\n"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":DHa:r:f:l:p:k:u"
@@ -1971,7 +1990,6 @@ ppamgr () {
 	#--End GetOpts--
 	 
 	#--Execution--
-	
 	# Set default action
 	if [[ ${OPT_PASSED} == "false" ]];then
 		if [[ -n ${1} ]];then
@@ -2008,6 +2026,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [USER]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -2016,8 +2035,8 @@ ___EOF
 	local PWDF=/etc/passwd
 	local GRPF=/etc/group
 
-	local PASSWD=("${(@f)$(/usr/bin/cat ${PWDF} | sed -e 's/::/:empty:/g' -e 's/,,,//g' | sort)}")
-	local GROUPS=("${(@f)$(/usr/bin/cat ${GRPF} | sed -e 's/::/:empty:/g' -e 's/,,,//g' | sort)}")
+	local PASSWD=("${(@f)$(cat ${PWDF} | sed -e 's/::/:empty:/g' -e 's/,,,//g' | sort)}")
+	local GROUPS=("${(@f)$(cat ${GRPF} | sed -e 's/::/:empty:/g' -e 's/,,,//g' | sort)}")
 	local GRPSEEN=()
 
 	is-group-user () {
@@ -2100,6 +2119,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [UMASK]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -2176,7 +2196,9 @@ ___EOF
 		echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
+
+		exit_leave
 	}
 
 	local OPTSTR=":HD:"
@@ -2257,7 +2279,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -2294,7 +2316,9 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
+
+		exit_leave
 	}
 
 	OPTSTR=":HDa"
@@ -2365,6 +2389,7 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+
 		exit_leave
 	fi
 
@@ -2401,7 +2426,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -2435,7 +2460,9 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
+
+	exit_leave
 }
 
 OPTSTR=":HD"

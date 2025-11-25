@@ -9,10 +9,11 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
 #Constants
-DB=.spanish.db
+_DB_DIR=/home/kmiller/Code/LOCAL/spanish_db
+DB=${_DB_DIR}/.spanish.db
 _SCRIPT_TAG="${WHITE_FG}[${RESET}${0:t}${WHITE_FG}]${RESET}"
 
-# Vars
+# Declarations
 typeset -a _SQL_OUT=()
 
 # Functions

@@ -15,16 +15,17 @@ source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
-# Declarations
-DB=.spanish.db
+# Constants
+_DB_DIR=/home/kmiller/Code/LOCAL/spanish_db
+DB=${_DB_DIR}/.spanish.db
 
-# Globals
-DELIM=' '
+# Vars
+_DELIM=' '
 
 # Functions
 query () {
 	local SQL=(${@})
-	sqlite3 -separator ${DELIM} ${DB} <<____END_SQL
+	sqlite3 -separator ${_DELIM} ${DB} <<____END_SQL
 ${SQL}
 ____END_SQL
 return ${?}
@@ -64,7 +65,7 @@ opt_exists () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		d) echo "<DELIM>";;
+		d) echo "<_DELIM>";;
 		s) echo "<SQL>";;
 	esac
 }
@@ -89,7 +90,7 @@ while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     d) DELIM=${OPTARG};;
+     d) _DELIM=${OPTARG};;
      :) print -u2 "${RED_FG}${SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac

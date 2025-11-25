@@ -92,7 +92,7 @@ autostart () {
 	# Constants
 	AUTODIRS+=/etc/xdg/autostart
 	AUTODIRS+=~/.config/autostart
-	local USER=${_USER_NAME}
+	local USER=${USER}
 
 	# Functions
 	action_do () {
@@ -212,7 +212,7 @@ ___EOF
 
 	_LOCAL_LIST=("${(f)$(sudo find ${AUTODIRS} -iname "*${SEARCHTERM}*desktop")}") 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
-		[[ -n ${SEARCHTERM} ]] && exit_leave $(msg_exit W "No autostart applications found matching:${WHITE_FG}${SEARCHTERM}${RESET}")
+		[[ -n ${SEARCHTERM} ]] && exit_leave $(err_msg_exit W "No autostart applications found matching:${WHITE_FG}${SEARCHTERM}${RESET}")
 	fi
 
 	# Set headings
@@ -228,6 +228,7 @@ ___EOF
 	list_set_select_action "view"
 	list_set_action_msgs view file
 	list_set_reuse_stale true
+	list_set_searchable true
 
 	while true;do
 		# Get selection
@@ -353,7 +354,7 @@ ___EOF
 	fi
 
 	echo -n "Restart cups daemon and clear spool? (y/n):"; read -q RESPONSE
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(msg_exit I "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave $(err_msg_exit I "Operation cancelled")
 
 	sudo service cups stop
 	sudo rm -r /var/spool/cups
@@ -377,7 +378,7 @@ ___EOF
 	fi
 
 	echo -n "Perform a low level (dd) copy of /dev/sda to /dev/sdb?"; read -q RESPONSE
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(msg_exit I "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave $(err_msg_exit I "Operation cancelled")
 
 	dd if=/dev/sda of=/dev/sdb status=progress conv=noerror,sync bs=4k
 }
@@ -407,7 +408,7 @@ ___EOF
 	fi
 
 	FAN_FILE=$(find ${CONTROL_DIR} -name 'pwm1_enable')
-	[[ -z ${FAN_FILE} ]] && exit_leave $(msg_exit E "Unable to locate fan control file:pwm1_enable")
+	[[ -z ${FAN_FILE} ]] && exit_leave $(err_msg_exit E "Unable to locate fan control file:pwm1_enable")
 
 	echo ${TITLE}
 	echo $(str_unicode_line ${#PROMPT})
@@ -572,8 +573,7 @@ info () {
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDv"
@@ -762,8 +762,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDr"
@@ -860,8 +859,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDbs"
@@ -1610,7 +1608,7 @@ ___EOF
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -1802,11 +1800,11 @@ ppamgr () {
 	list_ppa () {
 		local PPA_ARG=$1
 		local -A PPAS
+		local -a FILE_CONTENT=()
+		local -a _LOCAL_LIST=()
 		local ALL=false
-		local FILE_CONTENT
 		local HDR_LBL
 		local LINE
-		local _LOCAL_LIST
 		local L S
 
 		if [[ -n ${PPA_ARG} ]];then
@@ -1823,17 +1821,16 @@ ppamgr () {
 				_LOCAL_LIST=("${(f)$(find ${S})}") 
 				for L in ${_LOCAL_LIST};do
 					if [[ ${L:e} == "list" ]];then
-						FILE_CONTENT=("${(f)$(cat ${L})}")
+						FILE_CONTENT=("${(f)$(/usr/bin/cat ${L})}")
 						for LINE in ${FILE_CONTENT};do
 							[[ ${LINE} =~ "^#" ]] && continue # Ignore commented out 
 							PPAS[${LINE}]=${L}
-
 						done
 					fi
 				done
 			else
 				if [[ ${ALL} == "true" ]];then
-					FILE_CONTENT=("${(f)$(cat ${S})}")
+					FILE_CONTENT=("${(f)$(/usr/bin/cat ${S})}")
 					for LINE in ${FILE_CONTENT};do
 						[[ ${LINE} =~ "^#" ]] && continue # Ignore commented out 
 						PPAS[${LINE}]=${S}
@@ -1851,7 +1848,6 @@ ppamgr () {
 			PPA=$(echo ${P} | grep -oP 'launchpad.net/\K.*?(?=/ubuntu)')
 			if [[ -n ${PPA_ARG} ]];then
 				echo ${PPA} | grep -qi ${PPA_ARG}
-
 				[[ $? -ne 0 ]] && continue
 			fi
 			[[ -n ${PPA} ]] && PPA_LBL=${PPA} || PPA_LBL="${BOLD}${RED_FG}Not a Launchpad PPA${RESET} (possibly added manually)"
@@ -1940,8 +1936,7 @@ ppamgr () {
 		echo -e "\n${WHITE_FG}Desc${RESET}:Manage/show PPA repositories or show package with PPA\n"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":DHa:r:f:l:p:k:u"
@@ -1976,6 +1971,7 @@ ppamgr () {
 	#--End GetOpts--
 	 
 	#--Execution--
+	
 	# Set default action
 	if [[ ${OPT_PASSED} == "false" ]];then
 		if [[ -n ${1} ]];then
@@ -2020,8 +2016,8 @@ ___EOF
 	local PWDF=/etc/passwd
 	local GRPF=/etc/group
 
-	local PASSWD=("${(@f)$(cat ${PWDF} | sed -e 's/::/:empty:/g' -e 's/,,,//g' | sort)}")
-	local GROUPS=("${(@f)$(cat ${GRPF} | sed -e 's/::/:empty:/g' -e 's/,,,//g' | sort)}")
+	local PASSWD=("${(@f)$(/usr/bin/cat ${PWDF} | sed -e 's/::/:empty:/g' -e 's/,,,//g' | sort)}")
+	local GROUPS=("${(@f)$(/usr/bin/cat ${GRPF} | sed -e 's/::/:empty:/g' -e 's/,,,//g' | sort)}")
 	local GRPSEEN=()
 
 	is-group-user () {
@@ -2180,8 +2176,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	local OPTSTR=":HD:"
@@ -2299,8 +2294,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDa"
@@ -2322,12 +2316,12 @@ ___EOF
 	[[ ${#} -ne 0 ]] && SEARCHTERM=${1} && echo "Searching for keyword: ${SEARCHTERM}"
 
 	call_xdg_app () {
-		[[ ! -e /usr/bin/xdg-mime ]] && exit_leave $(msg_exit E "xdg-mime not found")
+		[[ ! -e /usr/bin/xdg-mime ]] && exit_leave $(err_msg_exit E "xdg-mime not found")
 		xdg-mime query default ${1}
 	}
 
 	call_gio_app () {
-		[[ ! -e /usr/bin/gio ]] && exit_leave $(msg_exit E "gio not found")
+		[[ ! -e /usr/bin/gio ]] && exit_leave $(err_msg_exit E "gio not found")
 		gio mime ${1}
 	}
 
@@ -2441,8 +2435,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"

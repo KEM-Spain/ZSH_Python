@@ -18,6 +18,9 @@ err_msg_exit () {
 		E_MSG=${2}
 	fi
 
+	# TODO: patched but need to improve arg handler
+	[[ ${E_MSG} =~ 'W|E|I' ]] && return
+
 	case ${E_TYPE} in 
 		W) LABEL="Warning";LCOLOR=${ITALIC}${BOLD}${MAGENTA_FG};;
 		E) LABEL="Error";LCOLOR=${ITALIC}${BOLD}${RED_FG};;

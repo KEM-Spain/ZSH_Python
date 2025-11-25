@@ -211,7 +211,7 @@ parse_params () {
 
 	PARAMS=("${PARAMS[@]/past/preterite}")
 
-	VERBS=($(query "select distinct verb from spanish_verb"))
+	VERBS=($(sql_query "select distinct verb from spanish_verb"))
 
 	[[ ${DEBUG} == 'true' ]] && echo "Entered:$0 with ${@}" >&2
 
@@ -285,7 +285,7 @@ parse_params () {
 
 }
 
-query () {
+sql_query () {
 	local SQL=(${@})
 	sqlite3 -separator ' ' ${SPAN_DB} <<____END_SQL
 ${SQL}
@@ -371,7 +371,7 @@ shift $((OPTIND -1))
 [[ ${REGULAR} == 'true' ]] && REG_SQL="where irregular = 0"
 [[ ${IRREGULAR} == 'true' ]] && REG_SQL="where irregular = 1"
 
-VERBS=($(query "select distinct verb from spanish_verb ${REG_SQL}")) #set default values if no user verb argument
+VERBS=($(sql_query "select distinct verb from spanish_verb ${REG_SQL}")) #set default values if no user verb argument
 CONTEXT_VALUES=(${(k)CONTEXTS})
 
 #Check for user params
@@ -428,8 +428,8 @@ while true;do
 
 	[[ (${CONTEXT_COUNT} -ge ${CONTEXT_MAX}) ]] && CONTEXT_COUNT=0 && SEEN=()
 
-	QUERY=($(query "select p1,p2,p3,p4,p5,p6 from spanish_tense where verb = '${RANDOM_VERB}' and mood = '${RANDOM_MOOD}' and tense = '${RANDOM_TENSE}'"))
-	VERB_TYPE=$(query "select distinct irregular from spanish_tense where verb = '${RANDOM_VERB}'")
+	QUERY=($(sql_query "select p1,p2,p3,p4,p5,p6 from spanish_tense where verb = '${RANDOM_VERB}' and mood = '${RANDOM_MOOD}' and tense = '${RANDOM_TENSE}'"))
+	VERB_TYPE=$(sql_query "select distinct irregular from spanish_tense where verb = '${RANDOM_VERB}'")
 	[[ ${VERB_TYPE} == "0" ]] && VERB_TYPE="Regular" || VERB_TYPE="Irregular"
 	[[ ${DEBUG} == 'true' ]] && echo "Query:select p1,p2,p3,p4,p5,p6 from spanish_tense where verb = '${RANDOM_VERB}' and mood = '${RANDOM_MOOD}' and tense = '${RANDOM_TENSE}'"
 
@@ -444,7 +444,7 @@ while true;do
 	SELECTION="<b>Verb</b>:${(C)RANDOM_VERB} (${VERB_TYPE})\n<b>Mood</b>:${(C)RANDOM_MOOD}\n<b>Tense</b>:${(C)RANDOM_TENSE}"
 	QUESTION="<b>Select conjugation</b>:${CONTEXT}"
 	RESPONSE=$(display_list "${CMD}" "${STR:gs/_/ }") #display question
-	ANSWER=($(query "select ${CONTEXT_FIELD} from spanish_tense where verb = '${RANDOM_VERB}' and mood = '${RANDOM_MOOD}' and tense = '${RANDOM_TENSE}'"))
+	ANSWER=($(sql_query "select ${CONTEXT_FIELD} from spanish_tense where verb = '${RANDOM_VERB}' and mood = '${RANDOM_MOOD}' and tense = '${RANDOM_TENSE}'"))
 	LAST_DISPLAY=(${CMD} ${STR:gs/_/ })
 	ANSWER=${ANSWER:s/_/ }
 
@@ -459,7 +459,7 @@ while true;do
 	RESULT_TITLE="Spanish Quiz Results"
 
 	if [[ -n ${RESPONSE} ]];then
-		VERB_RAW=("${(f)$(query "select * from spanish_verb where verb = '${RANDOM_VERB}'")}")
+		VERB_RAW=("${(f)$(sql_query "select * from spanish_verb where verb = '${RANDOM_VERB}'")}")
 		VERB_RAW=$(echo ${VERB_RAW} | cut -d' ' --output-delimiter='|' -f1-)
 		#verb, participle, gerund, irregular, translation
 		VERB_DATA[VERB]=$(echo ${VERB_RAW} | cut -d'|' -f1)

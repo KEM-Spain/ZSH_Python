@@ -573,8 +573,7 @@ info () {
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDv"
@@ -763,8 +762,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDr"
@@ -861,8 +859,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDbs"
@@ -1368,6 +1365,7 @@ mkinitscript () {
 		echo "[${WHITE_FG}-d${RESET} script_name - delete existing script_name"
 		echo -e "\n${WHITE_FG}Ensure switch arguments with spaces are \"double quoted\"${RESET}!\n"
 		) >&2
+
 		exit_leave
 	}
 
@@ -1611,8 +1609,7 @@ ___EOF
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	function status {
@@ -1941,8 +1938,7 @@ ppamgr () {
 		echo -e "\n${WHITE_FG}Desc${RESET}:Manage/show PPA repositories or show package with PPA\n"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":DHa:r:f:l:p:k:u"
@@ -2181,8 +2177,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	local OPTSTR=":HD:"
@@ -2300,8 +2295,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDa"
@@ -2442,8 +2436,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave $(err_msg_exit W ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
@@ -2462,6 +2455,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
+ 
 # Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
