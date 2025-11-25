@@ -46,7 +46,7 @@ _DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
 _LOGFILE=${_CONF_DIR}/${_TAG}.log
 _MARKER=${_CONF_DIR}/${_TAG}.lastrun
 _TODAY=$(date +'%Y-%m-%d') 
-_VERBOSE='-vv' # Default verbose level
+_VERBOSE='-v' # Default verbose level
 
 # Globals
 g_LAST_RUN=?

@@ -160,7 +160,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -227,8 +227,8 @@ shift $(( OPTIND - 1 ))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${PWD} =~ ${_MOUNTPOINT} ]];then
-	echo "${_SCRIPT} Cannot execute from ${_MOUNTPOINT}"
-	echo "Interferes with umount - change directories before executing"
+	echo "${_SCRIPT} Current location is within ${_MOUNTPOINT}"
+	echo "Change directories before executing backup"
 	exit 1
 fi
 

@@ -428,9 +428,8 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
-	#TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
-	TITLE=$(recode html <<<${TITLE}) # Convert any HTML entities
-	TITLE=$(iconv -f UTF-8 -t ASCII//TRANSLIT <<<${TITLE}) # Convert any UTF-8 
+	TITLE=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
+	TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 
 	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}, DISPLAY KEY:${g_DISPLAY_KEY}, QUERY KEY:${g_QUERY_KEY}"
 
