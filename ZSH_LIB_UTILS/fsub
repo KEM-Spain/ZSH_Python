@@ -106,7 +106,7 @@ clean_show_fn () {
 	
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Cleaned:${CLEANED}" >&2
 
-	echo "${(C)CLEANED}.${TITLE:e}"
+	echo "${CLEANED}.${TITLE:e}"
 
 	return 0
 }

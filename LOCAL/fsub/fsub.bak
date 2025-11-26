@@ -64,7 +64,7 @@ get_fn_ext () {
 
 inode_ndx () {
 	local FILE_OR_PATH=${1}
-	local DEPTH=${3:=1}
+	local DEPTH=${2:=1}
 	local -a LIST=()
 	local FN=''
 	local HEAD=''

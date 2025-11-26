@@ -1,0 +1,4 @@
+completions=( ${(Q)"${(z)$(<<\EO:completions
+'review kia ev3' 'review kia ev4' 'review kia ev5' 'review kia ev9' 'review kia ev6' 'review kia sportage' 'review kia seltos' 'review kia niro'
+EO:completions
+)}"} )

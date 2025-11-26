@@ -10,16 +10,15 @@ err_msg_exit () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${#} -eq 1 ]];then
-		E_TYPE=E
+	if [[ ${#} -eq 1 && ${#1} -eq 1 && ! ${1} =~ 'W|E|I' ]];then # Only type was passed - no msg
+		E_TYPE=E # Default type
 		E_MSG=${1}
 	elif [[ ${#} -eq 2 ]];then
 		E_TYPE=${1}
 		E_MSG=${2}
+	else
+		return # Message not populated
 	fi
-
-	# TODO: patched but need to improve arg handler
-	[[ ${E_MSG} =~ 'W|E|I' ]] && return
 
 	case ${E_TYPE} in 
 		W) LABEL="Warning";LCOLOR=${ITALIC}${BOLD}${MAGENTA_FG};;

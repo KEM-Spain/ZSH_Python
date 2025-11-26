@@ -825,7 +825,7 @@ title_info () {
 		fi
 	done
 
-	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${SHORT_TITLE} ${YEAR} ${SERIES} ${RES}" | tr -s '[:space:]')
+	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${(C)SHORT_TITLE} ${YEAR} ${(U)SERIES} ${RES}" | tr -s '[:space:]')
 
 	[[ -z ${LONG_TITLE} ]] && LONG_TITLE=${SHORT_TITLE} # Don't return an empty string
 

@@ -141,6 +141,9 @@ err_msg_exit () {
 		E_MSG=${2}
 	fi
 
+	# TODO: patched but need to improve arg handler
+	[[ ${E_MSG} =~ 'W|E|I' ]] && return
+
 	case ${E_TYPE} in 
 		W) LABEL="Warning";LCOLOR=${ITALIC}${BOLD}${MAGENTA_FG};;
 		E) LABEL="Error";LCOLOR=${ITALIC}${BOLD}${RED_FG};;
@@ -399,7 +402,7 @@ title_info () {
 		fi
 	done
 
-	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${SHORT_TITLE} ${YEAR} ${SERIES} ${RES}" | tr -s '[:space:]')
+	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${(C)SHORT_TITLE} ${YEAR} ${(U)SERIES} ${RES}" | tr -s '[:space:]')
 
 	[[ -z ${LONG_TITLE} ]] && LONG_TITLE=${SHORT_TITLE} # Don't return an empty string
 
@@ -478,7 +481,7 @@ clean_show_fn () {
 	
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Cleaned:${CLEANED}" >&2
 
-	echo "${(C)CLEANED}.${TITLE:e}"
+	echo "${CLEANED}.${TITLE:e}"
 
 	return 0
 }
