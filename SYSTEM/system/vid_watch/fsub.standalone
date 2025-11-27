@@ -133,16 +133,15 @@ err_msg_exit () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${#} -eq 1 ]];then
-		E_TYPE=E
+	if [[ ${#} -eq 1 && ${#1} -eq 1 && ! ${1} =~ 'W|E|I' ]];then # Only type was passed - no msg
+		E_TYPE=E # Default type
 		E_MSG=${1}
 	elif [[ ${#} -eq 2 ]];then
 		E_TYPE=${1}
 		E_MSG=${2}
+	else
+		return # Message not populated
 	fi
-
-	# TODO: patched but need to improve arg handler
-	[[ ${E_MSG} =~ 'W|E|I' ]] && return
 
 	case ${E_TYPE} in 
 		W) LABEL="Warning";LCOLOR=${ITALIC}${BOLD}${MAGENTA_FG};;
@@ -1105,7 +1104,7 @@ usage () {
 	echo -e "${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [FromText] [ToText] [FileList]\n"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-H${RESET} help"
-	echo -e "${WHITE_FG}-C${RESET} eliminate floats, underscores, commas, dots, dashes, brackets, parens, quotes, extra space, non ascii (${CYAN_FG}M${RESET})"
+	echo -e "${WHITE_FG}-C${RESET} eliminate commas, dots, dashes, brackets, underscores, parens, quotes, extra space, non ascii (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-I${RESET} interactive changes"
 	echo -e "${WHITE_FG}-N${RESET} add leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-P${RESET} proper case"

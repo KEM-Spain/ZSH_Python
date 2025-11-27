@@ -1,8 +1,0 @@
-#!/usr/bin/zsh
-RAWLINE=("${(f)$(find ~/Code -name 'cl' -executable)}")
-for R in ${RAWLINE};do
-	echo "Found:${R}" >&2
-done
-#RAWLINE=(${=WI})
-#whereis -bf ${1} | cut -d: -f2-
-#echo "WI:${WI}"
