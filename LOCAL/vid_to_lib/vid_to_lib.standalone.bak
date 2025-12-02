@@ -273,7 +273,7 @@ title_info () {
 		fi
 	done
 
-	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${SHORT_TITLE} ${YEAR} ${SERIES} ${RES}" | tr -s '[:space:]')
+	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${(C)SHORT_TITLE} ${YEAR} ${(U)SERIES} ${RES}" | tr -s '[:space:]')
 
 	[[ -z ${LONG_TITLE} ]] && LONG_TITLE=${SHORT_TITLE} # Don't return an empty string
 
@@ -553,6 +553,9 @@ logit "_SERVICE_MODE:${_SERVICE_MODE}"
 [[ ! -e ${_LIBRARY_DIR}/movies ]] && mkdir ${_LIBRARY_DIR}/movies 
 [[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
 
+# TODO: Investigate receiving a list of files
+logit "ARGC:${#}"
+logit "ARGV:${@:=null}"
 echo "Scanning ${_COMPLETED_DIR} for video..."
 _VIDEOS=("${(f)$(find ${_COMPLETED_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_COMPLETED_DIR})}")
 
@@ -631,6 +634,7 @@ for V in ${_VIDEOS};do
 done
 
 if [[ ${HIT} == 'true' ]];then
+	# TODO: Modify fsub.standalone to accecpt this list
 	logit ${_LOG} "=========================="
 	for M in ${_MOVELIST};do
 		logit ${_LOG} "Moved ${M} to ${MEDIA_DEST}"

@@ -101,3 +101,26 @@ arr_in_array () {
 	return 1
 }
 
+arr_fn_to_inode () {
+	local -a ARR=(${@})
+	local INODE=0
+	local L
+
+	for L in ${ARR};do
+		if [[ -f ${L} ]];then
+			echo $(ls -i ${L} | cut -d' ' -f1)
+		fi
+	done
+}
+
+arr_inode_to_fn () {
+	local -a ARR=(${@})
+	local L
+
+	for L in ${ARR};do
+		FN=$(find -inum ${L})
+		if [[ -f ${FN} ]];then
+			echo "$(realpath ${FN})"
+		fi
+	done
+}

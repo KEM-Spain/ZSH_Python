@@ -1,0 +1,66 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+arr_fn_to_inode () {
+	local -a ARR=(${@})
+	local -a INODE_ARR=()
+	local INODE=0
+	local L
+
+	for L in ${ARR};do
+		if [[ -f ${L} ]];then
+			INODE=$(ls -i ${L} | cut -d' ' -f1)
+			INODE_ARR+=${INODE}
+		fi
+	done
+	
+	[[ -n ${INODE_ARR} ]] && echo ${INODE_ARR}
+}
+
+
+arr_inode_to_fn () {
+	local -a ARR=(${@})
+	local -a FN_ARR=()
+	local L
+
+	for L in ${ARR};do
+		FN=$(find -inum ${L})
+		if [[ -f ${FN} ]];then
+			FN_ARR+=$(realpath ${FN})
+		fi
+	done
+	
+	[[ -n ${FN_ARR} ]] && echo ${FN_ARR}
+}
+
+typeset -a LIST=()
+typeset -a ILIST=()
+typeset -a FLIST=()
+
+LIST=("${(f)$(find . -type f)}")
+
+ILIST=($(arr_fn_to_inode ${LIST}))
+for L in ${ILIST};do
+	printf "%s\n" ${L}
+done
+
+FLIST=($(arr_inode_to_fn ${ILIST}))
+for L in ${FLIST};do
+	printf "%s\n" ${L}
+done

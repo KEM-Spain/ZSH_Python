@@ -730,7 +730,7 @@ usage () {
 	echo -e "${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [FromText] [ToText] [FileList]\n"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-H${RESET} help"
-	echo -e "${WHITE_FG}-C${RESET} eliminate floats, underscores, commas, dots, dashes, brackets, parens, quotes, extra space, non ascii (${CYAN_FG}M${RESET})"
+	echo -e "${WHITE_FG}-C${RESET} eliminate commas, dots, dashes, brackets, underscores, parens, quotes, extra space, non ascii (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-I${RESET} interactive changes"
 	echo -e "${WHITE_FG}-N${RESET} add leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-P${RESET} proper case"

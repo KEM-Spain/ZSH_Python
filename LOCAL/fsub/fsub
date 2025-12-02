@@ -187,12 +187,8 @@ do_finalize () {
 
 	if ! arr_is_populated "${FINAL}";then
 		MSG="No files qualified as candidates"
-		echo "${0}: ${MSG}" >> ${_LOG}
-		if [[ ${g_VERBOSE} == 'true' ]];then
-			echo "${0}: ${MSG}" >&2
-		else
-			exit_leave 1 $(err_msg_exit W ${MSG})
-		fi
+		logit ${_LOG} "${0}: ${MSG}"
+		[[ ${g_VERBOSE} == 'true' ]] && exit_leave 1 $(err_msg_exit W ${MSG}) || exit_leave 1
 	fi
 
 	if [[ ${_DEBUG} -ne 0 ]];then
@@ -846,21 +842,19 @@ if [[ ${SERVICE_MODE} == 'false' ]];then # SERVICE_MODE ignores piped inputs
 fi
 
 # Record arg types
-{
 if [[ ${#} -ne 0 ]];then
 	for ((A=1; A <= ${#@}; A++));do
 		OBJ=${@[${A}]}
 		if [[ -e ${OBJ} ]];then
 			_ARG_LIST[${A}]=file_dir
-			[[ -f ${OBJ} ]] && echo "Found file:${WHITE_FG}${OBJ}${RESET}"
-			[[ -d ${OBJ} ]] && echo "Found directory:${WHITE_FG}${OBJ}${RESET}"
+			[[ -f ${OBJ} ]] && logit ${_LOG} "Found file:${WHITE_FG}${OBJ}${RESET}"
+			[[ -d ${OBJ} ]] && logit ${_LOG} "Found directory:${WHITE_FG}${OBJ}${RESET}"
 		else
 			_ARG_LIST[${A}]=bare_word
-			echo "Found text:${WHITE_FG}${OBJ}${RESET}"
+			logit ${_LOG} "Found text:${WHITE_FG}${OBJ}${RESET}"
 		fi
 	done
 fi
-} >> ${_LOG}
 
 # Validate args and options
 [[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing arguments or options${RESET}"

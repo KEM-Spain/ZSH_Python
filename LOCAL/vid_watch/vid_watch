@@ -90,14 +90,15 @@ while true;do
 		on_event "${EVENT}:${LINE}"
 	done < ${_FIFO}
 
-	# If inot dies, activity is missed; count any existing files
+	# If inotify dies, activity is missed; count any existing files
 	VID_CNT=$(find ${_COMPLETED} -type f -iregex "${_VIDEO_REGEX}" ! -path ${_COMPLETED} | wc -l) 
 	AUD_CNT=$(find ${_COMPLETED} -type f -iregex "${_MUSIC_REGEX}" ! -path ${_COMPLETED} | wc -l) 
 
 	# TODO: Investigate passing _QUEUE to vid_to_lib
 	if [[ ${#_QUEUE} -ne 0 || ${VID_CNT} -ne 0 ]];then
-		echo "Calling ${_VW}/vid_to_lib with ${VID_CNT} files..."
-		${_VW}/vid_to_lib -S 2>&1 # Designate as system service
+		echo "Calling ${_VW}/vid_to_lib to process ${VID_CNT} files..."
+		FLIST=("${(f)$(arr_fn_to_inode ${_QUEUE})}")
+		${_VW}/vid_to_lib -S ${FLIST} 2>&1 # Pass _QUEUE to vid_to_lib
 		_QUEUE=()
 		EVENT=0
 		NDX=0

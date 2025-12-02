@@ -1,8 +1,9 @@
 # Extend PATH
 PATHS=(
 ${HOME} \
-${HOME}/.zsh
+${HOME}/.zsh \
 ${HOME}/.local/bin \
+${HOME}/Code/LOCAL/spanish_db \
 ${GOROOT}/bin \
 /etc/zsh/system_wide/functions \
 /etc/zsh \

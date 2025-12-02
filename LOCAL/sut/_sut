@@ -20,7 +20,6 @@ _sut() {
 				"kernel_cleaner[Clear unused kernels]" \
 				"last_install[Show dpkg install history]" \
 				"log[Query or tail system log]" \
-				"lscolors[Show colors by file type in the current dir]" \
 				"lsdaemons[Show running deamons]" \
 				"lssc[Display systemd detail]" \
 				"mkinitscript[Create an init script]" \
@@ -43,7 +42,6 @@ _sut() {
 					kernel_cleaner) _do_kernel_cleaner;;
 					last_install) _do_last_install;;
 					log) _do_log;;
-					lscolors) _do_lscolors;;
 					lsdaemons) _do_lsdaemons;;
 					lssc) _do_lssc;;
 					mkinitscript) _do_mkinitscript;;
@@ -112,11 +110,6 @@ _do_log () {
 			'-H[help]' \
 			'-t[tail]' \
 			'-l[lines to display (default=25)]' \
-}
-
-_do_lscolors () {
-    _arguments -s \
-			'-H[help]' \
 }
 
 _do_lsdaemons () {

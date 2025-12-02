@@ -321,7 +321,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] on|off\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -351,7 +350,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -376,7 +374,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -407,7 +404,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -577,9 +573,7 @@ info () {
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDv"
@@ -768,9 +762,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDr"
@@ -867,9 +859,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDbs"
@@ -914,7 +904,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -961,7 +950,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -1146,7 +1134,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -1242,7 +1229,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -1291,7 +1277,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -1640,7 +1625,6 @@ ___EOF
 		 [[ ${S} == hold ]] && echo "${1} ${S} (updates will NOT be applied)"
 		 echo ${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
 		 sudo dpkg -s ${1} | egrep 'Package:|Status:|Maintainer:|Version:|Description:'
-
 		 exit_leave
 	}
 
@@ -1676,7 +1660,6 @@ ___EOF
 				[[ ${P} =~ ${APP}  ]] && echo ${P}
 			done
 			echo ${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
-
 			exit_leave
 		fi
 	else
@@ -2026,7 +2009,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [USER]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -2119,7 +2101,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [UMASK]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -2196,9 +2177,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	local OPTSTR=":HD:"
@@ -2316,9 +2295,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-
-		exit_leave
+		exit_leave $(err_msg_exit W ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDa"
@@ -2389,7 +2366,6 @@ ___EOF
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-
 		exit_leave
 	fi
 
@@ -2460,9 +2436,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-
-	exit_leave
+	exit_leave $(err_msg_exit W ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
@@ -2481,6 +2455,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
+ 
 # Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}
 

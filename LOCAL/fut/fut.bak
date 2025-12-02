@@ -25,6 +25,7 @@ comments 1
 extensions 1
 generate 1
 links 1
+lscolors 1
 modified 1
 inode_del 1
 inode_get 1
@@ -37,6 +38,7 @@ comments "COMMENTS:Hide/show file comments"
 extensions "EXTENSIONS:Mass change file extension"
 generate "GENERATE:Generate multiple file types"
 links "LINKS:Dereference links"
+lscolors "COLORS:DIR_COLOR assignments"
 modified "MODIFIED:Show files created/modified today"
 inode_del "INODES:Delete file by inode"
 inode_get "INODES:Get inode of file"
@@ -154,7 +156,7 @@ ______EOF
 	fi
 
 	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ~/Code${RESET}" >&2
-	LIST+=("${(f)$(find ~/Code -type f -executable | grep -w ${FN})}")
+	LIST+=("${(f)$(find ~/Code -type f -executable | grep -w ${FN} | grep -v -i 'repo')}")
 	if [[ ${VERBOSE} == 'true' ]];then
 		if [[ -n ${LIST} ]];then
 			RAWLINE+=${LIST}
@@ -175,9 +177,13 @@ ______EOF
 
 	if [[ ${#LIST} -gt 1 ]];then
 		for L in ${LIST};do
+			[[ ${VERBOSE} == 'true' && ${L:l} =~ 'etc' ]] && echo "${WHITE_FG}Eliminating files in etc...${RESET}" >&2
 			[[ ${L:l} =~ 'etc' ]] &&  continue
+			[[ ${VERBOSE} == 'true' && ${L:l} =~ 'repo' ]] && echo "${WHITE_FG}Eliminating files in REPO...${RESET}" >&2
 			[[ ${L:l} =~ 'repo' ]] &&  continue
+			[[ ${VERBOSE} == 'true' && ! -f ${L} ]] && echo "${WHITE_FG}Eliminating directories and links...${RESET}" >&2
 			[[ ! -f ${L} ]] && continue
+
 			if [[ ${LOCAL} == 'true' ]];then
 				if [[ ${L:h} == ${PWD} ]];then
 					echo ${L}
@@ -1069,6 +1075,182 @@ ______EOF
 			printf "%s ${WHITE_FG}%*s ${RESET}is linked to ${CYAN_FG}%.65s${RESET}\n" ${TARGET_TYPE} ${LONGEST} "${LINK_PATH:t}" $(readlink ${LINK_PATH})
 		done
 		popd
+}
+
+lscolors () {
+	# Declarations
+	local -A ATTRIBUTE_CODES=(00 normal 01 bold 04 underscore 05 blink 07 reverse 08 concealed)
+	local -A BACKGROUND_COLOR_CODES=(40 black 41 red 42 green 43 yellow 44 blue 45 magenta 46 cyan 47 white)
+	local -A FOREGROUND_COLOR_CODES=(30 black 31 red 32 green 33 yellow 34 blue 35 magenta 36 cyan 37 white)
+	local -A FIELD_LEN=()
+	local -A OBJ_COLOR=()
+	local -a COLOR_TEXT=()
+	local -aU FOUND_EXT=()
+	local -aU FOUND_TYPES=()
+	local ANSI=''
+	local DESC=''
+	local NDX=0
+	local WIDTH=0
+	local C F K T
+
+	# Constants
+	local _DIR_COLORS=/etc/zsh/DIR_COLORS
+
+	# Declarations
+	local -a _CANDIDATES=("${(@f)$(sudo find . -maxdepth 1 ! -path . 2>/dev/null)}")
+
+	# Functions
+	get_color_code () {
+		local CODE=${1}
+		local K
+
+		case ${CODE} in
+			<0-8>) echo ${ATTRIBUTE_CODES[${CODE}]};;
+			<30-37>) echo ${FOREGROUND_COLOR_CODES[${CODE}]};;
+			<40-47>) echo ${BACKGROUND_COLOR_CODES[${CODE}]};;
+			*) echo "terminal default";;
+		esac
+	}
+
+	get_ansi () {
+		local CODE=${1}
+
+		CODE=$(str_trim ${CODE})
+
+		[[ ${CODE} == '99' ]] && return
+
+		echo "\033[${CODE}m"
+	}
+
+	parse_code_string () {
+		local CODE_STRING=${1}
+		local CODE
+		local -a CODES
+		local X
+		local LIMIT=$(( ${#CODE_STRING} + 1 ))
+
+		if [[ -n ${CODE_STRING} ]];then
+			for ((X=1;X<=${LIMIT};X++));do
+				if [[ ${CODE_STRING[${X}]} == ';' || ${X} == ${LIMIT} ]];then
+					CODES+=${CODE}
+					CODE=''
+				else
+					CODE+=${CODE_STRING[${X}]}
+				fi
+			done
+		else
+			CODES+=99
+		fi
+
+		echo ${CODES}
+	}
+
+	parse_dir_colors () {
+		local LINE
+		local EXT
+		local CODE_STRING
+		local F1
+		local F2
+
+		while read LINE;do
+			[[ ${LINE} =~ "^#" ]] && continue
+			if [[ ${LINE} =~ "^\.[A-Za-z0-9]" ]];then
+				EXT=$(cut -d ' ' -f1 <<<${LINE})
+				CODE_STRING=$(cut -d ' ' -f2- <<<${LINE} | sed -e 's/#.*$//g' -e 's/\t//g')
+				OBJ_COLOR[${EXT}]=${CODE_STRING}
+			else
+				EXT=$(cut -d ' ' -f1 <<<${LINE})
+				CODE_STRING=$(cut -d ' ' -f2- <<<${LINE} | sed -e 's/#.*$//g' -e 's/\t//g')
+				OBJ_COLOR[${EXT}]=${CODE_STRING}
+			fi
+		done < ${_DIR_COLORS}
+	}
+
+	# Execution
+	read -r -d '' DESC<<___EOF
+View color assignments for listings
+\tof files in the current directory
+___EOF
+
+	if [[ ${1} == '-H' ]];then
+		[[ ${_SMCUP} == 'true' ]] && do_rmcup
+		tabs 5
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H -D]\n"
+		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+		exit_leave
+	fi
+
+	[[ $(/bin/ls | wc -l) -eq 0 ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}No files detected${RESET}"
+
+	parse_dir_colors
+
+	# Parse local file types...
+	for F in ${_CANDIDATES};do
+		if [[ -d ${F} && -k ${F} && ! -O ${F} && -w ${F} ]];then
+			FOUND_TYPES+="STICKY_OTHER_WRITABLE"
+		elif [[ -d ${F} && ! -k ${F} && ! -O ${F} && -w ${F} ]];then
+			FOUND_TYPES+="OTHER_WRITABLE"
+		elif [[ -d ${F} && -k ${F} && ! -O ${F} && ! -w ${F} ]];then
+			FOUND_TYPES+="STICKY_DIR"
+		elif [[ -h ${F} ]];then
+			FOUND_TYPES+="LINK"
+		elif [[ -S ${F} ]];then
+			FOUND_TYPES+="SOCK"
+		elif [[ -b ${F} ]];then
+			FOUND_TYPES+="BLK"
+		elif [[ -c ${F} ]];then
+			FOUND_TYPES+="CHR"
+		elif [[ -u ${F} ]];then
+			FOUND_TYPES+="SETUID"
+		elif [[ -g ${F} ]];then
+			FOUND_TYPES+="SETGID"
+		elif [[ -k ${F} ]];then
+			FOUND_TYPES+="STICKY_FILE"
+		elif [[ -p ${F} ]];then
+			FOUND_TYPES+="NAMED-PIPE"
+		elif [[ -d ${F} ]];then
+			FOUND_TYPES+="DIR"
+		elif [[ -x ${F} ]];then
+			FOUND_TYPES+="EXEC"
+		elif [[ -f ${F} ]];then
+			FOUND_TYPES+="REGULAR FILE"
+		fi
+		[[ ${#FOUND_TYPES[-1]} -gt ${FIELD_LEN[TYPE]} ]] && FIELD_LEN[TYPE]=${#FOUND_TYPES[-1]}
+	done 
+
+	# Parse local file extensions...
+	for F in ${_CANDIDATES};do
+		[[ -d ${F} ]] && continue
+		T=${F:t}
+		[[ -n ${T:r} && -n ${T:e} ]] && FOUND_EXT+=".${T:e}"
+		[[ ${#FOUND_EXT[-1]} -gt ${FIELD_LEN[EXT]} ]] && FIELD_LEN[EXT]=${#FOUND_EXT[-1]}
+	done
+
+	[[ ${FIELD_LEN[TYPE]} -gt ${FIELD_LEN[EXT]} ]] && WIDTH=${FIELD_LEN[TYPE]} || WIDTH=${FIELD_LEN[EXT]}
+	[[ ${WIDTH} -lt 6 ]] && WIDTH=6
+
+	echo
+	printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "File Type" "Color"
+	printf "${MAGENTA_FG}%-*s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
+
+	for K in ${FOUND_TYPES};do
+		COLOR_TEXT=()
+		for C in ${$(parse_code_string ${OBJ_COLOR[${K}]})};do
+			COLOR_TEXT+=$(get_color_code ${C})
+		done
+		ANSI=$(get_ansi ${OBJ_COLOR[${K}]})
+		printf "%-*s ${ANSI}%s${RESET}\n" ${WIDTH} ${K} "${COLOR_TEXT}"
+	done
+
+	for K in ${FOUND_EXT};do
+		COLOR_TEXT=()
+		for C in ${$(parse_code_string ${OBJ_COLOR[${K}]})};do
+			COLOR_TEXT+=$(get_color_code ${C})
+		done
+		ANSI=$(get_ansi ${OBJ_COLOR[${K}]})
+		printf "%-*s ${ANSI}%s${RESET}\n" ${WIDTH} ${K} "${COLOR_TEXT}"
+	done
+	echo
 }
 
 modified () {

@@ -18,6 +18,7 @@ _fut() {
 				'inode_del[Delete file by inode]' \
 				'inode_get[Get inode for file]' \
 				'links[Dereference links]' \
+				'lscolors[DIR_COLOR assignments]' \
 				'modified[Show files created/modified today]' \
 				'surface[Extract file from subdirectory]' \
 				;;
@@ -30,6 +31,7 @@ _fut() {
                 inode_del) _do_inode_del;;
                 inode_get) _do_inode_get;;
                 links) _do_links;;
+                links) _do_lscolors;;
                 modified) _do_modified;;
                 surface) _do_surface;;
             esac
@@ -67,6 +69,11 @@ _do_links() {
 			'-d[increase depth of scan (repeats increase level)]'\
 			'-f[pipe delimited output]'\
 			'-i[ignore broken links]'\
+}
+
+_do_lscolors() {
+    _arguments -s \
+			'-H[help]' \
 }
 
 _do_modified() {
