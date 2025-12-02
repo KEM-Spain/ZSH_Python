@@ -17,30 +17,6 @@ typeset -a _QUEUE
 typeset -aU _M_DIRS
 
 # Functions
-arr_fn_to_inode () {
-	local -a ARR=(${@})
-	local INODE=0
-	local L
-
-	for L in ${ARR};do
-		if [[ -f ${L} ]];then
-			echo $(ls -i ${L} | cut -d' ' -f1)
-		fi
-	done
-}
-
-arr_fn_to_inode () {
-	local -a ARR=(${@})
-	local INODE=0
-	local L
-
-	for L in ${ARR};do
-		if [[ -f ${L} ]];then
-			echo $(ls -i ${L} | cut -d' ' -f1)
-		fi
-	done
-}
-
 start_inot () {
 	inotifywait -m -e create -e moved_to "${_COMPLETED}" >${_FIFO} &
 	[[ ${?} -eq 0 ]] && _INOT_PID=$! || (echo "inotifywait failed to start" >>${_LOG} && exit)
@@ -121,8 +97,7 @@ while true;do
 	# TODO: Investigate passing _QUEUE to vid_to_lib
 	if [[ ${#_QUEUE} -ne 0 || ${VID_CNT} -ne 0 ]];then
 		echo "Calling ${_VW}/vid_to_lib.standalone to process ${VID_CNT} files..."
-		FLIST=("${(f)$(arr_fn_to_inode ${_QUEUE})}")
-		${_VW}/vid_to_lib.standalone -S ${FLIST} 2>&1 # Pass _QUEUE to vid_to_lib
+		${_VW}/vid_to_lib.standalone -S 2>&1 # Pass _QUEUE to vid_to_lib
 		_QUEUE=()
 		EVENT=0
 		NDX=0

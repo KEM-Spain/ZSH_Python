@@ -96,8 +96,9 @@ while true;do
 
 	# TODO: Investigate passing _QUEUE to vid_to_lib
 	if [[ ${#_QUEUE} -ne 0 || ${VID_CNT} -ne 0 ]];then
-		echo "Calling ${_VW}/vid_to_lib with ${VID_CNT} files..."
-		${_VW}/vid_to_lib -S 2>&1 # Pass _QUEUE to vid_to_lib
+		echo "Calling ${_VW}/vid_to_lib to process ${VID_CNT} files..."
+		FLIST=("${(f)$(arr_fn_to_inode ${_QUEUE})}")
+		${_VW}/vid_to_lib -S ${FLIST} 2>&1 # Pass _QUEUE to vid_to_lib
 		_QUEUE=()
 		EVENT=0
 		NDX=0
