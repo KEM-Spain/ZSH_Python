@@ -1091,7 +1091,7 @@ lscolors () {
 	local ANSI=''
 	local DESC=''
 	local NDX=0
-	local WIDTH=0
+	local WIDTH=16
 	local C F K T
 
 	# Constants
@@ -1224,11 +1224,12 @@ ___EOF
 		elif [[ -f ${F} ]];then
 			FOUND_PERMS+="REGULAR FILE"
 		fi
+		[[ ${#FOUND_PERMS[-1]} -gt ${FIELD_LEN[PERMS]} ]] && FIELD_LEN[PERMS]=${#FOUND_PERMS[-1]}
 	done 
 
 	if [[ -n ${FOUND_PERMS} ]];then # Print headers if there is data
 		echo
-		WIDTH=16
+		[[ ${WIDTH} -lt ${FIELD_LEN[PERMS]} ]] && WIDTH=${FIELD_LEN[PERMS]}
 		printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "File Permissions" "Color"
 		printf "${MAGENTA_FG}%-*s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
 	fi
@@ -1244,7 +1245,6 @@ ___EOF
 
 	if [[ -n ${FOUND_EXT} ]];then # Print headers if there is data
 		echo
-		WIDTH=14
 		printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "File Extension" "Color"
 		printf "${MAGENTA_FG}%-*s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
 	fi
