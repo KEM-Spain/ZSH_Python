@@ -81,6 +81,9 @@ start_inot
 EVENT=0
 NDX=0
 while true;do
+	ps -p ${_INOT_PID} >/dev/null 2>&1
+	[[ ${?} -ne 0 ]] && echo "inotifywait died - restarting" && start_inot && sleep 3
+
 	((NDX++))
 	[[ ${NDX} -eq 1 ]] && echo "Reading fifo...$(date +'%T %D')"
 
@@ -94,7 +97,6 @@ while true;do
 	VID_CNT=$(find ${_COMPLETED} -type f -iregex "${_VIDEO_REGEX}" ! -path ${_COMPLETED} | wc -l) 
 	AUD_CNT=$(find ${_COMPLETED} -type f -iregex "${_MUSIC_REGEX}" ! -path ${_COMPLETED} | wc -l) 
 
-	# TODO: Investigate passing _QUEUE to vid_to_lib
 	if [[ ${#_QUEUE} -ne 0 || ${VID_CNT} -ne 0 ]];then
 		echo "Calling ${_VW}/vid_to_lib to process ${VID_CNT} files..."
 		${_VW}/vid_to_lib -S 2>&1 # Pass _QUEUE to vid_to_lib
@@ -121,8 +123,6 @@ while true;do
 	else
 		[[ ${NDX} -eq 1 ]] && echo "No activity, paused..."
 		sleep 2
-		ps -p ${_INOT_PID} >/dev/null 2>&1
-		[[ ${?} -ne 0 ]] && echo "inotifywait died - restarting" && start_inot && sleep 3
 		tweak_deluge_gtk
 	fi
 	[[ ${NDX} -eq 100 ]] && NDX=0

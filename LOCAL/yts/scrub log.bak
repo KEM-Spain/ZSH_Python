@@ -1,0 +1,108 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+typeset -a DIR_INODES=()
+typeset -a CURRENT_LOG=()
+typeset -A NEW_LOG=()
+typeset -R3 NDX=0
+
+_YTS_DIR=~/.yts
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_DOWNLOAD_LOG=${_YTS_DIR}/yts.downloads
+
+# Execution
+LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
+if [[ -z ${LIST} ]];then
+	echo "[${WHITE_FG}${0:t}${RESET}] There are no downloaded files - nothing to do"
+	rm -f ${_DOWNLOAD_LOG} >/dev/null 2>&1  # Ensure no downloads are logged
+	touch ${_DOWNLOAD_LOG}
+	exit
+fi
+
+LIST_CNT=${#LIST}
+
+echo "============================INODES================================"
+NDX=0
+for L in ${(on)LIST};do
+	((NDX++))
+	DIR_INODE=$(cut -d' ' -f1 <<<${L})
+	DIR_FN=$(cut -d' ' -f2- <<<${L})
+	DIR_INODES+="${INODE}|${FN}"
+	echo "${NDX}) DIR_INODE:${DIR_INODE} DIR_FN:${DIR_FN}"
+done
+
+while read LINE;do
+	LOG_INODE=$(cut -d'|' -f1 <<<${LINE})
+	LOG_FN=$(cut -d'|' -f3 <<<${LINE})
+	LOG_LINE=${LINE}
+	CURRENT_LOG+="${LOG_INODE}|${LOG_FN}|${LOG_LINE}"
+done < ${_DOWNLOAD_LOG} 
+
+echo "=============================LOG================================="
+NDX=0
+for C in ${(on)CURRENT_LOG};do
+	((NDX++))
+	LOG_INODE=$(cut -d'|' -f1 <<<${C})
+	LOG_FN=$(cut -d'|' -f2 <<<${C})
+	echo "${NDX}) LOG INODE:${LOG_INODE} LOG_FN:${LOG_FN}"
+done
+
+echo "=========================COMPARISON================================="
+for D in ${DIR_INODES};do
+	DIR_INODE=$(cut -d'|' -f1 <<<${D})
+	DIR_FN=$(cut -d'|' -f2 <<<${D})
+	for C in ${CURRENT_LOG};do
+		LOG_INODE=$(cut -d'|' -f1 <<<${C})
+		LOG_FN=$(cut -d'|' -f2 <<<${C})
+		LOG_LINE=$(cut -d'|' -f3- <<<${C})
+		if [[ ${DIR_INODE} == ${LOG_INODE} ]];then
+			echo "Matching INODES:${DIR_INODE} -> ${LOG_INODE}"
+			if [[ ${DIR_FN} == ${LOG_FN} ]];then
+		 		 echo "Matching FN:${DIR_FN} -> ${LOG_FN}"
+				NEW_LOG[${LOG_INODE}]="${LOG_LINE}"
+			fi
+		fi
+	done
+done
+
+#NDX=0
+#for L in ${(on)CURRENT_LOG};do
+#	((NDX++))
+#	LOG_INODE=$(cut -d'|' -f1 <<<${L})
+#	LOG_FN=$(cut -d'|' -f2 <<<${L})
+#	printf "%s)       LOG INODE:%s FN:%s\n" ${NDX} ${LOG_INODE} ${LOG_FN}
+#done
+#
+#if [[ ${LIST_CNT} -ne ${#CURRENT_LOG} ]];then
+#	echo "${WHITE_ON_GREY}The exisiting log${RESET}:${WHITE_FG}${_DOWNLOAD_LOG}${RESET} seems ${BOLD}${ITALIC}${RED_FG}INACCURATE${RESET}"
+#	echo -n "Overwrite the exisiting log (y/n):"
+#	read -q RESPONSE
+#	cp ${_DOWNLOAD_LOG} ${_DOWNLOAD_LOG}.bak
+#	if [[ ${RESPONSE} == 'y' ]];then
+#		for N in ${(v)NEW_LOG};do
+#			echo ${N} >> ${_DOWNLOAD_LOG}
+#		done
+#	else
+#		echo "\n${RED_FG}Operation cancelled${RESET}"
+#	fi
+#else
+#	echo "${GREEN_FG}The exisiting log${RESET}:${WHITE_FG}${_DOWNLOAD_LOG}${RESET} seems accurate"
+#fi

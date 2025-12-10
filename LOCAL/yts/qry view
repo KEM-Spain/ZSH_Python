@@ -1,0 +1,50 @@
+#!/usr/bin/zsh
+ 
+typeset -a TITLES
+typeset -a LINKS
+typeset -a AGES
+typeset -a DURATIONS
+
+[[ ! -e "./Rumble-channel.qry" ]] && echo "First run Rumble query using yts with -DDDD to generate qry file" && exit
+
+# Tie titles to links to age to duration
+TITLES_1=("${(f)$(pup --charset utf8 '.title__link text{}' < ./Rumble-channel.qry | tut blank_lines | sed 's/|//g')}")
+LINKS_1=("${(f)$(pup --charset utf8 '.title__link attr{href}' < ./Rumble-channel.qry)}")
+AGES_1=("${(f)$(pup --charset utf8 '.videostream__time' < ./Rumble-channel.qry | grep 'ago\|populated')}")
+DURATIONS_1=("${(f)$(pup --charset utf8 '.videostream__badge text{}' < ./Rumble-channel.qry | tut blank_lines)}")
+
+for (( X=1; X<=${#DURATIONS_1}; X++));do
+	if [[ ${DURATIONS_1[${X}]:l} != 'upcoming' ]];then
+		if grep -q 'ucp_f' <<<${LINKS_1[${X}]};then
+			continue
+		fi
+		TITLES+=${TITLES_1[${X}]}
+		LINKS+=${LINKS_1[${X}]}
+		AGES+=${AGES_1[${X}]}
+		DURATIONS+=${DURATIONS_1[${X}]}
+	fi
+done
+
+NDX=0
+for T in ${TITLES};do 
+	((NDX++))
+	echo ${NDX}:${T}
+done
+
+NDX=0
+for T in ${LINKS};do 
+	((NDX++))
+	echo ${NDX}:${T}
+done
+
+NDX=0
+for T in ${AGES};do 
+	((NDX++))
+	echo ${NDX}:${T}
+done
+
+NDX=0
+for T in ${DURATIONS};do 
+	((NDX++))
+	echo ${NDX}:${T}
+done

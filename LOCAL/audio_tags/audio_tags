@@ -17,20 +17,35 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Declarations
-typeset -a _TAG_LIST=()
+typeset -a _FILE_LIST=()
 typeset -A _EDITS=()
 typeset -A _EDIT_COORDS=()
 typeset -A _FLD_ORDER=(FILE 1 ARTIST 2 TITLE 3 ALBUM 4)
 
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/STR.zsh
-source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Vars
+_GOT_DATA=false
 
 # Functions
+dep_exists () {
+	local -a DEPS=(${@})
+	local D
+
+	for D in ${DEPS};do
+		which ${D} >/dev/null 2>&1
+		[[ ${?} -ne 0 ]] && echo ${D} && return 1
+	done
+	return 0
+}
+
 edit_field () {
 	local LABEL=${1}
 	local VALUE=${2}
@@ -86,7 +101,7 @@ tags_display () {
 	local DATA
 	local F K X Y
 
-	for F in ${(on)_TAG_LIST};do
+	for F in ${(on)_FILE_LIST};do
 		case ${F:e} in
 			flac) tags_flac ${F};;
 			mp3) tags_mp3 ${F};;
@@ -94,39 +109,43 @@ tags_display () {
 		esac
 		
 		TAG_DATA=(${(kv)_EDITS})
-		for K in ${(k)TAG_DATA};do
-			FIELDS[${_FLD_ORDER[${K}]}]="${K}:${TAG_DATA[${K}]}"
-		done
+		if arr_is_populated "${TAG_DATA}";then
+			_GOT_DATA=true
 
-		LABELS=("${(f)$(msg_list_data ${FIELDS})}")
-
-		tcup 10 50
-		echo -n "${WHITE_FG}Displaying tags for${RESET}:${CYAN_FG}${${PWD}##${MUSIC_DIR}}${RESET}"
-		tcup 12 50
-		echo -n "Enter '${WHITE_FG}e${RESET}' to edit, '${WHITE_FG}q${RESET}' to quit, <${WHITE_FG}ENTER${RESET}> for next track"
-
-		msg_box -q -c -p -x${BOX_X} -y${BOX_Y} -w 60 ${LABELS}
-
-		_EDIT_COORDS=($(box_coords_get MSG_BOX))
-
-		[[ ${_MSG_KEY} == 'q' ]] && exit_request
-		if [[ ${_MSG_KEY} == 'e' ]];then
-			NDX=0
-			for F in ${FIELDS};do
-				((NDX++))
-				LBL=$(cut -d'|' -f${NDX} <<<${LABELS} | cut -d':' -f1 | sed 's/<D> //') # Derive label from MSG
-				VAL=$(cut -d':' -f2 <<<${F})
-				_EDIT_COORDS=($(box_coords_get MSG_BOX))
-				X=$(( _EDIT_COORDS[X] + NDX )) && Y=$(( _EDIT_COORDS[Y] + 3 ))
-				NEW_VAL=$(edit_field "${LBL:gs/#/ /}" "${VAL} " ${X} ${Y}) # Quirky; adding a space after val seems to help coords stick
-				FIELDS[${NDX}]="${LBL}:$(sed 's/ *$//' <<<${NEW_VAL})"
-				msg_box -q -c -x${BOX_X} -y${BOX_Y} -w 60 $(msg_list_data ${FIELDS})
-				sleep .1
+			for K in ${(k)TAG_DATA};do
+				FIELDS[${_FLD_ORDER[${K}]}]="${K}:${TAG_DATA[${K}]}"
 			done
-			tags_update ${FIELDS}
+
+			LABELS=("${(f)$(msg_list_data ${FIELDS})}")
+
+			tcup 10 50
+			echo -n "${WHITE_FG}Displaying tags for${RESET}:${CYAN_FG}${${PWD}##${MUSIC_DIR}}${RESET}"
+			tcup 12 50
+			echo -n "Enter '${WHITE_FG}e${RESET}' to edit, '${WHITE_FG}q${RESET}' to quit, <${WHITE_FG}ENTER${RESET}> for next track"
+
+			msg_box -q -c -p -x${BOX_X} -y${BOX_Y} -w 60 ${LABELS}
+
+			_EDIT_COORDS=($(box_coords_get MSG_BOX))
+
+			[[ ${_MSG_KEY} == 'q' ]] && exit_request
+			if [[ ${_MSG_KEY} == 'e' ]];then
+				NDX=0
+				for F in ${FIELDS};do
+					((NDX++))
+					LBL=$(cut -d'|' -f${NDX} <<<${LABELS} | cut -d':' -f1 | sed 's/<D> //') # Derive label from MSG
+					VAL=$(cut -d':' -f2 <<<${F})
+					_EDIT_COORDS=($(box_coords_get MSG_BOX))
+					X=$(( _EDIT_COORDS[X] + NDX )) && Y=$(( _EDIT_COORDS[Y] + 3 ))
+					NEW_VAL=$(edit_field "${LBL:gs/#/ /}" "${VAL} " ${X} ${Y}) # Quirky; adding a space after val seems to help coords stick
+					FIELDS[${NDX}]="${LBL}:$(sed 's/ *$//' <<<${NEW_VAL})"
+					msg_box -q -c -x${BOX_X} -y${BOX_Y} -w 60 $(msg_list_data ${FIELDS})
+					sleep .1
+				done
+				tags_update ${FIELDS}
+			fi
+			msg_box_clear
+			tcup ${BOX_X} ${BOX_Y};echo -n "Working..."
 		fi
-		msg_box_clear
-		tcup ${BOX_X} ${BOX_Y};echo -n "Working..."
 	done
 }
 
@@ -168,31 +187,15 @@ tags_mp3 () {
 	local ARTIST=''
 	local TITLE=''
 	local ALBUM=''
-	local TEST=''
 
-	# TALB (Album/Movie/Show title): Unplugged (The Official Bootleg)
-	# TCON (Content type): Pop (13)
-	# TIT2 (Title/songname/content description): I Lost My Little Girl
-	# TPE1 (Lead performer(s)/Soloist(s)): Paul McCartney
-	# TRCK (Track number/Position in set): 02
-	# TYER (Year): 1991
+	ARTIST=$(mp3info -p "%a" ${FILE})
+	TITLE=$(mp3info -p "%t" ${FILE})
+	ALBUM=$(mp3info -p "%l" ${FILE})
 
-	TEST=$(id3v2 -l ${FILE})
-	if [[ ${TEST:l} =~ 'no id3 tag' ]];then
-		FILE=${FILE}
-		ARTIST=None
-		TITLE=None
-		ALBUM=None
-	else
-		ARTIST=$(id3v2 -l ${FILE} | grep TPE1 | cut -d':' -f2 | str_trim)
-		TITLE=$(id3v2 -l ${FILE} | grep TIT2 | cut -d':' -f2 | str_trim)
-		ALBUM=$(id3v2 -l ${FILE} | grep TALB | cut -d':' -f2 | str_trim)
-
-		_EDITS[FILE]="${FILE}"
-		_EDITS[ARTIST]="${ARTIST:=None}"
-		_EDITS[TITLE]="${TITLE:=None}"
-		_EDITS[ALBUM]="${ALBUM:=None}"
-	fi
+	_EDITS[FILE]="${FILE}"
+	_EDITS[ARTIST]="${ARTIST:=None}"
+	_EDITS[TITLE]="${TITLE:=None}"
+	_EDITS[ALBUM]="${ALBUM:=None}"
 }
 
 tags_update () {
@@ -238,14 +241,50 @@ tags_update () {
 	done
 }
 
+set_tags () {
+	local TAG=${1}
+	local TEXT=${2}
+	local EXT=''
+	local F
+
+	# TODO: add option to create track name from file name if none exists
+	for F in ${_FILE_LIST};do
+		EXT=${F:e}
+		case ${EXT} in
+			mp3) case ${TAG} in
+						a) mp3info -a ${TEXT} ${F};; # Set artist
+						l) mp3info -l ${TEXT} ${F};; # Set album
+					esac
+					;;
+			flac) case ${TAG} in
+						a) metaflac --remove-tag "ARTIST" ${F};
+						   metaflac --set-tag "ARTIST=${TEXT}" ${F}
+							;;
+						l) metaflac --remove-tag "ALBUM" ${F};
+						   metaflac --set-tag "ALBUM=${TEXT}" ${F}
+							;;
+					esac
+					;;
+			wav) case ${TAG} in
+						a) id3v2 -a ${TEXT} ${F};;
+						l) id3v2 -A ${TEXT} ${F};;
+					esac
+					;;
+			*) exit_leave "${EXT} not supported";;
+		esac
+	done
+}
+
 #--Begin GetOpts--
 local -a OPTIONS
 local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-Show tag info for all audio files in the current directory
-\tor for a file argument
+Display and edit tags for audio files. Single files can be
+\taccessed with a <FILE> argument. Otherwise, all files in
+\tthe current directory will be processed.  Optionally,
+\tset the Artist and/or Album tag.
 EOF
 
 parse_opts () {
@@ -273,7 +312,8 @@ opt_type () {
 	case ${OPT} in
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
-		t) echo "<FILE_TYPE>";;
+		a) echo "<TEXT>";;
+		l) echo "<TEXT>";;
 	esac
 }
 
@@ -288,19 +328,26 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type f)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) set artist tag (mp3 only)"
+	echo -e "${WHITE_FG}-l${RESET} $(opt_type l) set album tag (mp3 only)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HD"
+OPTSTR=":HDa:l:"
 OPTIND=0
+
+ARTIST=''
+ALBUM=''
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     a) ARTIST=${OPTARG};;
+     l) ALBUM=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -312,28 +359,29 @@ shift $(( OPTIND - 1 ))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
+DEP=$(dep_exists mp3info id3v2 metaflac)
+[[ ${?} -ne 0 ]] && exit_leave 1 $(err_msg_exit E "Missing dependency:${DEP}")
+
 [[ ${#} -ne 0 ]] && FN=${1} || FN=''
 
 if [[ -z ${FN} ]];then
-	# Find the tags
-	_TAG_LIST=("${(f)$(find . -maxdepth 1 -name '*flac' -type f)}")
-	_TAG_LIST+=("${(f)$(find . -maxdepth 1 -name '*mp3' -type f)}")
-	_TAG_LIST+=("${(f)$(find . -maxdepth 1 -name '*wav' -type f)}")
+	# Find audio files
+	_FILE_LIST=("${(f)$(find . -maxdepth 1 -name '*flac' -type f)}")
+	_FILE_LIST+=("${(f)$(find . -maxdepth 1 -name '*mp3' -type f)}")
+	_FILE_LIST+=("${(f)$(find . -maxdepth 1 -name '*wav' -type f)}")
 else
 	[[ ! -e ${FN} ]] && exit_leave "${_SCRIPT_TAG} ${BOLD}${RED_FG}File not found${RESET}:${FN}"
-	_TAG_LIST=(${FN})
+	_FILE_LIST=(${FN})
 fi
 
-HAVE_TAGS=false
-if arr_is_populated "${_TAG_LIST}";then
-	HAVE_TAGS=true
-fi
-
-# No tags found
-if [[ ${HAVE_TAGS} == 'false' ]];then
+if ! arr_is_populated "${_FILE_LIST}";then
 	exit_leave "${_SCRIPT_TAG} ${BOLD}${RED_FG}No audio files found${RESET}"
 fi
 
+[[ -n ${ARTIST} ]] && set_tags a ${ARTIST}
+[[ -n ${ALBUM} ]] && set_tags l ${ALBUM}
+
 tags_display
+[[ ${_GOT_DATA} == 'false' ]] && exit_leave 1 $(err_msg_exit W "${#_FILE_LIST} audio files found but contain no tag data")
 
 exit_leave

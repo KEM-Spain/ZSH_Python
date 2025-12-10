@@ -66,6 +66,7 @@ inode_ndx () {
 	local FILE_OR_PATH=${1}
 	local DEPTH=${2:=1}
 	local -a LIST=()
+	local CMD=''
 	local FN=''
 	local HEAD=''
 	local INODE=''
@@ -80,8 +81,11 @@ inode_ndx () {
 
 	logit "${0}: HEAD:${HEAD}, g_ALLOW_DIRS:${g_ALLOW_DIRS}, g_LIMIT_TO_EXT:${g_LIMIT_TO_EXT}"
 
-	LIST=("${(f)$(find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf "%i|%p\n")}")
-	logit "${0}: find COMMAND:find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf %i|%p\n"
+	CMD='find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf "%i|%p\n"'
+	[[ ${SERVICE_MODE} == 'true' ]] && CMD+=' -mtime 0' # Limit to most recent files
+
+	LIST=("${(f)$(eval ${CMD})}")
+	logit "${0}: Find CMD:${CMD}"
 	logit "${0}: LIST contains ${#LIST} elements"
 
 	for L in ${LIST};do
@@ -642,6 +646,8 @@ do_yt_tag () {
 
 		CFN=$(echo "${CANDIDATE}" | perl -pe 's/\-?\[.*//' | str_trim)
 		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g')
+		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x27s /g')
 
 		_OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}"
 	done
@@ -813,20 +819,20 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
+[[ ${@} == '-' ]] && usage
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
-
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
-MEDIA_ARG_TYPE=''
 MEDIA_ARG=$(str_trim <<<${MEDIA_ARG})
 if [[ ${MEDIA} == "true" ]];then
 	logit ${_LOG} "MEDIA_ARG:${MEDIA_ARG}"
 
+	MEDIA_ARG_TYPE=''
 	[[ -f ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="file"
 	[[ -d ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="path"
 	[[ -z ${MEDIA_ARG} ]] && exit_leave "${_SCRIPT_TAG} Media argument:${MEDIA_ARG} is neither file nor path"
 
-	MEDIA_ARG=$(realpath ${MEDIA_ARG}) # Translate any meta chars
+	MEDIA_ARG=$(realpath ${MEDIA_ARG}) # FQFN
 	logit ${_LOG} "MEDIA_ARG_TYPE:${MEDIA_ARG_TYPE}, realpath:${MEDIA_ARG}"
 fi
 

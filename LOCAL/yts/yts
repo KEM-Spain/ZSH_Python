@@ -1,5 +1,6 @@
 #!/usr/bin/zsh
  
+# TODO: Title inside download frame are overrunning the frame
 # Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -67,7 +68,7 @@ _FIELD_LEN[title]=80
 _JS_SCRIPT="/usr/local/etc/yts.js"
 _MAX_ERRORS=10
 _MAX_FLEN=85
-_MAX_HDR=70
+_MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
 _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
@@ -206,7 +207,7 @@ action_do () {
 				break # Scan cycle
 			fi
 
-			# Scan for not available
+			# Scan for future broadcast
 			LOG_LINE=$(grep -m1 -i "will begin\|premieres\|upcoming" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 ]];then
 				logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
@@ -270,7 +271,9 @@ action_do () {
 				DEST_1=$(cut -d'|' -f1 <<<${DEST})
 				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
-				HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
+				HDR1_TXT=$(clean_title ${HDR1_TXT})
+				HDR1_TXT=$(str_word_clip ${HDR1_TXT} ${_MAX_HDR})
+				HDR1_TXT="<w>Downloading<N>:<m> <c>${HDR1_TXT}<N>"
 				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 				HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
@@ -420,7 +423,6 @@ box_center () {
 
 clean_title () {
 	local TITLE=${1}
-	local TITLE_LEN=${2:=${_MAX_TITLE}}
 	local STR=''
 	local -a KEYWORDS=("judge napolitano - " "official" "^the " " show" "have it out with galloway \- " "youtube channel")
 	local -A SEEN=()
@@ -428,15 +430,12 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
+	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}"
+
 	TITLE=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
 	TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 
-	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}, DISPLAY KEY:${g_DISPLAY_KEY}, QUERY KEY:${g_QUERY_KEY}"
-
 	STR=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${TITLE})
-
-	STR=$(str_word_clip ${STR} ${TITLE_LEN})
-	logit ${_YT_DBG_LOG} "${0}: str_word_clip -  TITLE LEN:${#TITLE}, RETURN LEN:${#STR}"
 
 	STR=$(tr '\n' ' ' <<<${STR}) # html2text can insert a newline if STR exceeds --width
 	#[[ ${TITLE} != ${STR} ]] && logit ${_YT_DBG_LOG} "${0}: Strip newline:${STR}"
@@ -485,11 +484,10 @@ clean_title () {
 		STR=$(sed "s/${W}//I" <<<${STR})
 	done
 	#logit ${_YT_DBG_LOG} "${0}: Scrubbed keywords"
-	
 
 	TITLE=${STR[1,${_MAX_TITLE}]} # Title length
 
-	logit ${_YT_DBG_LOG} "${0}: Final:${TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: CLEAN:${TITLE} length:${_MAX_TITLE}"
 
 	echo ${TITLE}
 }
@@ -1545,12 +1543,12 @@ set_final_fn () {
 
 	logit ${_YT_DBG_LOG} "${0}: Received:${FN}"
 
-	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /} ${_MAX_FLEN}) # Clean tail, no extension, no underscores
-	NEW_FN=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${NEW_FN})
+	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /}) # Clean tail, no extension, no underscores
+	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FLEN})
+	NEW_FN=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${(qqq)NEW_FN})
 	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
 	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
-
 
 	logit ${_YT_DBG_LOG} "${0}: Formatted:${NEW_FN}"
 

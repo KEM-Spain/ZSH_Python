@@ -2317,6 +2317,13 @@ ${E_MAGENTA_FG}READ${E_RESET}
 ===================
 read [ -rszpqAclneE ] [ -t [ num ] ] [ -k [ num ] ] [ -d delim ] [ -u n ] [ name[?prompt] ] [ name ... ]
 
+while read -u3 F;do # To embed a read within a read loop use a different file descriptor
+    cat \${F}
+    echo -n "Next..."
+    read -s -k1 RESPONSE
+    [[ ${RESPONSE} == $'\n' ]] && exit # Test for newline using ANSI quoting
+done 3< ./media
+
 Read one line and break it into fields using the characters in \${IFS} as separators, except as noted below. The first field is
 assigned to the first name, the second field to the second name, etc., with leftover fields assigned to the last name. If name is
 omitted then REPLY is used for scalars and reply for arrays.  

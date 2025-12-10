@@ -7,6 +7,24 @@ typeset -a VIDEO=()
 typeset -a LIST=()
 
 _YTS_URL_LOG=~/.local/share/yts/yts.url.log
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+
+last_file_downloaded () {
+	local ST=''
+	local FN=''
+	local IN=''
+
+	ST=$(stat -c"%W|%i|%n" ${_DOWNLOAD_DIR}/* | sort -t'|' -k1 -r | head -1) # Sort by birth date; grab most recent
+	FN=$(cut -d'|' -f3 <<<${ST}) # Filename
+	IN=$(cut -d'|' -f2 <<<${ST}) # Inode
+
+	if [[ -e ${FN} ]];then
+		echo "${FN}|${IN}"
+		return 0
+	else
+		return 1
+	fi
+}
 
 if [[ ${GET_AV} == 'true' ]];then
 	LIST=("${(f)$(
@@ -40,10 +58,8 @@ else
 	/usr/local/bin/yt-dlp -Rinfinite "$@"
 fi
 
-LIST=("${(f)$(ls -1 --color=never)}")
-for L in ${LIST};do
-	grep -q -P '\-\[' <<<${L}
-	[[ ${?} -eq 0 ]] && fsub -y -Y ${L} && fsub -y '_' ' ' ${L} && fsub -y ' [st] ' '\x27s ' ${L}
-done
+FN=$(last_file_downloaded | cut -d'|' -f1)
+
+fsub -y -Y ${FN} 
 
 echo "yt download:${@}" >> ${_YTS_URL_LOG}

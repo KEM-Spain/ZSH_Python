@@ -553,8 +553,6 @@ logit "_SERVICE_MODE:${_SERVICE_MODE}"
 [[ ! -e ${_LIBRARY_DIR}/movies ]] && mkdir ${_LIBRARY_DIR}/movies 
 [[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
 
-# TODO: Investigate receiving a list of files
-logit "ARGC:${#} ${@}"
 echo "Scanning ${_COMPLETED_DIR} for video..."
 _VIDEOS=("${(f)$(find ${_COMPLETED_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_COMPLETED_DIR})}")
 

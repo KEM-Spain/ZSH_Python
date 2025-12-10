@@ -117,21 +117,6 @@ _reload_funcs () {
 	done
 }
 
-_chrome_restore_tweak () {
-	local CHROME_PREF=/home/kmiller/.config/google-chrome/Default/Preferences
-
-	 [[ -e ${CHROME_PREF} ]] || return 1
-
-	RUNNING=$(pgrep -c chrome)
-	[[ ${RUNNING} -ne 0 ]] && return 1
-
-	grep -qi 'crashed' ${CHROME_PREF} # check if edit is necessary
-	[[ ${?} -ne 0 ]] && return 1
-	# echo "Refreshing chrome restore tweak..."
-	sudo sed -i 's/Crashed/Normal/g' ${CHROME_PREF} # disable restore session prompt
-	return 0
-}
-
 _check_updates () {
 	sudo chmod 644 ${_MOTD_DIR}/10-help-text # disable
 
@@ -262,9 +247,8 @@ add-zsh-hook precmd _cursor_on
 if [[ $(_term_count) -eq 1 ]];then
 	INTERACTIVE=''
 
-	xdotool key "ctrl+J"
-	tput sgr0
-	xdotool key "ctrl+J"
+	TERM_WIN_ID=$(win_id | cut -d'|' -f2)
+	xdotool --window ${TERM_WIN_ID} key "Escape"
 
 	if [[ -o interactive ]]; then
 		if [[ $(_term_count) -eq 1 ]];then

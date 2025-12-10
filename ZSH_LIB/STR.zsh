@@ -315,30 +315,17 @@ str_unpipe () {
 
 str_word_clip () {
 	local TEXT=${1}
-	local LEN=${2}
-	local -a BREAKS=()
-	local LAST_BREAK
-	local LINE=''
-	local B P
+	local LIMIT=${2}
+	local LEN=0
+	local TEXT_OUT=''
+	local W
 
-	[[ ${#TEXT} -le ${LEN} ]] && LINE=${TEXT} # No length restriction
+	for W in ${=TEXT};do
+		(( LEN += ${#W} + 1 ))
+		if [[ ${LEN} -lt ${LIMIT} ]];then
+			TEXT_OUT+="${W} "
+		fi
+	done
 
-	if [[ -z ${LINE} ]];then
-		for (( P=1; P <= ${#TEXT}; P++ ));do # Mark all word boundaries
-			[[ ${TEXT[${P}]} =~ "[[:space:]]" ]] && BREAKS+=${P}
-		done
-
-		LINE=${TEXT} # Default is entire line
-		LAST_BREAK=${BREAKS[1]} # First pass has rational length
-
-		for B in ${BREAKS};do
-			[[ ${B} -gt ${LEN} ]] && LINE="${TEXT[1,${LAST_BREAK}]}" && break # Hit max length
-			LAST_BREAK=${B}
-		done
-	fi
-
-	LINE=$(sed -E -e 's/[[:punct:]]*\s+?$//' -e 's/ *$//' <<<${LINE}) # Clean any dangling punctuation
-
-	echo ${LINE}
+	echo ${TEXT_OUT}
 }
-

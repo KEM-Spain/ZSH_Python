@@ -34,8 +34,8 @@ WHITE_FG="\033[37m"
 read -r -d '' DESC<<EOF
 Display music file tags for both mp3 and flac files
 \tOptionally set the Artist and Title tags
-\tIf setting tags, simply populate Artist name
-\tTitle will be derived from the file name
+\tTo set tags provide artist name
+\tTitle derived from file name
 EOF
 
 parse_opts () {
@@ -82,7 +82,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave $(err_msg_exit W ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
@@ -123,7 +123,7 @@ for L in ${LIST};do
 	TRACK=$(sed -E 's/^[0-9]+[- ]?+//' <<<${L:t:r})
 	if [[ ${SET} == 'true' ]];then
 		mp3info -a "${ARTIST}" "${L}"
-		mp3info -t "${TRACK}" "${L}"
+		mp3info -t "${(C)TRACK}" "${L}"
 		mp3info "${L}"
 	else
 		mp3info "${L}"
@@ -140,7 +140,7 @@ for L in ${LIST};do
 		metaflac --remove-tag="ARTIST" "${L}"
 		metaflac --set-tag="ARTIST=${ARTIST}" "${L}"
 		metaflac --remove-tag="TITLE" "${L}"
-		metaflac --set-tag="TITLE=${TRACK}" "${L}"
+		metaflac --set-tag="TITLE=${(C)TRACK}" "${L}"
 		metaflac --export-tags-to="/dev/stdout" "${L}"
 	else
 		metaflac --export-tags-to="/dev/stdout" "${L}"

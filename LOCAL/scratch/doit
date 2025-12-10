@@ -17,50 +17,10 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-arr_fn_to_inode () {
-	local -a ARR=(${@})
-	local -a INODE_ARR=()
-	local INODE=0
-	local L
-
-	for L in ${ARR};do
-		if [[ -f ${L} ]];then
-			INODE=$(ls -i ${L} | cut -d' ' -f1)
-			INODE_ARR+=${INODE}
-		fi
-	done
-	
-	[[ -n ${INODE_ARR} ]] && echo ${INODE_ARR}
-}
-
-
-arr_inode_to_fn () {
-	local -a ARR=(${@})
-	local -a FN_ARR=()
-	local L
-
-	for L in ${ARR};do
-		FN=$(find -inum ${L})
-		if [[ -f ${FN} ]];then
-			FN_ARR+=$(realpath ${FN})
-		fi
-	done
-	
-	[[ -n ${FN_ARR} ]] && echo ${FN_ARR}
-}
-
-typeset -a LIST=()
-typeset -a ILIST=()
-typeset -a FLIST=()
-
-LIST=("${(f)$(find . -type f)}")
-
-ILIST=($(arr_fn_to_inode ${LIST}))
-for L in ${ILIST};do
-	printf "%s\n" ${L}
-done
-
-FLIST=($(arr_inode_to_fn ${ILIST}))
-for L in ${FLIST};do
-	printf "%s\n" ${L}
+#typeset -a TARGETS=(110 100 90 80 70 60 50 40 30 20 10 5)
+typeset -a TARGETS=(84)
+STR="Candace Owens - WHO Stood To Benefit From Charlie Kirk's Assassination? Candace EP 276"
+for TGT in ${TARGETS};do
+	S=$(clip ${STR} ${TGT})
+	[[ ${#S} -gt ${TGT} ]] && echo "TGT:${TGT} ERROR" || echo ${TGT}:${#S}:${S}
 done

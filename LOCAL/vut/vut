@@ -332,10 +332,10 @@ ___EOF
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO FILE>" || FN_ARG=(${@})
-	[[ ! -f ${FN_ARG} ]] && exit_leave $(err_msg_exit E "File not found:${FN_ARG}")
+	[[ ! -f ${FN_ARG} ]] && exit_leave 1 $(err_msg_exit E "File not found:${FN_ARG}")
 	
 	file ${FN_ARG} | grep -qi 'media\|matroska\|video'
-	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit E "File not a video:${FN_ARG}")
+	[[ ${?} -ne 0 ]] && exit_leave 1 $(err_msg_exit E "File not a video:${FN_ARG}")
 
 	echo "\n${CYAN_FG}Increasing volume by 3dB...${RESET}"
 	ffmpeg -i "${FN_ARG}" -af "volume=3dB" ${FN_ARG:r}_v+3d.${FN_ARG:e}
@@ -345,16 +345,22 @@ merge () {
 	# Declarations
 	local -a FILES_TO_MERGE=()
 	local -a FILELIST=()
-	local -A ORIGINALS=()
-	local APP=ffmpeg
-	local DESTINATION_FILE
-	local F FN FTYPE CMD
-	local RESPONSE
-	local SAVEDIR=${PWD}/.originals
+	local -a ORIGINALS=()
 
 	# Constants
 	local _OUT_FILE=vid_merge
 	local _VID_REGEX_F='.*\.\(mp4\|avi\|mkv\)$'
+	local SOURCE_DIR=${PWD}
+	local WORKDIR=${SOURCE_DIR}/.originals
+
+	# Vars
+	local APP=ffmpeg
+	local ARG=''
+	local DESTINATION_FILE=''
+	local EMSG=''
+	local RC=0
+	local RESPONSE=''
+	local F FN FTYPE CMD
 
 	#--Begin GetOpts--
 	local DESC
@@ -395,7 +401,7 @@ ___EOF
 		case ${OPT} in
 			d) echo "<DIR>";;
 			f) echo "<FILE>";;
-			l) echo "<GLOB>";;
+			l) echo "<ARG>";;
 			t) echo "<FILE_TYPE>";;
 		esac
 	}
@@ -435,29 +441,38 @@ ___EOF
 	#--End GetOpts--
 
 	#--Execution--
+	clear
+
+	[[ ${#} -ne 0 ]] && ARG=${1}
 
 	DESTINATION_FILE=${_OUT_FILE}.mp4
+	echo "DESTINATION_FILE:${DESTINATION_FILE}"
+
 	[[ -e ${DESTINATION_FILE} ]] && /bin/rm -f ${DESTINATION_FILE}
-	[[ -d ${SAVEDIR} ]] && /bin/rm -rf ${SAVEDIR}
-	mkdir ${SAVEDIR}
+
+	[[ -d ${WORKDIR} ]] && /bin/rm -rf ${WORKDIR}
+	mkdir ${WORKDIR}
 
 	if [[ ${#} -eq 0 ]];then
 		echo "No file GLOB provided - defaulting to all media files in PWD"
 		CMD="find ${PWD} -regextype 'posix-basic' -maxdepth 1 -type f -regex '${_VID_REGEX_F}'"
 		FILELIST=("${(f)$(eval ${CMD})}")
 	else
-		local -a CMD=($(path_get_raw_cmdline))
-		local FGLOB=${CMD[-1]}
-		echo "Adding all media files matching GLOB:${FGLOB}"
-		CMD="find ${PWD} -maxdepth 1 -type f -name '${FGLOB}' ! -path ${PWD}"
+		echo "Adding all media files matching:${ARG}"
+		CMD="find ${PWD} -maxdepth 1 -type f -name '${ARG}*' ! -path ${PWD}"
 		FILELIST=("${(f)$(eval ${CMD})}")
 	fi
 
-	[[ -z ${FILELIST} ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Missing required arguments${RESET}:<FILES_TO_MERGE>"
+	[[ -z ${FILELIST} ]] && exit_leave 1 "${_SCRIPT_TAG} ${RED_FG}No matches for argument${RESET}:${ARG}"
 
-	echo "Backing up original files..."
+	pushd ${WORKDIR} # Isolated work area
+
+	echo "\n${WHITE_FG}Entered work area${RESET}:PWD:${PWD}" >&2
+
+	echo "Backing up original files..." >&2
 	for F in ${FILELIST};do
-		cp ${F} ${SAVEDIR}
+		ORIGINALS+=${F:t}
+		cp ${F} ${WORKDIR}
 	done
 
 	echo "Formatting filelist..."
@@ -465,8 +480,8 @@ ___EOF
 		FTYPE=$(file -b ${F})
 		if [[ ${FTYPE:l} =~ 'media|matroska' ]];then
 			FN=$(fsub -Cs <<<${F}) # Compact file names to eliminate problematic spaces in file names
-			mv -f ${F} ${FN} >/dev/null 2>&1
-			FILES_TO_MERGE+=${FN:t}
+			mv -f ${F} ./${FN:t} >/dev/null 2>&1
+			FILES_TO_MERGE+=./${FN:t}
 		else
 			echo "File:${F} not of type media - skipped" >&2
 		fi
@@ -477,25 +492,48 @@ ___EOF
 	echo "${WHITE_FG}Output file${RESET}:${BOLD}${ITALIC}${DESTINATION_FILE}${RESET}"
 
 	respond "${CYAN_FG}Continue${RESET}"
-	if [[ ${?} -ne 0 ]];then
-		/bin/rm -f ${FILES_TO_MERGE}
-		cp ${SAVEDIR}/* ${PWD}
-		/bin/rm -f ${SAVEDIR}
-		exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
+	if [[ ${?} -eq 0 ]];then # Merge approved
+		echo "\nMerging:${WHITE_FG}${#FILES_TO_MERGE} files ${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
+		case ${APP} in
+			ffmpeg)		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}"
+							ffmpeg -loglevel error -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}
+							RC=${?}
+							;;
+			melt)			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
+							melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress
+							RC=${?}
+							;;
+			mkvmerge)	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
+							eval "mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
+							RC=${?}
+							;;
+		esac
+
+		if [[ ${RC} -eq 0 ]];then
+			EMSG="[${WHITE_FG}${0}${RESET}] ${GREEN_FG}Merge Completed to:${RESET}${SOURCE_DIR}/${DESTINATION_FILE}"
+		else
+			EMSG="[${WHITE_FG}${0}${RESET}] ${RED_FG}Merge Failed${RESET}"
+		fi
+
+		set_exit_value ${RC}
+
+		[[ -e ${DESTINATION_FILE} ]] && mv ${DESTINATION_FILE} ${SOURCE_DIR}
+	else # Merge rejected
+		clear
+		echo "\nRestoring original files..." >&2
+		for F in ${ORIGINALS};do
+			cp ${WORKDIR}/${F} ${SOURCE_DIR} # Restore files
+		done
+		set_exit_value 1
+		EMSG="[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
 	fi
 
-	echo "\nMerging:${WHITE_FG}${#FILES_TO_MERGE} files ${RESET} to ${WHITE_FG}${DESTINATION_FILE}${RESET} using APP:${WHITE_FG}${APP}${RESET}"
-	case ${APP} in
-		ffmpeg)		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ffmpeg -loglevel panic -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}"
-						ffmpeg -loglevel error -f concat -safe 0 -i <(for F in ${FILES_TO_MERGE}; do echo "file '${PWD}/${F}'"; done) -c copy ${DESTINATION_FILE}
-						;;
-		melt)			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress"
-						melt ${FILES_TO_MERGE} -consumer avformat:${DESTINATION_FILE} acodec=libmp3lame vcodec=libx264 -progress
-						;;
-		mkvmerge)	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
-						eval "mkvmerge -o ${DESTINATION_FILE} ${FILES_TO_MERGE}"
-						;;
-	esac
+	/bin/rm -rf ${WORKDIR} #>/dev/null 2>&1 # Remove work dir
+
+	popd # Leave work area
+	echo "${WHITE_FG}Exited work area${RESET}:PWD:${PWD}" >&2
+
+	exit_leave ${EMSG}
 }
 
 rescale () {

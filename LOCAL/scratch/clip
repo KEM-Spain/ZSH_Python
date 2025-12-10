@@ -1,0 +1,37 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+str_word_clip () {
+	local TEXT=${1}
+	local LIMIT=${2}
+	local LEN=0
+	local TEXT_OUT=''
+	local W
+
+	for W in ${=TEXT};do
+		(( LEN += ${#W} + 1 ))
+		if [[ ${LEN} -lt ${LIMIT} ]];then
+			TEXT_OUT+="${W} "
+		fi
+	done
+	echo ${TEXT_OUT}
+	#echo "LIMIT:${LIMIT} LEN:${#TEXT_OUT} TEXT:${TEXT_OUT}" >&2
+}
+
+str_word_clip ${@}

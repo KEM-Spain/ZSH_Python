@@ -145,6 +145,7 @@ cmd_filter () {
 
 		VALID=false
 		if [[ -n ${CMD_TGT} && -n ${_HIST_CACHE} ]];then
+			echo "CMD_TGT:${CMD_TGT}" >&2
 			if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
 				VALID='true'
 				((CACHE++))
