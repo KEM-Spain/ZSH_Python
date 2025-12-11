@@ -430,7 +430,7 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
-	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: ARG:${TITLE}"
 
 	TITLE=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
 	TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
@@ -1227,6 +1227,8 @@ post_process () {
 	local NDX=0
 	local F K
 
+	logit ${_YT_DBG_LOG} "${0}"
+
 	msg_box -x$(( _CONT_COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
 
 	NDX=0
@@ -1541,9 +1543,10 @@ set_final_fn () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
 
-	logit ${_YT_DBG_LOG} "${0}: Received:${FN}"
+	logit ${_YT_DBG_LOG} "${0}: ARG:${FN}"
 
-	NEW_FN=$(clean_title ${FN:t:r:gs/_/ /}) # Clean tail, no extension, no underscores
+	NEW_FN=${FN:t:r:gs/_/ /} # Tail, no extension, swap underscore
+	NEW_FN=$(clean_title ${NEW_FN}) # Clean 
 	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FLEN})
 	NEW_FN=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${NEW_FN})
 	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length

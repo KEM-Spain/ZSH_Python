@@ -17,10 +17,38 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-#typeset -a TARGETS=(110 100 90 80 70 60 50 40 30 20 10 5)
-typeset -a TARGETS=(84)
-STR="Candace Owens - WHO Stood To Benefit From Charlie Kirk's Assassination? Candace EP 276"
-for TGT in ${TARGETS};do
-	S=$(clip ${STR} ${TGT})
-	[[ ${#S} -gt ${TGT} ]] && echo "TGT:${TGT} ERROR" || echo ${TGT}:${#S}:${S}
-done
+# Imports
+ZSH_LIB_DIR=..
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+STR="Candace Owens - WHO Stood To Benefit From Charlie Kirk's Fu*king , & Assassination? Candace EP 276"
+
+echo "STR:${STR} ${#STR}"
+
+echo "85"
+STR=$(str_word_clip ${STR} 85)
+echo "STR:${STR} ${#STR}"
+
+echo "80"
+STR=$(str_word_clip ${STR} 80)
+echo "STR:${STR} ${#STR}"
+
+echo "75"
+STR=$(str_word_clip ${STR} 75)
+echo "STR:${STR} ${#STR}"
+
+echo "70"
+STR=$(str_word_clip ${STR} 70)
+echo "STR:${STR} ${#STR}"
+
+echo "65"
+STR=$(str_word_clip ${STR} 65)
+echo "STR:${STR} ${#STR}"
+
+echo "60"
+STR=$(str_word_clip ${STR} 60)
+echo "STR:${STR} ${#STR}"
+

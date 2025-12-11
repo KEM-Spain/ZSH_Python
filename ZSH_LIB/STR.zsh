@@ -34,7 +34,7 @@ str_center_pad () {
 	TEXT_IN=${@}
 
 	(( SPAN -= 2 )) # Minimum 1 space border surrounding text
-	TEXT_WIDTH=$(str_clean_line_len ${TEXT_IN})
+	TEXT_WIDTH=$(str_clean_len ${TEXT_IN})
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_IN:${TEXT_IN} TEXT_WIDTH:${TEXT_WIDTH}"
 
@@ -49,7 +49,7 @@ str_center_pad () {
 	echo ${L_GAP}
 }
 
-str_clean_line_len () {
+str_clean_len () {
 	local TEXT_IN=${@}
 	local LEN
 
@@ -322,9 +322,7 @@ str_word_clip () {
 
 	for W in ${=TEXT};do
 		(( LEN += ${#W} + 1 ))
-		if [[ ${LEN} -lt ${LIMIT} ]];then
-			TEXT_OUT+="${W} "
-		fi
+		[[ ${LEN} -lt ${LIMIT} ]] && TEXT_OUT+="${W} "
 	done
 
 	echo ${TEXT_OUT}

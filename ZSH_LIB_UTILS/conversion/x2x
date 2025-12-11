@@ -115,7 +115,7 @@ case ${0:t} in
 				((FRACTION = ${1} * .0338))
 				OZ=$FRACTION
 				((GM = $OZ * 28.35))
-				printf "${WHITE_FG} %3.2f ${RESET}$(str_pluralize milliliter ${1}) is ${WHITE_FG}%3.2f${RESET} $(str_pluralize ounce ${OZ})or ${WHITE_FG}%3.2f${RESET} $(str_pluralize gram ${GM})" ${1} ${OZ} ${GM}
+				printf "${WHITE_FG} %3.2f ${RESET}$(str_pluralize milliliter ${1}) is ${WHITE_FG}%3.2f${RESET} $(str_pluralize ounce ${OZ}) or ${WHITE_FG}%3.2f${RESET} $(str_pluralize gram ${GM})" ${1} ${OZ} ${GM}
 				;;
 	o2m) echo "Ounces to Milliliters"
 				((ML = ${1} * 29.57353))
