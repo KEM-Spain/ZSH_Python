@@ -8,7 +8,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Constants
 _CFG_DIR=~/.local/share/${0:t}
-_LOG=/tmp/${0:t}.log
+_LOG=${_CFG_DIR}/${0:t}.log
 _SCRIPT=${0:t}
 _SYS_APPS=/usr/local/bin/system/launchers
 

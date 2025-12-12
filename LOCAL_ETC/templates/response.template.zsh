@@ -25,13 +25,23 @@ DESCRIPTION="ACTION"
 
 [[ ${1} == "-H" ]] && echo "${WHITE_FG}Usage${RESET}:${0}\n ${WHITE_FG}Desc${RESET}:${DESCRIPTION}" && exit
 
+# Yes/No template
 echo -n "\n${RED_FG}${ALERT}!${RESET} ${DESCRIPTION}${WHITE_FG}${RESET}:(${WHITE_FG}y/n${RESET})?"
 read -q RESPONSE
 echo
-if [[ ${RESPONSE} != "n" ]];then
+if [[ ${RESPONSE} == "y" ]];then # Only 'y' will execute task
 	echo "${WHITE_FG}${DESCRIPTION}${RESET}"
 	echo "ACTION goes here"
-else
+else # All other keys terminate
 	echo "${RED_FG}Operation cancelled${RESET}..."
 	exit
 fi
+
+# File read template
+while read -u3 F;do # Separate file descriptor to allow embedded read
+	echo "ACTION goes here"
+	echo -n "Next..."
+	read -s -k1 RESPONSE
+	[[ ${RESPONSE} == $'\n' ]] && exit # ANSI quoting to detect empty return
+done 3< <FILE>
+

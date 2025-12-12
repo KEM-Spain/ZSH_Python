@@ -17,7 +17,8 @@ _QUICK=false
 
 # Constants
 _SCRIPT=${0:t}
-_LOG=/tmp/${_SCRIPT}.log
+_CFG_DIR=~/.local/share/${_SCRIPT}
+_LOG=${_CFG_DIR}/${_SCRIPT}.log
 
 # Functions
 get_app_tag () {
@@ -280,6 +281,8 @@ shift $((OPTIND -1))
 #--End GetOpts--
  
 # Execution
+[[ ! -e ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
+
 WIN_ARG=${1:l} # Lowercase
 
 WID=''

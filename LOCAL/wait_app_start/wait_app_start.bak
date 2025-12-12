@@ -64,15 +64,28 @@ clear_idle_apps () {
 cfg_create () {
 	[[ ! -e ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
 
-	if [[ ! -e ${_CFG_DIR}/${_SCRIPT}.cfg ]];then
-{
-cat << cfg_EOF
-haruna|10
-musescore|4
-audacity|10
-viber|3
-cfg_EOF
-} > ${_CFG_DIR}/${_SCRIPT}.cfg
+	if [[ ! -e ${_CFG_DIR}/${_SCRIPT}.xml ]];then
+		{ cat << ______cfg_EOF
+		<wait_app_start>
+		<entry> 
+		  <app>haruna</app>
+		  <waittime>10</waittime>
+		</entry>
+		<entry>
+		  <app>musescore</app>
+		  <waittime>4</waittime>
+		</entry>
+		<entry>
+		  <app>audacity</app>
+		  <waittime>10</waittime>
+		</entry>
+		<entry>
+		  <app>viber</app>
+		  <waittime>3</waittime>
+		</entry>
+		</wait_app_start>
+______cfg_EOF
+		} > ${_CFG_DIR}/${_SCRIPT}.xml
 	fi 
 }
 
@@ -80,12 +93,15 @@ cfg_load () {
 	local APP=''
 	local WT=''
 	local LINE=''
+	local FN=${_CFG_DIR}/${_SCRIPT}.xml
+	local MAX=$(xmllint --xpath "count(wait_app_start/entry)" ${FN})
+	local X=0
 
-	while read LINE;do
-		APP=$(cut -d'|' -f1 <<<${LINE})
-		WT=$(cut -d'|' -f2 <<<${LINE})
+	for (( X=1; X<=${MAX}; X++ ));do
+		APP=$(xmllint --xpath "wait_app_start/entry[${X}]/app//text()" ${FN})
+		WT=$(xmllint --xpath "wait_app_start/entry[${X}]/waittime//text()" ${FN})
 		_WAITTIMES=[${APP}]=${WT}
-	done < ${_CFG_DIR}/${_SCRIPT}.cfg
+	done
 }
 
 get_app_tag () {
