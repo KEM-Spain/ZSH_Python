@@ -477,7 +477,8 @@ clean_title () {
 	done
 	#logit ${_YT_DBG_LOG} "${0}: Scrubbed keywords"
 
-	TITLE=${STR[1,${_MAX_TITLE}]} # Title length
+	TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
+	#TITLE=${STR[1,${_MAX_TITLE}]} # Title length
 
 	logit ${_YT_DBG_LOG} "${0}: CLEAN:${TITLE} length:${_MAX_TITLE}"
 
