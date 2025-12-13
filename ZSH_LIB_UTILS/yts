@@ -1,6 +1,6 @@
 #!/usr/bin/zsh
+# TODO: Strip audio fix code - unnecessary
  
-# TODO: Title inside download frame are overrunning the frame
 # Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -307,7 +307,7 @@ action_do () {
 				logit ${_YT_DBG_LOG} "${0}: GOT ETA:${LOG_LINE}"
 				ETA=${LOG_LINE}
 			elif grep -qi 'error' <<<${LOG_LINE} 2>/dev/null;then
-				logit ${_YT_DBG_LOG} "${0}: GOT ERROR:${LOG_LINE}"
+				logit ${_ERROR_LOG} "${0}: GOT ERROR:${LOG_LINE}"
 				ERR=${LOG_LINE}
 			elif grep -qi 'Fixing MPEG-TS\|FixupM3u8' <<<${LOG_LINE} 2>/dev/null;then
 				logit ${_YT_DBG_LOG} "${0}: GOT Fragmention post-process:${LOG_LINE}"
@@ -339,6 +339,7 @@ action_do () {
 					*merging*) continue;; # Audio fix
 					*'deleting original'*) continue;; # Audio fix
 					*100%*) ETA=${OTH};;
+					*) logit ${_YT_DBG_LOG} "${0}: Uncaptured:${LOG_LINE}";;
 				esac
 			fi
 
@@ -1299,7 +1300,7 @@ query_rumble () {
 	if [[ ${g_PREFER_LIVE} == 'true' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 
-		QRY="http://rumble.com/c/${g_QUERY_KEY}/livestreams"
+		QRY="https://rumble.com/c/${g_QUERY_KEY}/livestreams"
 		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
@@ -1309,7 +1310,7 @@ query_rumble () {
 	else
 		msg_box -c "Requesting <c><I>channel<N> search..."
 
-		QRY="http://rumble.com/c/${g_QUERY_KEY}?page=1"
+		QRY="https://rumble.com/c/${g_QUERY_KEY}?page=1"
 		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
@@ -1414,7 +1415,7 @@ query_rumble () {
 		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${V})
 		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${V})
 		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${V}); TITLE=$(clean_title ${TITLE})
-		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${V}); URL="http://rumble.com${URL}"
+		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${V}); URL="https://rumble.com${URL}"
 		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${V})
 		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${V});	AGETIME="(${AGETIME:s/|/ /})"
 

@@ -447,20 +447,20 @@ inode_ndx () {
 	local TYPE=f
 	local L
 
-	logit "${0}: Received FILE_OR_PATH:${FILE_OR_PATH}"
+	logit ${_LOG} "${0}: Received FILE_OR_PATH:${FILE_OR_PATH}"
 
 	[[ -f ${FILE_OR_PATH} || -d ${FILE_OR_PATH} ]] && HEAD=${FILE_OR_PATH:h} || HEAD="."
 	[[ ${g_ALLOW_DIRS} == 'true' ]] && TYPE=d
 	[[ ${g_LIMIT_TO_EXT} == 'true' ]] && g_EXT_TEXT="*${g_EXT_TEXT}" || g_EXT_TEXT='*'
 
-	logit "${0}: HEAD:${HEAD}, g_ALLOW_DIRS:${g_ALLOW_DIRS}, g_LIMIT_TO_EXT:${g_LIMIT_TO_EXT}"
+	logit ${_LOG} "${0}: HEAD:${HEAD}, g_ALLOW_DIRS:${g_ALLOW_DIRS}, g_LIMIT_TO_EXT:${g_LIMIT_TO_EXT}"
 
 	CMD='find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf "%i|%p\n"'
 	[[ ${SERVICE_MODE} == 'true' ]] && CMD+=' -mtime 0' # Limit to most recent files
 
 	LIST=("${(f)$(eval ${CMD})}")
-	logit "${0}: Find CMD:${CMD}"
-	logit "${0}: LIST contains ${#LIST} elements"
+	logit ${_LOG} "${0}: Find CMD:${CMD}"
+	logit ${_LOG} "${0}: LIST contains ${#LIST} elements"
 
 	for L in ${LIST};do
 		INODE=$(cut -d '|' -f1 <<<${L})
@@ -490,21 +490,22 @@ clean_show_fn () {
 }
 
 do_finalize () {
-	local RESPONSE
-	local HIT
-	local K
-	local LONGEST
-	local -A FINAL
-	local -a BEFORE_AFTER
+	local -A FINAL=()
+	local -a BEFORE_AFTER=()
 	local ADDED=0
-	local RESULT BEFORE AFTER
-	local MSG
+	local AFTER=''
+	local BEFORE=''
 	local DELIM="|"
-	local MASKED=false
-	local I_TAG=''
-	local RESPONSE=''
+	local HIT=false
 	local IFN=''
+	local I_TAG=''
+	local LONGEST=0
+	local MASKED=false
+	local MSG=''
 	local OFN=''
+	local RESPONSE=''
+	local RESULT=''
+	local K
 
 	if [[ ${_PIPED} == "true" ]];then
 		if [[ -n ${_OUT_LIST} ]];then
@@ -723,12 +724,12 @@ do_media () {
 	local OLD NEW
 	
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
-	logit "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
+	logit ${_LOG} "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
 
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: calling clean_show_fn with TITLE:${TITLE}"
 	CLEANED=$(clean_show_fn "${TITLE}")
-	logit "clean_show_fn returned: $?"
+	logit ${_LOG} "${0}: clean_show_fn returned: $?"
 
 	if [[ -n ${CLEANED} ]];then
 		_OUT_LIST[${INODE}]=${FQFN:h}/${CLEANED}
@@ -1020,6 +1021,8 @@ do_yt_tag () {
 
 		CFN=$(echo "${CANDIDATE}" | perl -pe 's/\-?\[.*//' | str_trim)
 		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g')
+		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x27s /g')
 
 		_OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}"
 	done
@@ -1191,8 +1194,8 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
+[[ ${@} == '-' ]] && usage
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
-
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
 MEDIA_ARG=$(str_trim <<<${MEDIA_ARG})

@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+# TODO: Strip audio fix code - unnecessary
 GET_AV=false
 [[ ${1} == '-A' ]] && GET_AV=true && shift
 
@@ -59,7 +60,6 @@ else
 fi
 
 FN=$(last_file_downloaded | cut -d'|' -f1)
-
-fsub -y -Y ${FN} 
+[[ -e ${FN} ]] && fsub -y -Y ${FN} || echo "No file for:${@}" >> ${_YTS_URL_LOG}
 
 echo "yt download:${@}" >> ${_YTS_URL_LOG}

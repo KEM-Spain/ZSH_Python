@@ -37,7 +37,6 @@ typeset -a _LIST
 _VERB_ARG=''
 _V_TYPE=''
 _V_TYPE_LBL=''
-_PASTE=false
 _EXIT_MSG=''
 _EXIT_CODE=0
 
@@ -280,6 +279,7 @@ format_pretty () {
 		PF="printf \"${WHITE_FG}%-10s${RESET} " # Retain label
 		HPF="printf \"${WHITE_FG}%-10s " # Retain label
 		HDR_SEP='" " '
+
 		case ${SECTION} in
 				 GP) PF='printf "'
 					  HPF='printf "${WHITE_FG}'
@@ -312,6 +312,7 @@ format_pretty () {
 
 		if [[ ${LAST_SECTION} != ${SECTION} ]];then
 			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
+			printf "%s\n" "<SEP>"
 			echo "\n${BOLD}${CYAN_FG}${_BLOCK_HDRS[${SECTION}]}${RESET}"
 			eval "${HPF} ${HDR_PARSE}"
 			eval "${HPF} ${HDR_SEP}"
@@ -404,7 +405,7 @@ format_vertical () {
 
 		if [[ ${R} -eq ${SECTION_ROWS[${SECTION}]} ]];then
 			vertical_block ${SECTION} ${R}
-			echo
+			echo "<SEP>"
 			R=0
 		fi
 
@@ -412,6 +413,7 @@ format_vertical () {
 		_BLOCKS=()
 	done
 	vertical_block ${SECTION} # Last section
+	echo "<SEP>"
 }
 
 markdown_header () {
@@ -428,16 +430,29 @@ markdown_header () {
 }
 
 output_vector () {
-	local LINE=''
+	local STYLE=${1}
+	local CLIPBOARD=${2}
+	local -a OUTPUT=()
+	local TXT=''
+	local L
 
-	if [[ ${_PASTE} == 'true' ]];then
-		while read LINE;do
-			echo ${LINE}
+	case ${STYLE} in
+		vertical) OUTPUT=("${(f)$(format_vertical)}");;
+		markdown) OUTPUT=("${(f)$(format_markdown)}");;
+		pretty) OUTPUT=("${(f)$(format_pretty)}");;
+	esac
+
+	if [[ ${CLIPBOARD} == 'true' ]];then
+		for L in ${OUTPUT};do
+			TXT=$(str_no_ansi ${L})
+			[[ ${L} == '<SEP>' ]] && echo && continue
+			echo ${TXT}
 		done | gpaste-client
 		_EXIT_MSG="Output was sent to clipboard"
 	else
-		while read LINE;do
-			echo ${LINE}
+		for L in ${OUTPUT};do
+			[[ ${L} == '<SEP>' ]] && echo && continue
+			echo ${L}
 		done | mypager
 	fi
 }
@@ -445,7 +460,7 @@ output_vector () {
 section_break () {
 	local SECTION=${1}
 
-	[[ ${SECTION} == 'GP' || ${SECTION} == 'INFFUT' ]] && return || echo
+	[[ ${SECTION} == 'GP' || ${SECTION} == 'INFFUT' ]] && return || echo "<SEP>"
 }
 
 set_section_longest () {
@@ -611,20 +626,19 @@ usage () {
 OPTSTR=":HDcempv"
 OPTIND=0
 
+CLIPBOARD=false
 EXPORT=false
-MARKDOWN=false
-PRETTY=false
-VERTICAL=false
+STYLE=vertical
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     c) _PASTE=true;;
+     c) CLIPBOARD=true;;
      e) EXPORT=true;;
-     m) MARKDOWN=true;;
-     p) PRETTY=true;;
-     v) VERTICAL=true;;
+     m) STYLE=markdown;;
+     p) STYLE=pretty;;
+     v) STYLE=vertical;;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
@@ -651,34 +665,33 @@ else
 	_V_TYPE_LBL="Regular"
 fi
 
-(
-[[ ${EXPORT} == 'true' ]] && format_export > "${_VERB_ARG}_tense.dat"
-[[ ${MARKDOWN} == 'true' ]] && format_markdown
-[[ ${PRETTY} == 'true' ]] && format_pretty
-[[ ${VERTICAL} == 'true' ]] && format_vertical
-) | output_vector
-
-if [[ ${EXPORT} == 'true' && -s ${_VERB_ARG}_tense.dat && -s ${_VERB_ARG}_verb.dat ]];then
-	# TODO: This failed when last tested on verb fingir
-	echo "Exported data for:${WHITE_FG}${_VERB_ARG}${RESET}"
-	echo "Verb data:${WHITE_FG}${_VERB_ARG}_verb.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_verb.dat)) line(s)"
-	echo "Verb tenses:${WHITE_FG}${_VERB_ARG}_tense.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_tense.dat)) line(s)"
-	DATA=$(make_spanish_db -s ${_VERB_ARG})
-	if [[ -n ${DATA} ]];then
-		echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} exists"
-		OPT='-u'
-		OP='Update'
+if [[ ${EXPORT} == 'true' ]];then
+	if [[ -s ${_VERB_ARG}_tense.dat && -s ${_VERB_ARG}_verb.dat ]];then
+		format_export > ${_VERB_ARG}_tense.dat
+		# TODO: This failed when last tested on verb fingir
+		echo "Exported data for:${WHITE_FG}${_VERB_ARG}${RESET}"
+		echo "Verb data:${WHITE_FG}${_VERB_ARG}_verb.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_verb.dat)) line(s)"
+		echo "Verb tenses:${WHITE_FG}${_VERB_ARG}_tense.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_tense.dat)) line(s)"
+		DATA=$(make_spanish_db -s ${_VERB_ARG})
+		if [[ -n ${DATA} ]];then
+			echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} exists"
+			OPT='-u'
+			OP='Update'
+		else
+			OPT='-a'
+			OP='Append'
+		fi
+		respond "${OP} database"
+		[[ ${?} -eq 0 ]] && make_spanish_db ${OPT} ${_VERB_ARG}
+		_EXIT_CODE=0
 	else
-		OPT='-a'
-		OP='Append'
+		_EXIT_CODE=1
 	fi
-	respond "${OP} database"
-	[[ ${?} -eq 0 ]] && make_spanish_db ${OPT} ${_VERB_ARG}
-	_EXIT_CODE=0
 else
-	_EXIT_CODE=1
+	output_vector ${STYLE} ${CLIPBOARD}
 fi
 
 [[ -e ${_VERB_ARG}.html ]] && /bin/rm ${_VERB_ARG}.html
 
 exit_leave ${_EXIT_CODE} ${_EXIT_MSG}
+
