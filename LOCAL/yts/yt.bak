@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+# TODO: Strip audio fix code - unnecessary
 GET_AV=false
 [[ ${1} == '-A' ]] && GET_AV=true && shift
 

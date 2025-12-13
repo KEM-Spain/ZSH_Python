@@ -257,12 +257,6 @@ action_do () {
 				INFO_TAG=' (<w>resumed<N>)'
 			fi
 
-			# Audio fix mode
-			INFO_TAG=''
-			if [[ ${g_FIX_AUDIO} == 'true' ]];then
-				INFO_TAG=' (<w>Audio Fix Mode<N>)'
-			fi
-
 			# Process headers
 			LOG_LINE=$(grep -m1 -i "destination" ${g_YTS_LOG} 2>/dev/null)
 			if [[ ${?} -eq 0 && ${HDRS_OUT} == 'false' ]];then
@@ -306,13 +300,8 @@ action_do () {
 				logit ${_YT_DBG_LOG} "${0}: GOT ETA:${LOG_LINE}"
 				ETA=${LOG_LINE}
 			elif grep -qi 'error' <<<${LOG_LINE} 2>/dev/null;then
-				if [[ ${LOG_LINE} =~ 'HTTP Error 403' ]];then
-					logit ${_YT_DBG_LOG} "${0}: GOT HTTP 403:${LOG_LINE}"
-					ERR=${LOG_LINE}
-				else
-					logit ${_YT_DBG_LOG} "${0}: GOT ERROR:${LOG_LINE}"
-					ERR=${LOG_LINE}
-				fi
+				logit ${_ERROR_LOG} "${0}: GOT ERROR:${LOG_LINE}"
+				ERR=${LOG_LINE}
 			elif grep -qi 'Fixing MPEG-TS\|FixupM3u8' <<<${LOG_LINE} 2>/dev/null;then
 				logit ${_YT_DBG_LOG} "${0}: GOT Fragmention post-process:${LOG_LINE}"
 				ETA="100% of download completed"
@@ -340,8 +329,6 @@ action_do () {
 			if [[ -n ${OTH} ]];then
 				case ${OTH:l} in
 					*rumbleembed*) continue;;
-					*merging*) continue;; # Audio fix
-					*'deleting original'*) continue;; # Audio fix
 					*100%*) ETA=${OTH};;
 					*) logit ${_YT_DBG_LOG} "${0}: Uncaptured:${LOG_LINE}";;
 				esac
@@ -844,39 +831,6 @@ fav_add () {
 	sort -o ${_YTS_FAVORITES} -t'|' -k3 ${_YTS_FAVORITES} 
 }
 
-get_av_codes () {
-	URL=${1}
-
-	local -a LIST
-	local -a AUDIO
-	local -a VIDEO
-	local AUDIO_CODE
-	local VIDEO_CODE
-	local L V A
-
-	LIST=("${(f)$(yt -F ${URL} | grep 'm4a\|mp4' 2>/dev/null | grep 'https' 2>/dev/null)}")
-
-	for L in ${LIST};do
-		[[ ${L:l} =~ 'audio' ]] && AUDIO+=$(tr -s '[:space:]' <<<${L} | sed 's/ /|/g' | tr -s '|' | sed 's/,//g')
-		[[ ${L:l} =~ 'video' ]] && VIDEO+=$(tr -s '[:space:]' <<<${L} | sed 's/ /|/g' | tr -s '|' | sed 's/,//g')
-	done
-
-	AUDIO_CODE=$(
-	for A in ${AUDIO};do
-		[[ ${A} =~ 'drc' ]] && continue
-		echo "$(cut -d'|' -f12 <<<${A})|$(cut -d'|' -f1 <<<${A})"
-	done | sort -nr | head -1 | cut -d'|' -f2
-	)
-
-	VIDEO_CODE=$(
-	for V in ${VIDEO};do
-		echo "$(cut -d'|' -f12 <<<${V})|$(cut -d'|' -f1 <<<${V})"
-	done | sort -nr | head -1 | cut -d'|' -f2
-	)
-
-	echo "${VIDEO_CODE}+${AUDIO_CODE}"
-}
-
 get_field () {
 	local FIELD=${1}
 	local NDX=${2}
@@ -992,12 +946,7 @@ job_start () {
 
 	g_YTS_LOG=$(mktemp ${_CFG_DIR}/yt.log.XXXXXX)
 
-	if [[ ${g_FIX_AUDIO} == 'true' ]];then
-		msg_box -H1 -x${_CONT_COORDS[X]} -h${_CONT_COORDS[H]} "<w><I>Audio Fix Mode<N>|<Z>|Getting a/v codes|<Z>|<I>Please wait...<N>"
-		CMD="nohup yt -N2 -Rinfinite -f $(get_av_codes ${URL}) -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Manual a/v blend
-	else
-		CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
-	fi
+	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
 
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
 	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
@@ -1551,18 +1500,17 @@ set_final_fn () {
 	logit ${_YT_DBG_LOG} "${0}: ARG:${FN}"
 
 	NEW_FN=${FN:t:r:gs/_/ /} # Tail, no extension, swap underscore
-	NEW_FN=$(clean_title ${NEW_FN}) # Clean 
-	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FLEN})
-	NEW_FN=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${NEW_FN})
-	NEW_FN=${NEW_FN[1,${_MAX_FLEN}]} # Filename length
+	NEW_FN=$(clean_title ${NEW_FN}) # Strip problematic chars
+	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FLEN}) # Limit length at word boundary
+	NEW_FN=$(sed "s/${g_QUERY_KEY:l}/${g_DISPLAY_KEY:gs/_/ /}/I" <<<${NEW_FN}) # Add creator
 	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
-	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Add path and extension
+	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Restore path and extension
 
 	logit ${_YT_DBG_LOG} "${0}: Formatted:${NEW_FN}"
 
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		logit ${_YT_DBG_LOG} "${0}: Overwriting\nFile:${FN:t} \nwith:${NEW_FN:t}"
+		logit ${_YT_DBG_LOG} "${0}: Overwriting file:${FN:t} with:${NEW_FN:t}"
 		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
 		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
 	fi
@@ -1653,7 +1601,6 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${OPTS} [$(opt_type s)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-A${RESET} fix audio (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-L${RESET} prefer livestreams (${MAGENTA_FG}Rumble${RESET} only)"
 	echo -e "${WHITE_FG}-R${RESET} ${MAGENTA_FG}Rumble${RESET} query [${WHITE_FG}default is ${MAGENTA_FG}YouTube${RESET}]"
 	echo -e "${WHITE_FG}-V${RESET} yt-search version (${MAGENTA_FG}YouTube${RESET} only)"
@@ -1667,7 +1614,7 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDALRVa:sw:"
+OPTSTR=":HDLRVa:sw:"
 OPTIND=0
 
 HELP_OPT=false
@@ -1675,12 +1622,10 @@ VERSION_OPT=false
 WEB=''
 g_STRICT=false
 g_QRY_ENGINE=youtube
-g_FIX_AUDIO=false
 g_PREFER_LIVE=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
-     A) g_FIX_AUDIO=true;;
      H) HELP_OPT=true;;
      D) dbg_set_level;;
      L) g_PREFER_LIVE=true;;
@@ -1744,8 +1689,6 @@ if [[ ${g_QRY_ENGINE} == 'youtube' ]];then
 else
 	if [[ ${VERSION_OPT} == 'true'  ]];then
 		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")
-	elif [[ ${g_FIX_AUDIO} == 'true'  ]];then
-		exit_leave $(err_msg_exit E "Option:-A is a YouTube only option")
 	elif [[ -n ${AGE} ]];then
 		exit_leave $(err_msg_exit E "Option:-a is a YouTube only option")
 	elif [[ ${g_STRICT} == 'true' ]];then
