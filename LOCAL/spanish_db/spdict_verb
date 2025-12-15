@@ -26,7 +26,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 # Declarations
 typeset -a _LINE_MAP=(2 5 5 5 5 5 5 4 4 4 4 4 4 2 2 2 2 2 5 5 5 5 5 5 5 5 5 5 5 5 4 4 4 4 4 4 6)
 typeset -a _BLOCKS=()
-typeset -A _BLOCK_HDRS=(GP "Gerund & Participle" IND "Indicative" SUBJ "Subjunctive" IMP "Imperative" PROG "Progressive" PERF "Perfect" PSUBJ "Perfect Subjunctive" INFFUT "Informal Future")
+typeset -A _BLOCK_HDRS=(IND "Indicative" SUBJ "Subjunctive" IMP "Imperative" PROG "Progressive" PERF "Perfect" PSUBJ "Perfect Subjunctive" INFFUT "Informal Future")
 typeset -A _COL_HDRS=(GP HDR1 IND HDR2 SUBJ HDR3 IMP HDR4 PROG HDR2 PERF HDR2 PSUBJ HDR5 INFFUT HDR6)
 typeset -A _HDR_DEFS=(HDR1 "Gerund|Participle" HDR2 "Present|Preterite|Imperfect|Conditional|Future" HDR3 "Present|Imperfect|Imperfect2|Future" HDR4 "Affirmative|Negative" HDR5 "Present|Past|Past2|Future" HDR6 "Yo|Tú|El|Nosotros|Vosotros|Ellos")
 typeset -A _SECTION_LONGEST=()
@@ -41,6 +41,12 @@ _EXIT_MSG=''
 _EXIT_CODE=0
 
 # Functions
+cleanup () {
+	[[ -e ${_VERB_ARG}.html ]] && /bin/rm ${_VERB_ARG}.html
+	[[ -e ${_VERB_ARG}_tense.dat ]] && /bin/rm -f ${_VERB_ARG}_tense.dat
+	[[ -e ${_VERB_ARG}_verb.dat ]] && /bin/rm -f ${_VERB_ARG}_verb.dat
+}
+
 export_block () {
 	local SECTION=${1}
 	local B 
@@ -651,10 +657,24 @@ shift $((OPTIND -1))
 [[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:<VERB>"
 [[ -z ${OPTIONS} ]] && VERTICAL=true # Default format
 
+set_exit_callback cleanup
+
 curl -sA "Chrome" -L  "https://www.spanishdict.com/conjugate/${_VERB_ARG}" > ${_VERB_ARG}.html
-grep -q 'data-is_found="0"\|mismatch-spelling-suggestion' ${_VERB_ARG}.html
-[[ ${?} -eq 0 ]] && exit_leave $(err_msg_exit "Unable to find verb:${_VERB_ARG}")
- 
+
+grep -q 'result' ${_VERB_ARG}.html
+if [[ ${?} -ne 0 ]];then
+	exit_leave $(err_msg_exit "Verb:${_VERB_ARG} not found")
+else
+	grep -q 'data-conjugation_tab_shown' ${_VERB_ARG}.html
+	[[ ${?} -eq 0 ]] && CONJ=true || CONJ=false
+	grep -q 'data-spelling_suggestion' ${_VERB_ARG}.html
+	[[ ${?} -eq 0 ]] && SPELL=true || SPELL=false
+	if [[ ${CONJ} == 'true' && ${SPELL} == 'true' ]];then
+		SUGGEST=$(grep --color=never -Po 'data-spelling_suggestion=[^\s]*' ${_VERB_ARG}.html | cut -d'=' -f2)
+		[[ -n ${SUGGEST} ]] && exit_leave $(err_msg_exit "Verb:${_VERB_ARG} not found, Perhaps:${SUGGEST}")
+	fi
+fi
+
 _LIST=("${(f)$(pup --charset utf8 'a attr{aria-label}' < ${_VERB_ARG}.html | grep '^[a-z]' | head -n -1 )}")
 
 if grep -q -m1 '"isIrregular":true' ${_VERB_ARG}.html;then
@@ -666,24 +686,29 @@ else
 fi
 
 if [[ ${EXPORT} == 'true' ]];then
+	format_export > "${_VERB_ARG}_tense.dat"
 	if [[ -s ${_VERB_ARG}_tense.dat && -s ${_VERB_ARG}_verb.dat ]];then
-		format_export > ${_VERB_ARG}_tense.dat
-		# TODO: This failed when last tested on verb fingir
 		echo "Exported data for:${WHITE_FG}${_VERB_ARG}${RESET}"
 		echo "Verb data:${WHITE_FG}${_VERB_ARG}_verb.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_verb.dat)) line(s)"
 		echo "Verb tenses:${WHITE_FG}${_VERB_ARG}_tense.dat${RESET} $(cut -d' ' -f1 <<<$(wc -l ${_VERB_ARG}_tense.dat)) line(s)"
 		DATA=$(make_spanish_db -s ${_VERB_ARG})
-		if [[ -n ${DATA} ]];then
-			echo "Verb:${WHITE_FG}${_VERB_ARG}${RESET} exists"
+		if [[ ! ${DATA:l} =~ 'unsuccessful' ]];then
+			echo "Database already contains verb:${WHITE_FG}${_VERB_ARG}${RESET}"
 			OPT='-u'
-			OP='Update'
+			OP='Update existing verb data in'
 		else
+			echo "Database does not contain the verb:${WHITE_FG}${_VERB_ARG}${RESET}"
 			OPT='-a'
-			OP='Append'
+			OP='Append verb to'
 		fi
 		respond "${OP} database"
-		[[ ${?} -eq 0 ]] && make_spanish_db ${OPT} ${_VERB_ARG}
-		_EXIT_CODE=0
+		if [[ ${?} -eq 0 ]];then
+			make_spanish_db ${OPT} ${_VERB_ARG}
+			_EXIT_CODE=0
+		else
+			exit_leave "${RED_FG}Operation cancelled${RESET}"
+			_EXIT_CODE=1
+		fi
 	else
 		_EXIT_CODE=1
 	fi
@@ -691,7 +716,4 @@ else
 	output_vector ${STYLE} ${CLIPBOARD}
 fi
 
-[[ -e ${_VERB_ARG}.html ]] && /bin/rm ${_VERB_ARG}.html
-
 exit_leave ${_EXIT_CODE} ${_EXIT_MSG}
-

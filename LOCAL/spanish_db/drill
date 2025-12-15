@@ -273,6 +273,11 @@ usage () {
 do_smcup
 [[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage $(err_msg_exit "Missing argument:<VERB>")
 
+_VERB_DATA+=$(do_query -d '|' "select * from spanish_tense where verb = '${_VERB_ARG}'")
+if ! arr_is_populated "${_VERB_DATA}";then
+	exit_leave $(err_msg_exit "Verb:${_VERB_ARG} not found")
+fi
+
 select_list "Select Verb Type" ${(kv)_V_TYPES}
 V_NDX=${_RESPONSE}
 

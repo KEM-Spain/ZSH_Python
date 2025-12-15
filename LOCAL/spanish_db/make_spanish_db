@@ -276,7 +276,7 @@ if [[ ${SELECT} == "true" ]];then
 
 	get_spanish_verb_row ${VERB}
 	if [[ -z ${_SQL_OUT} ]];then
-		echo "Master query for:${VERB} was unsucessful..."
+		echo "Master query for:${VERB} was unsuccessful..."
 	else
 		for L in ${_SQL_OUT};do
 			printf "%s\n" ${L}
