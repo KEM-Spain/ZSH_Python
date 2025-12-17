@@ -27,15 +27,15 @@ typeset -a FILES
 
 #Constants
 _TEMPLATES=/usr/local/etc/templates
-_APPEXEC=${_TEMPLATES}/app_exec.template
-_COLORS=${_TEMPLATES}/color.template
+_APPEXEC=${_TEMPLATES}/app_exec.template.zsh
+_COLORS=${_TEMPLATES}/color.template.zsh
 _COLS=$(tput cols)
-_CURSOR=${_TEMPLATES}/list_cursor.template
+_CURSOR=${_TEMPLATES}/list_cursor.template.zsh
 _DIR_GROUP=$(id -ng)
 _DIR_USER=$(id -nu)
 _EDITABLE='ascii\|text\|script\|empty\|regular'
-_GETOPTS=${_TEMPLATES}/getopt.template
-_HEADERS=${_TEMPLATES}/app.template
+_GETOPTS=${_TEMPLATES}/getopt.template.zsh
+_HEADERS=${_TEMPLATES}/app.template.zsh
 _ROWS=$(tput lines)
 _VIM=/usr/bin/vim
 #_VIM=/usr/local/bin/nvim

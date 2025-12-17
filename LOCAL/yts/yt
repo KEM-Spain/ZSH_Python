@@ -1,5 +1,11 @@
 #!/usr/bin/zsh
  
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
 # Declarations
 typeset -a AUDIO=()
 typeset -a VIDEO=()
@@ -29,10 +35,11 @@ last_file_downloaded () {
 
 # Execution
 /usr/local/bin/yt-dlp -Rinfinite "$@"
+
 if [[ ${?} -eq 0 ]];then
-	FN=$(last_file_downloaded | cut -d'|' -f1)
-	fsub -y -Y ${FN}
 	echo "yt download:${@}" >> ${_YTS_URL_LOG}
 else
 	echo "Command failed:${@}" >> ${_YTS_URL_LOG}
 fi
+
+exit_leave 

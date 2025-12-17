@@ -35,7 +35,7 @@ exit_leave () {
 
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup # Restore if needed
 
-	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" # Display any exit messages
+	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
 
 	exit ${_EXIT_VALUE}
 }

@@ -114,9 +114,21 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+#[[ ${#} -eq 0 ]] && usage $(err_msg_exit "Missing argument:$(opt_type u)")
+
 /usr/local/bin/yt-dlp -Rinfinite "$@"
 
+#[[ -n ${PREPEND} ]] && CMDLINE=true # Trigger CMDLINE options
+
 if [[ ${?} -eq 0 ]];then
+#	if [[ ${CMDLINE} == 'true' ]];then
+#		FN=$(last_file_downloaded | cut -d'|' -f1)
+#		if [[ -e ${FN} ]];then
+#			fsub -y -Y ${FN}
+#			FN=$(last_file_downloaded | cut -d'|' -f1)
+#			[[ -n ${PREPEND} ]] && fsub -y -p ${PREPEND} ${FN}
+#		fi
+#	fi
 	echo "yt download:${@}" >> ${_YTS_URL_LOG}
 else
 	echo "Command failed:${@}" >> ${_YTS_URL_LOG}
