@@ -189,6 +189,7 @@ action_do () {
 
 			logit ${_YT_DBG_LOG} "${0}:${LOG_LINE}"
 
+			# Label log msg types
 			if grep -Eiq '^\[youtube\]|^\[rumble\]' <<<${LOG_LINE};then 
 				SECTION=SITE
 			elif grep -Eiq '^\[info\]' <<<${LOG_LINE};then 
@@ -206,12 +207,12 @@ action_do () {
 				logit ${_YT_DBG_LOG} "${0}: SECTION:${SECTION} UNCAPTURED:${LOG_LINE}"
 			fi
 
-			# Process headers
+			# Parse log messages within type
 			if [[ ${SECTION} == 'ERROR' ]];then
 				# Scan for future notice
 				if grep -Eiq 'will begin|premieres|upcoming' <<<${LOG_LINE};then
 					logit ${_YT_DBG_LOG} "${0}: FUTURE:${LOG_LINE}"
-					EMSG="<w>${TITLE[1,65]}<N>|<r>Not yet available<N>|<g>${LOG_LINE}<N>"
+					EMSG="<w>${TITLE[1,65]}<N>|<r>Not yet available<N>|<g>$(str_word_clip ${LOG_LINE} ${_MAX_HDR})<N>"
 					[[ ! ${LOG_LINE} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 					_FUTURE[${M}]=true
@@ -221,20 +222,34 @@ action_do () {
 					logit ${_YT_DBG_LOG} "${0}: SECTION:${SECTION} UNCAPTURED:${LOG_LINE}"
 				fi
 			elif [[ ${SECTION} == 'SITE' ]];then
-				EMSG="<w>${TITLE[1,65]}<N>|<r>Preprocessing<N>|<g>${LOG_LINE}<N>"
+				EMSG="<w>${TITLE[1,65]}<N>|<g>Pre-processing<N>|<w>$(str_word_clip ${LOG_LINE} ${_MAX_HDR})<N>"
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 			elif [[ ${SECTION} == 'INFO' ]];then
-				EMSG="<w>${TITLE[1,65]}<N>|<r>Preprocessing<N>|<g>${LOG_LINE}<N>"
+				EMSG="<w>${TITLE[1,65]}<N>|<g>Pre-processing<N>|<w>$(str_word_clip ${LOG_LINE} ${_MAX_HDR})<N>"
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 			elif [[ ${SECTION} == 'HLS' ]];then
-				EMSG="<w>${TITLE[1,65]}<N>|<r>Preprocessing<N>|<g>${LOG_LINE}<N>"
+				EMSG="<w>${TITLE[1,65]}<N>|<g>Pre-processing<N>|<w>$(str_word_clip ${LOG_LINE} ${_MAX_HDR})<N>"
 				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 			elif [[ ${SECTION} == 'DOWWNLOAD' ]];then
-				if [[ ${HDRS_OUT} == 'false' ]];then
+				grep -Eiq "already been downloaded" ${g_YTS_LOG} 2>/dev/null # Whole file grep
+				if [[ ${?} -eq 0 ]];then
+					logit ${_YT_DBG_LOG} "${0}: LOG_LINE:${LOG_LINE}"
+					EMSG="<w>${TITLE[1,65]}<N>|<g>Has already been downloaded<N>" 
+					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+					_DOWNLOADS[${M}]=true
+					break # Scan cycle
+				elif grep -Eiq 'sleeping' <<<${LOG_LINE};then
+					EMSG="<w>${TITLE[1,65]}<N>|<g>Pre-processing<N>|<w>$(str_word_clip ${LOG_LINE} ${_MAX_HDR})<N>"
+					msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
+				elif [[ ${HDRS_OUT} == 'false' ]];then
 					DEST=$(grep -m1 -i "destination" ${g_YTS_LOG} 2>/dev/null) # Whole file grep
-					DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST})}") # Strip path
-					DEST_1=$(cut -d'|' -f1 <<<${DEST})
-					DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
+					if [[ -z ${DEST} ]];then
+						DEST="QUERY FAILED - DEST UNSET"
+					else
+						DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST})}") # Strip path
+						DEST_1=$(cut -d'|' -f1 <<<${DEST})
+						DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
+					fi
 					HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
 					HDR1_TXT=$(clean_title ${HDR1_TXT})
 					HDR1_TXT=$(str_word_clip ${HDR1_TXT} ${_MAX_HDR})
@@ -258,6 +273,8 @@ action_do () {
 				fi
 			elif [[ ${SECTION} == 'FFMPEG' ]];then
 				ETA_COMPLETE=true
+				EMSG="<w>${TITLE[1,65]}<N>|<g>Post-processing<N>|<w>$(str_word_clip ${LOG_LINE} ${_MAX_HDR})<N>"
+				msg_box -z -x ${_BREAK_COORDS[X]} -y ${_BREAK_COORDS[Y]} -w ${_BREAK_COORDS[W]} -t${_PAUSE_TM} "${EMSG}"
 			else
 				logit ${_YT_DBG_LOG} "${0}: SECTION:${SECTION} UNCAPTURED:${LOG_LINE}"
 			fi
@@ -405,7 +422,6 @@ clean_title () {
 	for W in ${KEYWORDS};do # Scrub keywords
 		STR=$(sed "s/${W}//I" <<<${STR})
 	done
-	#logit ${_YT_DBG_LOG} "${0}: Scrubbed keywords"
 
 	TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
 

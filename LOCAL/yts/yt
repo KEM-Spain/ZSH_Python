@@ -12,8 +12,9 @@ typeset -a VIDEO=()
 typeset -a LIST=()
 
 # Constants
-_YTS_URL_LOG=~/.local/share/yts/yts.url.log
+_YT_DBG_LOG=~/.local/share/yts/yt.dbg.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_YT_DLP="/usr/local/bin/yt-dlp -Rinfinite"
 
 # Functions
 last_file_downloaded () {
@@ -33,13 +34,104 @@ last_file_downloaded () {
 	fi
 }
 
-# Execution
-/usr/local/bin/yt-dlp -Rinfinite "$@"
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
 
+read -r -d '' DESC<<EOF
+Manage download from YouTube and Rumble.
+\tIf executing from the command line, use option -c
+\tto invoke post precessing i.e. file name cleanup.
+\tPrepend option -p will auto trigger command line option.
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<TEXT>";;
+		u) echo "<URL>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-C${RESET} execution from cmdline (will apply post processing to filename)"
+	echo -e "${WHITE_FG}-p $(opt_type t)${RESET} prepend text to filename after download"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	exit_leave ${PENDING_MSGS}
+}
+
+# Execution
+grep -Eq -- '-C|-p' <<<${@} # Only execute getopts for command line call (yt-dlp has no -C or -p option)
 if [[ ${?} -eq 0 ]];then
-	echo "yt download:${@}" >> ${_YTS_URL_LOG}
+	OPTSTR=":HDCp:"
+	OPTIND=0
+	CMDLINE=false
+	PREPEND=''
+
+	while getopts ${OPTSTR} OPTION;do
+		case $OPTION in
+		  H) usage;;
+		  D) dbg_set_level;;
+		  C) CMDLINE=true;;
+		  p) PREPEND=${OPTARG} && CMDLINE=true;;
+		  :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+		 \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+		esac
+		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+	done
+	shift $((OPTIND -1))
+#--End GetOpts--
+fi
+
+[[ ${CMDLINE} == 'true' && ${#} -eq 0 ]] && usage $(err_msg_exit "Missing argument:$(opt_type u)")
+
+eval "${_YT_DLP} ${(qqq)@}"
+
+if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
+	FN=$(last_file_downloaded | cut -d'|' -f1)
+	if [[ -e ${FN} ]];then
+		fsub -y -Y ${FN}
+		FN=$(last_file_downloaded | cut -d'|' -f1)
+		[[ -n ${PREPEND} ]] && fsub -y -p ${PREPEND} ${FN}
+	fi
+	echo "Command line download:${@}" >> ${_YT_DBG_LOG}
 else
-	echo "Command failed:${@}" >> ${_YTS_URL_LOG}
+	echo "Executed: ${0}: ${(qqq)@}" >> ${_YT_DBG_LOG}
 fi
 
 exit_leave 
