@@ -187,6 +187,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
 		exit_leave ${PENDING_MSGS}
 	}
 
@@ -571,7 +572,8 @@ info () {
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDv"
@@ -760,7 +762,8 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDr"
@@ -857,7 +860,8 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDbs"
@@ -1427,7 +1431,8 @@ ___EOF
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	function status {
@@ -1995,7 +2000,8 @@ ___EOF
 		echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	local OPTSTR=":HD:"
@@ -2113,7 +2119,8 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDa"
@@ -2254,7 +2261,8 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(err_msg_exit W ${PENDING_MSGS})
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"

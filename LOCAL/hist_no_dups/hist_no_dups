@@ -310,7 +310,7 @@ cp ${_HIST_FILE} ${_HIST_BAK}
 echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
 upd_locate -u 2>/dev/null
 
-echo "${ITALIC}collating history...${RESET}" >&2
+echo "${ITALIC}Collating history...${RESET}" >&2
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
 [[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
@@ -348,7 +348,7 @@ if [[ ${_PROD} == 'false' ]];then
 	echo "${WHITE_ON_GREY}Done.${RESET}\n"
 else
 	tput el
-	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
+	printf " Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
 fi
 
 

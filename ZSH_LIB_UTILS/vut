@@ -163,6 +163,7 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
 		exit_leave ${PENDING_MSGS}
 	}
 
@@ -251,8 +252,8 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILES>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -325,8 +326,8 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILES>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -419,8 +420,8 @@ ___EOF
 		echo "${WHITE_FG}-o $(opt_type f)${RESET} output file name"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDkmo:"
@@ -597,8 +598,8 @@ ___EOF
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HD"
@@ -652,8 +653,8 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILE>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -716,8 +717,8 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"

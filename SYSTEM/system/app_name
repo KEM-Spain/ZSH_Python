@@ -1,15 +1,12 @@
 #!/usr/bin/zsh
-
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -17,19 +14,20 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
-
-WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
+# Declarations
 # Constants
-_TEMPLATE_DIR=/usr/local/etc/templates
-_APP=${0:t}
-_LIST=false
+# Globals
+# Functions
 
 #--Begin GetOpts--
 local -a OPTIONS
@@ -37,8 +35,7 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-Create application template
-\tOptionally create a list application
+This script does...
 EOF
 
 parse_opts () {
@@ -64,7 +61,6 @@ opt_exists () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		a) echo "<APP_NAME>";;
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
 		t) echo "<FILE_TYPE>";;
@@ -79,10 +75,9 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} <APP_NAME>\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-l${RESET} create a list applications"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
@@ -90,14 +85,13 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDl"
+OPTSTR=":HD"
 OPTIND=0
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     l) _LIST=true;;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
@@ -107,35 +101,44 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${#} -ne 0 ]] && _APP_NAME=${1} || usage "Missing argument:$(opt_type a)"
+item_decorate () {
+	local NDX=${1}
+	# Add code for any decorations
+	echo ${_LIST[${NDX}]}
+}
 
-if [[ -e ${_APP_NAME} ]];then
-	echo -n "File:${WHITE_FG}${_APP_NAME}${RESET} exists. ${WHITE_FG}Overwrite${RESET}?"
-	read -q RESPONSE
-	[[ ${RESPONSE} != 'y' ]] && echo "\n${RED_FG}Operation cancelled" && exit || echo
+PATHLBL=$(path_get_label 40) 
+
+LOCAL_LIST=("${(f)$(eval "find ${PWD} -maxdepth 1 -type f ! -path ." 2>/dev/null )}")
+if ! arr_is_populated "${LOCAL_LIST}";then
+	exit_leave $(msg_exit E "LOCAL_LIST was not populated")
 fi
 
-echo '#!/usr/bin/zsh' > ${_APP_NAME}
-cat ${_TEMPLATE_DIR}/color.template.zsh >> ${_APP_NAME} && echo >>${_APP_NAME}
-cat ${_TEMPLATE_DIR}/import.template.zsh >> ${_APP_NAME}
-echo '\n# Declarations\n# Constants\n# Globals\n# Functions' >>${_APP_NAME}
-echo >> ${_APP_NAME} && cat ${_TEMPLATE_DIR}/getopt.template.zsh >> ${_APP_NAME}
-echo '\n# Execution' >>${_APP_NAME}
+# Set headings
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET} Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} ${PATHLBL} ${SELECTED_COUNT}'
+list_add_header_break
 
-echo '\nexit_leave' >>${_APP_NAME}
-chmod 775 ${_APP_NAME}
+# Set line item
+list_set_line_item ' 
+printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+'
 
-if [[ ${_LIST} == 'true' ]];then
-	sed -i '/LIB_DEPS/i \
-source ${_LIB_DIR}/LIST.zsh' ${_APP_NAME}
+list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${g_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${g_ACTION} ${g_OBJECT}(s) (${ITALIC}or exit if none selected${RESET})"
 
-	sed -i "/Functions/ {
-	r ${_TEMPLATE_DIR}/app_funcs.template.zsh
-	}" ${_APP_NAME}
+while true;do
+	# Get selection
+	list_select ${LOCAL_LIST}
+	[[ ${?} -eq 0 ]] && break
 
-	sed -i "/Execution/ {
-	r ${_TEMPLATE_DIR}/app_loop.template.zsh
-	}" ${_APP_NAME}
-fi
+	# Get selections
+	_MARKED=($(list_get_selected))
+	
+	if [[ $(list_get_selected_count) -ne 0 ]];then
+		action_warn
+		if [[ ${_MSG_KEY} == "y" ]];then
+			action_do
+		fi
+	fi
+done
 
-echo "Template for application:${WHITE_FG}${_APP_NAME}${RESET} created"
+exit_leave

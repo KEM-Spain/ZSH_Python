@@ -77,6 +77,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
 		exit_leave ${PENDING_MSGS}
 	}
 
@@ -173,8 +174,8 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDft"
@@ -323,8 +324,8 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -354,8 +355,8 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -435,8 +436,8 @@ ___EOF
 		echo -e "${WHITE_FG}-i${RESET} run as inline util - no prompting"
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDi"
@@ -569,8 +570,8 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDp:t:"
@@ -655,8 +656,8 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -688,8 +689,8 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -729,8 +730,8 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -853,8 +854,8 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	OPTSTR=":HDl"
@@ -942,8 +943,8 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"

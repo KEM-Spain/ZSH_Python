@@ -23,6 +23,7 @@ source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
+# Execution
 [[ ${#} -ne 0 ]] && ARG=${1} || echo "Missing arg <SEARCHTERM>"
 
 LIST=("${(f)$(eval "find . -type f -name '${ARG}*'")}")

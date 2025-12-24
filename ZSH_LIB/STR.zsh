@@ -320,11 +320,11 @@ str_word_clip () {
 	local TEXT_OUT=''
 	local W
 
-	TEXT=$(tr '\n' ' ' <<<${TEXT}) # Eliminate any newlines
+	TEXT=$(tr '\n' ' ' <<<${TEXT} | str_trim) # Eliminate any newlines
 
 	for W in ${=TEXT};do
 		(( LEN += ${#W} + 1 ))
-		[[ ${LEN} -lt ${LIMIT} ]] && TEXT_OUT+="${W} "
+		[[ ${LEN} -lt $((LIMIT - 1)) ]] && TEXT_OUT+="${W} "
 	done
 
 	echo ${TEXT_OUT}

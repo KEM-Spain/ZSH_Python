@@ -135,7 +135,9 @@ cmd_filter () {
 
 	for K in ${(k)${(P)ARRAY}};do
 		((NDX++))
-		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
+		if [[ ${_VERBOSE} == 'true' ]];then
+			printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
+		fi
 		CMD_IN=$(cut -d';' -f2 <<<${K})
 		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN})
 		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
@@ -282,6 +284,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
 	exit_leave ${PENDING_MSGS}
 }
 

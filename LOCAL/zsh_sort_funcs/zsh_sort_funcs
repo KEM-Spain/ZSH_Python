@@ -153,6 +153,7 @@ usage () {
 	local -a PENDING_MSGS=(${@})
 
 	tabs 5
+
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 	(
@@ -167,7 +168,8 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit E "${PENDING_MSGS}")
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HDRBb:lr"
@@ -195,9 +197,11 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-FN=${1}
-[[ ! -e ${FN} ]] && usage "Missing argument:$(opt_type f)"
+[[ ${#} -ne 0 ]] && FN=${1} || usage "Missing argument:$(opt_type f)"
+[[ ! -e ${FN} ]] && usage "File:${FN} not found"
 [[ ! -e ${PWD}/${FN:t} ]] && ln -s ${FN} ${PWD} # Link file
+
+exit
 FN=${PWD}/${FN:t}
 
 [[ -e ${FN}.normalized ]] && rm -f ${FN}.normalized
@@ -216,23 +220,23 @@ sort_functions ${FN} # Extract sorted functions
 
 # Early exits
 [[ ${LIST_FUNCS} == 'true' ]] && exit_leave # Option was invoked in sort_functions
-[[ ! -e ${FN}.sorted.functions ]] && exit_leave $(msg_exit E "sort_functions: failed to create and output. Exiting.")
+[[ ! -e ${FN}.sorted.functions ]] && exit_leave $(err_msg_exit "sort_functions: failed to create and output. Exiting.")
 
 # Processing
 grep ${_FUNC_REGEX} < ${FN}.sorted.functions | sort | uniq -c | grep -v -P '\s+1\s+'
 if [[ ${?} -ne 1 ]];then
-	exit_leave $(msg_exit W "WARNING:Found duplicates")
+	exit_leave $(err_msg_exit W "WARNING:Found duplicates")
 fi
 
 if [[ ${REPLACE_FILE} == 'true' || ${REPLACE_SORTED} == 'true' ]];then 
 	replace_functions ${FN}
-	[[ ! -e ${FN}.normalized ]] && exit_leave $(msg_exit E "Option -r failed - unable to locate ${FN}.normalized")
+	[[ ! -e ${FN}.normalized ]] && exit_leave $(err_msg_exit "Option -r failed - unable to locate ${FN}.normalized")
 	cat -s ${FN}.normalized | cat -s > ${FN}.new
 	echo "Modified script with functions sorted in file:${FN}.new"
 fi
 
 if [[ ${REPLACE_FILE} == 'true' ]];then 
-	[[ ! -e ${FN}.new ]] && exit_leave $(msg_exit E "Option -R failed - unable to locate ${FN}.new")
+	[[ ! -e ${FN}.new ]] && exit_leave $(err_msg_exit "Option -R failed - unable to locate ${FN}.new")
 	mv -f ${FN}.new ${FN}
 	chmod 775 ${FN}
 	[[ ! -e ${FN}.sort_functions ]] && rm -f ${FN}.sort_functions # Cleanup

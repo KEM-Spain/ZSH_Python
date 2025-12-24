@@ -62,6 +62,7 @@ ___EOF
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
 		exit_leave ${PENDING_MSGS}
 	}
 
@@ -103,8 +104,8 @@ ___EOF
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -147,8 +148,8 @@ ___EOF
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -226,8 +227,8 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"

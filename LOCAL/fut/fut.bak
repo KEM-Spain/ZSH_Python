@@ -1230,8 +1230,8 @@ ___EOF
 	if [[ -n ${FOUND_PERMS} ]];then # Print headers if there is data
 		echo
 		[[ ${WIDTH} -lt ${FIELD_LEN[PERMS]} ]] && WIDTH=${FIELD_LEN[PERMS]}
-		printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "File Permissions" "Color"
-		printf "${MAGENTA_FG}%-*s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
+		printf "${WHITE_FG}%-18s %s${RESET}\n" ${WIDTH} "Based on Type" "Color"
+		printf "${MAGENTA_FG}%18*s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
 	fi
 
 	for K in ${FOUND_PERMS};do
@@ -1245,8 +1245,8 @@ ___EOF
 
 	if [[ -n ${FOUND_EXT} ]];then # Print headers if there is data
 		echo
-		printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "File Extension" "Color"
-		printf "${MAGENTA_FG}%-*s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
+		printf "${WHITE_FG}%-18s %s${RESET}\n" ${WIDTH} "Based on Extension" "Color"
+		printf "${MAGENTA_FG}%-18s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
 	fi
 
 	for K in ${FOUND_EXT};do

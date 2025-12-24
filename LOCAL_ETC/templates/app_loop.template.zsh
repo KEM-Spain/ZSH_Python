@@ -1,3 +1,9 @@
+item_decorate () {
+	local NDX=${1}
+	# Add code for any decorations
+	echo ${_LIST[${NDX}]}
+}
+
 PATHLBL=$(path_get_label 40) 
 
 LOCAL_LIST=("${(f)$(eval "find ${PWD} -maxdepth 1 -type f ! -path ." 2>/dev/null )}")

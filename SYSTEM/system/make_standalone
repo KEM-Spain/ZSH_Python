@@ -86,9 +86,9 @@ opt_type () {
 }
 
 usage () {
-	tabs 5
-
 	local -a PENDING_MSGS=(${@})
+
+	tabs 5
 
 	(
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTSTR}${WHITE_FG}]${RESET} $(opt_type f)\n"
@@ -99,7 +99,8 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit E ${PENDING_MSGS})
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":Hb:e:r"

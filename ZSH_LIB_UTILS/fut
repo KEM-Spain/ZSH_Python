@@ -119,6 +119,7 @@ ______EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
 		exit_leave ${PENDING_MSGS}
 	}
 
@@ -458,8 +459,8 @@ _____EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+			exit_leave ${PENDING_MSGS}
 		}
 
 		OPTSTR=":DHit:djs"
@@ -646,8 +647,8 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+			exit_leave ${PENDING_MSGS}
 		}
 
 		OPTSTR=":HDhs"
@@ -734,8 +735,8 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+			exit_leave ${PENDING_MSGS}
 		}
 
 		OPTSTR=":HDc"
@@ -840,8 +841,8 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+			exit_leave ${PENDING_MSGS}
 		}
 
 		OPTSTR=":HDe:fdhl"
@@ -973,8 +974,8 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+			exit_leave ${PENDING_MSGS}
 		}
 
 		OPTSTR=":HDdfl"
@@ -1091,7 +1092,7 @@ lscolors () {
 	local ANSI=''
 	local DESC=''
 	local NDX=0
-	local WIDTH=16
+	local WIDTH=20
 	local C F K T
 
 	# Constants
@@ -1227,10 +1228,10 @@ ___EOF
 		[[ ${#FOUND_PERMS[-1]} -gt ${FIELD_LEN[PERMS]} ]] && FIELD_LEN[PERMS]=${#FOUND_PERMS[-1]}
 	done 
 
+	#WIDTH=20
 	if [[ -n ${FOUND_PERMS} ]];then # Print headers if there is data
 		echo
-		[[ ${WIDTH} -lt ${FIELD_LEN[PERMS]} ]] && WIDTH=${FIELD_LEN[PERMS]}
-		printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "File Types" "Color"
+		printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "Based on Type" "Color"
 		printf "${MAGENTA_FG}%-*s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
 	fi
 
@@ -1245,7 +1246,7 @@ ___EOF
 
 	if [[ -n ${FOUND_EXT} ]];then # Print headers if there is data
 		echo
-		printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "File Extension" "Color"
+		printf "${WHITE_FG}%-*s %s${RESET}\n" ${WIDTH} "Based on Extension" "Color"
 		printf "${MAGENTA_FG}%-*s %s${RESET}\n" ${WIDTH} $(str_unicode_line ${WIDTH}) $(str_unicode_line 5)
 	fi
 
@@ -1323,8 +1324,8 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+			exit_leave ${PENDING_MSGS}
 		}
 
 		OPTSTR=":HDcdn"
@@ -1479,8 +1480,8 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"

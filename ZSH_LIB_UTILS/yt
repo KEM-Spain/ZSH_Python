@@ -96,7 +96,7 @@ usage () {
 }
 
 # Execution
-grep -Eq -- '-C|-p' <<<${@} # Only execute getopts for command line call (yt-dlp has no -C or -p option)
+grep -Pq -- '-C\s+|-p\s+' <<<${@} # Only execute getopts for command line call (yt-dlp has no -C or -p option)
 if [[ ${?} -eq 0 ]];then
 	OPTSTR=":HDCp:"
 	OPTIND=0

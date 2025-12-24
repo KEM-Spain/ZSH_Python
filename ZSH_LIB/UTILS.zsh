@@ -368,7 +368,6 @@ func_print () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	perl -ne "print if /^${FUNC}\s+\(\) {/ .. /^}$/" ${FN} | perl -pe 's/^}$/}\n/g'
-	#perl -ne "print if /^${FUNC}\s+\(\) {/ .. /^}$/" ${FN}
 }
 
 get_delim_field_cnt () {
