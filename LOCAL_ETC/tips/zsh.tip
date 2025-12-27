@@ -205,33 +205,6 @@ sudo zsh -c "echo 300 > /sys/block/md0/md/stripe_cache_size"
 
 sudo will execute zsh with higher privileges, and then that root zsh will execute the whole command.
 
-${E_WHITE_FG}Redirect output of command${E_RESET}
-<(command)
-
-${E_WHITE_FG}Redirect output of command to another command${E_RESET}
-< <(command)
-
-As in:
-
-while read X;do
-	do_something_with_X
-done< <(command)
-
-${E_WHITE_FG}Redirect output of command to another command using a different file descriptor${E_RESET}
-
-while IFS= read -ru3 LINE || [ -n "\$LINE" ]; do
-	if [[ \${LINE:l} =~ "interfacesadded" && \${LINE:l} =~ "terminal" ]];then
-		win_max terminal
-	elif [[ \${LINE:l} =~ "startservicebyname" ]];then
-		WAIT_FOR=deluge
-	elif [[ \${LINE:l} =~ "desktop" ]];then
-		if [[ -n \${WAIT_FOR} && \${LINE:l} =~ \${WAIT_FOR} ]];then
-			win_max \${WAIT_FOR}
-			WAIT_FOR=''
-		fi
-	fi
-done 3< <( dbus-monitor | grep --line-buffered -i "startservicebyname\|desktop\|interfacesadded")
-${E_WHITE_FG}See also ${E_CYAN_FG}REDIRECTION${E_RESET}
 
 
 ${E_WHITE_FG}Find command regex types${E_RESET}
@@ -2066,6 +2039,37 @@ ${E_WHITE_FG}-x${E_RESET}  Mark for automatic export to the environment of subse
 ===================
 ${E_MAGENTA_FG}REDIRECTION${E_RESET}
 ===================
+${E_WHITE_FG}Redirect output of command${E_RESET}
+<(command)
+
+${E_WHITE_FG}Example of sourcing a function${E_RESET}
+source <(func_print yts query_rumble)
+${E_WHITE_FG}source treats <() as though it were a filename${E_RESET}
+
+${E_WHITE_FG}Redirect output of command to another command${E_RESET}
+< <(command)
+
+As in:
+
+while read X;do
+	do_something_with_X
+done< <(command)
+
+${E_WHITE_FG}Redirect output of command to another command using a different file descriptor${E_RESET}
+
+while IFS= read -ru3 LINE || [ -n "\$LINE" ]; do
+	if [[ \${LINE:l} =~ "interfacesadded" && \${LINE:l} =~ "terminal" ]];then
+		win_max terminal
+	elif [[ \${LINE:l} =~ "startservicebyname" ]];then
+		WAIT_FOR=deluge
+	elif [[ \${LINE:l} =~ "desktop" ]];then
+		if [[ -n \${WAIT_FOR} && \${LINE:l} =~ \${WAIT_FOR} ]];then
+			win_max \${WAIT_FOR}
+			WAIT_FOR=''
+		fi
+	fi
+done 3< <( dbus-monitor | grep --line-buffered -i "startservicebyname\|desktop\|interfacesadded")
+
 If a command is followed by & and job control is not active, then the default standard input for the command is the 
 empty file /dev/null. Otherwise, the environment for the execution of a command contains the file descriptors of the 
 invoking shell as modified by input/output specifications.

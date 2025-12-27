@@ -432,7 +432,7 @@ if [[ ${_DIRS_ONLY} == 'true' || ${_FILES_ONLY} == 'true' || ${_LINKS_ONLY} == '
 			[[ ${_HIDDEN_ONLY} == 'true' && ! ${F:t} =~ '^\.' ]] && continue
 		fi
 		[[ ${_DEBUG} -gt 1 ]] && dbg "${0}:${LINENO} _HIDDEN_ONLY:${_HIDDEN_ONLY} F tail:${(qqq)F:t}"
-		_LS_LIST+=${(qqq)F} # Enclose file names w/spaces
+		_LS_LIST+=${(qqq)F:t} # Enclose file names w/spaces
 	done
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST} || echo No matching$(not_found)found${RESET}"

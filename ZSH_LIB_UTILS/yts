@@ -101,20 +101,6 @@ g_WHEN=''
 g_YTS_LOG=''
 
 # Functions
-cfg_init () {
-	local CFG_STATE=0
-	local -A CFG_MSGS=(1 "Missing configuration directory:${_CFG_DIR}" 2 "Missing favorites file:${_YTS_FAVORITES}")
-
-	[[ -e ${_YT_DBG_LOG} ]] && /bin/rm -f ${_YT_DBG_LOG}
-
-	[[ -d ${_CFG_DIR} ]] && CFG_STATE=0 || CFG_STATE=1
-	[[ -f ${_YTS_FAVORITES} ]] && CFG_STATE=0 || CFG_STATE=2
-
-	echo ${CFG_MSGS[${CFG_STATE}]}
-
-	return ${CFG_STATE}
-}
-
 action_do () {
 	local AUTHOR=''
 	local DEST=''
@@ -197,12 +183,12 @@ action_do () {
 					logit ${_YT_DBG_LOG} "${0}:${LOG_LINE}"
 					if [[ ${LOG_LINE} =~ '^\[info\]' ]];then # Look for pre-processing
 						MSG=${LOG_LINE[1,56]}
-						[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>Pre-processing...${MSG}<N>"
+						[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>Pre-processing...${MSG}<N>"
 						LAST_LOG_LINE=${MSG}
 						continue
 					elif [[ ${LOG_LINE} =~ 'sleeping' ]];then # Look for pre-processing
 						MSG=${LOG_LINE[1,56]}
-						[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>Pre-processing...${MSG}<N>"
+						[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>Pre-processing...${MSG}<N>"
 						LAST_LOG_LINE=${MSG}
 						continue
 					elif [[ ${LOG_LINE:l} =~ 'error' ]];then # Look for errors
@@ -210,18 +196,18 @@ action_do () {
 						if [[ ${LOG_LINE:l} =~ 'will begin|premieres|upcoming' ]];then
 							[[ ! ${LOG_LINE} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 							MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
 							_FUTURE[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
 						elif [[ ${LOG_LINE:l} =~ 'unable to download' ]];then
 							MSG="<w>${TITLE[1,56]}<N>|<r>Transmission error<N>:${LOG_LINE}"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
 							_DOWNLOADS[${M}]=false
 							break
 						else
 							MSG="<r>Got undefined error<N>:${LOG_LINE[1,56]}"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
 						fi
 						LAST_LOG_LINE=${MSG}
 						continue
@@ -328,6 +314,20 @@ box_center () {
 	local TXT_LEN=$(( ${#TXT} + BOX )) # Text length
 
 	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT})
+}
+
+cfg_init () {
+	local CFG_STATE=0
+	local -A CFG_MSGS=(1 "Missing configuration directory:${_CFG_DIR}" 2 "Missing favorites file:${_YTS_FAVORITES}")
+
+	[[ -e ${_YT_DBG_LOG} ]] && /bin/rm -f ${_YT_DBG_LOG}
+
+	[[ -d ${_CFG_DIR} ]] && CFG_STATE=0 || CFG_STATE=1
+	[[ -f ${_YTS_FAVORITES} ]] && CFG_STATE=0 || CFG_STATE=2
+
+	echo ${CFG_MSGS[${CFG_STATE}]}
+
+	return ${CFG_STATE}
 }
 
 clean_title () {
@@ -543,6 +543,59 @@ download_select () {
 	_FUTURE=()
 }
 
+fav_add () {
+	local FAVORITE=$(str_trim ${1:gs/ /_/})
+	local -aU HISTORY
+	local LINE=''
+	local LTYPE=''
+	local FTYPE=''
+	local H
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAVORITE:${FAVORITE} g_QRY_ENGINE:${g_QRY_ENGINE}"
+
+	clear
+
+	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add \"${(C)${FAVORITE:gs/_/ /}}\" to favorites?"
+	[[ ${_MSG_KEY} != 'y' ]] && return
+
+	while true;do
+		msg_box -c -H1 -p -PS -jl "<w>Select Favorites List<N>|<Z>|y) YouTube|r) Rumble|c) Custom"
+		case ${_MSG_KEY:l} in
+			y) LTYPE=y && break;;
+			r) LTYPE=r && break;;
+			c) LTYPE=c && break;;
+			0) return;;
+			*) msg_box -p -PK "Invalid option";;
+		esac
+	done
+
+	case ${g_QRY_ENGINE} in
+		youtube) [[ ${g_STRICT} == 'true' ]] && FTYPE="YS" || FTYPE="Y";;
+		rumble) [[ ${g_PREFER_LIVE} == 'true' ]] && FTYPE="RL" || FTYPE="R";;
+	esac
+
+	[[ ${LTYPE} == 'c' ]] && FTYPE="P${FTYPE}"
+
+	FAVORITE="${(C)FAVORITE}|${FAVORITE}|${FTYPE}"
+
+	HISTORY+=${FAVORITE}
+
+	if [[ -e ${_YTS_FAVORITES} ]];then
+		while read LINE;do
+			HISTORY+=${LINE}
+		done < ${_YTS_FAVORITES}
+
+		/bin/rm -f ${_YTS_FAVORITES}
+	fi
+
+	for H in ${(o)HISTORY};do
+		echo ${H} >> ${_YTS_FAVORITES}
+	done
+
+	sort -o ${_YTS_FAVORITES} -t'|' -k3 ${_YTS_FAVORITES} 
+}
+
 fav_delete () {
 	local FAV=${1:gs/ /_/:l}
 	local ENG=''
@@ -695,59 +748,6 @@ fav_load () {
 	done < ${_YTS_FAVORITES}
 
 	[[ -n ${_FAV_LIST} ]] && return 0 || return 1
-}
-
-fav_add () {
-	local FAVORITE=$(str_trim ${1:gs/ /_/})
-	local -aU HISTORY
-	local LINE=''
-	local LTYPE=''
-	local FTYPE=''
-	local H
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ARG: FAVORITE:${FAVORITE} g_QRY_ENGINE:${g_QRY_ENGINE}"
-
-	clear
-
-	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add \"${(C)${FAVORITE:gs/_/ /}}\" to favorites?"
-	[[ ${_MSG_KEY} != 'y' ]] && return
-
-	while true;do
-		msg_box -c -H1 -p -PS -jl "<w>Select Favorites List<N>|<Z>|y) YouTube|r) Rumble|c) Custom"
-		case ${_MSG_KEY:l} in
-			y) LTYPE=y && break;;
-			r) LTYPE=r && break;;
-			c) LTYPE=c && break;;
-			0) return;;
-			*) msg_box -p -PK "Invalid option";;
-		esac
-	done
-
-	case ${g_QRY_ENGINE} in
-		youtube) [[ ${g_STRICT} == 'true' ]] && FTYPE="YS" || FTYPE="Y";;
-		rumble) [[ ${g_PREFER_LIVE} == 'true' ]] && FTYPE="RL" || FTYPE="R";;
-	esac
-
-	[[ ${LTYPE} == 'c' ]] && FTYPE="P${FTYPE}"
-
-	FAVORITE="${(C)FAVORITE}|${FAVORITE}|${FTYPE}"
-
-	HISTORY+=${FAVORITE}
-
-	if [[ -e ${_YTS_FAVORITES} ]];then
-		while read LINE;do
-			HISTORY+=${LINE}
-		done < ${_YTS_FAVORITES}
-
-		/bin/rm -f ${_YTS_FAVORITES}
-	fi
-
-	for H in ${(o)HISTORY};do
-		echo ${H} >> ${_YTS_FAVORITES}
-	done
-
-	sort -o ${_YTS_FAVORITES} -t'|' -k3 ${_YTS_FAVORITES} 
 }
 
 get_field () {
@@ -1173,6 +1173,7 @@ query_rumble () {
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 
 		QRY="https://rumble.com/c/${g_QUERY_KEY}/livestreams"
+		[[ ${_VIEWER} == 'true' ]] && echo "\nQRY:${QRY}" >&2
 		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
@@ -1183,9 +1184,10 @@ query_rumble () {
 		msg_box -c "Requesting <c><I>channel<N> search..."
 
 		QRY="https://rumble.com/c/${g_QUERY_KEY}?page=1"
+		[[ ${_VIEWER} == 'true' ]] && echo "\nQRY:${QRY}" >&2
 		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
-		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+		if [[ ${_DEBUG} -ge ${_HIGH_DBG} || _VIEWER='true' ]];then
 			dbg "${0}:${LINENO} ${WHITE_FG}Saved query: ${QRY} to ${_CFG_DIR}/Rumble-channel.qry${RESET}"
 			wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble-channel.qry
 		fi
@@ -1213,6 +1215,7 @@ query_rumble () {
 
 		GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
 		QRY="https://rumble.com/user/${g_QUERY_KEY}/livestreams"
+		[[ ${_VIEWER} == 'true' ]] && echo "\nQRY:${QRY}" >&2
 		logit ${_YTS_URL_LOG} "${0}:${QRY}"
 		PG=$(wget -q -O - ${QRY})
 		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then

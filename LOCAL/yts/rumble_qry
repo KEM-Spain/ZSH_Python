@@ -1,0 +1,306 @@
+#!/usr/bin/zsh
+ 
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Constants
+_CFG_DIR=${PWD}
+
+# Declarations
+typeset -a _LOCAL_LIST=()
+typeset -F _TAB_SZ_CHECK=0
+typeset -a AGES=()
+typeset -a DURATIONS=()
+typeset -a LINKS=()
+typeset -a TITLES=()
+
+g_QUERY_KEY=''
+g_DISPLAY_KEY=''
+g_SEARCH_TYPE=''
+g_PREFER_LIVE=false
+_VIEWER=true
+_MAX_TITLE=74
+SEARCHTERM='qry_viewer'
+
+# Functions
+source <(func_print yts clean_title)
+
+strip_space () {
+	local LINE
+
+	while read LINE;do
+		tr -d '\011' | tr -s '\012' | sed '/^$/d' <<< ${LINE}
+	done
+}
+
+query_rumble () {
+	local SEARCHTERM=${1}
+	local QRY_TYPE=${2}
+	local -A FIELD_MAP=("author" 1 "title" 2 "age" 3 "url" 4 "time" 5 "agetime" "3,5")
+	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
+	local -a NDX_OUT=()
+	local -a TMP=()
+	local AGE AUTHOR TITLE URL TIME AGETIME
+	local CHANNEL=''
+	local GEN_SEARCH=''
+	local MSG=''
+	local NDX=''
+	local PG=''
+	local QRY=''
+	local STR=''
+	local K L V T
+
+	ping -w1 www.rumble.com >/dev/null
+	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	[[ -n ${SEARCHTERM} ]] && g_QUERY_KEY=${SEARCHTERM}
+
+	if [[ ${QRY_TYPE} == 'live' ]];then
+		msg_box -c "Requesting <c><I>livestream channel<N> search..."
+
+		QRY="https://rumble.com/c/${g_QUERY_KEY}/livestreams" && echo "\nQRY:${QRY}" >&2
+
+		PG=$(wget -q -O - ${QRY})
+		wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble.qry
+
+		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
+		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
+		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
+		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+	elif [[ ${QRY_TYPE} == 'channel' ]];then
+		msg_box -c "Requesting <c><I>channel<N> search..."
+
+		QRY="https://rumble.com/c/${g_QUERY_KEY}?page=1" && echo "\nQRY:${QRY}" >&2
+
+		PG=$(wget -q -O - ${QRY})
+		wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble.qry
+
+		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
+		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
+		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
+		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+	elif [[ ${QRY_TYPE} == 'general' ]];then
+		msg_box -c "Requesting <c><I>general<N> search..."
+		g_SEARCH_TYPE=general
+		GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
+
+		QRY="https://rumble.com/search/all?q=${GEN_SEARCH}&sort=date&section=sort" && echo "\nQRY:${QRY}" >&2
+
+		PG=$(wget -q -O - ${QRY})
+		wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble.qry
+
+		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
+		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
+		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
+		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+	elif [[ ${QRY_TYPE} == 'user' ]];then
+		msg_box -c "Requesting <c><I>livestream user<N> search..."
+		g_SEARCH_TYPE="user livestreams"
+		GEN_SEARCH=$(sed 's/ /%20/g' <<<${g_QUERY_KEY})
+
+		QRY="https://rumble.com/user/${g_QUERY_KEY}/livestreams" && echo "\nQRY:${QRY}" >&2
+
+		PG=$(wget -q -O - ${QRY})
+		wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble.qry
+
+		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
+		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
+		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
+		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+	fi
+
+	# Normalize tables
+	NDX=0
+	for L in ${(a)DURATIONS};do
+		((NDX++))
+		if [[ ! ${L} =~ ':' ]] && NDX_OUT+=${NDX} && continue # Missing colon indicates a live broadcast - eliminate
+		TMP+="${L}"
+	done
+	DURATIONS=(${TMP})
+	TMP=()
+
+	NDX=0
+	for L in ${(a)TITLES};do
+		((NDX++))
+		[[ ${NDX_OUT[(i)${NDX}]} -le ${#NDX_OUT} ]] && continue
+		TITLE=$(recode UTF8..ISO-8859-15 <<<${L:gs/|/#/}) # Convert UTF-8
+		TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
+		TMP+="${TITLE}"
+	done
+	TITLES=(${TMP})
+	TMP=()
+
+	NDX=0
+	for L in ${(a)LINKS};do
+		((NDX++))
+		[[ ${NDX_OUT[(i)${NDX}]} -le ${#NDX_OUT} ]] && continue
+		TMP+="${L}"
+	done
+	LINKS=(${TMP})
+	TMP=()
+
+	# Marshall data
+	NDX=0
+	for L in ${TITLES};do
+		((NDX++))
+		TMP+="${(C)g_QUERY_KEY}|${TITLES[${NDX}]}|${AGES[${NDX}]}|${LINKS[${NDX}]}|${DURATIONS[${NDX}]}"
+	done
+
+	# Return failed search status
+	if ! arr_is_populated "${TMP}";then
+		return 1
+	fi
+
+	for L in ${TMP};do
+		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${L})
+		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${L})
+		TITLE=$(cut -d'|' -f${FIELD_MAP[title]} <<<${L})
+		URL=$(cut -d'|' -f${FIELD_MAP[url]} <<<${L}); URL="https://rumble.com${URL}"
+		TIME=$(cut -d'|' -f${FIELD_MAP[time]} <<<${L})
+		AGETIME=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${L});	AGETIME="(${AGETIME:s/|/ /})"
+
+		_LOCAL_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
+	done
+
+	return 0
+}
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Test rumble queries
+Query types: live, channel, general, user
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} <SEARCHTERM> <QUERY_TYPE>\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
+}
+
+OPTSTR=":HD"
+OPTIND=0
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+clear
+[[ ${#} -ne 0 ]] && SEARCHTERM=${1} || exit_leave "Missing Argument:<SEARCHTERM>"
+[[ ${#} -eq 2 ]] && QRY_TYPE=${2} || exit_leave "Missing Argument:<QRY_TYPE>"
+[[ -e ./Rumble.qry ]] && /bin/rm -f ./Rumble.qry
+query_rumble "${SEARCHTERM}" ${QRY_TYPE}
+g_QUERY_KEY=${SEARCHTERM}
+g_DISPLAY_KEY=${SEARCHTERM}
+
+echo "SEARCHTERM:${SEARCHTERM}, TYPE:${QRY_TYPE}"
+#echo "\nTITLES ${#TITLES}"
+#echo "------"
+#NDX=0
+#for L in ${(o)TITLES};do
+#	echo ${L}
+#done
+#
+#echo "\nLINKS ${#LINKS}"
+#echo "------"
+#NDX=0
+#for L in ${(o)LINKS};do
+#	echo ${L}
+#done
+#
+#echo "\nAGES ${#AGES}"
+#echo "------"
+#NDX=0
+#for L in ${(o)AGES};do
+#	echo ${L}
+#done
+#
+#echo "\nDURATIONS ${#DURATIONS}"
+#echo "---------"
+#NDX=0
+#for L in ${(o)DURATIONS};do
+#	echo ${L}
+#done
+
+echo "\n_LOCAL_LIST ${#_LOCAL_LIST}"
+for L in ${_LOCAL_LIST};do
+	echo ${L}
+done
+
+exit_leave
