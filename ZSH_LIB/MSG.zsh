@@ -717,9 +717,9 @@ msg_line_weight () {
 
 msg_list_bullet () {
 	local -a MSG=(${@})
-	local L
 	local DELIM='|'
 	local NDX=0
+	local L
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: MSG COUNT:${#MSG}"
 
@@ -734,9 +734,9 @@ msg_list_bullet () {
 
 msg_list_number () {
 	local -a MSG=(${@})
-	local L
 	local DELIM='|'
 	local NDX=0
+	local L
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: MSG COUNT:${#MSG}"
 
@@ -751,33 +751,33 @@ msg_list_number () {
 
 msg_list_data () {
 	local -a MSG=(${@})
-	local L
 	local DELIM='|'
-	local NDX=0
-	local LINE=''
-	local MAX=0
-	local MARK=0
-	local PAD=0
 	local LBL
+	local LINE=''
+	local MARK=0
+	local MAX=0
+	local NDX=0
+	local PAD=0
 	local VAL
+	local L 
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: MSG COUNT:${#MSG}"
 
 	MAX=0
 
-	for K in ${MSG};do
-		NDX=${K[(i)[:]]} # Find separator
+	for L in ${MSG};do
+		NDX=${L[(i)[:]]} # Find separator
 		[[ ${NDX} -gt ${MAX} ]] && MAX=${NDX}
 	done
 
 	NDX=0
-	for K in ${MSG};do
+	for L in ${MSG};do
 		((NDX++))
-		MARK=${K[(i)[:]]}
+		MARK=${L[(i)[:]]}
 		[[ ${MARK} -lt ${MAX} ]] && PAD=$(( MAX - MARK )) || PAD=0 # Align fields at separator
-		PAD=$(( PAD + ${#K} ))
-		VAL=$(cut -d':' -f2 <<<${K})
-		LINE="<D> ${(l(${PAD})(#))K}:${VAL}"
+		PAD=$(( PAD + ${#L} ))
+		VAL=$(cut -d':' -f2 <<<${L})
+		LINE="<D> ${(l(${PAD})(#))L}:${VAL}"
 		[[ ${NDX} -lt ${#MSG} ]] && echo -n ${LINE}${DELIM} || echo -n ${LINE}
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ITEM:${LINE}"
 	done

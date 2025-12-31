@@ -38,7 +38,6 @@ typeset -a TITLES=()
 g_QUERY_KEY=''
 g_DISPLAY_KEY=''
 g_SEARCH_TYPE=''
-g_PREFER_LIVE=false
 _VIEWER=true
 _MAX_TITLE=74
 SEARCHTERM='qry_viewer'
@@ -56,20 +55,24 @@ strip_space () {
 
 query_rumble () {
 	local SEARCHTERM=${1}
-	local QRY_TYPE=${2}
+	local QRY_ARG=${2:l}
+	local -A QUERY_MAP=(l live g general u user c channel)
 	local -A FIELD_MAP=("author" 1 "title" 2 "age" 3 "url" 4 "time" 5 "agetime" "3,5")
 	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
 	local -a NDX_OUT=()
 	local -a TMP=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
-	local CHANNEL=''
 	local GEN_SEARCH=''
 	local MSG=''
 	local NDX=''
 	local PG=''
 	local QRY=''
 	local STR=''
-	local K L V T
+	local L
+
+	QRY_TYPE=${QUERY_MAP[${QRY_ARG}]}
+
+	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "Invalid query arg:${QRY_ARG}" && return 1
 
 	ping -w1 www.rumble.com >/dev/null
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
@@ -88,8 +91,8 @@ query_rumble () {
 
 		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
 		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
-		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
-		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG})}")
+		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | grep -E '[0-9].*')}")
 	elif [[ ${QRY_TYPE} == 'channel' ]];then
 		msg_box -c "Requesting <c><I>channel<N> search..."
 
@@ -112,10 +115,10 @@ query_rumble () {
 		PG=$(wget -q -O - ${QRY})
 		wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble.qry
 
-		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
-		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
-		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
-		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+		TITLES=("${(f)$(pup --charset utf8 '.video-item--title text{}' <<< ${PG})}")
+		LINKS=("${(f)$(pup --charset utf8 '.video-item--a attr{href}' <<< ${PG})}")
+		AGES=("${(f)$(pup --charset utf8 '.video-item--time text{}' <<< ${PG})}")
+		DURATIONS=("${(f)$(pup --charset utf8 '.video-item--duration attr{data-value}' <<< ${PG})}")
 	elif [[ ${QRY_TYPE} == 'user' ]];then
 		msg_box -c "Requesting <c><I>livestream user<N> search..."
 		g_SEARCH_TYPE="user livestreams"
@@ -128,8 +131,8 @@ query_rumble () {
 
 		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
 		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
-		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
-		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG})}")
+		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | grep -E '[0-9].*')}")
 	fi
 
 	# Normalize tables
@@ -146,8 +149,8 @@ query_rumble () {
 	for L in ${(a)TITLES};do
 		((NDX++))
 		[[ ${NDX_OUT[(i)${NDX}]} -le ${#NDX_OUT} ]] && continue
-		TITLE=$(recode UTF8..ISO-8859-15 <<<${L:gs/|/#/}) # Convert UTF-8
-		TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
+		TITLE=$(recode UTF8..ISO-8859-15 <<<${L:gs/|/#/} 2>/dev/null) # Convert UTF-8
+		TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE} 2>/dev/null) # Convert any HTML 
 		TMP+="${TITLE}"
 	done
 	TITLES=(${TMP})
@@ -174,6 +177,7 @@ query_rumble () {
 		return 1
 	fi
 
+	# Build video listing
 	for L in ${TMP};do
 		AGE=$(cut -d'|' -f${FIELD_MAP[age]} <<<${L})
 		AUTHOR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${L})

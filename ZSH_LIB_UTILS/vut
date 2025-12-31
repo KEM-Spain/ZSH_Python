@@ -206,7 +206,7 @@ ___EOF
 	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"
 	printf "${MAGENTA_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} $(str_unicode_line ${LONGEST}) $(str_unicode_line 11) $(str_unicode_line 5) $(str_unicode_line 10) $(str_unicode_line 5) $(str_unicode_line 8)
 	NDX=0
-	for K in ${(Onk)FLIST};do
+	for K in ${(k)FLIST};do
 		((NDX++))
 		TIT=$(cut -d':' -f2 <<<${K})
 		DUR=$(cut -d'|' -f1 <<<${FLIST[${K}]})
@@ -217,7 +217,7 @@ ___EOF
 		BARLINE=$(( NDX % 2 )) # Barlining 
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
-	done | mypager wait
+	done | sort -t' ' -k2rn | mypager wait
 
 }
 

@@ -33,23 +33,20 @@ typeset -A _CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _LOCATE_OPTS=()
-typeset -a _FREQ_CMDS=()
+typeset -a FREQ_OPT_CMDS=()
 
 # Constants
-#_HIST_DIR=./testing
-#_HIST_TMP=./testing
-#_CACHE_DIR=./testing/${0:t:r}
-_HIST_DIR=~
+_TESTING_DIR=${PWD}/testing
+_HIST_DIR=${HOME}
 _HIST_TMP=/tmp
-_CACHE_DIR=~/.local/share/${0:t:r}
-
+_CACHE_DIR=~/.local/share/${_SCRIPT}
 _HIST_CACHE=${_CACHE_DIR}/hist_cache
 _HIST_FILE=${_HIST_DIR}/.zsh_history
 _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
-_FREQ_CMDS=(
+FREQ_OPT_CMDS=(
 bak
 doit
 find
@@ -62,13 +59,8 @@ peip
 sed
 testit
 while
+vi
 )
-
-# Vars
-_FORCE=?
-_PROD=?
-_DEEP=?
-_FREQ=?
 
 size_diff () {
 	local HIST_BAK=$(find ${_HIST_DIR} -maxdepth 1 -name '*zsh*bak')
@@ -91,27 +83,6 @@ size_diff () {
 	fi
 }
 
-read -r -d '' DESC<<EOF
-Clean zsh.history
-\tOptions:
-\t -f FREQ - same as PROD except frequent arguments are command only
-\t -d DEEP - unique commands without arguments are retained   
-\t -p PROD - unique commands w/arguments are retained
-EOF
-
-got_opt () {
-	local OPT=${1}
-	local -a ARGS=(${@})
-	local A
-
-	for A in ${ARGS};do
-		case ${A} in
-			-${OPT}) echo 0 && return 0;;
-		esac
-	done
-	echo 1 && return 1
-}
-
 cmd_filter () {
 	local ARRAY=${1}
 	local CMD_IN=''
@@ -128,7 +99,7 @@ cmd_filter () {
 	local CACHE=0
 	local K
 
-	[[ ${_VERBOSE} == 'true' ]] && echo "Entered ${0}..." >&2
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
 
 	[[ ! -e ${_CACHE_DIR} ]] && md ${_CACHE_DIR}
 	[[ ! -e ${_HIST_CACHE} ]] && touch ${_HIST_CACHE}
@@ -141,7 +112,7 @@ cmd_filter () {
 		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
 		[[ -z ${CMD_TGT} ]] && continue
 
-		[[ ${_VERBOSE} == 'true' ]] && echo "Processing command:${CMD_TGT}" >&2
+		[[ ${VERBOSE_OPT} == 'true' ]] && echo "Processing command:${CMD_TGT}" >&2
 
 		VALID=false
 		if [[ -n ${CMD_TGT} && -n ${_HIST_CACHE} ]];then
@@ -149,36 +120,36 @@ cmd_filter () {
 				VALID='true'
 				((CACHE++))
 				printf '%s\n' "${K}"
-				[[ ${_VERBOSE} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			[[ ${_VERBOSE} == 'true' ]] && echo "Calling which..." >&2
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling which..." >&2
 			which -s ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((WCH++))
 				printf '%s\n' "${K}"
 				printf '%s\n' "${CMD_TGT}">>${_HIST_CACHE}
-				[[ ${_VERBOSE} == 'true' ]] && printf 'Found by which:%s\n' "${CMD_TGT}" >&2
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found by which:%s\n' "${CMD_TGT}" >&2
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			[[ ${_VERBOSE} == 'true' ]] && echo "Calling mya..." >&2
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling mya..." >&2
 			mya -q -- ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((MYA++))
 				printf '%s\n' "${K}"
 				printf '%s\n' "${CMD_TGT}">>${_HIST_CACHE}
-				[[ ${_VERBOSE} == 'true' ]] && printf 'Found by mya:%s\n' "${CMD_TGT}" >&2
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found by mya:%s\n' "${CMD_TGT}" >&2
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			[[ ${_VERBOSE} == 'true' ]] && echo "Calling locate..." >&2
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling locate..." >&2
 			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
 			CMD_OUT=$(locate -b -e ${CMD_MSK})
 			if [[ ${?} -eq 0 ]];then
@@ -193,11 +164,11 @@ cmd_filter () {
 
 		if [[ ${VALID} == 'false' ]];then
 			((RJT++))
-			[[ ${_VERBOSE} == 'true' ]] && printf 'Rejected:%s\n' "${CMD_TGT}" >&2
+			[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Rejected:%s\n' "${CMD_TGT}" >&2
 		fi
 	done
 	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
-	[[ ${_PROD} == 'false' ]] && echo >&2 # Clear progress
+	[[ ${PROD_OPT} == 'false' ]] && echo >&2 # Clear progress
 }
 
 hist_parse () {
@@ -210,7 +181,7 @@ hist_parse () {
 	local TS
 	local TS_NDX
 
-	[[ ${_VERBOSE} == 'true' ]] && echo "Entered ${0}..." >&2
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
 
 	for L in ${(on)${(P)ARRAY}};do
 		[[ -z ${L} ]] && continue # Blank hist line
@@ -220,14 +191,14 @@ hist_parse () {
 		TS=$(cut -d';' -f1 <<<${LINE})
 		TS_NDX=$(cut -d':' -f2 <<<${TS} | str_trim)
 
-		if [[ ${_DEEP} == 'true' ]];then
+		if [[ ${DEEP_OPT} == 'true' ]];then
 			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
 			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
 			CMD=${CMD_ONLY}
-		elif [[ ${_FREQ} == 'true' ]];then
+		elif [[ ${FREQ_OPT} == 'true' ]];then
 			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
 			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
-			if $(arr_in_array "_FREQ_CMDS" ${CMD_ONLY:gs/ //});then
+			if $(arr_in_array "FREQ_OPT_CMDS" ${CMD_ONLY:gs/ //});then
 				CMD=${CMD_ONLY}
 			fi
 		else
@@ -249,7 +220,7 @@ build_hist () {
 	local -a _VALID_CMDS
 	local K
 
-	[[ ${_VERBOSE} == 'true' ]] && echo "Entered ${0}..." >&2
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
 
 	#echo "ARRAY:${ARRAY} ${#${(P)ARRAY}}" >&2
 
@@ -262,41 +233,100 @@ build_hist () {
 	done | sort -n # Print valid commands in time order
 }
 
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Clean command history
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
 usage () {
 	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
 
-	tabs 5
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
+	tabs 5
 	(
-	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} [-p -d -f]\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
-	echo -e "${WHITE_FG}-F${RESET} force"
-	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-f${RESET} frequent commands w/o arguments"
-	echo -e "${WHITE_FG}-d${RESET} unique commands w/o arguments"
-	echo -e "${WHITE_FG}-p${RESET} unique command w/arguments"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-F${RESET} force rebuild"
+	echo -e "${WHITE_FG}-d${RESET} deep - unique commands w/o arguments"
+	echo -e "${WHITE_FG}-f${RESET} frequent - commands w/o arguments"
+	echo -e "${WHITE_FG}-p${RESET} production - unique command w/arguments"
+	echo -e "${WHITE_FG}-t${RESET} testing mode"
 	echo -e "${WHITE_FG}-v${RESET} verbose output"
-	echo -e "${WHITE_FG}-t${RESET} test mode - no file modifications"
-	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
 	exit_leave ${PENDING_MSGS}
 }
 
+OPTSTR=":HDFpdfvt"
+OPTIND=0
+
+FORCE_OPT=false
+PROD_OPT=false
+DEEP_OPT=false
+FREQ_OPT=false
+VERBOSE_OPT=false
+TESTING_OPT=false
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     F) FORCE_OPT=true;;
+     p) PROD_OPT=true;;
+     d) DEEP_OPT=true;;
+     f) FREQ_OPT=true;;
+     v) VERBOSE_OPT=true;;
+     t) TESTING_OPT=true;;
+     :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
 # Execution
-[[ $(got_opt H ${@}) -eq 0 ]] && usage
-[[ $(got_opt D ${@}) -eq 0 ]] && _DEBUG=1 || _DEBUG=0
-[[ $(got_opt F ${@}) -eq 0 ]] && _FORCE=true || _FORCE=false
-[[ $(got_opt p ${@}) -eq 0 ]] && _PROD=true || _PROD=false
-[[ $(got_opt d ${@}) -eq 0 ]] && _DEEP=true || _DEEP=false
-[[ $(got_opt f ${@}) -eq 0 ]] && _FREQ=true || _FREQ=false
-[[ $(got_opt v ${@}) -eq 0 ]] && _VERBOSE=true || _VERBOSE=false
-[[ $(got_opt t ${@}) -eq 0 ]] && _TESTING=true || _TESTING=false
+[[ ${VERBOSE_OPT} == 'true' && ${FORCE_OPT} == 'true' ]] && echo "Forcing rebuild..." >&2
 
-[[ ${_VERBOSE} == 'true' && ${_FORCE} == 'true' ]] && echo "Forcing rebuild..." >&2
-
-if [[ ${_FORCE} == 'false' ]];then
+if [[ ${FORCE_OPT} == 'false' && ${TESTING_OPT} == 'false' ]];then
 	MSG=$(size_diff)
 	if [[ ${?} -ne 0 ]];then
 		echo -n "History rebuild not required / ${MSG}"
@@ -304,7 +334,7 @@ if [[ ${_FORCE} == 'false' ]];then
 	fi
 fi
 
-[[ ${_PROD} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
+[[ ${PROD_OPT} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 cp ${_HIST_FILE} ${_HIST_BAK}
 
 echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
@@ -312,9 +342,9 @@ upd_locate -u 2>/dev/null
 
 echo "${ITALIC}Collating history...${RESET}" >&2
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
-[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
+[[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
-[[ ${_PROD} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
+[[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
 _REBUILT_HIST=("${(f)$(build_hist _HIST_IN)}")
 
 if ! arr_is_populated "_REBUILT_HIST";then
@@ -328,14 +358,15 @@ for L in ${_REBUILT_HIST};do
 	printf "%s\n" "${L}" >> ${_HIST_NEW}
 done
 
-if [[ ${_TESTING} == 'true' ]];then
-	echo "History output file:${PWD}/${_HIST_NEW}"
-	cp ${_HIST_NEW} ${PWD}
+if [[ ${TESTING_OPT} == 'true' ]];then
+	[[ ! -d ${_TESTING_DIR} ]] && mkdir ${_TESTING_DIR}
+	echo "History output file:${_TESTING_DIR}/${_HIST_NEW}"
+	cp ${_HIST_NEW} ${_TESTING_DIR}
 else
 	cp ${_HIST_NEW} ${_HIST_FILE}
 fi
 
-if [[ ${_PROD} == 'false' ]];then
+if [[ ${PROD_OPT} == 'false' ]];then
 	CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
 	read ACC <${_CACHE_DIR}/accumulators
 	echo "   SIZE:${WHITE_FG}${CUR_SIZE}${RESET}"
@@ -350,6 +381,5 @@ else
 	tput el
 	printf " Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
 fi
-
 
 exit_leave

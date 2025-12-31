@@ -327,5 +327,5 @@ str_word_clip () {
 		[[ ${LEN} -lt $((LIMIT - 1)) ]] && TEXT_OUT+="${W} "
 	done
 
-	echo ${TEXT_OUT}
+	echo $(str_trim ${TEXT_OUT})
 }
