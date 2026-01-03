@@ -61,6 +61,7 @@ query_rumble () {
 	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
 	local -a NDX_OUT=()
 	local -a TMP=()
+	local -a AUTHORS=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local GEN_SEARCH=''
 	local MSG=''
@@ -115,6 +116,7 @@ query_rumble () {
 		PG=$(wget -q -O - ${QRY})
 		wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble.qry
 
+		AUtHORS=("${(f)$(pup --charset utf8 '.ellipsis-1 text{}' <<< ${PG} | grep -vi 'verified')}")
 		TITLES=("${(f)$(pup --charset utf8 '.video-item--title text{}' <<< ${PG})}")
 		LINKS=("${(f)$(pup --charset utf8 '.video-item--a attr{href}' <<< ${PG})}")
 		AGES=("${(f)$(pup --charset utf8 '.video-item--time text{}' <<< ${PG})}")
@@ -167,10 +169,17 @@ query_rumble () {
 
 	# Marshall data
 	NDX=0
-	for L in ${TITLES};do
-		((NDX++))
-		TMP+="${(C)g_QUERY_KEY}|${TITLES[${NDX}]}|${AGES[${NDX}]}|${LINKS[${NDX}]}|${DURATIONS[${NDX}]}"
-	done
+	if [[ ${QRY_TYPE} == 'general' ]];then
+		for L in ${TITLES};do
+			((NDX++))
+			TMP+="${AUtHORS[${NDX}]}}|${TITLES[${NDX}]}|${AGES[${NDX}]}|${LINKS[${NDX}]}|${DURATIONS[${NDX}]}"
+		done
+	else
+		for L in ${TITLES};do
+			((NDX++))
+			TMP+="${(C)g_QUERY_KEY}|${TITLES[${NDX}]}|${AGES[${NDX}]}|${LINKS[${NDX}]}|${DURATIONS[${NDX}]}"
+		done
+	fi
 
 	# Return failed search status
 	if ! arr_is_populated "${TMP}";then

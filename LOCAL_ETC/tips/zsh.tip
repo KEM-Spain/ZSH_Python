@@ -179,6 +179,7 @@ ${E_WHITE_FG}CONDITIONAL EXPRESSIONS${E_RESET}
               true if either exp1 or exp2 is true.
 
  
+${E_BOLD} ${E_WHITE_FG}Miscellaneous Tips${E_RESET}
 
 ${E_WHITE_FG}Dead Tilde${E_RESET}
 Compose Key:<Right><Alt>
@@ -249,7 +250,11 @@ ___EOF
 perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
 }
 
-${E_WHITE_FG}Delete spaces in text between quotes${E_RESET}
+${E_WHITE_FG}Determine if script was executed on the command line${E_RESET}
+PPCMD=\$(</proc/\$PPID/cmdline | tr -d '\0') # Eliminate null terminator
+[[ \${PPCMD} == 'zsh' ]] && CMDLINE=true
+
+${E_WHITE_FG}Delete spaces in text between quotes using awk${E_RESET}
 awk 'BEGIN{FS=OFS="\""} {for(i=2;i<NF;i+=2)gsub(" ","_",$i)} 1' file
 
 ${E_WHITE_FG}Reformat text with long lines${E_RESET}
@@ -2325,7 +2330,7 @@ while read -u3 F;do # To embed a read within a read loop use a different file de
     cat \${F}
     echo -n "Next..."
     read -s -k1 RESPONSE
-    [[ ${RESPONSE} == $'\n' ]] && exit # Test for newline using ANSI quoting
+    [[ \${RESPONSE} == $'\n' ]] && exit # Test for newline using ANSI quoting
 done 3< ./media
 
 Read one line and break it into fields using the characters in \${IFS} as separators, except as noted below. The first field is

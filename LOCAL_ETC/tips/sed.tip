@@ -2,6 +2,20 @@
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_sed_EOF
 
+${E_WHITE_FG}Delete line number${E_RESET}
+If you want to delete lines from 5 through 10 and line 12th:
+
+sed -e '5,10d;12d' <FILE>
+
+This will print the results to the screen. 
+
+If you want to save the results to the same file:
+
+sed -i.bak -e '5,10d;12d' <FILE>
+
+${E_WHITE_FG}Insert line number${E_RESET}
+sed -i '3i NEW LINE on line 3' <FILE>
+
 =====================
 advanced sed examples
 =====================

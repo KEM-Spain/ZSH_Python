@@ -96,7 +96,7 @@ usage () {
 }
 
 # Execution
-grep -Eq -- '-C.|-p.' <<<${@} # Only execute getopts for command line call (yt-dlp has no -C or -p option)
+grep -Pq -- '-C\s+|-p\s+' <<<${@} # Only execute getopts for command line call (yt-dlp has no -C or -p option)
 if [[ ${?} -eq 0 ]];then
 	OPTSTR=":HDCp:"
 	OPTIND=0
@@ -124,10 +124,13 @@ eval "${_YT_DLP} ${(qqq)@}"
 
 if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
 	FN=$(last_file_downloaded | cut -d'|' -f1)
+	echo "pre cleanup -> last_file_downloaded is ${FN}" >> ${_YT_DBG_LOG}
 	if [[ -e ${FN} ]];then
 		fsub -y -Y ${FN}
+		echo "fsub cleanup done" >> ${_YT_DBG_LOG}
 		FN=$(last_file_downloaded | cut -d'|' -f1)
-		[[ -n ${PREPEND} ]] && fsub -y -p ${PREPEND} ${FN}
+		echo "post cleanup -> last_file_downloaded is ${FN}" >> ${_YT_DBG_LOG}
+		[[ -n ${PREPEND} ]] && fsub -y -p ${PREPEND} ${FN} && echo "fsub prepend done" >> ${_YT_DBG_LOG}
 	fi
 	echo "Command line download:${@}" >> ${_YT_DBG_LOG}
 else

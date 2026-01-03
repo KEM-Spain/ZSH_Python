@@ -798,6 +798,7 @@ list_select () {
 	# Display current page of list items
 	tput civis >&2
 	tput clear
+
 	list_display_page
 
 	#_LIST_NDX=1
