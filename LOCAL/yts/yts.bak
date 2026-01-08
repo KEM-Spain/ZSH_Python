@@ -1129,17 +1129,18 @@ post_process () {
 
 parse_rumble () {
 	local PARSE_TYPE=${1}
-	local -A NON_GENERAL=()
 	local -A GENERAL=()
+	local -A NON_GENERAL=()
 	local -a HTML=()
-	local TAG_ARRAY=''
-	local TAGLINE=''
-	local ROW=0
-	local LAST_ROW=0
-	local TAB=''
-	local LINE=''
-	local TAG=''
 	local DATA=''
+	local LAST_ROW=0
+	local LINE=''
+	local NDX=0
+	local ROW=0
+	local TAB=''
+	local TAG=''
+	local TAGLINE=''
+	local TAG_ARRAY=''
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local K
 
@@ -1171,6 +1172,7 @@ parse_rumble () {
 			for K in ${(k)${(P)TAG_ARRAY}};do
 				TAG=${${(P)TAG_ARRAY}[${K}]}
 				DATA=$(pup --charset utf8 ".${TAG}" <<<${HTML} | strip_unwanted)
+				#echo "${ROW} ${TAG} ${DATA}" >>row_data
 				if [[ ${ROW} -ne 0 && -n ${DATA} ]];then
 					_RUMBLE_ROWS[${ROW}_${K}]=${DATA}
 				fi
@@ -1196,6 +1198,8 @@ parse_rumble () {
 			AGETIME="(${AGE} ${TIME})"
 			[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
 			_LOCAL_LIST[${ROW}]="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
+			#echo "${ROW} ${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}\n-------------------------------------------" >>row_data
+			AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE=''
 		fi
 		LAST_ROW=${ROW}
 	done
@@ -1429,13 +1433,14 @@ strip_unwanted () {
 
 	while read -r LINE;do
 		[[ -z ${LINE} ]] && continue
-		[[ ${LINE} =~ '[Vv]erified' ]] && continue
-		[[ ${LINE} =~ 'LIVE' ]] && continue
+		[[ ${LINE} =~ '^[Vv]erified$' ]] && continue
+		[[ ${LINE} =~ '^LIVE$' ]] && continue
 		LINE=$(tr -d '\011' <<< ${LINE})
 		LINE=$(tr -d '\012' <<< ${LINE})
 		LINE=$(sed 's/|/#/g' <<< ${LINE})
-		LINE=$(recode UTF8..ISO-8859-15 <<<${LINE} 2>/dev/null) # Convert UTF-8
-		html2text -width 500 -ascii <<<${LINE} 2>/dev/null # Convert any HTML 
+		LINE=$(iconv -c -f UTF-8 -t ASCII <<<${LINE} 2>/dev/null) # Convert UTF-8
+		LINE=$(html2text -width 500 -ascii <<<${LINE} 2>/dev/null) # Convert any HTML 
+		str_trim <<< ${LINE}
 	done
 }
 

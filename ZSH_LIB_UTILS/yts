@@ -1157,6 +1157,8 @@ parse_rumble () {
 	GENERAL[AGES]='video-item--time text{}'
 	GENERAL[DURATIONS]='video-item--duration attr{data-value}'
 
+	_LOCAL_LIST=()
+
 	if [[ ${PARSE_TYPE} == 'g' ]];then
 		TAG_ARRAY="GENERAL"
 		TAGLINE="\"video-item--img\""
