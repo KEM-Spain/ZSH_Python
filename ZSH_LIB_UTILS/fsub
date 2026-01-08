@@ -647,7 +647,7 @@ do_yt_tag () {
 		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
 		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x27s /g')
 
-		_OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}"
+		_OUT_LIST[${C}]="${CPATH}/${(C)CFN}${CEXT}" # Proper cased
 	done
 
 	[[ -n ${_OUT_LIST} ]] && return 0 || return 1

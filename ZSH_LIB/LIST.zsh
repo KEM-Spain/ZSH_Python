@@ -154,7 +154,6 @@ list_do_header () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-
 	for (( L=1; L<=${#_LIST_HEADER}; L++ ));do
 		HDR_LINE=$(eval ${_LIST_HEADER[${L}]})
 		CLEAN_HDR=$(str_strip_ansi <<<${HDR_LINE})

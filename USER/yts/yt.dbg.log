@@ -1,1 +1,43 @@
-Executed: /home/kmiller/Code/LOCAL/yts/yt: "-H"
+2026-01-08_01:15: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-08_01:15: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-08_01:15: job_start: QUERY KEY:alexchristoforou
+2026-01-08_01:15: job_start:       CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' "https://rumble.com/v7401v4-e3-boots-on-the-ground.-denmark-warns-us-on-greenland.-trump-venezuela-shak.html?e9s=src_v1_ucp_a"
+2026-01-08_01:15: action_do:[RumbleEmbed] v71tduw: Downloading m3u8 information
+2026-01-08_01:15: action_do:[hlsnative] Downloading m3u8 manifest
+2026-01-08_01:15: action_do:[download]   0.0% of ~  57.11MiB at    2.49KiB/s ETA Unknown (frag 0/228)[download]   0.0% of ~  57.33MiB at    2.49KiB/s ETA Unknown (frag 0/228)[download]   0.0% of ~  57.77MiB at    2.49KiB/s ETA Unknown (frag 0/228)[download]   0.0% of ~  58.67MiB at    2.49KiB/s ETA Unknown (frag 0/228)[download]   0.1% of ~  60.45MiB at    2.49KiB/s ETA Unknown (frag 0/228)[download]   0.1% of ~  64.01MiB at   87.49KiB/s ETA Unknown (frag 0/228)
+2026-01-08_01:15: clean_title: ARG:Alex Christoforou - E3 BOOTS on the ground. Denmark warns US on Greenland. Trump Venezuela shakedown. Oil tanker chase
+2026-01-08_01:15: clean_title: CLEAN:Alex Christoforou - E3 BOOTS On The Ground. Denmark Warns US On length:74
+2026-01-08_01:15: action_do:[download]   2.0% of ~ 333.27MiB at    4.16MiB/s ETA 00:56 (frag 6/228)
+2026-01-08_01:15: action_do:[download]   6.2% of ~ 293.99MiB at    7.92MiB/s ETA 00:40 (frag 14/228)
+2026-01-08_01:15: action_do:[download]  10.6% of ~ 300.56MiB at    9.97MiB/s ETA 00:31 (frag 25/228)
+2026-01-08_01:15: action_do:[download]  13.7% of ~ 299.36MiB at   12.52MiB/s ETA 00:24 (frag 31/228)
+2026-01-08_01:15: action_do:[download]  18.0% of ~ 288.08MiB at   12.96MiB/s ETA 00:20 (frag 41/228)
+2026-01-08_01:15: action_do:[download]  23.6% of ~ 259.13MiB at   12.27MiB/s ETA 00:17 (frag 54/228)
+2026-01-08_01:15: action_do:[download]  27.8% of ~ 262.80MiB at   11.55MiB/s ETA 00:17 (frag 64/228)
+2026-01-08_01:15: action_do:[download]  32.3% of ~ 260.41MiB at   12.23MiB/s ETA 00:15 (frag 73/228)
+2026-01-08_01:15: action_do:[download]  35.8% of ~ 264.86MiB at   11.76MiB/s ETA 00:14 (frag 83/228)
+2026-01-08_01:15: action_do:[download]  40.2% of ~ 271.56MiB at   13.56MiB/s ETA 00:13 (frag 93/228)
+2026-01-08_01:15: action_do:[download]  43.9% of ~ 273.62MiB at   13.27MiB/s ETA 00:11 (frag 100/228)
+2026-01-08_01:15: action_do:[download]  48.0% of ~ 281.05MiB at   14.74MiB/s ETA 00:10 (frag 110/228)
+2026-01-08_01:15: action_do:[download]  51.8% of ~ 282.36MiB at   14.39MiB/s ETA 00:09 (frag 118/228)
+2026-01-08_01:15: action_do:[download]  56.5% of ~ 284.68MiB at   14.85MiB/s ETA 00:09 (frag 129/228)
+2026-01-08_01:15: action_do:[download]  59.8% of ~ 291.75MiB at   15.24MiB/s ETA 00:08 (frag 138/228)
+2026-01-08_01:15: action_do:[download]  64.3% of ~ 292.25MiB at   14.93MiB/s ETA 00:07 (frag 148/228)
+2026-01-08_01:15: action_do:[download]  68.7% of ~ 289.70MiB at   14.49MiB/s ETA 00:06 (frag 157/228)
+2026-01-08_01:15: action_do:[download]  72.7% of ~ 290.34MiB at   13.86MiB/s ETA 00:06 (frag 167/228)
+2026-01-08_01:15: action_do:[download]  77.6% of ~ 293.63MiB at   15.10MiB/s ETA 00:05 (frag 178/228)
+2026-01-08_01:15: action_do:[download]  83.2% of ~ 292.28MiB at   16.21MiB/s ETA 00:04 (frag 190/228)
+2026-01-08_01:15: action_do:[download]  87.7% of ~ 290.73MiB at   15.95MiB/s ETA 00:03 (frag 200/228)
+2026-01-08_01:15: action_do:[download]  92.4% of ~ 293.40MiB at   16.30MiB/s ETA 00:02 (frag 212/228)
+2026-01-08_01:16: action_do:[download]  97.2% of ~ 290.25MiB at   15.47MiB/s ETA 00:01 (frag 222/228)
+2026-01-08_01:16: action_do:[FixupM3u8] Fixing MPEG-TS in MP4 container of "/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - E3_BOOTS_on_the_ground._Denmark_warns_US_on_Greenland._Trump_Venezuela_shakedown._Oil_tanker_chase.mp4"
+2026-01-08_01:16: COMPLETED MSG
+2026-01-08_01:16: post_process
+2026-01-08_01:16: Executed by /usr/bin/zsh/usr/local/bin/yts with command:"-N2" "-Rinfinite" "-i" "-o" "%(channel)s - %(title)s.%(ext)s" "https://rumble.com/v7401v4-e3-boots-on-the-ground.-denmark-warns-us-on-greenland.-trump-venezuela-shak.html?e9s=src_v1_ucp_a"
+2026-01-08_01:16: post_process: Last FN:/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - E3_BOOTS_on_the_ground._Denmark_warns_US_on_Greenland._Trump_Venezuela_shakedown._Oil_tanker_chase.mp4
+2026-01-08_01:16: set_final_fn: ARG:/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - E3_BOOTS_on_the_ground._Denmark_warns_US_on_Greenland._Trump_Venezuela_shakedown._Oil_tanker_chase.mp4
+2026-01-08_01:16: clean_title: ARG:Alex Christoforou - E3 BOOTS on the ground. Denmark warns US on Greenland. Trump Venezuela shakedown. Oil tanker chase
+2026-01-08_01:16: clean_title: CLEAN:Alex Christoforou - E3 BOOTS On The Ground. Denmark Warns US On length:74
+2026-01-08_01:16: set_final_fn: Formatted:/home/kmiller/Downloads/Torrents/Library/web/Alex Christoforou - E3 BOOTS On The Ground. Denmark Warns US On.mp4
+2026-01-08_01:16: set_final_fn: Overwriting file:Alex_Christoforou - E3_BOOTS_on_the_ground._Denmark_warns_US_on_Greenland._Trump_Venezuela_shakedown._Oil_tanker_chase.mp4 with:Alex Christoforou - E3 BOOTS On The Ground. Denmark Warns US On.mp4
+2026-01-08_01:16: temp log file:/home/kmiller/.local/share/yts/yt.log.UZDFmt was cleared for:alexchristoforou from:action_do

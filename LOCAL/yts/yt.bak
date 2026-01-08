@@ -41,9 +41,8 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Manage download from YouTube and Rumble.
-\tIf executing from the command line, use option -c
-\tto invoke post precessing i.e. file name cleanup.
-\tPrepend option -p will auto trigger command line option.
+\tIf executing from the command line, use option -p
+\tto prepend text to the filename
 EOF
 
 parse_opts () {
@@ -71,7 +70,7 @@ opt_type () {
 	case ${OPT} in
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
-		t) echo "<TEXT>";;
+		p) echo "<TEXT>";;
 		u) echo "<URL>";;
 	esac
 }
@@ -87,8 +86,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-C${RESET} execution from cmdline (will apply post processing to filename)"
-	echo -e "${WHITE_FG}-p $(opt_type t)${RESET} prepend text to filename after download"
+	echo -e "${WHITE_FG}-p $(opt_type t)${RESET}prepend text to filename"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
@@ -96,18 +94,18 @@ usage () {
 }
 
 # Execution
-grep -Pq -- '-C\s+|-p\s+' <<<${@} # Only execute getopts for command line call (yt-dlp has no -C or -p option)
-if [[ ${?} -eq 0 ]];then
-	OPTSTR=":HDCp:"
+PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
+[[ ${PPCMD} == 'zsh' ]] && CMDLINE=true
+
+if [[ ${CMDLINE} == 'true' ]];then
+	OPTSTR=":HDp:"
 	OPTIND=0
-	CMDLINE=false
 	PREPEND=''
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 		  H) usage;;
 		  D) dbg_set_level;;
-		  C) CMDLINE=true;;
 		  p) PREPEND=${OPTARG} && CMDLINE=true;;
 		  :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
@@ -118,23 +116,22 @@ if [[ ${?} -eq 0 ]];then
 #--End GetOpts--
 fi
 
-[[ ${CMDLINE} == 'true' && ${#} -eq 0 ]] && usage $(err_msg_exit "Missing argument:$(opt_type u)")
-
 eval "${_YT_DLP} ${(qqq)@}"
 
 if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
+	logit ${_YT_DBG_LOG} "Command line download URL:${@}" >> ${_YT_DBG_LOG}
 	FN=$(last_file_downloaded | cut -d'|' -f1)
-	echo "pre cleanup -> last_file_downloaded is ${FN}" >> ${_YT_DBG_LOG}
 	if [[ -e ${FN} ]];then
 		fsub -y -Y ${FN}
-		echo "fsub cleanup done" >> ${_YT_DBG_LOG}
+		logit ${_YT_DBG_LOG} "Cleaning file name:${FN:t}" >> ${_YT_DBG_LOG}
 		FN=$(last_file_downloaded | cut -d'|' -f1)
-		echo "post cleanup -> last_file_downloaded is ${FN}" >> ${_YT_DBG_LOG}
-		[[ -n ${PREPEND} ]] && fsub -y -p ${PREPEND} ${FN} && echo "fsub prepend done" >> ${_YT_DBG_LOG}
+		if [[ -n ${PREPEND} ]];then
+			logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}" >> ${_YT_DBG_LOG}
+			fsub -y -p ${PREPEND} ${FN}
+		fi
 	fi
-	echo "Command line download:${@}" >> ${_YT_DBG_LOG}
 else
-	echo "Executed: ${0}: ${(qqq)@}" >> ${_YT_DBG_LOG}
+	logit ${_YT_DBG_LOG} "Executed by ${PPCMD} with command:${(qqq)@}" >> ${_YT_DBG_LOG}
 fi
 
 exit_leave 

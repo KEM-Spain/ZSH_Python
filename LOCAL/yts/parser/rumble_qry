@@ -56,7 +56,6 @@ strip_space () {
 query_rumble () {
 	local SEARCHTERM=${1}
 	local QRY_ARG=${2:l}
-	local -A QUERY_MAP=(l live g general u user c channel)
 	local -A FIELD_MAP=("author" 1 "title" 2 "age" 3 "url" 4 "time" 5 "agetime" "3,5")
 	local -A LAST_MSG=($(box_coords_get ${_LAST_MSG_TAG}))
 	local -a NDX_OUT=()
@@ -116,7 +115,7 @@ query_rumble () {
 		PG=$(wget -q -O - ${QRY})
 		wget -q -O - ${QRY} > ${_CFG_DIR}/Rumble.qry
 
-		AUtHORS=("${(f)$(pup --charset utf8 '.ellipsis-1 text{}' <<< ${PG} | grep -vi 'verified')}")
+		AUTHORS=("${(f)$(pup --charset utf8 '.ellipsis-1 text{}' <<< ${PG} | grep -vi 'verified')}")
 		TITLES=("${(f)$(pup --charset utf8 '.video-item--title text{}' <<< ${PG})}")
 		LINKS=("${(f)$(pup --charset utf8 '.video-item--a attr{href}' <<< ${PG})}")
 		AGES=("${(f)$(pup --charset utf8 '.video-item--time text{}' <<< ${PG})}")
@@ -172,7 +171,7 @@ query_rumble () {
 	if [[ ${QRY_TYPE} == 'general' ]];then
 		for L in ${TITLES};do
 			((NDX++))
-			TMP+="${AUtHORS[${NDX}]}}|${TITLES[${NDX}]}|${AGES[${NDX}]}|${LINKS[${NDX}]}|${DURATIONS[${NDX}]}"
+			TMP+="${AUTHORS[${NDX}]}}|${TITLES[${NDX}]}|${AGES[${NDX}]}|${LINKS[${NDX}]}|${DURATIONS[${NDX}]}"
 		done
 	else
 		for L in ${TITLES};do
@@ -278,6 +277,7 @@ clear
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1} || exit_leave "Missing Argument:<SEARCHTERM>"
 [[ ${#} -eq 2 ]] && QRY_TYPE=${2} || exit_leave "Missing Argument:<QRY_TYPE>"
 [[ -e ./Rumble.qry ]] && /bin/rm -f ./Rumble.qry
+typeset -A QUERY_MAP=(l live g general u user c channel)
 query_rumble "${SEARCHTERM}" ${QRY_TYPE}
 g_QUERY_KEY=${SEARCHTERM}
 g_DISPLAY_KEY=${SEARCHTERM}
