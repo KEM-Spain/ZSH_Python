@@ -1100,7 +1100,19 @@ fi
 
 # YouTube tags
 if [[ ${YT_TAGS} == "true" ]];then
+	typeset -A VID_LIST=()
 	logit ${_LOG} "Youtube Tags was called"
+	for K in ${(k)_IN_LIST};do
+		[[ ${_IN_LIST[${K}]:e} =~ "mp4|mkv|avi" ]] && VID_LIST[${K}]=${_IN_LIST[${K}]}
+	done
+
+	[[ -z ${VID_LIST} ]] && exit_leave 1 $(err_msg_exit "No video files found")
+
+	_IN_LIST=() # Replace _IN_LIST with video hits
+	for K in ${(k)VID_LIST};do
+		_IN_LIST[${K}]=${VID_LIST[${K}]}
+	done
+
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Eliminating YouTube tags" >&2
 	do_yt_tag
 	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 

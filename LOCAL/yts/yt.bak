@@ -14,7 +14,7 @@ typeset -a LIST=()
 # Constants
 _YT_DBG_LOG=~/.local/share/yts/yt.dbg.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_YT_DLP="/usr/local/bin/yt-dlp -Rinfinite"
+_YT_DLP="/usr/local/bin/yt-dlp"
 
 # Functions
 last_file_downloaded () {
@@ -119,19 +119,19 @@ fi
 eval "${_YT_DLP} ${(qqq)@}"
 
 if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
-	logit ${_YT_DBG_LOG} "Command line download URL:${@}" >> ${_YT_DBG_LOG}
+	logit ${_YT_DBG_LOG} "Command line download:${@}"
 	FN=$(last_file_downloaded | cut -d'|' -f1)
 	if [[ -e ${FN} ]];then
 		fsub -y -Y ${FN}
-		logit ${_YT_DBG_LOG} "Cleaning file name:${FN:t}" >> ${_YT_DBG_LOG}
+		logit ${_YT_DBG_LOG} "Cleaning file name:${FN:t}"
 		FN=$(last_file_downloaded | cut -d'|' -f1)
 		if [[ -n ${PREPEND} ]];then
-			logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}" >> ${_YT_DBG_LOG}
+			logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}"
 			fsub -y -p ${PREPEND} ${FN}
 		fi
 	fi
 else
-	logit ${_YT_DBG_LOG} "Executed by ${PPCMD} with command:${(qqq)@}" >> ${_YT_DBG_LOG}
+	logit ${_YT_DBG_LOG} "Executed by ${PPCMD} with command:${@}"
 fi
 
 exit_leave 

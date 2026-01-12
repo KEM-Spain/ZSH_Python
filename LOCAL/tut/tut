@@ -67,6 +67,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
 		exit_leave ${PENDING_MSGS}
 	}
 
@@ -104,8 +105,8 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -141,8 +142,8 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -179,8 +180,8 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -219,8 +220,8 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+		exit_leave ${PENDING_MSGS}
 	}
 
 	# Execution
@@ -255,7 +256,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -289,8 +290,8 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"
@@ -309,8 +310,8 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
-
 # Execution
+
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
 [[ ${UTIL} != 'none' && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "UTIL:${UTIL} not found"

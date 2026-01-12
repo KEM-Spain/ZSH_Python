@@ -14,7 +14,7 @@ typeset -a LIST=()
 # Constants
 _YT_DBG_LOG=~/.local/share/yts/yt.dbg.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_YT_DLP="/usr/local/bin/yt-dlp -Rinfinite"
+_YT_DLP="/usr/local/bin/yt-dlp"
 
 # Functions
 last_file_downloaded () {
@@ -119,7 +119,7 @@ fi
 eval "${_YT_DLP} ${(qqq)@}"
 
 if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
-	logit ${_YT_DBG_LOG} "Command line download URL:${@}"
+	logit ${_YT_DBG_LOG} "Command line download:${@}"
 	FN=$(last_file_downloaded | cut -d'|' -f1)
 	if [[ -e ${FN} ]];then
 		fsub -y -Y ${FN}
@@ -130,8 +130,9 @@ if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
 			fsub -y -p ${PREPEND} ${FN}
 		fi
 	fi
+	logit ${_YTS_URL_LOG} "CMDLINE download URL:${@} to ${FN:t}"
 else
-	logit ${_YT_DBG_LOG} "Executed by ${PPCMD} with command:${(qqq)@}"
+	logit ${_YT_DBG_LOG} "Executed by ${PPCMD} with command:${@}"
 fi
 
 exit_leave 

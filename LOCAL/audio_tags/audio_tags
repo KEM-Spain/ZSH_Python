@@ -23,8 +23,6 @@ typeset -A _EDIT_COORDS=()
 typeset -A _FLD_ORDER=(FILE 1 ARTIST 2 TITLE 3 ALBUM 4)
 
 # Imports
-
-# Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
@@ -33,6 +31,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Vars
 _GOT_DATA=false
+_MODIFIED=false
 
 # Functions
 dep_exists () {
@@ -93,12 +92,13 @@ tags_display () {
 	local -a LABELS=()
 	local BOX_X=14
 	local BOX_Y=50
+	local DATA
+	local FN_2_TITLE=''
 	local LBL
 	local MUSIC_DIR="/media/kmiller/KEM_Misc/Music/KEM-B9"
 	local NDX
 	local NEW_VAL
 	local VAL
-	local DATA
 	local F K X Y
 
 	for F in ${(on)_FILE_LIST};do
@@ -112,8 +112,16 @@ tags_display () {
 		if arr_is_populated "${TAG_DATA}";then
 			_GOT_DATA=true
 
+			# TODO: Carry these TITLE mods forward to write changes; set _MODIFIED flag
 			for K in ${(k)TAG_DATA};do
-				FIELDS[${_FLD_ORDER[${K}]}]="${K}:${TAG_DATA[${K}]}"
+				DATA=${TAG_DATA[${K}]}
+				[[ ${K} == "TITLE" ]] && DATA=${(C)DATA} # Proper case TITLE
+				FIELDS[${_FLD_ORDER[${K}]}]="${K}:${DATA}"
+				if [[ ${K} == "TITLE" && ${TAG_DATA[${K}]} == 'None' ]];then
+					FN_2_TITLE=${F:t:r}
+					FN_2_TITLE=$(perl -pe "s/^(\d+\s?[-]?)(.*)/\2/g" <<<${FN_2_TITLE})
+					FIELDS[${_FLD_ORDER[${K}]}]="${K}:${FN_2_TITLE}" # Swap file name for missing TITLE
+				fi
 			done
 
 			LABELS=("${(f)$(msg_list_data ${FIELDS})}")

@@ -1,4 +1,4 @@
-#comdef tut
+#compdef tut
 
 _tut() {
     local line state
@@ -60,4 +60,3 @@ _do_to_lower() {
 
 	_files -W ${PWD} ${0}
 }
-

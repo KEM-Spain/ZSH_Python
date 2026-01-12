@@ -1,0 +1,12 @@
+job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=3kMKAO_CLVQ"
+job_start: PID:1795881
+[youtube] Extracting URL: https://youtube.com/watch?v=3kMKAO_CLVQ
+[youtube] 3kMKAO_CLVQ: Downloading webpage
+[youtube] 3kMKAO_CLVQ: Downloading android sdkless player API JSON
+[youtube] 3kMKAO_CLVQ: Downloading web safari player API JSON
+WARNING: [youtube] 3kMKAO_CLVQ: Some web_safari client https formats have been skipped as they are missing a URL. YouTube is forcing SABR streaming for this client. See  https://github.com/yt-dlp/yt-dlp/issues/12482  for more details
+[youtube] 3kMKAO_CLVQ: Downloading m3u8 information
+WARNING: [youtube] 3kMKAO_CLVQ: Some web client https formats have been skipped as they are missing a URL. YouTube is forcing SABR streaming for this client. See  https://github.com/yt-dlp/yt-dlp/issues/12482  for more details
+[info] 3kMKAO_CLVQ: Downloading 1 format(s): 96-13
+[download] /home/kmiller/Downloads/Torrents/Library/web/blancolirio - Highline_Slackline_Kills_Four-_Tonto_NF_AZ_2_Jan_2026.mp4 has already been downloaded
+[download] 100% of   27.23MiB

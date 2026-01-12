@@ -30,24 +30,26 @@ source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A _CONT_COORDS=()
 typeset -A _ALERT_COORDS=()
-typeset -A _INFO_COORDS=()
+typeset -A _CONT_COORDS=()
 typeset -A _DOWNLOADS=()
 typeset -A _FAILED=()
 typeset -A _FAV_LIST=()
 typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
+typeset -A _INFO_COORDS=()
 typeset -A _PARTIALS=()
+typeset -A _QUERY_MAP=(l live g general u user c channel)
 typeset -A _QUERY_OPTS=()
 typeset -A _REJECTS=()
+typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _ACRONYMS=()
-typeset -aU _LOCAL_LIST=()
 typeset -a _QUERY_TYPES=(l c u g)
-typeset -A _QUERY_MAP=(l live g general u user c channel)
+typeset -a _RUMBLE_PAGE=()
+typeset -aU _LOCAL_LIST=()
 
 # Display Constants
 _CONT_COORDS=(X 10 Y $(center -h86) H 10 W 86) # Continuous box coords
@@ -504,14 +506,14 @@ download_select () {
 		[[ ${_QUERY_OPTS[STRICT]} == 'true' ]] && SEARCHTYPE="Strict (${_QUERY_OPTS[SMSG]} rejected)"
 	fi
 
- # Set headings
+	# Set headings
 	list_set_header_init
 	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${(C)_QUERY_OPTS[ENGINE]} ${(C)SEARCHTERM} ${(C)_QUERY_OPTS[TYPE]} $(list_get_selected_count)'
 	list_set_header 'printf " "'
 	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[age]} "Age" ${_FIELD_LEN[author]} "Author" ${_FIELD_LEN[title]} "Title"'
 	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[age]} "$(str_unicode_line ${_FIELD_LEN[age]})" ${_FIELD_LEN[author]} "$(str_unicode_line ${_FIELD_LEN[author]})" ${_FIELD_LEN[title]} "$(str_unicode_line ${_FIELD_LEN[title]})"'
 
- # Set line item
+	# Set line item
 	list_set_line_item ' 
 	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
 	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
@@ -1125,27 +1127,90 @@ post_process () {
 	set_final_fn ${FN}
 }
 
-query_rumble () {
-	local -A RUMBLE_MAP=("author" 1 "title" 2 "age" 3 "url" 4 "time" 5 "agetime" "3,5")
-	local -A TABLE_ROWS=()
-	local -a AGES=()
-	local -a AUTHORS=()
-	local -a DURATIONS=()
-	local -a LINKS=()
-	local -a NDX_OUT=()
-	local -a TITLES=()
-	local -a TMP=()
+parse_rumble () {
+	local PARSE_TYPE=${1}
+	local -A GENERAL=()
+	local -A NON_GENERAL=()
+	local -a HTML=()
+	local DATA=''
+	local LAST_ROW=0
+	local LINE=''
+	local NDX=0
+	local ROW=0
+	local TAB=''
+	local TAG=''
+	local TAGLINE=''
+	local TAG_ARRAY=''
 	local AGE AUTHOR TITLE URL TIME AGETIME
+	local K
+
+	[[ -z ${_RUMBLE_PAGE} ]] && return 1 # No data returned from query
+
+	NON_GENERAL[TITLES]='thumbnail__title attr{title}'
+	NON_GENERAL[LINKS]='title__link attr{href}'
+	NON_GENERAL[AGES]='videostream__time text{}'
+	NON_GENERAL[DURATIONS]='videostream__badge text{}'
+
+	GENERAL[AUTHORS]='ellipsis-1 text{}'
+	GENERAL[TITLES]='video-item--title text{}'
+	GENERAL[LINKS]='video-item--a attr{href}'
+	GENERAL[AGES]='video-item--time text{}'
+	GENERAL[DURATIONS]='video-item--duration attr{data-value}'
+
+	_LOCAL_LIST=()
+
+	if [[ ${PARSE_TYPE} == 'g' ]];then
+		TAG_ARRAY="GENERAL"
+		TAGLINE="\"video-item--img\""
+	else
+		TAG_ARRAY="NON_GENERAL"
+		TAGLINE="thumbnail__grid--item"
+	fi
+
+	ROW=0
+	while read LINE;do
+		HTML+=${LINE}
+		if [[ ${LINE} =~ ${TAGLINE} ]];then
+			for K in ${(k)${(P)TAG_ARRAY}};do
+				TAG=${${(P)TAG_ARRAY}[${K}]}
+				DATA=$(pup --charset utf8 ".${TAG}" <<<${HTML} | strip_unwanted)
+				#echo "${ROW} ${TAG} ${DATA}" >>row_data
+				if [[ ${ROW} -ne 0 && -n ${DATA} ]];then
+					_RUMBLE_ROWS[${ROW}_${K}]=${DATA}
+				fi
+			done
+			((ROW++))
+			HTML=()
+		fi
+	done <<<${_RUMBLE_PAGE}
+
+	LAST_ROW=1
+	for K in ${(onk)_RUMBLE_ROWS};do
+		ROW=$(cut -d'_' -f1 <<<${K})
+		TAB=$(cut -d'_' -f2 <<<${K})
+		case ${TAB} in
+			AGES) AGE=${_RUMBLE_ROWS[${K}]};;
+			AUTHORS) AUTHOR=${_RUMBLE_ROWS[${K}]};;
+			DURATIONS) TIME=${_RUMBLE_ROWS[${K}]};;
+			LINKS) URL="https://rumble.com${_RUMBLE_ROWS[${K}]}";;
+			TITLES) TITLE=${_RUMBLE_ROWS[${K}]};;
+		esac
+		if [[ ${ROW} != ${LAST_ROW} ]];then
+			[[ ${URL} =~ 'ucp_f' ]] && LAST_ROW=${ROW} && continue # Omit featured links
+			AGETIME="(${AGE} ${TIME})"
+			[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
+			_LOCAL_LIST[${ROW}]="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
+			#echo "${ROW} ${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}\n-------------------------------------------" >>row_data
+			AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE=''
+		fi
+		LAST_ROW=${ROW}
+	done
+}
+
+query_rumble () {
 	local GEN_SEARCH=''
-	local LAST_TAB=0
-	local MSG=''
-	local NDX=''
-	local PG=''
 	local QRY=''
 	local QRY_TYPE=''
-	local STR=''
-	local TAB_ERR=false
-	local L
 
 	QRY_TYPE=${_QUERY_MAP[${_QUERY_OPTS[EOPT]:l}]}
 	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "${0}:Invalid query type:${_QUERY_OPTS[EOPT]}" && return 1
@@ -1156,170 +1221,29 @@ query_rumble () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	# Queries
 	if [[ ${QRY_TYPE} == 'live' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 		QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}/livestreams"
-		PG=$(wget -q -O - ${QRY})
-
-		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
-		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
-		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
-		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 	elif [[ ${QRY_TYPE} == 'channel' ]];then
 		msg_box -c "Requesting <c><I>channel<N> search..."
 		QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}?page=1"
-		PG=$(wget -q -O - ${QRY})
-
-		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
-		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
-		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
-		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 	elif [[ ${QRY_TYPE} == 'general' ]];then
 		msg_box -c "Requesting <c><I>general<N> search..."
 		GEN_SEARCH=$(sed 's/ /%20/g' <<<${_QUERY_OPTS[QKEY]})
 		QRY="https://rumble.com/search/all?q=${GEN_SEARCH}&sort=date&section=sort"
-		PG=$(wget -q -O - ${QRY})
-
-		AUTHORS=("${(f)$(pup --charset utf8 '.ellipsis-1 text{}' <<< ${PG} | grep -vi 'verified')}")
-		TITLES=("${(f)$(pup --charset utf8 '.video-item--title text{}' <<< ${PG} | strip_space)}")
-		LINKS=("${(f)$(pup --charset utf8 '.video-item--a attr{href}' <<< ${PG})}")
-		AGES=("${(f)$(pup --charset utf8 '.video-item--time text{}' <<< ${PG} | strip_space)}")
-		DURATIONS=("${(f)$(pup --charset utf8 '.video-item--duration attr{data-value}' <<< ${PG})}")
+		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 	elif [[ ${QRY_TYPE} == 'user' ]];then
 		msg_box -c "Requesting <c><I>livestream user<N> search..."
-		GEN_SEARCH=$(sed 's/ /%20/g' <<<${_QUERY_OPTS[QKEY]})
 		QRY="https://rumble.com/user/${_QUERY_OPTS[QKEY]}/livestreams"
-		PG=$(wget -q -O - ${QRY})
-
-		TITLES=("${(f)$(pup --charset utf8 '.thumbnail__title attr{title}' <<< ${PG})}")
-		LINKS=("${(f)$(pup --charset utf8 '.title__link attr{href}' <<< ${PG})}")
-		AGES=("${(f)$(pup --charset utf8 '.videostream__time text{}' <<< ${PG} | strip_space)}")
-		DURATIONS=("${(f)$(pup --charset utf8 '.videostream__badge text{}' <<< ${PG} | strip_space | grep -E '[0-9].*')}")
+		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 	fi
 
-	# Return failed search status
-	if ! arr_is_populated "${LINKS}";then
-		return 1
-	fi
-
-	# Normalize tables
-	NDX=0
-	for L in ${(a)LINKS};do
-		((NDX++))
-		if [[ ${L} =~ 'ucp_f' ]] && NDX_OUT+=${NDX}  # Exclude featured links 
-	done
-
-	NDX=0
-	for L in ${(a)DURATIONS};do
-		((NDX++))
-		if [[ ! ${L} =~ ':' ]] && NDX_OUT+=${NDX} && # Exclude live broadcasts
-	done
-
-	NDX=0
-	for L in ${(a)DURATIONS};do
-		((NDX++))
-		[[ ${NDX_OUT[(i)${NDX}]} -le ${#NDX_OUT} ]] && continue
-		TMP+="${L}"
-	done
-	DURATIONS=(${TMP})
-	TMP=()
-
-	NDX=0
-	for L in ${(a)TITLES};do
-		((NDX++))
-		[[ ${NDX_OUT[(i)${NDX}]} -le ${#NDX_OUT} ]] && continue
-		TITLE=$(recode UTF8..ISO-8859-15 <<<${L:gs/|/#/} 2>/dev/null) # Convert UTF-8
-		TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE} 2>/dev/null) # Convert any HTML 
-		TMP+="${TITLE}"
-	done
-	TITLES=(${TMP})
-	TMP=()
-
-	NDX=0
-	for L in ${(a)LINKS};do
-		((NDX++))
-		[[ ${NDX_OUT[(i)${NDX}]} -le ${#NDX_OUT} ]] && continue
-		TMP+="${L}"
-	done
-	LINKS=(${TMP})
-	TMP=()
-
-	NDX=0
-	for L in ${(a)AGES};do
-		((NDX++))
-		[[ ${NDX_OUT[(i)${NDX}]} -le ${#NDX_OUT} ]] && continue
-		TMP+="${L}"
-	done
-	AGES=(${TMP})
-	TMP=()
-
-	TABLE_ROWS[DURATIONS]=${#DURATIONS}
-	TABLE_ROWS[TITLES]=${#TITLES}
-	TABLE_ROWS[LINKS]=${#LINKS}
-	TABLE_ROWS[AGES]=${#AGES}
-
-	# Marshall data
-	if [[ ${QRY_TYPE} == 'general' ]];then
-		NDX=0
-		for L in ${(a)AUTHORS};do
-			AUTHOR=$(recode UTF8..ISO-8859-15 <<<${L:gs/|/#/} 2>/dev/null) # Convert UTF-8
-			AUTHOR=$(html2text -width ${_MAX_COLS} -ascii <<<${AUTHOR} 2>/dev/null) # Convert any HTML 
-			((NDX++))
-			[[ ${NDX_OUT[(i)${NDX}]} -le ${#NDX_OUT} ]] && continue
-			TMP+="${AUTHOR}"
-		done
-		AUTHORS=(${TMP})
-		TMP=()
-		TABLE_ROWS[AUTHORS]=${#AUTHORS}
-
-		NDX=0
-		for L in ${TITLES};do
-			((NDX++))
-			TMP+="${AUTHORS[${NDX}]}|${TITLES[${NDX}]}|${AGES[${NDX}]}|${LINKS[${NDX}]}|${DURATIONS[${NDX}]}"
-		done
-	else
-		NDX=0
-		for L in ${TITLES};do
-			((NDX++))
-			TMP+="${(C)_QUERY_OPTS[DKEY]}|${TITLES[${NDX}]}|${AGES[${NDX}]}|${LINKS[${NDX}]}|${DURATIONS[${NDX}]}"
-		done
-	fi
-
-	# Sanity check
-	for L in ${(k)TABLE_ROWS};do
-		[[ ${LAST_TAB} -ne 0 && ${TABLE_ROWS[${L}]} -ne ${LAST_TAB} ]] && TAB_ERR=true
-		LAST_TAB="${TABLE_ROWS[${L}]}"
-	done
-
-	if [[ ${TAB_ERR} == 'false' ]];then
-		logit ${_YT_DBG_LOG} "Tables are balanced with ${LAST_TAB} rows"
-	else
-		for L in ${(k)TABLE_ROWS};do
-			logit ${_YT_DBG_LOG} "Table:${L} Rows:${TABLE_ROWS[${L}]}"
-		done
-	fi
-
-	# Build video listing
-	_LOCAL_LIST=()
-
-	for L in ${TMP};do
-		AGE=$(cut -d'|' -f${RUMBLE_MAP[age]} <<<${L})
-		AUTHOR=$(cut -d'|' -f${RUMBLE_MAP[author]} <<<${L})
-		TITLE=$(cut -d'|' -f${RUMBLE_MAP[title]} <<<${L})
-		URL=$(cut -d'|' -f${RUMBLE_MAP[url]} <<<${L}); URL="https://rumble.com${URL}"
-		TIME=$(cut -d'|' -f${RUMBLE_MAP[time]} <<<${L})
-		AGETIME=$(cut -d'|' -f${RUMBLE_MAP[agetime]} <<<${L});	AGETIME="(${AGETIME:s/|/ /})"
-		_LOCAL_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
-	done
-
-	AGES=()
-	AUTHORS=()
-	DURATIONS=()
-	LINKS=()
-	TITLES=()
-	TMP=()
-
-	return 0
+	[[ -n ${GEN_SEARCH} ]] && GEN_SEARCH='g'
+	parse_rumble ${GEN_SEARCH}
+	[[ ${?} -ne 0 ]] && return 1 || return 0
 }
 
 query_youtube () {
@@ -1506,11 +1430,19 @@ set_query_opts () {
 	_QUERY_OPTS[EOPT]=${ENG_OPT:l}
 }
 
-strip_space () {
+strip_unwanted () {
 	local LINE
 
-	while read LINE;do
-		tr -d '\011' | tr -s '\012' | sed '/^$/d' <<< ${LINE}
+	while read -r LINE;do
+		[[ -z ${LINE} ]] && continue
+		[[ ${LINE} =~ '^[Vv]erified$' ]] && continue
+		[[ ${LINE} =~ '^LIVE$' ]] && continue
+		LINE=$(tr -d '\011' <<< ${LINE})
+		LINE=$(tr -d '\012' <<< ${LINE})
+		LINE=$(sed 's/|/#/g' <<< ${LINE})
+		LINE=$(iconv -c -f UTF-8 -t ASCII <<<${LINE} 2>/dev/null) # Convert UTF-8
+		LINE=$(html2text -width 500 -ascii <<<${LINE} 2>/dev/null) # Convert any HTML 
+		str_trim <<< ${LINE}
 	done
 }
 
@@ -1749,8 +1681,6 @@ else # Args passed
 		_QUERY_OPTS[EOPT]=${QTYPE}
 	fi
 	query_${_QUERY_OPTS[ENGINE]}
-	# TODO: During testing a youtube query of 'maga' hangs during list display - unknown cause
-	# TODO: Needs more testing with command line args to youtube
 	if [[ ${?} -eq 0 ]];then # Inspect query status
 		download_select ${_QUERY_OPTS[QKEY]}
 		[[ ${g_CMDLINE_ARGS} == 'true' ]] && fav_add

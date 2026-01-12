@@ -53,31 +53,31 @@ typeset -aU _LOCAL_LIST=()
 
 # Display Constants
 _CONT_COORDS=(X 10 Y $(center -h86) H 10 W 86) # Continuous box coords
-_ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Error display coords
+_ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alert display coords
 _INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Info display coords
 
 # Constants
-_CFG_DIR=~/.local/share/yts
+#_CFG_DIR=~/.local/share/yts
+_CFG_DIR=./cfg
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _ACTION=download
 _ALERT_TM=.2
-_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _ERROR_LIMIT=5
-_ERROR_LOG=~/.local/share/yts/yts.err
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
 _FIELD_LEN[title]=80
 _JS_SCRIPT="/usr/local/etc/yts.js"
-_MAX_ERRORS=10
 _MAX_FLEN=85
 _MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
 _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
-_PAUSE_TM=4
+_PAUSE_TM=5
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _YTS_ACRONYMS=${_CFG_DIR}/yts.acronyms
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
+_YTS_ERROR_LOG=${_CFG_DIR}/yts.err.log
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
 _YTS_FAV_NEW=${_CFG_DIR}/yts.favorites.new
 _YTS_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
@@ -117,47 +117,28 @@ action_do () {
 	local DEST=''
 	local DEST_1=''
 	local DEST_2=''
+	local DEST_LINE=''
+	local DUP_LINE=''
 	local DL_CNT=0
-	local DL_MSG='Download is complete'
-	local EMSG=''
-	local ERR=''
-	local ERROR_CNT=0
 	local ETA=''
-	local ETA_COMPLETE=false
 	local FRAME_PAD=8
-	local HAD_ERROR=false
 	local HDR1_TXT=0
 	local HDR2_TXT=0
 	local HDRS_OUT=false
 	local HDR_LEN=0
 	local HRZ_CTR=0
-	local H_CTR=0
 	local INFO_TAG=''
-	local STALL_LIMIT=10
-	local KEY=''
-	local LAST_LOG_SIZE=0
-	local LAST_LOG_LINE=''
+	local LAST_MSG=''
 	local LINE_COLOR=''
-	local LOG_ACTIVE=false
 	local LOG_LINE=''
-	local LOG_SIZE=0
-	local LOG_STALLS=0
 	local MSG=''
 	local NDX=0
-	local OPENING=0
-	local OTH=''
-	local PID=0
 	local RETRIES=0
-	local RC1=0
-	local RC2=0
-	local SCAN_LIMIT=0
-	local SECTION=''
 	local SPEED=0
 	local TITLE=''
+	local TRANS_ERRORS=0
 	local URL=''
-	local REPEAT_CNT=0
-	local WAIT=0
-	local L M S X
+	local M
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -169,7 +150,6 @@ action_do () {
 		AUTHOR=$(get_field author ${M})
 		TITLE=$(get_field title ${M})
 		URL=$(get_field url ${M})
-		ERROR_CNT=0
 		RETRIES=0
 		HDRS_OUT=false
 
@@ -184,95 +164,106 @@ action_do () {
 
 		while true;do
 			((NDX++))
-			
-			# Ensure log activity
-			LOG_SIZE=$(wc -c < ${g_YTS_LOG} 2>/dev/null)
-			if [[ ${LOG_SIZE} -ne ${LAST_LOG_SIZE} ]];then
-				LOG_STALLS=0 # Log is growing
-				if [[ ${?} -eq 0 && ${HDRS_OUT} == 'false' ]];then
-					LOG_LINE=$(tail -1 ${g_YTS_LOG}) # Get most recent log line
-					logit ${_YT_DBG_LOG} "${0}:${LOG_LINE}"
-					if [[ ${LOG_LINE} =~ '^\[info\]' ]];then # Look for pre-processing
-						MSG=${LOG_LINE[1,56]}
-						[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>Pre-processing...${MSG}<N>"
-						LAST_LOG_LINE=${MSG}
+			LOG_LINE=$(tr '' '\n' < ${g_YTS_LOG} | tail -1 | str_trim) 2>/dev/null # Break into separate lines - get most recent
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${_YT_DBG_LOG} LOG_LINE:${LOG_LINE}"
+			if [[ ${HDRS_OUT} == 'false' ]];then 
+				if [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]|already been|100%|error' ]];then # Pre-processing triggers
+					if [[ ${LOG_LINE:l} =~ 'already been|100%' ]];then
+						DUP_LINE=$(grep -Ei 'already been' ${g_YTS_LOG}) # Capture duplicate msg - whole file grep
+						if [[ ${?} -eq 0 ]];then
+							logit ${_YT_DBG_LOG} "ALREADY DOWNLOADED"
+							MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${DUP_LINE})
+							msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<w>${MSG}<N>|<B>Has already been downloaded<N>"
+							_DOWNLOADS[${M}]=true
+							break
+						fi
+					elif [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]' ]];then # if already downloaded - HDRS_OUT will not have occurred - test early
+						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
+						if [[ ${MSG} != ${LAST_MSG} ]];then
+							logit ${_YT_DBG_LOG} "PRE-PROCESSING"
+							msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>${MSG}<N>"
+						fi
+						LAST_MSG=${MSG}
 						continue
-					elif [[ ${LOG_LINE} =~ 'sleeping' ]];then # Look for pre-processing
-						MSG=${LOG_LINE[1,56]}
-						[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>Pre-processing...${MSG}<N>"
-						LAST_LOG_LINE=${MSG}
-						continue
-					elif [[ ${LOG_LINE:l} =~ 'error' ]];then # Look for errors
-						logit ${_YT_DBG_LOG} "${0}:${LOG_LINE}"
-						if [[ ${LOG_LINE:l} =~ 'will begin|premieres|upcoming' ]];then
-							[[ ! ${LOG_LINE} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
-							MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
-							_FUTURE[${M}]=true
+					elif [[ ${LOG_LINE:l} =~ 'error' ]];then # # detect pre-download errors
+						MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture any pre-download errors - whole file grep
+						if [[ ${?} -eq 0 ]];then
+							msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
+							logit ${_YT_DBG_LOG} "ERROR"
+							logit ${_YTS_ERROR_LOG} "${MSG}"
+							_FAILED[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
-						elif [[ ${LOG_LINE:l} =~ 'unable to download' ]];then
-							MSG="<w>${TITLE[1,56]}<N>|<r>Transmission error<N>:${LOG_LINE}"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+						fi
+					fi
+				else
+					MSG=$(grep -Ei -m1 'will begin|premieres|upcoming' ${g_YTS_LOG}) # Capture any future msgs - whole file grep
+					if [[ ${?} -eq 0 ]];then
+						logit ${_YT_DBG_LOG} "FUTURE"
+						[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
+						MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
+						[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+						_FUTURE[${M}]=true
+						_DOWNLOADS[${M}]=false
+						break
+					else
+						DEST_LINE=$(grep -Ei 'destination' ${g_YTS_LOG}) # Capture destination - whole file grep
+						if [[ ${?} -eq 0 ]];then
+							logit ${_YT_DBG_LOG} "HEADER"
+							DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Strip path
+							DEST_1=$(cut -d'|' -f1 <<<${DEST})
+							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
+							HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
+							HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
+							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
+							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
+							HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
+							HRZ_CTR=$(center -h${HDR_LEN}) # Horiz center
+							[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
+							msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
+							msg_box -C -jl ${HDR2_TXT}
+							msg_box -C -jl "<c>$(str_unicode_line $(( _CONT_COORDS[W] - 2 )))<N>" # Divider line
+							HDRS_OUT=true
+							continue
+						fi
+					fi
+				fi
+			else # HDRS_OUT == true
+				if [[ ${LOG_LINE} =~ 'ETA' ]];then
+					SPEED=$(get_speed ${LOG_LINE}) && download_indicator ${SPEED}
+					ETA=${LOG_LINE}
+					case ${LOG_LINE:l} in
+						*100*%) LINE_COLOR='<B><g>';;
+						*mib/s*) LINE_COLOR='<w>';;
+						*kib/s*) LINE_COLOR='<B><y>';;
+					esac
+					msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
+					continue
+				elif [[ ${LOG_LINE:l} =~ 'fixing mpeg-ts|fixupm3u8' ]];then # Post-processing
+					logit ${_YT_DBG_LOG} "COMPLETED"
+					msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
+					_DOWNLOADS[${M}]=true
+					post_process
+					log_add ${M}
+					break
+				else
+					MSG=$(grep -Ei -m1 'error' <<<$(tac ${g_YTS_LOG})) # Capture last error
+					if [[ ${?} -eq 0 ]];then
+						TRANS_ERRORS=$(grep -w -c 'error' ${g_YTS_LOG})
+						msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
+						logit ${_YT_DBG_LOG} "ERROR"
+						logit ${_YTS_ERROR_LOG} "${MSG}"
+						if [[ ${TRANS_ERRORS} -ge ${_ERROR_LIMIT} ]];then
+							_FAILED[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
 						else
-							MSG="<r>Got undefined error<N>:${LOG_LINE[1,56]}"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+							continue
 						fi
-						LAST_LOG_LINE=${MSG}
-						continue
-					else # Pre-processing complete
-						LOG_LINE=$(grep --color=never -Ei 'destination:' ${g_YTS_LOG}) # Get destination
 					fi
-				else # Transfer info
-					LOG_LINE=$(tr '' '\n' < ${g_YTS_LOG} | tail -1 | str_trim) 2>/dev/null # Break into separate lines - get most recent
-					logit ${_YT_DBG_LOG} "${0}:${LOG_LINE}"
 				fi
-			else
-				((LOG_STALLS++))
-				if [[ ${LOG_STALLS} -ge ${STALL_LIMIT} ]];then
-					msg_box -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>No Log Activity - Exiting<N>"
-					exit_leave "No log activity"
-				fi
-				LAST_LOG_SIZE=${LOG_SIZE}
 			fi
-
-			# Process log line
-			if [[ ${LOG_LINE:l} =~ 'destination:' ]];then
-				DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${LOG_LINE})}") # Strip path
-				DEST_1=$(cut -d'|' -f1 <<<${DEST})
-				DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
-				HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
-				HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
-				HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
-				HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
-				HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
-				HRZ_CTR=$(center -h${HDR_LEN}) # Horiz center
-				[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
-				msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
-				msg_box -C -jl ${HDR2_TXT}
-				msg_box -C -jl "<c>$(str_unicode_line $(( _CONT_COORDS[W] - 2 )))<N>" # Divider line
-				HDRS_OUT=true
-			elif [[ ${LOG_LINE} =~ 'ETA' ]];then
-				SPEED=$(get_speed ${LOG_LINE}) && download_indicator ${SPEED}
-				ETA_COMPLETE=false
-				ETA=${LOG_LINE}
-				case ${LOG_LINE:l} in
-					*100%*) LINE_COLOR='<B><g>';ETA_COMPLETE=true;logit ${_YT_DBG_LOG} "HIT 100%";;
-					*mib/s*) LINE_COLOR='<w>';;
-					*kib/s*) LINE_COLOR='<B><y>';;
-				esac
-				msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>" # Show progress
-			elif [[ ${ETA_COMPLETE} == 'true' || ${LOG_LINE:l} =~ 'fixing mpeg-ts|fixupm3u8' ]];then
-				logit ${_YT_DBG_LOG} "COMPLETED MSG"
-				msg_box -C -jl "<B><g>${DL_MSG}<N>" # Show completed message
-				_DOWNLOADS[${M}]=true
-				post_process
-				log_add ${M}
-				break
-			fi
-			sleep .5 # Log fetch delay
+			sleep .3 # Log fetch delay
 		done
 		NDX=0
 		log_clear "action_do"
@@ -280,11 +271,7 @@ action_do () {
 	done # List complete
 
 	for M in ${_MARKED};do
-		if [[ ${_DOWNLOADS[${M}]} == 'true' ]];then
-			list_set_selected ${M} ${_STALE_ROW}
-		else
-			list_set_selected ${M} ${_AVAIL_ROW}
-		fi
+		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
 	done
 
 	_MARKED=()
@@ -397,7 +384,7 @@ clean_title () {
 
 	TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
 
-	logit ${_YT_DBG_LOG} "${0}: CLEAN:${TITLE} length:${_MAX_TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: RET:${TITLE} length:${_MAX_TITLE}"
 
 	echo ${TITLE}
 }
@@ -801,7 +788,7 @@ item_decorate () {
 	local NDX=${1}
 	local STR
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
 
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."
@@ -814,6 +801,8 @@ item_decorate () {
 	else
 		STR=${$(get_field agetime ${NDX})[1,${_FIELD_LEN[agetime]}]}
 	fi
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: STR:${STR}"
 
 	echo -n ${STR}
 }
@@ -858,16 +847,17 @@ job_start () {
 
 	g_YTS_LOG=$(mktemp ${_CFG_DIR}/yt.log.XXXXXX)
 
-	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title)s.%(ext)s' ${(qqq)URL}" # Routine download
+	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL}" # Routine download - limit title len
 
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
 	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
 
-	logit ${_YT_DBG_LOG} "${0}: QUERY KEY:${_QUERY_OPTS[QKEY]}"
-	logit ${_YT_DBG_LOG} "${0}:       CMD:${CMD}"
-
-	eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
+	#eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
+	log_gen ${_CFG_DIR}/yt.log.already >> ${g_YTS_LOG}
 	g_PID=$!
+
+	logit ${_YT_DBG_LOG} "${0}: QUERY KEY:${_QUERY_OPTS[QKEY]}"
+	logit ${_YT_DBG_LOG} "${0}: CMD:${CMD} PID:${g_PID}"
 
 	echo "${0}: PID:${g_PID}" >> ${g_YTS_LOG} # Log pid
 
@@ -968,7 +958,6 @@ log_find () {
 	_PARTIALS=()
 
 	[[ ${DBG} == 'true' ]] && /bin/rm -f ${0}.dbg
-
 
 	for ((R=${TOP}; R <= ${BOT}; R++));do
 		LINE_NUM=''
@@ -1165,24 +1154,25 @@ parse_rumble () {
 		TAGLINE="thumbnail__grid--item"
 	fi
 
-	ROW=0
+	ROW=-1
 	while read LINE;do
 		HTML+=${LINE}
 		if [[ ${LINE} =~ ${TAGLINE} ]];then
+			((ROW++))
+			[[ ${ROW} -eq 0 ]] && continue
 			for K in ${(k)${(P)TAG_ARRAY}};do
 				TAG=${${(P)TAG_ARRAY}[${K}]}
 				DATA=$(pup --charset utf8 ".${TAG}" <<<${HTML} | strip_unwanted)
-				#echo "${ROW} ${TAG} ${DATA}" >>row_data
-				if [[ ${ROW} -ne 0 && -n ${DATA} ]];then
-					_RUMBLE_ROWS[${ROW}_${K}]=${DATA}
-				fi
+				_RUMBLE_ROWS[${ROW}_${K}]=${DATA}
 			done
-			((ROW++))
 			HTML=()
 		fi
 	done <<<${_RUMBLE_PAGE}
 
-	LAST_ROW=1
+
+	LAST_ROW=0
+	NDX=0
+	_LOCAL_LIST=()
 	for K in ${(onk)_RUMBLE_ROWS};do
 		ROW=$(cut -d'_' -f1 <<<${K})
 		TAB=$(cut -d'_' -f2 <<<${K})
@@ -1193,15 +1183,21 @@ parse_rumble () {
 			LINKS) URL="https://rumble.com${_RUMBLE_ROWS[${K}]}";;
 			TITLES) TITLE=${_RUMBLE_ROWS[${K}]};;
 		esac
-		if [[ ${ROW} != ${LAST_ROW} ]];then
-			[[ ${URL} =~ 'ucp_f' ]] && LAST_ROW=${ROW} && continue # Omit featured links
-			AGETIME="(${AGE} ${TIME})"
-			[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
-			_LOCAL_LIST[${ROW}]="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
-			#echo "${ROW} ${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}\n-------------------------------------------" >>row_data
-			AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE=''
+		# TODO: Keep an eye on AGETIME - had a query that was whacky row order
+		if [[ -n ${AGE} && -n ${TITLE} && -n ${URL} && ${TIME} ]];then # All fields populated
+			if [[ ${ROW} != ${LAST_ROW} ]];then
+				[[ ${URL} =~ 'ucp_f' ]] && LAST_ROW=${ROW} && continue # Omit featured links 
+				# TODO: src_v1_mfp may need omission - investigate
+				[[ ! ${TIME} =~ ':' ]] && LAST_ROW=${ROW} && continue # Omit LIVE broadcasts
+				AGETIME="(${AGE} ${TIME})"
+				[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
+				((NDX++))
+				_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
+				#echo "${0}: ${NDX}\nAGE:${AGE}\nAUTHOR:${AUTHOR}\nTITLE:${TITLE}\nURL:${URL}\nTIME:${TIME}\nAGETIME:${AGETIME}\n-------------------------------------------" >>row_data
+				AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE='' && AGETIME='' 
+			fi
+			LAST_ROW=${ROW}
 		fi
-		LAST_ROW=${ROW}
 	done
 }
 
@@ -1354,7 +1350,7 @@ set_final_fn () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
 
-	[[ -e ${_ERROR_LOG} ]] && /bin/rm -f ${_ERROR_LOG}
+	[[ -e ${_YTS_ERROR_LOG} ]] && /bin/rm -f ${_YTS_ERROR_LOG}
 
 	logit ${_YT_DBG_LOG} "${0}: ARG:${FN}"
 
@@ -1370,8 +1366,8 @@ set_final_fn () {
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
 		logit ${_YT_DBG_LOG} "${0}: Overwriting file:${FN:t} with:${NEW_FN:t}"
-		mv -f "${FN}" "${NEW_FN}" 2>> ${_ERROR_LOG} # Write any changes
-		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_ERROR_LOG}
+		mv -f "${FN}" "${NEW_FN}" 2>> ${_YTS_ERROR_LOG} # Write any changes
+		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_YTS_ERROR_LOG}
 	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
@@ -1430,7 +1426,6 @@ set_query_opts () {
 
 strip_unwanted () {
 	local LINE
-
 	while read -r LINE;do
 		[[ -z ${LINE} ]] && continue
 		[[ ${LINE} =~ '^[Vv]erified$' ]] && continue

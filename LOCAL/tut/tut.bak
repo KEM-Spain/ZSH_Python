@@ -104,7 +104,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -141,7 +141,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -179,7 +179,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -219,7 +219,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
+		echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 		exit_leave
 	}
 
@@ -289,7 +289,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
+	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
 	exit_leave
 }
 
@@ -309,8 +309,8 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
-# Execution
 
+# Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
 [[ ${UTIL} != 'none' && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "UTIL:${UTIL} not found"
