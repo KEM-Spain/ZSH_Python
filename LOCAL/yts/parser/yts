@@ -57,8 +57,7 @@ _ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS
 _INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Info display coords
 
 # Constants
-#_CFG_DIR=~/.local/share/yts
-_CFG_DIR=./cfg
+_CFG_DIR=~/.local/share/yts
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _ACTION=download
 _ALERT_TM=.2
@@ -164,8 +163,12 @@ action_do () {
 
 		while true;do
 			((NDX++))
-			LOG_LINE=$(tr '' '\n' < ${g_YTS_LOG} | tail -1 | str_trim) 2>/dev/null # Break into separate lines - get most recent
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${_YT_DBG_LOG} LOG_LINE:${LOG_LINE}"
+
+			LOG_LINE=$(tail -1 ${g_YTS_LOG})
+			if grep -Eq '' <<<${LOG_LINE};then
+				LOG_LINE=$(sed "s//\n/g" <<<${LOG_LINE} | tail -1 | str_trim) 2>/dev/null # Break into lines - get most recent
+			fi
+
 			if [[ ${HDRS_OUT} == 'false' ]];then 
 				if [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]|already been|100%|error' ]];then # Pre-processing triggers
 					if [[ ${LOG_LINE:l} =~ 'already been|100%' ]];then
@@ -177,7 +180,7 @@ action_do () {
 							_DOWNLOADS[${M}]=true
 							break
 						fi
-					elif [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]' ]];then # if already downloaded - HDRS_OUT will not have occurred - test early
+					elif [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]' ]];then # Pre-processing messages
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						if [[ ${MSG} != ${LAST_MSG} ]];then
 							logit ${_YT_DBG_LOG} "PRE-PROCESSING"
@@ -185,47 +188,47 @@ action_do () {
 						fi
 						LAST_MSG=${MSG}
 						continue
-					elif [[ ${LOG_LINE:l} =~ 'error' ]];then # # detect pre-download errors
-						MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture any pre-download errors - whole file grep
+					else
+						MSG=$(grep -Ei -m1 'will begin|premieres|upcoming' ${g_YTS_LOG}) # Capture future msgs (technically an error) - whole file grep
 						if [[ ${?} -eq 0 ]];then
-							msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
-							logit ${_YT_DBG_LOG} "ERROR"
-							logit ${_YTS_ERROR_LOG} "${MSG}"
-							_FAILED[${M}]=true
+							logit ${_YT_DBG_LOG} "FUTURE"
+							[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
+							MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
+							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+							_FUTURE[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
+						elif [[ ${LOG_LINE:l} =~ 'error' ]];then # Detect pre-download errors
+							MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture msg - whole file grep
+							if [[ ${?} -eq 0 ]];then
+								msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
+								logit ${_YT_DBG_LOG} "ERROR"
+								logit ${_YTS_ERROR_LOG} "${MSG}"
+								_FAILED[${M}]=true
+								_DOWNLOADS[${M}]=false
+								break
+							fi
 						fi
 					fi
 				else
-					MSG=$(grep -Ei -m1 'will begin|premieres|upcoming' ${g_YTS_LOG}) # Capture any future msgs - whole file grep
+					DEST_LINE=$(grep -Ei 'destination' ${g_YTS_LOG}) # Capture destination - whole file grep
 					if [[ ${?} -eq 0 ]];then
-						logit ${_YT_DBG_LOG} "FUTURE"
-						[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
-						MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-						[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
-						_FUTURE[${M}]=true
-						_DOWNLOADS[${M}]=false
-						break
-					else
-						DEST_LINE=$(grep -Ei 'destination' ${g_YTS_LOG}) # Capture destination - whole file grep
-						if [[ ${?} -eq 0 ]];then
-							logit ${_YT_DBG_LOG} "HEADER"
-							DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Strip path
-							DEST_1=$(cut -d'|' -f1 <<<${DEST})
-							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
-							HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
-							HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
-							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
-							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
-							HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
-							HRZ_CTR=$(center -h${HDR_LEN}) # Horiz center
-							[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
-							msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
-							msg_box -C -jl ${HDR2_TXT}
-							msg_box -C -jl "<c>$(str_unicode_line $(( _CONT_COORDS[W] - 2 )))<N>" # Divider line
-							HDRS_OUT=true
-							continue
-						fi
+						logit ${_YT_DBG_LOG} "HEADER"
+						DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Strip path
+						DEST_1=$(cut -d'|' -f1 <<<${DEST})
+						DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
+						HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
+						HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
+						HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
+						HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
+						HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
+						HRZ_CTR=$(center -h${HDR_LEN}) # Horiz center
+						[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
+						msg_box -c -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
+						msg_box -C -jl ${HDR2_TXT}
+						msg_box -C -jl "<c>$(str_unicode_line $(( _CONT_COORDS[W] - 2 )))<N>" # Divider line
+						HDRS_OUT=true
+						continue
 					fi
 				fi
 			else # HDRS_OUT == true
@@ -247,7 +250,7 @@ action_do () {
 					log_add ${M}
 					break
 				else
-					MSG=$(grep -Ei -m1 'error' <<<$(tac ${g_YTS_LOG})) # Capture last error
+					MSG=$(grep -Ei -m1 'error' <<<$(tac ${g_YTS_LOG})) # Capture last tranmission error
 					if [[ ${?} -eq 0 ]];then
 						TRANS_ERRORS=$(grep -w -c 'error' ${g_YTS_LOG})
 						msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
@@ -852,8 +855,7 @@ job_start () {
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
 	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
 
-	#eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
-	log_gen ${_CFG_DIR}/yt.log.already >> ${g_YTS_LOG}
+	eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
 	g_PID=$!
 
 	logit ${_YT_DBG_LOG} "${0}: QUERY KEY:${_QUERY_OPTS[QKEY]}"

@@ -1,7 +1,0 @@
-job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=AVhJpCqNECg"
-job_start: PID:892421
-[youtube] Extracting URL: https://youtube.com/watch?v=AVhJpCqNECg
-[youtube] AVhJpCqNECg: Downloading webpage
-[youtube] AVhJpCqNECg: Downloading android sdkless player API JSON
-[youtube] AVhJpCqNECg: Downloading web safari player API JSON
-ERROR: [youtube] AVhJpCqNECg: This live event will begin in 102 minutes.

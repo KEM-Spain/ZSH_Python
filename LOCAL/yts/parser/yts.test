@@ -57,7 +57,8 @@ _ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS
 _INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Info display coords
 
 # Constants
-_CFG_DIR=~/.local/share/yts
+#_CFG_DIR=~/.local/share/yts
+_CFG_DIR=./cfg
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _ACTION=download
 _ALERT_TM=.2
@@ -163,12 +164,7 @@ action_do () {
 
 		while true;do
 			((NDX++))
-
-			LOG_LINE=$(tail -1 ${g_YTS_LOG})
-			if grep -Eq '' <<<${LOG_LINE};then
-				LOG_LINE=$(sed "s//\n/g" <<<${LOG_LINE} | tail -1 | str_trim) 2>/dev/null # Break into lines - get most recent
-			fi
-
+			LOG_LINE=$(tr '' '\n' < ${g_YTS_LOG} | tail -1 | str_trim) 2>/dev/null # Break into separate lines - get most recent
 			if [[ ${HDRS_OUT} == 'false' ]];then 
 				if [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]|already been|100%|error' ]];then # Pre-processing triggers
 					if [[ ${LOG_LINE:l} =~ 'already been|100%' ]];then
@@ -180,7 +176,7 @@ action_do () {
 							_DOWNLOADS[${M}]=true
 							break
 						fi
-					elif [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]' ]];then # Pre-processing messages
+					elif [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]' ]];then # if already downloaded - HDRS_OUT will not have occurred - test early
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						if [[ ${MSG} != ${LAST_MSG} ]];then
 							logit ${_YT_DBG_LOG} "PRE-PROCESSING"
@@ -189,7 +185,7 @@ action_do () {
 						LAST_MSG=${MSG}
 						continue
 					else
-						MSG=$(grep -Ei -m1 'will begin|premieres|upcoming' ${g_YTS_LOG}) # Capture future msgs (technically an error) - whole file grep
+						MSG=$(grep -Ei -m1 'will begin|premieres|upcoming' ${g_YTS_LOG}) # Capture any future msgs (technically an error) - whole file grep
 						if [[ ${?} -eq 0 ]];then
 							logit ${_YT_DBG_LOG} "FUTURE"
 							[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
@@ -198,8 +194,8 @@ action_do () {
 							_FUTURE[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
-						elif [[ ${LOG_LINE:l} =~ 'error' ]];then # Detect pre-download errors
-							MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture msg - whole file grep
+						elif [[ ${LOG_LINE:l} =~ 'error' ]];then # # detect pre-download errors
+							MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture any pre-download errors - whole file grep
 							if [[ ${?} -eq 0 ]];then
 								msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
 								logit ${_YT_DBG_LOG} "ERROR"
@@ -250,7 +246,7 @@ action_do () {
 					log_add ${M}
 					break
 				else
-					MSG=$(grep -Ei -m1 'error' <<<$(tac ${g_YTS_LOG})) # Capture last tranmission error
+					MSG=$(grep -Ei -m1 'error' <<<$(tac ${g_YTS_LOG})) # Capture last error
 					if [[ ${?} -eq 0 ]];then
 						TRANS_ERRORS=$(grep -w -c 'error' ${g_YTS_LOG})
 						msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
@@ -855,7 +851,8 @@ job_start () {
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
 	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
 
-	eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
+	#eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
+	log_gen ${_CFG_DIR}/yt.log.already >> ${g_YTS_LOG}
 	g_PID=$!
 
 	logit ${_YT_DBG_LOG} "${0}: QUERY KEY:${_QUERY_OPTS[QKEY]}"
@@ -1127,7 +1124,6 @@ parse_rumble () {
 	local LAST_ROW=0
 	local LINE=''
 	local NDX=0
-	local OMIT_NDX=0
 	local ROW=0
 	local TAB=''
 	local TAG=''
@@ -1148,8 +1144,6 @@ parse_rumble () {
 	GENERAL[LINKS]='video-item--a attr{href}'
 	GENERAL[AGES]='video-item--time text{}'
 	GENERAL[DURATIONS]='video-item--duration attr{data-value}'
-
-	logit ${_YT_DBG_LOG} "${0}:Parsing listing for:${_QUERY_OPTS[QKEY]}"
 
 	if [[ ${PARSE_TYPE} == 'g' ]];then
 		TAG_ARRAY="GENERAL"
@@ -1174,6 +1168,7 @@ parse_rumble () {
 		fi
 	done <<<${_RUMBLE_PAGE}
 
+
 	LAST_ROW=0
 	NDX=0
 	_LOCAL_LIST=()
@@ -1187,18 +1182,17 @@ parse_rumble () {
 			LINKS) URL="https://rumble.com${_RUMBLE_ROWS[${K}]}";;
 			TITLES) TITLE=${_RUMBLE_ROWS[${K}]};;
 		esac
+		# TODO: Keep an eye on AGETIME - had a query that was whacky row order
 		if [[ -n ${AGE} && -n ${TITLE} && -n ${URL} && ${TIME} ]];then # All fields populated
 			if [[ ${ROW} != ${LAST_ROW} ]];then
+				[[ ${URL} =~ 'ucp_f' ]] && LAST_ROW=${ROW} && continue # Omit featured links 
 				# TODO: src_v1_mfp may need omission - investigate
-				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "Omitting NDX:${ROW} - URL - ucp_f"
-				[[ ! ${TIME} =~ ':' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "Omitting NDX:${ROW} - TIME no colon"
+				[[ ! ${TIME} =~ ':' ]] && LAST_ROW=${ROW} && continue # Omit LIVE broadcasts
 				AGETIME="(${AGE} ${TIME})"
 				[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
-				if [[ ${ROW} -ne ${OMIT_NDX} ]];then
-					((NDX++))
-					_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
-					OMIT_NDX=0
-				fi
+				((NDX++))
+				_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
+				#echo "${0}: ${NDX}\nAGE:${AGE}\nAUTHOR:${AUTHOR}\nTITLE:${TITLE}\nURL:${URL}\nTIME:${TIME}\nAGETIME:${AGETIME}\n-------------------------------------------" >>row_data
 				AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE='' && AGETIME='' 
 			fi
 			LAST_ROW=${ROW}
@@ -1219,8 +1213,6 @@ query_rumble () {
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	logit ${_YT_DBG_LOG} "${0}:Creating listing for KEY:${_QUERY_OPTS[QKEY]} Type:${QRY_TYPE}"
 
 	# Queries
 	if [[ ${QRY_TYPE} == 'live' ]];then
@@ -1261,8 +1253,6 @@ query_youtube () {
 
 	ping -w1 www.youtube.com >/dev/null
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
-
-	logit ${_YT_DBG_LOG} "${0}:Creating listing for KEY:${_QUERY_OPTS[QKEY]} Strict:${_QUERY_OPTS[STRICT]}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 

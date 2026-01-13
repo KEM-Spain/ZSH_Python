@@ -23,16 +23,16 @@ source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
-CFG=~/Code/LOCAL/yts/parser/cfg
-
-[[ -n ${1} ]] && LOG_IN=${CFG}/${1} || (echo "Need LOG_IN" && exit)
+[[ -n ${1} ]] && LOG_IN=${1} || (echo "Need LOG_IN" && exit)
 [[ -n ${2} ]] && LOG_OUT=${2} || (echo "Need LOG_OUT" && exit)
 
-[[ ! -e ${LOG_IN} ]] && "LOG_IN:${LOG_IN} not found" && exit
-[[ -e ${LOG_OUT} ]] && /bin/rm -f ${LOG_OUT}
+log_gen ${LOG_IN} ${LOG_OUT} &
 
-while read LINE;do
-	echo ${LINE} >> ${LOG_OUT}
-done < ${LOG_IN}
-
-#[[ -e ${LOG_OUT} ]] && /bin/rm -f ${LOG_OUT}
+NDX=0
+while read -u3 -r LINE;do
+	if grep -Eq '' <<<${LINE};then
+		sed "s//\n/g" <<<${LINE} | tail -1
+	else
+		echo "2:${LINE}"
+	fi
+done 3< ${LOG_OUT}
