@@ -1149,6 +1149,8 @@ parse_rumble () {
 	GENERAL[AGES]='video-item--time text{}'
 	GENERAL[DURATIONS]='video-item--duration attr{data-value}'
 
+	logit ${_YT_DBG_LOG} "${0}:Parsing listing for:${_QUERY_OPTS[QKEY]}"
+
 	if [[ ${PARSE_TYPE} == 'g' ]];then
 		TAG_ARRAY="GENERAL"
 		TAGLINE="\"video-item--img\""
@@ -1188,7 +1190,7 @@ parse_rumble () {
 		if [[ -n ${AGE} && -n ${TITLE} && -n ${URL} && ${TIME} ]];then # All fields populated
 			if [[ ${ROW} != ${LAST_ROW} ]];then
 				# TODO: src_v1_mfp may need omission - investigate
-				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "Omitting NDX:${ROW} - ucp_f"
+				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "Omitting NDX:${ROW} - URL - ucp_f"
 				[[ ! ${TIME} =~ ':' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "Omitting NDX:${ROW} - TIME no colon"
 				AGETIME="(${AGE} ${TIME})"
 				[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
@@ -1217,6 +1219,8 @@ query_rumble () {
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	logit ${_YT_DBG_LOG} "${0}:Creating listing for KEY:${_QUERY_OPTS[QKEY]} Type:${QRY_TYPE}"
 
 	# Queries
 	if [[ ${QRY_TYPE} == 'live' ]];then
@@ -1257,6 +1261,8 @@ query_youtube () {
 
 	ping -w1 www.youtube.com >/dev/null
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
+
+	logit ${_YT_DBG_LOG} "${0}:Creating listing for KEY:${_QUERY_OPTS[QKEY]} Strict:${_QUERY_OPTS[STRICT]}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 

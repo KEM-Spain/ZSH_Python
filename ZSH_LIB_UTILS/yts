@@ -164,9 +164,9 @@ action_do () {
 		while true;do
 			((NDX++))
 
-			LOG_LINE=$(tail -1 ${g_YTS_LOG})
-			if grep -Eq '' <<<${LOG_LINE};then
-				LOG_LINE=$(sed "s//\n/g" <<<${LOG_LINE} | tail -1 | str_trim) 2>/dev/null # Break into lines - get most recent
+			LOG_LINE=$(tail -1 ${g_YTS_LOG}) # Get last log line
+			if grep -Eq '' <<<${LOG_LINE};then # Progress delimited by linefeeds
+				LOG_LINE=$(sed "s//\n/g" <<<${LOG_LINE} | tail -1 | str_trim) 2>/dev/null # Convert linefeeds to newlines - get last trimmed
 			fi
 
 			if [[ ${HDRS_OUT} == 'false' ]];then 
