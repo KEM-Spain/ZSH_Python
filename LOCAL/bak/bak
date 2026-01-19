@@ -77,9 +77,7 @@ get_prod_dir () {
 
 is_lib () {
 	local FN=${@}
-	set -xv
 	local LIB=$(find ${_LIB_DIR} -type f -name ${FN})
-	set +xv;read
 	
 	[[ -n ${LIB} ]] && return 0 || return 1
 }
@@ -251,6 +249,8 @@ local_to_prod () {
 	local NEWEST
 
 	echo "RELEASE"
+	[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
+
 	if [[ ${g_IS_INITIAL_PRODUCTION} == 'false' ]];then
 		# Existing production copy
 
@@ -289,7 +289,6 @@ local_to_prod () {
 			exit_leave $(msg_warn "Operation cancelled")
 		fi
 	fi
-	[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
 }
 
 set_messages () {
@@ -438,7 +437,8 @@ usage () {
 	echo -e "${WHITE_FG}\nDESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(err_msg_exit E ${PENDING_MSGS})
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS

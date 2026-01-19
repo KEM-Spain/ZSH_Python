@@ -325,6 +325,8 @@ Change the delimiter using the -d option.
 ${E_MAGENTA_FG}STRINGS${E_RESET}
 ${E_WHITE_FG}=======${E_RESET}
 ${E_WHITE_FG}LENGTH${E_RESET}
+Test string using ANSI quoting: [[ \${RESPONSE} == $'\n' ]] ...
+
 Get the length of a string with #. This is similar to string length in fish.
 
 str="abcdefghijklmnopqrstuvwxyz"

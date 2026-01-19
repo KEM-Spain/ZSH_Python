@@ -112,7 +112,7 @@ do_match () {
 	local RC
 
 	[[ ${WORD} == "true" ]] && OPTS="w" || OPTS=""
-	[[ ${CASE} == "true" ]] && OPTS+="qP" || OPTS+="qiP"
+	[[ ${CASE} == "true" || ${EXACT} == 'true' ]] && OPTS+="qP" || OPTS+="qiP"
 
 	grep -${OPTS} "${REGEX}" <<<${STR}
 	RC=$?
@@ -140,7 +140,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -179,7 +179,7 @@ usage () {
 	echo -e "${WHITE_FG}-e${RESET} output command text"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-x${RESET} exact match"
-	echo -e "${WHITE_FG}-q${RESET} quiet"
+	echo -e "${WHITE_FG}-n${RESET} no prompting"
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
@@ -187,11 +187,11 @@ usage () {
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDaceIqx"
+OPTSTR=":HDaceInx"
 OPTIND=0
 
 EXACT=false
-QUIET=false
+NO_WAIT=false
 MATCH_MODE=both
 OUTPUT_CMD_ONLY=false
 CASE=false
@@ -205,7 +205,7 @@ while getopts ${OPTSTR} OPTION;do
      a) MATCH_MODE=alias;;
      c) MATCH_MODE=cmd;;
      e) OUTPUT_CMD_ONLY=true;;
-     q) QUIET=true;;
+     n) NO_WAIT=true;;
      x) EXACT=true;;
      :) print -u2 "[${WHITE_FG}${_SCRIPT}${RESET}]: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "[${WHITE_FG}${_SCRIPT}${RESET}]: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
@@ -215,14 +215,18 @@ done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
 #---Execution---
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ -n ${1} ]] && SEARCHTERM=${1} && _SEARCH_MSGS+=${SEARCHTERM}
 
 [[ ${MATCH_MODE} != 'both' && -z ${SEARCHTERM} ]] && exit_leave "Matching requires a <SEARCHTERM>"
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} EXACT=${EXACT} OUTPUT_CMD_ONLY=${OUTPUT_CMD_ONLY} MATCH_MODE=${MATCH_MODE}"
 
-[[ ${QUIET} == 'true' ]] && WAIT='' || WAIT='wait'
+if [[ ${NO_WAIT} == 'true' ]];then
+	WAIT=''
+else
+	[[ ${_DEBUG} -eq 0 ]] && do_smcup
+	WAIT='wait'
+fi
 
 # Build list
 ALIASES=("${(@f)$(cat ${_ALIAS_FN} | grep ^alias | sort)}")

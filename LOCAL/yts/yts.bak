@@ -61,7 +61,7 @@ _CFG_DIR=~/.local/share/yts
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _ACTION=download
 _ALERT_TM=.2
-_ERROR_LIMIT=5
+_TM_ERR_LIMIT=3
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
@@ -135,7 +135,9 @@ action_do () {
 	local RETRIES=0
 	local SPEED=0
 	local TITLE=''
-	local TRANS_ERRORS=0
+	local TM_ERR=0
+	local LAST_TM_ERR=0
+	local TM_ERRS=0
 	local URL=''
 	local M
 
@@ -152,7 +154,7 @@ action_do () {
 		RETRIES=0
 		HDRS_OUT=false
 
-		logit ${_YTS_URL_LOG} ${AUTHOR}:${TITLE}:${URL}
+		logit ${_YTS_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
 
 		unsetopt localtraps # Initialize CTRL-C trap
 		trap job_kill INT
@@ -164,9 +166,9 @@ action_do () {
 		while true;do
 			((NDX++))
 
-			LOG_LINE=$(tail -1 ${g_YTS_LOG})
-			if grep -Eq '' <<<${LOG_LINE};then
-				LOG_LINE=$(sed "s//\n/g" <<<${LOG_LINE} | tail -1 | str_trim) 2>/dev/null # Break into lines - get most recent
+			LOG_LINE=$(tail -1 ${g_YTS_LOG}) # Get last log line
+			if grep -Eq '' <<<${LOG_LINE};then # Progress delimited by linefeeds
+				LOG_LINE=$(sed "s//\n/g" <<<${LOG_LINE} | tail -1 | str_trim) 2>/dev/null # Convert linefeeds to newlines - get last trimmed
 			fi
 
 			if [[ ${HDRS_OUT} == 'false' ]];then 
@@ -174,7 +176,7 @@ action_do () {
 					if [[ ${LOG_LINE:l} =~ 'already been|100%' ]];then
 						DUP_LINE=$(grep -Ei 'already been' ${g_YTS_LOG}) # Capture duplicate msg - whole file grep
 						if [[ ${?} -eq 0 ]];then
-							logit ${_YT_DBG_LOG} "ALREADY DOWNLOADED"
+							logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 							MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${DUP_LINE})
 							msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<w>${MSG}<N>|<B>Has already been downloaded<N>"
 							_DOWNLOADS[${M}]=true
@@ -183,7 +185,7 @@ action_do () {
 					elif [[ ${LOG_LINE:l} =~ 'sleeping|hlsnative|^\[info\]' ]];then # Pre-processing messages
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						if [[ ${MSG} != ${LAST_MSG} ]];then
-							logit ${_YT_DBG_LOG} "PRE-PROCESSING"
+							logit ${_YT_DBG_LOG} "${0}: PRE-PROCESSING"
 							msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>${MSG}<N>"
 						fi
 						LAST_MSG=${MSG}
@@ -191,7 +193,7 @@ action_do () {
 					else
 						MSG=$(grep -Ei -m1 'will begin|premieres|upcoming' ${g_YTS_LOG}) # Capture future msgs (technically an error) - whole file grep
 						if [[ ${?} -eq 0 ]];then
-							logit ${_YT_DBG_LOG} "FUTURE"
+							logit ${_YT_DBG_LOG} "${0}: FUTURE"
 							[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
 							MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
 							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
@@ -202,8 +204,8 @@ action_do () {
 							MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture msg - whole file grep
 							if [[ ${?} -eq 0 ]];then
 								msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
-								logit ${_YT_DBG_LOG} "ERROR"
-								logit ${_YTS_ERROR_LOG} "${MSG}"
+								logit ${_YT_DBG_LOG} "${0}: ERROR"
+								logit ${_YTS_ERROR_LOG} "${0}: ${MSG}"
 								_FAILED[${M}]=true
 								_DOWNLOADS[${M}]=false
 								break
@@ -213,7 +215,7 @@ action_do () {
 				else
 					DEST_LINE=$(grep -Ei 'destination' ${g_YTS_LOG}) # Capture destination - whole file grep
 					if [[ ${?} -eq 0 ]];then
-						logit ${_YT_DBG_LOG} "HEADER"
+						logit ${_YT_DBG_LOG} "${0}: HEADER"
 						DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Strip path
 						DEST_1=$(cut -d'|' -f1 <<<${DEST})
 						DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
@@ -242,26 +244,31 @@ action_do () {
 					esac
 					msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
 					continue
-				elif [[ ${LOG_LINE:l} =~ 'fixing mpeg-ts|fixupm3u8' ]];then # Post-processing
-					logit ${_YT_DBG_LOG} "COMPLETED"
+				elif [[ ${LOG_LINE:l} =~ '100%|fixing mpeg-ts|fixupm3u8|videoremuxer' ]];then # Post-processing
+					logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 					msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
 					_DOWNLOADS[${M}]=true
+					logit ${_YT_DBG_LOG} "${0}: POST-PROCESSING"
 					post_process
 					log_add ${M}
 					break
 				else
-					MSG=$(grep -Ei -m1 'error' <<<$(tac ${g_YTS_LOG})) # Capture last tranmission error
+					MSG=$(grep -Ein 'error' ${g_YTS_LOG} | tail -1) # Capture error and line
 					if [[ ${?} -eq 0 ]];then
-						TRANS_ERRORS=$(grep -w -c 'error' ${g_YTS_LOG})
-						msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
-						logit ${_YT_DBG_LOG} "ERROR"
-						logit ${_YTS_ERROR_LOG} "${MSG}"
-						if [[ ${TRANS_ERRORS} -ge ${_ERROR_LIMIT} ]];then
-							_FAILED[${M}]=true
-							_DOWNLOADS[${M}]=false
-							break
-						else
-							continue
+						TM_ERR=$(cut -d: -f1 <<<${MSG})
+						if [[ ${TM_ERR} -ne ${LAST_TM_ERR} ]];then
+							((TM_ERRS++))
+							msg_box -z -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<w>${TM_ERRS}<N>:<r>${MSG[1,70]}<N>"
+							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TM_ERRS} of ${_TM_ERR_LIMIT}"
+							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TM_ERRS}: ${MSG}"
+							LAST_TM_ERR=${TM_ERR}
+							if [[ ${TM_ERRS} -ge ${_TM_ERR_LIMIT} ]];then
+								_FAILED[${M}]=true
+								_DOWNLOADS[${M}]=false
+								break
+							else
+								continue
+							fi
 						fi
 					fi
 				fi
@@ -334,8 +341,6 @@ clean_title () {
 	local UCASE_LIMIT=4
 	local W U
 
-	logit ${_YT_DBG_LOG} "${0}: ARG:${TITLE}"
-
 	TITLE=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
 	TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
 
@@ -387,7 +392,7 @@ clean_title () {
 
 	TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
 
-	logit ${_YT_DBG_LOG} "${0}: RET:${TITLE} length:${_MAX_TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: [${TITLE}]"
 
 	echo ${TITLE}
 }
@@ -608,10 +613,10 @@ fav_delete () {
 	logit ${_YT_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was copied"
 
 	[[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]] && ENG="R" || ENG="Y"
-	logit ${_YT_DBG_LOG} "${0}: engine:${_QUERY_OPTS[ENGINE]}"
+	logit ${_YT_DBG_LOG} "${0}: Engine:${_QUERY_OPTS[ENGINE]}"
 
 	msg_box -p -PD "Deleting: ${FAV} for ${(C)_QUERY_OPTS[ENGINE]}?"
-	logit ${_YT_DBG_LOG} "${0}: deleting ${FAV}"
+	logit ${_YT_DBG_LOG} "${0}: Deleting ${FAV}"
 
 	if [[ ${_MSG_KEY} == 'y' ]];then
 		if [[ -s ${_YTS_FAVORITES} ]];then
@@ -839,7 +844,7 @@ job_reset () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	job_kill
-	logit ${_YT_DBG_LOG} "${0}: Killed"
+	logit ${_YT_DBG_LOG} "${0}: Job killed"
 }
 
 job_start () {
@@ -931,9 +936,9 @@ log_clear () {
 
 	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
 		rm -f ${g_YTS_LOG}
-		logit ${_YT_DBG_LOG} "temp log file:${g_YTS_LOG} was cleared for:${_QUERY_OPTS[QKEY]} from:${FROM}"
+		logit ${_YT_DBG_LOG} "${0}: Temp log file:${g_YTS_LOG} was cleared for:${_QUERY_OPTS[QKEY]} from:${FROM}"
 	else
-		logit ${_YT_DBG_LOG} "DEBUG TRIGGERED - log ${g_YTS_LOG} was retained for:${_QUERY_OPTS[QKEY]}"
+		logit ${_YT_DBG_LOG} "${0}: DEBUG TRIGGERED - log ${g_YTS_LOG} was retained for:${_QUERY_OPTS[QKEY]}"
 	fi
 }
 
@@ -1088,8 +1093,6 @@ post_process () {
 	local NDX=0
 	local F K
 
-	logit ${_YT_DBG_LOG} "${0}"
-
 	msg_box -x$(( _CONT_COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
 
 	NDX=0
@@ -1108,7 +1111,7 @@ post_process () {
 	TEMP_FILES=("${(f)$(find ${_DOWNLOAD_DIR} -name '*temp.mp4')}")
 	for F in ${TEMP_FILES};do
 		/bin/rm -f ${F} >/dev/null 2>&1
-		[[ ${?} -eq 0 ]] && logit ${_YT_DBG_LOG} "${0}: deleted ${F}"
+		[[ ${?} -eq 0 ]] && logit ${_YT_DBG_LOG} "${0}: Deleted ${F}"
 	done
 
 	LF=$(last_file_downloaded) # Filename and Inode
@@ -1136,8 +1139,6 @@ parse_rumble () {
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local K
 
-	[[ -z ${_RUMBLE_PAGE} ]] && return 1 # No data returned from query
-
 	NON_GENERAL[TITLES]='thumbnail__title attr{title}'
 	NON_GENERAL[LINKS]='title__link attr{href}'
 	NON_GENERAL[AGES]='videostream__time text{}'
@@ -1149,7 +1150,7 @@ parse_rumble () {
 	GENERAL[AGES]='video-item--time text{}'
 	GENERAL[DURATIONS]='video-item--duration attr{data-value}'
 
-	logit ${_YT_DBG_LOG} "${0}:Parsing listing for:${_QUERY_OPTS[QKEY]}"
+	logit ${_YT_DBG_LOG} "${0}: Parsing listing for:${_QUERY_OPTS[QKEY]}"
 
 	if [[ ${PARSE_TYPE} == 'g' ]];then
 		TAG_ARRAY="GENERAL"
@@ -1190,8 +1191,8 @@ parse_rumble () {
 		if [[ -n ${AGE} && -n ${TITLE} && -n ${URL} && ${TIME} ]];then # All fields populated
 			if [[ ${ROW} != ${LAST_ROW} ]];then
 				# TODO: src_v1_mfp may need omission - investigate
-				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "Omitting NDX:${ROW} - URL - ucp_f"
-				[[ ! ${TIME} =~ ':' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "Omitting NDX:${ROW} - TIME no colon"
+				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - URL - ucp_f"
+				[[ ! ${TIME} =~ ':' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - TIME no colon"
 				AGETIME="(${AGE} ${TIME})"
 				[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
 				if [[ ${ROW} -ne ${OMIT_NDX} ]];then
@@ -1204,6 +1205,12 @@ parse_rumble () {
 			LAST_ROW=${ROW}
 		fi
 	done
+
+	if ! arr_is_populated "${_LOCAL_LIST}";then
+		return 1
+	fi
+
+	return 0
 }
 
 query_rumble () {
@@ -1220,7 +1227,7 @@ query_rumble () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	logit ${_YT_DBG_LOG} "${0}:Creating listing for KEY:${_QUERY_OPTS[QKEY]} Type:${QRY_TYPE}"
+	logit ${_YT_DBG_LOG} "${0}: Creating listing for KEY:${_QUERY_OPTS[QKEY]} Type:${QRY_TYPE}"
 
 	# Queries
 	if [[ ${QRY_TYPE} == 'live' ]];then
@@ -1244,7 +1251,13 @@ query_rumble () {
 
 	[[ -n ${GEN_SEARCH} ]] && GEN_SEARCH='g'
 	parse_rumble ${GEN_SEARCH}
-	[[ ${?} -ne 0 ]] && return 1 || return 0
+
+	if [[ ${?} -ne 0 ]];then
+		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - KEY:${_QUERY_OPTS[QKEY]}"
+		return 1
+	else
+		return 0
+	fi
 }
 
 query_youtube () {
@@ -1262,7 +1275,7 @@ query_youtube () {
 	ping -w1 www.youtube.com >/dev/null
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
-	logit ${_YT_DBG_LOG} "${0}:Creating listing for KEY:${_QUERY_OPTS[QKEY]} Strict:${_QUERY_OPTS[STRICT]}"
+	logit ${_YT_DBG_LOG} "${0}: Creating listing for KEY:${_QUERY_OPTS[QKEY]} Strict:${_QUERY_OPTS[STRICT]}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
@@ -1278,7 +1291,7 @@ query_youtube () {
 		dbg "${0}:${LINENO} ${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
-	logit ${_YT_DBG_LOG} "${0}:_QUERY_OPTS[QKEY]:${_QUERY_OPTS[QKEY]}, g_PROXY_CMD:${g_PROXY_CMD}"
+	logit ${_YT_DBG_LOG} "${0}: _QUERY_OPTS[QKEY]:${_QUERY_OPTS[QKEY]}, g_PROXY_CMD:${g_PROXY_CMD}"
 
 	_LOCAL_LIST=()
 
@@ -1330,6 +1343,7 @@ query_youtube () {
 		else
 			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
 		fi
+		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - KEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[STRICT]}"
 		return 1
 	fi
 

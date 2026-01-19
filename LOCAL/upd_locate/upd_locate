@@ -62,7 +62,7 @@ last_locate () {
 		LB_LAST_RUN=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
 	else
 		touch ${_MARKER}
-		exit_leave $(msg_exit W "${_SCRIPT}: Last locate update is unknown")
+		exit_leave $(err_msg_exit W "${_SCRIPT}: Last locate update is unknown")
 	fi
 
 	[[ -e ${MARKER_ARG} ]] && LB_LAST_TIME=$(stat -c"%x" ${MARKER_ARG} | cut -d. -f1 | cut -d' ' -f2 | cut -d: -f1,2) 
@@ -71,7 +71,7 @@ last_locate () {
 }
 
 locate_info () {
-	echo "Last locate update was ${WHITE_FG}${g_LAST_RUN}${RESET}"
+	echo "locate was last updated ${WHITE_FG}${g_LAST_RUN}${RESET}"
 }
 
 #--Begin GetOpts--
@@ -86,7 +86,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -117,7 +117,7 @@ usage () {
 	echo -e "${WHITE_FG}-f${RESET} force"
 	echo -e "${WHITE_FG}-i${RESET} date of last locate update"
 	echo -e "${WHITE_FG}-u${RESET} utility operation (minimal output)"
-	echo -e "\n${WHITE_FG}Desc${RESET}:Backup selected directories"
+	echo -e "\n${WHITE_FG}Desc${RESET}Refresh locate database"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
@@ -158,9 +158,9 @@ fi
 
 if [[ ${UTILITY} == 'false' ]];then
 	if [[ -f ${_MARKER} && ${FORCE} == "false" && ${g_LAST_RUN:l} =~ 'today' ]];then
-		msg_box -p -P"Press F to Force"  "Last locate update was ${g_LAST_RUN}"
+		msg_box -p -P"Press F to Force"  "locate waas last updated ${g_LAST_RUN}"
 		if [[ ${_MSG_KEY:l} != 'f' ]];then
-			exit_leave $(msg_exit I "Operation cancelled")
+			exit_leave $(err_msg_exit I "Operation cancelled")
 		fi
 		FORCE=true
 	fi
@@ -173,6 +173,8 @@ UPDATE=false
 if [[ (! ${g_LAST_RUN:l} =~ 'today') || ${FORCE} == 'true' ]];then
 	UPDATE=true
 	if [[ ${UTILITY} == 'true' ]];then
+		tcup 0 0
+		echo "Updating locate database..."
 		echo "locate database update started: $(date)" >> ${_LOGFILE}
 		echo "Options: ${LOCATE_OPTS}" >> ${_LOGFILE}
 

@@ -147,8 +147,6 @@ do_copy () {
 	local RESPONSE
 	local MSG OP
 
-	# TODO: For initial copies of execs to production, backup should be delayed until the original is in place
-
 	[[ ${DEST_FN} =~ "\.bak$" ]] && OP="Backup" || OP="Copy"
 	[[ -e ${DEST_FN} ]] && MSG="Overwriting ${_EM}existing${RESET} ${OP:l}" || MSG="${OP} to"
 
@@ -438,7 +436,8 @@ usage () {
 	echo -e "${WHITE_FG}\nDESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(err_msg_exit E ${PENDING_MSGS})
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS

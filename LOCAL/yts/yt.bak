@@ -130,6 +130,7 @@ if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
 			fsub -y -p ${PREPEND} ${FN}
 		fi
 	fi
+	logit ${_YTS_URL_LOG} "CMDLINE download URL:${@} to ${FN:t}"
 else
 	logit ${_YT_DBG_LOG} "Executed by ${PPCMD} with command:${@}"
 fi

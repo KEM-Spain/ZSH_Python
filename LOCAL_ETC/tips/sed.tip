@@ -154,6 +154,240 @@ COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
 COMMAND: P
 > Streaming Nov 21, 2025|88%     ${E_WHITE_FG}# PRINTED${E_RESET}
 
+${E_WHITE_FG}Examples for Sed Branching${E_RESET}
+
+$ sed ':label command(s) b label'
+
+:label — specification of label.
+commands — Any sed command(s)
+label — Any Name for the label
+b label — jumps to the label with out checking any conditions. If label is not specified, then jumps to the end of the script.
+
+${E_WHITE_FG}Conditional Branch Syntax:${E_RESET}
+
+Basic format: sed ':label command(s) t label'
+
+1)   :label — create label
+2) commands — Any sed command(s)
+3)    label — Any Name for the label
+4)  t label — jump to label if last command succeeded
+
+${E_WHITE_FG}Sample test file - THEGEEKSTUFF.txt${E_RESET}
+
+Linux
+    Administration
+    Scripting
+        Tips and Tricks
+Windows
+    Administration
+Database
+    Administration of Oracle
+    Administration of Mysql
+Security
+    Network
+        Online\
+    Security
+Productivity
+    Google Search\
+    Tips
+    "Web Based Time Tracking,
+    Web Based Todo list and
+    Reduce Key Stores etc"
+$
+
+${E_WHITE_FG}Example - Unconditional Branch${E_RESET}
+
+Example 1 - Replace the first occurrence of a pattern in file
+
+In the file THEGEEKSTUFF.txt replace the first occurrence of “Administration” to “Supervision”
+
+$ sed '/Administration/{s/Administration/Supervision/ :loop n b loop}' THEGEEKSTUFF.txt
+
+RESULT:
+
+Linux
+    Supervision
+    Scripting
+        Tips and Tricks
+Windows
+    Administration
+Database
+    Administration of Oracle
+    Administration of Mysql
+Security
+    Network
+        Online\
+    Security
+Productivity
+    Google Search\
+    Tips
+    "Web Based Time Tracking,
+    Web Based Todo list and
+    Reduce Key Stores etc"
+$
+
+In the above sed command, it just reads line by line 
+and prints the pattern space until Administration occurs.
+Once Administration occurs, it substitutes Administration to Supervision 
+(only a single occurrence, (no ‘g’ flag).
+Once the first occurrence has been replaced, 
+read the remaining file content and print.
+
+“n” is a command which prints the pattern space and overwrites it with next line.
+“loop” is a label. “n” prints the current line and overwrite pattern space 
+with the next line. 'b loop' jumps to the :loop label thereby
+printing the remaining content of the file.
+
+${E_WHITE_FG}Example 2. Remove the data between quotes ("") in the file${E_RESET}
+
+In our example there are 3 lines between quotes.
+
+sed -e ':loop $!{N /\n$/!b loop} s/\"[^\"]*\"//g' THEGEEKSTUFF.txt
+
+RESULT:
+
+Linux
+    Administration
+    Scripting
+        Tips and Tricks
+Windows
+    Administration
+Database
+    Administration of Oracle
+    Administration of Mysql
+Security
+    Network
+        Online\
+    Security
+Productivity
+    Google Search\
+    Tips
+$
+
+The command keep appends all the lines of a file till end of file occurs.
+
+$! — not a end of file.
+N — Append the next line with the pattern space delimited by \n
+/\n$/!b loop — If not last line jump to label
+
+Now all the lines will be available in pattern space delimited by newline. 
+Substitute all occurrences of data between quotes ("") with nothing.
+
+${E_WHITE_FG}Example 3. Remove the HTML tags of a file${E_RESET}
+
+File has following html content
+
+$ cat index.html
+<html><body>
+<table
+border=2><tr><td valign=top
+align=right>1.</td>
+<td>Line 1 Column 2</
+td>
+</table>
+</body></html>
+
+The following sed command removes all the html tags from the given file
+
+$ sed '/</{:loop s/<[^<]*>//g /</{ N b loop }}' index.html
+
+RESULT:
+
+1.
+Line 1 Column 2
+
+Each time we find a line containing ‘<‘, remove all HTML tags of that line.
+If the pattern space contains ‘<‘, this implies a multi-line tag. 
+Now repeat the following loop:
+
+Join next line
+Remove all HTML tags until no single ‘<‘ exists
+
+When no ‘<‘ exists in the pattern space, we print it out and start a new cycle.
+
+${E_WHITE_FG}Examples for Conditional Branch${E_RESET}
+
+${E_WHITE_FG}Example 4. If a line ends with a backslash append the next line to it.${E_RESET}
+
+Our example file has two lines that end with a backslash, append the next line to it.
+
+$ sed ' :loop /\\$/N s/\\\n */ / t loop' THEGEEKSTUFF.txt
+
+RESULT:
+
+Linux
+    Administration
+    Scripting
+        Tips and Tricks
+Windows
+    Administration
+Database
+    Administration of Oracle
+    Administration of Mysql
+Security
+    Network
+    Security
+Productivity
+    Tips
+    "Web Based Time Tracking,
+    Web Based Todo list and
+    Reduce Key Stores etc"
+$
+
+Check if the line ends with the backslash (/\\$/), 
+if yes, read and append the next line to pattern space, 
+and substitute the \ at the end of the line and any number 
+of spaces that follow with a single space.
+If the substitution succeeds, repeat the above step. 
+The branch will be executed only if the substitution succeeds.
+Conditional branches are mostly used for recursive patterns.
+
+${E_WHITE_FG}Example 5. Commify numeric strings.${E_RESET}
+
+sed ' :loop s/\(.*[0-9]\)\([0-9]\{3\}\)/\1,\2/ t loop'
+INPUT: 12342342342343434
+OUTPUT: 12,342,342,342,343,434
+
+Group the digits into two groups.
+The first group is all the digits up to last three digits. 
+The last three digits are captured in the 2nd group.
+Then the two matching groups are separated by a comma. 
+The same rule gets applied to the line again until all 
+numbers have been grouped into groups of three.
+Example, in the first iteration: 12342342342343,434
+Next iteration: 12342342342,343,434 and so on.
+
+${E_WHITE_FG}Example 6. Formatting : Replace every leading space of a line with ‘+’${E_RESET}
+
+$ sed ' s/^ */&\n/ :loop s/^\n//;s/ \n/\n+/ t loop' test
+
+Linux
+++++++++Administration
+++++++++Scripting
+++++++++++++++++Tips and Tricks
+Windows
+++++++++Administration
+Database
+++++++++Administration of Oracle
+++++++++Administration of Mysql
+Security
+++++++++Network
++++++++++++++++++Online\
+++++++++Security
+Productivity
+++++++++Google Search\
+++++++++Tips
+++++++++"Web Based Time Tracking,
+++++++++Web Based Todo list and
+++++++++Reduce Key Stores etc"
+
+Separate all the leading spaces and other characters of a line 
+with a newline character.
+Now replace space and newline with newline and +. 
+From right to left space will be replaced by + and the 
+newline will be moved left one character.
+Lastly, in the beginning of the line a '\n' will exist, so remove.
+
 tip_sed_EOF
 ) | mypager wait
 

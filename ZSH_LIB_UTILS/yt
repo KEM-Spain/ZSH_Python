@@ -119,20 +119,20 @@ fi
 eval "${_YT_DLP} ${(qqq)@}"
 
 if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
-	logit ${_YT_DBG_LOG} "Command line download:${@}"
+	logit ${_YT_DBG_LOG} "${0:t} Command line download:${@}"
 	FN=$(last_file_downloaded | cut -d'|' -f1)
 	if [[ -e ${FN} ]];then
 		fsub -y -Y ${FN}
-		logit ${_YT_DBG_LOG} "Cleaning file name:${FN:t}"
+		logit ${_YT_DBG_LOG} "${0:t} Cleaning file name:${FN:t}"
 		FN=$(last_file_downloaded | cut -d'|' -f1)
 		if [[ -n ${PREPEND} ]];then
 			logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}"
 			fsub -y -p ${PREPEND} ${FN}
 		fi
 	fi
-	logit ${_YTS_URL_LOG} "CMDLINE download URL:${@} to ${FN:t}"
+	logit ${_YTS_URL_LOG} "${0:t} CMDLINE download URL:${@} to ${FN:t}"
 else
-	logit ${_YT_DBG_LOG} "Executed by ${PPCMD} with command:${@}"
+	logit ${_YT_DBG_LOG} "${0:t} Executed by ${PPCMD} with command:${@}"
 fi
 
 exit_leave 

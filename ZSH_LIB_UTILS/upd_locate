@@ -71,7 +71,7 @@ last_locate () {
 }
 
 locate_info () {
-	echo "Last locate update was ${WHITE_FG}${g_LAST_RUN}${RESET}"
+	echo "locate was last updated ${WHITE_FG}${g_LAST_RUN}${RESET}"
 }
 
 #--Begin GetOpts--
@@ -158,7 +158,7 @@ fi
 
 if [[ ${UTILITY} == 'false' ]];then
 	if [[ -f ${_MARKER} && ${FORCE} == "false" && ${g_LAST_RUN:l} =~ 'today' ]];then
-		msg_box -p -P"Press F to Force"  "Last locate update was ${g_LAST_RUN}"
+		msg_box -p -P"Press F to Force"  "locate waas last updated ${g_LAST_RUN}"
 		if [[ ${_MSG_KEY:l} != 'f' ]];then
 			exit_leave $(err_msg_exit I "Operation cancelled")
 		fi
