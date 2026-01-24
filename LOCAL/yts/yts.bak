@@ -33,6 +33,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 typeset -A _ALERT_COORDS=()
 typeset -A _CONT_COORDS=()
 typeset -A _DOWNLOADS=()
+typeset -A _CANCELLED=()
 typeset -A _FAILED=()
 typeset -A _FAV_LIST=()
 typeset -A _FIELD_LEN=()
@@ -127,6 +128,7 @@ action_do () {
 	local HDR_LEN=0
 	local HRZ_CTR=0
 	local INFO_TAG=''
+	local INT_KEY=''
 	local LAST_MSG=''
 	local LINE_COLOR=''
 	local LOG_LINE=''
@@ -145,6 +147,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		((DL_CNT++))
+		_CANCELLED[${DL_CNT}]=false
 		_DOWNLOADS[${DL_CNT}]=false
 		_FAILED[${DL_CNT}]=false
 		_FUTURE[${DL_CNT}]=false
@@ -160,11 +163,23 @@ action_do () {
 		trap job_kill INT
 
 		job_start ${URL}
-		msg_box -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<w>Download requested...<N>"
+		msg_box -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<w>Download requested...<N>|Use keys (${WHITE_FG}r${RESET})eset or (${WHITE_FG}k${RESET})ill to cancel..."
 		sleep 3
 
 		while true;do
 			((NDX++))
+
+			# Handle job reset
+			INT_KEY=''
+			read -s -t0.1 -k1 INT_KEY
+			if [[ ${INT_KEY} == 'k' || ${INT_KEY} == 'r' ]];then 
+				job_reset
+				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED"
+				MSG="Cancelling download..."
+				msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<w>${MSG}<N>"
+				_CANCELLED[${M}]=true
+				break
+			fi
 
 			LOG_LINE=$(tail -1 ${g_YTS_LOG}) # Get last log line
 			if grep -Eq '' <<<${LOG_LINE};then # Progress delimited by linefeeds
@@ -411,7 +426,7 @@ dashed_line () {
 }
 
 download_indicator () {
-	local SPEED=$(cut -d'|' -f1 <<<${1})
+	local SPEED=$(cut -d'|' -f1 <<<${1} | cut -d. -f1)
 	local STYPE=$(cut -d'|' -f2 <<<${1})
 	local L_OBJ="\\u23FA"
 	local M_OBJ="\\u25CF"
@@ -432,29 +447,28 @@ download_indicator () {
 	[[ -z ${SPEED} ]] && SPEED=0
 	[[ -z ${g_LAST_SPEED} ]] && g_LAST_SPEED=0
 
-	if [[ ( ${STYPE} == 'M' && ${g_LAST_STYPE} == 'K' ) || ${SPEED} -gt ${g_LAST_SPEED} ]];then 
-		SP_DIR=I # Increasing
+	if [[ ( ${STYPE} == 'M' && ${g_LAST_STYPE} == 'K' ) || ${SPEED} -ge ${g_LAST_SPEED} ]];then 
+		SP_DIR=I # Stable or Increasing
 	elif [[ ( ${STYPE} == 'K' && ${g_LAST_STYPE} == 'M' ) || ${SPEED} -lt ${g_LAST_SPEED} ]];then 
 		SP_DIR=D # Decreasing
 	fi
 
-	if [[ ${SPEED} -ge 50 ]];then 
-		OBJ_COLOR="${BOLD}${WHITE_FG}"
-		SP_DIR=M # Max
-	elif [[ ${SPEED} -ge 40 ]];then 
-		OBJ_COLOR="${BOLD}${RED_FG}"
-		SP_DIR=H # High
-	elif [[ ${SPEED} -ge 35 ]];then 
-		OBJ_COLOR="${BOLD}${GREEN_FG}"
-	elif [[ ${SPEED} -ge 30 ]];then 
-		OBJ_COLOR="${BOLD}${CYAN_FG}"
-	fi
+	#logit ${_YT_DBG_LOG} "${0}: SPEED:${SPEED}"
+
+	case ${SPEED} in
+		<1-2>) OBJ_COLOR="${BOLD}${RED_FG}";; # YouTube
+		<3-4>) OBJ_COLOR="${BOLD}${MAGENTA_FG}";;
+		<5-6>) OBJ_COLOR="${BOLD}${CYAN_FG}";;
+		<7-10>) OBJ_COLOR="${BOLD}${GREEN_FG}";;
+		<11-20>) OBJ_COLOR="${BOLD}${WHITE_FG}";;
+		<21-30>) OBJ_COLOR="${BOLD}${CYAN_FG}";;
+		<31-40>) OBJ_COLOR="${BOLD}${WHITE_FG}";;
+		*) OBJ_COLOR="${BOLD}${GREEN_FG}";;
+	esac
 
 	case ${SP_DIR} in
-		I) BORDER_COLOR="${BOLD}${MAGENTA_FG}";;
+		I) BORDER_COLOR="${BOLD}${GREEN_FG}";;
 		D) BORDER_COLOR="${BOLD}${RED_FG}";;
-		H) BORDER_COLOR="${BOLD}${WHITE_FG}";;
-		M) BORDER_COLOR="${BOLD}${GREEN_FG}";;
 	esac
 
 	OBJS=(${(kv)OBJS_1}) # Init
@@ -538,6 +552,7 @@ download_select () {
 		fi
 	done
 
+	_CANCELLED=()
 	_DOWNLOADS=()
 	_FAILED=()
 	_FUTURE=()
@@ -610,7 +625,7 @@ fav_delete () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	cp ${_YTS_FAVORITES} ${_YTS_FAVORITES}.bak
-	logit ${_YT_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was copied"
+	logit ${_YT_DBG_LOG} "${0}: Backup:${_YTS_FAVORITES} was copied"
 
 	[[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]] && ENG="R" || ENG="Y"
 	logit ${_YT_DBG_LOG} "${0}: Engine:${_QUERY_OPTS[ENGINE]}"
@@ -630,10 +645,10 @@ fav_delete () {
 			done < ${_YTS_FAVORITES}
 			diff -q ${_YTS_FAV_NEW} ${_YTS_FAVORITES} >/dev/null 2>&1
 			if [[ ${?} -eq 0 ]];then
-				logit ${_YT_DBG_LOG} "${0}: log ${_YTS_FAVORITES} was NOT updated - ${FAV} not found"
+				logit ${_YT_DBG_LOG} "${0}: ${_YTS_FAVORITES} NOT updated - ${FAV} not found"
 			else
 				mv -f ${_YTS_FAV_NEW} ${_YTS_FAVORITES}
-				logit ${_YT_DBG_LOG} "${0}: log ${_YTS_FAVORITES} updated"
+				logit ${_YT_DBG_LOG} "${0}: ${_YTS_FAVORITES} updated"
 				if ! fav_load;then
 					exit_leave "Unable to load favorites"
 				fi
@@ -800,6 +815,8 @@ item_decorate () {
 
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."
+	elif [[ ${_CANCELLED[${NDX}]} == 'true' ]];then
+		STR="Cancelled..."
 	elif [[ ${_FAILED[${NDX}]} == 'true' ]];then
 		STR="Failed..."
 	elif [[ ${_FUTURE[${NDX}]} == 'true' ]];then
@@ -844,7 +861,7 @@ job_reset () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	job_kill
-	logit ${_YT_DBG_LOG} "${0}: Job killed"
+	logit ${_YT_DBG_LOG} "${0}: Job was reset"
 }
 
 job_start () {
@@ -1008,6 +1025,62 @@ log_find () {
 	done
 }
 
+log_scrub () {
+	# TODO: This may duplicate log_update - investigate
+	local -A DIR_INODES=()
+	local -A LOG_LINES=()
+	local -a ERR_INODES=()
+	local -a LIST=()
+	local ERR_CNT=0
+	local LINE=''
+	local LOG_FN=''
+	local NEW_LOG=/tmp/${_YTS_DOWNLOAD_LOG:r}.new
+
+	LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
+	if [[ -z ${LIST} ]];then
+		rm -f ${_YTS_DOWNLOAD_LOG} >/dev/null 2>&1  # Ensure no downloads are logged
+		touch ${_YTS_DOWNLOAD_LOG}
+		return
+	fi
+
+	for L in ${(on)LIST};do
+		DIR_INODE=$(cut -d' ' -f1 <<<${L})
+		DIR_FN=$(cut -d' ' -f2- <<<${L})
+		[[ ${DIR_FN:e} == 'part' ]] && continue
+		DIR_INODES[${DIR_INODE}]=${DIR_FN}
+	done
+
+	[[ -e ${NEW_LOG} ]] && /bin/rm -f ${NEW_LOG}
+	for K in ${(onk)DIR_INODES};do
+		LOG_LINE=$(grep ${K} ${_YTS_DOWNLOAD_LOG})
+		if [[ ${?} -eq 0 ]];then
+			LOG_LINES[${K}]=${LOG_LINE}
+		fi
+	done
+
+	ERR_CNT=0
+	while read LINE;do
+		LOG_INODE=$(cut -d'|' -f1 <<<${LINE})
+		LOG_FN=$(cut -d'|' -f3 <<<${LINE})
+		if [[ -z "${DIR_INODES[${LOG_INODE}]}" ]];then
+			((ERR_CNT++))
+			ERR_INODES+=${LOG_INODE}
+		else
+			if [[ "${DIR_INODES[${LOG_INODE}]}" != "${LOG_FN}" ]];then
+				((ERR_CNT++))
+				ERR_INODES+=${LOG_INODE}
+			else
+				echo ${LOG_LINES[${LOG_INODE}]} >> ${NEW_LOG}
+			fi
+		fi
+	done < <(sort -n <${_YTS_DOWNLOAD_LOG})
+
+	if [[ ${ERR_CNT} -ne 0 ]];then
+		cp ${_YTS_DOWNLOAD_LOG} ${_YTS_DOWNLOAD_LOG}.$(date +"%s")
+		mv -f ${NEW_LOG} ${_YTS_DOWNLOAD_LOG}
+	fi
+}
+
 log_to_file () { 
 	local TOP=${1} # Page top row
 	local BOT=${2} # Page bot row
@@ -1150,7 +1223,7 @@ parse_rumble () {
 	GENERAL[AGES]='video-item--time text{}'
 	GENERAL[DURATIONS]='video-item--duration attr{data-value}'
 
-	logit ${_YT_DBG_LOG} "${0}: Parsing listing for:${_QUERY_OPTS[QKEY]}"
+	logit ${_YT_DBG_LOG} "${0}: Parsing list for QKEY:${_QUERY_OPTS[QKEY]}"
 
 	if [[ ${PARSE_TYPE} == 'g' ]];then
 		TAG_ARRAY="GENERAL"
@@ -1227,7 +1300,7 @@ query_rumble () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	logit ${_YT_DBG_LOG} "${0}: Creating listing for KEY:${_QUERY_OPTS[QKEY]} Type:${QRY_TYPE}"
+	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} TYPE:${QRY_TYPE}"
 
 	# Queries
 	if [[ ${QRY_TYPE} == 'live' ]];then
@@ -1253,7 +1326,7 @@ query_rumble () {
 	parse_rumble ${GEN_SEARCH}
 
 	if [[ ${?} -ne 0 ]];then
-		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - KEY:${_QUERY_OPTS[QKEY]}"
+		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}"
 		return 1
 	else
 		return 0
@@ -1275,7 +1348,7 @@ query_youtube () {
 	ping -w1 www.youtube.com >/dev/null
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
-	logit ${_YT_DBG_LOG} "${0}: Creating listing for KEY:${_QUERY_OPTS[QKEY]} Strict:${_QUERY_OPTS[STRICT]}"
+	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[STRICT]}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
@@ -1291,7 +1364,7 @@ query_youtube () {
 		dbg "${0}:${LINENO} ${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
-	logit ${_YT_DBG_LOG} "${0}: _QUERY_OPTS[QKEY]:${_QUERY_OPTS[QKEY]}, g_PROXY_CMD:${g_PROXY_CMD}"
+	logit ${_YT_DBG_LOG} "${0}: QKEY:${_QUERY_OPTS[QKEY]}, g_PROXY_CMD:${g_PROXY_CMD}"
 
 	_LOCAL_LIST=()
 
@@ -1343,7 +1416,7 @@ query_youtube () {
 		else
 			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
 		fi
-		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - KEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[STRICT]}"
+		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[STRICT]}"
 		return 1
 	fi
 
@@ -1354,6 +1427,7 @@ query_youtube () {
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
 			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
+				logit ${_YT_DBG_LOG} "${0}: Translated TITLE:${TITLE}"
 			fi
 		fi
 		URL=$(cut -d'|' -f${YOUTUBE_MAP[url]} <<<${F})
@@ -1402,9 +1476,10 @@ set_item_color () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	case ${ITEM:l} in
-		downloaded*) echo ${GREEN_FG};;
-		failed*) echo ${RED_FG};;
-		future*) echo ${CYAN_FG};;
+		downloaded*) echo ${BOLD}${GREEN_FG};;
+		cancelled*) echo ${BOLD}${ITALIC}${RED_FG};;
+		failed*) echo ${BOLD}${RED_FG};;
+		future*) echo ${BOLD}${CYAN_FG};;
 		partial*) echo ${WHITE_ON_GREY};;
 		*) echo '';;
 	esac
@@ -1494,7 +1569,7 @@ website () {
 read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
 \tChoose from a list of matching videos. 
-\tHidden key: 'r' during download will reset the connection.
+\tHidden key: 'r(eset) or k(ill)' during download will cancel the download.
 EOF
 
 opt_type () {

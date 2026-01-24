@@ -58,7 +58,7 @@ action_do () {
 			V_PATH=${${_FN_ARG}##${_GIT_REPO_DIR}/}
 			msg_box -p -P"(d)iff, (e)dit, (s)ave" "Diff, Edit, or Save file?"
 			if [[ ${_MSG_KEY} == 's' ]];then
-				FN_OUT=${_APP_DIR}/${COMMIT}:${V_PATH:t}.log.out
+				FN_OUT=${_APP_DIR}/${COMMIT}#${V_PATH:t}.log.out
 				if overwrite_file ${FN_OUT};then
 					git show -P ${COMMIT}:${V_PATH} > ${FN_OUT} && msg_box -p -PK "Wrote file:<w>${FN_OUT}<N>"
 				fi

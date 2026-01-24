@@ -174,26 +174,18 @@ GREP_OPTS+=${GR_OPT_WORD}
 # Limit to file type if specified
 FTYPE_MSG='all'
 if [[ -n ${FTYPE} ]];then
-	FLIST="${PATH_ARG}/*${FTYPE}"
+	FLIST="${PATH_ARG}/*${FTYPE}(.)"
 	[[ ${FTYPE} == 'bak' ]] && GR_OPT_BAK=true
 	FTYPE_MSG=${FTYPE}
-#	typeset -a FLIST=()
-#	FLIST=("${(f)$(find ${PATH_ARG} -maxdepth 1 -type f ! -path ${PATH_ARG} | xargs file | grep --color=never -i ${FTYPE} | cut -d: -f1)}")
-#	if [[ -n ${FLIST} ]];then
-#		FTYPE_MSG="type:${FTYPE}"
-#	else
-#		exit_leave $(err_msg_exit E "No files qualified for type:${FTYPE}")
-#	fi
 else
-	FLIST="${PATH_ARG}/(*|.*)"
+	FLIST="${PATH_ARG}/(*|.*)(.)"
 fi
 
 # Build CMD
-CMD="grep ${GREP_OPTS} '"${SEARCHTERM}"' ${FLIST} 2>/dev/null"
-CMD_MSG="grep ${GREP_OPTS} '"${SEARCHTERM}"' 2>/dev/null"
+CMD="grep --color=never ${GREP_OPTS} '"${SEARCHTERM}"' ${FLIST}"
+CMD_MSG="grep ${GREP_OPTS} \"${SEARCHTERM}\""
 
 # Execute CMD
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 RAWLIST=("${(f)$(eval ${CMD})}")
 [[ ${_DEBUG} -gt 1 ]] && dbg "${0}:${LINENO} RAWLIST:${RAWLIST}" || dbg "${0}:${LINENO} RAWLIST:${#RAWLIST}"
 

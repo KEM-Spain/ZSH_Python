@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+ 
 #Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -108,9 +109,9 @@ arr_is_populated () {
 	
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARR:${#ARR}"
 
-	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires an argument${RESET} of type <ARRAY> ${#}" >&2
+	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires a quoted argument${RESET} of type <ARRAY> ${#}" >&2
 
-	[[ ${ARR[@]} =~ "^ *$" ]] && RC=1 || RC=0
+	[[ -z ${ARR[@]} ]] && RC=1 || RC=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RC:${RC}"
 
@@ -133,14 +134,17 @@ err_msg_exit () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${#} -eq 1 && ${#1} -eq 1 && ! ${1} =~ 'W|E|I' ]];then # Only type was passed - no msg
-		E_TYPE=E # Default type
+	if [[ ${#} -eq 1 ]];then
 		E_MSG=${1}
+		if [[ ${#E_MSG} -eq 1 && ! ${E_MSG} =~ 'W|E|I' ]];then
+			return 1 # No message passed
+		else
+			E_TYPE=E # Default type
+			E_MSG=${1}
+		fi
 	elif [[ ${#} -eq 2 ]];then
 		E_TYPE=${1}
 		E_MSG=${2}
-	else
-		return # Message not populated
 	fi
 
 	case ${E_TYPE} in 
@@ -181,7 +185,7 @@ exit_leave () {
 
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup # Restore if needed
 
-	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" # Display any exit messages
+	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
 
 	exit ${_EXIT_VALUE}
 }
@@ -982,7 +986,7 @@ do_trim () {
 }
 
 do_prepend () {
-	local TAG=${1}
+	local TEXT=${1}
 	local CANDIDATE
 	local CPATH
 	local CEXT
@@ -995,7 +999,7 @@ do_prepend () {
 		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # W/o tail & extension
 		CPATH=${_CHAIN_LIST[${C}]:h}
 		[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
-		_OUT_LIST[${C}]="${CPATH}/${TAG}${CANDIDATE}${CEXT}"
+		_OUT_LIST[${C}]="${CPATH}/${TEXT} - ${CANDIDATE}${CEXT}"
 	done
 
 	[[ -n ${_OUT_LIST} ]] && return 0 || return 1
@@ -1009,22 +1013,22 @@ do_yt_tag () {
 	local C
 
 	[[ -z ${_OUT_LIST} ]] && _CHAIN_LIST=(${(kv)_IN_LIST}) || _CHAIN_LIST=(${(kv)_OUT_LIST})
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}"
 
 	for C in ${(k)_CHAIN_LIST};do
 		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # Exclude the extension
 		CPATH=$(realpath ${_CHAIN_LIST[${C}]:h})
 		[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
 
-		grep -Pq '\-?\[' <<<${CANDIDATE}
-		[[ ${?} -ne 0 ]] && unset "_IN_LIST[${C}]" && continue # Remove non matches from original
-
-		CFN=$(echo "${CANDIDATE}" | perl -pe 's/\-?\[.*//' | str_trim)
+		CFN=${(C)CANDIDATE} # Proper case
+		CFN=$(echo "${CFN}" | perl -pe 's/\-?\[.*//' | str_trim)
 		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g')
 		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
-		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x27s /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x{27}s /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/ [Vv]e /\x{27}ve /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe
 
-		_OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}"
+		[[ -n ${CFN} ]] && _OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Proper cased
 	done
 
 	[[ -n ${_OUT_LIST} ]] && return 0 || return 1
@@ -1477,7 +1481,19 @@ fi
 
 # YouTube tags
 if [[ ${YT_TAGS} == "true" ]];then
+	typeset -A VID_LIST=()
 	logit ${_LOG} "Youtube Tags was called"
+	for K in ${(k)_IN_LIST};do
+		[[ ${_IN_LIST[${K}]:e} =~ "mp4|mkv|avi" ]] && VID_LIST[${K}]=${_IN_LIST[${K}]}
+	done
+
+	[[ -z ${VID_LIST} ]] && exit_leave 1 $(err_msg_exit "No video files found")
+
+	_IN_LIST=() # Replace _IN_LIST with video hits
+	for K in ${(k)VID_LIST};do
+		_IN_LIST[${K}]=${VID_LIST[${K}]}
+	done
+
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Eliminating YouTube tags" >&2
 	do_yt_tag
 	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 

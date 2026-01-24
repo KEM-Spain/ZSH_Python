@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+ 
 #Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -608,7 +609,7 @@ do_trim () {
 }
 
 do_prepend () {
-	local TAG=${1}
+	local TEXT=${1}
 	local CANDIDATE
 	local CPATH
 	local CEXT
@@ -621,7 +622,7 @@ do_prepend () {
 		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # W/o tail & extension
 		CPATH=${_CHAIN_LIST[${C}]:h}
 		[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
-		_OUT_LIST[${C}]="${CPATH}/${TAG}${CANDIDATE}${CEXT}"
+		_OUT_LIST[${C}]="${CPATH}/${TEXT} - ${CANDIDATE}${CEXT}"
 	done
 
 	[[ -n ${_OUT_LIST} ]] && return 0 || return 1
@@ -642,12 +643,14 @@ do_yt_tag () {
 		CPATH=$(realpath ${_CHAIN_LIST[${C}]:h})
 		[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
 
-		CFN=$(echo "${CANDIDATE}" | perl -pe 's/\-?\[.*//' | str_trim)
+		CFN=${(C)CANDIDATE} # Proper case
+		CFN=$(echo "${CFN}" | perl -pe 's/\-?\[.*//' | str_trim)
 		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g')
 		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
-		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x27s /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x{27}s /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe
 
-		_OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}"
+		_OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Proper cased
 	done
 
 	[[ -n ${_OUT_LIST} ]] && return 0 || return 1

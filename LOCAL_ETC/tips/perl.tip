@@ -2,17 +2,23 @@
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_perl_EOF_1
 
+${E_WHITE_FG}Specify Octal char:${E_RESET}
+echo "'X" | perl -pe 's/${E_WHITE_FG}\o{047}${E_RESET}/G/g'
+
+${E_WHITE_FG}Specify Hex char:${E_RESET}
+echo "'X" | perl -pe 's/${E_WHITE_FG}\x{027}${E_RESET}/G/g'
+
 ${E_WHITE_FG}Search file for text:${E_RESET}
-perl -wln -e "/${1}/ and print;" ${2}
+perl -wln -e "/${E_WHITE_FG}\${TEXT}${E_RESET}/ and print;" \${FILE}
 
 ${E_WHITE_FG}Word is in KW:${E_RESET}
-perl -nle "if (index('${KW}', \$_) == 0) { exit 0 } else { exit 1 }" <<<${ARG}
+perl -nle "if (index('\${KW}', \$_) == 0) { exit 0 } else { exit 1 }" <<<\${ARG}
 
 is_valid_keyword () {
 	local ARG=\${1}
 	local KW=\${2}
 
-	perl -nle "if (index('${KW}', \$_) == 0) { exit 0 } else { exit 1 }" <<<\${ARG}
+	perl -nle "if (index('\${KW}', \$_) == 0) { exit 0 } else { exit 1 }" <<<\${ARG}
 	return \${?}
 }
 
@@ -24,7 +30,7 @@ ${E_WHITE_FG}Exit status on match
 
 ${E_WHITE_FG}Strip Options:${E_RESET}
 	while true;do # Strip options
-		grep -q '\-' <<<${RAW_PATH}
+		grep -q '\-' <<<\${RAW_PATH}
 		[[ \${?} -ne 0 ]] && break
 		RAW_PATH=\$(echo \${RAW_PATH} \| perl -pe 's/(-\w+)\s+(.*)/\2/g')
 	done

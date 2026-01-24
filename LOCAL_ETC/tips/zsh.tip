@@ -181,32 +181,53 @@ ${E_WHITE_FG}CONDITIONAL EXPRESSIONS${E_RESET}
  
 ${E_BOLD} ${E_WHITE_FG}Miscellaneous Tips${E_RESET}
 
+${E_WHITE_FG}Numeric Range${E_RESET}
+To specify a numeric range use: <X-Y> as in:
+case NUM in
+  <X-Y>) echo "number is between X and Y";;
+  *) echo "number is NOT between X and Y";;
+esac
+
 ${E_WHITE_FG}Dead Tilde${E_RESET}
 Compose Key:<Right><Alt>
 
-For á you press Compose+' then a
-For € you press Compose+= then e
-
+For á you use the key combination: <Right><Alt> + <'> then <a>
+For € you use the key combination: <Right><Alt> + <=> then <e>
 etc...
 
-${E_WHITE_FG}Sudo Execution${E_RESET}
-Not working: sudo echo 300 > /sys/block/md0/md/stripe_cache_size"
+To type Spanish characters use the Compose key and a diacritic modifier
 
-The "echo 300" is executed using sudo, which outputs 300 to stdout in the normal way. Then as your normal user, you are
-trying to take that output and write to /sys/
+Modifier Examples:
+<'> (single quote)
+<,> (comma)
+<~> (tilde)
+<"> (double quote)
+<?> (question mark)
 
-Sudo isn't a magic command that elevates privileges for your whole command line. It takes the arguments you passed to
-it and executes them as a program. Bash (which is running as a normal user) executes 'sudo echo 300' then takes that
-output and tries to write it to a file. Note that the writing to the file is done by zsh which is running as the
-normal user.
+Compose + <'> (single quote) + a = á
+Compose + <~> (tilde) + n = ñ
+Compose + <?> (question mark) + ? = ¿
 
-This should work:
+Common Spanish Sequences
+
+               Acute Accent: Compose + <'> + a/e/i/o/u → á/é/í/ó/ú
+                          ñ: Compose + <~> + n → ñ
+Inverted Punctuation (¡, ¿): Compose + <!> + ! → ¡ & Compose + ? + ? → ¿
+            Umlaut/Dieresis: Compose + <"> + u → ü
+           Guillemets (« »): Compose + <<> + < → « or Compose + <>> + > → »
+
+${E_WHITE_FG}Sudo Gotcha${E_RESET}
+This won't work: sudo echo 300 > /sys/block/md0/md/stripe_cache_size
+
+The command "echo 300" is executed using sudo, which outputs 300 to stdout.
+But you intended that output to write to /sys/ requiring root permissions.
+
+If zsh is running as a normal user, 'echo 300' will as well.
+You need to run zsh as root for echo to do the same.
 
 sudo zsh -c "echo 300 > /sys/block/md0/md/stripe_cache_size"
 
-sudo will execute zsh with higher privileges, and then that root zsh will execute the whole command.
-
-
+Execute zsh as root and permissions will cascade.
 
 ${E_WHITE_FG}Find command regex types${E_RESET}
 find: valid -regextype values
@@ -228,23 +249,23 @@ find: valid -regextype values
 
 ${E_WHITE_FG}Embed foreign script within zsh script${E_RESET}
 inline_edit () {
-	local PROMPT=${1}
-	local CUR_VALUE=${2}
-	local PERL_SCRIPT
+ local PROMPT=${1}
+ local CUR_VALUE=${2}
+ local PERL_SCRIPT
 
-	read -r -d '' PERL_SCRIPT <<'___EOF'
-	use warnings;
-	use strict;
-	use Term::ReadLine;
+ read -r -d '' PERL_SCRIPT <<'___EOF'
+ use warnings;
+ use strict;
+ use Term::ReadLine;
 
-	my $term = new Term::ReadLine 'gsq';
-	$term->parse_and_bind("set editing-mode vi");
+ my $term = new Term::ReadLine 'gsq';
+ $term->parse_and_bind("set editing-mode vi");
 
-	system('sleep .1;xdotool key Home &');
-	while ( defined ($_ = $term->readline($ARGV[0],$ARGV[1])) ) {
-		print $_;
-		exit;
-	}
+ system('sleep .1;xdotool key Home &');
+ while ( defined ($_ = $term->readline($ARGV[0],$ARGV[1])) ) {
+    print $_;
+    exit;
+ }
 ___EOF
 
 perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}

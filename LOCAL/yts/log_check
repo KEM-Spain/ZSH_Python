@@ -1,0 +1,92 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+typeset -a DIR_LIST=()
+typeset -a LOG_LIST=()
+typeset -a DIR_INODES=()
+typeset -a LOG_INODES=()
+typeset -a DIR_NOT_LOG=()
+typeset -a LOG_NOT_DIR=()
+
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_YTS_DIR=~/.local/share/yts
+_LOG=yts.downloads
+_DOWNLOAD_LOG=${_YTS_DIR}/${_LOG}
+_NEW_LOG=/tmp/_LOG.new
+
+# Execution
+clear
+
+DIR_LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
+
+for L in ${(on)DIR_LIST};do
+	DIR_INODE=$(cut -d' ' -f1 <<<${L})
+	[[ ${DIR_FN:e} == 'part' ]] && continue
+	DIR_INODES+=${DIR_INODE}
+done
+
+while read LINE;do
+	LOG_INODE=$(cut -d'|' -f1 <<<${LINE})
+	LOG_INODES+=${LOG_INODE}
+done < ${_DOWNLOAD_LOG}
+
+echo "Download Directory contains:${#DIR_INODES} inodes"
+echo "Log contains:${#LOG_INODES} inodes"
+
+echo "\nDirectory inodes"
+for L in ${DIR_INODES};do
+	[[ ${LOG_INODES[(i)${L}]} -le ${#LOG_INODES} ]] || DIR_NOT_LOG+=${L}
+	printf "%s\n" ${L}
+done
+
+echo "\nLog inodes"
+for L in ${LOG_INODES};do
+	[[ ${DIR_INODES[(i)${L}]} -le ${#DIR_INODES} ]] || LOG_NOT_DIR+=${L}
+	printf "%s\n" ${L}
+done
+
+typeset -a DIR_ROWS=()
+if [[ -n ${DIR_NOT_LOG} ]];then
+	for L in ${DIR_NOT_LOG};do
+		DIR_ROWS+="${L}|${$(find ${_DOWNLOAD_DIR} -inum ${L}):t}"
+	done
+fi
+
+typeset -a LOG_ROWS=()
+if [[ -n ${LOG_NOT_DIR} ]];then
+	for L in ${LOG_NOT_DIR};do
+		LOG_ROWS+=$(grep ${L} ${_DOWNLOAD_LOG})
+	done
+fi
+
+echo "\nDownload Directory contains:${#DIR_NOT_LOG} inodes not in log - add missing files to log"
+for L in ${DIR_ROWS};do
+	printf "%s\n" ${L}
+done
+
+echo "\nLog contains:${#LOG_NOT_DIR} inodes not in directory - remove missing files from log"
+for L in ${LOG_ROWS};do
+	printf "%s\n" ${L}
+done

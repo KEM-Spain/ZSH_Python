@@ -490,21 +490,22 @@ clean_show_fn () {
 }
 
 do_finalize () {
-	local RESPONSE
-	local HIT
-	local K
-	local LONGEST
-	local -A FINAL
-	local -a BEFORE_AFTER
+	local -A FINAL=()
+	local -a BEFORE_AFTER=()
 	local ADDED=0
-	local RESULT BEFORE AFTER
-	local MSG
+	local AFTER=''
+	local BEFORE=''
 	local DELIM="|"
-	local MASKED=false
-	local I_TAG=''
-	local RESPONSE=''
+	local HIT=false
 	local IFN=''
+	local I_TAG=''
+	local LONGEST=0
+	local MASKED=false
+	local MSG=''
 	local OFN=''
+	local RESPONSE=''
+	local RESULT=''
+	local K
 
 	if [[ ${_PIPED} == "true" ]];then
 		if [[ -n ${_OUT_LIST} ]];then
