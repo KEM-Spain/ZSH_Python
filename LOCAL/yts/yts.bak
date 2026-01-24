@@ -39,6 +39,7 @@ typeset -A _FAV_LIST=()
 typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
 typeset -A _INFO_COORDS=()
+typeset -A _MSG_DELAY=(SHORT .2 MED 2 LONG 5)
 typeset -A _PARTIALS=()
 typeset -A _QUERY_MAP=(l live g general u user c channel)
 typeset -A _QUERY_OPTS=()
@@ -61,7 +62,6 @@ _INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT
 _CFG_DIR=~/.local/share/yts
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _ACTION=download
-_ALERT_TM=.2
 _TM_ERR_LIMIT=3
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
@@ -73,7 +73,6 @@ _MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
 _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
-_PAUSE_TM=5
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _YTS_ACRONYMS=${_CFG_DIR}/yts.acronyms
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
@@ -176,7 +175,7 @@ action_do () {
 				job_reset
 				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED"
 				MSG="Cancelling download..."
-				msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<w>${MSG}<N>"
+				msg_box -z -t ${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<w>${MSG}<N>"
 				_CANCELLED[${M}]=true
 				break
 			fi
@@ -193,7 +192,7 @@ action_do () {
 						if [[ ${?} -eq 0 ]];then
 							logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 							MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${DUP_LINE})
-							msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<w>${MSG}<N>|<B>Has already been downloaded<N>"
+							msg_box -z -t ${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<w>${MSG}<N>|<B>Has already been downloaded<N>"
 							_DOWNLOADS[${M}]=true
 							break
 						fi
@@ -201,7 +200,7 @@ action_do () {
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						if [[ ${MSG} != ${LAST_MSG} ]];then
 							logit ${_YT_DBG_LOG} "${0}: PRE-PROCESSING"
-							msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>${MSG}<N>"
+							msg_box -z -t ${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<c>${MSG}<N>"
 						fi
 						LAST_MSG=${MSG}
 						continue
@@ -211,14 +210,14 @@ action_do () {
 							logit ${_YT_DBG_LOG} "${0}: FUTURE"
 							[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
 							MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_PAUSE_TM} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_MSG_DELAY[MED]} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
 							_FUTURE[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
 						elif [[ ${LOG_LINE:l} =~ 'error' ]];then # Detect pre-download errors
 							MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture msg - whole file grep
 							if [[ ${?} -eq 0 ]];then
-								msg_box -z -t ${_PAUSE_TM} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
+								msg_box -z -t ${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y${_INFO_COORDS[Y]} "<r>${MSG[1,70]}<N>"
 								logit ${_YT_DBG_LOG} "${0}: ERROR"
 								logit ${_YTS_ERROR_LOG} "${0}: ${MSG}"
 								_FAILED[${M}]=true
@@ -587,12 +586,13 @@ fav_add () {
 		break
 	done
 
+	msg_box -c -t ${_MSG_DELAY[LONG]} "<w>Adding<N>: \"${_QUERY_OPTS[DKEY]}\"|<w>to<N> ${MENUOPTS[${_MSG_KEY}]} <w>list<N>"
+
 	[[ ${_QUERY_OPTS[ENGINE]} == 'youtube' && ${_QUERY_OPTS[STRICT]} == 'true' ]] && STRICT='S'
 
 	ECODE=${ECODES[${_QUERY_OPTS[ENGINE]}]}
 	RTYPE=${${_QUERY_MAP[${_QUERY_OPTS[EOPT]}]:u}[1]}
 	QKEY=${(C)${_QUERY_OPTS[QKEY]}:gs/ /_/} # Normalize QKEY
-
 	NEWKEY="${QKEY}|${_QUERY_OPTS[DKEY]}|${MENUOP}${ECODE}${RTYPE}${STRICT}" # New key line
 
 	CNT=$(cut -d: -f1 <<<$(grep -ci ${QKEY} ${_YTS_FAVORITES})) # Get match count for key

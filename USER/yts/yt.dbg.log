@@ -1,32 +1,27 @@
-2026-01-24_00:44: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-01-24_00:44: log_update: Skipping expired inode:6366707
-2026-01-24_00:44: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
-2026-01-24_00:44: query_youtube: Creating listing for QKEY:judging freedom STRICT:false
-2026-01-24_00:44: query_youtube: QKEY:judging freedom, g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "judging freedom"
-2026-01-24_00:44: clean_title: [INTEL Roundtable W/ Johnson & Mcgovern : Weekly Wrap 23 JAN]
-2026-01-24_00:44: clean_title: [COL. Lawrence Wilkerson : The Rules Based Order Was A Lie]
-2026-01-24_00:44: clean_title: [Max Blumenthal : Did U.S. Policy Deliberately Harm Civilians In Iran?]
-2026-01-24_00:44: clean_title: [Phil Giraldi : TRUMP: The Presidency That Broke Everything]
-2026-01-24_00:44: clean_title: [Gilbert Doctorow : Trump Through Russian Eyes]
-2026-01-24_00:44: clean_title: [Pepe Escobar : The Emperor Of Chaos Strikes Again!]
-2026-01-24_00:44: clean_title: [Aaron Mate : Did A Regime Change Operation In Iran Fail?]
-2026-01-24_00:44: clean_title: [Prof. Jeffrey Sachs : Diplomacy By Insult -- Trump And Norway]
-2026-01-24_00:44: clean_title: [Prof. Glenn Diesen : Transatlantic Unity Is Cracking]
-2026-01-24_00:44: clean_title: [LT COL. Bill Astore : American Empire Is Breaking : Freefall Ahead]
-2026-01-24_00:44: clean_title: [Ltcol : Karen Kwiatkowski : Empire By Another Name; Trump's Neo]
-2026-01-24_00:44: clean_title: [Scott Ritter : How Close Is Putin To Escalation?]
-2026-01-24_00:44: clean_title: [** COL Douglas Macgreor : Foreign Policy Without A Plan, Who's In]
-2026-01-24_00:44: clean_title: [Alastair Crooke : Trump's Iran Blunders -- And False Hopes]
-2026-01-24_00:45: job_start: QUERY KEY:judging freedom
-2026-01-24_00:45: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=7Vf4vaiOtC4" PID:2839600
-2026-01-24_00:45: action_do: HEADER
-2026-01-24_00:45: clean_title: [Judging Freedom - INTEL Roundtable With Johnson Mcgovern - Weekly Wrap]
-2026-01-24_00:45: yt Executed by /usr/bin/zsh/usr/local/bin/yts with command:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=7Vf4vaiOtC4
-2026-01-24_00:45: action_do: COMPLETED
-2026-01-24_00:45: action_do: POST-PROCESSING
-2026-01-24_00:45: post_process: Last FN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - INTEL_Roundtable_w_Johnson_McGovern_-_Weekly_Wrap_23-JAN.mp4
-2026-01-24_00:45: set_final_fn: ARG:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - INTEL_Roundtable_w_Johnson_McGovern_-_Weekly_Wrap_23-JAN.mp4
-2026-01-24_00:45: clean_title: [Judging Freedom - INTEL Roundtable With Johnson Mcgovern - Weekly Wrap]
-2026-01-24_00:45: set_final_fn: Formatted:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - INTEL Roundtable With Johnson Mcgovern - Weekly Wrap.mp4
-2026-01-24_00:45: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - INTEL_Roundtable_w_Johnson_McGovern_-_Weekly_Wrap_23-JAN.mp4 with:Judging Freedom - INTEL Roundtable With Johnson Mcgovern - Weekly Wrap.mp4
-2026-01-24_00:45: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.pHk0ev was cleared for:judging freedom from:action_do
+2026-01-24_09:56: log_update: LOG lines BEFORE update:11 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-24_09:56: log_update: Skipping expired inode:6328787
+2026-01-24_09:56: log_update: Skipping expired inode:6362967
+2026-01-24_09:56: log_update: Skipping expired inode:6370980
+2026-01-24_09:56: log_update: Skipping expired inode:6371095
+2026-01-24_09:56: log_update: Skipping expired inode:6371203
+2026-01-24_09:56: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-24_09:56: query_rumble: Creating listing for QKEY:ggreenwald TYPE:channel
+2026-01-24_09:56: parse_rumble: Parsing list for QKEY:ggreenwald
+2026-01-24_09:56: parse_rumble: Omitting NDX:1 - URL - ucp_f
+2026-01-24_09:56: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
+2026-01-24_09:56: parse_rumble: Parsing list for QKEY:kimiversen
+2026-01-24_09:56: parse_rumble: Omitting NDX:1 - URL - ucp_f
+2026-01-24_09:56: job_start: QUERY KEY:kimiversen
+2026-01-24_09:56: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v74phcy-ice-can-invade-your-home-without-a-warrant-leaks-reveal.html?e9s=src_v1_ucp_a" PID:2977079
+2026-01-24_09:56: action_do: PRE-PROCESSING
+2026-01-24_09:56: action_do: HEADER
+2026-01-24_09:56: clean_title: [Kim Iversen - ICE Can INVADE Your Home Without A Warrant Leaks Reveal]
+2026-01-24_09:57: action_do: COMPLETED
+2026-01-24_09:57: action_do: POST-PROCESSING
+2026-01-24_09:57: yt Executed by /usr/bin/zsh/usr/local/bin/yts with command:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v74phcy-ice-can-invade-your-home-without-a-warrant-leaks-reveal.html?e9s=src_v1_ucp_a
+2026-01-24_09:57: post_process: Last FN:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - ICE_Can_INVADE_Your_Home_Without_A_Warrant_Leaks_Reveal.mp4
+2026-01-24_09:57: set_final_fn: ARG:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - ICE_Can_INVADE_Your_Home_Without_A_Warrant_Leaks_Reveal.mp4
+2026-01-24_09:57: clean_title: [Kim Iversen - ICE Can INVADE Your Home Without A Warrant Leaks Reveal]
+2026-01-24_09:57: set_final_fn: Formatted:/home/kmiller/Downloads/Torrents/Library/web/Kim Iversen - ICE Can INVADE Your Home Without A Warrant Leaks Reveal.mp4
+2026-01-24_09:57: set_final_fn: Overwriting file:Kim_Iversen - ICE_Can_INVADE_Your_Home_Without_A_Warrant_Leaks_Reveal.mp4 with:Kim Iversen - ICE Can INVADE Your Home Without A Warrant Leaks Reveal.mp4
+2026-01-24_09:57: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.MGLwPG was cleared for:kimiversen from:action_do
