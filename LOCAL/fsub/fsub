@@ -505,7 +505,7 @@ do_subs () {
 		CANDIDATE=${_CHAIN_LIST[${C}]:t} # W/o path
 		[[ -d ${_CHAIN_LIST[${C}]} ]] && OBJECT=Dir || OBJECT=File
 		[[ ${_DEBUG} -ge 1 ]] && dbg "${0}:${LINENO} grep ${GREP_OPTS} ${g_FROM_TEXT} <<<${CANDIDATE}"
-		grep ${GREP_OPTS} "${g_FROM_TEXT}" <<<${CANDIDATE}
+		eval "grep -q ${GREP_OPTS} ${g_FROM_TEXT} <<<${(qqq)CANDIDATE}"
 		if [[ $? -eq 0 ]];then
 			HIT=true
 			_OUT_LIST[${C}]=${_CHAIN_LIST[${C}]}
@@ -535,7 +535,7 @@ do_subs () {
 		CPATH=${_OUT_LIST[${C}]:h} # Path
 		CANDIDATE=${_OUT_LIST[${C}]:t} # W/o path
 		[[ -n ${_OUT_LIST[${C}]:e} ]] && CEXT=.${_OUT_LIST[${C}]:e} || CEXT='' # Set extension
-		CANDIDATE=$(eval "${SED_CMD} <<<${CANDIDATE}")
+		CANDIDATE=$(eval "${SED_CMD} <<<${(qqq)CANDIDATE}")
 		_OUT_LIST[${C}]="${CPATH}/${CANDIDATE:r}${CEXT}"
 	done
 
@@ -647,8 +647,7 @@ do_yt_tag () {
 		CFN=$(echo "${CFN}" | perl -pe 's/\-?\[.*//' | str_trim)
 		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g')
 		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
-		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x{27}s /g')
-		CFN=$(echo "${CFN}" | perl -pe 's/ [Vv]e /\x{27}ve /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/(\w+)\s([Ss]|[Vv]e|[Rr]e)\s(\w+)/\1\x{027}\2/g') # Missing apostrophe
 		CFN=$(echo "${CFN}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe
 
 		[[ -n ${CFN} ]] && _OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Proper cased
@@ -771,7 +770,7 @@ CLEAN_LEADING_DIGITS=false
 DOTS=false
 EXTENDED=false
 TRUNC_FN_LEN=0
-GREP_OPTS='-Eq'
+GREP_OPTS='--color=never -Eq --'
 INTERACTIVE=false
 MEDIA=false
 PREPEND_TAG=''
@@ -802,7 +801,7 @@ while getopts ${OPTSTR} OPT;do
      c) SPACES=true; DOTS=true; CAMEL=true;;
      d) g_ALLOW_DIRS=true;;
      e) g_LIMIT_TO_EXT=true;g_EXT_TEXT=${OPTARG};;
-     i) CASE=I; GREP_OPTS='-Eiq';;
+     i) CASE=I; GREP_OPTS='--color=never -Eiq --';;
      m) MEDIA=true;MEDIA_ARG=${OPTARG};;
      n) CLEAN_LEADING_DIGITS=true;;
      p) PREPEND=true;PREPEND_TAG=${OPTARG};;
@@ -855,11 +854,11 @@ if [[ ${#} -ne 0 ]];then
 		OBJ=${@[${A}]}
 		if [[ -e ${OBJ} ]];then
 			_ARG_LIST[${A}]=file_dir
-			[[ -f ${OBJ} ]] && logit ${_LOG} "Found file:${WHITE_FG}${OBJ}${RESET}"
-			[[ -d ${OBJ} ]] && logit ${_LOG} "Found directory:${WHITE_FG}${OBJ}${RESET}"
+			[[ -f ${OBJ} ]] && logit ${_LOG} "Found file:${OBJ}"
+			[[ -d ${OBJ} ]] && logit ${_LOG} "Found directory:${OBJ}"
 		else
 			_ARG_LIST[${A}]=bare_word
-			logit ${_LOG} "Found text:${WHITE_FG}${OBJ}${RESET}"
+			logit ${_LOG} "Found text:'${OBJ}'"
 		fi
 	done
 fi
@@ -946,6 +945,8 @@ if ! arr_is_populated "${_IN_LIST}";then
 	exit_leave $(err_msg_exit W "${_SCRIPT}:No candidates found")
 fi
 
+logit ${_LOG} "_IN_LIST:${#_IN_LIST}"
+
 if [[ ${_DEBUG} -gt 0 ]];then
 	{
 	echo "COMMAND LINE AND OPTIONS"
@@ -1010,7 +1011,7 @@ fi
 
 # Substitutions
 if [[ ${SEARCH_REPLACE} == 'true' ]];then
-	logit ${_LOG} "Search and Replace was called with:${g_FROM_TEXT} -> ${g_TO_TEXT}"
+	logit ${_LOG} "Search and Replace was called with:'${g_FROM_TEXT}' -> '${g_TO_TEXT}'"
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_subs${RESET}..."
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${WHITE_ON_GREY}Substituting \"${g_FROM_TEXT}\" with \"${g_TO_TEXT}\"${RESET}" >&2
 	do_subs

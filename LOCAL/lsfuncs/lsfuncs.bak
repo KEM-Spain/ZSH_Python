@@ -94,7 +94,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -219,14 +219,14 @@ fi
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Searching FPATH:${FPATH}"
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} find ${FPATH} -maxdepth 1 -type f ${FGLOB} ! -path ${FPATH}"
 
-[[ ! -e ${FPATH} ]] && exit_leave $(msg_exit E "PATH:${FPATH} not found")
+[[ ! -e ${FPATH} ]] && exit_leave $(err_msg_exit E "PATH:${FPATH} not found")
 
 RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f ${FGLOB} ! -path ${FPATH}")}")
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} RAWLIST:${#RAWLIST}"
 
 if ! arr_is_populated "${RAWLIST}";then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} empty RAWLIST - no files found - exit"
-	exit_leave $(msg_exit E "File not found: RAWPATH:${RAWPATH} FPATH:${FPATH} FGLOB:${FGLOB}")
+	exit_leave $(err_msg_exit E "File not found: RAWPATH:${RAWPATH} FPATH:${FPATH} FGLOB:${FGLOB}")
 fi
 
 HIT=false
@@ -259,9 +259,9 @@ done
 if ! arr_is_populated "${_LOCAL_LIST}";then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} empty _LOCAL_LIST - exit"
 	if [[ -n ${SEARCHTERM} ]];then
-		exit_leave $(msg_exit I "No function matches:${SEARCHTERM}")
+		exit_leave $(err_msg_exit I "No function matches:${SEARCHTERM}")
 	elif [[ -n ${FILE_ARG} ]];then
-		exit_leave $(msg_exit I "No functions found in:${FILE_ARG}")
+		exit_leave $(err_msg_exit I "No functions found in:${FILE_ARG}")
 	fi
 fi
 

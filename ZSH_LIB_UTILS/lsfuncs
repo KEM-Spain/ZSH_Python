@@ -124,14 +124,14 @@ usage () {
 	echo -e "${WHITE_FG}-n${RESET} no prompting"
 	echo -e "${WHITE_FG}-a${RESET} no ansi (pertains to print options only)"
 	echo -e "${WHITE_FG}-l${RESET} print list of files/functions (<SEARCHTERM> will apply)"
-	echo -e "${WHITE_FG}-f${RESET} print functions in files (<SEARCHTERM> will apply)"
+	echo -e "${WHITE_FG}-p${RESET} print functions in files (<SEARCHTERM> will apply)"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDanlf"
+OPTSTR=":HDanlp"
 
 OPTIND=0
 
@@ -147,7 +147,7 @@ while getopts ${OPTSTR} OPTION;do
      a) NO_ANSI=true;;
      n) NO_PROMPTS=true;;
      l) PRINT_LIST=true;;
-     f) PRINT_FUNCS=true;;
+     p) PRINT_FUNCS=true;;
      :) print -u2 "${_SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac

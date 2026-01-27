@@ -647,10 +647,10 @@ do_yt_tag () {
 		CFN=$(echo "${CFN}" | perl -pe 's/\-?\[.*//' | str_trim)
 		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g')
 		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
-		CFN=$(echo "${CFN}" | perl -pe 's/ s /\x{27}s /g')
+		CFN=$(echo "${CFN}" | perl -pe 's/(\w+)\s([Ss]|[Vv]e|[Rr]e)\s(\w+)/\1\x{027}\2/g') # Missing apostrophe
 		CFN=$(echo "${CFN}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe
 
-		_OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Proper cased
+		[[ -n ${CFN} ]] && _OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Proper cased
 	done
 
 	[[ -n ${_OUT_LIST} ]] && return 0 || return 1

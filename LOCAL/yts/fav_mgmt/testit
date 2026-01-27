@@ -1,0 +1,213 @@
+#!/usr/bin/zsh
+ 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Declarations
+typeset -A _ALERT_COORDS=()
+typeset -A _CONT_COORDS=()
+typeset -A _DOWNLOADS=()
+typeset -A _CANCELLED=()
+typeset -A _FAILED=()
+typeset -A _FAV_LIST=()
+typeset -A _FIELD_LEN=()
+typeset -A _FUTURE=()
+typeset -A _INFO_COORDS=()
+typeset -A _MSG_DELAY=(SHORT .2 MED 2 LONG 5)
+typeset -A _PARTIALS=()
+typeset -A _RUMBLE_QTYPES=(L live G general U user C channel)
+typeset -A _QUERY_OPTS=()
+typeset -A _REJECTS=()
+typeset -A _RUMBLE_ROWS=()
+typeset -A _SEEN=()
+typeset -A _SORT_TABLE=()
+typeset -A _STATUS_MSGS=()
+typeset -a _ACRONYMS=()
+typeset -a _RUMBLE_QRY_OPTS=(l c u g)
+typeset -a _RUMBLE_PAGE=()
+typeset -aU _LOCAL_LIST=()
+typeset -A _ENG_CODES=(youtube Y rumble R)
+typeset -A _MENU_TYPES=(1 Custom 2 Rumble 3 YouTube)
+
+# Display Constants
+_CONT_COORDS=(X 10 Y $(center -h86) H 10 W 86) # Continuous box coords
+_ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alert display coords
+_INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Info display coords
+
+# Constants
+_CFG_DIR=~/.local/share/yts
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_ACTION=download
+_TM_ERR_LIMIT=3
+_FIELD_LEN[age]=30
+_FIELD_LEN[agetime]=40
+_FIELD_LEN[author]=26
+_FIELD_LEN[title]=80
+_JS_SCRIPT="/usr/local/etc/yts.js"
+_MAX_FLEN=85
+_MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
+_MAX_TITLE=74
+_MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
+_OBJECT="video"
+_SORT_DEFAULT=(youtube 1:a rumble 1:a)
+_YTS_ACRONYMS=${_CFG_DIR}/yts.acronyms
+_YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
+_YTS_ERROR_LOG=${_CFG_DIR}/yts.err.log
+#_YTS_FAVORITES=${_CFG_DIR}/yts.favorites
+_YTS_FAVORITES=./yts.favorites
+_YTS_FAV_NEW=${_CFG_DIR}/yts.favorites.new
+_YTS_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
+_YTS_URL_LOG=${_CFG_DIR}/yts.url.log
+_YT_DBG_LOG=${_CFG_DIR}/yt.dbg.log
+
+# Globals
+g_CMDLINE_ARGS=false
+g_IND_FLIP=false
+g_LAST_CODE_UPD=?
+g_LAST_FAV_TYPE=y
+g_LAST_SPEED=0
+g_LAST_STYPE=0
+g_MASK_NDX=1
+g_PID=?
+g_PREFER_LIVE=''
+g_PROXY_CMD=''
+g_WHEN=''
+g_YTS_LOG=''
+
+fav_add () {
+	local -a EXISTING_KEYS=()
+	local -aU HISTORY
+	local CNT=0
+	local FAV=''
+	local LNUM=''
+	local MENU_KEY=''
+	local MENU_SEL=''
+	local MK=''
+	local NEW_KEY=''
+	local UPD_KEY=false
+	local KEY_MATCH=''
+	local DK=''
+	local K
+
+	# TODO: Provide option to modify display key
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} FKEY:${_QUERY_OPTS[QKEY]} DKEY:${_QUERY_OPTS[DKEY]} _QUERY_OPTS[ENGINE]:${_QUERY_OPTS[ENGINE]}"
+
+	clear
+
+	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add \"${_QUERY_OPTS[QKEY]}\" to favorites?"
+	[[ ${_MSG_KEY} != 'y' ]] && return
+
+	while true;do
+		msg_box -c -H1 -p -PS -jl "<w>Select Favorites List<N>|$(msg_list_number ${(ov)_MENU_TYPES})"
+		[[ ${_MSG_KEY} -eq 0 ]] && break
+		MENU_SEL=${_MENU_TYPES[${_MSG_KEY}]}
+		[[ -z ${MENU_SEL} ]] && msg_box -p -PK "Invalid option" && continue
+		MENU_SEL=${MENU_SEL[1]:u} 
+		break
+	done
+	[[ -z ${MENU_SEL} ]] && return 1
+
+	EXISTING_KEYS=("${(f)$(grep -Ei "${_QUERY_OPTS[QKEY]}|${_QUERY_OPTS[DKEY]:gs/ /_/}" ${_YTS_FAVORITES})}")
+
+	for K in ${EXISTING_KEYS};do
+		DK=$(cut -d'|' -f1 <<<${K})
+		MK=$(cut -d'|' -f3 <<<${K})
+		MENU_KEY=${MK[1]}
+		if [[ ${MENU_KEY} == ${MENU_SEL} ]];then
+			UPD_KEY=true
+			_QUERY_OPTS[DKEY]=$(cut -d'|' -f1 <<<${K}) # Use existing display key
+			KEY_MATCH=${K} # Key for selected menu exists
+		fi
+	done
+
+	[[ -n ${DK} ]] && _QUERY_OPTS[DKEY]=${DK} # Retain display key if match was QKEY
+
+	case ${MENU_SEL} in
+		C) if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then # Custom requires ECODE
+				NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[ECODE]}${_QUERY_OPTS[STRICT]}"
+			elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
+				NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[ECODE]}${_QUERY_OPTS[RQT]}"
+			fi;;
+		R) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[RQT]}";;
+		Y) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[STRICT]}";;
+	esac
+
+	msg_box -c -t ${_MSG_DELAY[MED]} "<w>Adding<N>: \"${_QUERY_OPTS[DKEY]}\"|<w>to<N> ${MENU_TYPES[${_MSG_KEY}]} <w>list<N>"
+
+	if [[ ${UPD_KEY} == 'true' ]];then
+		if [[ ${KEY_MATCH} == ${NEW_KEY} ]];then
+			msg_box -c -t ${_MSG_DELAY[LONG]} -s# "Key:<w>${KEY_MATCH}<N>#<r>Matching key already exists<N>#Nothing to do!"
+			return 2
+		fi
+		msg_box -c -p -PK -H1 -s# "<r>Duplicate Menu Key<N>#${KEY_MATCH}#<r>already exists<N>#<Z>#Replace with:#${NEW_KEY}#(Y/N)"
+		[[ ${_MSG_KEY} != 'y' ]] && return 1
+		LNUM=$(cut -d: -f1 <<<$(grep -ni ${KEY_MATCH} ${_YTS_FAVORITES})) # Get line number of existing key
+		if [[ -n ${LNUM} ]];then
+			sed -i "${LNUM}d" ${_YTS_FAVORITES} # Delete line number
+			sed -i "${LNUM}i ${NEW_KEY}" ${_YTS_FAVORITES} # Insert replacement
+		else
+			msg_box "${0}: grep error - unable to locate line for key"
+		fi
+	else
+		echo ${NEW_KEY} >> ${_YTS_FAVORITES} # Append new key to file
+	fi
+	return 0
+}
+
+# Execution
+clear
+
+[[ -z ${@} ]] && exit_leave "Missing argument: <QRY>"
+
+_QUERY_OPTS[QKEY]="${@}"
+_QUERY_OPTS[DKEY]="${(C)@:gs/_/ /}"
+_QUERY_OPTS[TYPE]=standard
+
+while true;do
+	_QUERY_OPTS[ENGINE]=''
+	msg_box -c -H1 -p -PS -jl "<w>Select Query Engine<N>|$(msg_list_number ${(ok)_ENG_CODES})"
+	[[ ${_MSG_KEY} -eq 0 ]] && break
+	[[ ${_MSG_KEY} -eq 1 ]] && _QUERY_OPTS[ENGINE]="rumble"
+	[[ ${_MSG_KEY} -eq 2 ]] && _QUERY_OPTS[ENGINE]="youtube"
+	[[ -z ${_QUERY_OPTS[ENGINE]} ]] && msg_box -p -PK "Invalid option" && continue
+	break
+done
+[[ -z ${_QUERY_OPTS[ENGINE]} ]] && exit_leave "Invalid Query Engine"
+
+if [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
+	_QUERY_OPTS[ECODE]="R"
+	while true;do
+		_QUERY_OPTS[RQT]=''
+		msg_box -c -H1 -p -PS -jl "<w>Select Rumble Query Type<N>|$(msg_list_number ${(ov)_RUMBLE_QTYPES})"
+		[[ ${_MSG_KEY} -eq 0 ]] && break
+		[[ ${_MSG_KEY} -eq 1 ]] && _QUERY_OPTS[RQT]="C"
+		[[ ${_MSG_KEY} -eq 2 ]] && _QUERY_OPTS[RQT]="G"
+		[[ ${_MSG_KEY} -eq 3 ]] && _QUERY_OPTS[RQT]="L"
+		[[ ${_MSG_KEY} -eq 4 ]] && _QUERY_OPTS[RQT]="U"
+		[[ -z ${_QUERY_OPTS[RQT]} ]] && msg_box -p -PK "Invalid option" && continue
+		break
+	done
+	[[ -z ${_QUERY_OPTS[RQT]} ]] && exit_leave "Invalid Rumble Query Type"
+elif [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
+	_QUERY_OPTS[ECODE]="Y"
+	local -A STYPES=(1 true 2 false)
+	while true;do
+		_QUERY_OPTS[STRICT]=''
+		msg_box -c -H1 -p -PS -jl "<w>Select STRICT value<N>|$(msg_list_number ${(v)STYPES})"
+		[[ ${_MSG_KEY} -eq 0 ]] && break
+		[[ ${STYPES[${_MSG_KEY}]} == 'true' ]] && _QUERY_OPTS[STRICT]="S" || _QUERY_OPTS[STRICT]=""
+		[[ -z ${STYPES[${_MSG_KEY}]} ]] && msg_box -p -PK "Invalid option" && continue
+		break
+	done
+	[[ -z ${STYPES[${_MSG_KEY}]} ]] && exit_leave "Invalid STRICT value"
+fi
+
+query_${_QUERY_OPTS[ENGINE]}
+
+fav_add
+echo "RC:${?}"

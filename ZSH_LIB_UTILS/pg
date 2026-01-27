@@ -25,11 +25,27 @@ source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
+usage () {
+	echo "Usage:${_SCRIPT} [<FILE>]"
+	echo " Desc:Paging for either <FILE> or <PIPE>"
+	exit_leave
+}
+
 #Execution
-[[ ${#} -eq 0 ]] && exit_leave $(err_msg_exit E "Missing argument:<FN>") || FN=${1}
-[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit E "File not found:${FN}")
+if [[ -t 0 ]];then
+	[[ ${1} == '-H' ]] && usage
+	[[ ${#} -eq 0 ]] && exit_leave $(err_msg_exit E "Missing argument:<FN>") || FN=${1}
+	[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit E "File not found:${FN}")
+fi
+
 tput smcup
-less $1
+if [[ -t 0 ]];then
+	less $1
+else
+	while read LINE;do
+		echo ${LINE}
+	done | less -R
+fi
 tput rmcup
 
 exit_leave

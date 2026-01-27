@@ -1,27 +1,971 @@
-2026-01-24_09:56: log_update: LOG lines BEFORE update:11 /home/kmiller/.local/share/yts/yts.downloads
-2026-01-24_09:56: log_update: Skipping expired inode:6328787
-2026-01-24_09:56: log_update: Skipping expired inode:6362967
-2026-01-24_09:56: log_update: Skipping expired inode:6370980
-2026-01-24_09:56: log_update: Skipping expired inode:6371095
-2026-01-24_09:56: log_update: Skipping expired inode:6371203
-2026-01-24_09:56: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
-2026-01-24_09:56: query_rumble: Creating listing for QKEY:ggreenwald TYPE:channel
-2026-01-24_09:56: parse_rumble: Parsing list for QKEY:ggreenwald
-2026-01-24_09:56: parse_rumble: Omitting NDX:1 - URL - ucp_f
-2026-01-24_09:56: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
-2026-01-24_09:56: parse_rumble: Parsing list for QKEY:kimiversen
-2026-01-24_09:56: parse_rumble: Omitting NDX:1 - URL - ucp_f
-2026-01-24_09:56: job_start: QUERY KEY:kimiversen
-2026-01-24_09:56: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v74phcy-ice-can-invade-your-home-without-a-warrant-leaks-reveal.html?e9s=src_v1_ucp_a" PID:2977079
-2026-01-24_09:56: action_do: PRE-PROCESSING
-2026-01-24_09:56: action_do: HEADER
-2026-01-24_09:56: clean_title: [Kim Iversen - ICE Can INVADE Your Home Without A Warrant Leaks Reveal]
-2026-01-24_09:57: action_do: COMPLETED
-2026-01-24_09:57: action_do: POST-PROCESSING
-2026-01-24_09:57: yt Executed by /usr/bin/zsh/usr/local/bin/yts with command:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v74phcy-ice-can-invade-your-home-without-a-warrant-leaks-reveal.html?e9s=src_v1_ucp_a
-2026-01-24_09:57: post_process: Last FN:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - ICE_Can_INVADE_Your_Home_Without_A_Warrant_Leaks_Reveal.mp4
-2026-01-24_09:57: set_final_fn: ARG:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - ICE_Can_INVADE_Your_Home_Without_A_Warrant_Leaks_Reveal.mp4
-2026-01-24_09:57: clean_title: [Kim Iversen - ICE Can INVADE Your Home Without A Warrant Leaks Reveal]
-2026-01-24_09:57: set_final_fn: Formatted:/home/kmiller/Downloads/Torrents/Library/web/Kim Iversen - ICE Can INVADE Your Home Without A Warrant Leaks Reveal.mp4
-2026-01-24_09:57: set_final_fn: Overwriting file:Kim_Iversen - ICE_Can_INVADE_Your_Home_Without_A_Warrant_Leaks_Reveal.mp4 with:Kim Iversen - ICE Can INVADE Your Home Without A Warrant Leaks Reveal.mp4
-2026-01-24_09:57: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.MGLwPG was cleared for:kimiversen from:action_do
+2026-01-27_09:15: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-27_09:15: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-27_09:16: query_rumble: Creating listing for QKEY:thejimmydoreshow TYPE:channel
+2026-01-27_09:16: parse_rumble: Parsing list for QKEY:thejimmydoreshow
+2026-01-27_09:16: get_field: MAPPED VALUE title:Heres Why Precious Metal Prices Are SKYROCKETING!!!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Heres Why Precious Metal Prices Are SKYROCKETING!!!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Candace EXPOSES TPUSAs Mass Firings All For Israel!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Candace EXPOSES TPUSAs Mass Firings All For Israel!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 16:50)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 16:50)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jon Stewart Defends Joe Rogan RIGHT IN New Yorker Reporters Face!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jon Stewart Defends Joe Rogan RIGHT IN New Yorker Reporters Face!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 22:42)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 22:42)
+2026-01-27_09:16: get_field: MAPPED VALUE title:No Gaza Genocide! SLIMY Gavin Newsom AGREES With Ben Shapiro!
+2026-01-27_09:16: get_field:  FINAL VALUE title:No Gaza Genocide! SLIMY Gavin Newsom AGREES With Ben Shapiro!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 18:19)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 18:19)
+2026-01-27_09:16: get_field: MAPPED VALUE title:No Warrants Needed! ICE Agents Told To Break Into Peoples Homes!
+2026-01-27_09:16: get_field:  FINAL VALUE title:No Warrants Needed! ICE Agents Told To Break Into Peoples Homes!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 14:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 14:02)
+2026-01-27_09:16: get_field: MAPPED VALUE title:SUPER SHADY! Erika Kirks Shocking History With Romanian Angels Program!
+2026-01-27_09:16: get_field:  FINAL VALUE title:SUPER SHADY! Erika Kirks Shocking History With Romanian Angels Program!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 14:57)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 14:57)
+2026-01-27_09:16: get_field: MAPPED VALUE title:This Massive Winter Storm Is COMPLETELY ENGINEERED! Dane Wiggington
+2026-01-27_09:16: get_field:  FINAL VALUE title:This Massive Winter Storm Is COMPLETELY ENGINEERED! Dane Wiggington
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 25:44)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 25:44)
+2026-01-27_09:16: get_field: MAPPED VALUE title:TPUSA Event HEADLINER Accused Of Covering Up S*x Trafficking!
+2026-01-27_09:16: get_field:  FINAL VALUE title:TPUSA Event HEADLINER Accused Of Covering Up S*x Trafficking!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 20:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 20:34)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Zionist Donor THREATENED Charlie Kirk Right Before His Murder!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Zionist Donor THREATENED Charlie Kirk Right Before His Murder!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 24:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 24:37)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Dementia Now Hitting People In Their 30s & 40s! w/ Kim Bright
+2026-01-27_09:16: get_field:  FINAL VALUE title:Dementia Now Hitting People In Their 30s & 40s! w/ Kim Bright
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 18:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 18:23)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Im Donald Trumps NUMBER ONE Lapdog! CNNs Scott Jennings
+2026-01-27_09:16: get_field:  FINAL VALUE title:Im Donald Trumps NUMBER ONE Lapdog! CNNs Scott Jennings
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 6:26)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 6:26)
+2026-01-27_09:16: get_field: MAPPED VALUE title:JD Vance Is PISSED About Having A 4th Baby!
+2026-01-27_09:16: get_field:  FINAL VALUE title:JD Vance Is PISSED About Having A 4th Baby!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 6:46)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 6:46)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Tech Takeover Of Americas Was Planned 90 YEARS AGO!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Tech Takeover Of Americas Was Planned 90 YEARS AGO!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 21:38)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 21:38)
+2026-01-27_09:16: get_field: MAPPED VALUE title:The Rules-Based Order Was ALWAYS A LIE! Canadian PM Mark Carney
+2026-01-27_09:16: get_field:  FINAL VALUE title:The Rules-Based Order Was ALWAYS A LIE! Canadian PM Mark Carney
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 22:41)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 22:41)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Candace Owens: Dave Rubin Is A Groomer!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Candace Owens: Dave Rubin Is A Groomer!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 17:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 17:35)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Candace Owens NUMBER ONE Unanswered Question About Charlie Kirk Assassination!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Candace Owens NUMBER ONE Unanswered Question About Charlie Kirk Assassination!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 10:57)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 10:57)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Erika Kirk Accused Of KNOWING Charlie Would Be Assassinated!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Erika Kirk Accused Of KNOWING Charlie Would Be Assassinated!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 5:36)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 5:36)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Europe Forces Trump Retreat From Greenland Land Grab!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Europe Forces Trump Retreat From Greenland Land Grab!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 12:00)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 12:00)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Newest Erika Kirk Lie About Chinese S*x Trafficking Revealed!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Newest Erika Kirk Lie About Chinese S*x Trafficking Revealed!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 9:21)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 9:21)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Heres The REAL End Game For Iran w/ Thomas Massie
+2026-01-27_09:16: get_field:  FINAL VALUE title:Heres The REAL End Game For Iran w/ Thomas Massie
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 5:07)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 5:07)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Pam Bondi BRAGS About Prosecuting Americans For Anti-Israel Speech!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Pam Bondi BRAGS About Prosecuting Americans For Anti-Israel Speech!
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 9:04)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 9:04)
+2026-01-27_09:16: get_field: MAPPED VALUE title:The Epstein Files WILL Be Released & Heres How! Thomas Massie
+2026-01-27_09:16: get_field:  FINAL VALUE title:The Epstein Files WILL Be Released & Heres How! Thomas Massie
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 18:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 18:59)
+2026-01-27_09:16: get_field: MAPPED VALUE title:The REAL Reason Trump Wants To Invade Venezuela & Greenland! w/ Thomas Massie
+2026-01-27_09:16: get_field:  FINAL VALUE title:The REAL Reason Trump Wants To Invade Venezuela & Greenland! w/ Thomas Massie
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 6:14)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 6:14)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Thomas Massie Talks Run For President in 2028
+2026-01-27_09:16: get_field:  FINAL VALUE title:Thomas Massie Talks Run For President in 2028
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 13:28)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 13:28)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Heres Why Precious Metal Prices Are SKYROCKETING!!!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Heres Why Precious Metal Prices Are SKYROCKETING!!!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 16:50)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 16:50)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 16:50)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 16:50)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Candace EXPOSES TPUSAs Mass Firings All For Israel!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Candace EXPOSES TPUSAs Mass Firings All For Israel!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 22:42)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 22:42)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 22:42)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 22:42)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jon Stewart Defends Joe Rogan RIGHT IN New Yorker Reporters Face!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jon Stewart Defends Joe Rogan RIGHT IN New Yorker Reporters Face!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 18:19)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 18:19)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 18:19)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 18:19)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:No Gaza Genocide! SLIMY Gavin Newsom AGREES With Ben Shapiro!
+2026-01-27_09:16: get_field:  FINAL VALUE title:No Gaza Genocide! SLIMY Gavin Newsom AGREES With Ben Shapiro!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 14:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 14:02)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 14:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 14:02)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:No Warrants Needed! ICE Agents Told To Break Into Peoples Homes!
+2026-01-27_09:16: get_field:  FINAL VALUE title:No Warrants Needed! ICE Agents Told To Break Into Peoples Homes!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 14:57)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 14:57)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 14:57)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 14:57)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:SUPER SHADY! Erika Kirks Shocking History With Romanian Angels Program!
+2026-01-27_09:16: get_field:  FINAL VALUE title:SUPER SHADY! Erika Kirks Shocking History With Romanian Angels Program!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 25:44)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 25:44)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 25:44)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 25:44)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:This Massive Winter Storm Is COMPLETELY ENGINEERED! Dane Wiggington
+2026-01-27_09:16: get_field:  FINAL VALUE title:This Massive Winter Storm Is COMPLETELY ENGINEERED! Dane Wiggington
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 20:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 20:34)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 20:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 20:34)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:TPUSA Event HEADLINER Accused Of Covering Up S*x Trafficking!
+2026-01-27_09:16: get_field:  FINAL VALUE title:TPUSA Event HEADLINER Accused Of Covering Up S*x Trafficking!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 24:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 24:37)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 24:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 24:37)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Zionist Donor THREATENED Charlie Kirk Right Before His Murder!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Zionist Donor THREATENED Charlie Kirk Right Before His Murder!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 18:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 18:23)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 18:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 18:23)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Dementia Now Hitting People In Their 30s & 40s! w/ Kim Bright
+2026-01-27_09:16: get_field:  FINAL VALUE title:Dementia Now Hitting People In Their 30s & 40s! w/ Kim Bright
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 6:26)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 6:26)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 6:26)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 6:26)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Im Donald Trumps NUMBER ONE Lapdog! CNNs Scott Jennings
+2026-01-27_09:16: get_field:  FINAL VALUE title:Im Donald Trumps NUMBER ONE Lapdog! CNNs Scott Jennings
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 6:46)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 6:46)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 6:46)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 6:46)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:JD Vance Is PISSED About Having A 4th Baby!
+2026-01-27_09:16: get_field:  FINAL VALUE title:JD Vance Is PISSED About Having A 4th Baby!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 21:38)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 21:38)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 21:38)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 21:38)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Tech Takeover Of Americas Was Planned 90 YEARS AGO!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Tech Takeover Of Americas Was Planned 90 YEARS AGO!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 22:41)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 22:41)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 22:41)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 22:41)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:The Rules-Based Order Was ALWAYS A LIE! Canadian PM Mark Carney
+2026-01-27_09:16: get_field:  FINAL VALUE title:The Rules-Based Order Was ALWAYS A LIE! Canadian PM Mark Carney
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 17:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 17:35)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 17:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 17:35)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Candace Owens: Dave Rubin Is A Groomer!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Candace Owens: Dave Rubin Is A Groomer!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 10:57)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 10:57)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 10:57)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 10:57)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Candace Owens NUMBER ONE Unanswered Question About Charlie Kirk Assassination!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Candace Owens NUMBER ONE Unanswered Question About Charlie Kirk Assassination!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 5:36)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 5:36)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 5:36)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 5:36)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Erika Kirk Accused Of KNOWING Charlie Would Be Assassinated!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Erika Kirk Accused Of KNOWING Charlie Would Be Assassinated!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 12:00)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 12:00)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 12:00)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 12:00)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Europe Forces Trump Retreat From Greenland Land Grab!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Europe Forces Trump Retreat From Greenland Land Grab!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 9:21)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 9:21)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 9:21)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 9:21)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Newest Erika Kirk Lie About Chinese S*x Trafficking Revealed!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Newest Erika Kirk Lie About Chinese S*x Trafficking Revealed!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 5:07)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 5:07)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 5:07)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 5:07)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Heres The REAL End Game For Iran w/ Thomas Massie
+2026-01-27_09:16: get_field:  FINAL VALUE title:Heres The REAL End Game For Iran w/ Thomas Massie
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 9:04)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 9:04)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 9:04)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 9:04)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Pam Bondi BRAGS About Prosecuting Americans For Anti-Israel Speech!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Pam Bondi BRAGS About Prosecuting Americans For Anti-Israel Speech!
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 18:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 18:59)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 18:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 18:59)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:The Epstein Files WILL Be Released & Heres How! Thomas Massie
+2026-01-27_09:16: get_field:  FINAL VALUE title:The Epstein Files WILL Be Released & Heres How! Thomas Massie
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 6:14)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 6:14)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 6:14)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 6:14)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:The REAL Reason Trump Wants To Invade Venezuela & Greenland! w/ Thomas Massie
+2026-01-27_09:16: get_field:  FINAL VALUE title:The REAL Reason Trump Wants To Invade Venezuela & Greenland! w/ Thomas Massie
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 13:28)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 13:28)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 13:28)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 13:28)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Thomas Massie Talks Run For President in 2028
+2026-01-27_09:16: get_field:  FINAL VALUE title:Thomas Massie Talks Run For President in 2028
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 16:19)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field:  FINAL VALUE author:Jimmy Dore
+2026-01-27_09:16: get_field: MAPPED VALUE title:Heres Why Precious Metal Prices Are SKYROCKETING!!!
+2026-01-27_09:16: get_field:  FINAL VALUE title:Heres Why Precious Metal Prices Are SKYROCKETING!!!
+2026-01-27_09:16: query_youtube: Creating listing for QKEY:danny haiphong STRICT:false
+2026-01-27_09:16: query_youtube: QKEY:danny haiphong, g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "danny haiphong"
+2026-01-27_09:16: clean_title: TITLE  IN:Iran Vows Next Missile Attack WIPES OUT Israel & US Navy : Patrick Henningsen & Col. Wilkerson
+2026-01-27_09:16: clean_title: TITLE OUT:Iran Vows Next Missile Attack WIPES OUT Israel & US NAVY : Patrick
+2026-01-27_09:16: clean_title: TITLE  IN:US Just LOST to Iran, Trump's Greenland Grab ENDS NATO : Larry Johnson & Stanislav Krapivnik
+2026-01-27_09:16: clean_title: TITLE OUT:US Just LOST To Iran, Trump's Greenland Grab ENDS NATO : Larry Johnson
+2026-01-27_09:16: clean_title: TITLE  IN:Trump LOSES IT as Iran Hits Back, NATO IMPLODES : Col. Larry Wilkerson & Patrick Henningsen
+2026-01-27_09:16: clean_title: TITLE OUT:Trump LOSES IT As Iran Hits Back, NATO IMPLODES : COL. Larry Wilkerson
+2026-01-27_09:16: clean_title: TITLE  IN:Trump's War on Iran Sparks WW3? Prof. Jiang Xueqin Predicts US Empire COLLAPSE in 2026
+2026-01-27_09:16: clean_title: TITLE OUT:Trump's War On Iran Sparks WW3? Prof. Jiang Xueqin Predicts US Empire
+2026-01-27_09:16: clean_title: TITLE  IN:Pepe Escobar: Trump in DEEP Trouble as Putin & Iran's BOMBSHELL Crush His War Bluff
+2026-01-27_09:16: clean_title: TITLE OUT:Pepe Escobar: Trump In DEEP Trouble As Putin & Iran's BOMBSHELL Crush
+2026-01-27_09:16: get_field: MAPPED VALUE title:Iran Vows Next Missile Attack WIPES OUT Israel & US NAVY : Patrick
+2026-01-27_09:16: get_field:  FINAL VALUE title:Iran Vows Next Missile Attack WIPES OUT Israel & US NAVY : Patrick
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Trump's War On Iran Sparks WW3? Prof. Jiang Xueqin Predicts US Empire
+2026-01-27_09:16: get_field:  FINAL VALUE title:Trump's War On Iran Sparks WW3? Prof. Jiang Xueqin Predicts US Empire
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 26:53)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 26:53)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Pepe Escobar: Trump In DEEP Trouble As Putin & Iran's BOMBSHELL Crush
+2026-01-27_09:16: get_field:  FINAL VALUE title:Pepe Escobar: Trump In DEEP Trouble As Putin & Iran's BOMBSHELL Crush
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 21:20)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 21:20)
+2026-01-27_09:16: get_field: MAPPED VALUE title:US Just LOST To Iran, Trump's Greenland Grab ENDS NATO : Larry Johnson
+2026-01-27_09:16: get_field:  FINAL VALUE title:US Just LOST To Iran, Trump's Greenland Grab ENDS NATO : Larry Johnson
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 1:34:39)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 1:34:39)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Trump LOSES IT As Iran Hits Back, NATO IMPLODES : COL. Larry Wilkerson
+2026-01-27_09:16: get_field:  FINAL VALUE title:Trump LOSES IT As Iran Hits Back, NATO IMPLODES : COL. Larry Wilkerson
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(5 days ago 1:41:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(5 days ago 1:41:35)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE title:Iran Vows Next Missile Attack WIPES OUT Israel & US NAVY : Patrick
+2026-01-27_09:16: get_field:  FINAL VALUE title:Iran Vows Next Missile Attack WIPES OUT Israel & US NAVY : Patrick
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 26:53)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 26:53)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 26:53)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 26:53)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE title:Trump's War On Iran Sparks WW3? Prof. Jiang Xueqin Predicts US Empire
+2026-01-27_09:16: get_field:  FINAL VALUE title:Trump's War On Iran Sparks WW3? Prof. Jiang Xueqin Predicts US Empire
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 21:20)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 21:20)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 21:20)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 21:20)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE title:Pepe Escobar: Trump In DEEP Trouble As Putin & Iran's BOMBSHELL Crush
+2026-01-27_09:16: get_field:  FINAL VALUE title:Pepe Escobar: Trump In DEEP Trouble As Putin & Iran's BOMBSHELL Crush
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 1:34:39)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 1:34:39)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 1:34:39)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 1:34:39)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE title:US Just LOST To Iran, Trump's Greenland Grab ENDS NATO : Larry Johnson
+2026-01-27_09:16: get_field:  FINAL VALUE title:US Just LOST To Iran, Trump's Greenland Grab ENDS NATO : Larry Johnson
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(5 days ago 1:41:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(5 days ago 1:41:35)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(5 days ago 1:41:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(5 days ago 1:41:35)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE title:Trump LOSES IT As Iran Hits Back, NATO IMPLODES : COL. Larry Wilkerson
+2026-01-27_09:16: get_field:  FINAL VALUE title:Trump LOSES IT As Iran Hits Back, NATO IMPLODES : COL. Larry Wilkerson
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(12 hours ago 24:10)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field:  FINAL VALUE author:Danny Haiphong
+2026-01-27_09:16: get_field: MAPPED VALUE title:Iran Vows Next Missile Attack WIPES OUT Israel & US NAVY : Patrick
+2026-01-27_09:16: get_field:  FINAL VALUE title:Iran Vows Next Missile Attack WIPES OUT Israel & US NAVY : Patrick
+2026-01-27_09:16: query_youtube: Creating listing for QKEY:dialogueworks STRICT:false
+2026-01-27_09:16: query_youtube: QKEY:dialogueworks, g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "dialogueworks"
+2026-01-27_09:16: clean_title: TITLE  IN:Scott Ritter: This Is the Moment the West Started Losing
+2026-01-27_09:16: clean_title: TITLE OUT:Scott Ritter: This Is The Moment The West Started Losing
+2026-01-27_09:16: clean_title: TITLE  IN:Amb. Chas Freeman: Iran Vows Huge Response to US-Israel Attack
+2026-01-27_09:16: clean_title: TITLE OUT:Amb. Chas Freeman: Iran Vows Huge Response To US Israel Attack
+2026-01-27_09:16: clean_title: TITLE  IN:Larry C. Johnson & Col. Larry Wilkerson:  Trump's War Gamble Just Blew Up in His Face
+2026-01-27_09:16: clean_title: TITLE OUT:Larry C. Johnson & COL. Larry Wilkerson: Trump's War Gamble Just Blew
+2026-01-27_09:16: clean_title: TITLE  IN:Richard Wolff & Michael Hudson: This Could Break NATO: Trump, Rutte, and Europe's Last Stand
+2026-01-27_09:16: clean_title: TITLE OUT:Richard Wolff & Michael Hudson: This Could Break NATO: Trump, Rutte,
+2026-01-27_09:16: clean_title: TITLE  IN:Andrei Martyanov: "Game Over": Russia's Plan to End Everything is Now Active
+2026-01-27_09:16: clean_title: TITLE OUT:Andrei Martyanov: "Game Over": Russia's Plan To End Everything Is Now
+2026-01-27_09:16: clean_title: TITLE  IN:John Helmer: Two Fronts, One Collapsing EU? Greenland's Choice & Ukraine's War
+2026-01-27_09:16: clean_title: TITLE OUT:John Helmer: Two Fronts, One Collapsing EU? Greenland's Choice &
+2026-01-27_09:16: clean_title: TITLE  IN:Paul Craig Roberts: Full Scale Chaos: How We Got Here So Fast
+2026-01-27_09:16: clean_title: TITLE OUT:Paul Craig Roberts: Full Scale Chaos: How We Got Here So Fast
+2026-01-27_09:16: clean_title: TITLE  IN:Col. Larry Wilkerson: Blazing Alarms, Collapsing Alliances -- America's Foreign Policy Just Backfired
+2026-01-27_09:16: clean_title: TITLE OUT:COL. Larry Wilkerson: Blazing Alarms, Collapsing Alliances -- America's
+2026-01-27_09:16: clean_title: TITLE  IN:John Helmer: Who Really Owns Venezuela?
+2026-01-27_09:16: clean_title: TITLE OUT:John Helmer: WHO Really Owns Venezuela?
+2026-01-27_09:16: clean_title: TITLE  IN:Patrick Henningsen: It's Over: Trump's Plan Just BLEW UP
+2026-01-27_09:16: clean_title: TITLE OUT:Patrick Henningsen: It's Over: Trump's Plan Just BLEW UP
+2026-01-27_09:16: clean_title: TITLE  IN:Mohammad Marandi: Starlink is DOWN. Iran's reality HITS Trump
+2026-01-27_09:16: clean_title: TITLE OUT:Mohammad Marandi: Starlink Is DOWN. Iran's Reality HITS Trump
+2026-01-27_09:16: get_field: MAPPED VALUE title:Scott Ritter: This Is The Moment The West Started Losing
+2026-01-27_09:16: get_field:  FINAL VALUE title:Scott Ritter: This Is The Moment The West Started Losing
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Larry C. Johnson & COL. Larry Wilkerson: Trump's War Gamble Just Blew
+2026-01-27_09:16: get_field:  FINAL VALUE title:Larry C. Johnson & COL. Larry Wilkerson: Trump's War Gamble Just Blew
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 1:09:31)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 1:09:31)
+2026-01-27_09:16: get_field: MAPPED VALUE title:John Helmer: WHO Really Owns Venezuela?
+2026-01-27_09:16: get_field:  FINAL VALUE title:John Helmer: WHO Really Owns Venezuela?
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works Highlights
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 26:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 26:02)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Amb. Chas Freeman: Iran Vows Huge Response To US Israel Attack
+2026-01-27_09:16: get_field:  FINAL VALUE title:Amb. Chas Freeman: Iran Vows Huge Response To US Israel Attack
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 53:44)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 53:44)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Andrei Martyanov: "Game Over": Russia's Plan To End Everything Is Now
+2026-01-27_09:16: get_field:  FINAL VALUE title:Andrei Martyanov: "Game Over": Russia's Plan To End Everything Is Now
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 59:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 59:59)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Wolff & Michael Hudson: This Could Break NATO: Trump, Rutte,
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Wolff & Michael Hudson: This Could Break NATO: Trump, Rutte,
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 57:56)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 57:56)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Patrick Henningsen: It's Over: Trump's Plan Just BLEW UP
+2026-01-27_09:16: get_field:  FINAL VALUE title:Patrick Henningsen: It's Over: Trump's Plan Just BLEW UP
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(5 days ago 1:11:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(5 days ago 1:11:37)
+2026-01-27_09:16: get_field: MAPPED VALUE title:COL. Larry Wilkerson: Blazing Alarms, Collapsing Alliances -- America's
+2026-01-27_09:16: get_field:  FINAL VALUE title:COL. Larry Wilkerson: Blazing Alarms, Collapsing Alliances -- America's
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 54:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 54:35)
+2026-01-27_09:16: get_field: MAPPED VALUE title:John Helmer: Two Fronts, One Collapsing EU? Greenland's Choice &
+2026-01-27_09:16: get_field:  FINAL VALUE title:John Helmer: Two Fronts, One Collapsing EU? Greenland's Choice &
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 59:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 59:59)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Mohammad Marandi: Starlink Is DOWN. Iran's Reality HITS Trump
+2026-01-27_09:16: get_field:  FINAL VALUE title:Mohammad Marandi: Starlink Is DOWN. Iran's Reality HITS Trump
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 55:45)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 55:45)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Paul Craig Roberts: Full Scale Chaos: How We Got Here So Fast
+2026-01-27_09:16: get_field:  FINAL VALUE title:Paul Craig Roberts: Full Scale Chaos: How We Got Here So Fast
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(7 days ago 50:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(7 days ago 50:02)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Scott Ritter: This Is The Moment The West Started Losing
+2026-01-27_09:16: get_field:  FINAL VALUE title:Scott Ritter: This Is The Moment The West Started Losing
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 1:09:31)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 1:09:31)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 1:09:31)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 1:09:31)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Larry C. Johnson & COL. Larry Wilkerson: Trump's War Gamble Just Blew
+2026-01-27_09:16: get_field:  FINAL VALUE title:Larry C. Johnson & COL. Larry Wilkerson: Trump's War Gamble Just Blew
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 26:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 26:02)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 26:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 26:02)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works Highlights
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:John Helmer: WHO Really Owns Venezuela?
+2026-01-27_09:16: get_field:  FINAL VALUE title:John Helmer: WHO Really Owns Venezuela?
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 53:44)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 53:44)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 53:44)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 53:44)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Amb. Chas Freeman: Iran Vows Huge Response To US Israel Attack
+2026-01-27_09:16: get_field:  FINAL VALUE title:Amb. Chas Freeman: Iran Vows Huge Response To US Israel Attack
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 59:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 59:59)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 59:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 59:59)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Andrei Martyanov: "Game Over": Russia's Plan To End Everything Is Now
+2026-01-27_09:16: get_field:  FINAL VALUE title:Andrei Martyanov: "Game Over": Russia's Plan To End Everything Is Now
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 57:56)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 57:56)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 57:56)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 57:56)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Wolff & Michael Hudson: This Could Break NATO: Trump, Rutte,
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Wolff & Michael Hudson: This Could Break NATO: Trump, Rutte,
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(5 days ago 1:11:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(5 days ago 1:11:37)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(5 days ago 1:11:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(5 days ago 1:11:37)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Patrick Henningsen: It's Over: Trump's Plan Just BLEW UP
+2026-01-27_09:16: get_field:  FINAL VALUE title:Patrick Henningsen: It's Over: Trump's Plan Just BLEW UP
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 54:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 54:35)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 54:35)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 54:35)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:COL. Larry Wilkerson: Blazing Alarms, Collapsing Alliances -- America's
+2026-01-27_09:16: get_field:  FINAL VALUE title:COL. Larry Wilkerson: Blazing Alarms, Collapsing Alliances -- America's
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 59:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 59:59)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 59:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 59:59)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:John Helmer: Two Fronts, One Collapsing EU? Greenland's Choice &
+2026-01-27_09:16: get_field:  FINAL VALUE title:John Helmer: Two Fronts, One Collapsing EU? Greenland's Choice &
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 55:45)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 55:45)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(6 days ago 55:45)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(6 days ago 55:45)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Mohammad Marandi: Starlink Is DOWN. Iran's Reality HITS Trump
+2026-01-27_09:16: get_field:  FINAL VALUE title:Mohammad Marandi: Starlink Is DOWN. Iran's Reality HITS Trump
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(7 days ago 50:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(7 days ago 50:02)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(7 days ago 50:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(7 days ago 50:02)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Paul Craig Roberts: Full Scale Chaos: How We Got Here So Fast
+2026-01-27_09:16: get_field:  FINAL VALUE title:Paul Craig Roberts: Full Scale Chaos: How We Got Here So Fast
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(20 hours ago 25:42)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Dialogue Works
+2026-01-27_09:16: get_field:  FINAL VALUE author:Dialogue Works
+2026-01-27_09:16: get_field: MAPPED VALUE title:Scott Ritter: This Is The Moment The West Started Losing
+2026-01-27_09:16: get_field:  FINAL VALUE title:Scott Ritter: This Is The Moment The West Started Losing
+2026-01-27_09:16: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
+2026-01-27_09:16: parse_rumble: Parsing list for QKEY:glenndiesen
+2026-01-27_09:16: parse_rumble: Omitting NDX:1 - URL - ucp_f
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jiang Xueqin: Western Decline, Asian Turmoil & World War
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jiang Xueqin: Western Decline, Asian Turmoil & World War
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Sakwa (clip): Is Russia an Expansionist Power?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Sakwa (clip): Is Russia an Expansionist Power?
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(17 hours ago 15:11)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(17 hours ago 15:11)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor (clip): Must Russia Take More Territory to End the War?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor (clip): Must Russia Take More Territory to End the War?
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(21 hours ago 11:58)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(21 hours ago 11:58)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor (clip): The Predictable Collapse of NATO
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor (clip): The Predictable Collapse of NATO
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 13:03)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 13:03)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor (clip): Trump vs. Deep State on War With China
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor (clip): Trump vs. Deep State on War With China
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 10:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 10:34)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor (clip): Why Trump Dislikes the European Leaders
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor (clip): Why Trump Dislikes the European Leaders
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 10:09)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 10:09)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Sakwa (clip): NATO's Destructive Role & Funeral in Ukraine
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Sakwa (clip): NATO's Destructive Role & Funeral in Ukraine
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 13:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 13:02)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Wolff: China Won the Economic War & the West Fragments
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Wolff: China Won the Economic War & the West Fragments
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 56:08)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 56:08)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Yanis Varoufakis: The Imperial "Board of Peace" & End of the United Nations
+2026-01-27_09:16: get_field:  FINAL VALUE title:Yanis Varoufakis: The Imperial "Board of Peace" & End of the United Nations
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 39:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 39:34)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor: Why NATO is Finished & the Ukraine War Was Lost
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor: Why NATO is Finished & the Ukraine War Was Lost
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 47:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 47:23)
+2026-01-27_09:16: get_field: MAPPED VALUE title:George Beebe: A New U.S. Grand Strategy & Europe's Strategic Failure
+2026-01-27_09:16: get_field:  FINAL VALUE title:George Beebe: A New U.S. Grand Strategy & Europe's Strategic Failure
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 32:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 32:59)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Sakwa (clip): NATO Exploited Division Within Ukraine
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Sakwa (clip): NATO Exploited Division Within Ukraine
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 7:18)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 7:18)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Alex Krainer (clip): U.S. Decouples From Declining Europe
+2026-01-27_09:16: get_field:  FINAL VALUE title:Alex Krainer (clip): U.S. Decouples From Declining Europe
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 10:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 10:23)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jeffrey Sachs (clip, 22.01.26): Canada Criticizes the U.S. & the U.S.-Led World Order
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jeffrey Sachs (clip, 22.01.26): Canada Criticizes the U.S. & the U.S.-Led World 
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 10:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 10:37)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jeffrey Sachs (clip): Can Europe Return to Reason, Common Sense & Peace?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jeffrey Sachs (clip): Can Europe Return to Reason, Common Sense & Peace?
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 14:43)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 14:43)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Sakwa (clip): The Roots of the Proxy War in Ukraine
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Sakwa (clip): The Roots of the Proxy War in Ukraine
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 12:01)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 12:01)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Stanislav Krapivnik (clip): Russia Demands Control Over Novorossiya?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Stanislav Krapivnik (clip): Russia Demands Control Over Novorossiya?
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 17:27)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 17:27)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Alex Krainer (clip): America First - U.S. Abandons Outdated Alliances
+2026-01-27_09:16: get_field:  FINAL VALUE title:Alex Krainer (clip): America First - U.S. Abandons Outdated Alliances
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 22:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 22:23)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Alex Krainer (clip): Old World Order Is Over - the New Is Not Yet Born
+2026-01-27_09:16: get_field:  FINAL VALUE title:Alex Krainer (clip): Old World Order Is Over - the New Is Not Yet Born
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 24:17)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 24:17)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jeffrey Sachs (clip): U.S. Threatens Greenland & Europe
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jeffrey Sachs (clip): U.S. Threatens Greenland & Europe
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 8:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 8:23)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jeffrey Sachs: Davos Revelation - US Empire Unhinged & Europe Subordinated
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jeffrey Sachs: Davos Revelation - US Empire Unhinged & Europe Subordinated
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 36:31)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 36:31)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Scott Ritter (clip): Ukraine Peace Agreement No Longer Possible
+2026-01-27_09:16: get_field:  FINAL VALUE title:Scott Ritter (clip): Ukraine Peace Agreement No Longer Possible
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 14:25)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 14:25)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Stanislav Krapivnik (clip): Entering New Phase of the Ukraine War
+2026-01-27_09:16: get_field:  FINAL VALUE title:Stanislav Krapivnik (clip): Entering New Phase of the Ukraine War
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 12:45)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 12:45)
+2026-01-27_09:16: get_field: MAPPED VALUE title:Stanislav Krapivnik (clip): NATO & Russia Moving Toward Nuclear War?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Stanislav Krapivnik (clip): NATO & Russia Moving Toward Nuclear War?
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 13:47)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 13:47)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jiang Xueqin: Western Decline, Asian Turmoil & World War
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jiang Xueqin: Western Decline, Asian Turmoil & World War
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(17 hours ago 15:11)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(17 hours ago 15:11)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(17 hours ago 15:11)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(17 hours ago 15:11)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Sakwa (clip): Is Russia an Expansionist Power?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Sakwa (clip): Is Russia an Expansionist Power?
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(21 hours ago 11:58)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(21 hours ago 11:58)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(21 hours ago 11:58)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(21 hours ago 11:58)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor (clip): Must Russia Take More Territory to End the War?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor (clip): Must Russia Take More Territory to End the War?
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 13:03)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 13:03)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 13:03)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 13:03)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor (clip): The Predictable Collapse of NATO
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor (clip): The Predictable Collapse of NATO
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 10:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 10:34)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 10:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 10:34)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor (clip): Trump vs. Deep State on War With China
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor (clip): Trump vs. Deep State on War With China
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 10:09)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 10:09)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 10:09)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 10:09)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor (clip): Why Trump Dislikes the European Leaders
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor (clip): Why Trump Dislikes the European Leaders
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 13:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 13:02)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 13:02)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 13:02)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Sakwa (clip): NATO's Destructive Role & Funeral in Ukraine
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Sakwa (clip): NATO's Destructive Role & Funeral in Ukraine
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 56:08)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 56:08)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 56:08)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 56:08)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Wolff: China Won the Economic War & the West Fragments
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Wolff: China Won the Economic War & the West Fragments
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 39:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 39:34)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(1 day ago 39:34)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(1 day ago 39:34)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Yanis Varoufakis: The Imperial "Board of Peace" & End of the United Nations
+2026-01-27_09:16: get_field:  FINAL VALUE title:Yanis Varoufakis: The Imperial "Board of Peace" & End of the United Nations
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 47:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 47:23)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 47:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 47:23)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Douglas Macgregor: Why NATO is Finished & the Ukraine War Was Lost
+2026-01-27_09:16: get_field:  FINAL VALUE title:Douglas Macgregor: Why NATO is Finished & the Ukraine War Was Lost
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 32:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 32:59)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 32:59)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 32:59)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:George Beebe: A New U.S. Grand Strategy & Europe's Strategic Failure
+2026-01-27_09:16: get_field:  FINAL VALUE title:George Beebe: A New U.S. Grand Strategy & Europe's Strategic Failure
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 7:18)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 7:18)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(2 days ago 7:18)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(2 days ago 7:18)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Sakwa (clip): NATO Exploited Division Within Ukraine
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Sakwa (clip): NATO Exploited Division Within Ukraine
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 10:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 10:23)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 10:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 10:23)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Alex Krainer (clip): U.S. Decouples From Declining Europe
+2026-01-27_09:16: get_field:  FINAL VALUE title:Alex Krainer (clip): U.S. Decouples From Declining Europe
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 10:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 10:37)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 10:37)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 10:37)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jeffrey Sachs (clip, 22.01.26): Canada Criticizes the U.S. & the U.S.-Led World Order
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jeffrey Sachs (clip, 22.01.26): Canada Criticizes the U.S. & the U.S.-Led World 
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 14:43)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 14:43)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 14:43)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 14:43)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jeffrey Sachs (clip): Can Europe Return to Reason, Common Sense & Peace?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jeffrey Sachs (clip): Can Europe Return to Reason, Common Sense & Peace?
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 12:01)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 12:01)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 12:01)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 12:01)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Richard Sakwa (clip): The Roots of the Proxy War in Ukraine
+2026-01-27_09:16: get_field:  FINAL VALUE title:Richard Sakwa (clip): The Roots of the Proxy War in Ukraine
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 17:27)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 17:27)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(3 days ago 17:27)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(3 days ago 17:27)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Stanislav Krapivnik (clip): Russia Demands Control Over Novorossiya?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Stanislav Krapivnik (clip): Russia Demands Control Over Novorossiya?
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 22:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 22:23)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 22:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 22:23)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Alex Krainer (clip): America First - U.S. Abandons Outdated Alliances
+2026-01-27_09:16: get_field:  FINAL VALUE title:Alex Krainer (clip): America First - U.S. Abandons Outdated Alliances
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 24:17)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 24:17)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 24:17)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 24:17)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Alex Krainer (clip): Old World Order Is Over - the New Is Not Yet Born
+2026-01-27_09:16: get_field:  FINAL VALUE title:Alex Krainer (clip): Old World Order Is Over - the New Is Not Yet Born
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 8:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 8:23)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 8:23)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 8:23)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jeffrey Sachs (clip): U.S. Threatens Greenland & Europe
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jeffrey Sachs (clip): U.S. Threatens Greenland & Europe
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 36:31)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 36:31)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 36:31)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 36:31)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jeffrey Sachs: Davos Revelation - US Empire Unhinged & Europe Subordinated
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jeffrey Sachs: Davos Revelation - US Empire Unhinged & Europe Subordinated
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 14:25)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 14:25)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 14:25)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 14:25)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Scott Ritter (clip): Ukraine Peace Agreement No Longer Possible
+2026-01-27_09:16: get_field:  FINAL VALUE title:Scott Ritter (clip): Ukraine Peace Agreement No Longer Possible
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 12:45)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 12:45)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 12:45)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 12:45)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Stanislav Krapivnik (clip): Entering New Phase of the Ukraine War
+2026-01-27_09:16: get_field:  FINAL VALUE title:Stanislav Krapivnik (clip): Entering New Phase of the Ukraine War
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 13:47)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 13:47)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(4 days ago 13:47)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(4 days ago 13:47)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Stanislav Krapivnik (clip): NATO & Russia Moving Toward Nuclear War?
+2026-01-27_09:16: get_field:  FINAL VALUE title:Stanislav Krapivnik (clip): NATO & Russia Moving Toward Nuclear War?
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field: MAPPED VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field:  FINAL VALUE agetime:(15 hours ago 57:06)
+2026-01-27_09:16: get_field: MAPPED VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field:  FINAL VALUE author:Glenn Diesen
+2026-01-27_09:16: get_field: MAPPED VALUE title:Jiang Xueqin: Western Decline, Asian Turmoil & World War
+2026-01-27_09:16: get_field:  FINAL VALUE title:Jiang Xueqin: Western Decline, Asian Turmoil & World War
