@@ -1,3 +1,0 @@
-_CFG_DIR=~/.local/share/yts
-[[ -e ./logdata ]] && /bin/rm -f ./logdata
-LOG_LINE=$(tr '' '\n' < ${g_YTS_LOG} | tail -1 | str_trim | tee -a ./logdata) 2>/dev/null # Break into separate lines - get most recent

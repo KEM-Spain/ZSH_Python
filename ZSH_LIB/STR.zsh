@@ -145,6 +145,7 @@ str_pluralize () {
 		function) RETURN_WORD="functions";;
 		gram) RETURN_WORD="grams";;
 		inch) RETURN_WORD="inches";;
+		inode) RETURN_WORD="inodes";;
 		item) RETURN_WORD="items";;
 		kilo) RETURN_WORD="kilos";;
 		kilometer) RETURN_WORD="kilometers";;

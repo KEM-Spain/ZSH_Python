@@ -52,19 +52,25 @@ while read LINE;do
 	LOG_INODES+=${LOG_INODE}
 done < ${_DOWNLOAD_LOG}
 
-echo "Download Directory contains:${#DIR_INODES} inodes"
-echo "Log contains:${#LOG_INODES} inodes"
+echo "Download Directory:${WHITE_FG}${_DOWNLOAD_DIR}${RESET}"
+echo "Download Log:${WHITE_FG}${_DOWNLOAD_LOG}${RESET}"
+echo
 
-echo "\nDirectory inodes"
+NDX=0
+echo "Download Directory contains:${WHITE_FG}${#DIR_INODES}${RESET} $(str_pluralize inode ${#DIR_INODES})"
 for L in ${DIR_INODES};do
+	((NDX++))
 	[[ ${LOG_INODES[(i)${L}]} -le ${#LOG_INODES} ]] || DIR_NOT_LOG+=${L}
-	printf "%s\n" ${L}
+	printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L}
 done
+echo
 
-echo "\nLog inodes"
+NDX=0
+echo "Download Log contains:${WHITE_FG}${#LOG_INODES}${RESET} $(str_pluralize inode ${#LOG_INODES})"
 for L in ${LOG_INODES};do
+	((NDX++))
 	[[ ${DIR_INODES[(i)${L}]} -le ${#DIR_INODES} ]] || LOG_NOT_DIR+=${L}
-	printf "%s\n" ${L}
+	printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L}
 done
 
 typeset -a DIR_ROWS=()
@@ -81,12 +87,30 @@ if [[ -n ${LOG_NOT_DIR} ]];then
 	done
 fi
 
-echo "\nDownload Directory contains:${#DIR_NOT_LOG} inodes not in log - add missing files to log"
-for L in ${DIR_ROWS};do
-	printf "%s\n" ${L}
-done
+echo
+if [[ ${#DIR_NOT_LOG} -ne 0 ]];then
+	echo "Download Directory contains ${WHITE_FG}${#DIR_NOT_LOG}${RESET} $(str_pluralize inode ${#DIR_NOT_LOG}) ${ITALIC}${RED_FG}not${RESET} in log"
+	NDX=0
+	for L in ${DIR_ROWS};do
+		((NDX++))
+		printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L[1,80]}
+	done
+	echo
+	echo "DIR CHECK ${RED_FG}FAILED${RESET} -> Add missing files to log"
+else
+	echo "DIR CHECK ${GREEN_FG}OK${RESET} -> Directory entries match log contents"
+fi
+echo
 
-echo "\nLog contains:${#LOG_NOT_DIR} inodes not in directory - remove missing files from log"
-for L in ${LOG_ROWS};do
-	printf "%s\n" ${L}
-done
+if [[ ${#LOG_NOT_DIR} -ne 0 ]];then
+	echo "Download Log contains ${WHITE_FG}${#LOG_NOT_DIR}${RESET} $(str_pluralize inode ${#LOG_NOT_DIR}) ${ITALIC}${RED_FG}not${RESET} in directory"
+	NDX=0
+	for L in ${LOG_ROWS};do
+		((NDX++))
+		printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L[1,80]}
+	done
+	echo
+	echo "LOG CHECK ${RED_FG}FAILED${RESET} -> Remove missing files from log"
+else
+	echo "LOG CHECK ${GREEN_FG}OK${RESET} -> Log entries match directory contents"
+fi
