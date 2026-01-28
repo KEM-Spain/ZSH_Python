@@ -735,5 +735,5 @@ show_keys () {
 		"L   -> Last Page"
 	)
 
-	msg_box -H1 -p -PK "Navigation Keys| |$(msg_list_bullet ${KEY_LIST})|<Z>|<w>Note<N>: NumPad/Arrow keys also function"
+	msg_box -H1 -p -PK "Menu Navigation Keys| |$(msg_list_bullet ${KEY_LIST})|<Z>|<L>NumPad/Arrow keys"
 }

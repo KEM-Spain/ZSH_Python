@@ -164,7 +164,7 @@ action_do () {
 		trap job_kill INT
 
 		job_start ${URL}
-		msg_box -P"<N>Use key:(<w>k<N>) to <B><r><I>cancel<N> download" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "Download requested..."
+		msg_box -P"<N>Use key:(<w>k<N>) to <B><r><I>cancel<N> download" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "Download Requested"
 		sleep 3
 
 		while true;do

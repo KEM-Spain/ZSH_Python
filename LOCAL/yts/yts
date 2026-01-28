@@ -707,7 +707,7 @@ fav_get () {
 
 		TAG="${ENGINE}.${g_LAST_FAV_TYPE}.query"
 		HDR="<B>${(C)ENGINE}${HDR_TAG} <B>Query<N>"
-		FTR="<w>Run ${(C)ENGINE} query from history or <h>(q)uit<N>"
+		FTR="Run <w>${(C)ENGINE}<N> query, <w>(<N>s<w>)<N>how keys<N>, or <w>(<N>q<w>)<N>uit<N>"
 
 		sel_set_app_keys d r y c
 		sel_set_list ${LIST}
