@@ -1,2 +1,102 @@
-2026-01-28_10:52: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-01-28_10:52: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-30_10:19: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-30_10:19: log_update: Skipping expired inode:6362944
+2026-01-30_10:19: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-01-30_10:20: _QUERY_OPTS: DKEY:Counter_Currents ENGINE:youtube EOPTS:S FKEY:Counter Currents QKEY:countercurrents TYPE:standard 
+2026-01-30_10:20: query_youtube: Creating listing for QKEY:countercurrents STRICT:S
+2026-01-30_10:20: query_youtube: QKEY:countercurrents, g_PROXY_CMD:node /usr/local/etc/yts.js -s "countercurrents"
+2026-01-30_10:20: query_youtube: Listing for QKEY:countercurrents contains 24 rows
+2026-01-30_10:20: _QUERY_OPTS: DKEY:Danny_Haiphong ENGINE:youtube EOPTS: FKEY:Danny Haiphong QKEY:danny haiphong SMSG:4.0% TYPE:standard 
+2026-01-30_10:20: query_youtube: Creating listing for QKEY:danny haiphong STRICT:
+2026-01-30_10:20: query_youtube: QKEY:danny haiphong, g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "danny haiphong"
+2026-01-30_10:20: query_youtube: Listing for QKEY:danny haiphong contains 3 rows
+2026-01-30_10:20: _QUERY_OPTS: DKEY:Dialogue_Works ENGINE:youtube EOPTS:S FKEY:Dialogue Works QKEY:dialogueworks SMSG: TYPE:standard 
+2026-01-30_10:20: query_youtube: Creating listing for QKEY:dialogueworks STRICT:S
+2026-01-30_10:20: query_youtube: QKEY:dialogueworks, g_PROXY_CMD:node /usr/local/etc/yts.js -s "dialogueworks"
+2026-01-30_10:20: query_youtube: Listing for QKEY:dialogueworks contains 20 rows
+2026-01-30_10:20: _QUERY_OPTS: DKEY:Judging_Freedom ENGINE:youtube EOPTS: FKEY:Judging Freedom QKEY:judging freedom SMSG:0.0% TYPE:standard 
+2026-01-30_10:21: query_youtube: Creating listing for QKEY:judging freedom STRICT:
+2026-01-30_10:21: query_youtube: QKEY:judging freedom, g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "judging freedom"
+2026-01-30_10:21: query_youtube: Listing for QKEY:judging freedom contains 17 rows
+2026-01-30_10:21: _QUERY_OPTS: DKEY:Mentour_Pilot ENGINE:youtube EOPTS:S FKEY:Mentour Pilot QKEY:mentourpilot SMSG: TYPE:standard 
+2026-01-30_10:21: query_youtube: Creating listing for QKEY:mentourpilot STRICT:S
+2026-01-30_10:21: query_youtube: QKEY:mentourpilot, g_PROXY_CMD:node /usr/local/etc/yts.js -s "mentourpilot"
+2026-01-30_10:21: query_youtube: Listing for QKEY:mentourpilot contains 22 rows
+2026-01-30_10:21: _QUERY_OPTS: DKEY:Katie_Halper ENGINE:youtube EOPTS:S FKEY:Katie Halper QKEY:katiehalper SMSG:4.3% TYPE:standard 
+2026-01-30_10:21: query_youtube: Creating listing for QKEY:katiehalper STRICT:S
+2026-01-30_10:21: query_youtube: QKEY:katiehalper, g_PROXY_CMD:node /usr/local/etc/yts.js -s "katiehalper"
+2026-01-30_10:21: query_youtube: Listing for QKEY:katiehalper contains 19 rows
+2026-01-30_10:21: _QUERY_OPTS: DKEY:Pilot_Debrief ENGINE:youtube EOPTS: FKEY:Pilot Debrief QKEY:pilot_debrief SMSG:20.8% TYPE:standard 
+2026-01-30_10:21: query_youtube: Creating listing for QKEY:pilot_debrief STRICT:
+2026-01-30_10:21: query_youtube: QKEY:pilot_debrief, g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "pilot_debrief"
+2026-01-30_10:21: query_youtube: Listing for QKEY:pilot_debrief contains 1 rows
+2026-01-30_10:21: job_start: QUERY KEY:pilot_debrief
+2026-01-30_10:21: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=ROFgELbflQk" PID:24941
+2026-01-30_10:21: action_do: HEADER
+2026-01-30_10:21: yt Executed by /usr/bin/zsh/usr/local/bin/yts with command:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=ROFgELbflQk
+2026-01-30_10:21: action_do: COMPLETED
+2026-01-30_10:21: action_do: POST-PROCESSING
+2026-01-30_10:21: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Pilot_Debrief - I_Investigated_a_Deadly_Flight_Instructor.mp4
+2026-01-30_10:21: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Pilot_Debrief - I_Investigated_a_Deadly_Flight_Instructor.mp4
+2026-01-30_10:21: set_final_fn: Overwriting file:Pilot_Debrief - I_Investigated_a_Deadly_Flight_Instructor.mp4 with:Pilot Debrief - I Investigated A Deadly Flight Instructor.mp4
+2026-01-30_10:21: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Pilot Debrief - I Investigated A Deadly Flight Instructor.mp4
+2026-01-30_10:21: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.YMEGMd was cleared for:pilot_debrief from:action_do
+2026-01-30_10:22: _QUERY_OPTS: DKEY:Alex_Christoforou ENGINE:rumble EOPTS:C FKEY:Alex Christoforou QKEY:alexchristoforou SMSG: TYPE:standard 
+2026-01-30_10:22: query_rumble: Creating listing for QKEY:alexchristoforou TYPE:channel
+2026-01-30_10:22: parse_rumble: Parsing list for QKEY:alexchristoforou
+2026-01-30_10:22: query_rumble: Listing for QKEY:alexchristoforou contains 24 rows
+2026-01-30_10:22: _QUERY_OPTS: DKEY:Glenn_Diesen ENGINE:rumble EOPTS:C FKEY:Glenn Diesen QKEY:glenndiesen SMSG: TYPE:standard 
+2026-01-30_10:22: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
+2026-01-30_10:22: parse_rumble: Parsing list for QKEY:glenndiesen
+2026-01-30_10:22: parse_rumble: Omitting NDX:1 - URL - ucp_f
+2026-01-30_10:22: query_rumble: Listing for QKEY:glenndiesen contains 24 rows
+2026-01-30_10:23: _QUERY_OPTS: DKEY:Kim_Iversen ENGINE:rumble EOPTS:C FKEY:Kim Iversen QKEY:kimiversen SMSG: TYPE:standard 
+2026-01-30_10:23: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
+2026-01-30_10:23: parse_rumble: Parsing list for QKEY:kimiversen
+2026-01-30_10:23: parse_rumble: Omitting NDX:1 - URL - ucp_f
+2026-01-30_10:23: query_rumble: Listing for QKEY:kimiversen contains 24 rows
+2026-01-30_10:23: job_start: QUERY KEY:kimiversen
+2026-01-30_10:23: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7517gs-tpusa-infiltrated-by-mossad-strange-behavior-and-sexpionage.html?e9s=src_v1_ucp_a" PID:38005
+2026-01-30_10:23: action_do: PRE-PROCESSING
+2026-01-30_10:23: action_do: HEADER
+2026-01-30_10:24: action_do: COMPLETED
+2026-01-30_10:24: action_do: POST-PROCESSING
+2026-01-30_10:24: yt Executed by /usr/bin/zsh/usr/local/bin/yts with command:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7517gs-tpusa-infiltrated-by-mossad-strange-behavior-and-sexpionage.html?e9s=src_v1_ucp_a
+2026-01-30_10:24: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - TPUSA_INFILTRATED_by_Mossad_-_Strange_Behavior_and_Sexpionage.mp4
+2026-01-30_10:24: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - TPUSA_INFILTRATED_by_Mossad_-_Strange_Behavior_and_Sexpionage.mp4
+2026-01-30_10:24: set_final_fn: Overwriting file:Kim_Iversen - TPUSA_INFILTRATED_by_Mossad_-_Strange_Behavior_and_Sexpionage.mp4 with:Kim Iversen - TPUSA INFILTRATED By Mossad - Strange Behavior And.mp4
+2026-01-30_10:24: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Kim Iversen - TPUSA INFILTRATED By Mossad - Strange Behavior And.mp4
+2026-01-30_10:24: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.D15ZEL was cleared for:kimiversen from:action_do
+2026-01-30_10:24: _QUERY_OPTS: DKEY:RT_News ENGINE:rumble EOPTS:C FKEY:RT News QKEY:rtnews SMSG: TYPE:standard 
+2026-01-30_10:24: query_rumble: Creating listing for QKEY:rtnews TYPE:channel
+2026-01-30_10:24: parse_rumble: Parsing list for QKEY:rtnews
+2026-01-30_10:24: parse_rumble: Omitting NDX:3 - TIME no colon
+2026-01-30_10:24: query_rumble: Listing for QKEY:rtnews contains 22 rows
+2026-01-30_10:25: job_start: QUERY KEY:rtnews
+2026-01-30_10:25: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v74ygfu-crosstalk-end-of-international-law.html?e9s=src_v1_ucp_a" PID:56318
+2026-01-30_10:25: action_do: PRE-PROCESSING
+2026-01-30_10:25: action_do: HEADER
+2026-01-30_10:26: action_do: COMPLETED
+2026-01-30_10:26: action_do: POST-PROCESSING
+2026-01-30_10:26: yt Executed by /usr/bin/zsh/usr/local/bin/yts with command:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v74ygfu-crosstalk-end-of-international-law.html?e9s=src_v1_ucp_a
+2026-01-30_10:26: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/RT - CrossTalk_End_of_international_law.mp4
+2026-01-30_10:26: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/RT - CrossTalk_End_of_international_law.mp4
+2026-01-30_10:26: set_final_fn: Overwriting file:RT - CrossTalk_End_of_international_law.mp4 with:RT - Crosstalk End Of International Law.mp4
+2026-01-30_10:26: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/RT - Crosstalk End Of International Law.mp4
+2026-01-30_10:26: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.9XSJ3k was cleared for:rtnews from:action_do
+2026-01-30_10:26: _QUERY_OPTS: DKEY:Tucker_Carlson ENGINE:rumble EOPTS:C FKEY:Tucker Carlson QKEY:tuckercarlson SMSG: TYPE:standard 
+2026-01-30_10:26: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
+2026-01-30_10:26: parse_rumble: Parsing list for QKEY:tuckercarlson
+2026-01-30_10:26: parse_rumble: Omitting NDX:1 - URL - ucp_f
+2026-01-30_10:26: query_rumble: Listing for QKEY:tuckercarlson contains 24 rows
+2026-01-30_10:26: job_start: QUERY KEY:tuckercarlson
+2026-01-30_10:26: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v74yu1c-chaos-is-spreading-like-cancer.-what-happens-next.html?e9s=src_v1_ucp_a" PID:66948
+2026-01-30_10:26: action_do: PRE-PROCESSING
+2026-01-30_10:26: action_do: HEADER
+2026-01-30_10:29: action_do: COMPLETED
+2026-01-30_10:29: action_do: POST-PROCESSING
+2026-01-30_10:29: yt Executed by /usr/bin/zsh/usr/local/bin/yts with command:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v74yu1c-chaos-is-spreading-like-cancer.-what-happens-next.html?e9s=src_v1_ucp_a
+2026-01-30_10:30: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Chaos_Is_Spreading_Like_Cancer._What_Happens_Next.mp4
+2026-01-30_10:30: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Chaos_Is_Spreading_Like_Cancer._What_Happens_Next.mp4
+2026-01-30_10:30: set_final_fn: Overwriting file:Tucker_Carlson - Chaos_Is_Spreading_Like_Cancer._What_Happens_Next.mp4 with:Tucker Carlson - Chaos Is Spreading Like Cancer. What Happens Next.mp4
+2026-01-30_10:30: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Chaos Is Spreading Like Cancer. What Happens Next.mp4
+2026-01-30_10:30: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.JFVHVo was cleared for:tuckercarlson from:action_do

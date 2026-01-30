@@ -72,7 +72,9 @@ center () {
 		else
 			exit_leave $(err_msg_exit E "Invalid argument:<CONTAINER_WIDTH>:non integer")
 		fi
-		[[ $(( CONTAINER_WIDTH - 2 )) -lt ${#TEXT_ARG} ]] && exit_leave $(err_msg_exit E "Invalid argument:<CONTAINER_WIDTH> must exceed TEXT length (${#TEXT_ARG}) by 2 chars")
+		if [[ $(( CONTAINER_WIDTH - 2 )) -lt ${#TEXT_ARG} ]];then
+			msg_box -p -PK "Invalid argument:<CONTAINER_WIDTH> must exceed TEXT length (${#TEXT_ARG}) by 2 chars"
+		fi
 	fi
 
 	if [[ ${REG_OVERRIDE} == 'false' ]];then

@@ -112,10 +112,9 @@ tags_display () {
 		if arr_is_populated "${TAG_DATA}";then
 			_GOT_DATA=true
 
-			# TODO: Carry these TITLE mods forward to write changes; set _MODIFIED flag
 			for K in ${(k)TAG_DATA};do
 				DATA=${TAG_DATA[${K}]}
-				[[ ${K} == "TITLE" ]] && DATA=${(C)DATA} # Proper case TITLE
+				[[ ${K} == "TITLE" ]] && DATA=$(str_proper $DATA}) # Proper case TITLE
 				FIELDS[${_FLD_ORDER[${K}]}]="${K}:${DATA}"
 				if [[ ${K} == "TITLE" && ${TAG_DATA[${K}]} == 'None' ]];then
 					FN_2_TITLE=${F:t:r}
@@ -255,7 +254,6 @@ set_tags () {
 	local EXT=''
 	local F
 
-	# TODO: add option to create track name from file name if none exists
 	for F in ${_FILE_LIST};do
 		EXT=${F:e}
 		case ${EXT} in

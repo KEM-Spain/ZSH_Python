@@ -206,6 +206,15 @@ str_no_ansi () {
 	echo ${STR} | perl -pe 's/\x1B\[+[\d;]*[mK]//g'
 }
 
+str_proper () {
+	local STR=${@}
+
+	STR=${(C)STR} # Proper case
+	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
+
+	echo ${STR}
+}
+
 str_to_ascii () {
 	local STR=${1}
 
