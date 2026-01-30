@@ -110,7 +110,7 @@ if [[ ${#LOG_NOT_DIR} -ne 0 ]];then
 		printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L[1,80]}
 	done
 	echo
-	echo "LOG CHECK ${RED_FG}FAILED${RESET} -> Remove missing files from log"
+	echo "LOG CHECK ${RED_FG}FAILED${RESET} -> Remove erroneous entries from log"
 else
 	echo "LOG CHECK ${GREEN_FG}OK${RESET} -> Log entries match directory contents"
 fi
