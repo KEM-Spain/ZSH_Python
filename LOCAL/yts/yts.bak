@@ -212,7 +212,7 @@ action_do () {
 							logit ${_YT_DBG_LOG} "${0}: FUTURE"
 							[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
 							MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_MSG_DELAY[MED]} -z -x ${_INFO_COORDS[X]} -y$(box_center ${MSG}) -w ${_INFO_COORDS[W]} "${MSG}"
+							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_MSG_DELAY[MED]} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
 							_FUTURE[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
@@ -1574,8 +1574,6 @@ usage () {
 
 	exit_leave ${PENDING_MSGS}
 }
-
-# TODO: Eliminate _QUERY_OPTS STRICT and EOPTS keys - replace with EOPTS
 
 OPTSTR=":HDRT:Va:sw:"
 OPTIND=0

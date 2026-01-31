@@ -212,7 +212,7 @@ action_do () {
 							logit ${_YT_DBG_LOG} "${0}: FUTURE"
 							[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
 							MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_MSG_DELAY[MED]} -z -x ${_INFO_COORDS[X]} -y$(box_center ${MSG}) -w ${_INFO_COORDS[W]} "${MSG}"
+							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_MSG_DELAY[MED]} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
 							_FUTURE[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
@@ -503,7 +503,7 @@ download_select () {
 	_SORT_TABLE=(1 1 2 2 3 3) # Age, author, title
 
 	if [[ ${_QUERY_OPTS[ENGINE]:l} == 'youtube' ]];then
-		[[ ${_QUERY_OPTS[EOPTS]:l} == 's' ]] && SEARCHTYPE="Strict (${_QUERY_OPTS[SMSG]} rejected)"
+		[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && SEARCHTYPE="Strict (${_QUERY_OPTS[SMSG]} rejected)"
 	fi
 
 	# Set headings
@@ -570,7 +570,7 @@ fav_add () {
 
 	clear
 
-	[[ ${_QUERY_OPTS[EOPTS]:l} == 's' ]] && STRICT_VAL="S" || STRICT_VAL=""
+	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STRICT_VAL="S" || STRICT_VAL=""
 
 	msg_box -H1 -p -PC "<w><I>Please respond<N>|<Z>|Add \"${_QUERY_OPTS[QKEY]}\" to favorites?"
 	[[ ${_MSG_KEY} != 'y' ]] && return
@@ -604,9 +604,9 @@ fav_add () {
 		C) if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then # Custom requires ECODE
 				NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[ECODE]}${STRICT_VAL}"
 			elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
-				NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[ECODE]}${_QUERY_OPTS[EOPTS]}"
+				NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[ECODE]}${_QUERY_OPTS[EOPT]}"
 			fi;;
-		R) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[EOPTS]}";;
+		R) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[EOPT]}";;
 		Y) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${STRICT_VAL}";;
 	esac
 
@@ -1244,8 +1244,8 @@ query_rumble () {
 	local QRY=''
 	local QRY_TYPE=''
 
-	QRY_TYPE=${_RUMBLE_QTYPES[${_QUERY_OPTS[EOPTS]:l}]}
-	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "${0}:Invalid query type:${_QUERY_OPTS[EOPTS]}" && return 1
+	QRY_TYPE=${_RUMBLE_QTYPES[${_QUERY_OPTS[EOPT]:l}]}
+	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "${0}:Invalid query type:${_QUERY_OPTS[EOPT]}" && return 1
 	_QUERY_OPTS[TYPE]=${QRY_TYPE}
 
 	ping -w1 www.rumble.com >/dev/null
@@ -1302,11 +1302,11 @@ query_youtube () {
 	ping -w1 www.youtube.com >/dev/null
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
-	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[EOPTS]}"
+	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[EOPT]}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
-	if [[ ${_QUERY_OPTS[EOPTS]:l} == 's' ]];then # Strict requested
+	if [[ ${_QUERY_OPTS[EOPT]:l} == 's' ]];then # Strict requested
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER ACTIVE${RESET}"
 		g_PROXY_CMD="node ${_JS_SCRIPT} -s ${(qqq)_QUERY_OPTS[QKEY]}"
 	else
@@ -1337,26 +1337,29 @@ query_youtube () {
 		STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
 		STR=${STR:s/Streamed //} # Strip age of excess text
 
-# TODO: Track if disabling this causes unwanted content
-#		if [[ ${_QUERY_OPTS[EOPTS]:l} != 's' ]];then # Apply filtering to non strict results
-#			HIT=false
-#			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
-#			TITLE=$(cut -d'|' -f3 <<<${LINE}) && TITLE=$(str_to_ascii ${TITLE})
-#			[[ ${TITLE:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true
-#			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true
-#			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true
-#			[[ ${AUTHOR:gs/ //:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true
-#			if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
-#				dbg "${0}:${LINENO} NON STRICT FILTERING, HIT:${HIT}"
-#				dbg "${0}:AUTHOR:${AUTHOR}, TITLE:${TITLE}_QUERY_OPTS[DKEY]:${_QUERY_OPTS[DKEY]}, _QUERY_OPTS[QKEY]:${_QUERY_OPTS[QKEY]}"
-#			fi
-#			[[ ${HIT} == 'false' ]] && continue
-#		fi
+		# TODO: Track if disabling this causes unwanted content
+		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' ]];then # Apply filtering to non strict results
+		#	HIT=false
+			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
+			TITLE=$(cut -d'|' -f3 <<<${LINE}) && TITLE=$(str_to_ascii ${TITLE})
+			[[ ${TITLE:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true
+			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true
+			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true
+			[[ ${AUTHOR:gs/ //:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true
+			logit ${_YT_DBG_LOG} "${0}: NO STRICT FILTERING - TITLE:${TITLE}"
+			logit ${_YT_DBG_LOG} "${0}: NO STRICT FILTERING - AUTHOR:${AUTHOR}, _QUERY_OPTS[DKEY]:${_QUERY_OPTS[DKEY]} _QUERY_OPTS[QKEY]:${_QUERY_OPTS[QKEY]}"
+			logit ${_YT_DBG_LOG} "${0}: HIT:${HIT}"
+		#	if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
+		#		dbg "${0}:${LINENO} NON STRICT FILTERING, HIT:${HIT}"
+		#		dbg "${0}:AUTHOR:${AUTHOR}, TITLE:${TITLE}_QUERY_OPTS[DKEY]:${_QUERY_OPTS[DKEY]}, _QUERY_OPTS[QKEY]:${_QUERY_OPTS[QKEY]}"
+		#	fi
+		#	[[ ${HIT} == 'false' ]] && continue
+		fi
 		 
 		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}
 	done < <(eval ${g_PROXY_CMD} 2>/dev/null)
 
-	[[ ${_QUERY_OPTS[EOPTS]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${NDX})" || _QUERY_OPTS[SMSG]=''
+	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${NDX})" || _QUERY_OPTS[SMSG]=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
@@ -1366,12 +1369,12 @@ query_youtube () {
 	# Search failed
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		g_PROXY_CMD=$(str_trim ${(Q)g_PROXY_CMD})
-		if [[ ${_QUERY_OPTS[EOPTS]:l} == 's' ]];then
+		if [[ ${_QUERY_OPTS[EOPT]:l} == 's' ]];then
 			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<I>Strict filter is active<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
 		else
 			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
 		fi
-		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[EOPTS]}"
+		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[EOPT]}"
 		return 1
 	fi
 
@@ -1446,14 +1449,17 @@ set_query_opts () {
 	local ENGINE=''
 	local ENG_CODE=''
 	local ENG_OPTS=''
+	local FKEY=''
 	local FVAL=''
 	local MENU_CODE=''
 	local OPTS=''
 	local QKEY=''
 	local QRY_TYPE=''
 
-	DKEY=${_QUERY_OPTS[FKEY]:gs/ /_/} # Normalize DKEY
-	FVAL=${_FAV_LIST[${DKEY}]} # _FAV_LIST lookup by DKEY
+	FKEY=${_QUERY_OPTS[FKEY]:gs/ /_/} # Normalize FKEY
+	FVAL=${_FAV_LIST[${FKEY}]} # _FAV_LIST lookup
+
+	DKEY=${_QUERY_OPTS[FKEY]}
 	QKEY=$(cut -d: -f1 <<<${FVAL})
 	OPTS=$(cut -d: -f2 <<<${FVAL})
 	MENU_CODE=${OPTS[1]:l}
@@ -1469,8 +1475,8 @@ set_query_opts () {
 	fi
 
 	case ${ENG_CODE:l} in
-		y) ENGINE=youtube;_QUERY_OPTS[EOPTS]=${ENG_OPTS};;
-		r) ENGINE=rumble;_QUERY_OPTS[EOPTS]=${ENG_OPTS};;
+		y) ENGINE=youtube;_QUERY_OPTS[EOPT]=${ENG_OPTS};;
+		r) ENGINE=rumble;_QUERY_OPTS[EOPT]=${ENG_OPTS};;
 	esac
 
 	_QUERY_OPTS[DKEY]=${DKEY}
@@ -1579,21 +1585,21 @@ OPTSTR=":HDRT:Va:sw:"
 OPTIND=0
 
 HELP_OPT=false
+ENGINE=youtube
+ENG_OPT=''
 VERSION_OPT=false
-WEB=''
-_QUERY_OPTS[ENGINE]=youtube
-_QUERY_OPTS[EOPTS]=''
+WEB_OPT=''
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) HELP_OPT=true;;
      D) dbg_set_level;;
-     R) _QUERY_OPTS[ENGINE]=rumble;;
-     T) _QUERY_OPTS[EOPTS]=${OPTARG:u};;
+     R) ENGINE=rumble;;
+     T) ENG_OPT=${OPTARG:u};;
      V) VERSION_OPT=true;;
      a) AGE=${OPTARG};;
-     s) _QUERY_OPTS[EOPTS]='S';;
-     w) WEB=${OPTARG};;
+     s) ENG_OPT='S';;
+     w) WEB_OPT=${OPTARG};;
     \?) exit_leave "${RED_FG}Error${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}";;
 	  :) exit_leave "${RED_FG}Error${RESET}: option -${OPTARG} requires an argument${RESET}";;
 	esac
@@ -1608,7 +1614,7 @@ if [[ ${?} -ne 0 ]];then
 	exit_leave "Configuration failed:${CFG_MSG}"
 fi
 
-[[ -n ${WEB} ]] && website ${WEB} && exit_leave
+[[ -n ${WEB_OPT} ]] && website ${WEB_OPT} && exit_leave
 
 [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGS IN:${@}, _QUERY_OPTS[ENGINE]:${_QUERY_OPTS[ENGINE]}"
 
@@ -1645,21 +1651,21 @@ if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
 		echo ${RESET}
 		exit_leave
 		[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Invalid argument${RESET} - valid age arguments: ${WHITE_FG}all,min,day,week,month,year${RESET}"
-	elif [[ ${_QUERY_OPTS[EOPTS]:l} == 's' ]];then
+	elif [[ ${_QUERY_OPTS[EOPT]:l} == 's' ]];then
 		SEARCHTERM="-s ${(qqq)SEARCHTERM}"
 	fi
 	g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)SEARCHTERM}"
 else
-	if [[ -n ${_QUERY_OPTS[EOPTS]} ]];then
-		${_RUMBLE_QRY_OPTS[(i)${_QUERY_OPTS[EOPTS]:l}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave "Invalid query type:${_QUERY_OPTS[EOPTS]}"
+	if [[ -n ${_QUERY_OPTS[EOPT]} ]];then
+		${_RUMBLE_QRY_OPTS[(i)${_QUERY_OPTS[EOPT]:l}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave "Invalid query type:${_QUERY_OPTS[EOPT]}"
 	else
-		_QUERY_OPTS[EOPTS]='g' # Default
+		_QUERY_OPTS[EOPT]='g' # Default
 	fi
 	if [[ ${VERSION_OPT} == 'true'  ]];then
 		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")
 	elif [[ -n ${AGE} ]];then
 		exit_leave $(err_msg_exit E "Option:-a is a YouTube only option")
-	elif [[ ${_QUERY_OPTS[EOPTS]:l} == 's' ]];then
+	elif [[ ${_QUERY_OPTS[EOPT]:l} == 's' ]];then
 		exit_leave $(err_msg_exit E "Option:-s is a YouTube only option")
 	fi
 fi
@@ -1718,6 +1724,8 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	done
 else # Args passed
 	g_CMDLINE_ARGS=true
+	_QUERY_OPTS[ENGINE]=${ENGINE}
+	_QUERY_OPTS[EOPT]=${ENG_OPT}
 	_QUERY_OPTS[QKEY]="${@}"
 	_QUERY_OPTS[DKEY]="${(C)@:gs/_/ /}"
 	_QUERY_OPTS[TYPE]=standard # Menu type is either Y or R; not C
