@@ -98,7 +98,7 @@ if [[ ${#DIR_NOT_LOG} -ne 0 ]];then
 	echo
 	echo "DIR CHECK ${RED_FG}FAILED${RESET} -> Add missing files to log"
 else
-	echo "DIR CHECK ${GREEN_FG}OK${RESET} -> Directory entries match log contents"
+	echo "DIR CHECK ${GREEN_FG}OK${RESET} -> All files present in log "
 fi
 echo
 

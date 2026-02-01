@@ -201,7 +201,6 @@ shift $(( OPTIND - 1 ))
 [[ ! -e ${FN} ]] && usage "File:${FN} not found"
 [[ ! -e ${PWD}/${FN:t} ]] && ln -s ${FN} ${PWD} # Link file
 
-exit
 FN=${PWD}/${FN:t}
 
 [[ -e ${FN}.normalized ]] && rm -f ${FN}.normalized
