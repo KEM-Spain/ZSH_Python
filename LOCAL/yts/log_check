@@ -23,12 +23,14 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/STR.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
-typeset -a DIR_LIST=()
-typeset -a LOG_LIST=()
 typeset -a DIR_INODES=()
-typeset -a LOG_INODES=()
+typeset -a DIR_LIST=()
 typeset -a DIR_NOT_LOG=()
+typeset -a DIR_ROWS=()
+typeset -a LOG_INODES=()
+typeset -a LOG_LIST=()
 typeset -a LOG_NOT_DIR=()
+typeset -a LOG_ROWS=()
 
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _YTS_DIR=~/.local/share/yts
@@ -39,78 +41,77 @@ _NEW_LOG=/tmp/_LOG.new
 # Execution
 clear
 
-DIR_LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
+echo "Download Directory:${WHITE_FG}${_DOWNLOAD_DIR}${RESET}"
+echo "Download Log:${WHITE_FG}${_DOWNLOAD_LOG}${RESET}"
 
+echo "\nScanning download directory..."
+DIR_LIST=("${(f)$(ls -Ai ${_DOWNLOAD_DIR})}")
+echo -n "Found ${#DIR_LIST} files in download directory"
+
+DIR_INODES=()
 for L in ${(on)DIR_LIST};do
 	DIR_INODE=$(cut -d' ' -f1 <<<${L})
 	[[ ${DIR_FN:e} == 'part' ]] && continue
-	DIR_INODES+=${DIR_INODE}
+	[[ -n ${DIR_INODE} ]] && DIR_INODES+=${DIR_INODE}
 done
-
-while read LINE;do
-	LOG_INODE=$(cut -d'|' -f1 <<<${LINE})
-	LOG_INODES+=${LOG_INODE}
-done < ${_DOWNLOAD_LOG}
-
-echo "Download Directory:${WHITE_FG}${_DOWNLOAD_DIR}${RESET}"
-echo "Download Log:${WHITE_FG}${_DOWNLOAD_LOG}${RESET}"
-echo
+echo " - collected ${#DIR_INODES} inodes"
 
 NDX=0
-echo "Download Directory contains:${WHITE_FG}${#DIR_INODES}${RESET} $(str_pluralize inode ${#DIR_INODES})"
+echo "\nScanning download log..."
+while read LINE;do
+	((NDX++))
+	LOG_INODE=$(cut -d'|' -f1 <<<${LINE})
+	[[ -n ${LOG_INODE} ]] && LOG_INODES+=${LOG_INODE}
+done < ${_DOWNLOAD_LOG}
+echo "Found ${NDX} lines in log - collected ${#LOG_INODES} inodes\n"
+
+NDX=0
 for L in ${DIR_INODES};do
 	((NDX++))
 	[[ ${LOG_INODES[(i)${L}]} -le ${#LOG_INODES} ]] || DIR_NOT_LOG+=${L}
 	printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L}
 done
-echo
+echo "${#DIR_NOT_LOG} download directory files are not present in log\n"
 
 NDX=0
-echo "Download Log contains:${WHITE_FG}${#LOG_INODES}${RESET} $(str_pluralize inode ${#LOG_INODES})"
 for L in ${LOG_INODES};do
 	((NDX++))
 	[[ ${DIR_INODES[(i)${L}]} -le ${#DIR_INODES} ]] || LOG_NOT_DIR+=${L}
 	printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L}
 done
-
-typeset -a DIR_ROWS=()
-if [[ -n ${DIR_NOT_LOG} ]];then
+echo "${#LOG_NOT_DIR} log file entries are not present in download directory"
+ 
+if [[ ${#DIR_NOT_LOG} -ne 0 ]];then
 	for L in ${DIR_NOT_LOG};do
 		DIR_ROWS+="${L}|${$(find ${_DOWNLOAD_DIR} -inum ${L}):t}"
 	done
-fi
-
-typeset -a LOG_ROWS=()
-if [[ -n ${LOG_NOT_DIR} ]];then
-	for L in ${LOG_NOT_DIR};do
-		LOG_ROWS+=$(grep ${L} ${_DOWNLOAD_LOG})
-	done
-fi
-
-echo
-if [[ ${#DIR_NOT_LOG} -ne 0 ]];then
-	echo "Download Directory contains ${WHITE_FG}${#DIR_NOT_LOG}${RESET} $(str_pluralize inode ${#DIR_NOT_LOG}) ${ITALIC}${RED_FG}not${RESET} in log"
+	echo "\nDownload Directory contains ${WHITE_FG}${#DIR_NOT_LOG}${RESET} $(str_pluralize inode ${#DIR_NOT_LOG}) ${ITALIC}${RED_FG}not${RESET} in log"
 	NDX=0
 	for L in ${DIR_ROWS};do
 		((NDX++))
 		printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L[1,80]}
 	done
-	echo
-	echo "DIR CHECK ${RED_FG}FAILED${RESET} -> Add missing files to log"
+	echo "\nDIR CHECK ${RED_FG}FAILED${RESET} -> Add missing files to log"
 else
-	echo "DIR CHECK ${GREEN_FG}OK${RESET} -> All files present in log "
+	echo "\nDIR CHECK ${GREEN_FG}PASSED${RESET} -> No missing files in log"
 fi
-echo
-
+ 
 if [[ ${#LOG_NOT_DIR} -ne 0 ]];then
-	echo "Download Log contains ${WHITE_FG}${#LOG_NOT_DIR}${RESET} $(str_pluralize inode ${#LOG_NOT_DIR}) ${ITALIC}${RED_FG}not${RESET} in directory"
+	for L in ${LOG_NOT_DIR};do
+		LOG_ROWS+=$(grep ${L} ${_DOWNLOAD_LOG})
+	done
+	echo "\nDownload Log contains ${WHITE_FG}${#LOG_NOT_DIR}${RESET} $(str_pluralize inode ${#LOG_NOT_DIR}) ${ITALIC}${RED_FG}not${RESET} in directory"
 	NDX=0
 	for L in ${LOG_ROWS};do
 		((NDX++))
-		printf "${WHITE_FG}%d${RESET}) %s\n" ${NDX} ${L[1,80]}
+		IN=$(cut -d'|' -f1 <<<${L})
+		FN=$(cut -d'|' -f3 <<<${L})
+		printf "${WHITE_FG}%d${RESET}) %s -> %s\n" ${NDX} ${IN} ${FN}
 	done
 	echo
 	echo "LOG CHECK ${RED_FG}FAILED${RESET} -> Remove erroneous entries from log"
 else
-	echo "LOG CHECK ${GREEN_FG}OK${RESET} -> Log entries match directory contents"
+	echo "\nLOG CHECK ${GREEN_FG}PASSED${RESET} -> No missing files in directory"
 fi
+ 
+ 

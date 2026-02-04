@@ -249,6 +249,8 @@ local_to_prod () {
 	local NEWEST
 
 	echo "RELEASE"
+	[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
+
 	if [[ ${g_IS_INITIAL_PRODUCTION} == 'false' ]];then
 		# Existing production copy
 
@@ -287,7 +289,6 @@ local_to_prod () {
 			exit_leave $(msg_warn "Operation cancelled")
 		fi
 	fi
-	[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
 }
 
 set_messages () {

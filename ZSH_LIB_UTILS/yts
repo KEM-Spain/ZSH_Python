@@ -49,6 +49,7 @@ typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _STERMS=()
+typeset -a _STRIP_WORDS=()
 typeset -a _ACRONYMS=()
 typeset -a _RUMBLE_QRY_OPTS=(l c u g)
 typeset -a _RUMBLE_PAGE=()
@@ -77,6 +78,7 @@ _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
+_STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel")
 _YTS_ACRONYMS=${_CFG_DIR}/yts.acronyms
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _YTS_ERROR_LOG=${_CFG_DIR}/yts.err.log
@@ -165,7 +167,7 @@ action_do () {
 		trap job_kill INT
 
 		job_start ${URL}
-		msg_box -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "Download Requested"
+		msg_box -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested<N>"
 		sleep 3
 
 		while true;do
@@ -322,27 +324,20 @@ action_warn () {
 }
 
 box_center () {
-	local TXT=${@} # Text to center
+	local TXT=${@} # Message
 	local BOX=-4 # Compensate for box border
-	local BOX_CTR=0
-	local BOX_LEFT=${_CONT_COORDS[Y]} # Left coord
 	local BOX_WIDTH=${_CONT_COORDS[W]} # Width coord
-	local CTR=0
-	local REM=0
-	local TXT_CTR=0
-	local TXT_LEN=$(( ${#TXT} + BOX )) # Text length
 
-	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT})
+	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT}) # Return Y coord
 }
 
 cfg_init () {
 	local CFG_STATE=0
 	local -A CFG_MSGS=(1 "Missing configuration directory:${_CFG_DIR}" 2 "Missing favorites file:${_YTS_FAVORITES}")
 
-	[[ -e ${_YT_DBG_LOG} ]] && /bin/rm -f ${_YT_DBG_LOG}
-
-	[[ -d ${_CFG_DIR} ]] && CFG_STATE=0 || CFG_STATE=1
-	[[ -f ${_YTS_FAVORITES} ]] && CFG_STATE=0 || CFG_STATE=2
+	[[ -e ${_YT_DBG_LOG} ]] && /bin/rm -f ${_YT_DBG_LOG} # Clear any existing log
+	[[ -d ${_CFG_DIR} ]] && CFG_STATE=0 || CFG_STATE=1 # Dir exists
+	[[ -f ${_YTS_FAVORITES} ]] && CFG_STATE=0 || CFG_STATE=2 # Favorites file found
 
 	echo ${CFG_MSGS[${CFG_STATE}]}
 
@@ -352,50 +347,47 @@ cfg_init () {
 clean_title () {
 	local TITLE=${1}
 	local STR=''
-	local -a KEYWORDS=("judge napolitano - " "official" "^the " " show" "have it out with galloway \- " "youtube channel")
 	local -A SEEN=()
 	local -a UCASE_WORDS=()
 	local UCASE_LIMIT=4
 	local W U
 
 	#logit ${_YT_DBG_LOG} "${0}: TITLE  IN:${TITLE}"
+	#STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]:gs/_/ /}/I" <<<${TITLE})
 
 	TITLE=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
 	TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
+	STR=$(tr '\n' ' ' <<<${TITLE}) # Newlines to space
 
-	STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]:gs/_/ /}/I" <<<${TITLE})
-	STR=$(tr '\n' ' ' <<<${STR}) # Newlines to space
-	STR=$(sed -e 's/[ _]\(d\|l\|s\|t\|re\|ve\)[ _]/\o047\1 /Ig' -e 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any contraction gaps
-	 
-	UCASE_WORDS=("${(f)$(tr -dc '[:alnum:][ \-]' <<<${STR} | grep -E -o -- '\b([[:upper:]]|[0-9])+\b')}") # Allow alpha,digits, and hyphen
+	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
 	for U in ${UCASE_WORDS};do
 		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
 	done
 
+	STR=$(tr -c '[:alnum:][ \-]' ' ' <<<${STR})
 	STR=$(perl -pe  's/\o{47}(?![rstv].?\b)//g' <<<${STR}) # Remove any sentence quotes, leave contractions
-	STR=$(sed -E -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' -e 's/(\S)([-])(\S)/\1 \3/g' <<<${STR}) # Trim
 	STR=${(C)STR} # Proper case
-	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
 
 	for W in ${=STR};do
-		W=$(tr -dc '[:alnum:][\047]' <<<${W}) # Strip other than alpha,digits,single quotes, and hyphen
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
-			#logit ${_YT_DBG_LOG} "${0}: Found acronym:${W:u}"
-			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acromyns
+			logit ${_YT_DBG_LOG} "${0}: Found acronym:${W:u}"
+			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acronyms
 			SEEN[${W}]=1
 		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				#logit ${_YT_DBG_LOG} "${0}: Found uppercase:${W:u}"
+				logit ${_YT_DBG_LOG} "${0}: Found uppercase:${W:u}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
 				SEEN[${W}]=1
 			fi
 		fi
 	done
 
-	for W in ${KEYWORDS};do # Scrub keywords
-		STR=$(sed "s/${W}//I" <<<${STR})
-	done
+	STR=$(sed -e 's/[ _]\(d\|l\|s\|t\|re\|ve\)[ _]/\o047\1 /Ig' -e 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any contraction gaps
+	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
+	STR=$(sed -E -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' -e 's/(\S)([-])(\S)/\1 \3/g' <<<${STR}) # Trim
+
+	STR=$(keyword_strip <<<${STR})
 
 	TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
 
@@ -914,6 +906,21 @@ job_start () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: CMD:${CMD}"
 }
 
+keyword_strip () {
+	local LINE=''
+	local W
+
+	read LINE
+
+	for W in ${_STRIP_WORDS};do # Scrub keywords
+		LINE=$(sed "s/${W}//I" <<<${LINE})
+		LINE=$(str_trim <<<${LINE})
+	done
+
+	LINE=$(sed -E "s/(^-|-$)//" <<<${LINE})
+	echo ${LINE}
+}
+
 last_code_update () {
 	local MARKER_ARG=${1}
 	local LAST_UPD=0
@@ -1219,10 +1226,6 @@ parse_rumble () {
 		fi
 	done
 
-	for K in ${_LOCAL_LIST};do
-		printf "%s\n" ${K}
-	done >>x
-
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		return 1
 	fi
@@ -1411,6 +1414,7 @@ query_youtube () {
 	for F in ${_LOCAL_LIST};do
 		AGE=$(cut -d'|' -f${YOUTUBE_MAP[age]} <<<${F})
 		AUTHOR=$(cut -d'|' -f${YOUTUBE_MAP[author]} <<<${F})
+		AUTHOR=$(keyword_strip <<<${AUTHOR})
 		TITLE=$(cut -d'|' -f${YOUTUBE_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
 			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
@@ -1731,7 +1735,7 @@ else # Args passed
 	_QUERY_OPTS[EOPT]=${ENG_OPT}
 	_QUERY_OPTS[QKEY]=${SEARCHTERM}
 	_QUERY_OPTS[DKEY]="${(C)@:gs/_/ /}"
-	_QUERY_OPTS[TYPE]=standard # Menu type is not custom
+	_QUERY_OPTS[TYPE]=standard
 	_QUERY_OPTS[ECODE]=${_ENG_CODES[${ENGINE}]}
 
 	logit ${_YT_DBG_LOG} "_QUERY_OPTS: $(for K in ${(ok)_QUERY_OPTS};do printf '%s:%s ' ${K} ${_QUERY_OPTS[${K}]};done)"
