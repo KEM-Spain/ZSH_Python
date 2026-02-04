@@ -95,7 +95,7 @@ usage () {
 
 # Execution
 PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
-[[ ${PPCMD} == 'zsh' ]] && CMDLINE=true
+[[ ${PPCMD} =~ '(zsh|/usr/bin/zsh)' ]] && CMDLINE=true
 
 if [[ ${CMDLINE} == 'true' ]];then
 	OPTSTR=":HDp:"
