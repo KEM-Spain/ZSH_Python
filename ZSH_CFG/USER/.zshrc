@@ -57,11 +57,15 @@ export GIT_AUTHOR_EMAIL="miller.kurt.e@gmail.com"
 export LC_ALL=C.utf8
 export DISPLAY=:0
 
+# Vars
+_TERMCNT=$(terms -c)
+
 [[ -o login ]] && LOGIN=login || LOGIN=''
 
 # Functions 
 _term_wid () {
-	wmctrl -l | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1
+	local WID=$(wmctrl -l | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
+	echo ${WID}
 }
 
 _cursor_row () {
@@ -244,16 +248,15 @@ add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
 
 # Execution
-if [[ $(_term_count) -eq 1 ]];then
+if [[ ${_TERMCNT} -eq 1 ]];then
 	INTERACTIVE=''
 
-	TERM_WIN_ID=$(win_id | cut -d'|' -f2)
-	xdotool --window ${TERM_WIN_ID} key "Escape"
+	#TERM_WIN_ID=$(win_id | cut -d'|' -f2)
+	#[[ -n ${TERM_WIN_ID} ]] && xdotool key --window ${TERM_WIN_ID} key "Escape" || echo "Unable to obtain TERM_WIN_ID"
 
 	if [[ -o interactive ]]; then
-		if [[ $(_term_count) -eq 1 ]];then
-			wmctrl -i -r $(_term_wid) -b add,maximized_vert,maximized_horz
-		fi
+		WID=$(_term_wid)
+		[[ -n ${WID} ]] && wmctrl -i -r ${WID} -b add,maximized_vert,maximized_horz || echo "Unable to obtain TERM_WIN_ID"
 
 		INTERACTIVE=interactive
 		tput cup 0 0
@@ -282,7 +285,7 @@ if [[ $(_term_count) -eq 1 ]];then
 		HIST=$(hist_no_dups -p)
 		tput el1
 		tput rc
-		wmctrl -R terminal
+		wmctrl -R Terminal 
 		echo ${HIST}
 
 		setopt >~/.cur_setopts
@@ -323,7 +326,8 @@ if [[ $(_term_count) -eq 1 ]];then
 
 		CNT=$(pgrep -ic enpass)
 		if [[ ${CNT} -eq 0 ]];then
-			wmctrl -i -a $(_term_wid) # Focus
+			WID=$(_term_wid)
+			[[ -n ${WID} ]] && wmctrl -i -a ${WID} || echo "Unable to obtain WID"
 			run_enpass
 		else
 			tput cup ${C_POS} 0 # Cursor position following last info 
@@ -331,6 +335,13 @@ if [[ $(_term_count) -eq 1 ]];then
 			tput cup $(tput lines) 0 # Cursor last line
 		fi
 	fi
+else
+	print -Pn "\e]0;Terminal ${_TERMCNT}\a"
+	WID=$(win_id | cut -d'|' -f1)
+	wmctrl -i -R ${WID} -b add,maximized_vert,maximized_horz
 fi
 
-[[ $(_term_count) -eq 1 ]] && wmctrl -i -a $(_term_wid) # Focus
+if [[ $(_term_count) -eq 1 ]];then
+	WID=$(_term_wid)
+	[[ -n ${WID} ]] && wmctrl -i -a ${WID} || echo "Unable to obtain WID"
+fi

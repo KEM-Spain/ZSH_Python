@@ -95,7 +95,7 @@ usage () {
 
 # Execution
 PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
-[[ ${PPCMD} == 'zsh' ]] && CMDLINE=true
+[[ ${PPCMD} =~ '(zsh|/usr/bin/zsh)' ]] && CMDLINE=true
 
 if [[ ${CMDLINE} == 'true' ]];then
 	OPTSTR=":HDp:"
@@ -119,7 +119,6 @@ fi
 eval "${_YT_DLP} ${(qqq)@}"
 
 if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
-	logit ${_YT_DBG_LOG} "${0:t} Command line download:${@}"
 	FN=$(last_file_downloaded | cut -d'|' -f1)
 	if [[ -e ${FN} ]];then
 		logit ${_YT_DBG_LOG} "${0:t} Cleaning file name:${FN:t}"
@@ -131,8 +130,9 @@ if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
 		fi
 	fi
 	logit ${_YTS_URL_LOG} "${0:t} CMDLINE download URL:${@} to ${FN:t}"
+	logit ${_YT_DBG_LOG} "${0:t} Executed from command line:${@} PPCMD:${PPCMD}"
 else
-	logit ${_YT_DBG_LOG} "${0:t} Executed by ${PPCMD} with command:${@}"
+	logit ${_YT_DBG_LOG} "${0:t} Executed from script:${@} PPCMD:${PPCMD}"
 fi
 
 exit_leave 

@@ -633,7 +633,7 @@ do_yt_tag () {
 	local -a ACRONYMS=()
 	local -a UCASE_WORDS=()
 	local CFG_DIR=~/.local/share/yts
-	local ACRONYM_FN=${_CFG_DIR}/yts.acronyms
+	local ACRONYM_FN=${CFG_DIR}/yts.acronyms
 	local CANDIDATE=''
 	local CEXT=''
 	local CFN=''
@@ -667,7 +667,11 @@ do_yt_tag () {
 
 		CFN=${(C)CFN} # Proper case
 
-		CFN=$(sed 's/\x27/ /g' <<<${CFN}) # Clear apostrophes to expose UCASE and ACRONYMS
+		# Expose UCASE and ACRONYMS
+		CFN=$(sed 's/\x27/ /g' <<<${CFN}) # Apostrophes
+		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g') # Underscores
+		CFN=$(echo "${CFN}" | perl -pe 's/\-?\[.*//' | str_trim) # Hyphens and braces
+		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g') # Dots
 
 		for W in ${=CFN};do
 			[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
@@ -682,9 +686,6 @@ do_yt_tag () {
 			fi
 		done
 
-		CFN=$(echo "${CFN}" | perl -pe 's/\-?\[.*//' | str_trim) # Hyphens and braces
-		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g')
-		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
 		CFN=$(echo "${CFN}" | perl -pe 's/(\w+)\s([Ss]|[Vv]e|[Rr]e)\s(.*)$/\1\x{027}\2 \3/g') # Replace missing apostrophes
 		CFN=$(echo "${CFN}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
 

@@ -686,7 +686,7 @@ do_yt_tag () {
 			fi
 		done
 
-		CFN=$(echo "${CFN}" | perl -pe 's/(\w+)\s([Ss]|[Vv]e|[Rr]e)\s(.*)$/\1\x{027}\2 \3/g') # Replace missing apostrophes
+		CFN=$(echo "${CFN}" | perl -pe 's/(\w+)\s([Ss]|[Tt]|[Vv]e|[Rr]e)\s(.*)$/\1\x{027}\2 \3/g') # Replace missing apostrophes
 		CFN=$(echo "${CFN}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
 
 		[[ -n ${CFN} ]] && _OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Cleaned text

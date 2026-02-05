@@ -25,6 +25,8 @@ alias spot='/usr/local/bin/system/launchers/run_spotify >/dev/null 2>&1 &'
 alias t='tz'
 alias templates='ls /usr/local/etc/*template'
 alias unf='unfunction '
+alias terminator='terminator --title terminal'
+
 
 # misc
 alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"

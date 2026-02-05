@@ -78,7 +78,7 @@ _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
-_STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "-")
+_STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel")
 _YTS_ACRONYMS=${_CFG_DIR}/yts.acronyms
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _YTS_ERROR_LOG=${_CFG_DIR}/yts.err.log
@@ -166,7 +166,7 @@ action_do () {
 		unsetopt localtraps # Initialize CTRL-C trap
 		trap job_kill INT
 
-		job_start ${URL}
+		job_start "${URL}|${TITLE}"
 		msg_box -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested<N>"
 		sleep 3
 
@@ -346,52 +346,51 @@ cfg_init () {
 
 clean_title () {
 	local TITLE=${1}
-	local STR=''
 	local -A SEEN=()
 	local -a UCASE_WORDS=()
+	local STR=''
 	local UCASE_LIMIT=4
 	local W U
 
-	#logit ${_YT_DBG_LOG} "${0}: TITLE  IN:${TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: TITLE  IN:${TITLE}"
 	#STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]:gs/_/ /}/I" <<<${TITLE})
 
-	TITLE=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
-	TITLE=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE}) # Convert any HTML 
-	STR=$(tr '\n' ' ' <<<${TITLE}) # Newlines to space
+	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
+	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
 
 	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
 	for U in ${UCASE_WORDS};do
 		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
 	done
 
-	STR=$(tr -c '[:alnum:][ \-]' ' ' <<<${STR})
-	STR=$(perl -pe  's/\o{47}(?![rstv].?\b)//g' <<<${STR}) # Remove any sentence quotes, leave contractions
 	STR=${(C)STR} # Proper case
+
+	# Expose UCASE and ACRONYMS
+	STR=$(sed 's/\x27/ /g' <<<${STR}) # Apostrophes
+	STR=$(echo "${STR}" | perl -pe 's/_/ /g') # Underscores
+	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim) # Hyphens and braces
+	STR=$(echo "${STR}" | perl -pe 's/\.*$//g') # Dots
 
 	for W in ${=STR};do
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
-			logit ${_YT_DBG_LOG} "${0}: Found acronym:${W:u}"
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acronyms
 			SEEN[${W}]=1
 		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				logit ${_YT_DBG_LOG} "${0}: Found uppercase:${W:u}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
 				SEEN[${W}]=1
 			fi
 		fi
 	done
 
-	STR=$(sed -e 's/[ _]\(d\|l\|s\|t\|re\|ve\)[ _]/\o047\1 /Ig' -e 's/[ _][Ww][ _]/ with /g' <<<${STR}) # Fix any contraction gaps
-	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
-	STR=$(sed -E -e 's/^[[:blank:]]*//' -e 's/[[:blank:]]*$//' -e 's/(\S)([-])(\S)/\1 \3/g' <<<${STR}) # Trim
-
+	STR=$(echo "${STR}" | perl -pe 's/(\w+)\s([Ss]|[Tt]|[Vv]e|[Rr]e)\s(.*)$/\1\x{027}\2 \3/g') # Replace missing apostrophes
+	STR=$(echo "${STR}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
 	STR=$(keyword_strip <<<${STR})
 
 	TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
 
-	#logit ${_YT_DBG_LOG} "${0}: TITLE OUT:${TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: TITLE OUT:${TITLE}"
 
 	echo ${TITLE}
 }
@@ -753,11 +752,9 @@ filter_rumble_data () {
 		[[ -z ${LINE} ]] && continue
 		[[ ${LINE} =~ '^[Vv]erified$' ]] && continue
 		[[ ${LINE} =~ '^LIVE$' ]] && continue
-		LINE=$(tr -d '\011' <<< ${LINE})
-		LINE=$(tr -d '\012' <<< ${LINE})
-		LINE=$(sed 's/|/#/g' <<< ${LINE})
-		LINE=$(iconv -c -f UTF-8 -t ASCII <<<${LINE} 2>/dev/null) # Convert UTF-8
-		LINE=$(html2text -width 500 -ascii <<<${LINE} 2>/dev/null) # Convert any HTML 
+		LINE=$(tr '\011' ' ' <<< ${LINE}) # Tabs to spaces
+		LINE=$(tr -d '\012' <<< ${LINE}) # Line feeds
+		LINE=$(tr '|' '#' <<< ${LINE}) # Embedded pipes to hash
 		str_trim <<< ${LINE}
 	done
 }
@@ -883,21 +880,24 @@ job_reset () {
 }
 
 job_start () {
-	local URL=${@}
+	local URL=$(cut -d'|' -f1 <<<${@})
+	local TITLE=$(cut -d'|' -f2 <<<${@})
 	local CMD=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#}"
 
 	g_YTS_LOG=$(mktemp ${_CFG_DIR}/yt.log.XXXXXX)
+	logit ${_YT_DBG_LOG} "${0}: DOWNLOAD LOG:${g_YTS_LOG}"
 
 	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL}" # Routine download - limit title len
 
+	[[ ! -w ${g_YTS_LOG} ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
-	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
 
 	eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
 	g_PID=$!
 
+	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}"
 	logit ${_YT_DBG_LOG} "${0}: QUERY KEY:${_QUERY_OPTS[QKEY]}"
 	logit ${_YT_DBG_LOG} "${0}: CMD:${CMD} PID:${g_PID}"
 
@@ -917,6 +917,7 @@ keyword_strip () {
 		LINE=$(str_trim <<<${LINE})
 	done
 
+	LINE=$(sed -E "s/(^-|-$)//" <<<${LINE})
 	echo ${LINE}
 }
 
