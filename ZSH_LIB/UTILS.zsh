@@ -5,6 +5,7 @@ _DEPS_+=(MSG.zsh TPUT.zsh)
 typeset -a _DELIMS=('#' '|' ':' ',' '	') # Recognized field delimiters
 typeset -a _POS_ARGS=()
 typeset -A _KWD_ARGS=()
+typeset -a _ACRONYMS=()
 
 # LIB Vars
 _EXIT_VALUE=0
@@ -767,7 +768,7 @@ respond () {
 	[[ ${RESPONSE} == 'y' ]] && return 0 || return 1
 }
 
-title_info () {
+title_info () { # Shared with fsub and vid_to_lib
 	local -a TITLE_ARG=(${@})
 	local INFO_TYPE=${1}
 	local INFO_TITLE=${2}
@@ -833,4 +834,60 @@ title_info () {
 		long) echo ${LONG_TITLE:gs/\./ /};;
 		series) echo ${SERIES:gs/\./ /};;
 	esac
+}
+
+title_scrubber () {
+	local TITLE=${1}
+	local -A SEEN=()
+	local -a UCASE_WORDS=()
+	local CFG_DIR=~/.local/share/yts
+	local ACRONYM_FN=${CFG_DIR}/yts.acronyms
+	local LINE=''
+	local STR=''
+	local UCASE_LIMIT=4
+	local W U
+
+	if [[ -e ${ACRONYM_FN} && -z ${_ACRONYMS} ]];then # Load acronyms
+		while read LINE;do
+			_ACRONYMS+=${LINE}
+		done < ${ACRONYM_FN}
+	else
+		exit_leave "${0}: Unable to load ACRONYMS from ${ACRONYM_FN}"
+	fi
+
+	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
+	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
+
+	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
+	for U in ${UCASE_WORDS};do
+		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
+	done
+
+	STR=${(C)STR} # Proper case
+
+	# Expose UCASE and ACRONYMS
+	STR=$(sed 's/\x27/ /g' <<<${STR} 2>/dev/null) # Apostrophes
+	STR=$(echo "${STR}" | perl -pe 's/_/ /g' 2>/dev/null) # Underscores
+	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim 2>/dev/null) # Hyphens and braces
+	STR=$(echo "${STR}" | perl -pe 's/\.*$//g' 2>/dev/null) # Dots
+
+	for W in ${=STR};do
+		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
+		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
+			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
+			SEEN[${W}]=1
+		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
+			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
+				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) 
+				SEEN[${W}]=1
+			fi
+		fi
+	done
+
+	STR=$(echo "${STR}" | perl -pe 's/(\w+)\s([Ss]|[Tt]|[Vv]e|[Rr]e)\s(.*)$/\1\x{027}\2 \3/g') # Replace missing apostrophes
+	STR=$(echo "${STR}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
+
+	[[ -n ${STR} ]] && TITLE=${STR}
+
+	echo ${TITLE}
 }

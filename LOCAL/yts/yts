@@ -50,7 +50,6 @@ typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
 typeset -a _STERMS=()
 typeset -a _STRIP_WORDS=()
-typeset -a _ACRONYMS=()
 typeset -a _RUMBLE_QRY_OPTS=(l c u g)
 typeset -a _RUMBLE_PAGE=()
 typeset -aU _LOCAL_LIST=()
@@ -79,7 +78,6 @@ _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve a
 _OBJECT="video"
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel")
-_YTS_ACRONYMS=${_CFG_DIR}/yts.acronyms
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _YTS_ERROR_LOG=${_CFG_DIR}/yts.err.log
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
@@ -103,19 +101,6 @@ g_WHEN=''
 g_YTS_LOG=''
 
 # Functions
-acronym_load () {
-	local LINE
-
-	# Load acronyms
-	if [[ -e ${_YTS_ACRONYMS} ]];then
-		while read LINE;do
-			_ACRONYMS+=${LINE}
-		done < ${_YTS_ACRONYMS}
-	fi
-
-	[[ ${#_ACRONYMS} ]] && return 0 || return 1
-}
-
 action_do () {
 	local AUTHOR=''
 	local DEST=''
@@ -346,48 +331,14 @@ cfg_init () {
 
 clean_title () {
 	local TITLE=${1}
-	local -A SEEN=()
-	local -a UCASE_WORDS=()
 	local STR=''
-	local UCASE_LIMIT=4
-	local W U
 
 	#logit ${_YT_DBG_LOG} "${0}: TITLE  IN:${TITLE}"
-
-	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
-	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
-
-	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
-	for U in ${UCASE_WORDS};do
-		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
-	done
-
-	STR=${(C)STR} # Proper case
-
-	# Expose UCASE and ACRONYMS
-	STR=$(sed 's/\x27/ /g' <<<${STR}) # Apostrophes
-	STR=$(echo "${STR}" | perl -pe 's/_/ /g') # Underscores
-	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim) # Hyphens and braces
-	STR=$(echo "${STR}" | perl -pe 's/\.*$//g') # Dots
-
-	for W in ${=STR};do
-		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
-			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) # Preserve acronyms
-			SEEN[${W}]=1
-		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
-			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR}) 
-				SEEN[${W}]=1
-			fi
-		fi
-	done
-
-	STR=$(echo "${STR}" | perl -pe 's/(\w+)\s([Ss]|[Tt]|[Vv]e|[Rr]e)\s(.*)$/\1\x{027}\2 \3/g') # Replace missing apostrophes
-	STR=$(echo "${STR}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
+	 
+	STR=$(title_scrubber ${TITLE})
 	STR=$(keyword_strip <<<${STR})
 
-	TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
+	[[ -n ${STR} ]] && TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
 
 	#logit ${_YT_DBG_LOG} "${0}: TITLE OUT:${TITLE}"
 
@@ -1322,6 +1273,7 @@ query_rumble () {
 query_youtube () {
 	local -a WORK_LIST=()
 	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
+	local -A FILTER_MSGS=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local DATA=false
 	local HIT=false
@@ -1334,15 +1286,14 @@ query_youtube () {
 	ping -w1 www.youtube.com >/dev/null
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
-	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[EOPT]}"
+	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[EOPT]:=null}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	if [[ ${_QUERY_OPTS[EOPT]:l} == 's' ]];then # Strict requested
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT FILTER ACTIVE${RESET}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}STRICT ACTIVE${RESET}"
 		g_PROXY_CMD="node ${_JS_SCRIPT} -s ${(qqq)_QUERY_OPTS[QKEY]}"
 	else
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}NON-STRICT FILTER ACTIVE${RESET}"
 		g_PROXY_CMD="node ${_JS_SCRIPT} -a recent ${(qqq)_QUERY_OPTS[QKEY]}"
 	fi
 
@@ -1371,21 +1322,19 @@ query_youtube () {
 
 		# TODO: Track if disabling this causes unwanted content
 		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' ]];then # Apply filtering to non strict results
-		#	HIT=false
+			HIT=false
+			FILTER_MSGS=()
 			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
 			TITLE=$(cut -d'|' -f3 <<<${LINE}) && TITLE=$(str_to_ascii ${TITLE})
-			[[ ${TITLE:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true
-			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true
-			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true
-			[[ ${AUTHOR:gs/ //:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true
-			logit ${_YT_DBG_LOG} "${0}: NO STRICT FILTERING - TITLE:${TITLE}"
-			logit ${_YT_DBG_LOG} "${0}: NO STRICT FILTERING - AUTHOR:${AUTHOR}, _QUERY_OPTS[DKEY]:${_QUERY_OPTS[DKEY]} _QUERY_OPTS[QKEY]:${_QUERY_OPTS[QKEY]}"
-			logit ${_YT_DBG_LOG} "${0}: HIT:${HIT}"
-		#	if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
-		#		dbg "${0}:${LINENO} NON STRICT FILTERING, HIT:${HIT}"
-		#		dbg "${0}:AUTHOR:${AUTHOR}, TITLE:${TITLE}_QUERY_OPTS[DKEY]:${_QUERY_OPTS[DKEY]}, _QUERY_OPTS[QKEY]:${_QUERY_OPTS[QKEY]}"
-		#	fi
-		#	[[ ${HIT} == 'false' ]] && continue
+			FILTER_MSGS[1]="title match on DKEY"
+			[[ ${TITLE:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true || FILTER_MSGS[1]="title non-match on DKEY"
+			FILTER_MSGS[2]="author match on DKEY"
+			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true || FILTER_MSGS[2]="author non-match on DKEY"
+			FILTER_MSGS[3]="author with u-score match on QKEY"
+			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true || FILTER_MSGS[3]="author with u-score non-match on QKEY"
+			FILTER_MSGS[4]="author w/o u-score match on QKEY"
+			[[ ${AUTHOR:gs/ //:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true || FILTER_MSGS[4]="author w/o u-score non-match on QKEY"
+			[[ ${HIT} == 'false' ]] && logit ${_YT_DBG_LOG} "${0}: NON-STRICT FILTER REJECT: TITLE:${TITLE}, AUTHOR:${AUTHOR}, QKEY:${_QUERY_OPTS[QKEY]}, DKEY:${_QUERY_OPTS[DKEY]}, ${(kv)FILTER_MSGS}"
 		fi
 		 
 		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}
@@ -1703,11 +1652,6 @@ clear
 # Load favorites
 if ! fav_load;then
 	exit_leave "Unable to load favorites"
-fi
-
-# Load acromyns
-if ! acronym_load;then
-	exit_leave "Unable to load acronyms"
 fi
 
 # Run Query
