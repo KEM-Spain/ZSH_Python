@@ -1,20 +1,20 @@
-2026-02-06_00:06: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-02-06_00:06: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-02-06_00:06: _QUERY_OPTS: DKEY:Judging Freedom ENGINE:youtube EOPT: FKEY:Judging Freedom QKEY:judging freedom TYPE:standard 
-2026-02-06_00:06: query_youtube: Creating listing for QKEY:judging freedom STRICT:null
-2026-02-06_00:06: query_youtube: QKEY:judging freedom, g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "judging freedom"
-2026-02-06_00:06: query_youtube: Listing for QKEY:judging freedom contains 18 rows
-2026-02-06_00:06: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.p0EKxi
-2026-02-06_00:06: job_start: TITLE:Col. Lawrence Wilkerson : America's Global Power Is Slipping Fast
-2026-02-06_00:06: job_start: QUERY KEY:judging freedom
-2026-02-06_00:06: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=Wzq7__Z1gc8" PID:747227
-2026-02-06_00:06: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-02-06_00:06: action_do: HEADER
-2026-02-06_00:06: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=Wzq7__Z1gc8 PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-02-06_00:06: action_do: COMPLETED
-2026-02-06_00:06: action_do: POST-PROCESSING
-2026-02-06_00:06: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - COL._Lawrence_Wilkerson_-_America_s_Global_Power_Is_Slipping_Fast.mp4
-2026-02-06_00:06: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - COL._Lawrence_Wilkerson_-_America_s_Global_Power_Is_Slipping_Fast.mp4
-2026-02-06_00:06: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - COL._Lawrence_Wilkerson_-_America_s_Global_Power_Is_Slipping_Fast.mp4 with:Judging Freedom - Col. Lawrence Wilkerson - America's Global Power Is.mp4
-2026-02-06_00:06: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Col. Lawrence Wilkerson - America's Global Power Is.mp4
-2026-02-06_00:06: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.p0EKxi was cleared for:judging freedom from:action_do
+2026-02-07_01:38: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-07_01:38: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-07_01:38: _QUERY_OPTS: DKEY:Judging Freedom ENGINE:youtube EOPT: FKEY:Judging Freedom QKEY:judging freedom TYPE:standard 
+2026-02-07_01:38: query_youtube: Creating listing for QKEY:judging freedom STRICT:null
+2026-02-07_01:38: query_youtube: QKEY:judging freedom, g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "judging freedom"
+2026-02-07_01:39: query_youtube: Listing for QKEY:judging freedom contains 16 rows
+2026-02-07_01:39: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.MSwBnH
+2026-02-07_01:39: job_start: TITLE:INTEL Roundtable w/ Johnson & Mcgovern : Weekly Wrap 6-Feb
+2026-02-07_01:39: job_start: QUERY KEY:judging freedom
+2026-02-07_01:39: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=sXCDi9N9NE0" PID:272010
+2026-02-07_01:39: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-02-07_01:39: action_do: HEADER
+2026-02-07_01:39: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=sXCDi9N9NE0 PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-02-07_01:39: action_do: COMPLETED
+2026-02-07_01:39: action_do: POST-PROCESSING
+2026-02-07_01:39: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - INTEL_Roundtable_w_Johnson_McGovern_-_Weekly_Wrap_6-FEB.mp4
+2026-02-07_01:39: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - INTEL_Roundtable_w_Johnson_McGovern_-_Weekly_Wrap_6-FEB.mp4
+2026-02-07_01:39: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - INTEL_Roundtable_w_Johnson_McGovern_-_Weekly_Wrap_6-FEB.mp4 with:Judging Freedom - INTEL Roundtable W Johnson Mcgovern - Weekly Wrap.mp4
+2026-02-07_01:39: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - INTEL Roundtable W Johnson Mcgovern - Weekly Wrap.mp4
+2026-02-07_01:39: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.MSwBnH was cleared for:judging freedom from:action_do

@@ -95,7 +95,8 @@ usage () {
 
 # Execution
 PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
-[[ ${PPCMD} =~ '(zsh|/usr/bin/zsh)' ]] && CMDLINE=true
+[[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true
+logit ${_YT_DBG_LOG} "${0:t} PPCMD:${PPCMD}"
 
 if [[ ${CMDLINE} == 'true' ]];then
 	OPTSTR=":HDp:"

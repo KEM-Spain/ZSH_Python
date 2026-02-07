@@ -13,6 +13,8 @@ typeset -a LIST=()
 
 # Constants
 _YT_DBG_LOG=~/.local/share/yts/yt.dbg.log
+_YTS_DBG_LOG=~/.local/share/yts/yts.dbg.log
+_YTS_URL_LOG=~/.local/share/yts/yts.url.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _YT_DLP="/usr/local/bin/yt-dlp"
 

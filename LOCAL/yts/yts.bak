@@ -333,6 +333,8 @@ clean_title () {
 	local TITLE=${1}
 	local STR=''
 
+	#logit ${_YT_DBG_LOG} "${0}: TITLE  IN:${TITLE}"
+	 
 	STR=$(title_scrubber ${TITLE})
 	STR=$(keyword_strip <<<${STR})
 
@@ -1271,7 +1273,7 @@ query_rumble () {
 query_youtube () {
 	local -a WORK_LIST=()
 	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
-	local -a FILTER_MSGS=()
+	local -A FILTER_MSGS=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local DATA=false
 	local HIT=false
@@ -1324,11 +1326,15 @@ query_youtube () {
 			FILTER_MSGS=()
 			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
 			TITLE=$(cut -d'|' -f3 <<<${LINE}) && TITLE=$(str_to_ascii ${TITLE})
-			[[ ${TITLE:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true || FILTER_MSGS+="title non-match on DKEY"
-			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true || FILTER_MSGS+="author non-match on DKEY"
-			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true || FILTER_MSGS+="author with u-score non-match on QKEY"
-			[[ ${AUTHOR:gs/ //:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true || FILTER_MSGS+="author w/o u-score non-match on QKEY"
-			[[ ${HIT} == 'false' ]] && logit ${_YT_DBG_LOG} "${0}: NON-STRICT FILTER REJECT: TITLE:${TITLE}, AUTHOR:${AUTHOR}, QKEY:${_QUERY_OPTS[QKEY]}, DKEY:${_QUERY_OPTS[DKEY]}, ${FILTER_MSGS}"
+			FILTER_MSGS[1]="title match on DKEY"
+			[[ ${TITLE:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true || FILTER_MSGS[1]="title non-match on DKEY"
+			FILTER_MSGS[2]="author match on DKEY"
+			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true || FILTER_MSGS[2]="author non-match on DKEY"
+			FILTER_MSGS[3]="author with u-score match on QKEY"
+			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true || FILTER_MSGS[3]="author with u-score non-match on QKEY"
+			FILTER_MSGS[4]="author w/o u-score match on QKEY"
+			[[ ${AUTHOR:gs/ //:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true || FILTER_MSGS[4]="author w/o u-score non-match on QKEY"
+			[[ ${HIT} == 'false' ]] && logit ${_YT_DBG_LOG} "${0}: NON-STRICT FILTER REJECT: TITLE:${TITLE}, AUTHOR:${AUTHOR}, QKEY:${_QUERY_OPTS[QKEY]}, DKEY:${_QUERY_OPTS[DKEY]}, ${(kv)FILTER_MSGS}"
 		fi
 		 
 		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}

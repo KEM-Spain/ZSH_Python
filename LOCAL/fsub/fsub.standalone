@@ -134,17 +134,22 @@ err_msg_exit () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${#} -eq 1 ]];then
-		E_MSG=${1}
-		if [[ ${#E_MSG} -eq 1 && ! ${E_MSG} =~ 'W|E|I' ]];then
-			return 1 # No message passed
-		else
-			E_TYPE=E # Default type
+	if [[ ! -t 0 ]];then
+		read E_MSG
+		E_TYPE=E
+	else
+		if [[ ${#} -eq 1 ]];then
 			E_MSG=${1}
+			if [[ ${#E_MSG} -eq 1 && ! ${E_MSG} =~ '^(W|E|I)$' ]];then
+				return 1 # No message passed
+			else
+				E_TYPE=E # Default type
+				E_MSG=${1}
+			fi
+		elif [[ ${#} -eq 2 ]];then
+			E_TYPE=${1}
+			E_MSG=${2}
 		fi
-	elif [[ ${#} -eq 2 ]];then
-		E_TYPE=${1}
-		E_MSG=${2}
 	fi
 
 	case ${E_TYPE} in 
@@ -154,7 +159,7 @@ err_msg_exit () {
 		*) LABEL="Unknown E_TYPE:${E_TYPE}";;
 	esac
 
-	[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe "s/^(.*:)(.*)$/\1\e[37m\2\e[m/" <<<${E_MSG})
+	[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe "s/^(.*:)(\w+)(.*)$/\1\e[37m\2\e[m\3/" <<<${E_MSG})
 
 	printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "$(echo ${E_MSG})"
 }
@@ -273,6 +278,7 @@ str_pluralize () {
 		function) RETURN_WORD="functions";;
 		gram) RETURN_WORD="grams";;
 		inch) RETURN_WORD="inches";;
+		inode) RETURN_WORD="inodes";;
 		item) RETURN_WORD="items";;
 		kilo) RETURN_WORD="kilos";;
 		kilometer) RETURN_WORD="kilometers";;
@@ -348,72 +354,61 @@ str_trim () {
 	fi
 }
 
-title_info () {
-	local -a TITLE_ARG=(${@})
-	local INFO_TYPE=${1}
-	local INFO_TITLE=${2}
-	local TITLE_REGEX
-	local LONG_INFO
-	local YEAR SERIES RES
-	local SHORT_TITLE
-	local LONG_TITLE
-	local NDX
+title_scrubber () {
+	local TITLE=${1}
+	local -A SEEN=()
+	local -a UCASE_WORDS=()
+	local CFG_DIR=~/.local/share/yts
+	local ACRONYM_FN=${CFG_DIR}/yts.acronyms
+	local LINE=''
+	local STR=''
+	local UCASE_LIMIT=4
+	local W U
 
-	# Find regexes (posix-basic syntax)
-	local _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
-
-	# Perl regexes (extended syntax)
-	local _SERIES_REGEX='((?<!^)[Ss]\d{2}[Ee]\d{2}|\d{4}.\d{2}.\d{2})'
-	local _YEAR_REGEX='(?<!^)(?<=[(. ])(\d{4})(?=[). ])'
-	local _RES_REGEX='(?<!^)(720p|1080p)'
-	local _SHORT_TITLE_REGEX='s/^([^.]*[.][^.]*)[.].*$'
-
-	# Sed regexes (posix-basic syntax)
-	local _TITLE_JUNK_REGEX='[.(_ ]'
-
-	YEAR=$(perl -p -e "s/(.*)(${_YEAR_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${YEAR} == ${INFO_TITLE} ]] && YEAR=''
-
-	SERIES=$(perl -p -e "s/(.*)(${_SERIES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${SERIES} == ${INFO_TITLE} ]] && SERIES=''
-
-	RES=$(perl -p -e "s/(.*)(${_RES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${RES} == ${INFO_TITLE} ]] && RES=''
-
-	LONG_INFO=true
-	if [[ -n ${YEAR} ]];then
-		TITLE_REGEX=${_YEAR_REGEX}
-	elif [[ -n ${SERIES} ]];then
-		TITLE_REGEX=${_SERIES_REGEX}
-	elif [[ -n ${RES} ]];then
-		TITLE_REGEX=${_RES_REGEX}
+	if [[ -e ${ACRONYM_FN} && -z ${_ACRONYMS} ]];then # Load acronyms
+		while read LINE;do
+			_ACRONYMS+=${LINE}
+		done < ${ACRONYM_FN}
 	else
-		TITLE_REGEX='(.*)'
-		LONG_INFO=false
+		exit_leave "${0}: Unable to load ACRONYMS from ${ACRONYM_FN}"
 	fi
 
-	SHORT_TITLE=$(perl -p -e "s/^(.*)(${TITLE_REGEX})(.*)/\$1/" <<<${INFO_TITLE})
+	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
+	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
 
-	NDX=0
-	while true;do
-		((NDX++))
-		if [[ ${SHORT_TITLE[-1]} =~ "${_TITLE_JUNK_REGEX}$" ]];then
-			SHORT_TITLE=$(sed "s/${_TITLE_JUNK_REGEX}$//" <<<${SHORT_TITLE})
-			[[ ${NDX} -ge 5 ]] && break # Safety break
-		else
-			break
+	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
+	for U in ${UCASE_WORDS};do
+		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
+	done
+
+	STR=${(C)STR} # Proper case
+
+	# Expose UCASE and ACRONYMS
+	STR=$(sed 's/\x27/ /g' <<<${STR} 2>/dev/null) # Apostrophes
+	STR=$(echo "${STR}" | perl -pe 's/_/ /g' 2>/dev/null) # Underscores
+	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim 2>/dev/null) # Hyphens and braces
+	STR=$(echo "${STR}" | perl -pe 's/\.*$//g' 2>/dev/null) # Dots
+
+	for W in ${=STR};do
+		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
+		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
+			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
+			SEEN[${W}]=1
+		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
+			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
+				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) 
+				SEEN[${W}]=1
+			fi
 		fi
 	done
 
-	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${(C)SHORT_TITLE} ${YEAR} ${(U)SERIES} ${RES}" | tr -s '[:space:]')
+	STR=$(echo "${STR}" | perl -pe 's/(.)\s([Rr]e|[Ss]|[Tt]|[Vv]e)(\s|[[:punct:]]|$)/\1\x{027}\2 /g') # Replace missing apostrophes
+	STR=$(echo "${STR}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
+	STR=$(echo "${STR}" | perl -pe 's/[Ww]\x{02f}/w\x{02f}/g') # Fix 'with' abbv
 
-	[[ -z ${LONG_TITLE} ]] && LONG_TITLE=${SHORT_TITLE} # Don't return an empty string
+	[[ -n ${STR} ]] && TITLE=${STR} || logit "TITLE failed scrubbing"
 
-	case ${INFO_TYPE} in
-		short) echo ${SHORT_TITLE:gs/\./ /};;
-		long) echo ${LONG_TITLE:gs/\./ /};;
-		series) echo ${SERIES:gs/\./ /};;
-	esac
+	echo ${TITLE}
 }
 
 validate_is_integer () {
@@ -1006,10 +1001,11 @@ do_prepend () {
 }
 
 do_yt_tag () {
-	local CANDIDATE
-	local CPATH
-	local CFN
-	local CEXT
+	local CANDIDATE=''
+	local CEXT=''
+	local CFN=''
+	local CPATH=''
+	local LINE=''
 	local C
 
 	[[ -z ${_OUT_LIST} ]] && _CHAIN_LIST=(${(kv)_IN_LIST}) || _CHAIN_LIST=(${(kv)_OUT_LIST})
@@ -1020,14 +1016,9 @@ do_yt_tag () {
 		CPATH=$(realpath ${_CHAIN_LIST[${C}]:h})
 		[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
 
-		CFN=${(C)CANDIDATE} # Proper case
-		CFN=$(echo "${CFN}" | perl -pe 's/\-?\[.*//' | str_trim)
-		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g')
-		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g')
-		CFN=$(echo "${CFN}" | perl -pe 's/(\w+)\s([Ss]|[Vv]e|[Rr]e)\s(\w+)/\1\x{027}\2/g') # Missing apostrophe
-		CFN=$(echo "${CFN}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe
+		CFN=$(title_scrubber ${CANDIDATE})
 
-		[[ -n ${CFN} ]] && _OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Proper cased
+		[[ -n ${CFN} ]] && _OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Cleaned text
 	done
 
 	[[ -n ${_OUT_LIST} ]] && return 0 || return 1

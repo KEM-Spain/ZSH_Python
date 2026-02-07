@@ -1160,6 +1160,7 @@ parse_rumble () {
 			TITLES) TITLE=${_RUMBLE_ROWS[${K}]};;
 		esac
 		if [[ -n ${AGE} && -n ${TITLE} && -n ${URL} && ${TIME} ]];then # All fields populated
+			TITLE=$(title_scrubber ${TITLE})
 			if [[ ${ROW} != ${LAST_ROW} ]];then
 				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - URL - ucp_f"
 				[[ ! ${TIME} =~ ':' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - TIME no colon"

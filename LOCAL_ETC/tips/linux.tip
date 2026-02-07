@@ -2,6 +2,10 @@
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_linux_EOF
 
+Plex Buffer - SOund cutting out
+In web app goto: Settings/Transcoder/Transcoder Default Throttle Buffer
+set to 600 (default 30)
+
 SSH setup
 
 TO CHANGE LISTENING PORT USING SOCKET

@@ -4,7 +4,9 @@ alias gd='. ~/.gd'
 
 # apps
 alias Cat='/bin/cat'
+alias MP42mp4="for X in *MP4;do mv ${X} ${X:r}.mp4;done"
 alias anthem='/opt/AnthemScore/AnthemScore >/dev/null 2>&1 &'
+alias ascii='o /usr/local/etc/asciiTable.pdf'
 alias battery='/usr/local/bin/system/tweaks/battery_charge_limit'
 alias calc='/usr/bin/gnome-calculator'
 alias cat='/usr/bin/batcat --theme=1337 --style=full'
@@ -12,36 +14,32 @@ alias cdef='compdef -a '
 alias chrome=/usr/bin/google-chrome-stable
 alias e2s='trans -no-pager en:es'
 alias easydrop='/opt/easydrop/run_easydrop_app_image'
+alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"
+alias feh='feh -F'
 alias foxit='/opt/foxitreader/FoxitReader >/dev/null 2>&1 &'
+alias help='run-help'
+alias keyrate='xset r rate 500 33'
+alias locate='/usr/local/bin/system/launchers/run_locate'
 alias lossless='/usr/local/bin/system/launchers/run_losslesscut >/dev/null 2>&1 &'
 alias ls='ls --color=always -XNv --group-directories-first'
+alias mnt='mount -t ext3,ext4,vfat,ntfs,fuseblk'
+alias nf='/usr/local/bin/system/launchers/run_nemo . 2>/dev/null'
+alias ns='sudo ss -turp state established'
 alias oct='od -A o -t o1z -v'
 alias pdf2txt='/usr/bin/pdftotext -layout -nopgbrk >/dev/null 2>&1 &'
 alias postit='gtk-launch xpad.desktop'
 alias prefs='/usr/bin/gnome-control-center >/dev/null 2>&1 &'
+alias prt='libreoffice -p'
+alias regexdbg="perl -MRegexp::Debugger -E 'Regexp::Debugger::rxrx(@ARGV)'"
 alias s2e='trans -no-pager es:en'
 alias sc='sudo systemctl'
 alias spot='/usr/local/bin/system/launchers/run_spotify >/dev/null 2>&1 &'
 alias t='tz'
-alias templates='ls /usr/local/etc/*template'
-alias unf='unfunction '
+alias templates='ls /usr/local/etc/templates'
 alias terminator='terminator --title terminal'
-
-
-# misc
-alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"
-alias feh='feh -F'
-alias help='run-help'
-alias keyrate='xset r rate 500 33'
-alias locate='/usr/local/bin/system/launchers/run_locate'
-alias mnt='mount -t ext3,ext4,vfat,ntfs,fuseblk'
-alias nf='/usr/local/bin/system/launchers/run_nemo . 2>/dev/null'
-alias ns='netstat -avpunt'
-alias prt='libreoffice -p'
-alias regexdbg="perl -MRegexp::Debugger -E 'Regexp::Debugger::rxrx(@ARGV)'"
 alias top='/usr/local/bin/system/launchers/run_htop'
+alias unf='unfunction '
 alias vi='/usr/local/bin/system/launchers/run_vim'
-alias MP4mp4="for X in *MP4;do mv ${X} ${X:r}.mp4;done"
 
 # conversion
 alias c2f='/usr/local/bin/conversion/c2f'

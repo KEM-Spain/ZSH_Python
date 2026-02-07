@@ -62,7 +62,7 @@ exit_pre_exit () {
 			if [[ -n ${_MY_PID} ]];then
 				SCRUB=("${(f)$(find /tmp/*${_MY_PID}* -type f)}")
 				for F in ${SCRUB};do
-					echo "${0}: Scrubbed: ${F}" >> /tmp/scrub.log
+					echo "${0}: Scrubbed: ${F}" >> /tmp/exit_scrub.log
 					/bin/rm -f ${F}
 				done
 			fi

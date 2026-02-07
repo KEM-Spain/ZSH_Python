@@ -464,13 +464,14 @@ ___EOF
 
 	local STATIC_IPS=(192.168.${SUBNETS}.100 192.168.${SUBNETS}.101 192.168.${SUBNETS}.102 192.168.${SUBNETS}.103 192.168.${SUBNETS}.200 ${FIRST_10_NON_STATIC})
 
-	echo "Pinging LAN IP's...SUB NET:${SUBNETS}"
+	clear
+	tcup 0 0;echo "Pinging LAN IP's...192.168.${WHITE_FG}${SUBNETS}${RESET}.0/24"
 
 	if [[ ${SHLVL} -lt 3 ]];then # Called from another script
 		local NDX=0
 		for K in ${STATIC_IPS};do
 			((NDX++))
-			tput cup 1 0; printf "\nPinging IP %s ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} addresses ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${K} ${NDX} ${#STATIC_IPS} $(( NDX * 100. / ${#STATIC_IPS} ))
+			tcup 2 0; printf "\nPinging IP %s ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} addresses ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${K} ${NDX} ${#STATIC_IPS} $(( NDX * 100. / ${#STATIC_IPS} ))
 			sudo arp -d ${K} >/dev/null 2>&1
 			ping -4 -c1 -W.3 ${K} >/dev/null 2>&1
 		done
