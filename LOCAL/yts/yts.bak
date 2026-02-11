@@ -30,35 +30,35 @@ source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A _ALERT_COORDS=()
+typeset -A _CANCELLED=()
 typeset -A _CONT_COORDS=()
 typeset -A _DOWNLOADS=()
-typeset -A _CANCELLED=()
+typeset -A _ENG_CODES=(youtube Y rumble R)
 typeset -A _FAILED=()
 typeset -A _FAV_LIST=()
 typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
+typeset -A _INDICATOR_COORDS=()
 typeset -A _INFO_COORDS=()
-typeset -A _MSG_DELAY=(SHORT .5 MED 2 LONG 5)
+typeset -A _MENU_TYPES=(1 Custom 2 Rumble 3 YouTube)
+typeset -A _MSG_DELAY=(SHORT .5 MED 2 LONG 4)
 typeset -A _PARTIALS=()
-typeset -A _RUMBLE_QTYPES=(l live g general u user c channel)
 typeset -A _QUERY_OPTS=()
 typeset -A _REJECTS=()
+typeset -A _RUMBLE_QTYPES=(l live g general u user c channel)
 typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
+typeset -a _RUMBLE_PAGE=()
+typeset -a _RUMBLE_QRY_OPTS=(l c u g)
 typeset -a _STERMS=()
 typeset -a _STRIP_WORDS=()
-typeset -a _RUMBLE_QRY_OPTS=(l c u g)
-typeset -a _RUMBLE_PAGE=()
 typeset -aU _LOCAL_LIST=()
-typeset -A _ENG_CODES=(youtube Y rumble R)
-typeset -A _MENU_TYPES=(1 Custom 2 Rumble 3 YouTube)
 
 # Display Constants
 _CONT_COORDS=(X 10 Y $(center -h86) H 10 W 86) # Continuous box coords
-_ALERT_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alert display coords
+_INDICATOR_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alert display coords
 _INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Info display coords
 
 # Constants
@@ -161,11 +161,11 @@ action_do () {
 			# Handle job reset
 			INT_KEY=''
 			read -s -t0.1 -k1 INT_KEY
-			if [[ ${INT_KEY} == 'k' || ${INT_KEY} == 'r' ]];then 
+			if [[ ${INT_KEY} == 'k' ]];then 
 				job_reset
 				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED"
 				MSG="Cancelling download..."
-				msg_box -z -t ${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${MSG}<N>"
+				msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${MSG}<N>"
 				_CANCELLED[${M}]=true
 				break
 			fi
@@ -182,7 +182,7 @@ action_do () {
 						if [[ ${?} -eq 0 ]];then
 							logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 							MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${DUP_LINE})
-							msg_box -z -t ${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]}  -y$(box_center ${MSG}) "<w>${MSG}<N>|<B>Has already been downloaded<N>"
+							msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]}  -y$(box_center ${MSG}) "<w>${MSG}<N>|<B>Has already been downloaded<N>"
 							_DOWNLOADS[${M}]=true
 							break
 						fi
@@ -190,7 +190,7 @@ action_do () {
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						if [[ ${MSG} != ${LAST_MSG} ]];then
 							logit ${_YT_DBG_LOG} "${0}: PRE-PROCESSING"
-							msg_box -z -t ${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${MSG}<N>"
+							msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${MSG}<N>"
 						fi
 						LAST_MSG=${MSG}
 						continue
@@ -200,14 +200,14 @@ action_do () {
 							logit ${_YT_DBG_LOG} "${0}: FUTURE"
 							[[ ! ${MSG} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${MSG})
 							MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-							[[ ${MSG} != ${LAST_LOG_LINE} ]] && msg_box -z -t ${_MSG_DELAY[MED]} -z -x ${_INFO_COORDS[X]} -y ${_INFO_COORDS[Y]} -w ${_INFO_COORDS[W]} "${MSG}"
+							msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(box_center ${TITLE}) "<w>${MSG}<N>"
 							_FUTURE[${M}]=true
 							_DOWNLOADS[${M}]=false
 							break
 						elif [[ ${LOG_LINE:l} =~ 'error' ]];then # Detect pre-download errors
 							MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture msg - whole file grep
 							if [[ ${?} -eq 0 ]];then
-								msg_box -z -t ${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG[1,70]}<N>"
+								msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG[1,70]}<N>"
 								logit ${_YT_DBG_LOG} "${0}: ERROR"
 								logit ${_YTS_ERROR_LOG} "${0}: ${MSG}"
 								_FAILED[${M}]=true
@@ -369,8 +369,8 @@ download_indicator () {
 	local -A OBJS_2=(1 ${R_OBJ} 2 ${M_OBJ} 3 ${L_OBJ})
 	local BORDER_COLOR=''
 	local DELAY=.3
-	local IND_X=$(( _ALERT_COORDS[X] + 1 ))
-	local IND_Y=$(( _ALERT_COORDS[Y] + 7 ))
+	local IND_X=$(( _INDICATOR_COORDS[X] + 1 ))
+	local IND_Y=$(( _INDICATOR_COORDS[Y] + 7 ))
 	local L_SIDE="\\u2770"
 	local R_SIDE="\\u2771"
 	local MASK=""
@@ -458,9 +458,8 @@ download_select () {
 	# Set line item
 	list_set_line_item ' 
 	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})" 
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(str_word_clip "$(get_field title ${_LIST_NDX})" ${_FIELD_LEN[title]})"
 	'
-
 	list_set_select_action ${_ACTION}
 	list_set_action_msgs video download
 	list_set_sortable true
@@ -552,11 +551,11 @@ fav_add () {
 		Y) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${STRICT_VAL}";;
 	esac
 
-	msg_box -c -t ${_MSG_DELAY[MED]} "<w>Adding<N>: \"${_QUERY_OPTS[DKEY]}\"|<w>to<N> ${MENU_TYPES[${_MSG_KEY}]} <w>list<N>"
+	msg_box -c -t${_MSG_DELAY[MED]} "<w>Adding<N>: \"${_QUERY_OPTS[DKEY]}\"|<w>to<N> ${MENU_TYPES[${_MSG_KEY}]} <w>list<N>"
 
 	if [[ ${UPD_KEY} == 'true' ]];then
 		if [[ ${KEY_MATCH} == ${NEW_KEY} ]];then
-			msg_box -c -t ${_MSG_DELAY[LONG]} -s# "Key:<w>${KEY_MATCH}<N>#<r>Matching key already exists<N>#Nothing to do!"
+			msg_box -c -t${_MSG_DELAY[LONG]} -s# "Key:<w>${KEY_MATCH}<N>#<r>Matching key already exists<N>#Nothing to do!"
 			return 2
 		fi
 		msg_box -c -p -PK -H1 -s# "<r>Duplicate Menu Key<N>#${KEY_MATCH}#<r>already exists<N>#<Z>#Replace with:#${NEW_KEY}#(Y/N)"
@@ -1138,6 +1137,7 @@ parse_rumble () {
 			for K in ${(k)${(P)TAG_ARRAY}};do
 				TAG=${${(P)TAG_ARRAY}[${K}]}
 				DATA=$(pup --charset utf8 ".${TAG}" <<<${HTML} | filter_rumble_data)
+				[[ -z ${DATA} ]] && logit ${_YT_DBG_LOG} "${0}: NO DATA from TAG:${TAG}" && continue
 				[[ $(wc -l <<<${DATA}) -ne 1 ]] && DATA="ERROR" # Reject multi line query results
 				_RUMBLE_ROWS[${ROW}_${K}]=${DATA}
 			done
@@ -1160,6 +1160,7 @@ parse_rumble () {
 			TITLES) TITLE=${_RUMBLE_ROWS[${K}]};;
 		esac
 		if [[ -n ${AGE} && -n ${TITLE} && -n ${URL} && ${TIME} ]];then # All fields populated
+			TITLE=$(title_scrubber ${TITLE})
 			if [[ ${ROW} != ${LAST_ROW} ]];then
 				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - URL - ucp_f"
 				[[ ! ${TIME} =~ ':' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - TIME no colon"
@@ -1242,21 +1243,20 @@ query_rumble () {
 	if [[ ${QRY_TYPE} == 'live' ]];then
 		msg_box -c "Requesting <c><I>livestream channel<N> search..."
 		QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}/livestreams"
-		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 	elif [[ ${QRY_TYPE} == 'channel' ]];then
 		msg_box -c "Requesting <c><I>channel<N> search..."
 		QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}?page=1"
-		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 	elif [[ ${QRY_TYPE} == 'general' ]];then
 		msg_box -c "Requesting <c><I>general<N> search..."
 		GEN_SEARCH=$(sed 's/ /%20/g' <<<${_QUERY_OPTS[QKEY]})
 		QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
-		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 	elif [[ ${QRY_TYPE} == 'user' ]];then
 		msg_box -c "Requesting <c><I>livestream user<N> search..."
 		QRY="https://rumble.com/user/${_QUERY_OPTS[QKEY]}/livestreams"
-		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 	fi
+
+	# Do query
+	_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 
 	[[ -n ${GEN_SEARCH} ]] && GEN_SEARCH='g'
 	parse_rumble ${GEN_SEARCH}
@@ -1345,7 +1345,7 @@ query_youtube () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
 
-	[[ ${_SMCUP} == 'false' ]] && do_smcup
+	[[ ${_DEBUG} -eq 0 && ${_SMCUP} == 'false' ]] && do_smcup
 
 	# Search failed
 	if ! arr_is_populated "${_LOCAL_LIST}";then
@@ -1655,7 +1655,7 @@ if ! fav_load;then
 fi
 
 # Run Query
-do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	while true;do
 		if fav_get;then

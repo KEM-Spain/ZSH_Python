@@ -4,6 +4,20 @@ cat << tip_regex_EOF_1
 
 ${E_WHITE_FG}Collected POSIX/GNU:${E_RESET}
 
+POSIX Character Classes
+[:upper:]   [A-Z]          uppercase letters
+[:lower:]   [a-z]          lowercase letters
+[:alpha:]   [A-Za-z]       upper and lowercase letters
+[:digit:]   [0-9]          digits
+[:xdigit:]  [0-9A-Fa-f]    hexadecimal digits
+[:alnum:]   [A-Za-z0-9]    digits, upper- and lowercase letters
+[:punct:]   punctuation    (all graphic characters except letters and digits)
+[:blank:]   [ \t]          space and TAB characters only
+[:space:]   [ \t\n\r\f\v]  blank (whitespace) characters
+[:cntrl:]                  control characters
+[:graph:]   [^ [:cntrl:]]  graphic characters (all characters which have graphic representation)
+[:print:]   [[:graph:] ]   graphic characters and space
+
 # file: 'test.txt'
 foobar bash 1
 bash

@@ -7,6 +7,13 @@ typeset -a _POS_ARGS=()
 typeset -A _KWD_ARGS=()
 typeset -a _ACRONYMS=()
 
+ACRONYM_FN=~/.local/share/yts/yts.acronyms
+if [[ -e ${ACRONYM_FN} && -z ${_ACRONYMS} ]];then # Load acronyms
+	while read LINE;do
+		_ACRONYMS+=${LINE}
+	done < ${ACRONYM_FN}
+fi
+
 # LIB Vars
 _EXIT_VALUE=0
 _FUNC_TRAP=false
@@ -840,23 +847,12 @@ title_scrubber () {
 	local TITLE=${1}
 	local -A SEEN=()
 	local -a UCASE_WORDS=()
-	local CFG_DIR=~/.local/share/yts
-	local ACRONYM_FN=${CFG_DIR}/yts.acronyms
-	local LINE=''
 	local STR=''
 	local UCASE_LIMIT=4
 	local W U
 
-	if [[ -e ${ACRONYM_FN} && -z ${_ACRONYMS} ]];then # Load acronyms
-		while read LINE;do
-			_ACRONYMS+=${LINE}
-		done < ${ACRONYM_FN}
-	else
-		exit_leave "${0}: Unable to load ACRONYMS from ${ACRONYM_FN}"
-	fi
-
-	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
-	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
+	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE} 2>/dev/null) # Convert UTF-8
+	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR} 2>/dev/null) # Convert any HTML 
 
 	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
 	for U in ${UCASE_WORDS};do

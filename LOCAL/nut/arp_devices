@@ -1,0 +1,43 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+source "/usr/local/etc/mac_table.zsh"
+
+LIST=("${(f)$(arp | str_delim -h)}")
+for L in ${(on)LIST};do
+	DCNT=$(grep -o '|' <<<${L} | wc -l)
+	IP=$(cut -d'|' -f1 <<<${L})
+	HW=$(cut -d'|' -f2 <<<${L})
+	MAC=$(cut -d'|' -f3 <<<${L})
+	FLAGS=$(cut -d'|' -f4 <<<${L})
+	MASK=$(cut -d'|' -f5 <<<${L})
+	IFACE=$(cut -d'|' -f6 <<<${L})
+	[[ ! ${IP} =~ '[0-9]' ]] && continue
+	if [[ ${DCNT} -lt 4 ]];then
+		sudo arp -d ${IP}
+	else
+		echo "${DCNT} IP:${IP} HW:${HW} MAC:${MAC} FLAGS:${FLAGS} MASK:${MASK} IFACE:${IFACE} ${MAC_IDS[${MAC}]}"
+	fi
+done

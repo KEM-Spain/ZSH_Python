@@ -15,8 +15,8 @@ center () {
 	local CONTAINER_WIDTH
 	local HORZ=false
 	local REGION=false
-	local REG_COORDS=''
-	local REG_OVERRIDE=false
+	local REGION_COORDS=''
+	local REGION_OVERRIDE=false
 	local TEST_MODE=false
 	local TEXT=false
 	local VERT=false
@@ -27,7 +27,7 @@ center () {
 		case $OPTION in
 		  A) ABSOLUTE=true;;
 		  D) dbg_set_level;;
-		  R) REG_OVERRIDE=true;REG_COORDS=${OPTARG};;
+		  R) REGION_OVERRIDE=true;REGION_COORDS=${OPTARG};;
 		  T) TEST_MODE=true;;
 		  h) HORZ=true;CONTAINER_WIDTH=${OPTARG};;
 		  r) REGION=true;;
@@ -70,24 +70,24 @@ center () {
 		if validate_is_integer ${CONTAINER_WIDTH};then
 			[[ -n ${1} ]] && TEXT_ARG=${1} || exit_leave $(err_msg_exit E "Missing argument:<TEXT>")
 		else
-			exit_leave $(err_msg_exit E "Invalid argument:<CONTAINER_WIDTH>:non integer")
+			exit_leave $(err_msg_exit E "Invalid argument:CONTAINER_WIDTH:${CONTAINER_WIDTH} non integer")
 		fi
 		if [[ $(( CONTAINER_WIDTH - 2 )) -lt ${#TEXT_ARG} ]];then
-			msg_box -p -PK "Invalid argument:<CONTAINER_WIDTH> must exceed TEXT length (${#TEXT_ARG}) by 2 chars"
+			exit_leave "Invalid text length:TEXT_ARG:${#TEXT_ARG} exceeds available CONTAINER_WIDTH:$(( CONTAINER_WIDTH - 2 ))"
 		fi
 	fi
 
-	if [[ ${REG_OVERRIDE} == 'false' ]];then
+	if [[ ${REGION_OVERRIDE} == 'false' ]];then
 		_REG_X=0
 		_REG_Y=0
 		_REG_WIDTH=${_TERM_WIDTH}
 		_REG_HEIGHT=${_TERM_HEIGHT}
 	else
-		[[ ! ${REG_COORDS} =~ "\d\d:\d\d:\d\d:\d\d" ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Invalid argument${RESET}:<REG_COORDS> has incorrect format. Format:'X:Y:W:H'"
-		_REG_X=$(cut -d: -f1 <<<${REG_COORDS})
-		_REG_Y=$(cut -d: -f2 <<<${REG_COORDS})
-		_REG_WIDTH=$(cut -d: -f3 <<<${REG_COORDS})
-		_REG_HEIGHT=$(cut -d: -f4 <<<${REG_COORDS})
+		[[ ! ${REGION_COORDS} =~ "\d\d:\d\d:\d\d:\d\d" ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Invalid argument${RESET}:<REGION_COORDS> has incorrect format. Format:'X:Y:W:H'"
+		_REG_X=$(cut -d: -f1 <<<${REGION_COORDS})
+		_REG_Y=$(cut -d: -f2 <<<${REGION_COORDS})
+		_REG_WIDTH=$(cut -d: -f3 <<<${REGION_COORDS})
+		_REG_HEIGHT=$(cut -d: -f4 <<<${REGION_COORDS})
 	fi
 
 	[[ ${CONTAINER_HEIGHT} -gt ${_REG_HEIGHT} ]] && exit_leave $(err_msg_exit E "Invalid argument:<CONTAINER_HEIGHT>:exceeds region height (${_REG_HEIGHT})")

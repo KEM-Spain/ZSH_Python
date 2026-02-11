@@ -135,7 +135,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -404,7 +404,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -499,6 +499,7 @@ ___EOF
 	done
 
 	printf "${WHITE_FG}${DEV_CNT} known devices found\n${RESET}"
+	local REPLY
 	[[ ${INLINE} == 'false' ]] && echo -n "\nPress any key..." && read -sk1
 
 	exit_leave
@@ -532,7 +533,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -820,7 +821,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -907,7 +908,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"

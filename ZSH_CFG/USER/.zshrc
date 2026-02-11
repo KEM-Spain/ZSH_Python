@@ -37,6 +37,7 @@ _CAL_LINES=9
 # Declarations
 typeset -a _MOTD=()
 typeset -U path cdpath fpath manpath # automatically remove duplicates from these arrays
+typeset -A _NUM_WORDS=(1 one 2 two 3 three 4 four 5 five 6 six 7 seven 8 eight 9 nine 10 ten)
 
 # Imports 
 source ${_SYS_ALIASES}
@@ -336,7 +337,7 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		fi
 	fi
 else
-	print -Pn "\e]0;Terminal ${_TERMCNT}\a"
+	print -Pn "\e]0;Terminal ${(C)_NUM_WORDS[${_TERMCNT}]}\a"
 	WID=$(win_id | cut -d'|' -f1)
 	wmctrl -i -R ${WID} -b add,maximized_vert,maximized_horz
 fi

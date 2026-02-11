@@ -67,6 +67,34 @@ str_clean_path () {
 	echo "${DIR}" | perl -pe 's#/+#/# G'
 }
 
+str_delim () {
+	local DELIM=''
+	local HAS_HEADER=false
+	local LINE=''
+
+	local OPTSTR=":hd"
+	local OPTION=''
+
+	while getopts ${OPTSTR} OPTION;do
+		case $OPTION in
+		  h) HAS_HEADER=true;;
+		  d) DELIM=${OPTARG};;
+		  :) exit_leave "${0}: ${OPTARG} requires an argument";;
+		 \?) exit_leave "${0}: Unknown option:${OPTARG}";;
+		esac
+	done
+	shift $((OPTIND -1))
+
+	DELIM=${DELIM:='|'}
+
+	while read -r LINE;do
+		[[ ${HAS_HEADER} == 'true' ]] && continue && HAS_HEADER=false
+		
+		LINE=$(tr -s '[:space:]' <<<${LINE} | tr " " "${DELIM}")
+		echo ${LINE}
+	done
+}
+
 str_expanded_length () {
 	local STR=${@}
 	local LEN
