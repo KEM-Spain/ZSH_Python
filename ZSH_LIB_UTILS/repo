@@ -100,7 +100,7 @@ copy_dev_files () {
 	done
  
 	cp -ar ${_SRC_CODE}/LIBS/scratch ${_REPO_LOCAL}
-	cp -ar ${_SRC_CODE}/spanish_db ${_REPO_LOCAL}
+	cp -ar ${_SRC_CODE}/sdb ${_REPO_LOCAL}
 	cp -ar ${_SRC_CODE}/takeout ${_REPO_LOCAL}
 }
 

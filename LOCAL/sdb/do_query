@@ -16,7 +16,7 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Constants
-_DB_DIR=/home/kmiller/Code/LOCAL/spanish_db
+_DB_DIR=/home/kmiller/Code/LOCAL/sdb
 DB=${_DB_DIR}/.spanish.db
 
 # Vars

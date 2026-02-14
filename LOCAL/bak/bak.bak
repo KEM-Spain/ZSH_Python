@@ -134,7 +134,7 @@ prod_to_local () {
 				echo "Copying production:${WHITE_FG}${g_PROD_NAME}${RESET}..."
 				do_copy ${g_PROD_VERSION} ${g_LOCAL_VERSION} no_prompt
 			else
-				exit_leave $(msg_warn "Operation cancelled")
+				exit_leave $(err_msg_exit "Operation cancelled")
 			fi
 		fi
 	fi
@@ -275,7 +275,7 @@ local_to_prod () {
 			cp ${g_LOCAL_VERSION} ${g_PROD_VERSION}
 			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied to ${WHITE_FG}${g_PROD_NAME}${RESET}"
 		else
-			exit_leave $(msg_warn "Operation cancelled")
+			exit_leave $(err_msg_exit "Operation cancelled")
 		fi
 	else
 		# No existing production copy
@@ -286,7 +286,7 @@ local_to_prod () {
 			cp ${g_LOCAL_VERSION} ${_PRODUCTION_DIR}/${FILE_ARG}
 			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied to ${WHITE_FG}${_PRODUCTION_DIR}/${FILE_ARG}${RESET}"
 		else
-			exit_leave $(msg_warn "Operation cancelled")
+			exit_leave $(err_msg_exit "Operation cancelled")
 		fi
 	fi
 }
@@ -475,7 +475,7 @@ FILE_ARG=${1}
 [[ -z ${FILE_ARG} ]] && usage "Missing argument:$(opt_type f)"
 
 # If any options are present they will require a local copy of the file arg
-[[ ! -e ./${FILE_ARG} && ${#OPTIONS} -ne 0 ]] && exit_leave $(msg_warn "No such file:${FILE_ARG} exists in the current directory")
+[[ ! -e ./${FILE_ARG} && ${#OPTIONS} -ne 0 ]] && exit_leave $(err_msg_exit "No such file:${FILE_ARG} exists in the current directory")
 
 if [[ ${BACKUP_LOCAL} == 'true' ]];then
 	g_LOCAL_ONLY=true # No production dir necessary
@@ -493,7 +493,7 @@ else
 				1) _PRODUCTION_DIR=${_BIN};;
 				2) _PRODUCTION_DIR=${_LIB_DIR};;
 				3) _PRODUCTION_DIR=${_BIN}/system;;
-				*) echo; exit_leave $(msg_warn "Operation Cancelled");;
+				*) echo; exit_leave $(err_msg_exit "Operation Cancelled");;
 			esac
 		else
 			exit_leave $(err_msg_exit "No production version of file:${FILE_ARG}${RESET} was found")
@@ -514,7 +514,7 @@ else
 	elif [[ ${FN_PATH} == ${PWD} ]];then
 		g_LOCAL_ONLY=true
 	else
-		exit_leave $(msg_warn "fut findexe returned:${FN_PATH} There are other copies of this file in an unexpected location")
+		exit_leave $(err_msg_exit "fut findexe returned:${FN_PATH} There are other copies of this file in an unexpected location")
 	fi
 fi
 
@@ -546,7 +546,7 @@ elif [[ ${SYNC_PROD_BAK} == 'true' ]];then # Copy production to local backup
 	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} SYNC_PROD_BAK:true"
 	prod_to_backup
 else
-	[[ ! -e ${FN} ]] && exit_leave $(msg_warn "File:${FN} not found")
+	[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit "File:${FN} not found")
 	prod_to_local # Default is to copy production to development
 fi
 

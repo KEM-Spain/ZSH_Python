@@ -257,12 +257,13 @@ action_do () {
 					log_add ${M}
 					break
 				else
-					MSG=$(grep -Ein 'error' ${g_YTS_LOG} | tail -1) # Capture error and line
+					MSG=$(grep -Ein 'error' ${g_YTS_LOG} | tail -1) # Capture error
+					MSG=${MSG[1,50]}
 					if [[ ${?} -eq 0 ]];then
 						TRANS_ERR=$(cut -d: -f1 <<<${MSG})
 						if [[ ${TRANS_ERR} -ne ${LAST_TRANS_ERR} ]];then
 							((TRANS_ERRS++))
-							msg_box -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG[1,70]}) "<w>${TRANS_ERRS}<N>:<r>${MSG[1,70]}<N>"
+							msg_box -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERRS}<N>:<r>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERRS} of ${_TRANS_ERR_LIMIT}"
 							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERRS}: ${MSG}"
 							LAST_TRANS_ERR=${TRANS_ERR}
@@ -458,7 +459,7 @@ download_select () {
 	# Set line item
 	list_set_line_item ' 
 	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(str_word_clip "$(get_field title ${_LIST_NDX})" ${_FIELD_LEN[title]})"
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})"
 	'
 	list_set_select_action ${_ACTION}
 	list_set_action_msgs video download
@@ -1164,11 +1165,12 @@ parse_rumble () {
 			if [[ ${ROW} != ${LAST_ROW} ]];then
 				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - URL - ucp_f"
 				[[ ! ${TIME} =~ ':' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - TIME no colon"
+				TIME=$(grep -Po '^\d+:?\d+' <<<${TIME}) # Hours:Mins
 				AGETIME="(${AGE} ${TIME})"
 				[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
 				if [[ ${ROW} -ne ${OMIT_NDX} ]];then
 					((NDX++))
-					_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
+					_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|$(clean_title ${TITLE})|${URL}|${TIME}|${AGETIME}"
 					OMIT_NDX=0
 				fi
 				AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE='' && AGETIME='' 
@@ -1227,6 +1229,7 @@ query_rumble () {
 	local GEN_SEARCH=''
 	local QRY=''
 	local QRY_TYPE=''
+	local PARSER_OPT=''
 
 	QRY_TYPE=${_RUMBLE_QTYPES[${_QUERY_OPTS[EOPT]:l}]}
 	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "${0}:Invalid query type:${_QUERY_OPTS[EOPT]}" && return 1
@@ -1250,6 +1253,7 @@ query_rumble () {
 		msg_box -c "Requesting <c><I>general<N> search..."
 		GEN_SEARCH=$(sed 's/ /%20/g' <<<${_QUERY_OPTS[QKEY]})
 		QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
+		PARSER_OPT='g'
 	elif [[ ${QRY_TYPE} == 'user' ]];then
 		msg_box -c "Requesting <c><I>livestream user<N> search..."
 		QRY="https://rumble.com/user/${_QUERY_OPTS[QKEY]}/livestreams"
@@ -1258,8 +1262,7 @@ query_rumble () {
 	# Do query
 	_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 
-	[[ -n ${GEN_SEARCH} ]] && GEN_SEARCH='g'
-	parse_rumble ${GEN_SEARCH}
+	parse_rumble ${PARSER_OPT}
 
 	if [[ ${?} -ne 0 ]];then
 		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}"

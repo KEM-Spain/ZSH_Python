@@ -222,7 +222,7 @@ format_markdown () {
 		done
 
 		if [[ ${LAST_SECTION} != ${SECTION} ]];then
-			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
+			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit W "Invalid verb:${_VERB_ARG}")
 			echo "\n#### ${_BLOCK_HDRS[${SECTION}]}"
 			echo "|${_HDR_DEFS[${_COL_HDRS[${SECTION}]}]}|"
 			markdown_header $(( ${#_BLOCKS} - 1 )) ${_SECTION_LONGEST[${SECTION}]}
@@ -317,7 +317,7 @@ format_pretty () {
 		HPF+="${RESET}\\\n\"" # Terminate HPF
 
 		if [[ ${LAST_SECTION} != ${SECTION} ]];then
-			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit "Invalid verb:${_VERB_ARG}")
+			[[ -z ${_SECTION_LONGEST[${SECTION}]} ]] && exit_leave $(err_msg_exit W "Invalid verb:${_VERB_ARG}")
 			printf "%s\n" "<SEP>"
 			echo "\n${BOLD}${CYAN_FG}${_BLOCK_HDRS[${SECTION}]}${RESET}"
 			eval "${HPF} ${HDR_PARSE}"
@@ -626,7 +626,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit E ${PENDING_MSGS})
 }
 
 OPTSTR=":HDcempv"
@@ -654,7 +654,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:<VERB>"
+[[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage "Missing argument:<VERB>"
 [[ -z ${OPTIONS} ]] && VERTICAL=true # Default format
 
 set_exit_callback cleanup
@@ -663,7 +663,7 @@ curl -sA "Chrome" -L  "https://www.spanishdict.com/conjugate/${_VERB_ARG}" > ${_
 
 grep -q 'result' ${_VERB_ARG}.html
 if [[ ${?} -ne 0 ]];then
-	exit_leave $(err_msg_exit "Verb:${_VERB_ARG} not found")
+	exit_leave $(err_msg_exit W "Verb:${_VERB_ARG} not found")
 else
 	grep -q 'data-conjugation_tab_shown' ${_VERB_ARG}.html
 	[[ ${?} -eq 0 ]] && CONJ=true || CONJ=false
@@ -671,7 +671,7 @@ else
 	[[ ${?} -eq 0 ]] && SPELL=true || SPELL=false
 	if [[ ${CONJ} == 'true' && ${SPELL} == 'true' ]];then
 		SUGGEST=$(grep --color=never -Po 'data-spelling_suggestion=[^\s]*' ${_VERB_ARG}.html | cut -d'=' -f2)
-		[[ -n ${SUGGEST} ]] && exit_leave $(err_msg_exit "Verb:${_VERB_ARG} not found, Perhaps:${SUGGEST}")
+		[[ -n ${SUGGEST} ]] && exit_leave $(err_msg_exit W "Verb:${_VERB_ARG} not found, Perhaps:${SUGGEST}")
 	fi
 fi
 

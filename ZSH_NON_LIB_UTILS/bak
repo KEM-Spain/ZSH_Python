@@ -18,9 +18,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Constants
 _LIB_DIR=/usr/local/lib
-_BIN=/usr/local/bin
-_PRODUCTION_DIR=${_BIN}
-
+_BIN_DIR=/usr/local/bin
 _EM=${BOLD}${ITALIC}
 
 # Globals
@@ -37,6 +35,7 @@ g_LOCAL_NAME=?
 g_LOCAL_ONLY=false
 g_LOCAL_VERSION=?
 g_LOCAL_WILL_OVERWRITE=?
+g_PRODUCTION_DIR=${_BIN_DIR}
 g_PROD_DIFFERS_LOCAL=?
 g_PROD_IS_MORE_RECENT=?
 g_PROD_MATCHES_BACKUP=?
@@ -63,8 +62,7 @@ get_prod_dir () {
 	else
 		CANDIDATE="$(fut findexe ${FN})"
 		if [[ -f ${CANDIDATE} ]];then # A regular file 
-			echo "CANDIDATE:${CANDIDATE}" >&2
-			if [[ ${CANDIDATE:l} =~ "/usr/local" ]];then
+			if [[ ${CANDIDATE:l} =~ "/usr/local" ]];then # Not sure what this for?
 				echo ${CANDIDATE:h}
 			else
 				echo "NOT_FOUND"
@@ -279,12 +277,12 @@ local_to_prod () {
 		fi
 	else
 		# No existing production copy
-		echo "Creating an initial production copy:${_PRODUCTION_DIR}/${FILE_ARG}"
-		get_response "Create ${_EM}production${RESET} version: ${WHITE_FG}${_PRODUCTION_DIR}/${FILE_ARG}${RESET} with the ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
+		echo "Creating an initial production copy:${g_PRODUCTION_DIR}/${FILE_ARG}"
+		get_response "Create ${_EM}production${RESET} version: ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET} with the ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
 		if [[ ${?} -eq 0 ]];then
 			prod_to_backup no_prompt
-			cp ${g_LOCAL_VERSION} ${_PRODUCTION_DIR}/${FILE_ARG}
-			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied to ${WHITE_FG}${_PRODUCTION_DIR}/${FILE_ARG}${RESET}"
+			cp ${g_LOCAL_VERSION} ${g_PRODUCTION_DIR}/${FILE_ARG}
+			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied to ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET}"
 		else
 			exit_leave $(err_msg_exit "Operation cancelled")
 		fi
@@ -341,10 +339,14 @@ set_messages () {
 
 show_diff () {
 	local DIFF_TYPE=${1}
+	local RC=0
 
 	case ${DIFF_TYPE} in
 		local_dev_2_local_bak) colordiff ${g_BACKUP_VERSION} ${g_LOCAL_VERSION} >/dev/null 2>&1
-					if [[ ${?} -eq 0 ]];then
+					RC=${?}
+					echo "\n${RED_FG}     Local Backup${RESET}:${g_BACKUP_VERSION}"
+					echo "${GREEN_FG}Local Development${RESET}:${g_LOCAL_VERSION}\n"
+					if [[ ${RC} -eq 0 ]];then
 						echo ${g_LOCAL_MATCHES_BACKUP}
 						exit_leave
 					else
@@ -354,7 +356,10 @@ show_diff () {
 					;;
 
 		prod_2_local_dev)	colordiff ${g_LOCAL_VERSION} ${g_PROD_VERSION} >/dev/null 2>&1
-					if [[ ${?} -eq 0 ]];then
+					RC=${?}
+					echo "\n${RED_FG}Local Development${RESET}:${g_LOCAL_VERSION}"
+					echo "${GREEN_FG}       Production${RESET}:${g_PROD_VERSION}\n"
+					if [[ ${RC} -eq 0 ]];then
 						echo ${g_PROD_MATCHES_LOCAL}
 						exit_leave
 					else
@@ -363,8 +368,11 @@ show_diff () {
 					fi
 					;;
 
-		prod_2_local_bak)	colordiff ${g_BACKUP_VERSION} ${g_PROD_VERSION} >/dev/null 2>&1
-					if [[ ${?} -eq 0 ]];then
+		prod_2_local_bak)	colordiff ${g_BACKUP_VERSION} ${g_PROD_VERSION} >/dev/null 2>&1 # Currenty unused
+					RC=${?}
+  					echo "\n${RED_FG}     Local Backup${RESET}:${g_BACKUP_VERSION}"
+					echo "${GREEN_FG}       Production${RESET}:${g_PROD_VERSION}\n"
+					if [[ ${RC} -eq 0 ]];then
 						echo ${g_PROD_MATCHES_BACKUP}
 						exit_leave
 					else
@@ -384,7 +392,7 @@ read -r -d '' DESC<<EOF
 Manage script sources during the development cycle
 \t'bak' regards:
 \t\tthe version in the <PWD> as <DEVELOPMENT> and
-\t\tthe version in <PRODUCTION> (default: ${_PRODUCTION_DIR}) as <PRODUCTION> 
+\t\tthe version in <PRODUCTION> (default: ${g_PRODUCTION_DIR}) as <PRODUCTION> 
 \n\t'bak <FILE>' default action is to first create a local backup of the existing 
 \t<PRODUCTION> version and then copy <DEVELOPMENT> to <PRODUCTION>
 EOF
@@ -481,8 +489,8 @@ if [[ ${BACKUP_LOCAL} == 'true' ]];then
 	g_LOCAL_ONLY=true # No production dir necessary
 	FN=${FILE_ARG}
 else
-	_PRODUCTION_DIR=$(get_prod_dir ${FILE_ARG}) # Need a production dir
-	if [[ ${_PRODUCTION_DIR} == "NOT_FOUND" ]];then
+	g_PRODUCTION_DIR=$(get_prod_dir ${FILE_ARG}) # Need a production dir
+	if [[ ${g_PRODUCTION_DIR} == "NOT_FOUND" ]];then
 		if [[ ${DEV_RELEASE} == 'true' ]];then
 			LIST=('1) Normal Production' '2) Library Module' '3) System Utility')
 			tput sc
@@ -490,9 +498,9 @@ else
 			msg_box_clear
 			tput rc
 			case ${_MSG_KEY} in
-				1) _PRODUCTION_DIR=${_BIN};;
-				2) _PRODUCTION_DIR=${_LIB_DIR};;
-				3) _PRODUCTION_DIR=${_BIN}/system;;
+				1) g_PRODUCTION_DIR=${_BIN_DIR};;
+				2) g_PRODUCTION_DIR=${_LIB_DIR};;
+				3) g_PRODUCTION_DIR=${_BIN_DIR}/system;;
 				*) echo; exit_leave $(err_msg_exit "Operation Cancelled");;
 			esac
 		else
@@ -506,11 +514,11 @@ else
 	if [[ -f ${FN} && -x ${FN} ]];then # A regular file - executable
 		FN_PATH=$(realpath ${FN:h})
 	else
-		FN_PATH=${_PRODUCTION_DIR}
+		FN_PATH=${g_PRODUCTION_DIR}
 	fi
 
-	if [[ ${FN_PATH} == ${_PRODUCTION_DIR} ]];then
-		FN=${_PRODUCTION_DIR}/${FILE_ARG}
+	if [[ ${FN_PATH} == ${g_PRODUCTION_DIR} ]];then
+		FN=${g_PRODUCTION_DIR}/${FILE_ARG}
 	elif [[ ${FN_PATH} == ${PWD} ]];then
 		g_LOCAL_ONLY=true
 	else

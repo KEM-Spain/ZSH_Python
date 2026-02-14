@@ -1,6 +1,6 @@
-2026-02-11_01:02: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-02-11_01:02: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-02-11_01:02: _QUERY_OPTS: DKEY:Alex Christoforou ENGINE:youtube EOPT:S FKEY:Alex Christoforou QKEY:alexchristoforou TYPE:standard 
-2026-02-11_01:02: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:S
-2026-02-11_01:02: query_youtube: QKEY:alexchristoforou, g_PROXY_CMD:node /usr/local/etc/yts.js -s "alexchristoforou"
-2026-02-11_01:02: query_youtube: Listing for QKEY:alexchristoforou contains 20 rows
+2026-02-13_21:11: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-13_21:11: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-13_21:11: _QUERY_OPTS: DKEY:Glenn Greenwald ECODE:Y ENGINE:youtube EOPT: QKEY:'glenn greenwald' TYPE:standard 
+2026-02-13_21:11: query_youtube: Creating listing for QKEY:'glenn greenwald' STRICT:null
+2026-02-13_21:11: query_youtube: QKEY:'glenn greenwald', g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "'glenn greenwald'"
+2026-02-13_21:11: query_youtube: Listing for QKEY:'glenn greenwald' contains 3 rows

@@ -58,7 +58,7 @@ _APP_EXE[IMAGE]=/usr/local/bin/viewnior
 _APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
 _APP_EXE[CLEM]="/usr/bin/clementine"
 _APP_EXE[HARUNA]=/snap/bin/haruna
-_APP_EXE[MPV]="/usr/bin/mpv --fs --loop-file=inf"
+_APP_EXE[MPV]="/usr/bin/mpv --fs --loop-file=inf --volume=40"
 _APP_EXE[VIM]=/usr/bin/vim
 
 _APP_WIN[EBOOK]="ebook-viewer"
