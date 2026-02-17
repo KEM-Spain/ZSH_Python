@@ -123,6 +123,7 @@ action_do () {
 	local LOG_LINE=''
 	local MSG=''
 	local NDX=0
+	local QUICK_DL_CHECK=false
 	local RETRIES=0
 	local SPEED=0
 	local TITLE=''
@@ -169,6 +170,20 @@ action_do () {
 				_CANCELLED[${M}]=true
 				break
 			fi
+			
+			if [[ ${QUICK_DL_CHECK} == 'false' ]];then
+				QUICK_DL_CHECK='true'
+				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
+					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
+					MSG="Download is complete..."
+					msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${MSG}<N>"
+					_DOWNLOADS[${M}]=true
+					logit ${_YT_DBG_LOG} "${0}: POST-PROCESSING"
+					post_process
+					log_add ${M}
+					break
+				fi
+			fi
 
 			LOG_LINE=$(tail -1 ${g_YTS_LOG}) # Get last log line
 			if grep -Eq '' <<<${LOG_LINE};then # Progress delimited by linefeeds
@@ -182,6 +197,7 @@ action_do () {
 						if [[ ${?} -eq 0 ]];then
 							logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 							MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${DUP_LINE})
+							MSG=${MSG[1,60]}
 							msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]}  -y$(box_center ${MSG}) "<w>${MSG}<N>|<B>Has already been downloaded<N>"
 							_DOWNLOADS[${M}]=true
 							break
@@ -571,6 +587,8 @@ fav_add () {
 	else
 		echo ${NEW_KEY} >> ${_YTS_FAVORITES} # Append new key to file
 	fi
+
+	sort -o ${_YTS_FAVORITES}{,} # In-place sort
 	return 0
 }
 
@@ -838,6 +856,7 @@ job_start () {
 
 	g_YTS_LOG=$(mktemp ${_CFG_DIR}/yt.log.XXXXXX)
 	logit ${_YT_DBG_LOG} "${0}: DOWNLOAD LOG:${g_YTS_LOG}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Logging to file:${g_YTS_LOG}"
 
 	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL}" # Routine download - limit title len
 
@@ -1170,7 +1189,7 @@ parse_rumble () {
 				[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
 				if [[ ${ROW} -ne ${OMIT_NDX} ]];then
 					((NDX++))
-					_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|$(clean_title ${TITLE})|${URL}|${TIME}|${AGETIME}"
+					_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|$(str_word_clip ${TITLE} ${_MAX_TITLE})|${URL}|${TIME}|${AGETIME}"
 					OMIT_NDX=0
 				fi
 				AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE='' && AGETIME='' 
@@ -1366,7 +1385,7 @@ query_youtube () {
 		AGE=$(cut -d'|' -f${YOUTUBE_MAP[age]} <<<${F})
 		AUTHOR=$(cut -d'|' -f${YOUTUBE_MAP[author]} <<<${F})
 		AUTHOR=$(keyword_strip <<<${AUTHOR})
-		TITLE=$(cut -d'|' -f${YOUTUBE_MAP[title]} <<<${F}); TITLE=$(clean_title ${TITLE})
+		TITLE=$(cut -d'|' -f${YOUTUBE_MAP[title]} <<<${F}); TITLE=$(str_word_clip ${TITLE} ${_MAX_TITLE})
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
 			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)

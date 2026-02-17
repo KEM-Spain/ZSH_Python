@@ -1,6 +1,27 @@
-2026-02-13_21:11: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-02-13_21:11: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-02-13_21:11: _QUERY_OPTS: DKEY:Glenn Greenwald ECODE:Y ENGINE:youtube EOPT: QKEY:'glenn greenwald' TYPE:standard 
-2026-02-13_21:11: query_youtube: Creating listing for QKEY:'glenn greenwald' STRICT:null
-2026-02-13_21:11: query_youtube: QKEY:'glenn greenwald', g_PROXY_CMD:node /usr/local/etc/yts.js -a recent "'glenn greenwald'"
-2026-02-13_21:11: query_youtube: Listing for QKEY:'glenn greenwald' contains 3 rows
+2026-02-17_11:08: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-17_11:08: log_update: Skipping expired inode:6374425
+2026-02-17_11:08: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-17_11:08: _QUERY_OPTS: DKEY:Kim Iversen ENGINE:rumble EOPT:C FKEY:Kim Iversen QKEY:kimiversen TYPE:standard 
+2026-02-17_11:08: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
+2026-02-17_11:08: parse_rumble: Parsing list for QKEY:kimiversen
+2026-02-17_11:08: parse_rumble: NO DATA from TAG:videostream__time text{}
+2026-02-17_11:08: parse_rumble: NO DATA from TAG:title__link attr{href}
+2026-02-17_11:08: parse_rumble: NO DATA from TAG:videostream__badge text{}
+2026-02-17_11:08: parse_rumble: NO DATA from TAG:thumbnail__title attr{title}
+2026-02-17_11:08: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-02-17_11:08: query_rumble: Listing for QKEY:kimiversen contains 24 rows
+2026-02-17_11:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.MrqQbo
+2026-02-17_11:08: job_start: TITLE:Ray Dalio Warns: U.S. Is In Stage 6 Of A 9 Stage Collapse
+2026-02-17_11:08: job_start: QUERY KEY:kimiversen
+2026-02-17_11:08: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v75ulaw-ray-dalio-warns-u.s.-is-in-stage-6-of-a-9-stage-collapse.html?e9s=src_v1_ucp_a" PID:513802
+2026-02-17_11:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-02-17_11:09: action_do: PRE-PROCESSING
+2026-02-17_11:09: action_do: HEADER
+2026-02-17_11:10: action_do: COMPLETED
+2026-02-17_11:10: action_do: POST-PROCESSING
+2026-02-17_11:10: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v75ulaw-ray-dalio-warns-u.s.-is-in-stage-6-of-a-9-stage-collapse.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-02-17_11:10: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - Ray_Dalio_Warns_-_U.S._is_in_Stage_6_of_a_9_Stage_Collapse.mp4
+2026-02-17_11:10: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - Ray_Dalio_Warns_-_U.S._is_in_Stage_6_of_a_9_Stage_Collapse.mp4
+2026-02-17_11:10: set_final_fn: Overwriting file:Kim_Iversen - Ray_Dalio_Warns_-_U.S._is_in_Stage_6_of_a_9_Stage_Collapse.mp4 with:Kim Iversen - Ray Dalio Warns - U.S. Is In Stage 6 Of A 9 Stage.mp4
+2026-02-17_11:10: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Kim Iversen - Ray Dalio Warns - U.S. Is In Stage 6 Of A 9 Stage.mp4
+2026-02-17_11:10: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.MrqQbo was cleared for:kimiversen from:action_do

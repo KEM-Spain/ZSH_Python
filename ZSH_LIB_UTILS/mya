@@ -87,7 +87,7 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-c${RESET} show aliases that execute commands"
 	echo -e "${WHITE_FG}-d${RESET} show aliases that execute directory changes"
-	echo -e "${WHITE_FG}-q${RESET} no output - return codes only"
+	echo -e "${WHITE_FG}-q${RESET} verify alias - no output - return codes only"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 

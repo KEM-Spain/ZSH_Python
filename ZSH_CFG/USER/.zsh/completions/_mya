@@ -1,0 +1,10 @@
+#compdef mya
+
+_files -W ${PWD} mya
+
+_arguments \
+'-H[help]' \
+'-D[debug]' \
+'-c[show aliases that execute commands]' \
+'-d[show aliases that execute directory changes]' \
+'-q[verify alias - no output - return codes only]' \

@@ -86,7 +86,8 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit E "${PENDING_MSGS}")
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 OPTSTR=":HD"
@@ -112,7 +113,7 @@ COMP_FILE="_${1}"
 
 echo "${CYAN_FG}Completion file found${RESET}:${WHITE_FG}${COMP_FILE}${RESET}"
 
-colordiff -Bws ${_COMP_DIR}/${COMP_FILE} ./${COMP_FILE} 
+colordiff -Bws ${_COMP_DIR}/${COMP_FILE} ./${COMP_FILE} 2>/dev/null
 [[ ${?} -eq 0 ]] && echo "${CYAN_FG}Completion file is up to date${RESET}" && exit 0
 
 echo -n "Install ${COMP_FILE} to ${_COMP_DIR} (y/n)?" && read -q RESPONSE

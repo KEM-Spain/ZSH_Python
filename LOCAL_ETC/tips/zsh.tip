@@ -186,6 +186,11 @@ ${E_WHITE_FG}CONDITIONAL EXPRESSIONS${E_RESET}
  
 ${E_BOLD} ${E_WHITE_FG}Miscellaneous Tips${E_RESET}
 
+Sort a file in-place using output options
+
+sort -o file{,} # Brace expansion repeats filename
+or sort -o file file
+
 ${E_WHITE_FG}Numeric Range${E_RESET}
 To specify a numeric range use: <X-Y> as in:
 case NUM in
