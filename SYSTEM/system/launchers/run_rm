@@ -28,6 +28,7 @@ _LIB=/usr/local/lib
 # Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/PATH.zsh
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/STR.zsh
 
@@ -229,24 +230,12 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #---Execution---
-#fc -R
-#RAW_CMD_LINE=$(fc -lnr | head -1) # Unexpanded command line
-RAW_CMD_LINE=$(cat /proc/$$/cmdline | tr -s "\0" " ") # Unexpanded command line
-
-[[ ${_DEBUG} -gt 0 ]] && dbg "RAW_CMD_LINE:${RAW_CMD_LINE}"
-
 [[ ${#} -eq 0 ]] && usage "insufficient arguments"
 
-ARG_CNT=$(wc -w <<<${RAW_CMD_LINE})
-[[ ${_DEBUG} -gt 0 ]] && dbg "ARG_CNT:${ARG_CNT}, _WARN_LIMIT:${_WARN_LIMIT}, _DISPLAY_LIMIT:${_DISPLAY_LIMIT}"
+RAW_CMD_ARGS=$(path_get_raw_args) # Unexpanded command line args
+[[ ${_DEBUG} -gt 0 ]] && dbg "RAW_CMD_ARGS:${RAW_CMD_ARGS}"
 
-LAST_ARG=$(cut -d' ' -f${ARG_CNT} <<<${RAW_CMD_LINE})
-[[ ${_DEBUG} -gt 0 ]] && dbg "LAST_ARG:${LAST_ARG}"
-
-WILD=$(perl -ne 'print if /(^\*$|^.*\/\*$)/' <<<${LAST_ARG})
-[[ ${_DEBUG} -gt 0 ]] && dbg "WILD:${WILD}"
-
-[[ -n ${WILD} ]] && WILDCARD=true || WILDCARD=false
+[[ $(str_contains ${RAW_CMD_ARGS} '\x2a') ]] && WILDCARD=true || WILDCARD=false
 [[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"
 
 MYID=$(get_myid)

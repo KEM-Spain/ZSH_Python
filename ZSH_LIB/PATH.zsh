@@ -126,7 +126,7 @@ path_get_label () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	RAW_PATH=$(path_get_raw_path)
+	RAW_PATH=$(path_get_raw_args)
 
 	[[ ! -d ${RAW_PATH:h} ]] && return 1
 
@@ -300,7 +300,7 @@ path_get_raw_cmdline () {
 	echo ${RAW_CMD_LINE}
 }
 
-path_get_raw_path () {
+path_get_raw_args () {
 	local RAW_CMD_LINE
 	local -a TOKENIZED
 	local -a TOKENS
