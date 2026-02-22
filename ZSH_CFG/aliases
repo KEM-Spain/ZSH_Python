@@ -72,7 +72,6 @@ alias syminstall='sudo apt-get -sy install '
 alias upgrades='sudo apt-get -s dist-upgrade '
 
 # linux
-#alias hist='fc -nl 1 10000|sort -u'
 alias md='mkdir'
 alias mv='mv -i'
 alias rm='/usr/local/bin/system/launchers/run_rm'

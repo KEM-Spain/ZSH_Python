@@ -105,7 +105,7 @@ external () {
 
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
 
-		msg_box "Working..."
+		msg_box -x10 "Working..."
 
 		for M in ${MARKED};do
 			NDX=${_LIST[${M}]}
@@ -118,7 +118,7 @@ external () {
 			do_${ACTION} ${NDX}
 
 			if [[ ${?} -ne 0 ]];then
-				msg_box -c -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
+				msg_box -x10 -c -p -PK "There was a problem trying to ${ACTION} partition:<w>${_PARTITIONS[${NDX}]}<N>| |${_MOUNT_CODES[${g_MOUNT_ERROR}]}"
 			else
 				get_disk_info
 			fi
@@ -134,7 +134,7 @@ external () {
 			fi
 			MLIST+="${_PARTITIONS[${NDX}]} is ${STATE}"
 		done
-		msg_box -c -p -PK -H1 "Mount Status| |$(msg_list_bullet ${MLIST})"
+		msg_box -x10 -c -p -PK -H1 "Mount Status| |$(msg_list_bullet ${MLIST})"
 
 		for M in ${MARKED};do
 			MARKED[${M}]=0
@@ -152,7 +152,7 @@ external () {
 		RC=${?}
 		[[ ${RC} -eq 0 && ${g_VERBOSE} == 'true' ]] && g_MOUNT_ERROR=35 && set_exit_value 35 && return 35 # Already mounted
 
-		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x16 -t.3 "Mounting..."
+		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x10 -t2 "Mounting..."
 		if [[ ${RC} -ne 0 ]];then # Not mounted
 			grep -q ${MOUNT_ROOT}/${_LABELS[${NDX}]} <<<$(fut comments /etc/fstab)
 			if [[ ${?} -eq 0 ]];then
@@ -164,10 +164,9 @@ external () {
 				RC=${?}
 			fi
 		fi
-		[[ ${g_VERBOSE} == 'true' ]] && msg_box_clear
 		
 		if [[ ${RC} -ne 0 ]];then
-			[[ ${g_VERBOSE} == 'true' ]] && msg_box -p -PK "Mount Error:${RC}"
+			[[ ${g_VERBOSE} == 'true' ]] && msg_box -x10 -p -PK "Mount Error:${RC}"
 			set_exit_value ${RC}
 		fi
 
@@ -186,7 +185,8 @@ external () {
 		RC=${?}
 		[[ ${RC} -ne 0 ]] && g_MOUNT_ERROR=25 && set_exit_value 25 && return 25 # Not mounted
 
-		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x16 -t.3 "Unmounting..."
+		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x10 -t2 "Unmounting..."
+
 		if [[ ${RC} -eq 0 ]];then
 			is_partition_free ${NDX}
 			RC=${?}
@@ -194,14 +194,13 @@ external () {
 		fi
 
 		if [[ ${RC} -eq 0 ]];then
-			sudo umount /dev/${_PARTITIONS[${NDX}]} 2>/dev/null
+			sudo udisksctl unmount -b /dev/${_PARTITIONS[${NDX}]}
 			RC=${?}
 		fi
 
-		[[ ${g_VERBOSE} == 'true' ]] && msg_box_clear
 
 		if [[ ${RC} -ne 0 ]];then
-			[[ ${g_VERBOSE} == 'true' ]] && msg_box -p -PK "Mount Error:${RC}"
+			[[ ${g_VERBOSE} == 'true' ]] && msg_box -x10 -p -PK "Mount Error:${RC}"
 			g_MOUNT_ERROR=${RC}
 			set_exit_value ${RC}
 		fi
@@ -264,6 +263,8 @@ external () {
 
 		RAW_DISK_STATUS=("${(f)$(sudo lsblk -P -o NAME,FSTYPE,MOUNTPOINT,LABEL | grep 'sd.[0-9]' | sed -e 's/=/|/g' -e 's/ /|/g' -e 's/\"//g')}")
 
+		[[ -z ${RAW_DISK_STATUS} ]] && return 1
+
 		for (( D=1; D<=${#RAW_DISK_STATUS}; D++ ));do
 			PART=$(cut -d'|' -f2 <<<${RAW_DISK_STATUS[${D}]})
 			TYPE=$(cut -d'|' -f4 <<<${RAW_DISK_STATUS[${D}]})
@@ -306,8 +307,8 @@ external () {
 		local STATE=${1}
 
 		case ${STATE} in
-			unmounted) msg_box -p -P"Mount all devices (y/n)?" "All devices are unmounted";;
-			mounted) msg_box -p -P"Unmount all devices (y/n)?" "All devices are mounted";;
+			unmounted) msg_box -x10 -p -P"Mount all devices (y/n)?" "All devices are unmounted";;
+			mounted) msg_box -x10 -p -P"Unmount all devices (y/n)?" "All devices are mounted";;
 		esac
 		[[ ${_MSG_KEY} == 'n' ]] && clear && exit_leave $(msg_exit I "Operation cancelled")
 		return 0
@@ -326,7 +327,7 @@ external () {
 						g_FCNT=$(find ${_MOUNT_DIRS[${NDX}]} -maxdepth 1 ! -path ${_MOUNT_DIRS[${NDX}]} | wc -l)
 						[[ ${g_FCNT} -eq 0 ]] && sudo /bin/rm -rf ${_MOUNT_DIRS[${NDX}]} || MSG_TEXT+="|<r>Warning<N>: Orphan mount Not deleted:${g_FCNT} files found"
 					fi
-					msg_box -t2 ${MSG_TEXT}
+					msg_box -x10 -t2 ${MSG_TEXT}
 				else
 					(
 					echo "${WHITE_FG}${_MOUNT_DIRS[${NDX}]}${RESET} is unmounted"
@@ -360,7 +361,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -450,7 +451,7 @@ ___EOF
 			fi
 		done
 
-		[[ ${NDX} -eq 0 ]] && exit_leave $(msg_err "Unknown partition:${PARTITION}")
+		[[ ${NDX} -eq 0 ]] && exit_leave $(err_msg_exit "Unknown partition:${PARTITION}")
 
 		if [[ ${_MOUNT_POINTS[${PARTITION:t}]} == 'unmounted' ]];then
 			do_mount ${NDX}
@@ -467,6 +468,7 @@ ___EOF
 			do_unmount ${L}
 			remove_orphan ${L}
 		done
+		local DEV=$(tr -d '[:digit:]' <<<${_PARTITIONS[1]})
 	elif [[ ${g_BRIEF} == 'true' ]];then # -b option
 		g_VERBOSE=false
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
@@ -528,7 +530,6 @@ ___EOF
 		read
 	fi
 
-
 	exit_leave
 }
 
@@ -573,7 +574,7 @@ ___EOF
 		local O
 
 		for O in {1..${#OPTS}};do
-			[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+			[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 			[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 			[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 			OPTSTR+="-${OPTS[${O}]}"
@@ -746,7 +747,7 @@ ___EOF
 }
 
 unplug () {
-	local PART_REGEX="sd[a-z][0-9]"
+	local PART_REGEX="sd[A-Za-z][0-9]"
 	local -A MOUNTS
 	local -a LIST
 	local MD MP
@@ -952,7 +953,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -1006,6 +1007,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
+
 # Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}
 

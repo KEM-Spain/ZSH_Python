@@ -5,9 +5,29 @@ ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 ${E_CYAN_FG}Search headers: MISC STRINGS ARRAYS PARAM TYPESET READ REDIRECTION BUILTIN VI ${E_RESET}
 
 ${E_WHITE_FG}MISC${E_RESET}
-To change the default terminal emulator to 'terminator' modify the keys in gsettings
+${E_WHITE_FG}Default Terminal${E_RESET}
+To modify the default terminal emulator to 'terminator' modify the keys in gsettings
 URL: org.cinnamon.desktop.default-application Key: exec          Value: terminator
 URL: org.gnome.shell                          Key: favorite-apps Value: [ 'terminator.desktop', '....' ]
+
+${E_WHITE_FG}Parsing Null Values${E_RESET}
+cat /proc/\$\$/cmdline | tr -s "\0" " " # Replace nulls with spaces
+
+${E_WHITE_FG}USB Port Power${E_RESET}
+Enable USB Wakeup/Power:
+Create a script to enable power to USB devices by setting their wakeup capability to enabled:
+for usbport in /sys/bus/usb/devices/usb*/power/wakeup ; do echo enabled > $usbport; done.
+Using hub-ctrl:
+If the USB hub supports it, you can use the hub-ctrl utility for precise control:
+sudo ./hub-ctrl -P 2 -p 1.
+
+Alternative Considerations:
+
+BIOS/UEFI: For persistent power (e.g., "always-on" ports), 
+check your motherboard's BIOS/UEFI settings, as this is often handled by firmware, especially on laptops.
+
+Warning: Disconnecting a USB device while it is being powered on/off via these methods might cause file 
+system errors or data loss.
 
 ${E_WHITE_FG}Operators${E_RESET}
 In the native mode of operation, the following operators are supported (listed in decreasing order of precedence):

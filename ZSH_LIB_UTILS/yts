@@ -16,7 +16,6 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
-RED_ON_GREY="\033[0m\033[0;1;31;100m"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -103,6 +102,7 @@ g_YTS_LOG=''
 
 # Functions
 action_do () {
+	local -A QUICK_DL_CHECK=()
 	local AUTHOR=''
 	local DEST=''
 	local DEST_1=''
@@ -124,7 +124,6 @@ action_do () {
 	local LOG_LINE=''
 	local MSG=''
 	local NDX=0
-	local QUICK_DL_CHECK=false
 	local RETRIES=0
 	local SPEED=0
 	local TITLE=''
@@ -138,6 +137,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		((DL_CNT++))
+		QUICK_DL_CHECK[${M}]=false
 		_CANCELLED[${DL_CNT}]=false
 		_DOWNLOADS[${DL_CNT}]=false
 		_FAILED[${DL_CNT}]=false
@@ -172,8 +172,8 @@ action_do () {
 				break
 			fi
 			
-			if [[ ${QUICK_DL_CHECK} == 'false' ]];then
-				QUICK_DL_CHECK='true'
+			if [[ ${QUICK_DL_CHECK[${M}]} == 'false' ]];then
+				QUICK_DL_CHECK[${M}]=true
 				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="Download is complete..."

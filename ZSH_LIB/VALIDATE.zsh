@@ -10,7 +10,7 @@ validate_is_integer () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	RET=$( echo "${VAL}" | sed 's/^[-+]*[0-9]*//g' )
+	RET=$(echo "${VAL}" | sed 's/^[-+]*[0-9]*//g')
 	[[ -z ${RET} ]] && return 0 || return 1
 }
 

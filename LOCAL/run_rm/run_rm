@@ -15,7 +15,7 @@ MAGENTA_FG="\033[35m"
 CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
-#Constants
+# Constants
 _WARN_LIMIT=5
 _DISPLAY_LIMIT=15
 _PWD=$(pwd)
@@ -25,7 +25,7 @@ _RD='sudo /bin/rm -rf'
 _UL='sudo /bin/unlink'
 _LIB=/usr/local/lib
 
-#Imports
+# Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/UTILS.zsh
@@ -40,7 +40,7 @@ for D in ${=_DEPS_};do
 	fi
 done
 
-#Declarations
+# Declarations
 typeset -a OPTIONS
 typeset -a LIST
 typeset -A OBJ_OWNER
@@ -48,7 +48,7 @@ typeset -A OBJ_GROUP
 typeset -A FIELD_OBJ
 typeset -A FIELD_LEN
 
-#Functions
+# Functions
 dir_resolve () { #unused but interesting...
   local DIR=`dirname "${1}"`
   local FILE=`basename "${1}"`
@@ -208,7 +208,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err "${PENDING_MSGS}")
+	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
 typeset -a OPTIONS
@@ -229,30 +229,37 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #---Execution---
-[[ ${#} -eq 0 ]] && usage "insufficient arguments"
+#fc -R
+#RAW_CMD_LINE=$(fc -lnr | head -1) # Unexpanded command line
+RAW_CMD_LINE=$(cat /proc/$$/cmdline | tr -s "\0" " ") # Unexpanded command line
 
-fc -R
-RAW_CMD_LINE=$(fc -lnr | head -1) #the unexpanded command line
 [[ ${_DEBUG} -gt 0 ]] && dbg "RAW_CMD_LINE:${RAW_CMD_LINE}"
 
-ARG_CNT=$(echo ${RAW_CMD_LINE} | wc -w)
+[[ ${#} -eq 0 ]] && usage "insufficient arguments"
+
+ARG_CNT=$(wc -w <<<${RAW_CMD_LINE})
 [[ ${_DEBUG} -gt 0 ]] && dbg "ARG_CNT:${ARG_CNT}, _WARN_LIMIT:${_WARN_LIMIT}, _DISPLAY_LIMIT:${_DISPLAY_LIMIT}"
 
-LAST_ARG=$(echo ${RAW_CMD_LINE} | cut -d' ' -f${ARG_CNT})
-WILD=$(echo ${LAST_ARG} | perl -ne 'print if /(^\*$|^.*\/\*$)/')
+LAST_ARG=$(cut -d' ' -f${ARG_CNT} <<<${RAW_CMD_LINE})
+[[ ${_DEBUG} -gt 0 ]] && dbg "LAST_ARG:${LAST_ARG}"
+
+WILD=$(perl -ne 'print if /(^\*$|^.*\/\*$)/' <<<${LAST_ARG})
+[[ ${_DEBUG} -gt 0 ]] && dbg "WILD:${WILD}"
+
 [[ -n ${WILD} ]] && WILDCARD=true || WILDCARD=false
+[[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"
 
 MYID=$(get_myid)
 MYGROUP=$(get_mygroup)
 [[ ${_DEBUG} -gt 0 ]] && dbg "MYID:${MYID}, MYGROUP:${MYGROUP}, WILDCARD:${WILDCARD}"
 
-#Prescan
+# Prescan
 LIST=("${(f)$(for L in ${@};do echo ${L};done)}") 
 [[ ${_DEBUG} -gt 0 ]] && dbg "LIST COUNT:${#LIST}"
 
 OBJ_COUNT=${#@}
 
-#Store meta information
+# Store meta information
 DIRS=0
 FILES=0
 LINKS=0
@@ -276,16 +283,19 @@ for L in ${LIST};do
 	[[ -f ${L} && ! -h ${L} ]] && ((FILES++))
 	[[ -L ${L} ]] && ((LINKS++))
 done
+
 [[ ${_DEBUG} -gt 0 ]] && dbg "FIELD_LEN[NAME]:${FIELD_LEN[NAME]}, FIELD_LEN[OWNER]:${FIELD_LEN[OWNER]}, FIELD_LEN[GROUP]:${FIELD_LEN[GROUP]}"
 [[ ${_DEBUG} -gt 0 ]] && dbg "DIRS:${DIRS}, FILES:${FILES}, LINKS:${LINKS}"
 
 [[ ${DIRS} -gt 0 ]] && DMSG="${WHITE_FG}${DIRS}${RESET}:$(str_pluralize directory ${DIRS})" || DMSG=''
 [[ ${FILES} -gt 0 ]] && FMSG=" ${WHITE_FG}${FILES}${RESET}:$(str_pluralize file ${FILES})" || FMSG=''
 [[ ${LINKS} -gt 0 ]] && LMSG=" ${WHITE_FG}${LINKS}${RESET}:$(str_pluralize link ${LINKS})" || LMSG=''
+
 [[ -n ${DMSG} ]] && FMSG=" ${FMSG}" || FMSG="${FMSG}"
 [[ -n ${LMSG} ]] && LMSG=" ${LMSG}" || LMSG="${LMSG}"
 
-#Detect/warn wildcard 
+# Detect/warn wildcard 
+
 if [[ ${WILDCARD} == "true" ]];then
 	echo "${BOLD}${RED_FG}Wildcard${RESET}${BOLD}${WHITE_FG} * ${RESET}detected ${ITALIC}ALL FILES${RESET} (${#LIST} $(str_pluralize item ${#LIST}))"
 fi
@@ -294,10 +304,10 @@ fi
 [[ ${OBJ_COUNT} -gt ${_DISPLAY_LIMIT} ]] && PARTIAL=true || PARTIAL=false
 
 if [[ ${WARN} == 'true' ]];then
-	#Summarize selection
+	# Summarize selection
 	echo "\n${WHITE_FG}Selected${RESET}: ${WHITE_FG}$(echo "${DMSG}${FMSG}${LMSG}" | tr -s '[:space:]' | sed 's/^[ ]*//g')${RESET}\n"
 
-	#Display files to be deleted
+	# Display files to be deleted
 	printf "${WHITE_FG}%14s %*s %*s %*s${RESET}\n" "Object" ${FIELD_LEN[NAME]} "Name" ${FIELD_LEN[OWNER]} "Owner" ${FIELD_LEN[GROUP]} "Group"
 	printf "${CYAN_FG}%14s %s %s %s${RESET}\n" $(str_unicode_line 14) $(str_unicode_line ${FIELD_LEN[NAME]}) $(str_unicode_line ${FIELD_LEN[OWNER]}) $(str_unicode_line ${FIELD_LEN[GROUP]})
 
@@ -319,7 +329,7 @@ fi
 
 [[ ${PARTIAL} == "true" ]] && echo "\nItems queued for ${RED_FG}removal${RESET}: (${WHITE_FG}${_DISPLAY_LIMIT} ${GREEN_FG}displayed${RESET}) plus ${WHITE_FG}$((${OBJ_COUNT}-${_DISPLAY_LIMIT}))${RESET} additional${RESET}..."
 
-#Always warn for directories unless options were passed
+# Always warn for directories unless options were passed
 RM_DIRS=false
 if [[ -z ${OPTIONS} && ${DIRS} -ne 0 ]];then
 	DIR_OBJ_COUNT=$(dir_obj_count ${LIST})
@@ -335,7 +345,7 @@ if [[ ${DIRS} -ne 0 && ${RM_DIRS} == 'false' ]];then
 	MSG=" with ${REMAINING} remaining items"
 fi
 
-#Get user approval to proceed
+# Get user approval to proceed
 APPROVED=false
 if [[ ${REMAINING} -ne 0 && (${REMAINING} -gt ${_WARN_LIMIT} || ${WARN} == "true") ]];then
 	echo -n "${WHITE_FG}Continue${MSG}${RESET}:(y/n):"

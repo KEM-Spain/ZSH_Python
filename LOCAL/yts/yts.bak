@@ -73,7 +73,8 @@ _FIELD_LEN[title]=80
 _JS_SCRIPT="/usr/local/etc/yts.js"
 _MAX_FLEN=85
 _MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
-_MAX_TITLE=74
+_MAX_DL_TITLE=74
+_MAX_LS_TITLE=80
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
@@ -102,6 +103,7 @@ g_YTS_LOG=''
 
 # Functions
 action_do () {
+	local -A QUICK_DL_CHECK=()
 	local AUTHOR=''
 	local DEST=''
 	local DEST_1=''
@@ -123,7 +125,6 @@ action_do () {
 	local LOG_LINE=''
 	local MSG=''
 	local NDX=0
-	local QUICK_DL_CHECK=false
 	local RETRIES=0
 	local SPEED=0
 	local TITLE=''
@@ -137,6 +138,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		((DL_CNT++))
+		QUICK_DL_CHECK[${M}]=false
 		_CANCELLED[${DL_CNT}]=false
 		_DOWNLOADS[${DL_CNT}]=false
 		_FAILED[${DL_CNT}]=false
@@ -171,8 +173,8 @@ action_do () {
 				break
 			fi
 			
-			if [[ ${QUICK_DL_CHECK} == 'false' ]];then
-				QUICK_DL_CHECK='true'
+			if [[ ${QUICK_DL_CHECK[${M}]} == 'false' ]];then
+				QUICK_DL_CHECK[${M}]=true
 				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="Download is complete..."
@@ -355,7 +357,7 @@ clean_title () {
 	STR=$(title_scrubber ${TITLE})
 	STR=$(keyword_strip <<<${STR})
 
-	[[ -n ${STR} ]] && TITLE=$(str_word_clip ${STR} ${_MAX_TITLE}) # Limit length at word boundary
+	[[ -n ${STR} ]] && TITLE=$(str_word_clip ${STR} ${_MAX_DL_TITLE}) # Limit length at word boundary
 
 	#logit ${_YT_DBG_LOG} "${0}: TITLE OUT:${TITLE}"
 
@@ -1189,7 +1191,7 @@ parse_rumble () {
 				[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
 				if [[ ${ROW} -ne ${OMIT_NDX} ]];then
 					((NDX++))
-					_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|$(str_word_clip ${TITLE} ${_MAX_TITLE})|${URL}|${TIME}|${AGETIME}"
+					_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|$(str_word_clip ${TITLE} ${_MAX_LS_TITLE})|${URL}|${TIME}|${AGETIME}"
 					OMIT_NDX=0
 				fi
 				AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE='' && AGETIME='' 
@@ -1385,7 +1387,7 @@ query_youtube () {
 		AGE=$(cut -d'|' -f${YOUTUBE_MAP[age]} <<<${F})
 		AUTHOR=$(cut -d'|' -f${YOUTUBE_MAP[author]} <<<${F})
 		AUTHOR=$(keyword_strip <<<${AUTHOR})
-		TITLE=$(cut -d'|' -f${YOUTUBE_MAP[title]} <<<${F}); TITLE=$(str_word_clip ${TITLE} ${_MAX_TITLE})
+		TITLE=$(cut -d'|' -f${YOUTUBE_MAP[title]} <<<${F}); TITLE=$(str_word_clip ${TITLE} ${_MAX_LS_TITLE})
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
 			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)

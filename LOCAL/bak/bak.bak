@@ -15,6 +15,7 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
 # Constants
 _LIB_DIR=/usr/local/lib
@@ -104,7 +105,7 @@ prod_to_local () {
 		do_copy ${g_LOCAL_VERSION} ${g_BACKUP_VERSION}
 	else
 		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} Found development"
-		echo "\nOVERWRITE DEVELOPMENT"
+		echo "${REVERSE}${WHITE_ON_GREY}< < <${RESET}${WHITE_ON_RED_ITALIC} OVERWRITE DEVELOPMENT ${RESET}${REVERSE}${WHITE_ON_GREY}> > >${RESET}"
 		echo ${g_LOCAL_EXISTS_PROD}
 
 		diff -b ${g_PROD_VERSION} ${g_LOCAL_VERSION} >/dev/null 2>&1
@@ -246,7 +247,7 @@ prod_to_backup () {
 local_to_prod () {
 	local NEWEST
 
-	echo "RELEASE"
+	tcup 0 0 && echo "${REVERSE}${WHITE_ON_GREY}< < <${RESET}${WHITE_ON_RED_ITALIC} RELEASE ${RESET}${REVERSE}${WHITE_ON_GREY}> > >${RESET}"
 	[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
 
 	if [[ ${g_IS_INITIAL_PRODUCTION} == 'false' ]];then
@@ -476,6 +477,8 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
+clear
+
 [[ ${LIB_TESTING} == 'true' ]] && exit_leave $(err_msg_exit "LIB_TESTING is on")
 [[ -n ${TESTING} ]] && exit_leave $(err_msg_exit "TESTING is set - unset to continue")
 
@@ -483,15 +486,11 @@ FILE_ARG=${1}
 if [[ -z ${FILE_ARG} ]];then
 	DEFAULT_FN=${PWD:t}
 	if [[ -e ${DEFAULT_FN} ]];then
-		echo "No file name passed. Defaulting to:${WHITE_FG}${DEFAULT_FN}${RESET}"
-		echo "Press ${WHITE_FG}<ENTER>${RESET} to continue..."
-		read -s -k1 RESPONSE
-		[[ ! ${RESPONSE} =~ "^\x0a$" ]] && exit_leave "${RED_FG}Operation cancelled${RESET}" # Enter will continue / other exit
-		FILE_ARG=${DEFAULT_FN}
+		FILE_ARG=${DEFAULT_FN} # Assign default file
 	fi
 fi
 
-# If any options are present they will require a local copy of the file arg
+# Ensure file exists
 [[ ! -e ./${FILE_ARG} && ${#OPTIONS} -ne 0 ]] && exit_leave $(err_msg_exit "No such file:${FILE_ARG} exists in the current directory")
 
 if [[ ${BACKUP_LOCAL} == 'true' ]];then

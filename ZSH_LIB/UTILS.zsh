@@ -880,7 +880,7 @@ title_scrubber () {
 		fi
 	done
 
-	STR=$(echo "${STR}" | perl -pe 's/(.)\s([Rr]e|[Ss]|[Tt]|[Vv]e)(\s|[[:punct:]]|$)/\1\x{027}\2 /g') # Replace missing apostrophes
+	STR=$(echo "${STR}" | perl -pe 's/(.)\s([Rr]e|[Ll]l|[Ss]|[Tt]|[Vv]e)(\s|[[:punct:]]|$)/\1\x{027}\2 /g') # Replace missing apostrophes
 	STR=$(echo "${STR}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
 	STR=$(echo "${STR}" | perl -pe 's/[Ww]\x{02f}/w\x{02f}/g') # Fix 'with' abbv
 

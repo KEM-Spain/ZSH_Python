@@ -222,6 +222,8 @@ do_smcup
 if [[ -n ${ARG} ]];then
 	if [[ -e ${_TIP_DIR}/${ARG}.tip ]];then
 		source ${_TIP_DIR}/${ARG}.tip
+	else
+		MSG=$(err_msg_exit "No tips for:${ARG} found")
 	fi
 else
 	while true;do
@@ -233,4 +235,4 @@ else
 	done
 fi
 
-exit_leave
+exit_leave ${MSG}
