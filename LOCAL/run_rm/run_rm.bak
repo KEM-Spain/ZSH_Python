@@ -232,11 +232,7 @@ shift $((OPTIND -1))
 #---Execution---
 [[ ${#} -eq 0 ]] && usage "insufficient arguments"
 
-RAW_CMD_ARGS=$(path_get_raw_args) # Unexpanded command line args
-[[ ${_DEBUG} -gt 0 ]] && dbg "RAW_CMD_ARGS:${RAW_CMD_ARGS}"
-
-perl -ne 'if ( /\x2a/ ) { exit(0) } else { exit(1) }' <<<${RAW_CMD_ARGS} # Args contain asterisk?
-[[ ${?} -eq 0 ]] && WILDCARD=true || WILDCARD=false
+[[ $(str_contains $(path_get_raw_args) '\x2a') ]] && WILDCARD=true || WILDCARD=false
 [[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"
 
 MYID=$(get_myid)

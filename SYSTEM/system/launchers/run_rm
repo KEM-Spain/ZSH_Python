@@ -230,12 +230,9 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #---Execution---
-[[ ${#} -eq 0 ]] && usage "insufficient arguments"
+[[ ${#} -eq 0 ]] && usage "Missing argument <FILE>"
 
-RAW_CMD_ARGS=$(path_get_raw_args) # Unexpanded command line args
-[[ ${_DEBUG} -gt 0 ]] && dbg "RAW_CMD_ARGS:${RAW_CMD_ARGS}"
-
-[[ $(str_contains ${RAW_CMD_ARGS} '\x2a') ]] && WILDCARD=true || WILDCARD=false
+[[ $(str_contains $(path_get_raw_args) '\x2a') ]] && WILDCARD=true || WILDCARD=false
 [[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"
 
 MYID=$(get_myid)

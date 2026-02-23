@@ -1,0 +1,26 @@
+2026-02-23_08:55: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-23_08:55: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-23_08:55: _QUERY_OPTS: DKEY:Going UnderGround ENGINE:rumble EOPT:C FKEY:Going UnderGround QKEY:goingunderground TYPE:standard 
+2026-02-23_08:55: query_rumble: Creating listing for QKEY:goingunderground TYPE:channel
+2026-02-23_08:55: parse_rumble: Parsing list for QKEY:goingunderground
+2026-02-23_08:55: parse_rumble: NO DATA from TAG:videostream__time text{}
+2026-02-23_08:55: parse_rumble: NO DATA from TAG:title__link attr{href}
+2026-02-23_08:55: parse_rumble: NO DATA from TAG:videostream__badge text{}
+2026-02-23_08:55: parse_rumble: NO DATA from TAG:thumbnail__title attr{title}
+2026-02-23_08:55: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-02-23_08:55: query_rumble: Listing for QKEY:goingunderground contains 25 rows
+2026-02-23_08:55: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.g0WGxX
+2026-02-23_08:55: job_start: TITLE:Can Cuba's Revolution Survive Donald Trump's Economic War? (Cuba's UN Amb.
+2026-02-23_08:55: job_start: QUERY KEY:goingunderground
+2026-02-23_08:55: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v763wvi-can-cubas-revolution-survive-donald-trumps-economic-war-cubas-un-amb.-ernes.html?e9s=src_v1_ucp_a" PID:413095
+2026-02-23_08:55: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-02-23_08:55: action_do: PRE-PROCESSING
+2026-02-23_08:55: action_do: HEADER
+2026-02-23_08:55: action_do: COMPLETED
+2026-02-23_08:55: action_do: POST-PROCESSING
+2026-02-23_08:55: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v763wvi-can-cubas-revolution-survive-donald-trumps-economic-war-cubas-un-amb.-ernes.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-02-23_08:55: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Afshin_Rattansi_s_Going_Underground - Can_Cuba_s_Revolution_Survive_Donald_Trump_s_Economic_War_Cuba._Ernesto_Soberon_Guzman.mp4
+2026-02-23_08:55: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Afshin_Rattansi_s_Going_Underground - Can_Cuba_s_Revolution_Survive_Donald_Trump_s_Economic_War_Cuba._Ernesto_Soberon_Guzman.mp4
+2026-02-23_08:55: set_final_fn: Overwriting file:Afshin_Rattansi_s_Going_Underground - Can_Cuba_s_Revolution_Survive_Donald_Trump_s_Economic_War_Cuba._Ernesto_Soberon_Guzman.mp4 with:Afshin Rattansi's Going Underground - Can Cuba's Revolution Survive.mp4
+2026-02-23_08:55: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Afshin Rattansi's Going Underground - Can Cuba's Revolution Survive.mp4
+2026-02-23_08:55: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.g0WGxX was cleared for:goingunderground from:action_do

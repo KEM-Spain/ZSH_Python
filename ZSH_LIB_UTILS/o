@@ -374,6 +374,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 #--Execution
+# TODO: 'Not properly handling select all; passing path fn fn fn - not path/fn path/fn path/fn
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
 

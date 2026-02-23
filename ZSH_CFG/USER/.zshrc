@@ -47,7 +47,7 @@ source ${_USR_LOCAL_SRC}/zhooks/zhooks.plugin.zsh # add zhooks command to displa
 
 # Exports
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=97:ln=32:bn=32:se=36' # https://askubuntu.com/questions/1042234/modifying-the-color-of-grep
-export HISTORY_IGNORE="(rm(| *)|cd(| *)|ls(| *)|tail(| *)|tvi(| *)|cp(| *)|mv(| *)|exit(| *))"
+export HISTORY_IGNORE="(cd(| *)|ls(| *)|tail(| *)|tvi(| *)|cp(| *)|mv(| *)|exit(| *))"
 export MUSIC_DIR=/media/kmiller/KEM_Misc/Music/KEM-B9
 export PRINTER=ENVY-5000
 export TERM=xterm
@@ -227,7 +227,7 @@ precmd () {
 
 	if [[ -e /tmp/pwd.last ]];then
 		read LPWD < /tmp/pwd.last
-		rm -f /tmp/pwd.last >/dev/null 2>&1
+		/bin/rm -f /tmp/pwd.last >/dev/null 2>&1
 	fi
 
 	if [[ ${PWD} != ${LPWD} ]];then

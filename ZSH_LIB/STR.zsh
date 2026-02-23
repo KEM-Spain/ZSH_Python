@@ -71,7 +71,7 @@ str_contains () {
 	local STR=${1}
 	local TARGET=${2}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	perl -ne "if ( /${TARGET}/ ) { exit(0) } else { exit(1) }" <<<${STR}
 	[[ ${?} -eq 0 ]] && echo 'true' || echo ''
