@@ -15,16 +15,6 @@ MAGENTA_FG="\033[35m"
 CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
-# Constants
-_WARN_LIMIT=5
-_DISPLAY_LIMIT=15
-_PWD=$(pwd)
-_RM='sudo /bin/rm'
-_RF='sudo /bin/rm -f'
-_RD='sudo /bin/rm -rf'
-_UL='sudo /bin/unlink'
-_LIB=/usr/local/lib
-
 # Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -48,6 +38,16 @@ typeset -A OBJ_OWNER
 typeset -A OBJ_GROUP
 typeset -A FIELD_OBJ
 typeset -A FIELD_LEN
+
+# Constants
+_WARN_LIMIT=3
+_DISPLAY_LIMIT=15
+_PWD=$(pwd)
+_RM='sudo /bin/rm'
+_RF='sudo /bin/rm -f'
+_RD='sudo /bin/rm -rf'
+_UL='sudo /bin/unlink'
+_LIB=/usr/local/lib
 
 # Functions
 dir_resolve () { #unused but interesting...
@@ -108,7 +108,7 @@ get_owner () {
 	local FILE=${1}
 	local OWNER
 
-	[[ -e ${FILE} ]] && OWNER=$(stat -c "%U" ${FILE}) || OWNER="${0}:file not found"
+	[[ ! -e ${FILE} ]] && OWNER='' || OWNER=$(stat -c "%U" ${FILE})
 
 	echo ${OWNER}
 }
@@ -117,7 +117,7 @@ get_group () {
 	local FILE=${1}
 	local GROUP
 
-	[[ -e ${FILE} ]] && GROUP=$(stat -c "%G" ${FILE}) || GROUP="${0}:file not found"
+	[[ ! -e ${FILE} ]] && GROUP='' || GROUP=$(stat -c "%G" ${FILE})
 
 	echo ${GROUP}
 }
@@ -163,7 +163,7 @@ Front end for /bin/rm. If options are passed,
 
 \tWarnings will be preceeded by a detailed list 
 \tof the files to be deleted including ownership and group. 
-\tAlso, dead links are identifed.
+\tLinked files, valid or not, are also identifed.
 EOF
 
 parse_opts () {
@@ -240,7 +240,7 @@ MYGROUP=$(get_mygroup)
 [[ ${_DEBUG} -gt 0 ]] && dbg "MYID:${MYID}, MYGROUP:${MYGROUP}, WILDCARD:${WILDCARD}"
 
 # Prescan
-LIST=("${(f)$(for L in ${@};do echo ${L};done)}") 
+LIST=(${@}) 
 [[ ${_DEBUG} -gt 0 ]] && dbg "LIST COUNT:${#LIST}"
 
 OBJ_COUNT=${#@}
@@ -253,18 +253,19 @@ FIELD_LEN[OWNER]=0
 FIELD_LEN[GROUP]=0
 FIELD_LEN[NAME]=0
 for L in ${LIST};do
+	[[ ! -L ${L} && ! -e ${L} ]] && exit_leave $(err_msg_exit E "file not found:${L}")
 	[[ ${_DEBUG} -ge 2 ]] && dbg "L:${L}"
 	if [[ ! -e ${L} && -L ${L} ]];then
-		OBJ_OWNER[${L}]="dead link"
-		OBJ_GROUP[${L}]="dead link"
+		OBJ_OWNER[${L}]="invalid"
+		OBJ_GROUP[${L}]="invalid"
 	else
 		OBJ_OWNER[${L}]=$(get_owner ${L})
 		OBJ_GROUP[${L}]=$(get_group ${L})
 	fi
 	[[ ${_DEBUG} -ge 2 ]] && dbg "OBJ_OWNER:${OBJ_OWNER[${L}]}, OBJ_GROUP:${OBJ_GROUP[${L}]}"
-	[[ ${#OBJ_OWNER[${L}]} -gt ${FIELD_LEN[OWNER]} ]] && FIELD_LEN[OWNER]=${#OBJ_OWNER[${L}]}
-	[[ ${#OBJ_GROUP[${L}]} -gt ${FIELD_LEN[GROUP]} ]] && FIELD_LEN[GROUP]=${#OBJ_GROUP[${L}]}
-	[[ ${#L} -gt ${FIELD_LEN[NAME]} ]] && FIELD_LEN[NAME]=${#L}
+	[[ ${#OBJ_OWNER[${L}]} -gt ${FIELD_LEN[OWNER]} ]] && FIELD_LEN[OWNER]=$(( ${#OBJ_OWNER[${L}]} + 3 ))
+	[[ ${#OBJ_GROUP[${L}]} -gt ${FIELD_LEN[GROUP]} ]] && FIELD_LEN[GROUP]=$(( ${#OBJ_GROUP[${L}]} + 3 ))
+	[[ ${#L} -gt ${FIELD_LEN[NAME]} ]] && FIELD_LEN[NAME]=$(( ${#L} + 3 ))
 	[[ -d ${L} ]] && ((DIRS++))
 	[[ -f ${L} && ! -h ${L} ]] && ((FILES++))
 	[[ -L ${L} ]] && ((LINKS++))

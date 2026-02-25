@@ -58,7 +58,7 @@ _APP_EXE[IMAGE]=/usr/local/bin/viewnior
 _APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
 _APP_EXE[CLEM]="/usr/bin/clementine"
 _APP_EXE[HARUNA]=/snap/bin/haruna
-_APP_EXE[MPV]="/usr/bin/mpv --fs"
+_APP_EXE[MPV]="/usr/bin/mpv --fs --loop-file=inf --volume=40"
 _APP_EXE[VIM]=/usr/bin/vim
 
 _APP_WIN[EBOOK]="ebook-viewer"
@@ -119,9 +119,9 @@ action_do () {
 	for K in ${(k)RUN_LIST};do
 		FN=$(realpath ${RUN_LIST[${K}]})
 		if is_foreground_only ${K};then
-			eval "${K} ${FN} 2>${_APP_LOG}"
+			eval "${K} ${(qqq)FN} 2>${_APP_LOG}"
 		else
-			eval "${K} ${FN:q} >${_APP_LOG} 2>&1 &"
+			eval "${K} ${(qqq)FN} >${_APP_LOG} 2>&1 &"
 			CMD_PID=${!} && RC=${?}
 		fi
 		if [[ ${RC} -ne 0 ]];then
@@ -162,8 +162,7 @@ create_list () {
 get_app () {
 	local FN=${1}
 	local EXT=${FN:e:l}
-
-	APP=$(map_ext ${EXT})
+	local APP=$(map_ext ${EXT})
 	
 	if [[ ${APP} == '?' ]];then
 		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${_APP_EXE[VIM]} # Editable unknown extensions 
@@ -172,12 +171,10 @@ get_app () {
 	echo ${APP}
 }
 
-get_app_win () {
+get_win () {
 	local FN=${1}
 	local EXT=${FN:e:l}
-	local APP_WIN
-
-	APP_WIN=$(map_ext ${EXT})
+	local APP_WIN=$(map_ext ${EXT})
 	
 	if [[ ${APP_WIN} == '?' ]];then
 		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP_WIN=${_APP_WIN[VIM]} # Editable unknown extensions 
@@ -223,6 +220,7 @@ map_ext () {
 		m4a) APP=${_APP_EXE[MPV]};;
 		markdown) APP=${_APP_EXE[MDLESS]};;
 		md) APP=${_APP_EXE[MDLESS]};;
+		mov) APP=${_APP_EXE[VLC]};;
 		mkv) APP=${_APP_EXE[MPV]};;
 		mp3) APP=${_APP_EXE[CLEM]};;
 		mp4) APP=${_APP_EXE[MPV]};;
@@ -282,7 +280,7 @@ same_extension () {
 single_file_launch () {
 	local FN=${1}
 	local APP=$(get_app ${FN})
-	local APP_WIN=$(get_app_win ${FN})
+	local APP_WIN=$(get_win ${FN})
 
 	[[ ${APP} == '?' ]] && exit_leave "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${FN}${RESET} of type: [$(file -b ${FN})]"
 
@@ -316,7 +314,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -376,6 +374,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 #--Execution
+# TODO: 'Not properly handling select all; passing path fn fn fn - not path/fn path/fn path/fn
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
 
@@ -428,7 +427,7 @@ NDX=0
 for F in ${(o)_RAWLIST};do
 	[[ -d ${F} ]] && continue # Skip any directories
 	APP=$(get_app ${F})
-	APP_WIN=$(get_app_win ${F})
+	APP_WIN=$(get_win ${F})
 	[[ ${APP} == '?' && ${FILTER_UNSUPPORTED} == 'true' ]] && continue # Skip any unsupported
 	((NDX++))
 	if [[ ${MUSIC_DIRS} == 'true' ]];then

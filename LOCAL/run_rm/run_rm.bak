@@ -15,16 +15,6 @@ MAGENTA_FG="\033[35m"
 CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
-# Constants
-_WARN_LIMIT=5
-_DISPLAY_LIMIT=15
-_PWD=$(pwd)
-_RM='sudo /bin/rm'
-_RF='sudo /bin/rm -f'
-_RD='sudo /bin/rm -rf'
-_UL='sudo /bin/unlink'
-_LIB=/usr/local/lib
-
 # Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -48,6 +38,16 @@ typeset -A OBJ_OWNER
 typeset -A OBJ_GROUP
 typeset -A FIELD_OBJ
 typeset -A FIELD_LEN
+
+# Constants
+_WARN_LIMIT=3
+_DISPLAY_LIMIT=15
+_PWD=$(pwd)
+_RM='sudo /bin/rm'
+_RF='sudo /bin/rm -f'
+_RD='sudo /bin/rm -rf'
+_UL='sudo /bin/unlink'
+_LIB=/usr/local/lib
 
 # Functions
 dir_resolve () { #unused but interesting...
@@ -163,7 +163,7 @@ Front end for /bin/rm. If options are passed,
 
 \tWarnings will be preceeded by a detailed list 
 \tof the files to be deleted including ownership and group. 
-\tAlso, dead links are identifed.
+\tLinked files, valid or not, are also identifed.
 EOF
 
 parse_opts () {
@@ -230,7 +230,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 #---Execution---
-[[ ${#} -eq 0 ]] && usage "insufficient arguments"
+[[ ${#} -eq 0 ]] && usage "Missing argument <FILE>"
 
 [[ $(str_contains $(path_get_raw_args) '\x2a') ]] && WILDCARD=true || WILDCARD=false
 [[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"

@@ -189,7 +189,7 @@ path_get_raw () {
 
 	if [[ ${PATH_HEAD} == '?' ]];then
 		if is_glob ${RAW_PATH};then
-			TOKENIZED=("${(f)$(eval ls ${RAW_PATH} >/dev/null 2>&1)}") # Expand glob - a clean file list will resolve PATH_HEAD
+			TOKENIZED=("${(f)$(eval "find ${RAW_PATH} 2>&1")}") # Expand glob - a clean file list will resolve PATH_HEAD
 
 			for T in ${TOKENIZED};do
 				[[ ! -f ${T} ]] && break

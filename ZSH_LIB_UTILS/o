@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# Ansi colors
 REVERSE="\033[7m"
 RESET="\033[m"
 BOLD="\033[1m"
@@ -117,17 +116,13 @@ action_do () {
 	done
 
 	for K in ${(k)RUN_LIST};do
-		FN=$(realpath ${RUN_LIST[${K}]})
 		if is_foreground_only ${K};then
-			eval "${K} ${FN} 2>${_APP_LOG}"
+			eval "${K} ${RUN_LIST[${K}]} 2>${_APP_LOG} 2>&1" # Foreground
+			[[ ${?} -ne 0 && -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
 		else
-			eval "${K} ${FN:q} >${_APP_LOG} 2>&1 &"
-			CMD_PID=${!} && RC=${?}
-		fi
-		if [[ ${RC} -ne 0 ]];then
-			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
-		else
-			win_max -p ${CMD_PID}
+			eval "${K} ${RUN_LIST[${K}]} >${_APP_LOG} 2>&1 &" # Background
+			[[ ${?} -ne 0 && -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
+			win_max -p ${!} # Maximize window using PID of background job
 		fi
 	done
 
@@ -186,6 +181,8 @@ get_win () {
 is_foreground_only () {
 	local APP=${1}
 	local A
+
+	APP=$(cut -d' ' -f1 <<<${APP}) # Isolate APP name
 
 	for A in ${_FOREGROUND_ONLY};do
 		[[ ${APP} =~ ${A} ]] && return 0 || return 1
@@ -374,7 +371,6 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 #--Execution
-# TODO: 'Not properly handling select all; passing path fn fn fn - not path/fn path/fn path/fn
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
 

@@ -26,6 +26,7 @@ CYAN_BG="\033[46m"
 WHITE_BG="\033[47m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
 E_BOLD=$(echo -n "\033[1m")
 E_ITALIC=$(echo -n "\033[3m")

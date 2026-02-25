@@ -5,18 +5,20 @@ alias gd='. ~/.gd'
 # apps
 alias Cat='/bin/cat'
 alias MP42mp4="for X in *MP4;do mv ${X} ${X:r}.mp4;done"
-alias anthem='/opt/AnthemScore/AnthemScore >/dev/null 2>&1 &'
+alias anthem='/opt/anthemscore/run_app_image 2>&1 &'
+alias audacity='/opt/audacity/run_app_image 2>&1 &'
+alias brave='/opt/brave.com//brave/brave 2>&1 &'
+alias foxit='/opt/foxitreader/FoxitReader >/dev/null 2>&1 &'
+alias chrome=/usr/bin/google-chrome-stable
+alias jubler='/opt/jubler/run_app_image >/dev/null 2>&1 &'
 alias ascii='o /usr/local/etc/asciiTable.pdf'
 alias battery='/usr/local/bin/system/tweaks/battery_charge_limit'
 alias calc='/usr/bin/gnome-calculator'
 alias cat='/usr/bin/batcat --theme=1337 --style=full'
 alias cdef='compdef -a '
-alias chrome=/usr/bin/google-chrome-stable
 alias e2s='trans -no-pager en:es'
-alias easydrop='/opt/easydrop/run_easydrop_app_image'
 alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"
 alias feh='feh -F'
-alias foxit='/opt/foxitreader/FoxitReader >/dev/null 2>&1 &'
 alias help='run-help'
 alias keyrate='xset r rate 500 33'
 alias locate='/usr/local/bin/system/launchers/run_locate'

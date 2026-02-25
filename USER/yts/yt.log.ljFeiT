@@ -1,0 +1,19 @@
+job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=jdE3kqFBuN8"
+job_start: PID:686607
+[youtube] Extracting URL: https://youtube.com/watch?v=jdE3kqFBuN8
+[youtube] jdE3kqFBuN8: Downloading webpage
+WARNING: [youtube] HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable. Retrying (1/3)...
+[youtube] jdE3kqFBuN8: Downloading webpage
+WARNING: [youtube] HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable. Retrying (2/3)...
+[youtube] jdE3kqFBuN8: Downloading webpage
+WARNING: [youtube] HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable. Retrying (3/3)...
+[youtube] jdE3kqFBuN8: Downloading webpage
+WARNING: [youtube] Unable to download webpage: HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable (caused by TransportError("HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable")). Giving up after 3 retries
+[youtube] jdE3kqFBuN8: Downloading initial data API JSON
+WARNING: [youtube] HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable. Retrying (1/3)...
+[youtube] jdE3kqFBuN8: Downloading initial data API JSON
+WARNING: [youtube] HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable. Retrying (2/3)...
+[youtube] jdE3kqFBuN8: Downloading initial data API JSON
+WARNING: [youtube] HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable. Retrying (3/3)...
+[youtube] jdE3kqFBuN8: Downloading initial data API JSON
+ERROR: [youtube] jdE3kqFBuN8: Unable to download API page: HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable (caused by TransportError("HTTPSConnection(host='www.youtube.com', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable"))

@@ -224,7 +224,7 @@ action_do () {
 						elif [[ ${LOG_LINE:l} =~ 'error' ]];then # Detect pre-download errors
 							MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture msg - whole file grep
 							if [[ ${?} -eq 0 ]];then
-								msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG[1,70]}<N>"
+								msg_box -c -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG[1,70]}<N>"
 								logit ${_YT_DBG_LOG} "${0}: ERROR"
 								logit ${_YTS_ERROR_LOG} "${0}: ${MSG}"
 								_FAILED[${M}]=true
@@ -280,7 +280,7 @@ action_do () {
 						TRANS_ERR=$(cut -d: -f1 <<<${MSG})
 						if [[ ${TRANS_ERR} -ne ${LAST_TRANS_ERR} ]];then
 							((TRANS_ERRS++))
-							msg_box -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERRS}<N>:<r>${MSG}<N>"
+							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERRS}<N>:<r>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERRS} of ${_TRANS_ERR_LIMIT}"
 							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERRS}: ${MSG}"
 							LAST_TRANS_ERR=${TRANS_ERR}
@@ -1255,7 +1255,7 @@ query_rumble () {
 	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "${0}:Invalid query type:${_QUERY_OPTS[EOPT]}" && return 1
 	_QUERY_OPTS[TYPE]=${QRY_TYPE}
 
-	ping -w1 www.rumble.com >/dev/null
+	ping -w1 www.rumble.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -1306,7 +1306,7 @@ query_youtube () {
 	local STR=''
 	local F
 
-	ping -w1 www.youtube.com >/dev/null
+	ping -w1 www.youtube.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
 	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[EOPT]:=null}"

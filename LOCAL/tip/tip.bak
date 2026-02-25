@@ -97,7 +97,7 @@ find_keyword () {
 				TEXT=$(cut -d: -f2 <<<${D})
 				printf "${MAGENTA_FG}%20s ${CYAN_FG}%4s ${WHITE_FG}%.90s${RESET}\n" ${F:t} ${LN} "$(str_trim ${TEXT} | tr -d '\n' | sed "s/${KW}/${E_RED_FG}${KW}${E_RESET}/g")"
 			done
-		done | mypager
+		done | mypager wait
 	else
 		for F in ${_TIPS};do
 			grep -q ${GREP_OPTS} ${KW} ${F}
@@ -113,7 +113,7 @@ read -r -d '' DESC<<EOF
 Display collected tips on various topics
 \tFor <KEYWORD> searches, additional options
 \tmay be included to enhance search:
-\t-d line detail -w word boundary, -i case sensitive
+\t-d add line detail -W disable word boundary, -I enable case sensitivity
 EOF
 
 parse_opts () {
@@ -123,7 +123,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -157,10 +157,11 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-I ${RESET} enable keyword case sensitivity (default:case insensitive)"
-	echo -e "${WHITE_FG}-W ${RESET} disable keyword word matches (default:whole words only)"
-	echo -e "${WHITE_FG}-k $(opt_type k)${RESET} search for keyword (do not combine options)"
-	echo -e "${WHITE_FG}-l ${RESET} list available tips"
+	echo -e "${WHITE_FG}-I${RESET} enable keyword case sensitivity (default:case insensitive)"
+	echo -e "${WHITE_FG}-W${RESET} disable keyword word matches (default:whole words only)"
+	echo -e "${WHITE_FG}-d${RESET} add line number detail for keyword search results"
+	echo -e "${WHITE_FG}-k $(opt_type k)${RESET} search for keyword"
+	echo -e "${WHITE_FG}-l${RESET} list available tips"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 	) >&2
 
@@ -191,7 +192,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
@@ -206,6 +207,7 @@ if [[ -n ${KEYWORD} ]];then
 fi
 
 if [[ ${SHOW_TIPS} == 'true' ]];then
+	do_rmcup
 	echo "${WHITE_FG}AVAILABLE TIPS${RESET}"
 	for T in ${(o)_TIPS};do 
 		FN=${T:t}
@@ -220,6 +222,8 @@ do_smcup
 if [[ -n ${ARG} ]];then
 	if [[ -e ${_TIP_DIR}/${ARG}.tip ]];then
 		source ${_TIP_DIR}/${ARG}.tip
+	else
+		MSG=$(err_msg_exit "No tips for:${ARG} found")
 	fi
 else
 	while true;do
@@ -230,6 +234,5 @@ else
 		source ${_TIP_DIR}/${_SEL_VAL}.tip
 	done
 fi
-do_rmcup
 
-exit_leave
+exit_leave ${MSG}

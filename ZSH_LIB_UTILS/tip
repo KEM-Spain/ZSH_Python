@@ -74,31 +74,32 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 find_keyword () {
 	local -A OPTS=('-w' '-w' '-i' '-i' '-d' '-n')
+	local -a DETAIL=()
 	local -a GREP_OPTS=()
 	local -a LIST
-	local A D F
-	local HIT=false
+	local HIT=''
 	local KW=''
-	local -a DETAIL=()
 	local TEXT=''
+	local A D F
 
 	for A in ${@};do
 		GREP_OPTS+=${OPTS[${A}]}
 	done
-	[[ -n ${GREP_OPTS} ]] && echo "OPTIONS:${WHITE_FG}${GREP_OPTS}${RESET}"
+	[[ -n ${GREP_OPTS} ]] && echo "GREP OPTIONS:${WHITE_FG}${GREP_OPTS}${RESET}"
 	KW=${@[-1]}
 
 	if [[ ${GREP_OPTS} =~ '-n' ]];then
 		for F in ${_TIPS};do
 			DETAIL=("${(f)$(grep ${GREP_OPTS} ${KW} ${F})}")
-			[[ ${?} -eq 0 ]] && HIT=true
+			[[ ${?} -eq 0 ]] && HIT=true || HIT=false
 			for D in ${DETAIL};do
 				LN=$(cut -d: -f1 <<<${D})
 				TEXT=$(cut -d: -f2 <<<${D})
-				printf "${MAGENTA_FG}%20s ${CYAN_FG}%4s ${WHITE_FG}%.90s${RESET}\n" ${F:t} ${LN} "$(str_trim ${TEXT} | tr -d '\n' | sed "s/${KW}/${E_RED_FG}${KW}${E_RESET}/g")"
+				printf "${BOLD}${MAGENTA_FG}%20s ${CYAN_FG}%4s ${WHITE_FG}%.90s${RESET}\n" ${F:t} ${LN} "$(str_trim ${TEXT} | tr -d '\n' | sed "s/${KW}/${E_RED_FG}${KW}${E_RESET}/g")"
 			done
 		done | mypager wait
 	else
+		HIT=false
 		for F in ${_TIPS};do
 			grep -q ${GREP_OPTS} ${KW} ${F}
 			[[ ${?} -eq 0 ]] && HIT=true && echo "Keyword:\"${CYAN_FG}${KW}${RESET}\" located in:${WHITE_FG}${F}${RESET}"
@@ -202,6 +203,7 @@ shift $(( OPTIND - 1 ))
 
 if [[ -n ${KEYWORD} ]];then
 	echo "Searching for KEYWORD:${WHITE_FG}\"${KEYWORD}\"${RESET}"
+	do_rmcup
 	find_keyword ${CASE} ${WHOLE_WORD} ${KEYWORD_DETAIL} ${KEYWORD}
 	exit_leave
 fi

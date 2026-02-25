@@ -16,7 +16,6 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
-RED_ON_GREY="\033[0m\033[0;1;31;100m"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -225,7 +224,7 @@ action_do () {
 						elif [[ ${LOG_LINE:l} =~ 'error' ]];then # Detect pre-download errors
 							MSG=$(grep -Ei -m1 'error' ${g_YTS_LOG}) # Capture msg - whole file grep
 							if [[ ${?} -eq 0 ]];then
-								msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG[1,70]}<N>"
+								msg_box -c -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG[1,70]}<N>"
 								logit ${_YT_DBG_LOG} "${0}: ERROR"
 								logit ${_YTS_ERROR_LOG} "${0}: ${MSG}"
 								_FAILED[${M}]=true
@@ -281,7 +280,7 @@ action_do () {
 						TRANS_ERR=$(cut -d: -f1 <<<${MSG})
 						if [[ ${TRANS_ERR} -ne ${LAST_TRANS_ERR} ]];then
 							((TRANS_ERRS++))
-							msg_box -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERRS}<N>:<r>${MSG}<N>"
+							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERRS}<N>:<r>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERRS} of ${_TRANS_ERR_LIMIT}"
 							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERRS}: ${MSG}"
 							LAST_TRANS_ERR=${TRANS_ERR}
