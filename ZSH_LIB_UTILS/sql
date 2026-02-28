@@ -152,7 +152,7 @@ usage () {
 	echo -e "${WHITE_FG}-z${RESET} increase search depth"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS

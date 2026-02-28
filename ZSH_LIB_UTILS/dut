@@ -404,7 +404,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	typeset -a OPTIONS
@@ -612,8 +612,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	local -a OPTIONS
@@ -988,8 +987,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"

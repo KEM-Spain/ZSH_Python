@@ -67,8 +67,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	# Execution
@@ -79,7 +78,7 @@ ___EOF
 			echo ${LINE} | perl -pe 's/\$([0-9A-Za-z?#@_:]*)(\b|$|")/\${$1}$2/g'
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing arguments or piped input${RESET}"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "Missing arguments or piped input"
 		perl -pe 's/\$([0-9A-Za-z?#@_:]*)(\b|$|")/\${$1}$2/g' <${FN}
 	fi
 }
@@ -105,8 +104,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	# Execution
@@ -117,7 +115,7 @@ ___EOF
 			echo ${LINE} | perl -pe 's/[^[:ascii:]]//g' 
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<FN> or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "Missing required argument:<FN> or piped input"
 		sed -r '/^\s*$/d' <${FN}
 	fi
 }
@@ -142,8 +140,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	# Execution
@@ -154,7 +151,7 @@ ___EOF
 			echo ${LINE} | sed -r '/^\s*$/d'
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<FN> or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "Missing required argument:<FN> or piped input"
 		sed -r '/^\s*$/d' <${FN}
 	fi
 }
@@ -180,8 +177,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	# Execution
@@ -197,7 +193,7 @@ ___EOF
 	elif [[ -e ${FN} ]];then
 		perl -pne 's/(\e|\\C-\[)\[+[\d;]*[mK]//g' <${FN}
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<FN> or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "Missing required argument:<FN> or piped input"
 	fi
 }
 
@@ -220,8 +216,7 @@ ___EOF
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	# Execution
@@ -232,7 +227,7 @@ ___EOF
 			echo ${LINE} | tr '[:upper:]' '[:lower:]'
 		done
 	else
-		[[ ${#} -ne 0 ]] && FN=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<FN> or piped input"
+		[[ ${#} -ne 0 ]] && FN=${1} || usage "Missing required argument:<FN> or piped input"
 		tr '[:upper:]' '[:lower:]' < ${FN}
 	fi
 }
@@ -290,8 +285,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"

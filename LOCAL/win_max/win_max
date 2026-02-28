@@ -116,7 +116,7 @@ get_win_id () {
 }
 
 get_last_term () {
-	wmctrl -l | grep -i terminal | sort -r | head -1 | tr -s '[:space:]' | cut -d' ' -f1
+	wmctrl -l >/dev/null 2>&1 | grep -i terminal | sort -r | head -1 | tr -s '[:space:]' | cut -d' ' -f1
 }
 
 is_maximized () {
@@ -157,7 +157,7 @@ set_cur_win () {
 			break
 		fi
 
-		_CUR_WIN=("${(f)$(wmctrl -lp | tr -s '[:space:]')}")
+		_CUR_WIN=("${(f)$(wmctrl -lp >/dev/null 2>&1 | tr -s '[:space:]')}")
 
 		for L in ${_CUR_WIN};do
 			F1=$(cut -d' ' -f${_FLD_LIST[WID]} <<<${L})
@@ -317,7 +317,7 @@ if [[ -n ${WIN_ID} ]];then
 	else
 		if [[ $(is_maximized ${WIN_ID}) == 'false' ]];then
 			wmctrl -i -r ${WIN_ID} -b add,maximized_vert,maximized_horz >/dev/null 2>&1
-			wmctrl -i -a ${WIN_ID} # Focus
+			wmctrl -i -a ${WIN_ID} >/dev/null 2>&1 # Focus
 			logit ${_LOG} "WID:${WIN_ID} (${WIN_ARG}) was MAXIMIZED"
 			return 0
 		else

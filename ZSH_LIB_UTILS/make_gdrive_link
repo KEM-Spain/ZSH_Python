@@ -14,6 +14,13 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
 THIS_FILE=${0}
 
 read -r -d '' DESC<<EOF
@@ -21,19 +28,17 @@ Convert a Google Drive shared URL to a direct download link
 EOF
 
 usage () {
-	local MSG=${@}
+	local PENDING_MSGS=${@}
 
 	(
 	echo "Usage:${THIS_FILE} <SHARED_URL>"
 	echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	[[ -n ${MSG} ]] && echo "\n${MSG}"
-
-	exit
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SHARED_URL>" || URL=${1}
+[[ -z ${1} ]] && usage "Missing argument:<SHARED_URL>" || URL=${1}
 
 FILE_ID=$(echo ${URL} | perl -pe 's/(^.*\/d\/)(.*)(\/view.*$)/$2/g')
 

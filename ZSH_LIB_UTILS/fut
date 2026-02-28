@@ -119,8 +119,7 @@ ______EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDlv"
@@ -143,7 +142,7 @@ ______EOF
 	#--End GetOpts--
 	 
 	# Execution
-	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FILE>" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "Missing argument:<FILE>" || FN=${1}
 
 	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Seeking${RESET}: ${FN}" >&2
 
@@ -459,8 +458,7 @@ _____EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-			exit_leave ${PENDING_MSGS}
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":DHit:djs"
@@ -647,8 +645,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-			exit_leave ${PENDING_MSGS}
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDhs"
@@ -670,8 +667,8 @@ ______EOF
 		
 		local -a ARGS=(${@})
 
-		[[ -z ${ARGS} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:$(opt_type f)"
-		[[ $(is_file ${ARGS}) -eq 0 ]] && FN=${ARGS} || usage "file not found:${ARGS}"
+		[[ -z ${ARGS} ]] && usage "Missing argument:$(opt_type f)"
+		[[ $(is_file ${ARGS}) -eq 0 ]] && FN=${ARGS} || usage "File not found:${ARGS}"
 
 		[[ ${HIDE} == 'true' ]] && hide_comments <${FN}
 		[[ ${SHOW} == 'true' ]] && show_comments <${FN}
@@ -735,8 +732,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-			exit_leave ${PENDING_MSGS}
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDc"
@@ -757,7 +753,7 @@ ______EOF
 		 
 		local -a ARGS=(${@})
 
-		[[ ${#ARGS} -lt 2 ]] &&  usage "${_SCRIPT_TAG} ${RED_FG}Missing required (2) arguments${RESET}:$(opt_type e) $(opt_type e)"
+		[[ ${#ARGS} -lt 2 ]] &&  usage "Missing arguments:$(opt_type e) $(opt_type e)"
 
 		FROM_EXT=${ARGS[1]}
 		TO_EXT=${ARGS[2]}
@@ -841,8 +837,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-			exit_leave ${PENDING_MSGS}
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDe:fdhl"
@@ -867,8 +862,8 @@ ______EOF
 		
 		local -a ARGS=(${@})
 
-		[[ -z ${ARGS} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:$(opt_type c)"
-		[[ $(validate_is_number ${ARGS}) -eq 0 ]] && CNT=${ARGS} || usage "count must be a positive integer"
+		[[ -z ${ARGS} ]] && usage "Missing argument:$(opt_type c)"
+		[[ $(validate_is_number ${ARGS}) -eq 0 ]] && CNT=${ARGS} || usage "Count must be a positive integer"
 
 		[[ ${#OPTIONS} -eq 0 ]] && FILE=true # Default
 
@@ -974,8 +969,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-			exit_leave ${PENDING_MSGS}
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDdfl"
@@ -1324,8 +1318,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-			exit_leave ${PENDING_MSGS}
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDcdn"
@@ -1399,7 +1392,7 @@ ___EOF
 		exit_leave
 	fi
 
-	[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FN>"
+	[[ -z ${1} ]] && usage "Missing argument:<FN>"
 	[[ $(is_file ${1}) -eq 0 ]] && FN=${1} || usage "file is invalid:${1}"
 
 	INODE=$(cut -d':' -f1 <<<$(inode_get ${FN}))
@@ -1421,7 +1414,7 @@ ___EOF
 		exit_leave
 	fi
 
-	[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FN>"
+	[[ -z ${1} ]] && usage "Missing argument:<FN>"
 	[[ $(is_file ${1}) -eq 0 ]] && FN=${1} || usage "file is invalid:${1}"
 	stat -c "%i:%n" ${FN}
 }
@@ -1480,8 +1473,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"

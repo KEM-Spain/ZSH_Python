@@ -21,6 +21,7 @@ typeset -Z2 CNT
 TODAY=$(date +'%Y-%m-%d')
 LOG=~/.${0:t}.log
 MOTD=/etc/update-motd.d
+REBOOT=/run/reboot-required
 
 
 # Imports
@@ -31,8 +32,13 @@ source ${_LIB_DIR}/STR.zsh
 source ${_LIB_DIR}/ARRAY.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
-need_boot () {
-   [[ -e /var/run/reboot-required ]] && return 0 || return 1
+qry_reboot () {
+   if [[ -e ${REBOOT} ]];then
+		msg_box -p -PB "<r>Reboot required<N>"
+		[[ ${_MSG_KEY} == 'y' ]] && return 0 || return 1
+	else
+		return 1
+	fi
 }
 
 #--Begin GetOpts--
@@ -75,7 +81,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}\n"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDy"
@@ -107,7 +113,7 @@ for L in ${LIST};do
 done
 
 if [[ ${PENDING} == 'false' ]];then
-	if need_boot;then
+	if qry_reboot;then
 		msg_box -p -PB "<r>Reboot required<N>"
 		[[ ${_MSG_KEY} == 'y' ]] && rb -r
 	fi
@@ -194,8 +200,8 @@ fi
 
 sudo snap refresh
 
-if need_boot;then
-	msg_box -p -PB "<r>Reboot required<N>"
-	[[ ${_MSG_KEY} == 'y' ]] && rb -r
+if qry_reboot;then
+	rb -r
 fi
+
 exit_leave

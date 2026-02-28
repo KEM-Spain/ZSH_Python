@@ -183,7 +183,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDis"
@@ -205,7 +205,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${#} -ne 2 ]] && usage "2 arguments required:$(opt_type f) ${WHITE_FG}${ITALIC}$(opt_type t)${RESET}"
+[[ ${#} -ne 2 ]] && usage "Missing arguments:$(opt_type f) $(opt_type t)"
 
 [[ ${1} =~ "|" ]] && g_FROM_TEXT=${1:gs/|/\\|} || g_FROM_TEXT=${1} # Escape message box delims
 [[ ${2} =~ "|" ]] && g_TO_TEXT=${2:gs/|/\\|} || g_TO_TEXT=${2} # Escape message box delims

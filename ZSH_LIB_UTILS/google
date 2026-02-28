@@ -19,22 +19,31 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-_SCRIPT=${0:t}
-_SCRIPT_TAG="${WHITE_FG}[${RESET}${_SCRIPT}${WHITE_FG}]${RESET}"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
 _ARG="<SEARCHTERM>"
 
 usage () {
+	local PENDING_MSGS=${1}
+
 	echo "\nUsage: ${_SCRIPT} ${_ARG}"
-	exit 1
+
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 [[ ${1} == '-H' ]] && usage
-[[ ${#} -eq 0 ]] && echo "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:${_ARG}" && usage
+[[ ${#} -eq 0 ]] && usage "Missing argument:${_ARG}"
 
 ITEMS=7
 
 tput smcup
 ddgr --url-handler=/usr/local/bin/system/launchers/run_google-chrome --num ${ITEMS} ${@} 2>/dev/null
 tput rmcup
-exit 0
+
+exit_leave
 

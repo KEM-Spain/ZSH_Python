@@ -83,7 +83,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
@@ -102,11 +102,11 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type f)" || FN=${1}
+[[ -z ${1} ]] && usage "Missing argument:$(opt_type f)" || FN=${1}
 if [[ ${FN:e:l} == 'mov' ]];then
 	EXT=mkv
 elif [[ -z ${2} ]];then
-	usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type e)"
+	usage "Missing argument:$(opt_type e)"
 else
 	EXT=${2}
 fi

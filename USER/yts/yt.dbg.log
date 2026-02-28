@@ -1,49 +1,20 @@
-2026-02-25_09:52: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-02-25_09:52: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-02-25_09:52: _QUERY_OPTS: DKEY:Kim Iversen ENGINE:rumble EOPT:C FKEY:Kim Iversen QKEY:kimiversen TYPE:standard 
-2026-02-25_09:52: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
-2026-02-25_09:52: parse_rumble: Parsing list for QKEY:kimiversen
-2026-02-25_09:52: parse_rumble: NO DATA from TAG:videostream__time text{}
-2026-02-25_09:52: parse_rumble: NO DATA from TAG:title__link attr{href}
-2026-02-25_09:52: parse_rumble: NO DATA from TAG:videostream__badge text{}
-2026-02-25_09:52: parse_rumble: NO DATA from TAG:thumbnail__title attr{title}
-2026-02-25_09:52: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-02-25_09:52: query_rumble: Listing for QKEY:kimiversen contains 25 rows
-2026-02-25_09:53: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.9cqJ9T
-2026-02-25_09:53: job_start: TITLE:Another Epstein "Suicide"?! Nobel Prize Chair Turns Up Nearly Dead
-2026-02-25_09:53: job_start: QUERY KEY:kimiversen
-2026-02-25_09:53: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7685ei-another-epstein-suicide-nobel-prize-chair-turns-up-nearly-dead.html?e9s=src_v1_ucp_a" PID:495959
-2026-02-25_09:53: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-02-25_09:53: action_do: PRE-PROCESSING
-2026-02-25_09:53: action_do: HEADER
-2026-02-25_09:54: action_do: COMPLETED
-2026-02-25_09:54: action_do: POST-PROCESSING
-2026-02-25_09:54: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7685ei-another-epstein-suicide-nobel-prize-chair-turns-up-nearly-dead.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-02-25_09:54: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - Another_Epstein_Suicide_Nobel_Prize_Chair_Turns_Up_Nearly_Dead.mp4
-2026-02-25_09:54: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - Another_Epstein_Suicide_Nobel_Prize_Chair_Turns_Up_Nearly_Dead.mp4
-2026-02-25_09:54: set_final_fn: Overwriting file:Kim_Iversen - Another_Epstein_Suicide_Nobel_Prize_Chair_Turns_Up_Nearly_Dead.mp4 with:Kim Iversen - Another Epstein Suicide Nobel Prize Chair Turns Up Nearly.mp4
-2026-02-25_09:54: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Kim Iversen - Another Epstein Suicide Nobel Prize Chair Turns Up Nearly.mp4
-2026-02-25_09:54: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.9cqJ9T was cleared for:kimiversen from:action_do
-2026-02-25_09:54: _QUERY_OPTS: DKEY:Due Dissidence ENGINE:rumble EOPT:L FKEY:Due Dissidence QKEY:duedissidence TYPE:standard 
-2026-02-25_09:54: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
-2026-02-25_09:54: parse_rumble: Parsing list for QKEY:duedissidence
-2026-02-25_09:54: parse_rumble: NO DATA from TAG:videostream__time text{}
-2026-02-25_09:54: parse_rumble: NO DATA from TAG:title__link attr{href}
-2026-02-25_09:54: parse_rumble: NO DATA from TAG:videostream__badge text{}
-2026-02-25_09:54: parse_rumble: NO DATA from TAG:thumbnail__title attr{title}
-2026-02-25_09:54: query_rumble: Listing for QKEY:duedissidence contains 28 rows
-2026-02-25_09:55: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.e4eRYe
-2026-02-25_09:55: job_start: TITLE:Witkoff CONTRADICTS TRUMP On Iran Weapons Line, MAHA Rages At RFK Jr, Newsom
-2026-02-25_09:55: job_start: QUERY KEY:duedissidence
-2026-02-25_09:55: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v767edk-witkoff-contradicts-trump-on-iran-weapons-line-maha-rages-at-rfk-jr-newsom-.html?e9s=src_v1_ucp_l" PID:513389
-2026-02-25_09:55: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-02-25_09:55: action_do: PRE-PROCESSING
-2026-02-25_09:55: action_do: HEADER
-2026-02-25_09:59: action_do: COMPLETED
-2026-02-25_09:59: action_do: POST-PROCESSING
-2026-02-25_10:01: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v767edk-witkoff-contradicts-trump-on-iran-weapons-line-maha-rages-at-rfk-jr-newsom-.html?e9s=src_v1_ucp_l PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-02-25_10:01: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Witkoff_CONTRADICTS_TRUMP_on_Iran_Weapons_Line_MAHA_Rages_at_RFK_Jr_Newsom_Pulls_a_.mp4
-2026-02-25_10:01: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Witkoff_CONTRADICTS_TRUMP_on_Iran_Weapons_Line_MAHA_Rages_at_RFK_Jr_Newsom_Pulls_a_.mp4
-2026-02-25_10:01: set_final_fn: Overwriting file:Due_Dissidence - Witkoff_CONTRADICTS_TRUMP_on_Iran_Weapons_Line_MAHA_Rages_at_RFK_Jr_Newsom_Pulls_a_.mp4 with:Due Dissidence - Witkoff CONTRADICTS TRUMP On Iran Weapons Line MAHA.mp4
-2026-02-25_10:01: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Due Dissidence - Witkoff CONTRADICTS TRUMP On Iran Weapons Line MAHA.mp4
-2026-02-25_10:01: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.e4eRYe was cleared for:duedissidence from:action_do
+2026-02-28_01:08: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-28_01:08: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-02-28_01:08: _QUERY_OPTS: DKEY:Dialogue Works ENGINE:youtube EOPT:S FKEY:Dialogue Works QKEY:dialogueworks TYPE:standard 
+2026-02-28_01:08: query_youtube: Creating listing for QKEY:dialogueworks STRICT:S
+2026-02-28_01:08: query_youtube: QKEY:dialogueworks, g_PROXY_CMD:node /usr/local/etc/yts.js -s "dialogueworks"
+2026-02-28_01:08: query_youtube: Listing for QKEY:dialogueworks contains 20 rows
+2026-02-28_01:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.CcaLwV
+2026-02-28_01:08: job_start: TITLE:Larry C. Johnson & Col. Larry Wilkerson: Iran-US Talks on the Edge, War Could
+2026-02-28_01:08: job_start: QUERY KEY:dialogueworks
+2026-02-28_01:08: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=t4d42-oT7nw" PID:2132313
+2026-02-28_01:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-02-28_01:08: action_do: HEADER
+2026-02-28_01:09: action_do: COMPLETED
+2026-02-28_01:09: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=t4d42-oT7nw PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-02-28_01:09: action_do: POST-PROCESSING
+2026-02-28_01:09: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Larry_C._Johnson_Col._Larry_Wilkerson_-_Iran-US_Talks_on_the_Edge_War_Could_Break_Out_ANY_MOMENT.mp4
+2026-02-28_01:09: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Larry_C._Johnson_Col._Larry_Wilkerson_-_Iran-US_Talks_on_the_Edge_War_Could_Break_Out_ANY_MOMENT.mp4
+2026-02-28_01:09: set_final_fn: Overwriting file:Dialogue_Works - Larry_C._Johnson_Col._Larry_Wilkerson_-_Iran-US_Talks_on_the_Edge_War_Could_Break_Out_ANY_MOMENT.mp4 with:Dialogue Works - Larry C. Johnson Col. Larry Wilkerson - Iran-Us Talks.mp4
+2026-02-28_01:09: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Dialogue Works - Larry C. Johnson Col. Larry Wilkerson - Iran-Us Talks.mp4
+2026-02-28_01:09: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.CcaLwV was cleared for:dialogueworks from:action_do

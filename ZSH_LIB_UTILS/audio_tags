@@ -114,7 +114,7 @@ tags_display () {
 
 			for K in ${(k)TAG_DATA};do
 				DATA=${TAG_DATA[${K}]}
-				[[ ${K} == "TITLE" ]] && DATA=$(str_proper $DATA}) # Proper case TITLE
+				[[ ${K} == "TITLE" ]] && DATA=$(str_proper ${DATA}) # Proper case TITLE
 				FIELDS[${_FLD_ORDER[${K}]}]="${K}:${DATA}"
 				if [[ ${K} == "TITLE" && ${TAG_DATA[${K}]} == 'None' ]];then
 					FN_2_TITLE=${F:t:r}
@@ -276,7 +276,7 @@ set_tags () {
 						l) id3v2 -A ${TEXT} ${F};;
 					esac
 					;;
-			*) exit_leave "${EXT} not supported";;
+				*) exit_leave $(err_msg_exit "Extension not supported:${EXT}");;
 		esac
 	done
 }
@@ -339,7 +339,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDa:l:"
@@ -366,7 +366,7 @@ shift $(( OPTIND - 1 ))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 DEP=$(dep_exists mp3info id3v2 metaflac)
-[[ ${?} -ne 0 ]] && exit_leave 1 $(err_msg_exit E "Missing dependency:${DEP}")
+[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Missing dependency:${DEP}")
 
 [[ ${#} -ne 0 ]] && FN=${1} || FN=''
 
@@ -376,18 +376,18 @@ if [[ -z ${FN} ]];then
 	_FILE_LIST+=("${(f)$(find . -maxdepth 1 -name '*mp3' -type f)}")
 	_FILE_LIST+=("${(f)$(find . -maxdepth 1 -name '*wav' -type f)}")
 else
-	[[ ! -e ${FN} ]] && exit_leave "${_SCRIPT_TAG} ${BOLD}${RED_FG}File not found${RESET}:${FN}"
+	[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit "File not found:${FN}")
 	_FILE_LIST=(${FN})
 fi
 
 if ! arr_is_populated "${_FILE_LIST}";then
-	exit_leave "${_SCRIPT_TAG} ${BOLD}${RED_FG}No audio files found${RESET}"
+	exit_leave $(err_msg_exit "No audio files found")
 fi
 
 [[ -n ${ARTIST} ]] && set_tags a ${ARTIST}
 [[ -n ${ALBUM} ]] && set_tags l ${ALBUM}
 
 tags_display
-[[ ${_GOT_DATA} == 'false' ]] && exit_leave 1 $(err_msg_exit W "${#_FILE_LIST} audio files found but contain no tag data")
+[[ ${_GOT_DATA} == 'false' ]] && exit_leave $(err_msg_exit "${#_FILE_LIST} audio files found but contain no tag data")
 
 exit_leave

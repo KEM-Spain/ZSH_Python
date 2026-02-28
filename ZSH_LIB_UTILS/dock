@@ -22,10 +22,18 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 _SCRIPT=${0:t}
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
 usage () {
+	local PENDING_MSGS=${1}
 	echo "${WHITE_FG}Usage${RESET}: ${_SCRIPT} on|off|toggle"
 	echo " ${WHITE_FG}Desc${RESET}: enable,disable, or toggle the dock"
-	exit
+
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 toggle () {
@@ -36,11 +44,11 @@ toggle () {
 # Execution
 [[ ${1} == "-H" ]] && usage
 
-DEFAULT=toggle
+ACTION=${1:=toggle}
 
-case ${1} in
+case ${ACTION} in
 	on) gnome-extensions enable ubuntu-dock@ubuntu.com;;
 	off) gnome-extensions disable ubuntu-dock@ubuntu.com;;
 	toggle) gnome-extensions disable ubuntu-dock@ubuntu.com;gnome-extensions enable ubuntu-dock@ubuntu.com;;
-	*) $(${DEFAULT});;
+	*) usage "Invalid action:${ACTION}";;
 esac

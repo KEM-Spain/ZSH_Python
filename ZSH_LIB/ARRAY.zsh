@@ -42,6 +42,8 @@ arr_is_populated () {
 
 	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires a quoted argument${RESET} of type <ARRAY> ${#}" >&2
 
+	ARR=$(tr -d '[:space:]' <<<${ARR})
+
 	[[ -z ${ARR[@]} ]] && RC=1 || RC=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RC:${RC}"

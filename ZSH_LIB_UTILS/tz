@@ -107,7 +107,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:Show times in other zones. Accepts TZ id as an argument.  Default is USA\n"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDl"

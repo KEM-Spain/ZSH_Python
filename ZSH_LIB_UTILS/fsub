@@ -527,6 +527,8 @@ do_subs () {
 	
 	[[ ${CASE} == "I" ]] && SED_OPT=I || SED_OPT=''
 	
+	[[ ${g_FROM_TEXT} =~ '-' ]] && sed 's/\x2d/\x5b\x2d\x5d/g' <<<${g_FROM_TEXT}
+	[[ ${g_TO_TEXT} =~ '-' ]] && sed 's/\x2d/\x5b\x2d\x5d/g' <<<${g_TO_TEXT}
 	SED_CMD="/bin/sed -E -e 's/${g_FROM_TEXT}/${g_TO_TEXT}/${SED_OPT}g'"
 	
 	[[ ${_DEBUG} -gt 0 && ${HIT} == true ]] && dbg "${0}:${LINENO} ${GREEN_FG}SED COMMAND${RESET}:${SED_CMD}"
@@ -754,7 +756,7 @@ usage () {
 	echo -e "${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HCDINPSTYabe:irscdm:p:nt:uxyv"
@@ -816,7 +818,6 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${@} == '-' ]] && usage
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
@@ -861,7 +862,6 @@ fi
 
 # Validate args and options
 [[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing arguments or options${RESET}"
-[[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
 
 if [[ ${TRUNCATE} == 'true' && -n ${TRUNC_FN_LEN} ]];then
 	validate_is_integer ${TRUNC_FN_LEN}
@@ -894,6 +894,8 @@ _FIND_PATH=null
 [[ ${_ARG_LIST[3]} == 'file_dir' ]] && _FIND_PATH=${3}
 [[ ${_ARG_LIST[1]} == 'bare_word' ]] && g_FROM_TEXT=${1} && SEARCH_REPLACE=true
 [[ ${_ARG_LIST[2]} == 'bare_word' ]] && g_TO_TEXT=${2} && SEARCH_REPLACE=true
+
+[[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
 
 if [[ ${g_VERBOSE} == 'true' && ${SEARCH_REPLACE} == 'true' ]];then
 	[[ -z ${g_TO_TEXT} ]] && echo "Deleting:${WHITE_FG}${g_FROM_TEXT}${RESET}\n" >&2

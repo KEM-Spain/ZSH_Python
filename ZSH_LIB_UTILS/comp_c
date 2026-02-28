@@ -9,36 +9,41 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 BOLD="\033[1m"
 
-tabs 6
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
+tabs 6
 read -r -d '' DESC<<EOF
 Compile C lang source file
 \tVery basic compilation
 EOF
 
 usage () {
+	PENDING_MSGS=${1}
+
 	echo "${WHITE_FG}Usage${RESET}:${0} <C_SOURCE>"
 	echo "${WHITE_FG} Desc${RESET}:${DESC}"
-	exit
+
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
+# Execution
+FN_ARG=''
 if [[ ${1} == '-H' ]];then
-	echo "Usage: ${0} <FILE>.c"
-	echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
-	exit
+	usage
 fi
 
 if [[ ${#} -eq 0 ]];then
 	usage
 else
-	if [[ ! ${1:e} == 'c' ]];then
-		echo -n "${RED_FG}Invalid file type${RESET}"
-		[[ -n ${1:e} ]] && echo ":${1:e}" || echo
-		usage
-	fi
+	FN_ARG=${1}
+	[[ ! ${FN_ARG:e} == 'c' ]] && usage "Invalid file type:${FN_ARG:e}"
 fi
 
-C_SOURCE=${1}
+C_SOURCE=${FN_ARG}
 C_EXE=${C_SOURCE:t:r}
 
 echo " Compiling:${WHITE_FG}${C_SOURCE}${RESET}"
@@ -51,5 +56,7 @@ if [[ -e a.out ]];then
 	mv a.out ${C_EXE}
 	echo "   Created:${WHITE_FG}${C_EXE}${RESET} from ${C_SOURCE}"
 else
-	echo "${RED_FG}Problem compiling ${WHITE_FG}${C_SOURCE}${RESET}"
+	exit_leave $(err_msg_exit "Problem compiling:${C_SOURCE}")
 fi
+
+exit_leave

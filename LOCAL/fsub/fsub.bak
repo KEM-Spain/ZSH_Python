@@ -527,7 +527,7 @@ do_subs () {
 	
 	[[ ${CASE} == "I" ]] && SED_OPT=I || SED_OPT=''
 	
-	SED_CMD="/bin/sed -E -e 's/${g_FROM_TEXT}/${g_TO_TEXT}/${SED_OPT}g'"
+	SED_CMD="/bin/sed -E -e 's/[${g_FROM_TEXT}]/[${g_TO_TEXT}]/${SED_OPT}g'"
 	
 	[[ ${_DEBUG} -gt 0 && ${HIT} == true ]] && dbg "${0}:${LINENO} ${GREEN_FG}SED COMMAND${RESET}:${SED_CMD}"
 
@@ -629,65 +629,22 @@ do_prepend () {
 }
 
 do_yt_tag () {
-	local -A SEEN=()
-	local -a ACRONYMS=()
-	local -a UCASE_WORDS=()
-	local CFG_DIR=~/.local/share/yts
-	local ACRONYM_FN=${CFG_DIR}/yts.acronyms
 	local CANDIDATE=''
 	local CEXT=''
 	local CFN=''
 	local CPATH=''
 	local LINE=''
-	local UCASE_LIMIT=4
-	local C U W
+	local C
 
 	[[ -z ${_OUT_LIST} ]] && _CHAIN_LIST=(${(kv)_IN_LIST}) || _CHAIN_LIST=(${(kv)_OUT_LIST})
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}"
-
-	# Load acronyms
-	if [[ -e ${ACRONYM_FN} ]];then
-		while read LINE;do
-			ACRONYMS+=${LINE}
-		done < ${ACRONYM_FN}
-	fi
 
 	for C in ${(k)_CHAIN_LIST};do
 		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # Exclude the extension
 		CPATH=$(realpath ${_CHAIN_LIST[${C}]:h})
 		[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
 
-		CFN=$(recode UTF8..ISO-8859-15 <<<${CANDIDATE}) # Convert UTF-8
-		CFN=$(html2text -width ${_MAX_COLS} -ascii <<<${CFN}) # Convert any HTML 
-
-		UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${CFN})}")
-		for U in ${UCASE_WORDS};do
-			[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
-		done
-
-		CFN=${(C)CFN} # Proper case
-
-		# Expose UCASE and ACRONYMS
-		CFN=$(sed 's/\x27/ /g' <<<${CFN}) # Apostrophes
-		CFN=$(echo "${CFN}" | perl -pe 's/_/ /g') # Underscores
-		CFN=$(echo "${CFN}" | perl -pe 's/\-?\[.*//' | str_trim) # Hyphens and braces
-		CFN=$(echo "${CFN}" | perl -pe 's/\.*$//g') # Dots
-
-		for W in ${=CFN};do
-			[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-			if [[ ${ACRONYMS[(i)${W:u}]} -le ${#ACRONYMS} ]];then
-				CFN=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${CFN}) # Preserve acronyms
-				SEEN[${W}]=1
-			elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
-				if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-					CFN=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${CFN}) 
-					SEEN[${W}]=1
-				fi
-			fi
-		done
-
-		CFN=$(echo "${CFN}" | perl -pe 's/(\w+)\s([Ss]|[Tt]|[Vv]e|[Rr]e)\s(.*)$/\1\x{027}\2 \3/g') # Replace missing apostrophes
-		CFN=$(echo "${CFN}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
+		CFN=$(title_scrubber ${CANDIDATE})
 
 		[[ -n ${CFN} ]] && _OUT_LIST[${C}]="${CPATH}/${CFN}${CEXT}" # Cleaned text
 	done
@@ -859,7 +816,6 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${@} == '-' ]] && usage
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
@@ -904,7 +860,6 @@ fi
 
 # Validate args and options
 [[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing arguments or options${RESET}"
-[[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
 
 if [[ ${TRUNCATE} == 'true' && -n ${TRUNC_FN_LEN} ]];then
 	validate_is_integer ${TRUNC_FN_LEN}
@@ -937,6 +892,8 @@ _FIND_PATH=null
 [[ ${_ARG_LIST[3]} == 'file_dir' ]] && _FIND_PATH=${3}
 [[ ${_ARG_LIST[1]} == 'bare_word' ]] && g_FROM_TEXT=${1} && SEARCH_REPLACE=true
 [[ ${_ARG_LIST[2]} == 'bare_word' ]] && g_TO_TEXT=${2} && SEARCH_REPLACE=true
+
+[[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
 
 if [[ ${g_VERBOSE} == 'true' && ${SEARCH_REPLACE} == 'true' ]];then
 	[[ -z ${g_TO_TEXT} ]] && echo "Deleting:${WHITE_FG}${g_FROM_TEXT}${RESET}\n" >&2

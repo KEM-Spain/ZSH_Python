@@ -148,7 +148,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:Control active display(s). Default is current status."
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDbeits"
@@ -181,7 +181,7 @@ get_mon_status # Load table with mon status data
 
 if [[ -n ${1} ]];then
 	if ! validate_mon_arg ${1};then
-		usage "${_SCRIPT_TAG} ${RED_FG}Error${RESET}:<MONITOR> \"${1}\" invalid"
+		usage "Error:<MONITOR> \"${1}\" invalid"
 	else
 		MON_ARG=${MON_ABBV[${1}]}
 	fi

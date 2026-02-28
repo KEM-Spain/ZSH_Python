@@ -351,7 +351,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDiu"
@@ -382,7 +382,7 @@ if [[ ! -x ${_EDITOR_CMD} ]];then
 fi
 
 # Process arguments
-[[ $# -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type f)"
+[[ $# -eq 0 ]] && usage "Missing argument:$(opt_type f)"
 [[ $# -gt 1 ]] && exit_leave echo "${RED_FG}Too many arguments${RESET}:(${#}):${@}"
 
 # Set candidate filename

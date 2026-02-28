@@ -307,14 +307,6 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		[[ ${CAM_DEFAULT} == 'off' ]] && sut cam off # Kill cam - show status
 		C_POS=$(_cursor_row)
 
-		# show calendar
-		if [[ $(_term_count) -eq 1 ]];then
-			TERM_LINES=$(tput lines)
-			CAL_TOP_ROW=$(( TERM_LINES - _CAL_LINES ))
-			tput cup ${CAL_TOP_ROW} 0
-			cal_clr
-		fi
-
 		# background dbus monitor - maximize new windows (gnome doesn't track win coords)
 		INSTANCE=$(pgrep -c wait_app_start)
 		if [[ ${INSTANCE} -eq 0 ]];then
@@ -322,6 +314,16 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		fi
 
 		remind # post any reminders
+
+		# show calendar
+		if [[ $(_term_count) -eq 1 ]];then
+			TERM_LINES=$(tput lines)
+			CAL_TOP_ROW=$(( TERM_LINES - _CAL_LINES ))
+			tput cup ${CAL_TOP_ROW} 0
+			cal_clr
+		else
+			terms
+		fi
 
 		xdotool mousemove $((1920/2)) $((1080/2)) # center the mouse  pointer
 

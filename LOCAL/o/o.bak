@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# Ansi colors
 REVERSE="\033[7m"
 RESET="\033[m"
 BOLD="\033[1m"
@@ -58,7 +57,7 @@ _APP_EXE[IMAGE]=/usr/local/bin/viewnior
 _APP_EXE[VLC]="/usr/bin/vlc --no-qt-error-dialogs --verbose 0"
 _APP_EXE[CLEM]="/usr/bin/clementine"
 _APP_EXE[HARUNA]=/snap/bin/haruna
-_APP_EXE[MPV]="/usr/bin/mpv --fs --loop-file=inf --volume=40"
+_APP_EXE[MPV]="/usr/bin/mpv --fs --loop-file=inf --volume=40 --msg-level=all=error"
 _APP_EXE[VIM]=/usr/bin/vim
 
 _APP_WIN[EBOOK]="ebook-viewer"
@@ -91,7 +90,9 @@ action_do () {
 	local FN
 	local IN_APP=false
 	local LAST_APP=?
-	local RC=0
+	local ERR_LOG='/tmp/o.ERR'
+	local MSG=''
+	local RC=''
 	local M K
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -117,17 +118,20 @@ action_do () {
 	done
 
 	for K in ${(k)RUN_LIST};do
-		FN=$(realpath ${RUN_LIST[${K}]})
+		/bin/rm -f ${ERR_LOG}
 		if is_foreground_only ${K};then
-			eval "${K} ${(qqq)FN} 2>${_APP_LOG}"
+			logit ${_APP_LOG} "Foreground job: APP:${K} ARGS:${RUN_LIST[${K}]}"
+			eval "${K} ${RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
+			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
+			RC=$(wc -w <<<${MSG})
+			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
 		else
-			eval "${K} ${(qqq)FN} >${_APP_LOG} 2>&1 &"
-			CMD_PID=${!} && RC=${?}
-		fi
-		if [[ ${RC} -ne 0 ]];then
-			[[ -s ${_APP_LOG} ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |$(<${_APP_LOG})| |Press any key..."
-		else
-			win_max -p ${CMD_PID}
+			logit ${_APP_LOG} "Background job: APP:${K} ARGS:${RUN_LIST[${K}]}"
+			eval "${K} ${RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
+			win_max -p ${!} # Maximize window using PID of background job
+			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
+			RC=$(wc -w <<<${MSG})
+			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
 		fi
 	done
 
@@ -186,6 +190,8 @@ get_win () {
 is_foreground_only () {
 	local APP=${1}
 	local A
+
+	APP=$(cut -d' ' -f1 <<<${APP}) # Isolate APP name
 
 	for A in ${_FOREGROUND_ONLY};do
 		[[ ${APP} =~ ${A} ]] && return 0 || return 1
@@ -374,7 +380,6 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 #--Execution
-# TODO: 'Not properly handling select all; passing path fn fn fn - not path/fn path/fn path/fn
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
 

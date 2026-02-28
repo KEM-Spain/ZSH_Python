@@ -163,8 +163,7 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HD"
@@ -252,8 +251,7 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILES>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	# Execution
@@ -326,13 +324,12 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILES>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
-	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO FILE>" || FN_ARG=(${@})
+	[[ ${#} -eq 0 ]] && usage "Missing required argument:<VIDEO FILE>" || FN_ARG=(${@})
 	[[ ! -f ${FN_ARG} ]] && exit_leave 1 $(err_msg_exit E "File not found:${FN_ARG}")
 	
 	file ${FN_ARG} | grep -qi 'media\|matroska\|video'
@@ -420,8 +417,7 @@ ___EOF
 		echo "${WHITE_FG}-o $(opt_type f)${RESET} output file name"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDkmo:"
@@ -598,8 +594,7 @@ ___EOF
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HD"
@@ -619,7 +614,7 @@ ___EOF
 
 	# Execution
 	[[ ${_DEBUG} -eq 0 ]] && do_smcup
-	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type v)" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "Missing argument:$(opt_type v)" || FN=${1}
 
 	[[ ! -e ${FN} ]] && usage "File not found:${FN}"
 
@@ -653,14 +648,13 @@ ___EOF
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] <VIDEO_FILE>\n"
 		echo "${WHITE_FG}Desc${RESET}:${DESC}"
 
-		[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 
-	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:<VIDEO_FILE>" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "Missing required argument:<VIDEO_FILE>" || FN=${1}
 	[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit E "file not found:${FN}")
 
 	ffmpeg -i ${FN} -map 0 -map 0:a -c copy -c:a:1 ac3 -b:a:1 640k ${FN:r}_ac3.mkv
@@ -717,8 +711,7 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 
-	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"

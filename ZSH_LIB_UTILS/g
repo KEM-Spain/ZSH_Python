@@ -95,7 +95,7 @@ usage () {
 	echo -e "${WHITE_FG}-w${RESET} whole word match"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDABILFO:P:lLhm:nort:vw"
@@ -154,7 +154,7 @@ SEARCHTERM=${@}
 [[ ${_DEBUG} -eq 0 && FILELIST == 'false' ]] && do_smcup
 
 # Arg validation
-[[ -z ${SEARCHTERM} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
+[[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
 [[ ! -t 0 ]] && exit_leave $(err_msg_exit W "No support for piped input")
 [[ ${GR_OPT_FN} == '--no-filename' && -z ${FILE_OUT} ]] && exit_leave "${_SCRIPT_TAG} Option:-h is only valid in combination with option:-O"
 

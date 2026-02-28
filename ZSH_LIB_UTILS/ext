@@ -96,7 +96,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDl"
@@ -127,7 +127,7 @@ if [[ ${LIST_EXT} == 'true' ]];then
 	exit_leave
 fi
 
-[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type c)" || FN=${1}
+[[ ${#} -eq 0 ]] && usage "Missing argument:$(opt_type c)" || FN=${1}
 [[ ! -f ${FN} ]] && exit_leave $(err_msg_exit E "file not found:${FN}")
 
 FES=(${${(s/./)FN}[2,-1]}) # All possible file extensions
