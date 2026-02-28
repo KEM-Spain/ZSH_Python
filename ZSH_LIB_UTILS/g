@@ -200,7 +200,7 @@ if [[ -n ${FILE_OUT} ]];then
 		done
 		exit_leave "Output saved in:${FILE_OUT}"
 	else
-		exit_leave "No results for $(opt_type s):${WHITE_FG}${SEARCHTERM}${RESET}"
+		exit_leave $(err_msg_exit W "No results for $(opt_type s):${SEARCHTERM}")
 	fi
 fi
 

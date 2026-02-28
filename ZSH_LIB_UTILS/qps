@@ -95,10 +95,10 @@ shift $((OPTIND -1))
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
-[[ ${#} -eq 0 ]] && exit_leave "${_SCRIPT_TAG}${RED_FG}Missing argument${RESET}:<SEARCHTERM>" || SEARCHTERM=${1}
+[[ ${#} -eq 0 ]] && exit_leave $(err_msg_exit "Missing argument:<SEARCHTERM>") || SEARCHTERM=${1}
 
 PS=("${(f)$(ps --headers -aux | grep --color=never -i ${SEARCHTERM} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
-[[ -z ${PS} ]] && exit_leave "${_SCRIPT_TAG}Process:${WHITE_FG}${SEARCHTERM}${RESET} ${RED_FG}not found${RESET}"
+[[ -z ${PS} ]] && exit_leave $(err_msg_exit "Process:${SEARCHTERM} not found")
 
 (
 printf "[${WHITE_FG}%s${RESET}]:${WHITE_FG} %d${RESET} %s found matching:${WHITE_FG}${SEARCHTERM}${RESET}\n\n" ${0:t} ${#PS} $(str_pluralize "process" ${#PS})

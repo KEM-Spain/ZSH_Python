@@ -56,7 +56,7 @@ last_locate () {
 	local LB_LAST_RUN
 	local LB_LAST_TIME
 
-	[[ -z ${MARKER_ARG} ]] && exit_leave "${_SCRIPT_TAG}} ${RED_FG}Missing arument${RESET}:<MARKER>"
+	[[ -z ${MARKER_ARG} ]] && exit_leave $(err_msg_exit "Missing argument:<MARKER>"
 
 	if [[ -e ${MARKER_ARG} ]];then
 		LB_LAST_RUN=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
@@ -160,7 +160,7 @@ if [[ ${UTILITY} == 'false' ]];then
 	if [[ -f ${_MARKER} && ${FORCE} == "false" && ${g_LAST_RUN:l} =~ 'today' ]];then
 		msg_box -p -P"Press F to Force"  "locate waas last updated ${g_LAST_RUN}"
 		if [[ ${_MSG_KEY:l} != 'f' ]];then
-			exit_leave $(err_msg_exit I "Operation cancelled")
+			exit_leave "${RED_FG}Operation cancelled${RESET}"
 		fi
 		FORCE=true
 	fi

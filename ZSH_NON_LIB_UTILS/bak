@@ -133,7 +133,7 @@ prod_to_local () {
 				echo "Copying production:${WHITE_FG}${g_PROD_NAME}${RESET}..."
 				do_copy ${g_PROD_VERSION} ${g_LOCAL_VERSION} no_prompt
 			else
-				exit_leave $(err_msg_exit "Operation cancelled")
+				exit_leave "${RED_FG}Operation cancelled${RESET}"
 			fi
 		fi
 	fi
@@ -274,7 +274,7 @@ local_to_prod () {
 			cp ${g_LOCAL_VERSION} ${g_PROD_VERSION}
 			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied to ${WHITE_FG}${g_PROD_NAME}${RESET}"
 		else
-			exit_leave $(err_msg_exit "Operation cancelled")
+			exit_leave "${RED_FG}Operation cancelled${RESET}"
 		fi
 	else
 		# No existing production copy
@@ -285,7 +285,7 @@ local_to_prod () {
 			cp ${g_LOCAL_VERSION} ${g_PRODUCTION_DIR}/${FILE_ARG}
 			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied to ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET}"
 		else
-			exit_leave $(err_msg_exit "Operation cancelled")
+			exit_leave "${RED_FG}Operation cancelled${RESET}"
 		fi
 	fi
 }
@@ -508,7 +508,7 @@ else
 				1) g_PRODUCTION_DIR=${_BIN_DIR};;
 				2) g_PRODUCTION_DIR=${_LIB_DIR};;
 				3) g_PRODUCTION_DIR=${_BIN_DIR}/system;;
-				*) echo; exit_leave $(err_msg_exit "Operation Cancelled");;
+				*) echo; exit_leave "${RED_FG}Operation cancelled${RESET}";;
 			esac
 		else
 			exit_leave $(err_msg_exit "No production version of file:${FILE_ARG}${RESET} was found")

@@ -736,7 +736,7 @@ ___EOF
 	if [[ ${RESPONSE} != "n" ]];then
 		echo "${WHITE_FG}Toggling Network Services${RESET}"
 	else
-		exit_leave $(err_msg_exit I "Operation cancelled")
+		exit_leave "${RED_FG}Operation cancelled${RESET}"
 	fi
 
 	echo "Switching networking off..."
@@ -870,7 +870,7 @@ ___EOF
 	clear
 
 	load_geo_data
-	[[ ${?} -ne 0 ]] && exit_leave "GEO_DATA_REQUEST failed for IP:${IP}" 
+	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "GEO_DATA_REQUEST failed for IP:${IP}")
 
 	tput cup 0 0
 	for K in ${(ko)GEO};do

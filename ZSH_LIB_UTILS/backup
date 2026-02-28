@@ -250,7 +250,7 @@ fi
 if [[ (-f ${_MARKER}) && (${FORCE} == "false") && (${g_LAST_RUN:l} =~ 'today') ]];then
 	msg_box -H1 -p -P"Enter 'F' to Force"  "Backup Status|Last backup was ${g_LAST_RUN}"
 	if [[ ${_MSG_KEY:l} != 'f' ]];then
-		exit_leave $(err_msg_exit I "Operation cancelled")
+		exit_leave "${RED_FG}Operation cancelled${RESET}"
 	fi
 fi
 

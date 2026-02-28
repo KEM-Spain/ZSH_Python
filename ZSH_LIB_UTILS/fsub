@@ -828,7 +828,7 @@ if [[ ${MEDIA} == "true" ]];then
 	MEDIA_ARG_TYPE=''
 	[[ -f ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="file"
 	[[ -d ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="path"
-	[[ -z ${MEDIA_ARG} ]] && exit_leave "${_SCRIPT_TAG} Media argument:${MEDIA_ARG} is neither file nor path"
+	[[ -z ${MEDIA_ARG} ]] && exit_leave $(err_msg_exit "Media argument:${MEDIA_ARG} is neither file nor path")
 
 	MEDIA_ARG=$(realpath ${MEDIA_ARG}) # FQFN
 	logit ${_LOG} "MEDIA_ARG_TYPE:${MEDIA_ARG_TYPE}, realpath:${MEDIA_ARG}"

@@ -837,7 +837,7 @@ job_kill () {
 	if [[ ! ${functrace[1]} =~ "job_reset" ]];then # Exit unless called by reset
 		trap - INT # Disable trap
 		log_clear "job_kill"
-		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job:${RED_FG}killed${RESET}"
+		exit_leave $(err_msg_exit "Download Job killed")
 	fi
 }
 
@@ -896,7 +896,7 @@ last_code_update () {
 	local LAST_UPD=0
 	local LAST_TIME=0
 
-	[[ -z ${MARKER_ARG} ]] && exit_leave "${_SCRIPT_TAG}} ${RED_FG}Missing argument${RESET}:<MARKER>"
+	[[ -z ${MARKER_ARG} ]] && exit_leave $(err_msg_exit "Missing argument:<MARKER>")
 
 	if [[ -e ${MARKER_ARG} ]];then
 		LAST_UPD=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
@@ -1595,7 +1595,7 @@ shift $(( OPTIND  - 1 ))
 # Execution
 CFG_MSG=$(cfg_init)
 if [[ ${?} -ne 0 ]];then
-	exit_leave "Configuration failed:${CFG_MSG}"
+	exit_leave $(err_msg_exit "Configuration failed:${CFG_MSG}")
 fi
 
 [[ -n ${WEB_OPT} ]] && open_website ${WEB_OPT} && exit_leave
@@ -1630,14 +1630,14 @@ if [[ ${ENGINE} == 'youtube' ]];then
 		node ${_JS_SCRIPT} --version
 		echo ${RESET}
 		exit_leave
-		[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Invalid argument${RESET} - valid age arguments: ${WHITE_FG}all,min,day,week,month,year${RESET}"
+		[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Invalid argument - valid age arguments:all,min,day,week,month,year")
 	elif [[ ${ENG_OPT:l} == 's' ]];then
 		SEARCHTERM="-s ${(qqq)SEARCHTERM}"
 	fi
 	g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)SEARCHTERM}"
 else
 	[[ -z ${ENG_OPT} ]] && ENG_OPT=g
-	[[ ${_RUMBLE_QRY_OPTS[(i)${ENG_OPT}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave "Invalid query type:${ENG_OPT}"
+	[[ ${_RUMBLE_QRY_OPTS[(i)${ENG_OPT}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave $(err_msg_exit "Invalid query type:${ENG_OPT}")
 	if [[ ${VERSION_OPT} == 'true'  ]];then
 		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")
 	elif [[ -n ${AGE} ]];then
@@ -1710,7 +1710,7 @@ else # Args passed
 		download_select ${_QUERY_OPTS[QKEY]}
 		[[ ${g_CMDLINE_ARGS} == 'true' ]] && fav_add
 	else
-		exit_leave "Query failed for:${_QUERY_OPTS[QKEY]}"
+		exit_leave $(err_msg_exit "Query failed for:${_QUERY_OPTS[QKEY]}")
 	fi
 fi
 

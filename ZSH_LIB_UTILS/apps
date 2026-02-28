@@ -311,7 +311,7 @@ set_package_list () {
 	if [[ ${#RAWLIST} -ge 10000 ]];then
 		msg_box -x15 -p -PP "Need to scan ${BOLD}<w>${#RAWLIST}<N> rows<N>.${RESET} Estimated search time <w>$(printf "%.2f" ${ROWTIME})<N> minutes.|<w>HINT<N>:add a <c><SEARCHTERM><N> to narrow search"
 		if [[ ${_MSG_KEY} != 'y' ]];then
-			exit_leave $(err_msg_exit I "Operation cancelled")
+			exit_leave "${RED_FG}Operation cancelled${RESET}"
 		fi
 	fi
 

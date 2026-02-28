@@ -200,7 +200,7 @@ if [[ ${GET_DIR} == 'true' ]];then
 	sel_set_list ${(on)_ICO_DIRS}
 	sel_list -O ${MAGENTA_FG} -x5 -y11 -M"<w>Select icon directory<N>"
 
-	[[ ${?} -ne 0 ]] && echo "${_SCRIPT_TAG} ${BOLD}${RED_FG}Operation Cancelled${RESET}" && exit_leave
+	[[ ${?} -ne 0 ]] && && exit_leave "${RED_FG}Operation Cancelled${RESET}"
 
 	g_ICON_DIR=${_SEL_VAL}
 	msg_box_clear OUTER_BOX

@@ -286,7 +286,7 @@ set_target () {
 				done
 				echo -n "Choose a file [${WHITE_FG}1..${#PRIORITIZE}${RESET}] or ${WHITE_FG}<ENTER>${RESET} to skip:"
 				read PFN
-				[[ -z ${PFN} ]] && exit_leave $(err_msg_exit I "Operation cancelled")
+				[[ -z ${PFN} ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 				if [[ ${PFN} -ge 1 && ${PFN} -le ${#PRIORITIZE} ]];then
 					g_TARGET_FILE=$(echo ${PRIORITIZE[${PFN}]} | cut -d'|' -f2)
 					break

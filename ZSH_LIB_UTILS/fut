@@ -289,7 +289,7 @@ surface () {
 				if [[ ${DO_PROMPTS} = 'true' ]];then
 					echo -n "Should files from ${GREEN_FG}${1}${RESET} be moved to ${TARGET_DIR_MSG}? (y/n):"
 					if ! get_response;then
-						exit_leave $(err_msg_exit I "Operation cancelled")
+						exit_leave "${RED_FG}Operation cancelled${RESET}"
 					fi
 				fi
 			fi
@@ -554,7 +554,7 @@ _____EOF
 					echo "Removing ${WHITE_FG}${D}${RESET}"
 					[[ ${DO_SIM} == 'false' ]] && /bin/rm -rf ${D} >/dev/null 2>&1
 				else
-					exit_leave $(err_msg_exit I "Operation cancelled")
+					exit_leave "${RED_FG}Operation cancelled${RESET}"
 				fi
 			fi  
 		done

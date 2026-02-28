@@ -218,7 +218,7 @@ shift $(( OPTIND - 1 ))
 
 [[ -n ${1} ]] && SEARCHTERM=${1} && _SEARCH_MSGS+=${SEARCHTERM}
 
-[[ ${MATCH_MODE} != 'both' && -z ${SEARCHTERM} ]] && exit_leave "Matching requires a <SEARCHTERM>"
+[[ ${MATCH_MODE} != 'both' && -z ${SEARCHTERM} ]] && exit_leave $(err_msg_exit "Matching requires a:<SEARCHTERM>")
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} EXACT=${EXACT} OUTPUT_CMD_ONLY=${OUTPUT_CMD_ONLY} MATCH_MODE=${MATCH_MODE}"
 
 if [[ ${NO_WAIT} == 'true' ]];then

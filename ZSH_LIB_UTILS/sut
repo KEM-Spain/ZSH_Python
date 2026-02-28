@@ -352,7 +352,7 @@ ___EOF
 	fi
 
 	echo -n "Restart cups daemon and clear spool? (y/n):"; read -q RESPONSE
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(err_msg_exit I "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 
 	sudo service cups stop
 	sudo rm -r /var/spool/cups
@@ -376,7 +376,7 @@ ___EOF
 	fi
 
 	echo -n "Perform a low level (dd) copy of /dev/sda to /dev/sdb?"; read -q RESPONSE
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(err_msg_exit I "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 
 	dd if=/dev/sda of=/dev/sdb status=progress conv=noerror,sync bs=4k
 }

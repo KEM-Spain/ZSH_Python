@@ -81,7 +81,7 @@ action_do () {
 					y) APPROVE_ALL=false;;
 					s) list_clear_selected ${M};continue;;
 					*) msg_box -c -p -PC "Cancel this operation?"
-						[[ ${_MSG_KEY} == 'y' ]] && exit_leave "[${WHITE_FG}${_SCRIPT}${RESET}] ${RED_FG}Operation cancelled${RESET}"
+						[[ ${_MSG_KEY} == 'y' ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 						list_clear_selected ${M};continue
 						continue # Assume skip
 						;;

@@ -77,7 +77,7 @@ select_db () {
 	if set_db_list;then
 		sel_set_list ${(o)_DB_LIST}
 		sel_list -x10 -H"<w>Select database or <h>(q)uit<N>"
-		[[ ${?} -ne 0 ]] && exit_leave "Operation Cancelled"
+		[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Operation Cancelled${RESET}"
 		_SESSION_DATA[DB]=${_SEL_VAL}
 	fi
 	msg_box_clear
@@ -87,7 +87,7 @@ select_tab () {
 	if arr_is_populated "${_TB_LIST}";then
 		sel_set_list ${(o)_TB_LIST}
 		sel_list -x15 -H"<w>Select table or <h>(q)uit<N>" 
-		[[ ${?} -ne 0 ]] && exit_leave "Operation Cancelled"
+		[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Operation Cancelled${RESET}"
 		_SESSION_DATA[TAB]=${_SEL_VAL}
 	fi
 	msg_box_clear

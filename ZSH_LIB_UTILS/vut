@@ -199,7 +199,7 @@ ___EOF
 		[[ ${#L} -gt ${LONGEST} ]] && LONGEST=${#L}
 	done
 
-	[[ ${HIT} == 'false' ]] && exit_leave "No video files found in ${PWD}"
+	[[ ${HIT} == 'false' ]] && exit_leave $(err_msg_exit "No video files found in:${PWD}")
 
 	tcup 0 0
 	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"
@@ -522,7 +522,7 @@ ___EOF
 			cp ${WORKDIR}/${F} ${SOURCE_DIR} # Restore files
 		done
 		set_exit_value 1
-		EMSG="[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
+		EMSG="${RED_FG}Operation Canceled${RESET}"
 	fi
 
 	/bin/rm -rf ${WORKDIR} #>/dev/null 2>&1 # Remove work dir
@@ -620,7 +620,7 @@ ___EOF
 
 	sel_set_list ${RESOLUTIONS}
 	sel_list -sa -O${CYAN_FG} -x10 -y30 -F"<w>Select Resolution<N>" -H"Video Utilities"
-	[[ ${?} -ne 0 ]] && exit_leave "[${WHITE_FG}${0}${RESET}] ${RED_FG}Operation Canceled${RESET}"
+	[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Operation Canceled${RESET}"
 	SCALE=${_SEL_VAL}
 
 	FN_OUT="${FN:r} ${SCALE}.mkv"
