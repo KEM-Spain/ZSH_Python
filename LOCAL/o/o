@@ -288,7 +288,7 @@ single_file_launch () {
 	local APP=$(get_app ${FN})
 	local APP_WIN=$(get_win ${FN})
 
-	[[ ${APP} == '?' ]] && exit_leave "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${FN}${RESET} of type: [$(file -b ${FN})]"
+	[[ ${APP} == '?' ]] && exit_leave $(err_msg_exit "No application to handle file:${FN} of type: [$(file -b ${FN})]")
 
 	[[ -e ${PWD}/${FN:t} ]] && _LIST+=${FN:t} || _LIST+=$(realpath ${FN}) 
 
@@ -357,7 +357,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDa"
@@ -478,7 +478,7 @@ list_set_select_action "open"
 list_set_action_msgs open file
 list_set_reuse_stale true
 list_set_client_warn true
-list_set_searchable true
+#list_set_searchable true
 
 while true;do
 	# Get selection
