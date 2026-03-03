@@ -449,7 +449,9 @@ do_sdc () {
 						CANDIDATE=${CANDIDATE:gs/\[//} # Scrub brackets
 						CANDIDATE=${CANDIDATE:gs/\]//} # Scrub brackets
 						CANDIDATE=$(tr -d '()' <<<${CANDIDATE}) # Scrub parens
+						CANDIDATE=$(sed -E 's/([[:alnum:]])\x27([[:alnum:]])/\1%!%\2/g' <<<${CANDIDATE}) # Mask apostrophes
 						CANDIDATE=$(tr -d \' <<<${CANDIDATE}) # Scrub single quotes
+						CANDIDATE=$(sed -E 's/([[:alnum:]])%!%([[:alnum:]])/\1\x27\2/g' <<<${CANDIDATE}) # Restore apostrophes
 						CANDIDATE=$(tr -d \" <<<${CANDIDATE}) # Scrub double quotes
 						CANDIDATE=$(tr -s "[:space:]" <<<${CANDIDATE}) # Squeeze space
 						CANDIDATE=$(str_to_ascii <<<${CANDIDATE}) # Scrub extended ascii/non ascii
@@ -756,7 +758,7 @@ usage () {
 	echo -e "${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HCDINPSTYabe:irscdm:p:nt:uxyv"
@@ -828,7 +830,7 @@ if [[ ${MEDIA} == "true" ]];then
 	MEDIA_ARG_TYPE=''
 	[[ -f ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="file"
 	[[ -d ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="path"
-	[[ -z ${MEDIA_ARG} ]] && exit_leave "${_SCRIPT_TAG} Media argument:${MEDIA_ARG} is neither file nor path"
+	[[ -z ${MEDIA_ARG} ]] && exit_leave $(err_msg_exit "Media argument:${MEDIA_ARG} is neither file nor path")
 
 	MEDIA_ARG=$(realpath ${MEDIA_ARG}) # FQFN
 	logit ${_LOG} "MEDIA_ARG_TYPE:${MEDIA_ARG_TYPE}, realpath:${MEDIA_ARG}"

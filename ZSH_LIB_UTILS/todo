@@ -20,6 +20,12 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _SRC_CLR
 typeset -A _SOURCES
@@ -36,12 +42,6 @@ _SOURCES[${HOME}/Code/LOCAL]=DEV
 _SRC_CLR[PROD]=${GREEN_FG}
 _SRC_CLR[DEV]=${RED_FG}
 _SRC_CLR[PWD]=${WHITE_ON_GREY}
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/STR.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 read -r -d '' DESC<<EOF
 Show list of TODO labels embedded in scripts
@@ -67,7 +67,7 @@ usage () {
 
 clear
 echo "[${WHITE_FG}${0}${RESET}] Searching for TODO items...\n"
-[[ ${SHOW_DEV} == 'false' ]] && echo "Development not scanned - use option [-d]\n"
+#[[ ${SHOW_DEV} == 'false' ]] && echo "Development not scanned - use option [-d]\n"
 
 for S in ${(k)_SOURCES};do
 	_TODO_LIST+=("${(f)$(find ${S} -maxdepth 2 -type f)}")

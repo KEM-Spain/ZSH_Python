@@ -43,8 +43,7 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Manage download from YouTube and Rumble.
-\tIf executing from the command line, use option -p
-\tto prepend text to the filename
+\tUse option -p to prepend a label to the filename
 EOF
 
 parse_opts () {
@@ -70,6 +69,7 @@ opt_exists () {
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
+		a) echo "<AGE_FILTER>";;
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
 		p) echo "<TEXT>";;
@@ -88,17 +88,23 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) [all,recent,min,hour,day,week,month,year] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-p $(opt_type t)${RESET}prepend text to filename"
+	echo -e "${WHITE_FG}-s${RESET} invoke strict - searchterm must match video title (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 # Execution
+
 PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
 [[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true
 logit ${_YT_DBG_LOG} "${0:t} PPCMD:${PPCMD}"
+
+STRICT=false
+AGE=''
 
 if [[ ${CMDLINE} == 'true' ]];then
 	OPTSTR=":HDp:"
@@ -109,7 +115,9 @@ if [[ ${CMDLINE} == 'true' ]];then
 		case $OPTION in
 		  H) usage;;
 		  D) dbg_set_level;;
+		  a) AGE=${OPTARG};;
 		  p) PREPEND=${OPTARG} && CMDLINE=true;;
+		  s) STRICT=true;;
 		  :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 		esac
@@ -119,7 +127,15 @@ if [[ ${CMDLINE} == 'true' ]];then
 #--End GetOpts--
 fi
 
-eval "${_YT_DLP} ${(qqq)@}"
+[[ ${STRICT} == 'true' ]] && STRICT_ARG='-s' || STRICT_ARG=''
+
+AGE_ARG=''
+if [[ -n ${AGE} ]];then
+	[[ ! ${AGE} =~ "all|recent|min|hour|day|week|month|year" ]] && usage "Invalid value for AGE:${AGE}"
+	AGE_ARG="-a ${AGE}"
+fi
+
+eval "${_YT_DLP} ${STRICT_ARG} ${AGE_ARG} ${(qqq)@}"
 
 if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
 	FN=$(last_file_downloaded | cut -d'|' -f1)

@@ -43,8 +43,7 @@ local DESC
 
 read -r -d '' DESC<<EOF
 Manage download from YouTube and Rumble.
-\tIf executing from the command line, use option -p
-\tto prepend text to the filename
+\tUse option -p to prepend a label to the filename
 EOF
 
 parse_opts () {
@@ -119,6 +118,7 @@ if [[ ${CMDLINE} == 'true' ]];then
 #--End GetOpts--
 fi
 
+# TODO: No options are being passed to yt-dlp
 eval "${_YT_DLP} ${(qqq)@}"
 
 if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing

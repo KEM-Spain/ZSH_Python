@@ -837,7 +837,7 @@ job_kill () {
 	if [[ ! ${functrace[1]} =~ "job_reset" ]];then # Exit unless called by reset
 		trap - INT # Disable trap
 		log_clear "job_kill"
-		exit_leave "${_SCRIPT}:${WHITE_FG}Download Job:${RED_FG}killed${RESET}"
+		exit_leave $(err_msg_exit "Download Job killed")
 	fi
 }
 
@@ -859,6 +859,7 @@ job_start () {
 	logit ${_YT_DBG_LOG} "${0}: DOWNLOAD LOG:${g_YTS_LOG}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Logging to file:${g_YTS_LOG}"
 
+	# TODO YouTube options AGE, STRICT are not being passed to yt
 	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL}" # Routine download - limit title len
 
 	[[ ! -w ${g_YTS_LOG} ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
@@ -896,7 +897,7 @@ last_code_update () {
 	local LAST_UPD=0
 	local LAST_TIME=0
 
-	[[ -z ${MARKER_ARG} ]] && exit_leave "${_SCRIPT_TAG}} ${RED_FG}Missing argument${RESET}:<MARKER>"
+	[[ -z ${MARKER_ARG} ]] && exit_leave $(err_msg_exit "Missing argument:<MARKER>")
 
 	if [[ -e ${MARKER_ARG} ]];then
 		LAST_UPD=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
@@ -1343,7 +1344,6 @@ query_youtube () {
 		STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
 		STR=${STR:s/Streamed //} # Strip age of excess text
 
-		# TODO: Track if disabling this causes unwanted content
 		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' ]];then # Apply filtering to non strict results
 			HIT=false
 			FILTER_MSGS=()
@@ -1562,7 +1562,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDRT:Va:sw:"
@@ -1585,8 +1585,8 @@ while getopts ${OPTSTR} OPTION;do
      a) AGE=${OPTARG};;
      s) ENG_OPT='S';;
      w) WEB_OPT=${OPTARG};;
-    \?) exit_leave "${RED_FG}Error${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}";;
-	  :) exit_leave "${RED_FG}Error${RESET}: option -${OPTARG} requires an argument${RESET}";;
+     :) print -u2 "${_SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
@@ -1596,7 +1596,7 @@ shift $(( OPTIND  - 1 ))
 # Execution
 CFG_MSG=$(cfg_init)
 if [[ ${?} -ne 0 ]];then
-	exit_leave "Configuration failed:${CFG_MSG}"
+	exit_leave $(err_msg_exit "Configuration failed:${CFG_MSG}")
 fi
 
 [[ -n ${WEB_OPT} ]] && open_website ${WEB_OPT} && exit_leave
@@ -1616,6 +1616,10 @@ for X in ${=RCL};do
 done
 SEARCHTERM=$(str_trim ${_STERMS})
 
+if [[ -n ${AGE} ]];then
+	[[ ! ${AGE} =~ "all|recent|min|hour|day|week|month|year" ]] && usage "Invalid value for AGE:${AGE}"
+fi
+
 # Parse options per engine
 if [[ ${ENGINE} == 'youtube' ]];then
    if [[ ${HELP_OPT} == 'true' ]];then
@@ -1631,14 +1635,14 @@ if [[ ${ENGINE} == 'youtube' ]];then
 		node ${_JS_SCRIPT} --version
 		echo ${RESET}
 		exit_leave
-		[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Invalid argument${RESET} - valid age arguments: ${WHITE_FG}all,min,day,week,month,year${RESET}"
+		[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Invalid argument - valid age arguments:all,min,day,week,month,year")
 	elif [[ ${ENG_OPT:l} == 's' ]];then
 		SEARCHTERM="-s ${(qqq)SEARCHTERM}"
 	fi
 	g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)SEARCHTERM}"
 else
 	[[ -z ${ENG_OPT} ]] && ENG_OPT=g
-	[[ ${_RUMBLE_QRY_OPTS[(i)${ENG_OPT}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave "Invalid query type:${ENG_OPT}"
+	[[ ${_RUMBLE_QRY_OPTS[(i)${ENG_OPT}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave $(err_msg_exit "Invalid query type:${ENG_OPT}")
 	if [[ ${VERSION_OPT} == 'true'  ]];then
 		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")
 	elif [[ -n ${AGE} ]];then
@@ -1711,7 +1715,7 @@ else # Args passed
 		download_select ${_QUERY_OPTS[QKEY]}
 		[[ ${g_CMDLINE_ARGS} == 'true' ]] && fav_add
 	else
-		exit_leave "Query failed for:${_QUERY_OPTS[QKEY]}"
+		exit_leave $(err_msg_exit "Query failed for:${_QUERY_OPTS[QKEY]}")
 	fi
 fi
 

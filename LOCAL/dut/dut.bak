@@ -194,7 +194,7 @@ external () {
 		fi
 
 		if [[ ${RC} -eq 0 ]];then
-			sudo udisksctl unmount -b /dev/${_PARTITIONS[${NDX}]}
+			{ sudo udisksctl unmount -b /dev/${_PARTITIONS[${NDX}]} } >/dev/null
 			RC=${?}
 		fi
 
@@ -310,7 +310,7 @@ external () {
 			unmounted) msg_box -x10 -p -P"Mount all devices (y/n)?" "All devices are unmounted";;
 			mounted) msg_box -x10 -p -P"Unmount all devices (y/n)?" "All devices are mounted";;
 		esac
-		[[ ${_MSG_KEY} == 'n' ]] && clear && exit_leave $(msg_exit I "Operation cancelled")
+		[[ ${_MSG_KEY} == 'n' ]] && clear && exit_leave "${RED_FG}Operation cancelled${RESET}"
 		return 0
 	}
 
@@ -404,7 +404,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	typeset -a OPTIONS
@@ -468,7 +468,8 @@ ___EOF
 			do_unmount ${L}
 			remove_orphan ${L}
 		done
-		local DEV=$(tr -d '[:digit:]' <<<${_PARTITIONS[1]})
+		loca DEV=$(tr -d '[:digit:]' <<<${_PARTITIONS[1]})
+		{ udisksctl power-off -b /dev/${DEV} } >/dev/null
 	elif [[ ${g_BRIEF} == 'true' ]];then # -b option
 		g_VERBOSE=false
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
@@ -611,8 +612,7 @@ ___EOF
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		echo "\n$(msg_exit W ${PENDING_MSGS})"
-		exit_leave
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	local -a OPTIONS
@@ -793,15 +793,15 @@ ___EOF
 		read -k1 RESPONSE
 		echo
 
-		[[ ${RESPONSE} =~ "^\x0a" ]] && exit_leave $(msg_exit I "Operation cancelled")
+		[[ ${RESPONSE} =~ "^\x0a" ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 
 		NDX=0
 		for M in ${(k)MOUNTS};do
 			((NDX++))
 			if [[ ${RESPONSE:l} == 'a' ]];then
-				udisksctl unmount -f -b ${M} 
+				{ udisksctl unmount -f -b ${M} } >/dev/null
 			else
-				[[ ${NDX} -eq ${RESPONSE} ]] && udisksctl unmount -f -b ${M} && break
+				[[ ${NDX} -eq ${RESPONSE} ]] && { udisksctl unmount -f -b ${M} } >/dev/null && break
 			fi
 		done
 		[[ ${?} -ne 0 ]] && echo "An error occurred ejecting ${M}:$?" || echo "Safe to unplug"
@@ -987,8 +987,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
