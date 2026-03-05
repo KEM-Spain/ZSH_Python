@@ -274,7 +274,7 @@ action_do () {
 					log_add ${M}
 					break
 				else
-					MSG=$(grep -Ein 'error' ${g_YTS_LOG} | tail -1) # Capture error
+					MSG=$(grep -Ein 'error' ${g_YTS_LOG} | tail -1) # Capture error or live broadcast
 					MSG=${MSG[1,50]}
 					if [[ ${?} -eq 0 ]];then
 						TRANS_ERR=$(cut -d: -f1 <<<${MSG})
@@ -291,6 +291,13 @@ action_do () {
 							else
 								continue
 							fi
+						elif grep -Eiq 'cannot reuse http' ${g_YTS_LOG};then # Check for live broadcast
+							MSG="Live broadcast - unable to download"
+							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG}<N>"
+							logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
+							_FAILED[${M}]=true
+							_DOWNLOADS[${M}]=false
+							break
 						fi
 					fi
 				fi
