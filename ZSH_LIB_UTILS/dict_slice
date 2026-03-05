@@ -33,12 +33,14 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-Show only selected section of dict output
-\tDefault is WordNet. 
+Filter dict output to show only selected slice of output
+\tProvide option to show thesaurus
+\tDefault slice is WordNet. 
 
 \tAlternate slices:
 \tCollaborative International Dictionary (collab)
-\tMoby Thesaurus (moby)
+\tEaston 1897 Bible (easton)
+\tU.S. Gazetteer (gazet)
 EOF
 
 parse_opts () {
@@ -82,23 +84,29 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-s $(opt_type s)${RESET} view alternate slice (collab|moby)"
+	echo -e "${WHITE_FG}-s $(opt_type s)${RESET} slice (collab|easton|gazet|wordnet [default])"
+	echo -e "${WHITE_FG}-t${RESET} view thesaurus"
+	echo -e "${WHITE_FG}-u${RESET} unfiltered"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDs:"
+OPTSTR=":HDtus:"
 OPTIND=0
 
 SLICE=''
+THESAURUS=false
+UNFILTERED=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
 		H) usage;;
 		D) dbg_set_level;;
 		s) SLICE=${OPTARG};;
+		t) THESAURUS=true;;
+		u) UNFILTERED=true;;
 		:) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
 		\?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
@@ -109,20 +117,32 @@ shift $(( OPTIND -1 ))
 
 # Execution
 [[ ${#} -ne 0 ]] && KEYWORD=${1} || KEYWORD=''
-
-if [[ -n ${SLICE} ]];then
-	_DEFAULT_SLICE=${SLICE}
-	[[ ! ${SLICE} =~ "collab|moby|wordnet" ]] && usage "Invalid slice:${SLICE}"
-fi
-
 [[ -z ${KEYWORD} ]] && usage "Missing argument:<WORD>"
 
-DEF=$(dict ${KEYWORD})
-[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit W "Word:${KEYWORD} not found")
+{
+if [[ ${UNFILTERED} == 'true' ]];then
+	dict ${KEYWORD}
+else
+	if [[ -n ${SLICE} ]];then
+		_DEFAULT_SLICE=${SLICE}
+		[[ ! ${SLICE} =~ "collab|easton|gazet|wordnet" ]] && usage "Invalid slice:${SLICE}"
+	fi
 
-PAT_1=$(grep -m1 -i ${_DEFAULT_SLICE} <<<${DEF})
-PAT_1=${PAT_1[1,20]}
+	DEF=$(dict ${KEYWORD})
+	[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit W "Word:${KEYWORD} not found")
 
-sed -n "/$PAT_1/,/$_PAT_2/p" <<<${DEF} | sed '$d' | mypager # Slice pattern and drop last line
+	PAT_1=$(grep -m1 -i ${_DEFAULT_SLICE} <<<${DEF})
+	PAT_1=${PAT_1[1,20]}
+
+	sed -n "/$PAT_1/,/$_PAT_2/p" <<<${DEF} | sed '$d' # Slice pattern and drop last line
+
+	if [[ ${THESAURUS} == 'true' ]];then
+		_DEFAULT_SLICE=moby
+		PAT_1=$(grep -m1 -i ${_DEFAULT_SLICE} <<<${DEF})
+		PAT_1=${PAT_1[1,20]}
+		sed -n "/$PAT_1/,/$_PAT_2/p" <<<${DEF} | sed '$d' # Slice pattern and drop last line
+	fi
+fi
+} | mypager
 
 exit_leave

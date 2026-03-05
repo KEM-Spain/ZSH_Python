@@ -9,6 +9,7 @@ alias anthem='/opt/anthemscore/run_app_image 2>&1 &'
 alias audacity='/opt/audacity/run_app_image 2>&1 &'
 alias brave='/opt/brave.com//brave/brave 2>&1 &'
 alias foxit='/opt/foxitreader/FoxitReader >/dev/null 2>&1 &'
+alias firefox='/usr/bin/firefox >/dev/null 2>&1 &'
 alias chrome=/usr/bin/google-chrome-stable
 alias jubler='/opt/jubler/run_app_image >/dev/null 2>&1 &'
 alias ascii='o /usr/local/etc/asciiTable.pdf'
@@ -124,6 +125,7 @@ alias MB="cd /media/kmiller/KEM_Backup"
 alias MM="cd /media/kmiller/KEM_Misc"
 alias O='cd /opt'
 alias P='cd ~/Pictures'
+alias ss='cd ~/Pictures/Screenshots'
 alias T='cd ~/Downloads/Torrents'
 alias V='cd ~/Videos'
 
