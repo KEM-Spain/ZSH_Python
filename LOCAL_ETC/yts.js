@@ -62,11 +62,12 @@
 		} 
 		v.title = v.title.replace(/\|/g, ':') /* titles contain pipe separators */
 		if (has_match) {
-			if (strict) { /* searchterm must be in title */
+			if (strict) { /* searchterm must be in author */
 				t_arg = searchterm.toLowerCase()
+				t_arg = t_arg.replace(/ /g, '')
 				v_arg = v.author.name.toLowerCase()
 				v_arg = v_arg.replace(/ /g, '')
-				if (v_arg.indexOf(t_arg) >= 0) { /* searchterm is in title */
+				if (v_arg.indexOf(t_arg) >= 0) { /* searchterm is in author */
 					if (msgout === false) {
 						console.log("matched strict")
 						console.log("t_arg:"+t_arg)

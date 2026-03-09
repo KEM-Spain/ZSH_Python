@@ -507,7 +507,7 @@ do_subs () {
 		CANDIDATE=${_CHAIN_LIST[${C}]:t} # W/o path
 		[[ -d ${_CHAIN_LIST[${C}]} ]] && OBJECT=Dir || OBJECT=File
 		[[ ${_DEBUG} -ge 1 ]] && dbg "${0}:${LINENO} grep ${GREP_OPTS} ${g_FROM_TEXT} <<<${CANDIDATE}"
-		eval "grep -q ${GREP_OPTS} ${g_FROM_TEXT} <<<${(qqq)CANDIDATE}"
+		eval "grep -q ${GREP_OPTS} ${(qqq)g_FROM_TEXT} <<<${(qqq)CANDIDATE}"
 		if [[ $? -eq 0 ]];then
 			HIT=true
 			_OUT_LIST[${C}]=${_CHAIN_LIST[${C}]}
@@ -520,7 +520,6 @@ do_subs () {
 	if ! arr_is_populated "${_OUT_LIST}";then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		logit ${_LOG} "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
-		[[ ${g_VERBOSE} == 'true' ]] && echo "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		return 1 
 	fi
 
@@ -1006,7 +1005,7 @@ if [[ ${PREPEND} == "true" ]];then
 	logit ${_LOG} "Prepend was called with:${PREPEND_TAG}"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Prepending file names" >&2
 	do_prepend ${PREPEND_TAG}
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for prepend" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for prepend" >&2
 fi
 
 # Substitutions
@@ -1015,7 +1014,7 @@ if [[ ${SEARCH_REPLACE} == 'true' ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_subs${RESET}..."
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${WHITE_ON_GREY}Substituting \"${g_FROM_TEXT}\" with \"${g_TO_TEXT}\"${RESET}" >&2
 	do_subs
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for substitution" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for substitution" >&2
 fi
 
 # Space_Dot_Camel
@@ -1039,19 +1038,17 @@ if [[ ${#_SPACE_DOT} -gt 0 ]];then
 	do_sdc
 
 	if [[ ${?} -ne 0 ]];then
-		if [[ ${g_VERBOSE} == 'true' ]];then
-			{
-			for X in ${(o)_SPACE_DOT};do
-				case ${X} in
-					B) echo "No matches for extended/non-ascii";;
-					S) echo "No matches for eliminating spaces";;
-					D) echo "No matches for eliminating dots, dashes, and commas";;
-					C) echo "No matches for camel casing";;
-					U) echo "No matches for uncamel casing";;
-				esac
-			done
-			} >&2
-		fi
+		{
+		for X in ${(o)_SPACE_DOT};do
+			case ${X} in
+				B) echo "No matches for extended/non-ascii";;
+				S) echo "No matches for eliminating spaces";;
+				D) echo "No matches for eliminating dots, dashes, and commas";;
+				C) echo "No matches for camel casing";;
+				U) echo "No matches for uncamel casing";;
+			esac
+		done
+		} >&2
 	fi
 fi
 
@@ -1060,7 +1057,7 @@ if [[ ${PROPER_CASE} == "true" ]];then
 	logit ${_LOG} "Proper Case was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Proper casing files${RESET}" >&2
 	do_proper_case
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for proper case" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for proper case" >&2
 fi
 
 # Clean leading digits (usually for audio files)
@@ -1068,7 +1065,7 @@ if [[ ${CLEAN_LEADING_DIGITS} == "true" ]];then
 	logit ${_LOG} "Clean Leading Digits was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Cleaning leading digits with hyphen${RESET}" >&2
 	do_clean_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for clean leading digits" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for clean leading digits" >&2
 fi
 
 # Add leading digits (usually for audio files)
@@ -1076,7 +1073,7 @@ if [[ ${ADD_LEADING_DIGITS} == "true" ]];then
 	logit ${_LOG} "All leading digits was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Adding leading digits with hyphen${RESET}" >&2
 	do_add_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for add leading digits" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for add leading digits" >&2
 fi
 
 # Strip leading digits (usually for audio files)
@@ -1084,7 +1081,7 @@ if [[ ${STRIP_LEADING_DIGITS} == "true" ]];then
 	logit ${_LOG} "Strip Leading Digits was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Stripping leading digits with hyphen${RESET}" >&2
 	do_strip_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for strip leading digits" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for strip leading digits" >&2
 fi
 
 # Truncations
@@ -1092,7 +1089,7 @@ if [[ ${TRUNC_FN_LEN} -gt 0 ]];then
 	logit ${_LOG} "Truncation called - Length:${TRUNC_FN_LEN} chars"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Truncating file names to:${TRUNC_FN_LEN} chars" >&2
 	do_truncate
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for truncation" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for truncation" >&2
 fi
 
 # Trimming
@@ -1100,7 +1097,7 @@ if [[ ${TRIM} == "true" ]];then
 	logit ${_LOG} "Trim was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Trimming file names" >&2
 	do_trim
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for trim" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for trim" >&2
 fi
 
 # YouTube tags
@@ -1120,7 +1117,7 @@ if [[ ${YT_TAGS} == "true" ]];then
 
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Eliminating YouTube tags" >&2
 	do_yt_tag
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 
+	[[ ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 
 fi
 
 # Finalize

@@ -113,3 +113,10 @@ dbg_trace () {
 	done
 }
 
+dbg_args () {
+	local ARGS=${@}
+	if [[ ${#ARGS} -gt 1 ]];then
+		echo "ARGC:${#ARGS}" >>${_DEBUG_FILE}
+		echo "ARGV:${ARGS}" >>${_DEBUG_FILE}
+	fi
+}

@@ -254,8 +254,7 @@ path_get_raw () {
 				fi;;
 	esac
 
-	if [[ ${PATH_TAIL} = '?' ]];then
-		# Echo "PATH_TAIL is unknown; Parsing ${#TOKENIZED} TOKENS:${TOKENIZED}" >&2
+	if [[ ${PATH_TAIL} = '?' ]];then # Resolve PATH_TAIL
 		for T in ${TOKENIZED};do
 			if is_file "${T}" || is_dir "${T}";then
 				I=$(path_get_inode ${T})
@@ -266,7 +265,11 @@ path_get_raw () {
 				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "TOKEN is neither file nor dir"
 			fi
 		done
+
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: FNDX:${FNDX}"
+
 		if [[ ${FNDX} -ne 0 ]];then
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Resolving PATH_HEAD and PATH_TAIL"
 			PATH_HEAD=$(realpath $(eval echo ${RAW_PATH:h}))
 			PATH_TAIL=$(path_find_prep) # Prepare for find command
 		fi
@@ -351,11 +354,11 @@ path_read_raw () {
 }
 
 path_split_fn () {
-	local TEXT="${@}"
+	local TEXT=${@:Q}
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	perl -pe 's/(?<![\\])[ ]/\n/g' <<<${TEXT}
+	 
+	[[ -f ${TEXT} ]] && echo ${TEXT} || perl -pe 's/(?<![\\])[ ]/\n/g' <<<${TEXT}
 }
 
 path_strip_options () {
@@ -372,27 +375,27 @@ path_strip_options () {
 	echo ${LINE}
 }
 
-path_trailing_segs () {
-	local DIR_SLICE=${1}
-	local TARGET=${2}
-	local SEGS=(${(s:/:)${DIR_SLICE}})
-	local -A SEG_NDX
-	local NDX=0
-	local OUT
-	local S
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	for S in ${SEGS};do
-		((NDX++))
-		SEG_NDX[${NDX}]=${S}
-	done
-
-	OUT=''
-	for (( S=${#SEG_NDX}; S>$(( ${#SEG_NDX} - TARGET )); S-- ));do
-		OUT=${SEG_NDX[${S}]}/${OUT}
-		[[ ${S} -lt 1 ]] && break
-	done
-	echo ${OUT[1,-2]}
-}
+#path_trailing_segs () {
+#	local DIR_SLICE=${1}
+#	local TARGET=${2}
+#	local SEGS=(${(s:/:)${DIR_SLICE}})
+#	local -A SEG_NDX
+#	local NDX=0
+#	local OUT
+#	local S
+#
+#	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+#
+#	for S in ${SEGS};do
+#		((NDX++))
+#		SEG_NDX[${NDX}]=${S}
+#	done
+#
+#	OUT=''
+#	for (( S=${#SEG_NDX}; S>$(( ${#SEG_NDX} - TARGET )); S-- ));do
+#		OUT=${SEG_NDX[${S}]}/${OUT}
+#		[[ ${S} -lt 1 ]] && break
+#	done
+#	echo ${OUT[1,-2]}
+#}
 

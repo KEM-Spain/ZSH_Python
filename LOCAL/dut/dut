@@ -389,10 +389,11 @@ ___EOF
 		local OPTS=$(parse_opts ${OPTSTR})
 		local -a PENDING_MSGS=(${@})
 
-		tabs 5
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup
-
 		(
+		tabs 5
+		set -xv
+		[[ ${_SMCUP} == 'true' ]] && do_rmcup
+		set +xv;read
 		echo -e "${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type p)]\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
@@ -432,6 +433,7 @@ ___EOF
 	
 	# Execution
 	[[ -n ${1} ]] && PARTITION=${1} || PARTITION=''
+
 	if [[ ${#OPTIONS} -eq 0 ]];then
 		g_VERBOSE=true # Set defaults
 		g_SHOW_LIST=true # Set defaults
@@ -473,7 +475,6 @@ ___EOF
 		{ udisksctl power-off -b /dev/${DEV} } >/dev/null
 	elif [[ ${g_BRIEF} == 'true' ]];then # -b option
 		g_VERBOSE=false
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		for L in ${(on)_LOCAL_LIST};do
 			if is_mounted ${L};then
 				MSG_OUT+="External disk ${_LABELS[${L}]} is ${GREEN_FG}mounted${RESET}"
@@ -602,10 +603,9 @@ ___EOF
 		local OPTS=$(parse_opts ${OPTSTR})
 		local -a PENDING_MSGS=(${@})
 
+		(
 		tabs 5
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
-
-		(
 		echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
@@ -636,9 +636,6 @@ ___EOF
 	#--End GetOpts--
 
 	# Execution
-	[[ ${_DEBUG} -eq 0 ]] && do_smcup
-
-	# PARTITIONS=("${(f)$(lsblk -Anif | grep -v "truecrypt\|loop" | sed '1d' | cut -c3- | tr -s '[:blank:]' | cut -d' ' -f1)}") 
 	PARTITIONS=("${(f)$(mount -t ext3,ext4,vfat,ntfs,fuseblk | sed 's/ on.*//' | cut -d'/' -f3)}") 
 
 	DIRCNT=$(find . ! -path . -type d 2>/dev/null | wc -l)
@@ -762,7 +759,6 @@ Unmount and power off connected external drive
 ___EOF
 
 	if [[ ${1} == '-H' ]];then
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
 		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] on|off"
 		echo "${WHITE_FG} Desc${RESET}:${DESC}"
@@ -808,7 +804,7 @@ ___EOF
 		[[ ${?} -ne 0 ]] && echo "An error occurred ejecting ${M}:$?" || echo "Safe to unplug"
 	else
 		echo
-		exit_leave $(msg_exit W "No:${PART_REGEX} partitions appear to be mounted")
+		exit_leave $(err_msg_exit W "No:${PART_REGEX} partitions mounted")
 	fi
 }
 
@@ -828,9 +824,9 @@ Show usb disk details
 ___EOF
 
 	if [[ ${1} == '-H' ]];then
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
+		[[ ${_SMCUP} == 'true' ]] && do_rmcup
+		echo "${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -880,9 +876,9 @@ Display fstab info
 ___EOF
 
 	if [[ ${1} == '-H' ]];then
-		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
+		[[ ${_SMCUP} == 'true' ]] && do_rmcup
+		echo "${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -975,13 +971,12 @@ opt_type () {
 }
 
 usage () {
-	local -a PENDING_MSGS=(${@})
 	local OPTS=$(parse_opts ${OPTSTR})
+	local -a PENDING_MSGS=(${@})
 
-	[[ ${_SMCUP} == 'true' ]] && do_rmcup
-
-	tabs 5
 	(
+	tabs 5
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
@@ -994,7 +989,7 @@ usage () {
 OPTSTR=":HD"
 OPTIND=0
 
-UTIL=none
+UTIL=''
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -1009,24 +1004,22 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
-[[ ${UTIL} != 'none' && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "UTIL:${UTIL} not found"
+[[ -n ${UTIL} && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "UTIL:${UTIL} not found"
 
-if [[ ${UTIL} != 'none' ]];then
+if [[ -n ${UTIL} ]];then
 	UTIL=${1}
 	_SCRIPT=${UTIL}
 	[[ ${_UTILS[${UTIL}]} -eq 1 ]] && shift && ${UTIL} ${@}
 else
-	[[ ${_DEBUG} -eq 0 ]] && do_smcup
-
 	sel_set_list ${(v)_UTILS_DESC}
 	sel_list -sa -O ${CYAN_FG} -C -F"<w>Show Disk Utilities usage or <h>(q)uit<N>" -H"Disk Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
-	echo # Clear read
+	do_rmcup
 	${_SCRIPT} -H # Call function help
 
 	exit_leave
 fi
-

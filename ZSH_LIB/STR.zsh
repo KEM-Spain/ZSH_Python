@@ -68,13 +68,18 @@ str_clean_path () {
 }
 
 str_contains () {
-	local STR=${1}
-	local TARGET=${2}
+	local -a ARGS=($(rev <<<${@}))
+	local TARGET=$(echo ${ARGS[1]} | rev)
+	local STR=$(echo ${ARGS[2,-1]} | rev)
+	local RC=''
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	perl -ne "if ( /${TARGET}/ ) { exit(0) } else { exit(1) }" <<<${STR}
-	[[ ${?} -eq 0 ]] && echo 'true' || echo ''
+	RC=${?}
+
+	[[ ${RC} -eq 0 ]] && echo 'true' || echo ''
+	return  ${RC}
 }
 
 str_delim () {
@@ -376,4 +381,12 @@ str_word_clip () {
 	done
 
 	echo $(str_trim ${TEXT_OUT})
+}
+
+str_nolf () {
+	local STR
+
+	while read STR;do
+		tr '\012' ' ' <<<${STR}
+	done
 }

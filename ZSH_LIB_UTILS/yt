@@ -133,9 +133,10 @@ if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
 			fsub -y -p ${PREPEND} ${FN}
 		fi
 	fi
-	logit ${_YTS_URL_LOG} "${0:t} CMDLINE download URL:${@} to ${FN:t}"
+	logit ${_YTS_URL_LOG} "${0:t} CMDLINE downloaded URL:${@} to ${FN:t}"
 	logit ${_YT_DBG_LOG} "${0:t} Executed from command line:${@} PPCMD:${PPCMD}"
 else
+	logit ${_YTS_URL_LOG} "${0:t} SCRIPT downloaded URL:${@} to ${FN:t}"
 	logit ${_YT_DBG_LOG} "${0:t} Executed from script:${@} PPCMD:${PPCMD}"
 fi
 

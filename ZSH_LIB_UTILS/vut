@@ -509,7 +509,10 @@ ___EOF
 		if [[ ${RC} -eq 0 ]];then
 			EMSG="[${WHITE_FG}${0}${RESET}] ${GREEN_FG}Merge Completed to:${RESET}${SOURCE_DIR}/${DESTINATION_FILE}"
 		else
-			EMSG="[${WHITE_FG}${0}${RESET}] ${RED_FG}Merge Failed${RESET}"
+			EMSG="[${WHITE_FG}${0}${RESET}] ${RED_FG}Merge had errors${RESET}"
+			for F in ${ORIGINALS};do
+				cp ${WORKDIR}/${F} ${SOURCE_DIR} # Restore files
+			done
 		fi
 
 		set_exit_value ${RC}

@@ -506,22 +506,36 @@ ___EOF
 	cursor_off
 }
 
+# TODO: All boolean tests should show return vals in DEBUG similar to is_glob
 is_bare_word () {
 	local TEXT="${@}"
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${TEXT} =~ '\*' || ${TEXT} =~ '\~' || ${TEXT} =~ '^/.*' ]] && return 1
+	if [[ ${TEXT} =~ '\*' || ${TEXT} =~ '\~' || ${TEXT} =~ '^/.*' ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${TEXT}"
+		return 1
+	fi
 
 	if [[ ${_BAREWORD_IS_FILE} == 'false' ]];then # Bare words should be tested as possible file and dir names
-		[[ -f ${TEXT:Q} || -d ${TEXT:Q} ]] && return 1 || return 0
+		if [[ -f ${TEXT:Q} || -d ${TEXT:Q} ]];then
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${TEXT}"
+			return 1
+		else
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${TEXT}"
+			return 0
+		fi
 	fi
 }
 
 is_binary () {
 	if [[ -f ${1} ]];then
 		grep -q -P '[\x7f-\xff]' ${1}
-		[[ ${?} -eq 0 ]] && return 0 || return 1
+		if [[ ${?} -eq 0 ]];then
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${1}"
+			return 0
+		else
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${1}"
+			return 1
+		fi
 	else
 		echo "${1} not file" >&2
 		return 1
@@ -531,18 +545,31 @@ is_binary () {
 is_dir () {
 	local TEXT="${@}"
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
 	TEXT=$(eval "echo ${TEXT}")
-	[[ -d ${TEXT} ]] && return 0 || return 1
+	if [[ -d ${TEXT} ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${TEXT}"
+		return 0
+	else
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${TEXT}"
+		return 1
+	fi
 }
 
 is_empty_dir () {
 	local DIR=${1}
+	local RVAL=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ -d ${DIR} ]] && return $(ls -A ${DIR} | wc -l)
+	[[ -d ${DIR} ]] && RVAL=$(ls -A ${DIR} | wc -l)
+
+	if [[ ${RVAL} -eq 0 ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${DIR}"
+		return 0
+	else
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${DIR}"
+		return ${RVAL}
+	fi
 }
 
 is_file () {
@@ -556,9 +583,13 @@ is_file () {
 is_glob () {
 	local TEXT="${@}"
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${TEXT:Q} =~ '\*' ]] && return 0 || return 1
+	if [[ ${TEXT:Q} =~ '\*' ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${TEXT}"
+		return 0
+	else
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${TEXT}"
+		return 1
+	fi
 }
 
 is_singleton () {

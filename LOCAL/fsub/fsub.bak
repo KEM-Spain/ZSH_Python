@@ -449,8 +449,9 @@ do_sdc () {
 						CANDIDATE=${CANDIDATE:gs/\[//} # Scrub brackets
 						CANDIDATE=${CANDIDATE:gs/\]//} # Scrub brackets
 						CANDIDATE=$(tr -d '()' <<<${CANDIDATE}) # Scrub parens
-						#sed 's/\'[:alnum:]\'/^%^/g'
+						CANDIDATE=$(sed -E 's/([[:alnum:]])\x27([[:alnum:]])/\1%!%\2/g' <<<${CANDIDATE}) # Mask apostrophes
 						CANDIDATE=$(tr -d \' <<<${CANDIDATE}) # Scrub single quotes
+						CANDIDATE=$(sed -E 's/([[:alnum:]])%!%([[:alnum:]])/\1\x27\2/g' <<<${CANDIDATE}) # Restore apostrophes
 						CANDIDATE=$(tr -d \" <<<${CANDIDATE}) # Scrub double quotes
 						CANDIDATE=$(tr -s "[:space:]" <<<${CANDIDATE}) # Squeeze space
 						CANDIDATE=$(str_to_ascii <<<${CANDIDATE}) # Scrub extended ascii/non ascii

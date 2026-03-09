@@ -3,7 +3,6 @@ _DEPS_+=(DBG.zsh)
 
 # LIB Vars
 _CURSOR=''
-_SMCUP=''
 _TERM=xterm
 
 # LIB Functions

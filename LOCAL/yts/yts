@@ -1579,7 +1579,7 @@ HELP_OPT=false
 SEARCHTERM=''
 VERSION_OPT=false
 WEB_OPT=''
-AGE=recent
+AGE_OPT=''
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -1588,7 +1588,7 @@ while getopts ${OPTSTR} OPTION;do
      R) ENGINE=rumble;;
      T) ENG_OPT=${OPTARG:l};;
      V) VERSION_OPT=true;;
-     a) AGE=${OPTARG};;
+     a) AGE_OPT=${OPTARG};;
      s) ENG_OPT='S';;
      w) WEB_OPT=${OPTARG};;
      :) print -u2 "${_SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
@@ -1600,14 +1600,22 @@ shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution
-CFG_MSG=$(cfg_init)
-if [[ ${?} -ne 0 ]];then
-	exit_leave $(err_msg_exit "Configuration failed:${CFG_MSG}")
+if [[ -n ${AGE_OPT} ]];then
+	[[ ! ${AGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]] && usage "Invalid value for AGE_OPT:${AGE_OPT}"
+else
+	AGE_OPT=recent # Default
 fi
+
+[[ -n ${AGE_OPT} ]] && _QUERY_OPTS[AGE]=${AGE_OPT}
 
 [[ -n ${WEB_OPT} ]] && open_website ${WEB_OPT} && exit_leave
 
 [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGS IN:${@}, ENGINE:${ENGINE}"
+
+CFG_MSG=$(cfg_init)
+if [[ ${?} -ne 0 ]];then
+	exit_leave $(err_msg_exit "Configuration failed:${CFG_MSG}")
+fi
 
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
@@ -1620,21 +1628,16 @@ for X in ${=RCL};do
 	[[ ${X} =~ '[-]' ]] && continue
 	_STERMS+=${X}
 done
+
 SEARCHTERM=$(str_trim ${_STERMS})
-
-if [[ -n ${AGE} ]];then
-	[[ ! ${AGE} =~ "all|recent|min|hour|day|week|month|year" ]] && usage "Invalid value for AGE:${AGE}"
-fi
-
-[[ -n ${AGE} ]] && _QUERY_OPTS[AGE]=${AGE}
 
 # Parse options per engine
 if [[ ${ENGINE} == 'youtube' ]];then
    if [[ ${HELP_OPT} == 'true' ]];then
-		echo "${MAGENTA_FG}$(str_unicode_line 70)${RESET}"
+		echo "${MAGE_OPTNTA_FG}$(str_unicode_line 70)${RESET}"
 		echo "YouTube backend:${WHITE_ON_GREY}${_JS_SCRIPT}${RESET}\n"
 		eval "node ${_JS_SCRIPT} -h" >&2
-		echo "\n${MAGENTA_FG}$(str_unicode_line 70)${RESET}"
+		echo "\n${MAGE_OPTNTA_FG}$(str_unicode_line 70)${RESET}"
 		echo -n "YouTube frontend:${WHITE_ON_GREY}${_SCRIPT}${RESET}\n"
 		usage
 		exit_leave
@@ -1653,7 +1656,7 @@ else
 	[[ ${_RUMBLE_QRY_OPTS[(i)${ENG_OPT}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave $(err_msg_exit "Invalid query type:${ENG_OPT}")
 	if [[ ${VERSION_OPT} == 'true'  ]];then
 		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")
-	elif [[ -n ${AGE} ]];then
+	elif [[ -n ${AGE_OPT} ]];then
 		exit_leave $(err_msg_exit E "Option:-a is a YouTube only option")
 	elif [[ ${ENG_OPT:l} == 's' ]];then
 		exit_leave $(err_msg_exit E "Option:-s is a YouTube only option")

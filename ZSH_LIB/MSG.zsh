@@ -146,7 +146,7 @@ msg_box () {
 	[[ -z ${MSG} ]] && return # If no MSG
 
 	# Long messages display feedback while parsing
-	MSG_LEN=${*}
+	MSG_LEN=${#${=@}}
 	[[ ${#MSG_LEN} -gt 250 && ${QUIET} == 'false' ]] && _PROC_MSG=true
 	
 	# Append prompt to msgs
@@ -174,7 +174,11 @@ msg_box () {
 
 	# Get message delimiter
 	[[ ${DELIM_ARG} != 'false' ]] && _DELIM=${DELIM_ARG} # Assign delimiter
-	[[ ${#DELIM} -gt 1 ]] && exit_leave $(msg_err "${functrace[1]} called ${0}:${LINENO}: Invalid delimiter:${DELIM}")
+
+	if [[ ${#DELIM} -gt 1 ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Invalid delimiter:${DELIM}. Resetting to '|'"
+		DELIM='|' # Set to rational default
+	fi
 
 	# Flash progress msg if requested
 	[[ ${_PROC_MSG} == 'true' ]] && msg_proc

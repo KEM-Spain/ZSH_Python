@@ -282,7 +282,6 @@ done
 [[ -n ${LMSG} ]] && LMSG=" ${LMSG}" || LMSG="${LMSG}"
 
 # Detect/warn wildcard 
-
 if [[ ${WILDCARD} == "true" ]];then
 	echo "${BOLD}${RED_FG}Wildcard${RESET}${BOLD}${WHITE_FG} * ${RESET}detected ${ITALIC}ALL FILES${RESET} (${#LIST} $(str_pluralize item ${#LIST}))"
 fi

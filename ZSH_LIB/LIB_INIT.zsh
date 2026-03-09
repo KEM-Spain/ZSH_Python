@@ -64,6 +64,7 @@ _DEBUG=0
 _DEBUG_INIT=true
 _EXIT_MSGS=''
 _EXIT_SCRUB=true
+_SMCUP=false
 
 # Initialize traps
 unsetopt localtraps

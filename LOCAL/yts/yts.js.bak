@@ -46,7 +46,7 @@
 				msgout = true
 			}
 		} else if (age === "recent") { /* any recent age */
-				if ( v.ago.indexOf("hour") >= 0 || v.ago.indexOf("day") >= 0 ) {
+				if ( v.ago.indexOf("hour") >= 0 || v.ago.indexOf("day") >= 0 || v.ago.indexOf("min") >= 0 ) {
 					has_match = true
 					if (msgout === false) {
 						console.log("matched on recent")
