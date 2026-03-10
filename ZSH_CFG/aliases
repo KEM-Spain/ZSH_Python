@@ -79,6 +79,7 @@ alias upgrades='sudo apt-get -s dist-upgrade '
 alias md='mkdir'
 alias mv='mv -i'
 alias rm='/usr/local/bin/system/launchers/run_rm '
+alias cls='tput clear'
 
 # bunzip2
 alias bu='bunzip2'

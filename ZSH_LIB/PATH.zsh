@@ -48,12 +48,12 @@ path_abbv () {
 	;' 
 }
 
-path_expand () {
+path_expand_token () {
 	local ARG=${@}
 	local ARG_TST
 	local PATH_TST
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARG:${ARG}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${ARG}"
 
 	if [[ ${ARG} =~ "^[\.\~]" ]];then # Something to expand
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Expanding tilde or dot"
@@ -64,7 +64,13 @@ path_expand () {
 		ARG_TST=$(eval "echo ${ARG_TST}")
 		PATH_TST=$(realpath ${ARG_TST})
 
-		[[ -f ${PATH_TST} ]] && echo ${PATH_TST:h} || echo ${PATH_TST} # If it points to a file return only the head
+		if [[ -f ${PATH_TST} ]];then
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Expansion:${PATH_TST:h}"
+			echo ${PATH_TST:h} 
+		else
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Expansion:${PATH_TST}"
+			echo ${PATH_TST} # If it points to a file return only the head
+		fi
 	else
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Nothing to expand"
 		echo ${ARG}
@@ -79,7 +85,7 @@ path_find_prep () {
 	local K
 	local HIT=false
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${@}"
 
 	FLIST='\( '
 	for K in ${(k)_ARGS};do
@@ -92,8 +98,10 @@ path_find_prep () {
 	FLIST+=' \)'
 
 	if [[ ${HIT} == 'false' ]];then
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning false"
 		return 1
 	else
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning true with:${FLIST}"
 		echo ${FLIST}
 		return 0
 	fi
@@ -103,15 +111,16 @@ path_get_inode () {
 	local FN=${@}
 	local INODE
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${@}"
 
 	INODE=$(ls -i ${FN:Q} 2>/dev/null | cut -d' ' -f1 2>/dev/null)
 
 	if [[ -n ${INODE} ]];then 
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning true with:$(str_nolf <<<${INODE})"
 		echo ${INODE}
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${RED_FG}Unable to obtain inode${RESET}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning false"
 		return 1
 	fi
 }
@@ -130,9 +139,9 @@ path_get_label () {
 
 	[[ ! -d ${RAW_PATH:h} ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: calling path_expand with: ${RAW_PATH}"
-	PATH_EXPANDED=$(path_expand ${RAW_PATH:h})
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: path_expand returned: ${PATH_EXPANDED}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: calling path_expand_token with: ${RAW_PATH}"
+	PATH_EXPANDED=$(path_expand_token ${RAW_PATH:h})
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: path_expand_token returned: ${PATH_EXPANDED}"
 
 	[[ -n ${MAX_LEN} ]] && MAX_LEN="-l ${MAX_LEN}" || MAX_LEN=''
 
@@ -200,7 +209,7 @@ path_get_raw () {
 	fi
 
 	if [[ ${PATH_HEAD} == '?' ]];then
-		TOKENIZED=("${(f)$(path_read_raw ${RAW_PATH})}") # Parse tokens incl names w/ spaces)
+		TOKENIZED=("${(f)$(path_parse_cmd ${RAW_PATH})}") # Parse tokens incl names w/ spaces)
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Tokenized: TOKENIZED:${TOKENIZED}"
 
 		# Eliminate all bare words from command line
@@ -223,7 +232,7 @@ path_get_raw () {
 		RAW_PATH=${TOKENS:=.} # Default to PWD
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${RED_FG}RAW_PATH STRIPPED${RESET}:[${WHITE_FG}${RAW_PATH}${RESET}]"
 
-		PATH_EXPANDED=$(path_expand ${RAW_PATH})
+		PATH_EXPANDED=$(path_expand_token ${RAW_PATH})
 
 		PATH_HEAD=${PATH_EXPANDED}
 	fi
@@ -322,7 +331,7 @@ path_get_raw_args () {
 	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_PATH:${RAW_PATH} (removed script name & options)${RESET}" 
 
-	TOKENIZED=("${(f)$(path_read_raw ${RAW_PATH})}") # Read whole lines (non-traditional file/dir names - spaces)
+	TOKENIZED=("${(f)$(path_parse_cmd ${RAW_PATH})}") # Read whole lines (non-traditional file/dir names - spaces)
 
 	for A in ${TOKENIZED};do
 		if is_bare_word "${A}";then
@@ -336,35 +345,35 @@ path_get_raw_args () {
 	echo -n ${RAW_PATH}
 }
 
-path_read_raw () {
+path_parse_cmd () {
 	local RAWCMD=${@}
 	local -a TEXT
 	local LINE
 	local L
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${@}"
 
 	while read -r LINE;do
 		TEXT+=${LINE}
-	done < <(path_split_fn ${RAWCMD})
+	done < <(path_split_cmd ${RAWCMD})
 
 	for L in ${TEXT};do
 		echo ${L}
 	done
 }
 
-path_split_fn () {
-	local TEXT=${@:Q}
+path_split_cmd () {
+	local RAWCMD=${@:Q}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${@}"
 	 
-	[[ -f ${TEXT} ]] && echo ${TEXT} || perl -pe 's/(?<![\\])[ ]/\n/g' <<<${TEXT}
+	[[ -f ${RAWCMD} ]] && echo ${RAWCMD} || perl -pe 's/(?<![\\])[ ]/\n/g' <<<${RAWCMD}
 }
 
 path_strip_options () {
 	local LINE=${@}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${@}"
 
 	while true;do # Strip options
         grep -qP '^\-\w+' <<<${LINE}
@@ -374,28 +383,4 @@ path_strip_options () {
 
 	echo ${LINE}
 }
-
-#path_trailing_segs () {
-#	local DIR_SLICE=${1}
-#	local TARGET=${2}
-#	local SEGS=(${(s:/:)${DIR_SLICE}})
-#	local -A SEG_NDX
-#	local NDX=0
-#	local OUT
-#	local S
-#
-#	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-#
-#	for S in ${SEGS};do
-#		((NDX++))
-#		SEG_NDX[${NDX}]=${S}
-#	done
-#
-#	OUT=''
-#	for (( S=${#SEG_NDX}; S>$(( ${#SEG_NDX} - TARGET )); S-- ));do
-#		OUT=${SEG_NDX[${S}]}/${OUT}
-#		[[ ${S} -lt 1 ]] && break
-#	done
-#	echo ${OUT[1,-2]}
-#}
 
