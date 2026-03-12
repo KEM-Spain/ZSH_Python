@@ -1,2 +1,27 @@
-2026-03-10_09:43: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
-2026-03-10_09:43: log_update: LOG lines AFTER update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-03-12_10:07: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-03-12_10:07: log_update: Skipping expired inode:6319236
+2026-03-12_10:07: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-03-12_10:07: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:S
+2026-03-12_10:07: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:S FKEY:Judging Freedom QKEY:judgingfreedom TYPE:standard 
+2026-03-12_10:07: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
+2026-03-12_10:07: query_youtube: Listing for QKEY:judgingfreedom contains 17 rows
+2026-03-12_10:07: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.G64rwj
+2026-03-12_10:07: job_start: TITLE:Pepe Escobar : Iran's New Leader and a Changing Oil Order
+2026-03-12_10:07: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=9GoB8_DOl20" PID:37338
+2026-03-12_10:07: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-03-12_10:07: action_do: HEADER
+2026-03-12_10:07: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=9GoB8_DOl20 PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-03-12_10:07: action_do: COMPLETED
+2026-03-12_10:07: action_do: POST-PROCESSING
+2026-03-12_10:07: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Pepe_Escobar_-_Iran_s_New_Leader_and_a_Changing_Oil_Order.mp4
+2026-03-12_10:07: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Pepe_Escobar_-_Iran_s_New_Leader_and_a_Changing_Oil_Order.mp4
+2026-03-12_10:07: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Pepe_Escobar_-_Iran_s_New_Leader_and_a_Changing_Oil_Order.mp4 with:Judging Freedom - Pepe Escobar - Iran's New Leader And A Changing Oil.mp4
+2026-03-12_10:07: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Pepe Escobar - Iran's New Leader And A Changing Oil.mp4
+2026-03-12_10:07: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.G64rwj was cleared for:judgingfreedom from:action_do
+2026-03-12_10:07: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.P6ob5C
+2026-03-12_10:07: job_start: TITLE:Prof. Mohammad Marandi : LIVE From Tehran: Iran Unites Under Pressure
+2026-03-12_10:07: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=ENz2Lbn66o0" PID:38999
+2026-03-12_10:07: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-03-12_10:08: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=ENz2Lbn66o0 PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-03-12_10:08: action_do: FUTURE
+2026-03-12_10:08: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.P6ob5C was cleared for:judgingfreedom from:action_do

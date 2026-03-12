@@ -545,7 +545,7 @@ is_binary () {
 is_dir () {
 	local TEXT="${@}"
 
-	TEXT=$(eval "echo ${TEXT}")
+	TEXT=$(eval "echo ${TEXT}" 2>/dev/null)
 	if [[ -d ${TEXT} ]];then
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${TEXT}"
 		return 0

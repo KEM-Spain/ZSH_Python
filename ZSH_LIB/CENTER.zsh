@@ -1,5 +1,6 @@
 # LIB Dependencies
 _DEPS_+=(DBG.zsh MSG.zsh TPUT.zsh VALIDATE.zsh UTILS.zsh)
+_RCT=0
 
 # LIB functions
 center () {
@@ -101,6 +102,11 @@ center () {
 	if [[ ${REGION} == 'true' ]];then
 		[[ ${TEST_MODE} == 'true' ]] && center_test_region ${REG_HORZ_CTR} ${REG_VERT_CTR} && return
 		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} returned REGION:${_REG_X}:${_REG_Y}:${REG_HORZ_CTR}:${REG_VERT_CTR}"
+#		validate_is_integer ${_REG_X}; (( _RCT += ${?} ))
+#		validate_is_integer ${_REG_Y}; (( _RCT += ${?} ))
+#		validate_is_integer ${REG_HORZ_CTR}; (( _RCT += ${?} ))
+#		validate_is_integer ${REG_VERT_CTR}; (( _RCT += ${?} ))
+#		[[ ${_RCT} -ne 0 ]] && logit "${0}: Found non integer: _REG_X:${_REG_X} _REG_Y:${_REG_Y} REG_HORZ_CTR:${REG_HORZ_CTR} REG_VERT_CTR:${REG_VERT_CTR}"
 		echo ${_REG_X}:${_REG_Y}:${REG_HORZ_CTR}:${REG_VERT_CTR}
 		return
 	fi
@@ -108,9 +114,13 @@ center () {
 	CONT_HORZ_CTR=$(center_get_center ${CONTAINER_WIDTH})
 	CONT_HORZ_REF=$(( REG_HORZ_CTR - CONT_HORZ_CTR ))
 	CONT_HORZ_REF=$(( CONT_HORZ_REF + _Y_OFFSET ))
+	
 	if [[ ${HORZ} == 'true' ]];then
 		[[ ${TEST_MODE} == 'true' ]] && center_test_horz ${CONT_HORZ_REF} ${CONTAINER_WIDTH} && return
 		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} returned CONT_HORZ_REF:${CONT_HORZ_REF}"
+#		validate_is_integer ${_REG_Y}; (( _RCT += ${?} ))
+#		validate_is_integer ${CONT_HORZ_REF}; (( _RCT += ${?} ))
+#		[[ ${_RCT} -ne 0 ]] && logit "${0}: Found non integer: _REG_Y:${_REG_Y} CONT_HORZ_REF:${CONT_HORZ_REF}"
 		[[ ${ABSOLUTE} == 'true' ]] && echo $(( _REG_Y + CONT_HORZ_REF )) || echo ${CONT_HORZ_REF}
 		return
 	fi
@@ -118,9 +128,13 @@ center () {
 	CONT_VERT_CTR=$(center_get_center ${CONTAINER_HEIGHT})
 	CONT_VERT_REF=$(( REG_VERT_CTR - CONT_VERT_CTR ))
 	CONT_VERT_REF=$(( CONT_VERT_REF + _X_OFFSET ))
+
 	if [[ ${VERT} == 'true' ]];then
 		[[ ${TEST_MODE} == 'true' ]] && center_test_vert ${CONT_VERT_REF} ${CONTAINER_HEIGHT} && return
 		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} returned CONT_VERT_REF:${CONT_VERT_REF}"
+#		validate_is_integer ${_REG_X}; (( _RCT += ${?} ))
+#		validate_is_integer ${CONT_VERT_REF}; (( _RCT += ${?} ))
+#		[[ ${_RCT} -ne 0 ]] && logit "${0}: Found non integer: _REG_X:${_REG_X} CONT_VERT_REF:${CONT_VERT_REF}"
 		[[ ${ABSOLUTE} == 'true' ]] && echo $(( _REG_X + CONT_VERT_REF )) || echo ${CONT_VERT_REF}
 		return
 	fi
@@ -131,7 +145,10 @@ center () {
 		TEXT_REF=$(( CONT_HORZ_REF + TEXT_REF ))
 		[[ ${TEST_MODE} == 'true' ]] && center_test_text ${CONT_HORZ_REF} ${CONTAINER_WIDTH} ${TEXT_REF} ${TEXT_ARG} && return
 		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} returned TEXT_REF:${TEXT_REF}"
-		[[ ${ABSOLUTE} == 'true' ]] && echo $(( _REG_Y + TEXT_REF )) || echo ${TEXT_REF}
+#		validate_is_integer ${_REG_X}; (( _RCT += ${?} ))
+#		validate_is_integer ${TEXT_REF}; (( _RCT += ${?} ))
+#		[[ ${_RCT} -ne 0 ]] && logit "${0}: Found non integer: _REG_X:${_REG_X} TEXT_REF:${TEXT_REF}"
+		[[ ${ABSOLUTE} == 'true' ]] && echo $(( _REG_X + TEXT_REF )) || echo ${TEXT_REF}
 		return
 	fi
 }
@@ -140,6 +157,12 @@ center_get_center () {
 	local WIDTH=${1}
 	local CENTER=0
 	local REM=0
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} ARGV:${@}"
+
+#	if ! validate_is_integer ${WIDTH};then
+#		logit "${0}: Found non integer: WIDTH:${WIDTH}"
+#	fi
 
 	CENTER=$(( WIDTH / 2 ))
 	REM=$(( WIDTH % 2 ))
@@ -153,6 +176,14 @@ center_test_horz () {
 	local CONT_WIDTH=${2}
 	local MARK=0
 	local X
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} ARGV:${@}"
+
+#	validate_is_integer ${CONT_REF}; (( _RCT += ${?} ))
+#	validate_is_integer ${CONT_WIDTH}; (( _RCT += ${?} ))
+#	[[ ${_RCT} -ne 0 ]] && logit "${0}: Found non integer: CONT_REF:${CONT_REF} CONT_WIDTH:${CONT_WIDTH}"
+
+	[[ ${?} -ne 0 ]] && exit_leave "${0}: Found non integer: CONT_WIDTH:${CONT_WIDTH}"
 
 	clear
 	cursor_off
@@ -173,6 +204,12 @@ center_test_region () {
 	local HORZ_CTR=${1}
 	local VERT_CTR=${2}
 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} ARGV:${@}"
+
+#	validate_is_integer ${HORZ_CTR}; (( _RCT += ${?} ))
+#	validate_is_integer ${VERT_CTR}; (( _RCT += ${?} ))
+#	[[ ${_RCT} -ne 0 ]] && logit "${0}: Found non integer: HORZ_CTR:${HORZ_CTR} VERT_CTR:${VERT_CTR}"
+
 	clear
 	cursor_off
 	msg_unicode_box ${_REG_X} ${_REG_Y} ${_REG_WIDTH} ${_REG_HEIGHT}
@@ -188,6 +225,13 @@ center_test_text () {
 	local CONT_WIDTH=${2}
 	local TEXT_REF=${3}
 	local TEXT=${4}
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} ARGV:${@}"
+
+#	validate_is_integer ${CONT_REF}; (( _RCT += ${?} ))
+#	validate_is_integer ${CONT_WIDTH}; (( _RCT += ${?} ))
+#	validate_is_integer ${TEXT_REF}; (( _RCT += ${?} ))
+#	[[ ${_RCT} -ne 0 ]] && logit "${0}: Found non integer: CONT_REF:${CONT_REF} CONT_WIDTH:${CONT_WIDTH} TEXT_REF:${TEXT_REF}"
 
 	clear
 	cursor_off
@@ -205,9 +249,17 @@ center_test_vert () {
 	local CONT_HEIGHT=${2}
 	local NDX=0
 	local MARK=0
-	local CSR=$(( _REG_X + CONT_REF ))
+	local CSR=0
 	local V_REF=0
 	local X
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLER:${functrace[-1]}:${functrace[1]} LINE:${LINENO} ARGV:${@}"
+
+#	validate_is_integer ${CONT_REF}; (( _RCT += ${?} ))
+#	validate_is_integer ${CONT_HEIGHT}; (( _RCT += ${?} ))
+#	[[ ${_RCT} -ne 0 ]] && logit "${0}: Found non integer: CONT_REF:${CONT_REF} CONT_HEIGHT:${CONT_HEIGHT}"
+
+	CSR=$(( _REG_X + CONT_REF ))
 
 	clear
 	cursor_off
