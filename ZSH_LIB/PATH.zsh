@@ -384,3 +384,42 @@ path_strip_options () {
 	echo ${LINE}
 }
 
+path_abbv () {
+	local MAX_LEN=false
+	local OPTIND=0
+	local OPTION
+	local LINE
+	local OPTSTR="l:"
+	local LEN_LIMIT
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	while getopts ${OPTSTR} OPTION;do
+		case $OPTION in
+		  l) MAX_LEN=${OPTARG};;
+		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
+		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+		esac
+	done
+	shift $(( OPTIND - 1 ))
+
+	[[ ${MAX_LEN} != 'false' ]] && LEN_LIMIT=${MAX_LEN} || LEN_LIMIT=60
+
+	if [[ ! -t 0 ]];then
+		read -r LINE
+	else
+		LINE=${1}
+	fi
+
+	[[ ${#LINE} -le ${LEN_LIMIT} ]] && printf ${LINE} && return
+
+	echo ${LINE} | perl -wane'
+		foreach $w (@F) {
+			$w =~ s#/$(?=^/.*)##g;             # Kill if trailing slash if preceded by any chars
+			$w =~ s#([^/])([^/]*(?=.*/))#$1#g; # For every word btwn slashes kill all after first char
+			$w =~ s/%//g;                      # Kill any percent signs (not sure why)
+			push (@line,$w);                   # Build line
+		}
+		printf("%-s\n", "@line");
+	;' 
+}

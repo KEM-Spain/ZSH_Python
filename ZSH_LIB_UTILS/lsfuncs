@@ -43,8 +43,8 @@ action_do () {
 				func_print ${_LIST[${M}]} ${F}
 			done | less -S -P "Viewing functions within\:$(sed 's/\./\\./' <<<${_LIST[${M}]})" # Less hides dots in prompt - must escape
 		else
-			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling msg_box with: ${#FUNCTIONS} lines"
-			msg_box -H2 -P"Show function code (y/n)?" -cp "File:<w>${_LIST[${M}]}<N>|Functions:<w>${#FUNCTIONS}<N>|$(msg_list_bullet ${(o)FUNCTIONS})"
+			#[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling msg_box with: ${#FUNCTIONS} lines"
+			msg_box -H2 -P"Show function code (y/n)?" -c -p "File:<w>${_LIST[${M}]}<N>|Functions:<w>${#FUNCTIONS}<N>|$(msg_list_bullet ${(o)FUNCTIONS})"
 			if [[ ${_MSG_KEY} == 'y' ]];then
 				for F in ${FUNCTIONS};do
 					func_print ${_LIST[${M}]} ${F}
@@ -301,7 +301,7 @@ if [[ ${PRINT_FUNCS} == 'true' ]];then
 	exit_leave
 fi
 
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ -n ${FILE_ARG} ]];then # Process a single file arg directly
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} FILE_ARG:${FILE_ARG} process file - exit"

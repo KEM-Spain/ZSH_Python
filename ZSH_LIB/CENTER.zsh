@@ -68,11 +68,12 @@ center () {
 	[[ ${TEST_MODE} == 'true' && -n ${CONTAINER_HEIGHT} && ${CONTAINER_HEIGHT} -lt 3 ]] && exit_leave $(err_msg_exit E "Invalid argument - test mode requires >= 3:<CONTAINER_HEIGHT>")
 
 	if [[ ${TEXT} == 'true' ]];then
-		if validate_is_integer ${CONTAINER_WIDTH};then
-			[[ -n ${1} ]] && TEXT_ARG=${1} || exit_leave $(err_msg_exit E "Missing argument:<TEXT>")
-		else
+		[[ -n ${1} ]] && TEXT_ARG=${1} || exit_leave $(err_msg_exit E "Missing argument:<TEXT>")
+
+		if ! validate_is_integer ${CONTAINER_WIDTH};then
 			exit_leave $(err_msg_exit E "Invalid argument:CONTAINER_WIDTH:${CONTAINER_WIDTH} non integer")
 		fi
+
 		if [[ $(( CONTAINER_WIDTH - 2 )) -lt ${#TEXT_ARG} ]];then
 			exit_leave "Invalid text length:TEXT_ARG:${#TEXT_ARG} exceeds available CONTAINER_WIDTH:$(( CONTAINER_WIDTH - 2 ))"
 		fi

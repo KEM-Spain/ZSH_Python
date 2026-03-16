@@ -1,6 +1,0 @@
-job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=yhykh9iYQ_4"
-job_start: PID:4322
-[youtube] Extracting URL: https://youtube.com/watch?v=yhykh9iYQ_4
-[youtube] yhykh9iYQ_4: Downloading webpage
-[youtube] yhykh9iYQ_4: Downloading android vr player API JSON
-ERROR: [youtube] yhykh9iYQ_4: Requested format is not available. Use --list-formats for a list of available formats

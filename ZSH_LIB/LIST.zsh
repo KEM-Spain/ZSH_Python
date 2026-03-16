@@ -1428,18 +1428,14 @@ list_toggle_all () {
 list_toggle_selected () {
 	local COUNT=$(list_get_selected_count)
 
+	# TODO: reexamine this logic - provide sane handling of previously selected (STALE) rows
+	 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST_NDX:${_LIST_NDX} _SELECTION_LIMIT:${_SELECTION_LIMIT}"
 
-	if [[ -n ${_SELECT_CALLBACK_FUNC} ]];then
+	if [[ -n ${_SELECT_CALLBACK_FUNC} ]];then # Execute any callbacks
 		${_SELECT_CALLBACK_FUNC} ${_LIST_NDX}
 		[[ ${?} -ne 0 ]] && return
-	fi
-
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST_NDX:${_LIST_NDX} _REUSE_STALE:${_REUSE_STALE} _SELECTION_LIMIT:${_SELECTION_LIMIT}"
-
-	if [[ ${_REUSE_STALE} == 'false' && ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_STALE_ROW} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: STALE ROW:${_LIST_NDX} WAS REJECTED _LIST_SELECTED: ${_LIST_SELECTED[${_LIST_NDX}]}"
-		return # Ignore stale
 	fi
 
 	if [[ ${_SELECTION_LIMIT} -ne 0 && ${COUNT} -gt $((_SELECTION_LIMIT - 1 )) ]];then
@@ -1452,17 +1448,14 @@ list_toggle_selected () {
 	if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_AVAIL_ROW} ]];then
 		list_set_selected ${_LIST_NDX} ${_SELECTED_ROW} 
 		list_item select ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
-		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|1" # All on
+		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|1" # Pass to header callback - all on
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_SELECTED_ROW}"
 	else
 		if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]];then
 			list_set_selected ${_LIST_NDX} ${_AVAIL_ROW}
 			list_item deselect ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
-			[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|0" # All off
+			[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|0" # Pass to header callback - all off
 			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_AVAIL_ROW}"
-		elif [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_STALE_ROW} ]];then
-			msg_box -c -p -PK "Row <r>not<N> selectable|This row is marked as STALE"
-			msg_box_clear
 		fi
 	fi
 

@@ -1,97 +1,66 @@
-2026-03-12_19:07: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-03-12_19:07: log_update: Skipping expired inode:6358673
-2026-03-12_19:07: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-03-12_19:07: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:S
-2026-03-12_19:07: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:S FKEY:Alex Christoforou QKEY:alexchristoforou TYPE:standard 
-2026-03-12_19:07: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "alexchristoforou"
-2026-03-12_19:07: query_youtube: Listing for QKEY:alexchristoforou contains 10 rows
-2026-03-12_19:07: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:S
-2026-03-12_19:07: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:S FKEY:Judging Freedom QKEY:judgingfreedom SMSG:0.0% TYPE:standard 
-2026-03-12_19:07: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
-2026-03-12_19:07: query_youtube: Listing for QKEY:judgingfreedom contains 14 rows
-2026-03-12_19:07: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.vkyAZK
-2026-03-12_19:07: job_start: TITLE:Prof. Mohammad Marandi : LIVE From Tehran: Iran Unites Under Pressure
-2026-03-12_19:07: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=ENz2Lbn66o0" PID:169269
-2026-03-12_19:07: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-03-12_19:08: action_do: HEADER
-2026-03-12_19:08: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=ENz2Lbn66o0 PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-03-12_19:08: action_do: COMPLETED
-2026-03-12_19:08: action_do: POST-PROCESSING
-2026-03-12_19:08: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Mohammad_Marandi_-_LIVE_From_Tehran_-_Iran_Unites_Under_Pressure.mp4
-2026-03-12_19:08: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Mohammad_Marandi_-_LIVE_From_Tehran_-_Iran_Unites_Under_Pressure.mp4
-2026-03-12_19:08: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Prof._Mohammad_Marandi_-_LIVE_From_Tehran_-_Iran_Unites_Under_Pressure.mp4 with:Judging Freedom - Prof. Mohammad Marandi - LIVE From Tehran - Iran.mp4
-2026-03-12_19:08: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Prof. Mohammad Marandi - LIVE From Tehran - Iran.mp4
-2026-03-12_19:08: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.vkyAZK was cleared for:judgingfreedom from:action_do
-2026-03-12_19:08: query_youtube: Creating listing for QKEY:max blumenthal STRICT:null
-2026-03-12_19:08: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Max Blumenthal ENGINE:youtube EOPT:null FKEY:Max Blumenthal QKEY:max blumenthal SMSG:0.0% TYPE:custom 
-2026-03-12_19:08: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "max blumenthal"
-2026-03-12_19:08: query_youtube: NON-STRICT FILTER REJECT: TITLE:Blumenthal: Trump 'doesn't understand or is deceiving the American people' on Iran, AUTHOR:MS NOW, QKEY:max blumenthal, DKEY:Max Blumenthal, 3 author with u-score non-match on QKEY 4 author w/o u-score non-match on QKEY 1 title non-match on DKEY 2 author non-match on DKEY
-2026-03-12_19:08: query_youtube: NON-STRICT FILTER REJECT: TITLE:'We have only us and our God to rely on' -Dr. Setareh Sadeqi on Iran's fight after Khamenei, AUTHOR:The Grayzone, QKEY:max blumenthal, DKEY:Max Blumenthal, 3 author with u-score non-match on QKEY 4 author w/o u-score non-match on QKEY 1 title non-match on DKEY 2 author non-match on DKEY
-2026-03-12_19:08: query_youtube: Listing for QKEY:max blumenthal contains 9 rows
-2026-03-12_19:08: query_youtube: Creating listing for QKEY:blancolirio STRICT:S
-2026-03-12_19:08: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:S FKEY:Blan Colirio QKEY:blancolirio SMSG: TYPE:standard 
-2026-03-12_19:08: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
-2026-03-12_19:08: query_youtube: Translated TITLE:NTSB Preliminary: Challenger 650 crash at Bangor, January 25,
-2026-03-12_19:08: query_youtube: Translated TITLE:Two Bonanza engine failures: one fatal and one not.
-2026-03-12_19:08: query_youtube: Listing for QKEY:blancolirio contains 2 rows
-2026-03-12_19:08: query_youtube: Creating listing for QKEY:danny haiphong STRICT:null
-2026-03-12_19:08: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Danny Haiphong ENGINE:youtube EOPT:null FKEY:Danny Haiphong QKEY:danny haiphong SMSG:0.0% TYPE:standard 
-2026-03-12_19:08: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "danny haiphong"
-2026-03-12_19:08: query_youtube: Listing for QKEY:danny haiphong contains 13 rows
-2026-03-12_19:09: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.6nRQ02
-2026-03-12_19:09: job_start: TITLE:Iran HITS US Oil Tankers, Trump PANICS Then THIS HAPPENED : Alexander
-2026-03-12_19:09: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=brQ5K0JowyQ" PID:180029
-2026-03-12_19:09: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-03-12_19:09: action_do: HEADER
-2026-03-12_19:09: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=brQ5K0JowyQ PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-03-12_19:09: action_do: COMPLETED
-2026-03-12_19:09: action_do: POST-PROCESSING
-2026-03-12_19:09: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Danny_Haiphong - Iran_HITS_US_Oil_Tankers_Trump_PANICS_Then_THIS_HAPPENED_Alexander_Mercouris_Patric.mp4
-2026-03-12_19:09: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Danny_Haiphong - Iran_HITS_US_Oil_Tankers_Trump_PANICS_Then_THIS_HAPPENED_Alexander_Mercouris_Patric.mp4
-2026-03-12_19:09: set_final_fn: Overwriting file:Danny_Haiphong - Iran_HITS_US_Oil_Tankers_Trump_PANICS_Then_THIS_HAPPENED_Alexander_Mercouris_Patric.mp4 with:Danny Haiphong - Iran Hits US Oil Tankers Trump Panics Then This.mp4
-2026-03-12_19:09: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Danny Haiphong - Iran Hits US Oil Tankers Trump Panics Then This.mp4
-2026-03-12_19:09: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.6nRQ02 was cleared for:danny haiphong from:action_do
-2026-03-12_19:09: query_youtube: Creating listing for QKEY:dialogueworks STRICT:S
-2026-03-12_19:09: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:S FKEY:Dialogue Works QKEY:dialogueworks SMSG: TYPE:standard 
-2026-03-12_19:09: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
-2026-03-12_19:09: query_youtube: Listing for QKEY:dialogueworks contains 19 rows
-2026-03-12_19:09: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Nhh4xK
-2026-03-12_19:09: job_start: TITLE:Alex Krainer: The Empire Is Collapsing -- And Iran Just Proved It
-2026-03-12_19:09: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=KGotXjKuGNo" PID:187605
-2026-03-12_19:09: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-03-12_19:09: action_do: HEADER
-2026-03-12_19:09: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=KGotXjKuGNo PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-03-12_19:09: action_do: COMPLETED
-2026-03-12_19:09: action_do: POST-PROCESSING
-2026-03-12_19:09: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Alex_Krainer_-_The_Empire_Is_Collapsing_And_Iran_Just_Proved_It.mp4
-2026-03-12_19:09: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Alex_Krainer_-_The_Empire_Is_Collapsing_And_Iran_Just_Proved_It.mp4
-2026-03-12_19:09: set_final_fn: Overwriting file:Dialogue_Works - Alex_Krainer_-_The_Empire_Is_Collapsing_And_Iran_Just_Proved_It.mp4 with:Dialogue Works - Alex Krainer - The Empire Is Collapsing And Iran Just.mp4
-2026-03-12_19:09: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Dialogue Works - Alex Krainer - The Empire Is Collapsing And Iran Just.mp4
-2026-03-12_19:09: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Nhh4xK was cleared for:dialogueworks from:action_do
-2026-03-12_19:10: query_youtube: Creating listing for QKEY:thegrayzone STRICT:S
-2026-03-12_19:10: query_youtube: _QUERY_OPTS: AGE:recent DKEY:The Grayzone ENGINE:youtube EOPT:S FKEY:The Grayzone QKEY:thegrayzone SMSG:0.0% TYPE:standard 
-2026-03-12_19:10: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "thegrayzone"
-2026-03-12_19:10: query_youtube: Listing for QKEY:thegrayzone contains 3 rows
-2026-03-12_19:10: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
-2026-03-12_19:10: parse_rumble: Parsing list for QKEY:duedissidence
-2026-03-12_19:10: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-03-12_19:10: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-03-12_19:10: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-03-12_19:10: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-03-12_19:10: parse_rumble: ROW:2 NO DATA from TAG:videostream__time text{}
-2026-03-12_19:10: parse_rumble: Omitting NDX:3 - TIME no colon
-2026-03-12_19:10: query_rumble: Listing for QKEY:duedissidence contains 22 rows
-2026-03-12_19:10: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.FRu9gL
-2026-03-12_19:10: job_start: TITLE:Bill Maher & SAM Harris Have Dumb-Off Over Iran, Trump Botches War Presser,
-2026-03-12_19:10: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v76wuce-bill-maher-and-sam-harris-have-dumb-off-over-iran-trump-botches-war-presser.html?e9s=src_v1_ucp_l" PID:196896
-2026-03-12_19:10: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-03-12_19:10: action_do: PRE-PROCESSING
-2026-03-12_19:10: action_do: HEADER
-2026-03-12_19:15: action_do: COMPLETED
-2026-03-12_19:15: action_do: POST-PROCESSING
-2026-03-12_19:16: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v76wuce-bill-maher-and-sam-harris-have-dumb-off-over-iran-trump-botches-war-presser.html?e9s=src_v1_ucp_l PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-03-12_19:16: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Bill_Maher_Sam_Harris_Have_DUMB-OFF_Over_Iran_Trump_BOTCHES_War_Presser_Israel_MEDI.mp4
-2026-03-12_19:16: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Bill_Maher_Sam_Harris_Have_DUMB-OFF_Over_Iran_Trump_BOTCHES_War_Presser_Israel_MEDI.mp4
-2026-03-12_19:16: set_final_fn: Overwriting file:Due_Dissidence - Bill_Maher_Sam_Harris_Have_DUMB-OFF_Over_Iran_Trump_BOTCHES_War_Presser_Israel_MEDI.mp4 with:Due Dissidence - Bill Maher SAM Harris Have Dumb-Off Over Iran Trump.mp4
-2026-03-12_19:16: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Due Dissidence - Bill Maher SAM Harris Have Dumb-Off Over Iran Trump.mp4
-2026-03-12_19:16: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.FRu9gL was cleared for:duedissidence from:action_do
+2026-03-16_18:41: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-03-16_18:41: log_update: LOG lines AFTER update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-03-16_18:41: query_rumble: Creating listing for QKEY:DeepFocuswithJohnKiriakou TYPE:channel
+2026-03-16_18:41: parse_rumble: Parsing list for QKEY:DeepFocuswithJohnKiriakou
+2026-03-16_18:41: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-03-16_18:41: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-03-16_18:41: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-03-16_18:41: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-03-16_18:41: query_rumble: Listing for QKEY:DeepFocuswithJohnKiriakou contains 24 rows
+2026-03-16_18:41: query_rumble: Creating listing for QKEY:rtnews TYPE:channel
+2026-03-16_18:41: parse_rumble: Parsing list for QKEY:rtnews
+2026-03-16_18:41: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-03-16_18:41: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-03-16_18:41: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-03-16_18:41: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-03-16_18:41: parse_rumble: ROW:3 NO DATA from TAG:videostream__time text{}
+2026-03-16_18:41: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-03-16_18:41: parse_rumble: Omitting NDX:3 - TIME no colon
+2026-03-16_18:41: query_rumble: Listing for QKEY:rtnews contains 24 rows
+2026-03-16_18:42: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.PSaIol
+2026-03-16_18:42: job_start: TITLE:Crosstalk Bullhorns # Hard Limits
+2026-03-16_18:42: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v776lw8-crosstalk-bullhorns-hard-limits.html?e9s=src_v1_ucp_a" PID:1202592
+2026-03-16_18:42: yt PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/yts/yts
+2026-03-16_18:42: action_do: GENERATING HEADER
+2026-03-16_18:42: action_do: COMPLETED
+2026-03-16_18:42: action_do: POST-PROCESSING
+2026-03-16_18:42: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v776lw8-crosstalk-bullhorns-hard-limits.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/yts/yts
+2026-03-16_18:42: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/RT - CrossTalk_Bullhorns_Hard_Limits.mp4
+2026-03-16_18:42: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/RT - CrossTalk_Bullhorns_Hard_Limits.mp4
+2026-03-16_18:42: set_final_fn: Overwriting file:RT - CrossTalk_Bullhorns_Hard_Limits.mp4 with:RT - Crosstalk Bullhorns Hard Limits.mp4
+2026-03-16_18:42: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/RT - Crosstalk Bullhorns Hard Limits.mp4
+2026-03-16_18:42: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.PSaIol was cleared for:rtnews from:action_do
+2026-03-16_18:42: query_rumble: Creating listing for QKEY:syrianaanalysis TYPE:user
+2026-03-16_18:42: parse_rumble: Parsing list for QKEY:syrianaanalysis
+2026-03-16_18:42: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-03-16_18:42: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-03-16_18:42: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-03-16_18:42: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-03-16_18:42: query_rumble: Listing for QKEY:syrianaanalysis contains 28 rows
+2026-03-16_18:43: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
+2026-03-16_18:43: parse_rumble: Parsing list for QKEY:tuckercarlson
+2026-03-16_18:43: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-03-16_18:43: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-03-16_18:43: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-03-16_18:43: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-03-16_18:43: parse_rumble: ROW:3 NO DATA from TAG:videostream__time text{}
+2026-03-16_18:43: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-03-16_18:43: parse_rumble: Omitting NDX:3 - TIME no colon
+2026-03-16_18:43: query_rumble: Listing for QKEY:tuckercarlson contains 24 rows
+2026-03-16_18:43: query_youtube: Creating listing for QKEY:Neil-Oliver STRICT:null
+2026-03-16_18:43: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Neil Oliver ENGINE:youtube EOPT:null FKEY:Neil Oliver QKEY:Neil-Oliver TYPE:standard 
+2026-03-16_18:43: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "Neil-Oliver"
+2026-03-16_18:43: query_youtube: Listing for QKEY:Neil-Oliver contains 4 rows
+2026-03-16_18:43: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Z6bpvc
+2026-03-16_18:43: job_start: TITLE:Neil Oliver: SHAME on them!
+2026-03-16_18:43: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=pJUDnK9-lMc" PID:1220144
+2026-03-16_18:43: yt PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/yts/yts
+2026-03-16_18:43: action_do: GENERATING HEADER
+2026-03-16_18:43: action_do: COMPLETED
+2026-03-16_18:43: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=pJUDnK9-lMc PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/yts/yts
+2026-03-16_18:43: action_do: POST-PROCESSING
+2026-03-16_18:43: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Neil_Oliver - Neil_Oliver_-_SHAME_on_them.mp4
+2026-03-16_18:43: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Neil_Oliver - Neil_Oliver_-_SHAME_on_them.mp4
+2026-03-16_18:43: set_final_fn: Overwriting file:Neil_Oliver - Neil_Oliver_-_SHAME_on_them.mp4 with:Neil Oliver - Neil Oliver - SHAME On Them.mp4
+2026-03-16_18:43: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Neil Oliver - Neil Oliver - SHAME On Them.mp4
+2026-03-16_18:43: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Z6bpvc was cleared for:Neil-Oliver from:action_do

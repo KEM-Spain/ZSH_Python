@@ -1,2 +1,142 @@
-2026-01-12_17:42: log_update: LOG lines BEFORE update:1 ./cfg/yts.downloads
-2026-01-12_17:42: log_update: LOG lines AFTER update:1 ./cfg/yts.downloads
+2026-03-14_23:24: log_update: LOG lines BEFORE update:2 ./cfg/yts.downloads
+2026-03-14_23:24: log_update: ERROR Got duplicate inode:6371220 - skipping duplicates
+2026-03-14_23:24: log_update: LOG lines AFTER update:1 ./cfg/yts.downloads
+2026-03-14_23:24: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:S
+2026-03-14_23:24: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:S FKEY:Alex Christoforou QKEY:alexchristoforou TYPE:standard 
+2026-03-14_23:24: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "alexchristoforou"
+2026-03-14_23:24: query_youtube: Listing for QKEY:alexchristoforou contains 9 rows
+2026-03-14_23:24: action_do: COMPLETED (very small file) NDX:1
+2026-03-14_23:25: action_do: POST-PROCESSING
+2026-03-14_23:25: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Alex Christoforou - US Hits Kharg Island 5000 Marines Deployed. Trump.mp4
+2026-03-14_23:25: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Alex Christoforou - US Hits Kharg Island 5000 Marines Deployed. Trump.mp4
+2026-03-14_23:25: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Alex Christoforou - US Hits Kharg Island 5000 Marines Deployed. Trump.mp4
+2026-03-14_23:25: log_clear: Temp log file:./cfg/test.log was cleared for:alexchristoforou from:action_do
+2026-03-15_09:58: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_09:59: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_10:03: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:04: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:09: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:17: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_10:18: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_10:18: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_10:18: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:19: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:20: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:21: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:21: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:30: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:30: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:32: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:34: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_10:34: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_10:34: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_10:36: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_10:37: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_10:39: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_10:39: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_10:39: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_10:39: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_11:37: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_11:38: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:38: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_11:38: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_11:38: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_11:38: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:39: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_11:39: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_11:39: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_11:43: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:43: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_11:43: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:43: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_11:43: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_11:43: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_11:54: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:54: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_11:55: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:55: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_11:56: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:56: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_11:56: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_11:56: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_11:57: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:58: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_11:58: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_11:58: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_11:58: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_11:58: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_11:58: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_11:58: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_12:00: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:00: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:00: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_12:00: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_12:02: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:02: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:02: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_12:02: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_12:17: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:17: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:18: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:18: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:19: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:19: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:22: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:22: /home/kmiller/Code/LOCAL/yts/parser/testit: COMPLETED
+2026-03-15_12:22: /home/kmiller/Code/LOCAL/yts/parser/testit: POST-PROCESSING
+2026-03-15_12:22: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:22: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:23: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_12:23: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE
+2026-03-15_12:27: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:27: /home/kmiller/Code/LOCAL/yts/parser/testit: ERROR
+2026-03-15_12:27: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:27: /home/kmiller/Code/LOCAL/yts/parser/testit: ERROR
+2026-03-15_12:29: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:29: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:29: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:29: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:32: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:32: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:33: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:33: /home/kmiller/Code/LOCAL/yts/parser/testit: ERROR
+2026-03-15_12:35: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:35: /home/kmiller/Code/LOCAL/yts/parser/testit: ERROR
+2026-03-15_12:38: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:39: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:40: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:40: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:46: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:46: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:48: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:50: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:50: /home/kmiller/Code/LOCAL/yts/parser/testit: TRANSMISSION ERROR 1 of 3
+2026-03-15_12:50: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:50: /home/kmiller/Code/LOCAL/yts/parser/testit: TRANSMISSION ERROR 1 of 3
+2026-03-15_12:54: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:54: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:54: /home/kmiller/Code/LOCAL/yts/parser/testit: LIVE BROADCAST
+2026-03-15_12:54: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:55: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:55: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:55: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:55: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:55: /home/kmiller/Code/LOCAL/yts/parser/testit: TRANSMISSION ERROR 1 of 3
+2026-03-15_12:56: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:56: /home/kmiller/Code/LOCAL/yts/parser/testit: TRANSMISSION ERROR 1 of 3
+2026-03-15_12:56: /home/kmiller/Code/LOCAL/yts/parser/testit: PRE-PROCESSING
+2026-03-15_12:56: /home/kmiller/Code/LOCAL/yts/parser/testit: GENERATING HEADER
+2026-03-15_12:56: /home/kmiller/Code/LOCAL/yts/parser/testit: LIVE BROADCAST
+2026-03-15_12:56: /home/kmiller/Code/LOCAL/yts/parser/testit: ALREADY DOWNLOADED
+2026-03-15_12:57: /home/kmiller/Code/LOCAL/yts/parser/testit: FUTURE

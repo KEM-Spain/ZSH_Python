@@ -26,14 +26,19 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 _CFG=~/Code/LOCAL/yts/parser/cfg
 
 [[ -n ${1} ]] && LOG_IN=${_CFG}/${1} || exit_leave "Need LOG_IN"
-[[ -n ${2} ]] && LOG_OUT=${2} || exit_leave "Need LOG_OUT"
+[[ -n ${2} ]] && LOG_OUT=${_CFG}/${2} || exit_leave "Need LOG_OUT"
 
-[[ ! -f ${LOG_IN} ]] && "LOG_IN:${LOG_IN} not found" && exit
-[[ -f ${LOG_OUT} ]] && /bin/rm -f ${LOG_OUT}
+[[ -e ${LOG_OUT} ]] && /usr/bin/rm -r ${LOG_OUT}
+[[ -e /tmp/log_lines ]] && /usr/bin/rm -r /tmp/log_lines
 
 while read LINE;do
-	echo ${LINE} >> ${LOG_OUT}
+	echo ${LINE} >> /tmp/log_lines
 done < ${LOG_IN}
 
-#[[ -e ${LOG_OUT} ]] && /bin/rm -f ${LOG_OUT}
+# Logs for testing downloads have to converted before using to test - progress has to be verticalized
+while read -u3 -r LOG_LINE;do
+	echo "${LOG_LINE}" >>${LOG_OUT}
+	sleep .4
+done 3< /tmp/log_lines
+
 exit_leave

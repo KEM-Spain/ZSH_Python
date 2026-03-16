@@ -19,11 +19,8 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-#Declarations
-typeset -a SEL_LIST
-
 #Constants
-INST_DIR=~/.npm-packages/lib/node_modules
+LIST_DIR=~/.npm-packages/lib/node_modules
 API_DIR=/usr/share/doc/nodejs/api
 SITE="https://nodejs.org/api/modules.html"
 
@@ -33,7 +30,7 @@ SITE="https://nodejs.org/api/modules.html"
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
 source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/SEL_LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
 
 for D in ${=_DEPS_};do
 	if [[ -e ${_LIB_DIR}/${D} ]];then
@@ -84,6 +81,7 @@ opt_type () {
 	case ${OPT} in
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
+		m) echo "<MODULE>";;
 		t) echo "<FILE_TYPE>";;
 	esac
 }
@@ -96,27 +94,27 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}] <MODULE>${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}] $(opt_type m)${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-i${RESET} list installed modules"
+	echo -e "${WHITE_FG}-l${RESET} list installed modules"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_err "${PENDING_MSGS}")
+	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDai"
+OPTSTR=":HDal"
 OPTIND=0
 API=false
-INST=false
+LIST=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
 		H) usage;;
 		D) dbg_set_level;;
 		a) API=true;;
-		i) INST=true;;
+		l) LIST=true;;
 		:) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 		\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -128,9 +126,14 @@ shift $((OPTIND -1))
 #Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ ${INST} == 'true' ]] && do_rmcup && npm ls && exit_leave
+if [[ ${LIST} == 'true' ]];then
+	do_rmcup
+	echo "\n${CYAN_FG}Installed node modules${RESET}\n"
+	npm ls
+	exit_leave
+fi
 
-[[ -z ${1} ]] && usage
+[[ -z ${1} ]] && usage "Missing argument:$(opt_type m)"
 
 npm docs ${1}
 

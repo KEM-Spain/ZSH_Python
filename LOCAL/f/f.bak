@@ -56,7 +56,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -92,11 +92,10 @@ usage () {
 	echo -e "${WHITE_FG}-d${RESET} depth; repetition increases depth"
 	echo -e "${WHITE_FG}-p${RESET} search path (default PWD)"
 	echo -e "${WHITE_FG}-t${RESET} $(opt_type t) (default:any)"
-	echo -e "${WHITE_FG}-v${RESET} verbose"
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
@@ -107,9 +106,8 @@ TYPE=''
 OPTIND=0
 REGEX_ARG=''
 FIND_PATH=${PWD}
-VERBOSE=false
 
-OPTSTR=":HDLdp:t:v"
+OPTSTR=":HDLdp:t:"
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -119,7 +117,6 @@ while getopts ${OPTSTR} OPTION;do
      d) depth_set_level;;
      p) FIND_PATH=${OPTARG};;
      t) TYPE="${OPTARG}";;
-     v) VERBOSE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -150,24 +147,27 @@ case ${TYPE} in
 	c) TYPE='-type c';TDESC='Char Special';;
 	s) TYPE='-type s';TDESC='Socket';;
 	b) TYPE='-type b';TDESC='Block Special';;
-	*) TYPE='';TDESC='None';;
+	*) usage "Invalid type:${TYPE}"
 esac
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nTYPE:${TYPE:-any}"
 
-[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Find command${RESET}: sudo find ${WHITE_FG}${FIND_PATH}${RESET} -maxdepth ${WHITE_FG}${MAXDEPTH}${RESET} ${WHITE_FG}${REGEX}${RESET} ${WHITE_FG}Type Filter${RESET}:${CYAN_FG}${TDESC}${RESET}" | tr -s '[:space:]'
 
 CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE}"
 
 LIST=("${(f)$(eval ${CMD})}")
 if ! arr_is_populated "${LIST}" ;then
-	exit_leave $(msg_exit W "No results for query")
+	exit_leave $(err_msg_exit W "No results for query")
 fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LIST COUNT:${#LIST}"
 
 {
+MSG="${CYAN_FG}Find command${RESET}:${WHITE_FG}${CMD} ${CYAN_FG}Type Filter${RESET}:(${WHITE_FG}${TDESC}${RESET})"
+LEN=$(str_no_ansi ${MSG})
+echo "${MSG}"
+echo $(str_unicode_line ${#LEN})
 if [[ ${LISTING} == 'true' ]];then
 	ls -lAdrt ${LIST}
 else

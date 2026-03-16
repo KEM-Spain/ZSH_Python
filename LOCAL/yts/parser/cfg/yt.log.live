@@ -1,0 +1,22 @@
+job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=Jx7CcLnsYeM"
+job_start: PID:1023286
+[youtube] Extracting URL: https://youtube.com/watch?v=Jx7CcLnsYeM
+[youtube] Jx7CcLnsYeM: Downloading webpage
+[youtube] Jx7CcLnsYeM: Downloading android sdkless player API JSON
+[youtube] Jx7CcLnsYeM: Downloading web safari player API JSON
+WARNING: [youtube] Jx7CcLnsYeM: Some web_safari client https formats have been skipped as they are missing a URL. YouTube is forcing SABR streaming for this client. See  https://github.com/yt-dlp/yt-dlp/issues/12482  for more details
+[youtube] Jx7CcLnsYeM: Downloading m3u8 information
+WARNING: [youtube] Jx7CcLnsYeM: Some web client https formats have been skipped as they are missing a URL. YouTube is forcing SABR streaming for this client. See  https://github.com/yt-dlp/yt-dlp/issues/12482  for more details
+[info] Jx7CcLnsYeM: Downloading 1 format(s): 96-13
+[download] Sleeping 5.00 seconds as required by the site...
+[hlsnative] Downloading m3u8 manifest
+[hlsnative] Total fragments: 126
+[download] Destination: /home/kmiller/Downloads/Torrents/Library/web/blancolirio - NTSB_Final_Report_N52156_Cessna_Cardinal_RG_KGOO.mp4
+[download]   2.4% of ~ 126.00KiB at    964.03B/s ETA Unknown (frag 0/126)
+[download]   1.9% of ~ 378.00KiB at    964.03B/s ETA Unknown (frag 0/126)
+[download]   1.7% of ~ 882.00KiB at    964.03B/s ETA Unknown (frag 0/126)
+ERROR: [youtube] cannot reuse http
+ERROR: [youtube] cannot reuse http
+ERROR: [youtube] cannot reuse http
+ERROR: [youtube] cannot reuse http
+ERROR: [youtube] cannot reuse http
