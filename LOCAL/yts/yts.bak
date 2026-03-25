@@ -1705,7 +1705,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		if fav_get;then
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
-				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I>${_QUERY_OPTS[DKEY]:gs/_/ /}<N>..."
+				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]:gs/_/ /}<N>..."
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}

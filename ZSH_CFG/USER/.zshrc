@@ -172,14 +172,14 @@ _set_ssid () {
 
 	local SSID=$(wless -s)
 	local NTWK=$(nut conn)
-	local KEY
+	local KEY=n
 
 	tput sc
 	[[ -n ${SSID} ]] && WIFI=" to ${WHITE_FG}${SSID}${RESET}" && echo ${NTWK}${WIFI}
 
 	if [[ ! ${SSID} =~ ${_WIFI_PREF} ]];then
 		echo -n "Change wireless to:${WHITE_FG}${_WIFI_PREF}${RESET} [y]es, [n]o [c]hoose:"
-		read -sk1 KEY
+		read -t3 -sk1 KEY # Time out after 3 seconds; default is no
 		if [[ ${KEY:l} == "y" ]];then
 			tput rc
 			tput ed
