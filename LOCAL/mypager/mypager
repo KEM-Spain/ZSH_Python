@@ -60,6 +60,8 @@ page () {
 	my $LINES;
 	my $TERM_LINES = `tput lines`;
 	my $WAIT = $ARGV[0] if (defined($ARGV[0]));
+	my $BOLD="\033[1m";
+	my $MAGENTA="\033[35m";
 	my $WHITE_ON_GREY="\033[0m\033[0;1;37;100m";
 	my $WHITE="\033[37m";
 	my $RESET="\033[m";
@@ -77,11 +79,11 @@ page () {
 				print $BUFFER;
 				print "\n";
 				if (defined $WAIT) { # If WAIT is populated end with msg
-					print $CSROF . $WHITE_ON_GREY . "Press any key" . $RESET . "...";
+					print $CSROF . $BOLD . $MAGENTA . "Press any key" . $RESET . "...";
 				}
 				exit 1;
 			} 
-		} # The first screen is bufferred
+		} # The first screen is buffered
 
 		open LESS, "| $LESS_CMD"; # Feed the first screen to less
 		print LESS $BUFFER; 
