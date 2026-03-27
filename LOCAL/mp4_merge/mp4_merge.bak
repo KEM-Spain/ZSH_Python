@@ -122,7 +122,6 @@ shift $(( OPTIND -1 ))
 #--End GetOpts--
 
 # Execution
-# TODO: option to remove files that were merged from the target dir
 clear
 SEARCHTERM=''
 [[ ${#} -ne 0 ]] && SEARCHTERM=${@}
