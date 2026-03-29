@@ -60,10 +60,16 @@ export DISPLAY=:0
 
 # Vars
 _TERMCNT=$(terms -c)
+_NDX=0
 
 [[ -o login ]] && LOGIN=login || LOGIN=''
 
 # Functions 
+_check_term () {
+	local THIS_TERM=$(tty)
+	print -Pn "\e]0;Terminal ${(C)_NUM_WORDS[${THIS_TERM:t}]}\a"
+}
+
 _term_wid () {
 	local WID=$(wmctrl -l | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
 	echo ${WID}
@@ -169,7 +175,6 @@ _wifi_on () {
 }
 
 _set_ssid () {
-
 	local SSID=$(wless -s)
 	local NTWK=$(nut conn)
 	local KEY=n
@@ -241,6 +246,7 @@ precmd () {
 
 	fi
 	echo ${PWD} > /tmp/pwd.last
+	_check_term
 }
 
 # Hooks
@@ -339,7 +345,7 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		fi
 	fi
 else
-	print -Pn "\e]0;Terminal ${(C)_NUM_WORDS[${_TERMCNT}]}\a"
+	print -Pn "\e]0;Terminal ${(C)_NUM_WORDS[$(terms -c)]}\a"
 	WID=$(win_id | cut -d'|' -f1)
 	wmctrl -i -R ${WID} -b add,maximized_vert,maximized_horz
 fi

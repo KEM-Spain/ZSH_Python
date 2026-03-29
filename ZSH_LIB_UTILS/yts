@@ -217,7 +217,7 @@ action_do () {
 						break
 						;;
 					*error*)
-						MSG=${LOG_LINE[1,50]}
+						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))

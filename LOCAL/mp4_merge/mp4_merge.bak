@@ -91,6 +91,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} normalize audio prior to merge"
+	echo -e "${WHITE_FG}-m${RESET} move original files to ${_SAFEDIR}"
 	echo -e "${WHITE_FG}-o${RESET} $(opt_type f) output file name"
 	echo -e "${WHITE_FG}-p${RESET} $(opt_type d) alternate media path [default:${_DEFAULT_DIR}]"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -99,18 +100,20 @@ usage () {
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDao:p:"
+OPTSTR=":HDamo:p:"
 OPTIND=0
 
 OUT_FILE=''
 ALT_PATH=''
 NORM_AUDIO=false
+MOVE_FILES=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      a) NORM_AUDIO=true;;
+     m) MOVE_FILES=true;;
      o) OUT_FILE=${OPTARG};;
      p) ALT_PATH=${OPTARG};;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
@@ -161,6 +164,7 @@ fi
 if [[ -z ${_FILELIST} ]];then
 	exit_leave 1 "${_SCRIPT_TAG} ${RED_FG}No media file matches for argument${RESET}:${SEARCHTERM}"
 else
+	[[ ${NORM_AUDIO} == 'true' ]] && echo "Audio normalization is ${GREEN_FG}active${RESET}"
 	echo "DESTINATION_FILE:${_DESTINATION_FILE:h}/${WHITE_FG}${ITALIC}${_DESTINATION_FILE:t}${RESET}"
 	[[ -e ${_DESTINATION_FILE} ]] && /bin/rm -f ${_DESTINATION_FILE}
 
@@ -191,11 +195,11 @@ for F in ${(o)_FILELIST};do
 		FN=$(fsub -Cs <<<${F} | tr -d $'\x27') # Compact file names to eliminate problematic spaces in file names
 		echo "${GREEN_FG}Adding${RESET} ${F} to worklist..."
 		cp ${F} ${_WORKDIR}/${FN:t} >/dev/null 2>&1
-		echo "${CYAN_FG}Backing up${RESET} ${F} to ${WHITE_FG}${_SAFEDIR}${RESET}..."
-		cp ${F} ${_SAFEDIR} >/dev/null 2>&1
 		_FILES_TO_MERGE+=${_WORKDIR}/${FN:t}
+		echo "${CYAN_FG}Backing up${RESET} ${F} to ${WHITE_FG}${_SAFEDIR}${RESET}..."
+		[[ ${MOVE_FILES} == 'true' ]] && mv -f ${F} ${_SAFEDIR} >/dev/null 2>&1
 	else
-		echo "File:${F} not of type media - skipped" >&2
+		echo "File:${F} not eligible media - skipped" >&2
 	fi
 done
 
@@ -206,7 +210,7 @@ if [[ ${NORM_AUDIO} == 'true' ]];then
 		echo "Reencoding audio for ${F}..."
 		((NDX++))
 		RECODE_OUT="${_WORKDIR}/aud_recode_${NDX}.mp4"
-		ffmpeg -y -i ${F} -nostats -loglevel error -c:v copy -c:a aac -b:a 128k ${RECODE_OUT}
+		ffmpeg-bar -y -i ${F} -nostats -loglevel error -c:v copy -c:a aac -b:a 128k ${RECODE_OUT}
 		echo "file '${RECODE_OUT}'" >> ${_FLIST}
 	done
 else
@@ -218,8 +222,7 @@ fi
 
 echo "Merging ${WHITE_FG}${#_FILES_TO_MERGE}${RESET} files..."
 ffmpeg -y -loglevel error -f concat -safe 0 -i ${_FLIST} -c copy ${_DESTINATION_FILE}
-RC=${?}
-
-[[ ${RC} -ne 0 ]] && echo "${RED_FG}ffmpeg had errors${RESET}"
+[[ ${?} -ne 0 ]] && echo "${RED_FG}ffmpeg had errors${RESET}"
+# TODO: restore files that were to be merged from the _SAFEDIR if errors were present
 [[ -e ${_DESTINATION_FILE} ]] && echo "${_DESTINATION_FILE:h}/${ITALIC}${WHITE_FG}${_DESTINATION_FILE:t}${RESET} was created"
 
