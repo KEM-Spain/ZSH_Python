@@ -197,7 +197,10 @@ for F in ${(o)_FILELIST};do
 		cp ${F} ${_WORKDIR}/${FN:t} >/dev/null 2>&1
 		_FILES_TO_MERGE+=${_WORKDIR}/${FN:t}
 		echo "${CYAN_FG}Backing up${RESET} ${F} to ${WHITE_FG}${_SAFEDIR}${RESET}..."
-		[[ ${MOVE_FILES} == 'true' ]] && mv -f ${F} ${_SAFEDIR} >/dev/null 2>&1
+		if [[ ${MOVE_FILES} == 'true' ]];then
+			echo "Moving ${F} to ${_SAFEDIR}"
+			mv -f ${F} ${_SAFEDIR} # >/dev/null 2>&1
+		fi
 	else
 		echo "File:${F} not eligible media - skipped" >&2
 	fi

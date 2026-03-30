@@ -29,6 +29,7 @@ _VID_REGEX='.*\.\(mp4\|avi\|mkv\)$'
 _WORKDIR=/tmp/.mp4_merge
 _SAFEDIR=/tmp/.mp4_merge_backup
 _FLIST=${_WORKDIR}/flist
+export BAR_SIZE_RATIO=0.25
 
 # Declarations
 typeset -a _FILELIST=()
@@ -190,6 +191,7 @@ else
 fi
 
 for F in ${(o)_FILELIST};do
+	[[ ${F:t:r} == 'vid_merge' ]] && continue
 	FTYPE=$(file -b ${F})
 	if [[ ${FTYPE:l} =~ 'media|matroska' ]];then
 		FN=$(fsub -Cs <<<${F} | tr -d $'\x27') # Compact file names to eliminate problematic spaces in file names
@@ -210,10 +212,10 @@ if [[ ${NORM_AUDIO} == 'true' ]];then
 	echo "Normalizing audio..."
 	NDX=0
 	for F in ${_FILES_TO_MERGE};do
-		echo "Reencoding audio for ${F}..."
 		((NDX++))
 		RECODE_OUT="${_WORKDIR}/aud_recode_${NDX}.mp4"
-		ffmpeg-bar -y -i ${F} -nostats -loglevel error -c:v copy -c:a aac -b:a 128k ${RECODE_OUT}
+		export BAR_FILENAME_LENGTH=${#RECODE_OUT:t}
+		ffmpeg-bar -y -i ${F} -c:v copy -c:a aac -b:a 128k ${RECODE_OUT}
 		echo "file '${RECODE_OUT}'" >> ${_FLIST}
 	done
 else

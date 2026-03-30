@@ -65,14 +65,44 @@ _NDX=0
 [[ -o login ]] && LOGIN=login || LOGIN=''
 
 # Functions 
-_check_term () {
-	local THIS_TERM=$(tty)
-	print -Pn "\e]0;Terminal ${(C)_NUM_WORDS[${THIS_TERM:t}]}\a"
+_check_updates () {
+	sudo chmod 644 ${_MOTD_DIR}/10-help-text # disable
+
+	local -a MSGS_1
+	local -a MSGS_2
+	local COUNT=0
+	local NUM=0
+	local M
+
+	MSGS_1+=("${(f)$(sudo run-parts ${_MOTD_DIR} | grep -vi esm)}")
+
+	for M in ${MSGS_1};do
+		[[ ${M:l} =~ 'esm' ]] && continue
+		[[ ! ${M:l} =~ 'applied' ]] && continue
+		NUM=$(cut -d' ' -f1 <<<${M})
+		if [[ ${NUM} -gt 0 && ${M} =~ 'applied' ]];then
+			(( COUNT += ${NUM} ))
+		fi
+	done
+
+	MSGS_2=("${(f)$(apt list --upgradable 2>/dev/null)}")
+
+	if [[ ${COUNT} -ne 0 ]];then
+		for M in ${MSGS_2};do
+			[[ ! ${M:l} =~ 'listing\|done' ]] && continue
+			((COUNT++))
+		done
+	fi
+
+	if [[ ${COUNT} -eq 0 ]];then
+		_MOTD+="${ITALIC}No updates available...${RESET}"
+	else
+		_MOTD+="${GREEN_FG}${BOLD}${ITALIC}Updates available:${RESET}(${WHITE_FG}${COUNT}${RESET})"
+	fi
 }
 
-_term_wid () {
-	local WID=$(wmctrl -l | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
-	echo ${WID}
+_cursor_on () {
+	tput cnorm
 }
 
 _cursor_row () {
@@ -83,10 +113,6 @@ _cursor_row () {
 	ROW=$(cut -d';' -f1 <<<${ROW} | tr -dc '0-9') # Split and strip non digits (escape seq etc.)
 	((ROW--))
 	echo ${ROW}
-}
-
-_cursor_on () {
-	tput cnorm
 }
 
 _reload_aliases () {
@@ -128,52 +154,6 @@ _reload_funcs () {
 	done
 }
 
-_check_updates () {
-	sudo chmod 644 ${_MOTD_DIR}/10-help-text # disable
-
-	local -a MSGS_1
-	local -a MSGS_2
-	local COUNT=0
-	local NUM=0
-	local M
-
-	MSGS_1+=("${(f)$(sudo run-parts ${_MOTD_DIR} | grep -vi esm)}")
-
-	for M in ${MSGS_1};do
-		[[ ${M:l} =~ 'esm' ]] && continue
-		[[ ! ${M:l} =~ 'applied' ]] && continue
-		NUM=$(cut -d' ' -f1 <<<${M})
-		if [[ ${NUM} -gt 0 && ${M} =~ 'applied' ]];then
-			(( COUNT += ${NUM} ))
-		fi
-	done
-
-	MSGS_2=("${(f)$(apt list --upgradable 2>/dev/null)}")
-
-	if [[ ${COUNT} -ne 0 ]];then
-		for M in ${MSGS_2};do
-			[[ ! ${M:l} =~ 'listing\|done' ]] && continue
-			((COUNT++))
-		done
-	fi
-
-	if [[ ${COUNT} -eq 0 ]];then
-		_MOTD+="${ITALIC}No updates available...${RESET}"
-	else
-		_MOTD+="${GREEN_FG}${BOLD}${ITALIC}Updates available:${RESET}(${WHITE_FG}${COUNT}${RESET})"
-	fi
-}
-
-_wifi_on () {
-	local R=$(nmcli -c no r | tail -1 | cut -d' ' -f1)
-
-	if [[ ! ${R} =~ "enabled" ]];then
-		nmcli radio wifi on
-		return 1
-	fi
-	return 0
-}
-
 _set_ssid () {
 	local SSID=$(wless -s)
 	local NTWK=$(nut conn)
@@ -208,8 +188,28 @@ _set_ssid () {
 	fi
 }
 
+_set_term_header () {
+	local THIS_TERM=$(tty)
+	print -Pn "\e]0;Terminal ${THIS_TERM:t} of $(terms -c)\a"
+}
+
 _term_count () {
 	terms -c
+}
+
+_term_wid () {
+	local WID=$(wmctrl -l | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
+	echo ${WID}
+}
+
+_wifi_on () {
+	local R=$(nmcli -c no r | tail -1 | cut -d' ' -f1)
+
+	if [[ ! ${R} =~ "enabled" ]];then
+		nmcli radio wifi on
+		return 1
+	fi
+	return 0
 }
 
 stty -ixon
@@ -246,7 +246,7 @@ precmd () {
 
 	fi
 	echo ${PWD} > /tmp/pwd.last
-	_check_term
+	_set_term_header
 }
 
 # Hooks
@@ -345,7 +345,6 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		fi
 	fi
 else
-	print -Pn "\e]0;Terminal ${(C)_NUM_WORDS[$(terms -c)]}\a"
 	WID=$(win_id | cut -d'|' -f1)
 	wmctrl -i -R ${WID} -b add,maximized_vert,maximized_horz
 fi
