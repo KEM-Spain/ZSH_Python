@@ -213,7 +213,7 @@ if [[ ${NORM_AUDIO} == 'true' ]];then
 	NDX=0
 	for F in ${_FILES_TO_MERGE};do
 		((NDX++))
-		RECODE_OUT="${_WORKDIR}/aud_recode_${NDX}.mp4"
+		RECODE_OUT="${_WORKDIR}/recode_${NDX}.mp4"
 		export BAR_FILENAME_LENGTH=${#RECODE_OUT:t}
 		ffmpeg-bar -y -i ${F} -c:v copy -c:a aac -b:a 128k ${RECODE_OUT}
 		echo "file '${RECODE_OUT}'" >> ${_FLIST}
@@ -228,6 +228,5 @@ fi
 echo "Merging ${WHITE_FG}${#_FILES_TO_MERGE}${RESET} files..."
 ffmpeg -y -loglevel error -f concat -safe 0 -i ${_FLIST} -c copy ${_DESTINATION_FILE}
 [[ ${?} -ne 0 ]] && echo "${RED_FG}ffmpeg had errors${RESET}"
-# TODO: restore files that were to be merged from the _SAFEDIR if errors were present
 [[ -e ${_DESTINATION_FILE} ]] && echo "${_DESTINATION_FILE:h}/${ITALIC}${WHITE_FG}${_DESTINATION_FILE:t}${RESET} was created"
 

@@ -269,7 +269,7 @@ action_do () {
 						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
 						continue
 						;;
-					*100%*|*'fixing mpeg-ts'*|*fixupm3u8*|*videoremuxer*)
+					*100%*|*'fixing mpeg-ts'*|*fixup*|*remux*)
 						logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 						msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
 						_DOWNLOADS[${M}]=true
@@ -1118,7 +1118,7 @@ open_website () {
 	case ${1} in
 		y) firefox "https://www.youtube.com/feed/subscriptions" >/dev/null 2>&1 &;;
 		r) firefox "https://www.rumble.com/subscriptions" >/dev/null 2>&1 &;;
-		*) exit_leave $(err_msg_exit E "Enter y for YouTube, r for Rumble")
+		*) exit_leave $(err_msg_exit E "Invalid $(opt_type w): Enter y for YouTube, r for Rumble")
 	esac
 }
 
@@ -1606,7 +1606,7 @@ shift $(( OPTIND  - 1 ))
 
 # Execution
 if [[ -n ${AGE_OPT} ]];then
-	[[ ! ${AGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]] && usage "Invalid value for AGE_OPT:${AGE_OPT}"
+	[[ ! ${AGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]] && usage "Invalid $(opt_type a):${AGE_OPT}"
 else
 	AGE_OPT=recent # Default
 fi
@@ -1658,7 +1658,7 @@ if [[ ${ENGINE} == 'youtube' ]];then
 	g_PROXY_CMD="node ${_JS_SCRIPT} ${(qqq)SEARCHTERM}"
 else
 	[[ -z ${ENG_OPT} ]] && ENG_OPT=g
-	[[ ${_RUMBLE_QRY_OPTS[(i)${ENG_OPT}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave $(err_msg_exit "Invalid query type:${ENG_OPT}")
+	[[ ${_RUMBLE_QRY_OPTS[(i)${ENG_OPT}]} -gt ${#_RUMBLE_QRY_OPTS} ]] && exit_leave $(err_msg_exit "Invalid $(opt_type T): ${ENG_OPT}")
 	if [[ ${VERSION_OPT} == 'true'  ]];then
 		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")
 	elif [[ -n ${AGE_OPT} ]];then
@@ -1706,6 +1706,8 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
 				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]:gs/_/ /}<N>..."
+				_LOCAL_LIST=()
+				_SORT_TABLE=()
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}

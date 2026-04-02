@@ -48,7 +48,7 @@ term_pids () {
 # Execution
 [[ ${#_LIST} -gt 1 ]] && TAG=sessions || TAG=session
 COUNT_ONLY=false
-TERM_PID=$(ps | grep --color=never terminator | head -1 | tr -s ' ' | cut -d' ' -f2)
+TERM_PID=$(ps | grep --color=never zsh | head -1 | tr -s ' ' | cut -d' ' -f2)
 THIS_TTY=$(tty)
 
 OPT=${1:=null}

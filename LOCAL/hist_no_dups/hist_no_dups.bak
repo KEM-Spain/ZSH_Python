@@ -36,7 +36,7 @@ typeset -a _LOCATE_OPTS=()
 typeset -a FREQ_OPT_CMDS=()
 
 # Constants
-_TESTING_DIR=${PWD}
+_TESTING_DIR=${PWD}/testing
 _HIST_DIR=${HOME}
 _HIST_TMP=/tmp
 _CACHE_DIR=~/.local/share/${_SCRIPT}
@@ -116,12 +116,14 @@ cmd_filter () {
 
 		VALID=false
 		if [[ -n ${CMD_TGT} && -n ${_HIST_CACHE} ]];then
+			set -xv
 			if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
 				VALID='true'
 				((CACHE++))
 				printf '%s\n' "${K}"
 				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
 			fi
+			set +xv;read
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
@@ -359,6 +361,7 @@ for L in ${_REBUILT_HIST};do
 done
 
 if [[ ${TESTING_OPT} == 'true' ]];then
+	[[ ! -d ${_TESTING_DIR} ]] && mkdir ${_TESTING_DIR}
 	echo "History output file:${_TESTING_DIR}/${_HIST_NEW}"
 	cp ${_HIST_NEW} ${_TESTING_DIR}
 else

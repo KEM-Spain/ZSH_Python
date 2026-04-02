@@ -1,0 +1,100 @@
+#!/usr/bin/zsh
+typeset -A TAB=()
+
+TAB[RESET]=0
+TAB[BOLD]=1
+TAB[FAINT]=2
+TAB[ITALIC]=3
+TAB[UNDER]=4
+TAB[BLINK1]=5
+TAB[BLINK2]=6
+TAB[REVERSE]=7
+TAB[HIDDEN]=8
+TAB[STRIKE]=9
+
+TAB[F_BLACK]=30
+TAB[F_RED]=31
+TAB[F_GREEN]=32
+TAB[F_YELLOW]=33
+TAB[F_BLUE]=34
+TAB[F_MAGENTA]=35
+TAB[F_CYAN]=36
+TAB[F_WHITE]=37
+
+TAB[B_BLACK]=40
+TAB[B_RED]=41
+TAB[B_GREEN]=42
+TAB[B_YELLOW]=43
+TAB[B_BLUE]=44
+TAB[B_MAGENTA]=45
+TAB[B_CYAN]=46
+TAB[B_WHITE]=47
+
+TAB[BF_BLACK]=90
+TAB[BF_RED]=91
+TAB[BF_GREEN]=92
+TAB[BF_YELLOW]=93
+TAB[BF_BLUE]=94
+TAB[BF_MAGENTA]=95
+TAB[BF_CYAN]=96
+TAB[BF_WHITE]=97
+
+TAB[BB_BLACK]=100
+TAB[BB_RED]=101
+TAB[BB_GREEN]=102
+TAB[BB_YELLOW]=103
+TAB[BB_BLUE]=104
+TAB[BB_MAGENTA]=105
+TAB[BB_CYAN]=106
+TAB[BB_WHITE]=107
+
+clear
+R="\033[m"
+W="\033[37;4m"
+
+tput cup 0 0
+echo "${W}Effects${R}"
+for (( X=0; X <= 9; X++ ));do
+	tput cup $((X + 1)) 0
+	tput el
+	printf "%3d %-15s \033[37;${X}m TEXT ${R}\n" ${X} ${(k)TAB[(r)${X}]}
+done
+echo -n "Press any key";read
+
+tput cup 0 0
+tput ed
+echo "${W}Foreground color${R}"
+for (( X=30; X <= 37; X++ ));do
+	tput cup $(( X - 30 + 1)) 0
+	tput el
+	printf "%3d %-15s \033[37;${X}m TEXT ${R}\n" ${X} ${(k)TAB[(r)${X}]}
+done
+echo -n "Press any key";read
+
+tput cup 0 0
+echo "${W}Background color${R}"
+for (( X=40; X <= 47; X++ ));do
+	tput cup $(( X - 40 + 1)) 0
+	tput el
+	printf "%3d %-15s \033[37;${X}m TEXT ${R}\n" ${X} ${(k)TAB[(r)${X}]}
+done
+echo -n "Press any key";read
+
+tput cup 0 0
+echo "${W}Bold Foreground color${R}"
+for (( X=90; X <= 97; X++ ));do
+	tput cup $(( X - 90 + 1)) 0
+	tput el
+	printf "%3d %-15s \033[37;${X}m TEXT ${R}\n" ${X} ${(k)TAB[(r)${X}]}
+done
+echo -n "Press any key";read
+
+tput cup 0 0
+echo "${W}Bold Background color${R}"
+for (( X=100; X <= 107; X++ ));do
+	tput cup $(( X - 100 + 1)) 0
+	tput el
+	printf "%3d %-15s \033[37;${X}m TEXT ${R}\n" ${X} ${(k)TAB[(r)${X}]}
+done
+echo -n "Press any key";read
+clear

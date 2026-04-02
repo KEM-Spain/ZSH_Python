@@ -1,0 +1,121 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLINK="\033[5m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+get_fn () {
+	local INODE=${1}
+	sleep .2
+	{
+	INODE=$(stat -c "%i" ${F})
+	sudo debugfs -R "ncheck ${INODE}" /dev/nvme0n1p2 2>&1
+	} | grep -Eiv 'debugfs|pathname' | sed 's/\x09/\x20/g'
+}
+
+[[ ${#} -ne 0 ]] && ARG=${1}
+
+clear 
+
+typeset -A _CODEC=()
+typeset -A _FPS=()
+typeset -A _RATE=()
+typeset -A _INODES=()
+
+DIR=~/Downloads/Torrents/Library/web
+
+if [[ -n ${ARG} ]];then
+	FLIST=("${(f)$(find ${DIR} -iname "*${ARG}*")}")
+else
+	FLIST=("${(f)$(find ${DIR} ! -path ${DIR})}")
+fi
+
+[[ ${#FLIST} -eq 1 ]] && { echo "No conflicts - only 1 matching file" && exit }
+
+for F in ${FLIST};do
+	INODE=$(stat -c "%i" ${F})
+	FN=$(get_fn ${INODE} | cut -d' ' -f2-)
+	_INODES[${INODE}]=${FN}
+done
+
+for F in ${FLIST};do
+	INODE=$(stat -c "%i" ${F})
+	LIST=("${(f)$(mediainfo ${F})}")
+
+	for L in ${LIST};do
+		case ${L:l} in
+			"general")
+				in_general=true
+				in_video=false
+				in_audio=false
+				;;
+			"video") 
+				in_general=false
+				in_video=true
+				in_audio=false
+				;;
+			"audio") 
+				in_general=false
+				in_video=false
+				in_audio=true
+				;;
+		esac
+		if [[ ${in_general} == 'true' ]];then
+			[[ ${L:l} =~ 'codec' ]] && _CODEC[${INODE}]="general:$(cut -d: -f2 <<<${L})"
+			[[ ${L:l} =~ 'fps' ]] && _FPS[${INODE}]="general:$(cut -d: -f2 <<<${L})"
+		fi
+		if [[ ${in_video} == 'true' ]];then
+			[[ ${L:l} =~ 'codec' ]] && _CODEC[${INODE}]="video:$(cut -d: -f2 <<<${L})"
+			[[ ${L:l} =~ 'fps' ]] && _FPS[${INODE}]="video:$(cut -d: -f2 <<<${L})"
+		fi
+		if [[ ${in_audio} == 'true' ]];then
+			[[ ${L:l} =~ 'codec' ]] && _CODEC[${INODE}]="audio codec:$(cut -d: -f2 <<<${L})"
+			[[ ${L:l} =~ 'fps' ]] && _FPS[${INODE}]="audio fps:$(cut -d: -f2 <<<${L})"
+			[[ ${L:l} =~ 'bit rate' ]] && _RATE[${INODE}]="audio bit rate:$(cut -d: -f2 <<<${L})"
+		fi
+	done
+done
+
+FLAG=${RED_FG}differs${RESET}
+
+last_codec=?
+for K in ${(k)_CODEC};do
+	MSG=''
+	[[ ${last_codec} != '?' && ${last_codec} != ${_CODEC[${K}]} ]] && MSG=${FLAG}
+	echo ${K} ${_CODEC[${K}]} ${MSG}
+	last_codec=${_CODEC[${K}]}
+done
+
+last_fps=?
+for K in ${(k)_FPS};do
+	MSG=''
+	[[ ${last_fps} != '?' && ${last_fps} != ${_FPS[${K}]} ]] && MSG=${FLAG}
+	echo ${K} ${_FPS[${K}]} ${MSG}
+	last_fps=${_FPS[${K}]}
+done
+
+last_rate=?
+for K in ${(k)_RATE};do
+	MSG=''
+	[[ ${last_rate} != '?' && ${last_rate} != ${_RATE[${K}]} ]] && MSG=${FLAG}
+	echo ${K} ${_RATE[${K}]} ${MSG}
+	last_rate=${_RATE[${K}]}
+done
+
+for K in ${(k)_INODES};do
+	printf "INODE:%s FN:%s\n" ${K} ${${_INODES[${K}]}:t}
+done

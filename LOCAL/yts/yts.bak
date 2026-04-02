@@ -217,7 +217,7 @@ action_do () {
 						break
 						;;
 					*error*)
-						MSG=${LOG_LINE[1,50]}
+						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))
@@ -269,7 +269,7 @@ action_do () {
 						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
 						continue
 						;;
-					*100%*|*'fixing mpeg-ts'*|*fixupm3u8*|*videoremuxer*)
+					*100%*|*'fixing mpeg-ts'*|*fixup*|*remux*)
 						logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 						msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
 						_DOWNLOADS[${M}]=true
@@ -1706,6 +1706,8 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
 				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]:gs/_/ /}<N>..."
+				_LOCAL_LIST=()
+				_SORT_TABLE=()
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}
