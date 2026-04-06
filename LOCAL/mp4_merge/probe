@@ -18,45 +18,53 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-get_fn () {
-	local INODE=${1}
-	sleep .2
-	{
-	INODE=$(stat -c "%i" ${F})
-	sudo debugfs -R "ncheck ${INODE}" /dev/nvme0n1p2 2>&1
-	} | grep -Eiv 'debugfs|pathname' | sed 's/\x09/\x20/g'
-}
-
-[[ ${#} -ne 0 ]] && ARG=${1}
-
-clear 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 typeset -A _CODEC=()
 typeset -A _FPS=()
 typeset -A _RATE=()
 typeset -A _INODES=()
 
-DIR=~/Downloads/Torrents/Library/web
+_VIDEO_DIR=~/Downloads/Torrents/Library/web
+_FS_DISK=/dev/nvme0n1p2
+_MAX_FPS=0
+_MAX_RATE=0
+_MIXED_CODEC=false
+_MIXED_FPS=false
+_MIXED_RATE=false
 
-if [[ -n ${ARG} ]];then
-	FLIST=("${(f)$(find ${DIR} -iname "*${ARG}*")}")
-else
-	FLIST=("${(f)$(find ${DIR} ! -path ${DIR})}")
-fi
+get_inode_fn () {
+	local INODE=${1}
 
-[[ ${#FLIST} -eq 1 ]] && { echo "No conflicts - only 1 matching file" && exit }
-
-for F in ${FLIST};do
+	sleep .2
+	{
 	INODE=$(stat -c "%i" ${F})
-	FN=$(get_fn ${INODE} | cut -d' ' -f2-)
-	_INODES[${INODE}]=${FN}
-done
+	sudo debugfs -R "ncheck ${INODE}" ${_FS_DISK} 2>&1
+	} | grep -Eiv 'debugfs|pathname' | sed 's/\x09/\x20/g'
+}
 
-for F in ${FLIST};do
-	INODE=$(stat -c "%i" ${F})
-	LIST=("${(f)$(mediainfo ${F})}")
+scan_media () {
+	local FN=${1}
+	local -a LIST=("${(f)$(mediainfo ${F})}")
+	local LINE=''
+	local LINE_LBL=''
+	local LINE_VALUES=''
+	local LINE_VAL=''
+	local in_general=''
+	local in_video=''
+	local in_audio=''
+	local L
 
 	for L in ${LIST};do
+		LINE=$(tr -s '[:space:]' <<<${L})
+		LINE_LBL=$(cut -d: -f1- <<<${LINE} | str_trim | cut -d: -f1)
+		LINE_VALUES=$(cut -d: -f2- <<<${LINE} | str_trim | tr ' ' '|')
+		LINE_VAL=$(cut -d'|' -f1 <<<${LINE_VALUES})
+
 		case ${L:l} in
 			"general")
 				in_general=true
@@ -74,48 +82,88 @@ for F in ${FLIST};do
 				in_audio=true
 				;;
 		esac
+
 		if [[ ${in_general} == 'true' ]];then
-			[[ ${L:l} =~ 'codec' ]] && _CODEC[${INODE}]="general:$(cut -d: -f2 <<<${L})"
-			[[ ${L:l} =~ 'fps' ]] && _FPS[${INODE}]="general:$(cut -d: -f2 <<<${L})"
+			[[ ${LINE_LBL:l} =~ 'codec' ]] && _CODEC[${INODE}]="general codec:${LINE_VAL}"
+			[[ ${LINE_LBL:l} =~ 'fps' ]] && _FPS[${INODE}]="general fps:${LINE_VAL}"
 		fi
+
 		if [[ ${in_video} == 'true' ]];then
-			[[ ${L:l} =~ 'codec' ]] && _CODEC[${INODE}]="video:$(cut -d: -f2 <<<${L})"
-			[[ ${L:l} =~ 'fps' ]] && _FPS[${INODE}]="video:$(cut -d: -f2 <<<${L})"
+			[[ ${LINE_LBL:l} =~ 'codec' ]] && _CODEC[${INODE}]="video codec:${LINE_VAL}"
+			[[ ${LINE_LBL:l} =~ 'fps' ]] && _FPS[${INODE}]="video fps:${LINE_VAL}"
 		fi
+
 		if [[ ${in_audio} == 'true' ]];then
-			[[ ${L:l} =~ 'codec' ]] && _CODEC[${INODE}]="audio codec:$(cut -d: -f2 <<<${L})"
-			[[ ${L:l} =~ 'fps' ]] && _FPS[${INODE}]="audio fps:$(cut -d: -f2 <<<${L})"
-			[[ ${L:l} =~ 'bit rate' ]] && _RATE[${INODE}]="audio bit rate:$(cut -d: -f2 <<<${L})"
+			[[ ${LINE_LBL:l} =~ 'codec' ]] && _CODEC[${INODE}]="audio codec:${LINE_VAL}"
+			[[ ${LINE_LBL:l} =~ 'fps' ]] && _FPS[${INODE}]="audio fps:${LINE_VAL}" [[ ${LINE_LBL:l} =~ 'bit rate' ]] && _RATE[${INODE}]="audio bit rate:${LINE_VAL}"
 		fi
 	done
+}
+
+get_media_info () {
+	local LBL=''
+	local M_FPS=''
+	local M_RATE=''
+	local VAL=0
+	local last_codec=?
+	local last_fps=?
+	local last_rate=?
+	local K
+
+	_MIXED_CODEC=false
+	for K in ${(k)_CODEC};do
+		LBL=$(cut -d: -f1 <<<${_CODEC[${K}]})
+		VAL=$(cut -d: -f2 <<<${_CODEC[${K}]})
+		[[ ${last_codec} != '?' && ${last_codec} != ${VAL} ]] && _MIXED_CODEC=true
+		last_codec=${VAL}
+	done
+
+	_MIXED_FPS=false
+	for K in ${(k)_FPS};do
+		LBL=$(cut -d: -f1 <<<${_FPS[${K}]})
+		VAL=$(cut -d: -f2 <<<${_FPS[${K}]})
+		[[ ${last_fps} != '?' && ${last_fps} != ${VAL} ]] && _MIXED_FPS=true
+		M_FPS=$(max ${last_fps} ${VAL})
+		[[ ${M_FPS} -gt ${_MAX_FPS} ]] && _MAX_FPS=${M_FPS}
+		last_fps=${VAL}
+	done
+
+	_MIXED_RATE=false
+	for K in ${(k)_RATE};do
+		LBL=$(cut -d: -f1 <<<${_RATE[${K}]})
+		VAL=$(cut -d: -f2 <<<${_RATE[${K}]})
+		[[ ${last_rate} != '?' && ${last_rate} != ${VAL} ]] && _MIXED_RATE=true
+		M_RATE=$(max ${last_rate} ${VAL})
+		[[ ${M_RATE} -gt ${_MAX_RATE} ]] && _MAX_RATE=${M_RATE}
+		last_rate=${VAL}
+	done
+}
+
+# Execution
+clear 
+[[ ${#} -ne 0 ]] && ARG=${1}
+
+if [[ -n ${ARG} ]];then
+	FLIST=("${(f)$(find ${_VIDEO_DIR} -iname "*${ARG}*")}")
+else
+	FLIST=("${(f)$(find ${_VIDEO_DIR} ! -path ${_VIDEO_DIR})}")
+fi
+
+[[ ${#FLIST} -eq 1 ]] && { echo "No analysis needed - only 1 matching file" && exit }
+
+for F in ${FLIST};do
+	INODE=$(stat -c "%i" ${F})
+	FN=$(get_inode_fn ${INODE} | cut -d' ' -f2-)
+	_INODES[${INODE}]=${FN}
+	scan_media ${FN}
 done
 
-FLAG=${RED_FG}differs${RESET}
+get_media_info
 
-last_codec=?
-for K in ${(k)_CODEC};do
-	MSG=''
-	[[ ${last_codec} != '?' && ${last_codec} != ${_CODEC[${K}]} ]] && MSG=${FLAG}
-	echo ${K} ${_CODEC[${K}]} ${MSG}
-	last_codec=${_CODEC[${K}]}
-done
-
-last_fps=?
-for K in ${(k)_FPS};do
-	MSG=''
-	[[ ${last_fps} != '?' && ${last_fps} != ${_FPS[${K}]} ]] && MSG=${FLAG}
-	echo ${K} ${_FPS[${K}]} ${MSG}
-	last_fps=${_FPS[${K}]}
-done
-
-last_rate=?
-for K in ${(k)_RATE};do
-	MSG=''
-	[[ ${last_rate} != '?' && ${last_rate} != ${_RATE[${K}]} ]] && MSG=${FLAG}
-	echo ${K} ${_RATE[${K}]} ${MSG}
-	last_rate=${_RATE[${K}]}
-done
-
-for K in ${(k)_INODES};do
-	printf "INODE:%s FN:%s\n" ${K} ${${_INODES[${K}]}:t}
-done
+if [[ ${_MIXED_CODEC} == 'true' || ${_MIXED_FPS} == 'true' || ${_MIXED_RATE} == 'true' ]];then
+	[[ ${_MIXED_CODEC} == 'true' ]] && echo "Reformat required - Mixed codecs"
+	[[ ${_MIXED_FPS} == 'true' ]] && echo "Reformat required - Mixed fps MAX:${_MAX_FPS}"
+	[[ ${_MIXED_RATE} == 'true' ]] && echo "Reformat required - Mixed bit rates MAX:${_MAX_RATE}"
+else
+	echo "All formats match"
+fi

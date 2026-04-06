@@ -106,6 +106,7 @@ action_do () {
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "CMD:${CMD}"
 
+	set -xv
 	for K in ${(k)FILE_APP};do # Allow each app to have a unique filelist
 		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
 			LAST_APP=${FILE_APP[${K}]}
@@ -116,22 +117,33 @@ action_do () {
 		fi
 		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
 	done
+	set +xv;read
 
 	for K in ${(k)RUN_LIST};do
 		/bin/rm -f ${ERR_LOG}
 		if is_foreground_only ${K};then
 			logit ${_APP_LOG} "Foreground job: APP:${K} ARGS:${RUN_LIST[${K}]}"
-			eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
-			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
-			RC=$(wc -w <<<${MSG})
-			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
+			if [[ ${TEST} == 'true' ]];then
+				msg_box -p -PK -H2 "TEST MODE|FOREGROUND|K:${K} RUN_LIST:${(qqq)RUN_LIST[${K}]}"
+				eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
+			else
+				eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
+				MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
+				RC=$(wc -w <<<${MSG})
+				[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
+			fi
 		else
 			logit ${_APP_LOG} "Background job: APP:${K} ARGS:${RUN_LIST[${K}]}"
-			eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
-			win_max -p ${!} # Maximize window using PID of background job
-			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
-			RC=$(wc -w <<<${MSG})
-			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
+			if [[ ${TEST} == 'true' ]];then
+				msg_box -p -PK -H2 "TEST MODE|BACKGROUND|K:${K} RUN_LIST:${(qqq)RUN_LIST[${K}]}"
+				eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
+			else
+				eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
+				win_max -p ${!} # Maximize window using PID of background job
+				MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
+				RC=$(wc -w <<<${MSG})
+				[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
+			fi
 		fi
 	done
 
@@ -360,17 +372,19 @@ usage () {
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDa"
+OPTSTR=":HDat"
 OPTIND=0
 
 FILTER_UNSUPPORTED=true
 FILTER="Supported Only"
+TEST=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      a) FILTER_UNSUPPORTED=false;FILTER="All Files";;
+     t) TEST=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -478,7 +492,7 @@ list_set_select_action "open"
 list_set_action_msgs open file
 list_set_reuse_stale true
 list_set_client_warn true
-#list_set_searchable true
+list_set_searchable true
 
 while true;do
 	# Get selection

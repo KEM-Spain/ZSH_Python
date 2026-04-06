@@ -116,14 +116,12 @@ cmd_filter () {
 
 		VALID=false
 		if [[ -n ${CMD_TGT} && -n ${_HIST_CACHE} ]];then
-			set -xv
 			if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
 				VALID='true'
 				((CACHE++))
 				printf '%s\n' "${K}"
 				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
 			fi
-			set +xv;read
 		fi
 
 		if [[ ${VALID} == 'false' ]];then

@@ -110,9 +110,9 @@ action_do () {
 		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
 			LAST_APP=${FILE_APP[${K}]}
 			FLIST=()
-			FLIST+=${K}
+			FLIST+=${(qqq)K}
 		else
-			FLIST+=${K}
+			FLIST+=${(qqq)K}
 		fi
 		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
 	done
@@ -121,17 +121,16 @@ action_do () {
 		/bin/rm -f ${ERR_LOG}
 		if is_foreground_only ${K};then
 			logit ${_APP_LOG} "Foreground job: APP:${K} ARGS:${RUN_LIST[${K}]}"
-			eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
+			eval "${K} ${RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
 			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
 			RC=$(wc -w <<<${MSG})
 			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
 		else
 			logit ${_APP_LOG} "Background job: APP:${K} ARGS:${RUN_LIST[${K}]}"
-			eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
+			eval "${K} ${RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
 			win_max -p ${!} # Maximize window using PID of background job
 			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
 			RC=$(wc -w <<<${MSG})
-			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
 		fi
 	done
 
@@ -360,17 +359,19 @@ usage () {
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDa"
+OPTSTR=":HDat"
 OPTIND=0
 
 FILTER_UNSUPPORTED=true
 FILTER="Supported Only"
+TEST=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      a) FILTER_UNSUPPORTED=false;FILTER="All Files";;
+     t) TEST=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac

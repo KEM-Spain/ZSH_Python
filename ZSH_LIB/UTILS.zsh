@@ -880,6 +880,7 @@ title_scrubber () {
 	local -a UCASE_WORDS=()
 	local STR=''
 	local UCASE_LIMIT=4
+	local PLURAL=''
 	local W U
 
 	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE} 2>/dev/null) # Convert UTF-8
@@ -899,8 +900,9 @@ title_scrubber () {
 	STR=$(echo "${STR}" | perl -pe 's/\.*$//g' 2>/dev/null) # Dots
 
 	for W in ${=STR};do
+		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
+		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
 			SEEN[${W}]=1
 		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive

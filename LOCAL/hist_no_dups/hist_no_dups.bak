@@ -108,7 +108,7 @@ cmd_filter () {
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
 		CMD_IN=$(cut -d';' -f2 <<<${K})
-		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN})
+		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN:t}) # Strip any path
 		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
 		[[ -z ${CMD_TGT} ]] && continue
 

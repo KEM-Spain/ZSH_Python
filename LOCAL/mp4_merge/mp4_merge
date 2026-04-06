@@ -208,6 +208,8 @@ for F in ${(o)_FILELIST};do
 	fi
 done
 
+# Insert probe here - pass bit rate
+
 if [[ ${NORM_AUDIO} == 'true' ]];then
 	echo "Normalizing audio..."
 	NDX=0
