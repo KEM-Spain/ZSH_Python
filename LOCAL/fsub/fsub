@@ -669,6 +669,8 @@ save_changes () {
 			fi
 			echo "Not overwriting existing file:${_OUT_LIST[${C}]}" >> ${_LOG}
 			continue # No collisions
+		else
+			logit ${_LOG} "${0}: File:${C}"
 		fi
 		if [[ ! -e ${_OUT_LIST[${C}]} ]];then
 			[[ ${TRUNCATE} == 'true' ]] && echo "${WHITE_FG}${_SCRIPT}${RESET}:Truncating\nFrom: ${_IN_LIST[${C}]:t} \n  To: ${_OUT_LIST[${C}]:t}" >&2

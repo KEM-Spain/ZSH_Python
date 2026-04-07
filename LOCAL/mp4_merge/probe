@@ -95,7 +95,8 @@ scan_media () {
 
 		if [[ ${in_audio} == 'true' ]];then
 			[[ ${LINE_LBL:l} =~ 'codec' ]] && _CODEC[${INODE}]="audio codec:${LINE_VAL}"
-			[[ ${LINE_LBL:l} =~ 'fps' ]] && _FPS[${INODE}]="audio fps:${LINE_VAL}" [[ ${LINE_LBL:l} =~ 'bit rate' ]] && _RATE[${INODE}]="audio bit rate:${LINE_VAL}"
+			[[ ${LINE_LBL:l} =~ 'fps' ]] && _FPS[${INODE}]="audio fps:${LINE_VAL}" 
+			[[ ${LINE_LBL:l} =~ 'bit rate' ]] && _RATE[${INODE}]="audio bit rate:${LINE_VAL}"
 		fi
 	done
 }
@@ -161,9 +162,9 @@ done
 get_media_info
 
 if [[ ${_MIXED_CODEC} == 'true' || ${_MIXED_FPS} == 'true' || ${_MIXED_RATE} == 'true' ]];then
-	[[ ${_MIXED_CODEC} == 'true' ]] && echo "Reformat required - Mixed codecs"
-	[[ ${_MIXED_FPS} == 'true' ]] && echo "Reformat required - Mixed fps MAX:${_MAX_FPS}"
-	[[ ${_MIXED_RATE} == 'true' ]] && echo "Reformat required - Mixed bit rates MAX:${_MAX_RATE}"
+	[[ ${_MIXED_CODEC} == 'true' ]] && echo "Reformat required - Mixed codecs" && for C in ${(k)_CODEC};do echo ${C} ${_CODEC[${C}]};done
+	[[ ${_MIXED_FPS} == 'true' ]] && echo "Reformat required - Mixed fps MAX:${_MAX_FPS}" && for F in ${(k)_FPS};do echo ${F} ${_FPS[${F}]};done
+	[[ ${_MIXED_RATE} == 'true' ]] && echo "Reformat required - Mixed bit rates MAX:${_MAX_RATE}" && for R in ${(k)_RATE};do echo ${R} ${_RATE[${R}]};done
 else
 	echo "All formats match"
 fi
