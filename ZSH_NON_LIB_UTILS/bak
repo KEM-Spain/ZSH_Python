@@ -196,7 +196,7 @@ get_response () {
 
 	echo -n "${MSG}${RESET}?\n(y/n)${RESET}:"
 
-	read -sq RESPONSE;echo
+	read -k1 RESPONSE;echo
 	[[ ${RESPONSE} == 'y' ]] && return 0 || return 1
 }
 

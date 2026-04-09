@@ -1024,7 +1024,7 @@ msg_unicode_box () {
 		VERT_BAR="\\u2503%.0s"
 	fi
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TOP LEFT CORNER - BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
+	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TOP LEFT CORNER - BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
 
 	# Reset standout (if set)
 	tput rmso
@@ -1046,7 +1046,7 @@ msg_unicode_box () {
 	printf ${TOP_RIGHT}
 
 	# Sides
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SIDES - BOX_WIDTH:${BOX_WIDTH}"
+	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SIDES - BOX_WIDTH:${BOX_WIDTH}"
 	for (( X=${T_SPAN}; X<=${B_SPAN}; X++ ));do
 		tcup ${X} ${BOX_Y_COORD}
 		printf ${VERT_BAR}
@@ -1066,14 +1066,14 @@ msg_unicode_box () {
 	done
 
 	# Bottom right corner
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_HEIGHT:${BOX_HEIGHT}"
+	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_HEIGHT:${BOX_HEIGHT}"
 	tcup ${X} ${Y}
 	printf ${BOT_RIGHT}
 
 	echo -n ${RESET}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOTTOM RIGHT - BOX_X_COORD:${X} BOX_Y_COORD:${Y}"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX DIMENSIONS:$(( X - BOX_X_COORD + 1 )) x $(( Y - BOX_Y_COORD + 1 ))"
+	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOTTOM RIGHT - BOX_X_COORD:${X} BOX_Y_COORD:${Y}"
+	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX DIMENSIONS:$(( X - BOX_X_COORD + 1 )) x $(( Y - BOX_Y_COORD + 1 ))"
 }
 
 msg_warn () {

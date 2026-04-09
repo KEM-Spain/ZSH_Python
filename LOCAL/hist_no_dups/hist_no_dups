@@ -33,7 +33,7 @@ typeset -A _CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _LOCATE_OPTS=()
-typeset -a FREQ_OPT_CMDS=()
+typeset -a _FREQ_OPT_CMDS=()
 
 # Constants
 _TESTING_DIR=${PWD}/testing
@@ -46,7 +46,7 @@ _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
-FREQ_OPT_CMDS=(
+_FREQ_OPT_CMDS=(
 bak
 doit
 find
@@ -84,7 +84,8 @@ size_diff () {
 }
 
 cmd_filter () {
-	local ARRAY=${1}
+	local ARRAY_NAME=${1}
+	local -A SEEN=()
 	local CMD_IN=''
 	local CMD_MSK=''
 	local CMD_OUT=''
@@ -93,7 +94,7 @@ cmd_filter () {
 	local MYA=0
 	local NDX=0
 	local RJT=0
-	local ROWS=${#${(P)ARRAY}}
+	local ROWS=${#${(P)ARRAY_NAME}}
 	local VALID=false
 	local WCH=0
 	local CACHE=0
@@ -104,13 +105,14 @@ cmd_filter () {
 	[[ ! -e ${_CACHE_DIR} ]] && md ${_CACHE_DIR}
 	[[ ! -e ${_HIST_CACHE} ]] && touch ${_HIST_CACHE}
 
-	for K in ${(k)${(P)ARRAY}};do
+	for K in ${(k)${(P)ARRAY_NAME}};do
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
 		CMD_IN=$(cut -d';' -f2 <<<${K})
 		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN:t}) # Strip any path
 		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
 		[[ -z ${CMD_TGT} ]] && continue
+		[[ ${SEEN[${CMD_TGT}]} -eq 1 ]] && continue # no repeated validations
 
 		[[ ${VERBOSE_OPT} == 'true' ]] && echo "Processing command:${CMD_TGT}" >&2
 
@@ -166,13 +168,14 @@ cmd_filter () {
 			((RJT++))
 			[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Rejected:%s\n' "${CMD_TGT}" >&2
 		fi
+		SEEN[${CMD_TGT}]=1
 	done
 	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
 	[[ ${PROD_OPT} == 'false' ]] && echo >&2 # Clear progress
 }
 
 hist_parse () {
-	local ARRAY=${1}
+	local ARRAY_NAME=${1}
 	local -A RECENT=()
 	local CMD
 	local CMD_ONLY
@@ -183,7 +186,7 @@ hist_parse () {
 
 	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
 
-	for L in ${(on)${(P)ARRAY}};do
+	for L in ${(on)${(P)ARRAY_NAME}};do
 		[[ -z ${L} ]] && continue # Blank hist line
 		#[[ ${L} =~ ';\[\[' ]] && continue # test commands
 
@@ -198,7 +201,7 @@ hist_parse () {
 		elif [[ ${FREQ_OPT} == 'true' ]];then
 			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
 			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
-			if $(arr_in_array "FREQ_OPT_CMDS" ${CMD_ONLY:gs/ //});then
+			if $(arr_in_array "_FREQ_OPT_CMDS" ${CMD_ONLY:gs/ //});then
 				CMD=${CMD_ONLY}
 			fi
 		else
@@ -215,16 +218,16 @@ hist_parse () {
 }
 
 build_hist () {
-	local ARRAY=${1}
+	local ARRAY_NAME=${1}
 	local -a _CMD_LIST
 	local -a _VALID_CMDS
 	local K
 
 	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
 
-	#echo "ARRAY:${ARRAY} ${#${(P)ARRAY}}" >&2
+	#echo "ARRAY_NAME:${ARRAY_NAME} ${#${(P)ARRAY_NAME}}" >&2
 
-	_CMD_LIST=("${(f)$(hist_parse ${ARRAY})}") # Order unique commands by timestamp
+	_CMD_LIST=("${(f)$(hist_parse ${ARRAY_NAME})}") # Order unique commands by timestamp
 
 	_VALID_CMDS=("${(f)$(cmd_filter _CMD_LIST)}") # Retain valid commands
 
@@ -379,7 +382,7 @@ if [[ ${PROD_OPT} == 'false' ]];then
 	echo "${WHITE_ON_GREY}Done.${RESET}\n"
 else
 	tput el
-	printf " Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
+	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
 fi
 
 exit_leave

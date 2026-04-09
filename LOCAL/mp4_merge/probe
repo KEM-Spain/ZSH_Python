@@ -37,16 +37,6 @@ _MIXED_CODEC=false
 _MIXED_FPS=false
 _MIXED_RATE=false
 
-get_inode_fn () {
-	local INODE=${1}
-
-	sleep .2
-	{
-	INODE=$(stat -c "%i" ${F})
-	sudo debugfs -R "ncheck ${INODE}" ${_FS_DISK} 2>&1
-	} | grep -Eiv 'debugfs|pathname' | sed 's/\x09/\x20/g'
-}
-
 scan_media () {
 	local FN=${1}
 	local -a LIST=("${(f)$(mediainfo ${F})}")
@@ -145,16 +135,17 @@ clear
 [[ ${#} -ne 0 ]] && ARG=${1}
 
 if [[ -n ${ARG} ]];then
-	FLIST=("${(f)$(find ${_VIDEO_DIR} -iname "*${ARG}*")}")
+	FLIST=("${(f)$(find ${_VIDEO_DIR} -iname "${ARG}*")}")
 else
 	FLIST=("${(f)$(find ${_VIDEO_DIR} ! -path ${_VIDEO_DIR})}")
 fi
+echo "Matched ${#FLIST} files"
 
 [[ ${#FLIST} -eq 1 ]] && { echo "No analysis needed - only 1 matching file" && exit }
 
 for F in ${FLIST};do
 	INODE=$(stat -c "%i" ${F})
-	FN=$(get_inode_fn ${INODE} | cut -d' ' -f2-)
+	FN=$(get_inode_fn ${F:h} ${INODE})
 	_INODES[${INODE}]=${FN}
 	scan_media ${FN}
 done

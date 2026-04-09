@@ -1,68 +1,9 @@
-2026-04-07_10:02: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-07_10:02: log_update: Skipping expired inode:6292425
-2026-04-07_10:02: log_update: Skipping expired inode:6292119
-2026-04-07_10:02: log_update: Skipping expired inode:6296141
-2026-04-07_10:02: log_update: Empty log - initializing new log
-2026-04-07_10:03: query_youtube: Creating listing for QKEY:blancolirio STRICT:S
-2026-04-07_10:03: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:S FKEY:Blan Colirio QKEY:blancolirio TYPE:standard 
-2026-04-07_10:03: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent blancolirio
-2026-04-07_10:03: query_youtube: Translated TITLE:When a turbocharger failure turns into an engine failure
-2026-04-07_10:03: query_youtube: Translated TITLE:Delta #104 A330 Sao Paulo, Brazil, March 29, 2026
-2026-04-07_10:03: query_youtube: Translated TITLE:KSNA 'Near miss' March 24, 2026 UAL/UH60 525'
-2026-04-07_10:03: query_youtube: Listing for QKEY:blancolirio contains 3 rows
-2026-04-07_10:04: query_youtube: Creating listing for QKEY:dialogueworks STRICT:S
-2026-04-07_10:04: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:S FKEY:Dialogue Works QKEY:dialogueworks SMSG:0.0% TYPE:standard 
-2026-04-07_10:04: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent dialogueworks
-2026-04-07_10:04: query_youtube: Listing for QKEY:dialogueworks contains 16 rows
-2026-04-07_10:04: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:S
-2026-04-07_10:04: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:S FKEY:Judging Freedom QKEY:judgingfreedom SMSG:0.0% TYPE:standard 
-2026-04-07_10:04: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent judgingfreedom
-2026-04-07_10:04: query_youtube: Listing for QKEY:judgingfreedom contains 14 rows
-2026-04-07_10:05: query_rumble: Creating listing for QKEY:dannyhaiphong TYPE:channel
-2026-04-07_10:05: parse_rumble: Parsing list for QKEY:dannyhaiphong
-2026-04-07_10:05: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-04-07_10:05: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-04-07_10:05: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-04-07_10:05: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-04-07_10:05: query_rumble: Listing for QKEY:dannyhaiphong contains 24 rows
-2026-04-07_10:05: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
-2026-04-07_10:06: parse_rumble: Parsing list for QKEY:duedissidence
-2026-04-07_10:06: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-04-07_10:06: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-04-07_10:06: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-04-07_10:06: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-04-07_10:06: query_rumble: Listing for QKEY:duedissidence contains 24 rows
-2026-04-07_10:06: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
-2026-04-07_10:06: parse_rumble: Parsing list for QKEY:glenndiesen
-2026-04-07_10:06: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-04-07_10:06: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-04-07_10:06: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-04-07_10:06: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-04-07_10:06: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-04-07_10:06: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
-2026-04-07_10:07: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
-2026-04-07_10:07: parse_rumble: Parsing list for QKEY:tuckercarlson
-2026-04-07_10:07: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-04-07_10:07: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-04-07_10:07: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-04-07_10:07: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-04-07_10:07: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-04-07_10:07: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
-2026-04-07_10:07: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.7CfXhP
-2026-04-07_10:07: job_start: TITLE:Tucker On Trump's Desecration Of Easter And A Warning To Christians
-2026-04-07_10:07: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v785j4a-tucker-on-trumps-desecration-of-easter-and-a-warning-to-christians-everywhe.html?e9s=src_v1_ucp_a" PID:2581636
-2026-04-07_10:07: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-07_10:07: action_do: PRE-PROCESSING
-2026-04-07_10:07: action_do: PRE-PROCESSING
-2026-04-07_10:07: action_do: PRE-PROCESSING
-2026-04-07_10:07: action_do: PRE-PROCESSING
-2026-04-07_10:07: action_do: PRE-PROCESSING
-2026-04-07_10:07: action_do: GENERATING HEADER
-2026-04-07_10:10: action_do: COMPLETED
-2026-04-07_10:10: action_do: POST-PROCESSING
-2026-04-07_10:10: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v785j4a-tucker-on-trumps-desecration-of-easter-and-a-warning-to-christians-everywhe.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-07_10:10: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Tucker_on_Trump_s_Desecration_of_Easter_and_a_Warning_to_Christians_Everywhere.mp4
-2026-04-07_10:10: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Tucker_on_Trump_s_Desecration_of_Easter_and_a_Warning_to_Christians_Everywhere.mp4
-2026-04-07_10:10: set_final_fn: Overwriting file:Tucker_Carlson - Tucker_on_Trump_s_Desecration_of_Easter_and_a_Warning_to_Christians_Everywhere.mp4 with:Tucker Carlson - Tucker On Trump's Desecration Of Easter And A Warning.mp4
-2026-04-07_10:10: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Tucker On Trump's Desecration Of Easter And A Warning.mp4
-2026-04-07_10:10: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.7CfXhP was cleared for:tuckercarlson from:action_do
+2026-04-09_11:10: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-09_11:10: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-09_11:10: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
+2026-04-09_11:10: parse_rumble: Parsing list for QKEY:duedissidence
+2026-04-09_11:10: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-09_11:10: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-09_11:10: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-09_11:10: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-09_11:10: query_rumble: Listing for QKEY:duedissidence contains 24 rows

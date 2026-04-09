@@ -17,6 +17,20 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
+# Force all media files to same codec, frame rate, and bit rate
+#ffmpeg -i input1.mp4 -i input2.mp4 -filter_complex \
+#"[0:v]fps=30,scale=1920:1080[v0]; \
+# [1:v]fps=30,scale=1920:1080[v1]; \
+# [v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]" \
+#-map "[outv]" -map "[outa]" -c:v libx264 -b:v 5000k -c:a aac -b:a 192k output.mp4
+#Key Parameters Explained
+
+#    fps=30: Forces all video segments to a specific frame rate (e.g., 30 fps) before merging.
+#    scale=1920:1080: Ensures all videos have the same resolution (required for the concat filter to work seamlessly).
+#    -c:v libx264: Forces the output to a specific codec (H.264).
+#    -b:v 5000k: Forces a specific constant or average video bitrate.
+#    concat=n=2:v=1:a=1: Merges n inputs into 1 video (v=1) and 1 audio (a=1) stream.
+
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
@@ -217,7 +231,7 @@ if [[ ${NORM_AUDIO} == 'true' ]];then
 		((NDX++))
 		RECODE_OUT="${_WORKDIR}/recode_${NDX}.mp4"
 		export BAR_FILENAME_LENGTH=${#RECODE_OUT:t}
-		ffmpeg-bar -y -i ${F} -c:v copy -c:a aac -b:a 128k ${RECODE_OUT}
+		ffmpeg-bar -y -i ${F} -c:v copy -c:a aac -b:a 48k ${RECODE_OUT}
 		echo "file '${RECODE_OUT}'" >> ${_FLIST}
 	done
 else

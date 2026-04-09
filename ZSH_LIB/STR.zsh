@@ -167,6 +167,7 @@ str_pluralize () {
 	fi
 
 	case ${WORD:l} in
+		is) RETURN_WORD="are";;
 		app) RETURN_WORD="apps";;
 		candidate) RETURN_WORD="candidates";;
 		choice) RETURN_WORD="choices";;

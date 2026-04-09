@@ -32,6 +32,7 @@ typeset -a MARKED
 typeset -a RS_OPTS
 typeset -a RS_FLTR
 typeset -a BACKUP_DIRS
+typeset -A _DISK_MAP=()
 
 # Dependencies
 _MOUNT=media
@@ -40,9 +41,10 @@ _TAG=$(hostname)_RSYNC2
 _DEST_ID=KEM_Backup
 
 # Constants
+_DISK_MAP[${_DEST_ID}]="EXT_1"
 _CONF_DIR=${HOME}/.local/share/backup
 #_DBG_FILTER='--debug=FILTER'
-_DESTINATION=${_MOUNTPOINT}/${_DEST_ID}/${_TAG}
+_DESTINATION=${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}/${_TAG}
 _LOGFILE=${_CONF_DIR}/${_TAG}.log
 _MARKER=${_CONF_DIR}/${_TAG}.lastrun
 _TODAY=$(date +'%Y-%m-%d') 
@@ -115,7 +117,7 @@ is_mounted () {
 		sleep 1
 		for M in ${MOUNT_LIST};do
 			[[ ${TRYS} -gt 2 ]] && return 1
-			[[ ${M:l} =~ ${_DEST_ID:l} ]] && return 0
+			[[ ${M:l} =~ ${_DISK_MAP[${_DEST_ID}]:l} ]] && return 0
 		done
 	done
 }
@@ -124,7 +126,7 @@ cleanup () {
 	local PID
 
 	[[ -z ${DRYRUN} ]] && clear
-	msg_box -x0 "Waiting for rsync process to finish..."
+	msg_box -c -t2 -x0 "Waiting for rsync process to finish..."
 
 	while true;do
 		PID=$(pgrep -n rsync)
@@ -133,7 +135,7 @@ cleanup () {
 	done
 
 	[[ ${g_FOUND_EXT} == 'true' ]] && dut external -u
-	msg_box -x0 -t1 "External drive ${_DEST_ID:l} was unmounted"
+	msg_box -c -x0 -t2 "External drive ${_DISK_MAP[${_DEST_ID}]} was unmounted"
 	clear
 }
 
@@ -188,18 +190,18 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-F${RESET} force"
 	echo -e "${WHITE_FG}-d${RESET} dry run"
-	echo -e "${WHITE_FG}-f${RESET} force"
 	echo -e "${WHITE_FG}-s${RESET} status"
 	echo -e "${WHITE_FG}-v${RESET} verbose"
 	echo -e "${WHITE_FG}-i${RESET} date of last backup"
 	echo -e "\n${WHITE_FG}Desc${RESET}:Backup selected directories"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDdfisv"
+OPTSTR=":HDFdisv"
 
 FORCE=false
 INFO=false
@@ -211,8 +213,8 @@ while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     F) FORCE=true;;
      d) DRYRUN='--dry-run';;
-     f) FORCE=true;;
      s) last_backup ${_MARKER};exit;;
      v) verbose_set_level;;
      i) INFO=true;;
@@ -234,13 +236,13 @@ fi
 
 g_LAST_RUN=$(last_backup ${_MARKER})
 
-if [[ -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
-	msg_box "Clearing orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DEST_ID}${RESET}"
+if [[ -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
+	msg_box -t2 "Clearing orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}${RESET}"
 	dut external -u
-	if [[ ! -e ${_MOUNTPOINT}/${_DEST_ID} ]];then
-		msg_box -c "Orphaned mounts removed"
+	if [[ ! -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
+		msg_box -t2 -c "Orphaned mounts removed"
 	else
-		exit_leave "Unable to remove orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DEST_ID}${RESET}"
+		exit_leave "Unable to remove orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}${RESET}"
 	fi
 fi
 
@@ -250,25 +252,25 @@ fi
 if [[ (-f ${_MARKER}) && (${FORCE} == "false") && (${g_LAST_RUN:l} =~ 'today') ]];then
 	msg_box -H1 -p -P"Enter 'F' to Force"  "Backup Status|Last backup was ${g_LAST_RUN}"
 	if [[ ${_MSG_KEY:l} != 'f' ]];then
-		exit_leave $(err_msg_exit I "Operation cancelled")
+		exit_leave "${RED_FG}Operation cancelled${RESET}"
 	fi
 fi
 
 [[ -z ${DRYRUN} ]] && clear
-msg_box -t.8 "Checking mounted drives..."
+msg_box -t2 "Checking mounted drives..."
 while true;do
 	if is_mounted;then
-		msg_box -t.8 "External drive ${_DEST_ID:l} is mounted"
+		msg_box -t2 "External drive ${_DISK_MAP[${_DEST_ID}]} is mounted"
 		g_FOUND_EXT=true
 		break
 	else
 		g_FOUND_EXT=false
-		msg_box -t.8 "Attempting to mount ${_DEST_ID:l}..."
+		msg_box -t2 "Attempting to mount ${_DISK_MAP[${_DEST_ID}]}..."
 		dut external -m
 		[[ ${?} -ne 0 ]] && exit_leave "\nNo external drives available"
 	fi
 done
-[[ g_FOUND_EXT == 'false' ]] && exit_leave $(err_msg_exit W "Failed to mount ${_DEST_ID:l}")
+[[ g_FOUND_EXT == 'false' ]] && exit_leave $(err_msg_exit W "Failed to mount ${_DISK_MAP[${_DEST_ID}]}")
 
 # Backup
 [[ -n ${DRYRUN} ]] && echo "\n${RED_ON_WHITE}THIS IS A DRY RUN${RESET}"

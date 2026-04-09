@@ -30,34 +30,39 @@
 	const yts = require(MOD_PATH+'/yt-search')
 	const r = await yts(searchterm)
 	const videos = r.videos.slice(0,50)
-	
+
 	/*
 	let str = JSON.stringify(videos, null, 2)
 	process.stderr.write(str)
 	*/
 
 	msgout = false
+	if (strict) { 
+		console.log("strict filter is active")
+	}
 	videos.forEach(function (v) {
 		has_match = false
 		if (age === "all") { /* any age is default */
 			has_match = true
 			if (msgout === false) {
-				console.log("matched on all")
+				console.log("matched on age:all")
 				msgout = true
 			}
 		} else if (age === "recent") { /* any recent age */
 				if ( v.ago.indexOf("hour") >= 0 || v.ago.indexOf("day") >= 0 || v.ago.indexOf("min") >= 0 ) {
 					has_match = true
 					if (msgout === false) {
-						console.log("matched on recent")
+						console.log("matched on age:recent")
 						msgout = true
 					}
 				}
 		} else {
 			if (v.ago.indexOf(age) >= 0) { /* age was specified */
 				has_match = true
-				console.log("matched on age (non-strict)")
+				console.log("matched on age:"+age)
 				msgout = true
+			} else {
+				console.log("no matches for age:"+age)
 			}
 		} 
 		v.title = v.title.replace(/\|/g, ':') /* titles contain pipe separators */
@@ -75,7 +80,7 @@
 						msgout = true
 					}
 				} else {
-					console.log("rejected strict:"+v_arg+" != "+t_arg) /* searchterm NOT in title */
+					console.log("strict rejected:"+v_arg+" != "+t_arg) /* searchterm NOT in title */
 					return	
 				}
 			}

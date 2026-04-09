@@ -18,6 +18,7 @@ alias calc='/usr/bin/gnome-calculator'
 alias cat='/usr/bin/batcat --theme=1337 --style=full'
 alias cdef='compdef -a '
 alias dict='/usr/local/bin/dict_slice '
+alias disks='/usr/bin/gnome-disks '
 alias e2s='trans -no-pager en:es'
 alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"
 alias feh='feh -F'

@@ -111,7 +111,7 @@ prod_to_local () {
 		diff -b ${g_PROD_VERSION} ${g_LOCAL_VERSION} >/dev/null 2>&1
 		if [[ $? -eq 0 ]];then
 			echo ${g_PROD_MATCHES_LOCAL}
-			exit_leave
+			exit_leave "Nothing to do"
 		else
 			echo ${g_PROD_DIFFERS_LOCAL}
 
@@ -256,7 +256,7 @@ local_to_prod () {
 		diff -b ${g_PROD_VERSION} ${g_LOCAL_VERSION} >/dev/null 2>&1
 		if [[ ${?} -eq 0 ]];then
 			echo ${g_PROD_MATCHES_LOCAL}
-			exit_leave
+			exit_leave "Nothing to do"
 		else
 			NEWEST=$(date_file_diff ${FN} ./${FN:t})
 			if [[ ${NEWEST} == ${FN} ]];then

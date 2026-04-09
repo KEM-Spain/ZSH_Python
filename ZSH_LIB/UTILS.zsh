@@ -395,6 +395,20 @@ get_delim_field_cnt () {
 	fi
 }
 
+get_inode_fn () {
+	local DIR=${1}
+	local INODE=${2}
+	local FN=$(find ${DIR} -inum ${INODE})
+	[[ -n ${FN} ]] && echo ${FN} || echo "filename for INODE:${INODE} not found"
+	[[ -n ${FN} ]] && return 0 || return 1
+}
+
+get_inode () {
+	local INODE=$(ls -Ai ${1} | cut -d' ' -f1)
+	[[ -n ${INODE} ]] && echo ${INODE} || echo "inode for:${1} not found"
+	[[ -n ${INODE} ]] && return 0 || return 1
+}
+
 get_keys () {
 	local PROMPT=${@}
 	local -a NUM

@@ -654,9 +654,9 @@ fav_get () {
 		OPTS=$(cut -d: -f2 <<<${_FAV_LIST[${L}]})
 		MENU_TYPE=${OPTS[1]:l} # Embedded in OPTS
 		case ${MENU_TYPE} in
-			c) C_LIST+="${L:gs/_/ /}";;
-			r) R_LIST+="${L:gs/_/ /}";;
-			y) Y_LIST+="${L:gs/_/ /}";;
+			c) C_LIST+="${(C)L:gs/_/ /}";;
+			r) R_LIST+="${(C)L:gs/_/ /}";;
+			y) Y_LIST+="${(C)L:gs/_/ /}";;
 		esac
 	done
 
@@ -700,7 +700,7 @@ fav_get () {
 
 		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && g_LAST_FAV_TYPE=${_SEL_KEY}
 		if [[ ${_SEL_KEY} == '?' ]];then
-			_QUERY_OPTS[FKEY]=${_SEL_VAL} # Store selected _FAV_LIST key
+			_QUERY_OPTS[FKEY]=${_SEL_VAL:l} # Store selected _FAV_LIST key
 			break
 		fi
 	done
@@ -775,6 +775,7 @@ get_field () {
 		else
 			STR=${_QUERY_OPTS[DKEY]}
 		fi
+		STR=${(C)STR}
 	fi
 
 	if [[ -n ${_FIELD_LEN[${FIELD}]} ]];then
@@ -872,7 +873,7 @@ job_start () {
 	logit ${_YT_DBG_LOG} "${0}: DOWNLOAD LOG:${g_YTS_LOG}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Logging to file:${g_YTS_LOG}"
 
-	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' ${URL}" # Routine download - limit title len
+	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL}" # Routine download - limit title len
 
 	[[ ! -w ${g_YTS_LOG} ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
@@ -1009,9 +1010,9 @@ log_find () {
 		[[ ${DBG} == 'true' ]] && echo "LIST_TITLE:${LIST_TITLE}" >>${0}.dbg
 		[[ ${DBG} == 'true' ]] && echo "LIST_AU:${LIST_AU}" >>${0}.dbg
 		[[ ${DBG} == 'true' ]] && echo "LIST_TM:${LIST_TM}" >>${0}.dbg
-		[[ ${DBG} == 'true' ]] && echo "\nAttempting TITLE match on:${LIST_TITLE[1,50]}" >>${0}.dbg 
 
 		if [[ -n ${LIST_TITLE[1,50]} ]];then
+			[[ ${DBG} == 'true' ]] && echo "\nAttempting TITLE match on:${LIST_TITLE[1,50]}" >>${0}.dbg 
 			LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE[1,50]} ${_YTS_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
 			if [[ ${?} -eq 0 ]];then
 				LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Fetch line number
@@ -1033,8 +1034,11 @@ log_find () {
 				else
 					[[ ${DBG} == 'true' ]] && echo "Failed to confirm download" >>${0}.dbg
 				fi
+			else
+				[[ ${DBG} == 'true' ]] && echo "grep failed title match" >>${0}.dbg 
 			fi
 		else
+			[[ ${DBG} == 'true' ]] && echo "Skipped title search - blank title" >>${0}.dbg
 			logit ${_YT_DBG_LOG} "${0}: Skipped title search - blank title"
 		fi
 	done
@@ -1266,6 +1270,7 @@ query_rumble () {
 	QRY_TYPE=${_RUMBLE_QTYPES[${_QUERY_OPTS[EOPT]:l}]}
 	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "${0}:Invalid query type:${_QUERY_OPTS[EOPT]}" && return 1
 	_QUERY_OPTS[TYPE]=${QRY_TYPE}
+	_QUERY_OPTS[QKEY]=${_QUERY_OPTS[QKEY]}
 
 	ping -w1 www.rumble.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
@@ -1289,6 +1294,10 @@ query_rumble () {
 	elif [[ ${QRY_TYPE} == 'user' ]];then
 		msg_box -c "<w>Requesting <c><I>livestream user<N> <w>search<N>..."
 		QRY="https://rumble.com/user/${_QUERY_OPTS[QKEY]}/livestreams"
+	fi
+
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+		dbg "${0}:${LINENO} RUMBLE QUERY:${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
 	# Do query
@@ -1331,11 +1340,11 @@ query_youtube () {
 
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STRICT_ARG='-s' || STRICT_ARG=''
 
-	g_PROXY_CMD="node ${_JS_SCRIPT} ${STRICT_ARG} -a ${_QUERY_OPTS[AGE]} ${_QUERY_OPTS[QKEY]}"
+	g_PROXY_CMD="node ${_JS_SCRIPT} ${STRICT_ARG} -a ${_QUERY_OPTS[AGE]} ${(qqq)_QUERY_OPTS[QKEY]}" # Quote key
 	logit ${_YT_DBG_LOG} "${0}: g_PROXY_CMD:${g_PROXY_CMD}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${0}:${LINENO} ${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
+		dbg "${0}:${LINENO} YOUTUBE QUERY:${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
 	_LOCAL_LIST=()
@@ -1345,6 +1354,7 @@ query_youtube () {
 	NDX=0
 	while read LINE;do
 		[[ ${LINE:l} =~ 'matched' ]] && DATA=true && continue
+		[[ ${LINE:l} =~ 'no matches' ]] && continue
 
 		[[ ${LINE:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
 		[[ ${LINE:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
@@ -1383,12 +1393,8 @@ query_youtube () {
 
 	# Search failed
 	if ! arr_is_populated "${_LOCAL_LIST}";then
-		g_PROXY_CMD=$(str_trim ${(Q)g_PROXY_CMD})
-		if [[ ${_QUERY_OPTS[EOPT]:l} == 's' ]];then
-			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<I>Strict filter is active<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
-		else
-			msg_box -H2 -p -PK "<r>Query returned no rows<N>|<w>g_PROXY_CMD<N>:${g_PROXY_CMD}"
-		fi
+		[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STR="|<I>Strict filter is active<N>" || STR=''
+		msg_box -t2 "<r>Query returned no rows<N>${STR}"
 		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[EOPT]}"
 		return 1
 	fi
