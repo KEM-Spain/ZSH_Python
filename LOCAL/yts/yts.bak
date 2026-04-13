@@ -155,7 +155,7 @@ action_do () {
 		trap job_kill INT
 
 		job_start "${URL}|${TITLE}"
-		msg_box -t${_MSG_DELAY[LONG]} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested<N>"
+		msg_box -t${_MSG_DELAY[LONG]} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested|<N>"
 
 		while true;do
 			((NDX++))
@@ -242,6 +242,7 @@ action_do () {
 							DEST_1=$(cut -d'|' -f1 <<<${DEST})
 							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
 							HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
+							HDR1_TXT=$(trim_title ${HDR1_TXT})
 							HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
@@ -769,20 +770,17 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'author' ]];then
-		if [[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]];then # Query key contains a space - assume multiple authors are displayed
+		if [[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]];then # Query key contains a space
 			STR=$(str_trim <<<${STR})
-			[[ -z ${STR} ]] && STR=${_QUERY_OPTS[DKEY]} # Ensure not blank
+			[[ -z ${STR} ]] && STR=${(C)_QUERY_OPTS[DKEY]} # Ensure not blank
 		else
 			STR=${_QUERY_OPTS[DKEY]}
 		fi
-		STR=${(C)STR}
 	fi
 
 	if [[ -n ${_FIELD_LEN[${FIELD}]} ]];then
 		STR=${STR[1,${_FIELD_LEN[${FIELD}]}]}
 	fi
-
-	#logit ${_YT_DBG_LOG} "${0}:  FINAL VALUE ${FIELD}:${STR}"
 
 	echo -n ${STR}
 }
@@ -1032,7 +1030,7 @@ log_find () {
 					[[ ${DBG} == 'true' ]] && echo "LOG_AU:${LOG_AU}" >>${0}.dbg
 					[[ ${DBG} == 'true' ]] && echo "LOG_TM:${LOG_TM}" >>${0}.dbg
 				else
-					[[ ${DBG} == 'true' ]] && echo "Failed to confirm download" >>${0}.dbg
+					[[ ${DBG} == 'true' ]] && echo "Failed to confirm download: LOG_TM:${LOG_TM} LOG_AU:${LOG_AU}" >>${0}.dbg
 				fi
 			else
 				[[ ${DBG} == 'true' ]] && echo "grep failed title match" >>${0}.dbg 
@@ -1367,21 +1365,13 @@ query_youtube () {
 
 		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' ]];then # Apply filtering to non strict results
 			HIT=false
-			FILTER_MSGS=()
 			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
-			TITLE=$(cut -d'|' -f3 <<<${LINE}) && TITLE=$(str_to_ascii ${TITLE})
-			FILTER_MSGS[1]="title match on DKEY"
-			[[ ${TITLE:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true || FILTER_MSGS[1]="title non-match on DKEY"
-			FILTER_MSGS[2]="author match on DKEY"
-			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[DKEY]:l} ]] && HIT=true || FILTER_MSGS[2]="author non-match on DKEY"
-			FILTER_MSGS[3]="author with u-score match on QKEY"
-			[[ ${AUTHOR:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true || FILTER_MSGS[3]="author with u-score non-match on QKEY"
-			FILTER_MSGS[4]="author w/o u-score match on QKEY"
-			[[ ${AUTHOR:gs/ //:l} =~ ${_QUERY_OPTS[QKEY]:l} ]] && HIT=true || FILTER_MSGS[4]="author w/o u-score non-match on QKEY"
-			[[ ${HIT} == 'false' ]] && logit ${_YT_DBG_LOG} "${0}: NON-STRICT FILTER REJECT: TITLE:${TITLE}, AUTHOR:${AUTHOR}, QKEY:${_QUERY_OPTS[QKEY]}, DKEY:${_QUERY_OPTS[DKEY]}, ${(kv)FILTER_MSGS}"
+			[[ ${AUTHOR:l} =~ "${_QUERY_OPTS[DKEY]:l}" ]] && HIT=true || logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
+		else
+			HIT=true
 		fi
 		 
-		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' ]] && _LOCAL_LIST+=${STR}
+		[[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' && ${HIT} == 'true' ]] && _LOCAL_LIST+=${STR}
 	done < <(eval ${g_PROXY_CMD} 2>/dev/null)
 
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${NDX})" || _QUERY_OPTS[SMSG]=''
@@ -1434,9 +1424,10 @@ set_final_fn () {
 
 	NEW_FN=${FN:t:r:gs/_/ /} # Tail, no extension, swap underscore
 	NEW_FN=$(clean_title ${NEW_FN}) # Strip problematic chars
-	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FLEN}) # Limit length at word boundary
-	NEW_FN=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${NEW_FN}) # Add creator
+	#NEW_FN=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${NEW_FN}) # Add creator
+	NEW_FN=$(trim_title ${NEW_FN}) # Shorten creator if needed
 	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
+	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FLEN}) # Limit length at word boundary
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Restore path and extension
 
 	if [[ ${FN} != ${NEW_FN} ]];then
@@ -1501,7 +1492,7 @@ set_query_opts () {
 		r) ENGINE=rumble;_QUERY_OPTS[EOPT]=${ENG_OPT};;
 	esac
 
-	_QUERY_OPTS[DKEY]=${DKEY}
+	_QUERY_OPTS[DKEY]="${(C)DKEY:gs/_/ /}"
 	_QUERY_OPTS[QKEY]=${QKEY}
 	_QUERY_OPTS[TYPE]=${QRY_TYPE}
 	_QUERY_OPTS[ENGINE]=${ENGINE}
@@ -1525,6 +1516,18 @@ total_rejects () {
 	[[ ${TL_RJ} -ne 0 ]] && RJ_PCT=$(( (TL_RJ/TL_VIDS) * 100 ))
 
 	echo "${RJ_PCT}%"
+}
+
+trim_title () {
+	local STR=${@}
+	local TITLE=$(echo ${STR} | cut -d'-' -f2-)
+	local AUTHOR=$(echo ${STR} | cut -d'-' -f1 | cut -d' ' -f1,2)
+
+	if [[ ${#AUTHOR} -le 27 ]];then
+		echo ${STR}
+	else
+		echo "${AUTHOR} -${TITLE}"
+	fi
 }
 
 #--Begin GetOpts--
@@ -1711,7 +1714,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		if fav_get;then
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
-				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]:gs/_/ /}<N>..."
+				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
 				_LOCAL_LIST=()
 				_SORT_TABLE=()
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
@@ -1719,7 +1722,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 					download_select ${_QUERY_OPTS[QKEY]}
 				fi
 			else
-				msg_box -p -PK "Failed to set query options|$(msg_list_data $(for K in ${(k)_QUERY_OPTS};do echo "${K}:${_QUERY_OPTS[${K}]}";done))"
+				msg_box -p -PK "Failed to get query options|$(msg_list_data $(for K in ${(k)_QUERY_OPTS};do echo "${K}:${_QUERY_OPTS[${K}]}";done))"
 			fi
 		fi
 	done

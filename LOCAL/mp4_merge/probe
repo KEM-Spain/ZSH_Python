@@ -153,9 +153,22 @@ done
 get_media_info
 
 if [[ ${_MIXED_CODEC} == 'true' || ${_MIXED_FPS} == 'true' || ${_MIXED_RATE} == 'true' ]];then
-	[[ ${_MIXED_CODEC} == 'true' ]] && echo "Reformat required - Mixed codecs" && for C in ${(k)_CODEC};do echo ${C} ${_CODEC[${C}]};done
-	[[ ${_MIXED_FPS} == 'true' ]] && echo "Reformat required - Mixed fps MAX:${_MAX_FPS}" && for F in ${(k)_FPS};do echo ${F} ${_FPS[${F}]};done
-	[[ ${_MIXED_RATE} == 'true' ]] && echo "Reformat required - Mixed bit rates MAX:${_MAX_RATE}" && for R in ${(k)_RATE};do echo ${R} ${_RATE[${R}]};done
+#  Force all media files to same codec, frame rate, and bit rate
+#	ffmpeg -i input1.mp4 -i input2.mp4 -filter_complex \
+#	"[0:v]fps=30,scale=1920:1080[v0]; \
+#	 [1:v]fps=30,scale=1920:1080[v1]; \
+#	 [v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]" \
+#	-map "[outv]" -map "[outa]" -c:v libx264 -b:v 5000k -c:a aac -b:a 192k output.mp4
+
+	#Key Parameters Explained
+	#
+	#    fps=30: Forces all video segments to a specific frame rate (e.g., 30 fps) before merging.
+	#    scale=1920:1080: Ensures all videos have the same resolution (required for the concat filter to work seamlessly).
+	#    -c:v libx264: Forces the output to a specific codec (H.264).
+	#    -b:v 5000k: Forces a specific constant or average video bitrate.
+	#    concat=n=2:v=1:a=1: Merges n inputs into 1 video (v=1) and 1 audio (a=1) stream.
 else
 	echo "All formats match"
+	ffmpeg -y -loglevel error -f concat -safe 0 -i ${_FLIST} -c copy ${_DESTINATION_FILE}
 fi
+

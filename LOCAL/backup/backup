@@ -126,7 +126,7 @@ cleanup () {
 	local PID
 
 	[[ -z ${DRYRUN} ]] && clear
-	msg_box -c -t2 -x0 "Waiting for rsync process to finish..."
+	msg_box -x0 "Waiting for rsync process to finish..."
 
 	while true;do
 		PID=$(pgrep -n rsync)
