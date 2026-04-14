@@ -1520,12 +1520,13 @@ total_rejects () {
 
 trim_title () {
 	local STR=${@}
-	local TITLE=$(echo ${STR} | cut -d'-' -f2-)
-	local AUTHOR=$(echo ${STR} | cut -d'-' -f1 | cut -d' ' -f1,2)
+	local AUTHOR=$(cut -d'-' -f1 <<<${STR})
+	local TITLE=$(cut -d'-' -f2- <<<${STR})
 
 	if [[ ${#AUTHOR} -le 27 ]];then
 		echo ${STR}
 	else
+		AUTHOR=$(cut -d' ' -f1,2 <<<${AUTHOR})
 		echo "${AUTHOR} -${TITLE}"
 	fi
 }

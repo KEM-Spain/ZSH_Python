@@ -155,7 +155,7 @@ action_do () {
 		trap job_kill INT
 
 		job_start "${URL}|${TITLE}"
-		msg_box -t${_MSG_DELAY[LONG]} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested|<N>"
+		msg_box -t${_MSG_DELAY[LONG]} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested<N>"
 
 		while true;do
 			((NDX++))

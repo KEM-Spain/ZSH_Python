@@ -1,46 +1,31 @@
-2026-04-13_15:44: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-13_15:44: log_update: Skipping expired inode:6388878
-2026-04-13_15:44: log_update: Skipping expired inode:6337724
-2026-04-13_15:44: log_update: Skipping expired inode:6375111
-2026-04-13_15:44: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-13_15:44: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-04-13_15:44: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
-2026-04-13_15:44: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
-2026-04-13_15:44: query_youtube: Listing for QKEY:judgingfreedom contains 2 rows
-2026-04-13_15:44: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.WtdSAk
-2026-04-13_15:44: job_start: TITLE:Scott Ritter : Who Controls Hormuz?
-2026-04-13_15:44: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=C4XjdkWNzDo" PID:1668735
-2026-04-13_15:44: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-13_15:44: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=C4XjdkWNzDo PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-13_15:44: action_do: FUTURE
-2026-04-13_15:44: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.WtdSAk was cleared for:judgingfreedom from:action_do
-2026-04-13_15:44: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.PI1WYQ
-2026-04-13_15:44: job_start: TITLE:Larry Johnson : Israeli Agents Wreck Islamabad Talks
-2026-04-13_15:44: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=4kK_GW-3hnA" PID:1669899
-2026-04-13_15:44: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-13_15:45: action_do: GENERATING HEADER
-2026-04-13_15:45: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=4kK_GW-3hnA PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-13_15:45: action_do: COMPLETED
-2026-04-13_15:45: action_do: POST-PROCESSING
-2026-04-13_15:45: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Larry_Johnson_-_Israeli_Agents_Wreck_Islamabad_Talks.mp4
-2026-04-13_15:45: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Larry_Johnson_-_Israeli_Agents_Wreck_Islamabad_Talks.mp4
-2026-04-13_15:45: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Larry_Johnson_-_Israeli_Agents_Wreck_Islamabad_Talks.mp4 with:Judging Freedom - Larry Johnson - Israeli Agents Wreck Islamabad Talks.mp4
-2026-04-13_15:45: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Larry Johnson - Israeli Agents Wreck Islamabad Talks.mp4
-2026-04-13_15:45: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.PI1WYQ was cleared for:judgingfreedom from:action_do
-2026-04-13_15:45: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-04-13_15:45: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom SMSG:0.0% TYPE:standard 
-2026-04-13_15:45: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
-2026-04-13_15:45: query_youtube: Listing for QKEY:judgingfreedom contains 17 rows
-2026-04-13_15:45: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.dteBly
-2026-04-13_15:45: job_start: TITLE:Alastair Crooke : Iran Will Not Be Bullied
-2026-04-13_15:45: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=LJaEyk9eeV8" PID:1675447
-2026-04-13_15:45: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-13_15:45: action_do: GENERATING HEADER
-2026-04-13_15:45: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=LJaEyk9eeV8 PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-13_15:45: action_do: COMPLETED
-2026-04-13_15:45: action_do: POST-PROCESSING
-2026-04-13_15:45: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Alastair_Crooke_-_Iran_Will_Not_Be_Bullied.mp4
-2026-04-13_15:45: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Alastair_Crooke_-_Iran_Will_Not_Be_Bullied.mp4
-2026-04-13_15:45: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Alastair_Crooke_-_Iran_Will_Not_Be_Bullied.mp4 with:Judging Freedom - Alastair Crooke - Iran Will Not Be Bullied.mp4
-2026-04-13_15:45: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Alastair Crooke - Iran Will Not Be Bullied.mp4
-2026-04-13_15:45: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.dteBly was cleared for:judgingfreedom from:action_do
+2026-04-14_11:32: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-14_11:32: log_update: Skipping expired inode:6395187
+2026-04-14_11:32: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-14_11:32: query_rumble: Creating listing for QKEY:goingunderground TYPE:channel
+2026-04-14_11:32: parse_rumble: Parsing list for QKEY:goingunderground
+2026-04-14_11:32: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-14_11:32: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-14_11:32: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-14_11:32: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-14_11:32: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-04-14_11:32: query_rumble: Listing for QKEY:goingunderground contains 25 rows
+2026-04-14_11:32: query_rumble: Creating listing for QKEY:newordertv TYPE:channel
+2026-04-14_11:32: parse_rumble: Parsing list for QKEY:newordertv
+2026-04-14_11:32: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-14_11:32: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-14_11:32: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-14_11:32: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-14_11:32: query_rumble: Listing for QKEY:newordertv contains 27 rows
+2026-04-14_11:32: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.4TQgFe
+2026-04-14_11:32: job_start: TITLE:Strait Of Hormuz Crisis IS Hitting The Global South Hardest: Safesea Group
+2026-04-14_11:32: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v78d0am-strait-of-hormuz-crisis-is-hitting-the-global-south-hardest-safesea-group-c.html?e9s=src_v1_ucp_a" PID:374674
+2026-04-14_11:33: yt PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/yts/yts
+2026-04-14_11:33: action_do: GENERATING HEADER
+2026-04-14_11:33: action_do: COMPLETED
+2026-04-14_11:33: action_do: POST-PROCESSING
+2026-04-14_11:33: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v78d0am-strait-of-hormuz-crisis-is-hitting-the-global-south-hardest-safesea-group-c.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/yts/yts
+2026-04-14_11:33: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/New_Order_with_Afshin_Rattansi - Strait_of_Hormuz_Crisis_Is_Hitting_the_Global_South_HARDEST_-_Safes._Anchan.mp4
+2026-04-14_11:33: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/New_Order_with_Afshin_Rattansi - Strait_of_Hormuz_Crisis_Is_Hitting_the_Global_South_HARDEST_-_Safes._Anchan.mp4
+2026-04-14_11:33: set_final_fn: Overwriting file:New_Order_with_Afshin_Rattansi - Strait_of_Hormuz_Crisis_Is_Hitting_the_Global_South_HARDEST_-_Safes._Anchan.mp4 with:New Order - Strait Of Hormuz Crisis IS Hitting The.mp4
+2026-04-14_11:33: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/New Order - Strait Of Hormuz Crisis IS Hitting The.mp4
+2026-04-14_11:33: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.4TQgFe was cleared for:newordertv from:action_do

@@ -134,9 +134,23 @@ cleanup () {
 		sleep 1
 	done
 
-	[[ ${g_FOUND_EXT} == 'true' ]] && dut external -u
+	[[ ${g_FOUND_EXT} == 'true' ]] && external u
 	msg_box -c -x0 -t2 "External drive ${_DISK_MAP[${_DEST_ID}]} was unmounted"
 	clear
+}
+
+external () {
+	local OPT=${1}
+	local RC=0
+
+	{
+		dut external -${OPT}
+		RC=${?}
+
+		[[ ${RC} -ne 0 ]] && msg_box -t2 "${0:} <r>failed<N>"
+	}>/dev/null 2>&1
+
+	return ${RC}
 }
 
 verbose_set_level () {
@@ -238,7 +252,7 @@ g_LAST_RUN=$(last_backup ${_MARKER})
 
 if [[ -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
 	msg_box -t2 "Clearing orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}${RESET}"
-	dut external -u
+	external u
 	if [[ ! -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
 		msg_box -t2 -c "Orphaned mounts removed"
 	else
@@ -266,7 +280,7 @@ while true;do
 	else
 		g_FOUND_EXT=false
 		msg_box -t2 "Attempting to mount ${_DISK_MAP[${_DEST_ID}]}..."
-		dut external -m
+		external m
 		[[ ${?} -ne 0 ]] && exit_leave "\nNo external drives available"
 	fi
 done
