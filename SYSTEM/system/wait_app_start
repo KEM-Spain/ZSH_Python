@@ -18,7 +18,7 @@ typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
 typeset -A _SCAN=()
 typeset -A _SEEN=()
 typeset -A _WAITTIMES=()
-typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
+typeset -a _APPS_NON_DOCK=(google-chrome enpass vlc losslesscut)
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(enpass pyts libreoffice org.gnome.terminal)
 typeset -aU _WIN_LIST=()
@@ -281,6 +281,7 @@ while IFS= read -ru3 LINE;do
 		if [[ (${LINE:l} =~ 'string' || ${LINE:l} =~ 'array') && ${LINE:l} =~ '\.desktop' ]];then
 			STR=$(grep --color=never -o -E '["].*.desktop["]' <<<${LINE} | tr -d '["]' | sed 's/.desktop//')
 			_SCAN[${STR:t}]=1
+			[[ -n ${STR} ]] && logit ${_LOG} "SCAN STR:${STR}"
 			scan_apps
 		fi
 	fi

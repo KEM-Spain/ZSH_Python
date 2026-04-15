@@ -17,6 +17,6 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-/bin/rm -f /tmp/wait*
+/bin/rm -f ~/.local/share/wait_app_start/wait_app_start.log
 pkill wait_app_start
 

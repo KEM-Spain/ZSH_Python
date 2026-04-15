@@ -189,14 +189,12 @@ _set_ssid () {
 }
 
 _set_term_header () {
-	local THIS_TERM=$(tty)
+	local THIS_TERM=${$(tty):t}
 	local TCNT=$(terms -c)
-	local TLBL=''
 
-	THIS_TERM=${THIS_TERM:t}
+	(( THIS_TERM++ ))
 
-	[[ ${THIS_TERM} =~ '0|1' ]] && TLBL=1 || TLBL=${TCNT}
-	print -Pn "\e]0;Terminal ${TLBL} of ${TCNT}\a"
+	print -Pn "\e]0;Terminal ${THIS_TERM} of ${TCNT}\a"
 }
 
 _term_count () {

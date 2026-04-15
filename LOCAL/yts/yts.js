@@ -38,14 +38,14 @@
 
 	msgout = false
 	if (strict) { 
-		console.log("strict filter is active")
+		console.log("strict filter active")
 	}
 	videos.forEach(function (v) {
 		has_match = false
 		if (age === "all") { /* any age is default */
 			has_match = true
 			if (msgout === false) {
-				console.log("matched on age:all")
+				console.log("match on age:all")
 				msgout = true
 			}
 		} else if (age === "recent") { /* any recent age */
@@ -62,7 +62,7 @@
 				console.log("matched on age:"+age)
 				msgout = true
 			} else {
-				console.log("no matches for age:"+age)
+				console.log("no match on age:"+age)
 			}
 		} 
 		v.title = v.title.replace(/\|/g, ':') /* titles contain pipe separators */
@@ -74,13 +74,11 @@
 				v_arg = v_arg.replace(/ /g, '')
 				if (v_arg.indexOf(t_arg) >= 0) { /* searchterm is in author */
 					if (msgout === false) {
-						console.log("matched strict")
-						console.log("t_arg:"+t_arg)
-						console.log("v_arg:"+v_arg)
+						console.log("strict accept:"+v_arg+" == "+t_arg) /* searchterm NOT in title */
 						msgout = true
 					}
 				} else {
-					console.log("strict rejected:"+v_arg+" != "+t_arg) /* searchterm NOT in title */
+					console.log("strict reject:"+v_arg+" != "+t_arg) /* searchterm NOT in title */
 					return	
 				}
 			}
