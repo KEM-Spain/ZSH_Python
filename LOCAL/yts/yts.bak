@@ -1357,10 +1357,8 @@ query_youtube () {
 
 		[[ ${LINE:l} =~ 'matched' ]] && DATA=true && continue
 		[[ ${LINE:l} =~ 'strict filter' ]] && continue
-
 		[[ ${LINE:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
 		[[ ${LINE:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
-
 		[[ ${LINE:l} =~ 'strict reject' ]] && _REJECTS[${NDX}]=true || _REJECTS[${NDX}]=false
 
 		STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
@@ -1375,32 +1373,35 @@ query_youtube () {
 			HIT=true
 		fi
 		 
-		if [[ ${_REJECTS[${NDX}]} == 'false' && ${DATA} == 'true' && ${HIT} == 'true' ]];then
+		if [[ ${DATA} == 'true' && ${_REJECTS[${NDX}]} == 'false' && ${HIT} == 'true' ]];then
 			_LOCAL_LIST+=${STR}
 		else
 			_QUERY_REJECTS+=${STR}
 		fi
 	done < <(eval ${g_PROXY_CMD} 2>/dev/null)
 
-	logit ${_YT_DBG_LOG} "${0}: Query matched ${NDX} lines, _LOCAL_LIST has ${#_LOCAL_LIST} lines"
-	if [[ ${NDX} -ne 0 && ${#_LOCAL_LIST} -eq 0 ]];then
-		msg_box -p -PY "Search engine returned ${NDX} results|but blocking a non-matching author caused all to be <r>rejected<N>|<w>Should these rows be accepted to investigate<N>?"
-		[[ ${_MSG_KEY} == 'y' ]] && _LOCAL_LIST=(${_QUERY_REJECTS})
-	fi
 
-	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${NDX})" || _QUERY_OPTS[SMSG]=''
+	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
-
 	[[ ${_DEBUG} -eq 0 && ${_SMCUP} == 'false' ]] && do_smcup
 
-	# Search failed
 	if ! arr_is_populated "${_LOCAL_LIST}";then
-		[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STR="|<I>Strict filter is active<N>" || STR=''
-		msg_box -t2 "<r>Query returned no rows<N>${STR}"
-		logit ${_YT_DBG_LOG} "${0}: Search engine returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[EOPT]}"
-		return 1
+		# Search failed
+		if [[ ${#_QUERY_REJECTS} -ne 0 ]];then
+			msg_box -p -PY "Search engine returned ${NDX} results|but blocking a non-matching author caused all to be <r>rejected<N>|AUTHOR:${AUTHOR} DKEY:#{_QUERY_OPTS[DKEY]}|<w>Should these rows be accepted to investigate<N>?"
+			if [[ ${_MSG_KEY} == 'y' ]];then
+				_LOCAL_LIST=(${_QUERY_REJECTS})
+			fi
+		else
+			[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STR="|<I>Strict filter is active<N>" || STR=''
+			msg_box -t2 "<r>Query returned no rows<N>${STR}"
+			logit ${_YT_DBG_LOG} "${0}: Search engine returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[EOPT]}"
+			return 1
+		fi
+	else
+		logit ${_YT_DBG_LOG} "${0}: Query matched ${NDX} lines, _LOCAL_LIST has ${#_LOCAL_LIST} lines"
 	fi
 
 	for F in ${_LOCAL_LIST};do

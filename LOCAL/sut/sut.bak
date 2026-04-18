@@ -29,7 +29,6 @@ typeset -A _UTILS
 typeset -A _UTILS_DESC
 
 # Constants
-_WRAPPER=${0:t}
 _UTILS=(
 autostart 1
 cam 1
@@ -181,13 +180,13 @@ ___EOF
 
 		tabs 5
 		(
-		echo -e "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+		echo -e "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HD"
@@ -317,7 +316,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] on|off\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H] on|off\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -346,13 +345,13 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
 
 	echo -n "Restart cups daemon and clear spool? (y/n):"; read -q RESPONSE
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(err_msg_exit I "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 
 	sudo service cups stop
 	sudo rm -r /var/spool/cups
@@ -370,13 +369,13 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
 
 	echo -n "Perform a low level (dd) copy of /dev/sda to /dev/sdb?"; read -q RESPONSE
-	[[ ${RESPONSE} == 'n' ]] && exit_leave $(err_msg_exit I "Operation cancelled")
+	[[ ${RESPONSE} == 'n' ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 
 	dd if=/dev/sda of=/dev/sdb status=progress conv=noerror,sync bs=4k
 }
@@ -400,7 +399,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -564,14 +563,14 @@ info () {
 
 		tabs 5
 		(
-		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-v${RESET} verbosity level - repeats increase detail"
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDv"
@@ -753,14 +752,14 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo -e "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+		echo -e "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-r${RESET} show recent install activity"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDr"
@@ -849,7 +848,7 @@ ___EOF
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 		(
-		echo -e "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+		echo -e "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-b${RESET} last boot (default)"
@@ -857,7 +856,7 @@ ___EOF
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	OPTSTR=":HDbs"
@@ -900,7 +899,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -946,7 +945,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -985,7 +984,7 @@ ___EOF
 
 	function usage {
 		(
-		echo -e "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${SCRIPT} ${OPTSTR} [<SEARCHTERM>]\n"
+		echo -e "${WHITE_FG}\nUsage${RESET}:${SCRIPT} ${OPTSTR} [<SEARCHTERM>]\n"
 		echo -e "-H help"
 		echo -e "-t tail"
 		echo -e "-l lines to display (default=25)"
@@ -1045,7 +1044,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -1093,7 +1092,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -1172,7 +1171,7 @@ mkinitscript () {
 	function usage {
 		(
 		echo
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [${WHITE_FG}-H${RESET} for this help screen]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [${WHITE_FG}-H${RESET} for this help screen]\n"
 		echo -e "\n${WHITE_FG}Required switches${RESET}:"
 		echo "[${WHITE_FG}-n${RESET} init script name] [${WHITE_FG}-f${RESET} controlled program's fully qualified name]"
 		echo -e "\n${WHITE_FG}Optional switches${RESET}:"
@@ -1419,7 +1418,7 @@ ___EOF
 
 		tabs 5
 		(
-		echo -e "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-Hxus] <PACKAGE>\n"
+		echo -e "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-Hxus] <PACKAGE>\n"
 		echo -e "-H help"
 		echo -e "-x hold current release"
 		echo -e "-u update current release"
@@ -1427,7 +1426,7 @@ ___EOF
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	function status {
@@ -1825,7 +1824,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [USER]"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H] [USER]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -1917,7 +1916,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H] [UMASK]"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H] [UMASK]"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -1991,11 +1990,11 @@ ___EOF
 
 		tabs 5
 		(
-		echo "${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} date-criterion | keyword"
+		echo "${WHITE_FG}Usage${RESET}:${_SCRIPT} date-criterion | keyword"
 		echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
 	local OPTSTR=":HD:"
@@ -2053,11 +2052,14 @@ ___EOF
 
 mime_defaults () {
 	local MIMETYPES=/etc/mime.types
-	local M_LOCAL_LIST=($(awk 'NF && $1!~/^#/ {print $1}' < ${MIMETYPES}))
-	local SEARCHTERM
-	local SHOW_ONLY_APPS=false
+	local -a M_LOCAL_LIST=($(awk 'NF && $1!~/^#/ {print $1}' < ${MIMETYPES}))
+	local -a LIST_OUT=()
+	local SEARCHTERM=''
+	local SHOW_ONLY_ASSIGNED=true
 	local USERMIMETYPES=~/.local/share/applications/mimeapps.list
-	local APP
+	local APP=''
+	local MSG=''
+	local NDX=0
 	local M
 
 	#--Begin GetOpts--
@@ -2106,24 +2108,22 @@ ___EOF
 
 		tabs 5
 		(
-		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [<SEARCHTERM>]"
+		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [<SEARCHTERM>]"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-		echo -e "${WHITE_FG}-a${RESET} show only mimetypes with default apps assigned"
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 		) >&2
 
-		exit_leave $(err_msg_exit W ${PENDING_MSGS})
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
-	OPTSTR=":HDa"
+	OPTSTR=":HD"
 	OPTIND=0
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 		  H) usage;;
 		  D) dbg_set_level;;
-		  a) SHOW_ONLY_APPS=true;;
 		  :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 		esac
@@ -2132,46 +2132,36 @@ ___EOF
 	shift $(( OPTIND - 1 ))
 	#--End GetOpts--
 	# Execution
-	[[ ${#} -ne 0 ]] && SEARCHTERM=${1} && echo "Searching for keyword: ${SEARCHTERM}"
+	[[ ${#} -ne 0 ]] && SEARCHTERM=${1} && MSG="Searching for keyword:${WHITE_FG}${SEARCHTERM}${RESET}" || MSG="Finding applications per mimetype"
+	[[ ! -e /usr/bin/gio ]] && exit_leave $(err_msg_exit E "Missing dependency:gio")
+	[[ ! -e /usr/bin/xdg-mime ]] && exit_leave $(err_msg_exit E "Missing dependency:xdg-mime")
 
-	call_xdg_app () {
-		[[ ! -e /usr/bin/xdg-mime ]] && exit_leave $(err_msg_exit E "xdg-mime not found")
-		xdg-mime query default ${1}
-	}
+	clear
+	NDX=0
 
-	call_gio_app () {
-		[[ ! -e /usr/bin/gio ]] && exit_leave $(err_msg_exit E "gio not found")
-		gio mime ${1}
-	}
-
-	show_default () {
-		local DA
-
-		[[ -n ${2} ]] && DA="${WHITE_FG}${APP}" || DA="${RED_FG}no default app"
-		echo "mimetype: ${WHITE_FG}${1}${RESET} -> default app: ${WHITE_FG}${DA}${RESET}"
-	}
-
+	tcup 0 0; echo ${MSG}
 	for M in ${M_LOCAL_LIST};do
 		if [[ -n ${SEARCHTERM} ]];then
-			[[ ! ${M} =~ "${SEARCHTERM}" ]] && continue
-			APP=$(call_xdg_app ${M})
-			echo -n "XDG:"
-			show_default ${M} ${APP}
-			APP=$(call_gio_app ${M})
-			echo -n "GVFS:"
-			show_default ${M} ${APP}
-			continue
+			[[ ! ${M} =~ ${SEARCHTERM} ]] && continue
 		fi
+		((NDX++))
+		tcup 1 0; printf "\rProcessing mimetype ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#M_LOCAL_LIST} $(( NDX * 100. / ${#M_LOCAL_LIST} ))
 
-		APP=$(call_xdg_app ${M})
-
-		if ${SHOW_ONLY_APPS};then
-			[[ -z ${APP} ]] && continue
-			show_default ${M} ${APP}
+		APP=$(xdg-mime query default ${M})
+		if [[ -n ${APP} ]];then
+			LIST_OUT+="XDG:${M} ${APP}"
 		else
-			show_default ${M} ${APP}
+			APP=$(gio mime ${M} | head -1)
+			if [[ ${APP:l} =~ 'default application for' ]];then
+				APP=$(cut -d: -f2 <<<${APP} | str_trim)
+				LIST_OUT+="GIO:${M} ${APP}"
+			fi
 		fi
 	done
+
+	for L in ${LIST_OUT};do
+		printf "%s\n" ${L}
+	done | pg
 }
 
 host_mac () {
@@ -2182,7 +2172,7 @@ ___EOF
 	if [[ ${1} == '-H' ]];then
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
 		tabs 5
-		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} [-H]\n"
+		echo "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} [-H]\n"
 		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		exit_leave
 	fi
@@ -2248,13 +2238,13 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(err_msg_exit W ${PENDING_MSGS})
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
@@ -2290,7 +2280,7 @@ else
 	sel_list -sa -O ${GREEN_FG} -C -F"<w>Show System Utilities usage or <h>(q)uit<N>" -H"System Utilities"
 
 	_SCRIPT=${(k)_UTILS_DESC[(r)${_SEL_VAL}]}
-	${_SCRIPT} -H # Call function help
+	${_SCRIPT} -H # Call help function
 
 	exit_leave
 fi

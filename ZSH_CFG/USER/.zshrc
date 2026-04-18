@@ -57,6 +57,7 @@ export GIT_AUTHOR_NAME="Kurt Miller"
 export GIT_AUTHOR_EMAIL="miller.kurt.e@gmail.com"
 export LC_ALL=C.utf8
 export DISPLAY=:0
+export CPU_WARN_LIMIT=800
 
 # Vars
 _TERMCNT=$(terms -c)
@@ -321,6 +322,12 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		INSTANCE=$(pgrep -c wait_app_start)
 		if [[ ${INSTANCE} -eq 0 ]];then
 			( nohup wait_app_start & ) >/dev/null 2>&1
+		fi
+
+		# cpu usage warning
+		INSTANCE=$(pgrep -c cpu_warn)
+		if [[ ${INSTANCE} -eq 0 ]];then
+			( nohup /usr/local/bin/system/cpu_warn & ) >/dev/null 2>&1
 		fi
 
 		remind # post any reminders

@@ -101,7 +101,7 @@ alias grep='grep --color=always'
 alias fgrep='fgrep --color=always'
 alias egrep='egrep --color=always'
 
-#cd shortcuts
+#Directory shortcuts
 alias ,='cd -'
 alias ....='cd ../../..'
 alias ...='cd ../..'
@@ -112,7 +112,7 @@ alias .ls='cd ~/.local/share'
 alias .z='cd ~/.zsh'
 alias .zc='cd ~/.zsh/completions'
 
-alias B="cd /media/kmiller/KEM_Backup/$(hostname)_RSYNC2"
+alias B="cd /media/kmiller/EXT_1/$(hostname)_RSYNC2"
 alias C='cd ~/Downloads/Torrents/Completed'
 alias D='cd ~/Documents'
 alias E='cd /etc'
@@ -122,9 +122,9 @@ alias Lm='cd ~/Downloads/Torrents/Library/movies'
 alias Lp='cd ~/Downloads/Torrents/Library/piano'
 alias Ls='cd ~/Downloads/Torrents/Library/series'
 alias Lw='cd ~/Downloads/Torrents/Library/web'
-alias M="cd /media/kmiller/KEM_Misc/Music/KEM-B9"
-alias MB="cd /media/kmiller/KEM_Backup"
-alias MM="cd /media/kmiller/KEM_Misc"
+alias M="cd /media/kmiller/EXT_2/Music/KEM-B9"
+alias MB="cd /media/kmiller/EXT_1"
+alias MM="cd /media/kmiller/EXT_2"
 alias O='cd /opt'
 alias P='cd ~/Pictures'
 alias ss='cd ~/Pictures/Screenshots'

@@ -111,7 +111,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -153,7 +153,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
@@ -173,7 +173,7 @@ while getopts ${OPTSTR} OPTION;do
 	  l) if is_valid_int ${OPTARG};then
            g_LIMIT=${OPTARG}
         else
-			  exit_leave $(msg_exit W "Invalid integer")
+			  exit_leave $(err_msg_exit W "Invalid integer")
         fi;;
      p) PRINT_PATHS=true;;
      s) GET_SIZE=true;;
@@ -200,7 +200,7 @@ if [[ ${GET_DIR} == 'true' ]];then
 	sel_set_list ${(on)_ICO_DIRS}
 	sel_list -O ${MAGENTA_FG} -x5 -y11 -M"<w>Select icon directory<N>"
 
-	[[ ${?} -ne 0 ]] && echo "${_SCRIPT_TAG} ${BOLD}${RED_FG}Operation Cancelled${RESET}" && exit_leave
+	[[ ${?} -ne 0 ]] && exit_leave "${RED_FG}Operation Cancelled${RESET}"
 
 	g_ICON_DIR=${_SEL_VAL}
 	msg_box_clear OUTER_BOX

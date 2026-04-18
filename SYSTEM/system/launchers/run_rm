@@ -240,6 +240,7 @@ MYGROUP=$(get_mygroup)
 [[ ${_DEBUG} -gt 0 ]] && dbg "MYID:${MYID}, MYGROUP:${MYGROUP}, WILDCARD:${WILDCARD}"
 
 # Prescan
+# TODO: Resolve conflicts with aliases i.e. file name 'm' Alias is: cd ~/Music etc.
 LIST=(${@}) 
 [[ ${_DEBUG} -gt 0 ]] && dbg "LIST COUNT:${#LIST}"
 

@@ -172,7 +172,6 @@ _do_updates () {
 _do_mime_defaults () {
     _arguments -s \
 			'-H[help]' \
-			'-a[show only mimetypes with default apps assigned]' \
 }
 
 _do_host_mac () {

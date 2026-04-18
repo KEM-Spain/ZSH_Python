@@ -1,40 +1,10 @@
-2026-04-15_23:30: log_update: LOG lines BEFORE update:13 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-15_23:30: log_update: LOG lines AFTER update:13 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-15_23:30: query_youtube: Creating listing for QKEY:aaron mate STRICT:null
-2026-04-15_23:30: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Aaron Mate ENGINE:youtube EOPT:null FKEY:aaron mate QKEY:aaron mate TYPE:custom 
-2026-04-15_23:30: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "aaron mate"
-2026-04-15_23:30: query_youtube: Query matched 5 lines, _LOCAL_LIST has 4 lines
-2026-04-15_23:30: query_youtube: Listing for QKEY:aaron mate contains 4 rows
-2026-04-15_23:30: query_youtube: Creating listing for QKEY:alexkrainerofficial STRICT:null
-2026-04-15_23:30: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Krainer ENGINE:youtube EOPT:null FKEY:alex krainer QKEY:alexkrainerofficial SMSG: TYPE:custom 
-2026-04-15_23:30: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "alexkrainerofficial"
-2026-04-15_23:30: query_youtube: Query matched 3 lines, _LOCAL_LIST has 2 lines
-2026-04-15_23:30: query_youtube: Listing for QKEY:alexkrainerofficial contains 2 rows
-2026-04-15_23:30: query_youtube: Creating listing for QKEY:americanexception STRICT:null
-2026-04-15_23:30: query_youtube: _QUERY_OPTS: AGE:recent DKEY:American Exception ENGINE:youtube EOPT:null FKEY:american exception QKEY:americanexception SMSG: TYPE:custom 
-2026-04-15_23:30: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "americanexception"
-2026-04-15_23:30: query_youtube: Query matched 2 lines, _LOCAL_LIST has 1 lines
-2026-04-15_23:30: query_youtube: Listing for QKEY:americanexception contains 1 rows
-2026-04-15_23:30: query_youtube: Creating listing for QKEY:arthur migliazza STRICT:null
-2026-04-15_23:30: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Arthur Migliazza ENGINE:youtube EOPT:null FKEY:arthur migliazza QKEY:arthur migliazza SMSG: TYPE:custom 
-2026-04-15_23:30: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "arthur migliazza"
-2026-04-15_23:30: query_youtube: Search engine returned no rows - QKEY:arthur migliazza, STRICT:null
-2026-04-15_23:31: query_youtube: Creating listing for QKEY:empire files STRICT:null
-2026-04-15_23:31: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Empire Files ENGINE:youtube EOPT:null FKEY:empire files QKEY:empire files SMSG: TYPE:custom 
-2026-04-15_23:31: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "empire files"
-2026-04-15_23:31: query_youtube: Search engine returned no rows - QKEY:empire files, STRICT:null
-2026-04-15_23:31: query_youtube: Creating listing for QKEY:glenn greenwald STRICT:null
-2026-04-15_23:31: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Glenn Greenwald ENGINE:youtube EOPT:null FKEY:glenn greenwald QKEY:glenn greenwald SMSG: TYPE:custom 
-2026-04-15_23:31: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "glenn greenwald"
-2026-04-15_23:31: query_youtube: Query matched 4 lines, _LOCAL_LIST has 3 lines
-2026-04-15_23:31: query_youtube: Listing for QKEY:glenn greenwald contains 3 rows
-2026-04-15_23:31: query_youtube: Creating listing for QKEY:jeffery sachs STRICT:null
-2026-04-15_23:31: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Jeffery Sachs ENGINE:youtube EOPT:null FKEY:jeffery sachs QKEY:jeffery sachs SMSG: TYPE:custom 
-2026-04-15_23:31: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "jeffery sachs"
-2026-04-15_23:31: query_youtube: Query matched 17 lines, _LOCAL_LIST has 16 lines
-2026-04-15_23:31: query_youtube: Listing for QKEY:jeffery sachs contains 16 rows
-2026-04-15_23:31: query_youtube: Creating listing for QKEY:intel roundtable STRICT:null
-2026-04-15_23:31: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Intel Roundtable ENGINE:youtube EOPT:null FKEY:intel roundtable QKEY:intel roundtable SMSG: TYPE:custom 
-2026-04-15_23:31: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "intel roundtable"
-2026-04-15_23:31: query_youtube: Query matched 3 lines, _LOCAL_LIST has 2 lines
-2026-04-15_23:31: query_youtube: Listing for QKEY:intel roundtable contains 2 rows
+2026-04-18_14:39: log_update: LOG lines BEFORE update:9 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-18_14:39: log_update: LOG lines AFTER update:9 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-18_14:39: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
+2026-04-18_14:39: parse_rumble: Parsing list for QKEY:tuckercarlson
+2026-04-18_14:39: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-18_14:39: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-18_14:39: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-18_14:39: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-18_14:39: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-04-18_14:39: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows

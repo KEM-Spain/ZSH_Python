@@ -125,7 +125,7 @@ prod_to_local () {
 			fi
 			echo ${g_PROD_WILL_OVERWRITE}
 			
-			get_response "Overwrite the ${_EM}local${RESET} version?\n(the ${_EM}local${RESET} version will be backed up first)"
+			get_response "${RED_FG}Overwrite the ${_EM}local version${RESET}?\n(the ${_EM}local${RESET} version will be backed up first)"
 			if [[ ${?} -eq 0 ]];then
 				[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} Local backed up; production will overwrite local"
 				do_copy ${g_LOCAL_VERSION} ${g_LOCAL_VERSION}.bak no_prompt
@@ -268,7 +268,7 @@ local_to_prod () {
 			fi
 		fi
 
-		get_response "Overwrite the ${_EM}production${RESET} version: ${WHITE_FG}${g_PROD_NAME}${RESET}\nwith the ${_EM}development${RESET} version: ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
+		get_response "${RED_FG}Overwrite the ${_EM}production version${RESET}: ${WHITE_FG}${g_PROD_NAME}${RESET}\nwith the ${_EM}development${RESET} version: ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
 		if [[ ${?} -eq 0 ]];then
 			prod_to_backup no_prompt
 			cp ${g_LOCAL_VERSION} ${g_PROD_VERSION}

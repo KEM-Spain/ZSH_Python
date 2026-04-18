@@ -890,6 +890,7 @@ title_info () { # Shared with fsub and vid_to_lib
 
 title_scrubber () {
 	local TITLE=${1}
+	local LOG=${2}
 	local -A SEEN=()
 	local -a UCASE_WORDS=()
 	local STR=''
@@ -904,6 +905,7 @@ title_scrubber () {
 	for U in ${UCASE_WORDS};do
 		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
 	done
+	logit ${LOG} "${0}: UCASE_WORDS:${#UCASE_WORDS}"
 
 	STR=${(C)STR} # Proper case
 
@@ -917,10 +919,12 @@ title_scrubber () {
 		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
+			logit ${LOG} "${0}: Preserving acronym:${W}"
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
 			SEEN[${W}]=1
 		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
+				logit ${LOG} "${0}: Preserving uppercase:${W}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) 
 				SEEN[${W}]=1
 			fi
@@ -931,7 +935,7 @@ title_scrubber () {
 	STR=$(echo "${STR}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
 	STR=$(echo "${STR}" | perl -pe 's/[Ww]\x{02f}/w\x{02f}/g') # Fix 'with' abbv
 
-	[[ -n ${STR} ]] && TITLE=${STR} || logit "TITLE failed scrubbing"
+	[[ -n ${STR} ]] && TITLE=${STR} || logit ${LOG} "TITLE failed scrubbing"
 
 	echo ${TITLE}
 }

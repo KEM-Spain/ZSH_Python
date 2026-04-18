@@ -1,0 +1,15 @@
+#!/usr/bin/zsh
+
+ICON="/usr/share/icons/HighContrast/48x48/status/dialog-warning.png"
+
+while true;do
+	[[ -n ${CPU_WARN_LIMIT} ]] && LIMIT=${CPU_WARN_LIMIT} || LIMIT=800 # Scan environment
+
+	CPU=$(ps -eo pid,pcpu,comm --sort=-pcpu | tr -s '[:space:]' | cut -d' ' -f3- | head -2 | tail -1 | tr ' ' '|')
+
+	MAX=$(cut -d'|' -f1 <<<${CPU})
+	JOB=$(cut -d'|' -f2- <<<${CPU})
+
+	[[ ${MAX} -ge ${LIMIT} ]] && notify-send -i ${ICON} -t 1 -u normal "System Load Above ${LIMIT[1,2]}" "CPU is at ${MAX} -> Job:${JOB}"
+	sleep 3
+done
