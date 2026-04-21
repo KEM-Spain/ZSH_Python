@@ -27,7 +27,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 usage () {
 	echo "Usage:${_SCRIPT} [<FILE>]"
-	echo " Desc:Paging for either <FILE> or <PIPE>"
+	echo " Desc:Paging for <FILE> or <PIPE>"
 	exit_leave
 }
 
@@ -44,7 +44,7 @@ if [[ -t 0 ]];then
 else
 	while read LINE;do
 		echo ${LINE}
-	done | less -R
+	done | fold -w ${COLUMNS} | less ${COLUMNS} -R
 fi
 tput rmcup
 

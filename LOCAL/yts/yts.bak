@@ -367,7 +367,7 @@ clean_title () {
 
 	#logit ${_YT_DBG_LOG} "${0}: TITLE  IN:${TITLE}"
 	 
-	STR=$(title_scrubber ${TITLE})
+	STR=$(title_scrubber ${TITLE} ${_YT_DBG_LOG})
 	STR=$(keyword_strip <<<${STR})
 	STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${STR}) # Use DKEY
 

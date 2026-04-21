@@ -1305,6 +1305,7 @@ query_rumble () {
 	_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 
 	parse_rumble ${PARSER_OPT}
+	_RUMBLE_PAGE=()
 
 	if [[ ${?} -ne 0 ]];then
 		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}"

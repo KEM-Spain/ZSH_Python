@@ -1,10 +1,67 @@
-2026-04-18_14:39: log_update: LOG lines BEFORE update:9 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-18_14:39: log_update: LOG lines AFTER update:9 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-18_14:39: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
-2026-04-18_14:39: parse_rumble: Parsing list for QKEY:tuckercarlson
-2026-04-18_14:39: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-04-18_14:39: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-04-18_14:39: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-04-18_14:39: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-04-18_14:39: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-04-18_14:39: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
+2026-04-21_11:15: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-21_11:15: log_update: Skipping expired inode:6296141
+2026-04-21_11:15: log_update: Skipping expired inode:6395532
+2026-04-21_11:15: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-21_11:15: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
+2026-04-21_11:15: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio TYPE:standard 
+2026-04-21_11:15: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
+2026-04-21_11:15: query_youtube: Search engine returned no rows - QKEY:blancolirio, STRICT:s
+2026-04-21_11:15: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
+2026-04-21_11:15: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:0.0% TYPE:standard 
+2026-04-21_11:15: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
+2026-04-21_11:15: query_youtube: Query matched 4 lines, _LOCAL_LIST has 2 lines
+2026-04-21_11:15: query_youtube: Translated TITLE:Air France LAX April 8, 2026
+2026-04-21_11:15: query_youtube: Listing for QKEY:blancolirio contains 2 rows
+2026-04-21_11:16: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
+2026-04-21_11:16: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG:0.0% TYPE:standard 
+2026-04-21_11:16: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
+2026-04-21_11:16: query_youtube: Query matched 18 lines, _LOCAL_LIST has 16 lines
+2026-04-21_11:16: query_youtube: Listing for QKEY:dialogueworks contains 16 rows
+2026-04-21_11:16: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
+2026-04-21_11:16: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom SMSG:0.0% TYPE:standard 
+2026-04-21_11:16: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
+2026-04-21_11:16: query_youtube: Search engine returned no rows - QKEY:judgingfreedom, STRICT:s
+2026-04-21_11:16: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
+2026-04-21_11:16: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom SMSG:0.0% TYPE:standard 
+2026-04-21_11:16: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
+2026-04-21_11:16: query_youtube: Query matched 16 lines, _LOCAL_LIST has 14 lines
+2026-04-21_11:16: query_youtube: Listing for QKEY:judgingfreedom contains 14 rows
+2026-04-21_11:16: query_youtube: Creating listing for QKEY:mentourpilot STRICT:s
+2026-04-21_11:16: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Mentour Pilot ENGINE:youtube EOPT:s FKEY:mentour pilot QKEY:mentourpilot SMSG:0.0% TYPE:standard 
+2026-04-21_11:16: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "mentourpilot"
+2026-04-21_11:16: query_youtube: Query matched 4 lines, _LOCAL_LIST has 1 lines
+2026-04-21_11:16: query_youtube: Listing for QKEY:mentourpilot contains 1 rows
+2026-04-21_11:17: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ez4AWJ
+2026-04-21_11:17: job_start: TITLE:One Of The WORST Reports I've EVER Read! : Thai International Airways 261
+2026-04-21_11:17: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=dHIAi5FYH6w" PID:366482
+2026-04-21_11:17: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-21_11:17: action_do: GENERATING HEADER
+2026-04-21_11:17: title_scrubber: UCASE_WORDS:3
+2026-04-21_11:17: title_scrubber: Preserving uppercase:Worst
+2026-04-21_11:17: title_scrubber: Preserving acronym:I
+2026-04-21_11:17: title_scrubber: Preserving uppercase:Ever
+2026-04-21_11:17: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=dHIAi5FYH6w PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-21_11:17: action_do: COMPLETED
+2026-04-21_11:17: action_do: POST-PROCESSING
+2026-04-21_11:17: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Mentour_Pilot - One_Of_The_WORST_Reports_I_ve_EVER_Read_Thai_International_Airways_261.mp4
+2026-04-21_11:17: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Mentour_Pilot - One_Of_The_WORST_Reports_I_ve_EVER_Read_Thai_International_Airways_261.mp4
+2026-04-21_11:17: title_scrubber: UCASE_WORDS:3
+2026-04-21_11:17: title_scrubber: Preserving uppercase:Worst
+2026-04-21_11:17: title_scrubber: Preserving acronym:I
+2026-04-21_11:17: title_scrubber: Preserving uppercase:Ever
+2026-04-21_11:17: set_final_fn: Overwriting file:Mentour_Pilot - One_Of_The_WORST_Reports_I_ve_EVER_Read_Thai_International_Airways_261.mp4 with:Mentour Pilot - One Of The WORST Reports I've EVER Read Thai.mp4
+2026-04-21_11:17: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Mentour Pilot - One Of The WORST Reports I've EVER Read Thai.mp4
+2026-04-21_11:17: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.ez4AWJ was cleared for:mentourpilot from:action_do
+2026-04-21_11:17: query_youtube: Creating listing for QKEY:rickbeato STRICT:s
+2026-04-21_11:17: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Rick Beato ENGINE:youtube EOPT:s FKEY:rick beato QKEY:rickbeato SMSG:100.0% TYPE:standard 
+2026-04-21_11:17: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "rickbeato"
+2026-04-21_11:17: query_youtube: Query matched 5 lines, _LOCAL_LIST has 3 lines
+2026-04-21_11:17: query_youtube: Listing for QKEY:rickbeato contains 3 rows
+2026-04-21_11:17: query_youtube: Creating listing for QKEY:thegrayzone STRICT:s
+2026-04-21_11:17: query_youtube: _QUERY_OPTS: AGE:recent DKEY:The Grayzone ENGINE:youtube EOPT:s FKEY:the grayzone QKEY:thegrayzone SMSG:0.0% TYPE:standard 
+2026-04-21_11:17: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "thegrayzone"
+2026-04-21_11:17: query_youtube: Query matched 6 lines, _LOCAL_LIST has 4 lines
+2026-04-21_11:17: query_youtube: Listing for QKEY:thegrayzone contains 4 rows
+2026-04-21_11:19: yt PPCMD:/usr/bin/zsh
+2026-04-21_11:19: yt Cleaning file name:The_Bruce_Hornsby_Interview-[O3FI4nBXE18].mp4
+2026-04-21_11:19: yt Executed from command line:https://www.youtube.com/watch?v=O3FI4nBXE18 PPCMD:/usr/bin/zsh

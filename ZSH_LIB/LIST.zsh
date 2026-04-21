@@ -70,10 +70,6 @@ list_add_header_break () {
 	_LIST_HEADER_BREAK=true
 }
 
-list_clear_header () {
-	_LIST_HEADER=()
-}
-
 list_clear_selected () {
 	local NDX=${1}
 
@@ -139,6 +135,7 @@ list_display_page () {
 list_do_header () {
 	local PAGE=${1}
 	local MAX_PAGE=${2}
+	local MAX_LINE=$(tput cols)
 	local CLEAN_HDR
 	local CLEAN_TAG
 	local HDR_LEN
@@ -194,6 +191,7 @@ list_do_header () {
 					HDR_LINE="${HDR_LINE}${PG_TAG}"
 					CLEAN_HDR=$(str_strip_ansi <<<${HDR_LINE})
 					LONGEST_HDR=${#CLEAN_HDR} # This header will now be the longest
+					[[ ${LONGEST_HDR} -ge ${MAX_LINE} ]] && LONGEST_HDR=${MAX_LINE}
 
 					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Added header page tag:${HDR_LINE}, LONGEST_HDR:${LONGEST_HDR}"
 

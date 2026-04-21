@@ -404,7 +404,7 @@ PATHLBL=$(path_get_label 40)
 
 # Verify path/file if passed
 if [[ ${#} -eq 0 ]];then # No args - PWD
-	HDR_MSG="Showing all files in:${PWD}"
+	HDR_MSG="Showing all files in:$(pathabv <<<${PWD})"
 else
 	HDR_MSG="Processing file list"
 	_RAWLIST=(${@})

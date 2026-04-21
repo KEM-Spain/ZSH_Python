@@ -232,6 +232,13 @@ shift $((OPTIND -1))
 #---Execution---
 [[ ${#} -eq 0 ]] && usage "Missing argument <FILE>"
 
+ARGS=()
+RAW_ARGS=($(path_get_raw_args))
+for A in ${RAW_ARGS};do
+	ARGS+=$(eval "realpath ${A}")
+done
+OBJ_COUNT=${#ARGS}
+
 [[ $(str_contains $(path_get_raw_args) '\x2a') ]] && WILDCARD=true || WILDCARD=false
 [[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"
 
@@ -240,10 +247,9 @@ MYGROUP=$(get_mygroup)
 [[ ${_DEBUG} -gt 0 ]] && dbg "MYID:${MYID}, MYGROUP:${MYGROUP}, WILDCARD:${WILDCARD}"
 
 # Prescan
-LIST=(${@}) 
+LIST=(${ARGS}) 
 [[ ${_DEBUG} -gt 0 ]] && dbg "LIST COUNT:${#LIST}"
 
-OBJ_COUNT=${#@}
 
 # Store meta information
 DIRS=0
@@ -283,7 +289,7 @@ done
 
 # Detect/warn wildcard 
 if [[ ${WILDCARD} == "true" ]];then
-	echo "${BOLD}${RED_FG}Wildcard${RESET}${BOLD}${WHITE_FG} * ${RESET}detected ${ITALIC}ALL FILES${RESET} (${#LIST} $(str_pluralize item ${#LIST}))"
+	echo "${BOLD}${RED_FG}Wildcard${RESET}${BOLD}${WHITE_FG} * ${RESET}detected ${ITALIC}WILDCARD${RESET} (${#LIST} $(str_pluralize item ${#LIST}))"
 fi
 
 [[ (${OBJ_COUNT} -gt ${_WARN_LIMIT}) || ${WILDCARD} == "true" ]] && WARN=true || WARN=false
@@ -339,17 +345,25 @@ if [[ ${REMAINING} -ne 0 && (${REMAINING} -gt ${_WARN_LIMIT} || ${WARN} == "true
 	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Operation cancelled${RESET}\n" && exit_leave
 	[[ ${RESPONSE} == "y" ]] && APPROVED=true && echo
 fi
+
+OPTS_SHOWN=false
 OPTS=($(echo "-"${^OPTIONS}))
 if [[ ${APPROVED} == "true" || ${REMAINING} -lt ${_WARN_LIMIT} ]];then
 	for L in ${(onk)LIST};do
 		if [[ -n ${OPTIONS} ]];then
-			eval "${_RM} ${OPTS} ${L:q}" && MSG="${WHITE_FG}User options:${OPTS}${RESET}" #options
+			eval "${_RM} ${OPTS} ${L:q}"
+			if [[ ${OPTS_SHOWN} == 'false' ]];then
+				MSG="${WHITE_FG}User options:${OPTS}${RESET}\n${RED_FG}Removed File${RESET}"
+				OPTS_SHOWN=true
+			else
+				MSG="${RED_FG}Removed File${RESET}"
+			fi
 		else
-			[[ ! -e ${L} && ! -L ${L} ]] && echo "${WHITE_FG}${L}${RESET}:${RED_FG}object not found${RESET}" && continue 
-			[[ -e ${L} && -d ${L} && ${RM_DIRS} == "false" ]] && MSG="${GREEN_FG}Skipped Dir${RESET}" #disallowed
-			[[ -L ${L} ]] && eval "${_UL} ${L:q}" && MSG="${RED_FG}Removed Link${RESET}" #symbolic link
-			[[ -e ${L} && -d ${L} && ${RM_DIRS} == "true" ]] && eval "${_RD} ${L:q}" && MSG="${RED_FG}Removed Dir${RESET}" #directory
-			[[ -e ${L} && ! -d ${L} ]] && eval "${_RF} ${L:q}" && MSG="${RED_FG}Removed File${RESET}" #regular file
+			[[ ! -e ${L} && ! -L ${L} ]] && echo "${WHITE_FG}${L}${RESET}:${RED_FG}object not found${RESET}" && continue   # Not found
+			[[ -e ${L} && -d ${L} && ${RM_DIRS} == "false" ]] && MSG="${GREEN_FG}Skipped Dir${RESET}"                      # Disallowed
+			[[ -L ${L} ]] && eval "${_UL} ${L:q}" && MSG="${RED_FG}Removed Link${RESET}"                                   # Symbolic link
+			[[ -e ${L} && -d ${L} && ${RM_DIRS} == "true" ]] && eval "${_RD} ${L:q}" && MSG="${RED_FG}Removed Dir${RESET}" # Directory
+			[[ -e ${L} && ! -d ${L} ]] && eval "${_RF} ${L:q}" && MSG="${RED_FG}Removed File${RESET}"                      # Regular file
 		fi
 		echo ${MSG}: ${L}
 	done

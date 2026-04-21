@@ -87,20 +87,22 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-c${RESET} show aliases that execute commands"
 	echo -e "${WHITE_FG}-d${RESET} show aliases that execute directory changes"
-	echo -e "${WHITE_FG}-q${RESET} verify alias - no output - return codes only"
+	echo -e "${WHITE_FG}-q${RESET} verify alias (fuzzy search) - no output - return codes only"
+	echo -e "${WHITE_FG}-t${RESET} test for alias (exact match) - no output - return codes only"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDcdq"
+OPTSTR=":HDcdqt"
 OPTIND=0
 
 DIRCHANGE=true
 CMDS=true
 OPTS=false
 QUIET=false
+TEST_EXISTS=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -109,6 +111,7 @@ while getopts ${OPTSTR} OPTION;do
      c) CMDS=true;DIRCHANGE=false;;
      d) CMDS=false;DIRCHANGE=true;;
      q) QUIET=true;;
+     t) TEST_EXISTS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -135,6 +138,18 @@ done < ${ALIAS_FN}
 
 typeset -a MATCHED=()
 if [[ -n ${SEARCHTERM} ]];then
+	#set -xv
+	if [[ ${TEST_EXISTS} == 'true' ]];then
+		IS_ALIAS=false # Exact match
+		for K in ${(ok)ALIASES};do
+			if [[ ${K} =~ "^${SEARCHTERM}$" ]];then
+				IS_ALIAS=true
+				break
+			fi
+		done
+		[[ ${IS_ALIAS} == 'false' ]] && return 1 || return 0
+	fi
+	#set +xv;read
 	for K in ${(ok)ALIASES};do
 		grep -q -i ${SEARCHTERM} <<< ${K}
 		RC1=${?}
@@ -143,7 +158,7 @@ if [[ -n ${SEARCHTERM} ]];then
 		[[ ${RC1} -eq 0 || ${RC2} -eq 0 ]] && MATCHED+="${K} -> ${ALIASES[${K}]}"
 	done
 	if [[ ${QUIET} == 'true' ]];then
-		[[ -z ${MATCHED} ]] && return 1 || return 0
+		[[ -z ${MATCHED} ]] && return 1 || return 0 # Fuzzy match
 	else
 		if [[ -z ${MATCHED} ]];then
 			echo "No matches for SEARCHTERM:${WHITE_FG}${SEARCHTERM}${RESET}"

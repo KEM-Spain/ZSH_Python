@@ -135,7 +135,7 @@ path_get_label () {
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	RAW_PATH=$(path_get_raw_args)
+	RAW_PATH=$(path_get_tokens)
 
 	[[ ! -d ${RAW_PATH:h} ]] && return 1
 
@@ -313,6 +313,28 @@ path_get_raw_cmdline () {
 }
 
 path_get_raw_args () {
+	local RAW_CMD_LINE
+	local -a TOKENIZED
+	local -a TOKENS
+	local A
+	local RAW_PATH
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	fc -R
+	RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
+	[[ ${RAW_CMD_LINE} =~ '\|' ]] && echo "Input is piped" && return 0
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
+
+	RAW_CMD_LINE=($(echo ${RAW_CMD_LINE} | perl -p -e 's/[^\s]+//')) # Strip leading word (script name)
+
+	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_PATH:${RAW_PATH} (removed script name & options)${RESET}" 
+
+	echo -n ${RAW_PATH}
+}
+
+path_get_tokens () {
 	local RAW_CMD_LINE
 	local -a TOKENIZED
 	local -a TOKENS

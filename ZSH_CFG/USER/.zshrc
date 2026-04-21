@@ -195,6 +195,7 @@ _set_term_header () {
 
 	(( THIS_TERM++ ))
 
+	[[ ${THIS_TERM} -gt ${TCNT} ]] && THIS_TERM=${TCNT}
 	print -Pn "\e]0;Terminal ${THIS_TERM} of ${TCNT}\a"
 }
 
@@ -204,7 +205,7 @@ _term_count () {
 
 _term_wid () {
 	local WID=$(wmctrl -l | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
-	echo ${WID}
+	[[ -z ${WID} ]] && echo "Unable to obtain WID" >&2 || echo ${WID}
 }
 
 _wifi_on () {
@@ -263,12 +264,8 @@ add-zsh-hook precmd _cursor_on
 if [[ ${_TERMCNT} -eq 1 ]];then
 	INTERACTIVE=''
 
-	#TERM_WIN_ID=$(win_id | cut -d'|' -f2)
-	#[[ -n ${TERM_WIN_ID} ]] && xdotool key --window ${TERM_WIN_ID} key "Escape" || echo "Unable to obtain TERM_WIN_ID"
-
 	if [[ -o interactive ]]; then
-		WID=$(_term_wid)
-		[[ -n ${WID} ]] && wmctrl -i -r ${WID} -b add,maximized_vert,maximized_horz || echo "Unable to obtain TERM_WIN_ID"
+		wmctrl -i -r $(_term_wid) -b add,maximized_vert,maximized_horz
 
 		INTERACTIVE=interactive
 		tput cup 0 0
@@ -346,8 +343,7 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 
 		CNT=$(pgrep -ic enpass)
 		if [[ ${CNT} -eq 0 ]];then
-			WID=$(_term_wid)
-			[[ -n ${WID} ]] && wmctrl -i -a ${WID} || echo "Unable to obtain WID"
+			wmctrl -i -a $(_term_wid)
 			run_enpass
 		else
 			tput cup ${C_POS} 0 # Cursor position following last info 
@@ -356,11 +352,9 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		fi
 	fi
 else
-	WID=$(win_id | cut -d'|' -f1)
-	wmctrl -i -R ${WID} -b add,maximized_vert,maximized_horz
+	wmctrl -i -R $(win_id | cut -d'|' -f1) -b add,maximized_vert,maximized_horz
 fi
 
 if [[ $(_term_count) -eq 1 ]];then
-	WID=$(_term_wid)
-	[[ -n ${WID} ]] && wmctrl -i -a ${WID} || echo "Unable to obtain WID"
+	wmctrl -i -a $(_term_wid)
 fi
