@@ -218,6 +218,7 @@ action_do () {
 						break
 						;;
 					*error*)
+						_DEBUG=5
 						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
@@ -281,6 +282,7 @@ action_do () {
 						break
 						;;
 					*error*)
+						_DEBUG=5
 						if grep -Eiq 'cannot reuse http' ${g_YTS_LOG};then # Check for live broadcast - whole file grep
 							MSG="Live broadcast - unable to download"
 							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG}<N>"
