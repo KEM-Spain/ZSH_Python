@@ -31,7 +31,7 @@ typeset -a LIST=()
 
 LIST=("${(f)$(ps -ax -o'user pid %mem %cpu cmd')}")
 {
-printf "${WHITE_FG}%7s %11s %4s %4s %s${RESET}\n"  "USER" "PID" "MEM" "CPU" "CMD"
+printf "${WHITE_FG}%10s  %7s  %3s  %3s  %s${RESET}\n"  "USER" "PID" "MEM" "CPU" "CMD"
 printf "${MAGENTA_FG}%s${RESET}\n"  $(str_unicode_line 120)
 	{
 	for L in ${LIST};do
@@ -43,7 +43,7 @@ printf "${MAGENTA_FG}%s${RESET}\n"  $(str_unicode_line 120)
 		CPU=$(cut -d' ' -f4 <<<${LINE})
 		CMD=$(cut -d' ' -f5 <<<${LINE})
 		[[ ${MEM} == '0.0' && ${CPU} == '0.0' ]] && continue
-		printf "%10s %8s ${CYAN_FG}%4s ${RED_FG}%4s ${WHITE_FG}%-s${RESET}\n" ${USER} ${PID} ${MEM} ${CPU} ${CMD}
+		printf "%10s %8s ${CYAN_FG}%4s ${RED_FG}%4s ${WHITE_FG}%s${RESET}\n" ${USER} ${PID} ${MEM} ${CPU} ${CMD}
 	done 
 	} | sort -k4r -k3r | head -36
 } | mypager
