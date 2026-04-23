@@ -1,0 +1,48 @@
+#!/usr/bin/zsh
+RESET="\033[m"
+BOLD="\033[1m"
+FAINT="\033[2m"
+ITALIC="\033[3m"
+UNDER="\033[4m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+OVERUND="\033[53m\033[4m"
+
+BLACK_FG="\033[30m"
+RED_FG="\033[31m"
+GREEN_FG="\033[32m"
+YELLOW_FG="\033[33m"
+BLUE_FG="\033[34m"
+MAGENTA_FG="\033[35m"
+CYAN_FG="\033[36m"
+WHITE_FG="\033[37m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+typeset -a LIST=()
+
+LIST=("${(f)$(ps -ax -o'user pid %mem %cpu cmd')}")
+{
+printf "${WHITE_FG}%10s\t%8s\t%4s\t%4s\t%s${RESET}\n"  "USER" "PID" "MEM" "CPU" "CMD"
+printf "${MAGENTA_FG}%s${RESET}\n"  $(str_unicode_line 120)
+	{
+	for L in ${LIST};do
+		LINE=$(tr -s '[:space:]' <<<${L})
+		[[ ${LINE} =~ "USER" ]] && continue
+		USER=$(cut -d' ' -f1 <<<${LINE})
+		PID=$(cut -d' ' -f2 <<<${LINE})
+		MEM=$(cut -d' ' -f3 <<<${LINE})
+		CPU=$(cut -d' ' -f4 <<<${LINE})
+		CMD=$(cut -d' ' -f5 <<<${LINE})
+		[[ ${MEM} == '0.0' && ${CPU} == '0.0' ]] && continue
+		printf "%10s\t%8s\t${CYAN_FG}%4s\t${RED_FG}%4s\t${WHITE_FG}%s${RESET}\n" ${USER} ${PID} ${MEM} ${CPU} ${CMD}
+	done 
+	} | sort -k4r -k3r | head -36
+} | mypager

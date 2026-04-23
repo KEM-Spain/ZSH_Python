@@ -1,132 +1,146 @@
-2026-04-22_09:12: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-22_09:12: log_update: Skipping expired inode:6296141
-2026-04-22_09:12: log_update: Skipping expired inode:6398926
-2026-04-22_09:12: log_update: Skipping expired inode:6378808
-2026-04-22_09:12: log_update: Skipping expired inode:6398574
-2026-04-22_09:12: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-22_09:13: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
-2026-04-22_09:13: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
-2026-04-22_09:13: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "alexchristoforou"
-2026-04-22_09:13: query_youtube: Query matched 8 lines, _LOCAL_LIST has 5 lines
-2026-04-22_09:13: query_youtube: Listing for QKEY:alexchristoforou contains 5 rows
-2026-04-22_09:13: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
-2026-04-22_09:13: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:100.0% TYPE:standard 
-2026-04-22_09:13: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
-2026-04-22_09:13: query_youtube: Listing for QKEY:blancolirio contains 1 rows
-2026-04-22_09:13: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
-2026-04-22_09:13: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:100.0% TYPE:standard 
-2026-04-22_09:13: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
-2026-04-22_09:13: query_youtube: Query matched 7 lines, _LOCAL_LIST has 4 lines
-2026-04-22_09:13: query_youtube: Translated TITLE:Crash landing of Twin Comanche PA-30 N741TJ on April 18, 2026
-2026-04-22_09:13: query_youtube: Translated TITLE:Air France LAX April 8, 2026
-2026-04-22_09:13: query_youtube: Translated TITLE:Fatal runway departure at Marana, Arizona, N4190E, April 8, 2026
-2026-04-22_09:13: query_youtube: Listing for QKEY:blancolirio contains 4 rows
-2026-04-22_09:14: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ZrTJcr
-2026-04-22_09:14: job_start: TITLE:Crash landing of Twin Comanche PA-30 N741TJ on April 18, 2026
-2026-04-22_09:14: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=0wrnW1MQm0g" PID:917899
-2026-04-22_09:14: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:14: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=0wrnW1MQm0g PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:14: action_do: COMPLETED (very small file) NDX:1
-2026-04-22_09:14: action_do: POST-PROCESSING
-2026-04-22_09:14: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/blancolirio - Twin_Comanche_PA-30_N741TJ_Forced_Landing_18_Apr_2026.mp4
-2026-04-22_09:14: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/blancolirio - Twin_Comanche_PA-30_N741TJ_Forced_Landing_18_Apr_2026.mp4
-2026-04-22_09:14: title_scrubber: UCASE_WORDS:2
-2026-04-22_09:14: title_scrubber: Preserving uppercase:N741tj
-2026-04-22_09:14: set_final_fn: Overwriting file:blancolirio - Twin_Comanche_PA-30_N741TJ_Forced_Landing_18_Apr_2026.mp4 with:Blan Colirio - Twin Comanche Pa-30 N741TJ Forced Landing 18 Apr 2026.mp4
-2026-04-22_09:14: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Blan Colirio - Twin Comanche Pa-30 N741TJ Forced Landing 18 Apr 2026.mp4
-2026-04-22_09:14: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.ZrTJcr was cleared for:blancolirio from:action_do
-2026-04-22_09:14: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-04-22_09:14: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom SMSG:50.0% TYPE:standard 
-2026-04-22_09:14: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
-2026-04-22_09:14: query_youtube: Query matched 19 lines, _LOCAL_LIST has 17 lines
-2026-04-22_09:14: query_youtube: Listing for QKEY:judgingfreedom contains 17 rows
-2026-04-22_09:14: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Sl6le0
-2026-04-22_09:14: job_start: TITLE:CPT. Matt Hoh : Israel's Next Move Could Change Everything
-2026-04-22_09:14: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=lqWnPfoZkgM" PID:922410
-2026-04-22_09:14: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:14: action_do: GENERATING HEADER
-2026-04-22_09:14: title_scrubber: UCASE_WORDS:1
-2026-04-22_09:14: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=lqWnPfoZkgM PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:14: action_do: COMPLETED
-2026-04-22_09:14: action_do: POST-PROCESSING
-2026-04-22_09:14: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - CPT._Matt_Hoh_-_Israel_s_Next_Move_Could_Change_Everything.mp4
-2026-04-22_09:14: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - CPT._Matt_Hoh_-_Israel_s_Next_Move_Could_Change_Everything.mp4
-2026-04-22_09:14: title_scrubber: UCASE_WORDS:1
-2026-04-22_09:14: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - CPT._Matt_Hoh_-_Israel_s_Next_Move_Could_Change_Everything.mp4 with:Judging Freedom - Cpt. Matt Hoh - Israel's Next Move Could Change.mp4
-2026-04-22_09:14: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Cpt. Matt Hoh - Israel's Next Move Could Change.mp4
-2026-04-22_09:14: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Sl6le0 was cleared for:judgingfreedom from:action_do
-2026-04-22_09:14: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.J3TX5c
-2026-04-22_09:14: job_start: TITLE:LIVE FROM TEHRAN: Prof. Mohammad Marandi : Why Iran Won't Meet With
-2026-04-22_09:14: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=7ElhBkevYrA" PID:923819
-2026-04-22_09:14: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:14: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=7ElhBkevYrA PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:14: action_do: FUTURE
-2026-04-22_09:14: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.J3TX5c was cleared for:judgingfreedom from:action_do
-2026-04-22_09:14: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.3Ha9ZV
-2026-04-22_09:14: job_start: TITLE:LtCOL. Karen Kwiatkowski : Fascism in America? The Question No One Wants to
-2026-04-22_09:14: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=2EePYdcr8HU" PID:924628
-2026-04-22_09:14: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:14: action_do: GENERATING HEADER
-2026-04-22_09:14: title_scrubber: UCASE_WORDS:1
-2026-04-22_09:14: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=2EePYdcr8HU PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:14: action_do: COMPLETED
-2026-04-22_09:14: action_do: POST-PROCESSING
-2026-04-22_09:14: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - LtCOL._Karen_Kwiatkowski_-_Fascism_in_America_The_Question_No_One_Wants_to_Answer.mp4
-2026-04-22_09:14: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - LtCOL._Karen_Kwiatkowski_-_Fascism_in_America_The_Question_No_One_Wants_to_Answer.mp4
-2026-04-22_09:14: title_scrubber: UCASE_WORDS:1
-2026-04-22_09:15: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - LtCOL._Karen_Kwiatkowski_-_Fascism_in_America_The_Question_No_One_Wants_to_Answer.mp4 with:Judging Freedom - Ltcol. Karen Kwiatkowski - Fascism In America The.mp4
-2026-04-22_09:15: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Ltcol. Karen Kwiatkowski - Fascism In America The.mp4
-2026-04-22_09:15: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.3Ha9ZV was cleared for:judgingfreedom from:action_do
-2026-04-22_09:15: query_youtube: Creating listing for QKEY:thegrayzone STRICT:s
-2026-04-22_09:15: query_youtube: _QUERY_OPTS: AGE:recent DKEY:The Grayzone ENGINE:youtube EOPT:s FKEY:the grayzone QKEY:thegrayzone SMSG:0.0% TYPE:standard 
-2026-04-22_09:15: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "thegrayzone"
-2026-04-22_09:15: query_youtube: Query matched 5 lines, _LOCAL_LIST has 3 lines
-2026-04-22_09:15: query_youtube: Listing for QKEY:thegrayzone contains 3 rows
-2026-04-22_09:15: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
-2026-04-22_09:15: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG:0.0% TYPE:standard 
-2026-04-22_09:15: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
-2026-04-22_09:15: query_youtube: Query matched 19 lines, _LOCAL_LIST has 17 lines
-2026-04-22_09:15: query_youtube: Listing for QKEY:dialogueworks contains 17 rows
-2026-04-22_09:15: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.k0wFtx
-2026-04-22_09:15: job_start: TITLE:Max Blumenthal: Israel's Defeat Begins: Zionist Power Structure FALLING APART
-2026-04-22_09:15: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=ZNu4dUynW2w" PID:931472
-2026-04-22_09:15: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:15: action_do: GENERATING HEADER
-2026-04-22_09:15: title_scrubber: UCASE_WORDS:2
-2026-04-22_09:15: title_scrubber: Preserving uppercase:Falling
-2026-04-22_09:15: title_scrubber: Preserving uppercase:Apart
-2026-04-22_09:15: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=ZNu4dUynW2w PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:15: action_do: COMPLETED
-2026-04-22_09:15: action_do: POST-PROCESSING
-2026-04-22_09:15: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Max_Blumenthal_-_Israel_s_Defeat_Begins_-_Zionist_Power_Structure_FALLING_APART_in_.mp4
-2026-04-22_09:15: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Max_Blumenthal_-_Israel_s_Defeat_Begins_-_Zionist_Power_Structure_FALLING_APART_in_.mp4
-2026-04-22_09:15: title_scrubber: UCASE_WORDS:2
-2026-04-22_09:15: title_scrubber: Preserving uppercase:Falling
-2026-04-22_09:15: title_scrubber: Preserving uppercase:Apart
-2026-04-22_09:15: set_final_fn: Overwriting file:Dialogue_Works - Max_Blumenthal_-_Israel_s_Defeat_Begins_-_Zionist_Power_Structure_FALLING_APART_in_.mp4 with:Dialogue Works - Max Blumenthal - Israel's Defeat Begins - Zionist.mp4
-2026-04-22_09:15: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Dialogue Works - Max Blumenthal - Israel's Defeat Begins - Zionist.mp4
-2026-04-22_09:15: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.k0wFtx was cleared for:dialogueworks from:action_do
-2026-04-22_09:16: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
-2026-04-22_09:16: parse_rumble: Parsing list for QKEY:duedissidence
-2026-04-22_09:16: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-04-22_09:16: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-04-22_09:16: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-04-22_09:16: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-04-22_09:16: query_rumble: Listing for QKEY:duedissidence contains 24 rows
-2026-04-22_09:16: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.vFvimr
-2026-04-22_09:16: job_start: TITLE:Aipac Dem Booed, Tucker Apologizes For Trump Support, IDF Bashes Jesus -w/
-2026-04-22_09:16: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v78sqd4-aipac-dem-booed-tucker-apologizes-for-trump-support-idf-bashes-jesus-w-jose.html?e9s=src_v1_ucp_l" PID:940428
-2026-04-22_09:16: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:16: action_do: GENERATING HEADER
-2026-04-22_09:16: title_scrubber: UCASE_WORDS:6
-2026-04-22_09:16: title_scrubber: Preserving acronym:Idf
-2026-04-22_09:20: action_do: COMPLETED
-2026-04-22_09:20: action_do: POST-PROCESSING
-2026-04-22_09:20: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v78sqd4-aipac-dem-booed-tucker-apologizes-for-trump-support-idf-bashes-jesus-w-jose.html?e9s=src_v1_ucp_l PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-22_09:21: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - AIPAC_Dem_BOOED_Tucker_APOLOGIZES_For_Trump_Support_IDF_BASHES_Jesus_-w_Jose_Vega_K.mp4
-2026-04-22_09:21: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - AIPAC_Dem_BOOED_Tucker_APOLOGIZES_For_Trump_Support_IDF_BASHES_Jesus_-w_Jose_Vega_K.mp4
-2026-04-22_09:21: title_scrubber: UCASE_WORDS:6
-2026-04-22_09:21: title_scrubber: Preserving acronym:Idf
-2026-04-22_09:21: set_final_fn: Overwriting file:Due_Dissidence - AIPAC_Dem_BOOED_Tucker_APOLOGIZES_For_Trump_Support_IDF_BASHES_Jesus_-w_Jose_Vega_K.mp4 with:Due Dissidence - Aipac Dem Booed Tucker Apologizes For Trump Support.mp4
-2026-04-22_09:21: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Due Dissidence - Aipac Dem Booed Tucker Apologizes For Trump Support.mp4
-2026-04-22_09:21: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.vFvimr was cleared for:duedissidence from:action_do
+2026-04-23_09:33: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-23_09:33: log_update: Skipping expired inode:6398763
+2026-04-23_09:33: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-23_09:33: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
+2026-04-23_09:33: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
+2026-04-23_09:33: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
+2026-04-23_09:33: query_youtube: Query matched 18 lines, _LOCAL_LIST has 16 lines
+2026-04-23_09:34: query_youtube: Listing for QKEY:judgingfreedom contains 16 rows
+2026-04-23_09:34: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
+2026-04-23_09:34: parse_rumble: Parsing list for QKEY:kimiversen
+2026-04-23_09:34: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-23_09:34: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-23_09:34: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-23_09:34: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-23_09:34: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-04-23_09:34: query_rumble: Listing for QKEY:kimiversen contains 25 rows
+2026-04-23_09:34: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.EiAhhn
+2026-04-23_09:34: job_start: TITLE:Leaked Audio: Tyler's Family Claims He Was Framed
+2026-04-23_09:34: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v78v1ky-leaked-audio-tylers-family-claims-he-was-framed.html?e9s=src_v1_ucp_a" PID:2131712
+2026-04-23_09:34: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:34: action_do: GENERATING HEADER
+2026-04-23_09:34: title_scrubber: UCASE_WORDS:1
+2026-04-23_09:35: action_do: COMPLETED
+2026-04-23_09:35: action_do: POST-PROCESSING
+2026-04-23_09:35: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v78v1ky-leaked-audio-tylers-family-claims-he-was-framed.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:35: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - Leaked_Audio_-_Tyler_s_Family_Claims_He_Was_Framed.mp4
+2026-04-23_09:35: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - Leaked_Audio_-_Tyler_s_Family_Claims_He_Was_Framed.mp4
+2026-04-23_09:35: title_scrubber: UCASE_WORDS:1
+2026-04-23_09:35: set_final_fn: Overwriting file:Kim_Iversen - Leaked_Audio_-_Tyler_s_Family_Claims_He_Was_Framed.mp4 with:Kim Iversen - Leaked Audio - Tyler's Family Claims He Was Framed.mp4
+2026-04-23_09:35: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Kim Iversen - Leaked Audio - Tyler's Family Claims He Was Framed.mp4
+2026-04-23_09:35: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.EiAhhn was cleared for:kimiversen from:action_do
+2026-04-23_09:36: query_rumble: Creating listing for QKEY:newordertv TYPE:channel
+2026-04-23_09:36: parse_rumble: Parsing list for QKEY:newordertv
+2026-04-23_09:36: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-23_09:36: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-23_09:36: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-23_09:36: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-23_09:36: query_rumble: Listing for QKEY:newordertv contains 6 rows
+2026-04-23_09:36: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
+2026-04-23_09:36: parse_rumble: Parsing list for QKEY:tuckercarlson
+2026-04-23_09:36: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-23_09:36: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-23_09:36: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-23_09:36: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-23_09:37: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-04-23_09:37: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
+2026-04-23_09:37: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
+2026-04-23_09:37: parse_rumble: Parsing list for QKEY:tuckercarlson
+2026-04-23_09:37: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-23_09:37: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-23_09:37: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-23_09:37: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-23_09:37: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-04-23_09:37: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
+2026-04-23_09:38: query_youtube: Creating listing for QKEY:thegrayzone STRICT:s
+2026-04-23_09:38: query_youtube: _QUERY_OPTS: AGE:recent DKEY:The Grayzone ENGINE:youtube EOPT:s FKEY:the grayzone QKEY:thegrayzone SMSG:0.0% TYPE:standard 
+2026-04-23_09:38: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "thegrayzone"
+2026-04-23_09:38: query_youtube: Query matched 5 lines, _LOCAL_LIST has 3 lines
+2026-04-23_09:38: query_youtube: Listing for QKEY:thegrayzone contains 3 rows
+2026-04-23_09:38: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.MaEVtt
+2026-04-23_09:38: job_start: TITLE:Inside an Iranian pro-gov't rally defying Trump's war
+2026-04-23_09:38: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=UFyOqrPpEJI" PID:2162671
+2026-04-23_09:38: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:38: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=UFyOqrPpEJI PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:38: action_do: COMPLETED (very small file) NDX:1
+2026-04-23_09:38: action_do: POST-PROCESSING
+2026-04-23_09:38: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/The_Grayzone - Inside_an_Iranian_pro-gov_t_rally_defying_Trump_s_war.mp4
+2026-04-23_09:38: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/The_Grayzone - Inside_an_Iranian_pro-gov_t_rally_defying_Trump_s_war.mp4
+2026-04-23_09:38: title_scrubber: UCASE_WORDS:1
+2026-04-23_09:38: set_final_fn: Overwriting file:The_Grayzone - Inside_an_Iranian_pro-gov_t_rally_defying_Trump_s_war.mp4 with:Grayzone - Inside An Iranian Pro-Gov't Rally Defying Trump's War.mp4
+2026-04-23_09:38: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Grayzone - Inside An Iranian Pro-Gov't Rally Defying Trump's War.mp4
+2026-04-23_09:38: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.MaEVtt was cleared for:thegrayzone from:action_do
+2026-04-23_09:38: query_youtube: Creating listing for QKEY:neil-oliver STRICT:null
+2026-04-23_09:38: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Neil Oliver ENGINE:youtube EOPT:null FKEY:neil oliver QKEY:neil-oliver SMSG:0.0% TYPE:standard 
+2026-04-23_09:38: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "neil-oliver"
+2026-04-23_09:38: query_youtube: Query matched 5 lines, _LOCAL_LIST has 4 lines
+2026-04-23_09:38: query_youtube: Listing for QKEY:neil-oliver contains 4 rows
+2026-04-23_09:38: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
+2026-04-23_09:38: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG: TYPE:standard 
+2026-04-23_09:38: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
+2026-04-23_09:38: query_youtube: Query matched 14 lines, _LOCAL_LIST has 12 lines
+2026-04-23_09:38: query_youtube: Listing for QKEY:dialogueworks contains 12 rows
+2026-04-23_09:39: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ILBz36
+2026-04-23_09:39: job_start: TITLE:Alex Krainer: Trump Trapped Himself in the Persian Gulf - Iran's Comeback
+2026-04-23_09:39: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=aaryUcXYr6k" PID:2167754
+2026-04-23_09:39: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:39: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=aaryUcXYr6k PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:39: action_do: FUTURE
+2026-04-23_09:39: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.ILBz36 was cleared for:dialogueworks from:action_do
+2026-04-23_09:39: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Fr5gUw
+2026-04-23_09:39: job_start: TITLE:Matthew Hoh: US Missiles Are GONE - Here's What the Pentagon Isn't Telling
+2026-04-23_09:39: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=Y15qDsKyBn8" PID:2169349
+2026-04-23_09:39: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:39: action_do: GENERATING HEADER
+2026-04-23_09:39: title_scrubber: UCASE_WORDS:2
+2026-04-23_09:39: title_scrubber: Preserving acronym:Us
+2026-04-23_09:39: title_scrubber: Preserving uppercase:Gone
+2026-04-23_09:39: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=Y15qDsKyBn8 PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:39: action_do: COMPLETED
+2026-04-23_09:39: action_do: POST-PROCESSING
+2026-04-23_09:39: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Matthew_Hoh_-_US_Missiles_Are_GONE_Here_s_What_the_Pentagon_Isn_t_Telling_You.mp4
+2026-04-23_09:39: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Matthew_Hoh_-_US_Missiles_Are_GONE_Here_s_What_the_Pentagon_Isn_t_Telling_You.mp4
+2026-04-23_09:39: title_scrubber: UCASE_WORDS:2
+2026-04-23_09:39: title_scrubber: Preserving acronym:Us
+2026-04-23_09:39: title_scrubber: Preserving uppercase:Gone
+2026-04-23_09:39: set_final_fn: Overwriting file:Dialogue_Works - Matthew_Hoh_-_US_Missiles_Are_GONE_Here_s_What_the_Pentagon_Isn_t_Telling_You.mp4 with:Dialogue Works - Matthew Hoh - US Missiles Are GONE Here's What The.mp4
+2026-04-23_09:39: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Dialogue Works - Matthew Hoh - US Missiles Are GONE Here's What The.mp4
+2026-04-23_09:39: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Fr5gUw was cleared for:dialogueworks from:action_do
+2026-04-23_09:39: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
+2026-04-23_09:39: parse_rumble: Parsing list for QKEY:glenndiesen
+2026-04-23_09:39: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-04-23_09:39: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-04-23_09:39: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-04-23_09:39: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-04-23_09:40: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-04-23_09:40: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
+2026-04-23_09:40: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.9mj1sd
+2026-04-23_09:40: job_start: TITLE:John Mearsheimer: U.S. Expands Iran War & Divorces Europe
+2026-04-23_09:40: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v78v8iq-john-mearsheimer-u.s.-expands-iran-war-and-divorces-europe.html?e9s=src_v1_ucp_a" PID:2179125
+2026-04-23_09:40: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:40: action_do: GENERATING HEADER
+2026-04-23_09:40: title_scrubber: UCASE_WORDS:2
+2026-04-23_09:40: action_do: COMPLETED
+2026-04-23_09:40: action_do: POST-PROCESSING
+2026-04-23_09:40: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v78v8iq-john-mearsheimer-u.s.-expands-iran-war-and-divorces-europe.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:40: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - John_Mearsheimer_-_U.S._Expands_Iran_War_Divorces_Europe.mp4
+2026-04-23_09:40: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - John_Mearsheimer_-_U.S._Expands_Iran_War_Divorces_Europe.mp4
+2026-04-23_09:40: title_scrubber: UCASE_WORDS:2
+2026-04-23_09:40: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - John_Mearsheimer_-_U.S._Expands_Iran_War_Divorces_Europe.mp4 with:Glenn Diesen - John Mearsheimer - U.S. Expands Iran War.mp4
+2026-04-23_09:40: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Glenn Diesen - John Mearsheimer - U.S. Expands Iran War.mp4
+2026-04-23_09:40: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.9mj1sd was cleared for:glenndiesen from:action_do
+2026-04-23_09:41: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ygmQtr
+2026-04-23_09:41: job_start: TITLE:Douglas Macgregor: Europe & Asia Will Suffer Greatly From Iran War
+2026-04-23_09:41: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v78ulxw-douglas-macgregor-europe-and-asia-will-suffer-greatly-from-iran-war.html?e9s=src_v1_ucp_a" PID:2188443
+2026-04-23_09:41: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:41: action_do: GENERATING HEADER
+2026-04-23_09:41: title_scrubber: UCASE_WORDS:1
+2026-04-23_09:41: action_do: COMPLETED
+2026-04-23_09:41: action_do: POST-PROCESSING
+2026-04-23_09:41: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v78ulxw-douglas-macgregor-europe-and-asia-will-suffer-greatly-from-iran-war.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-23_09:41: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Douglas_Macgregor_-_Europe_Asia_Will_Suffer_Greatly_From_Iran_War.mp4
+2026-04-23_09:41: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Douglas_Macgregor_-_Europe_Asia_Will_Suffer_Greatly_From_Iran_War.mp4
+2026-04-23_09:41: title_scrubber: UCASE_WORDS:1
+2026-04-23_09:41: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - Douglas_Macgregor_-_Europe_Asia_Will_Suffer_Greatly_From_Iran_War.mp4 with:Glenn Diesen - Douglas Macgregor - Europe Asia Will.mp4
+2026-04-23_09:41: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Glenn Diesen - Douglas Macgregor - Europe Asia Will.mp4
+2026-04-23_09:41: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.ygmQtr was cleared for:glenndiesen from:action_do

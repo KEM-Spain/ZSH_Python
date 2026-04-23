@@ -45,7 +45,6 @@ typeset -A _PARTIALS=()
 typeset -A _QUERY_OPTS=()
 typeset -A _REJECTS=()
 typeset -A _RUMBLE_QTYPES=(l live g general u user c channel)
-typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
@@ -218,7 +217,6 @@ action_do () {
 						break
 						;;
 					*error*)
-						_DEBUG=5
 						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
@@ -282,7 +280,6 @@ action_do () {
 						break
 						;;
 					*error*)
-						_DEBUG=5
 						if grep -Eiq 'cannot reuse http' ${g_YTS_LOG};then # Check for live broadcast - whole file grep
 							MSG="Live broadcast - unable to download"
 							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG}<N>"
@@ -519,6 +516,8 @@ download_select () {
 		fi
 	done
 
+	_LOCAL_LIST=()
+	_SORT_TABLE=()
 	_CANCELLED=()
 	_DOWNLOADS=()
 	_FAILED=()
@@ -1132,6 +1131,7 @@ parse_rumble () {
 	local PARSE_TYPE=${1}
 	local -A GENERAL=()
 	local -A NON_GENERAL=()
+	local -A _RUMBLE_ROWS=()
 	local -a HTML=()
 	local DATA=''
 	local LAST_ROW=0
@@ -1186,7 +1186,6 @@ parse_rumble () {
 
 	LAST_ROW=0
 	NDX=0
-	_LOCAL_LIST=()
 	for K in ${(onk)_RUMBLE_ROWS};do
 		ROW=$(cut -d'_' -f1 <<<${K})
 		TAB=$(cut -d'_' -f2 <<<${K})
@@ -1349,8 +1348,6 @@ query_youtube () {
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}:${LINENO} YOUTUBE QUERY:${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
-
-	_LOCAL_LIST=()
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 
@@ -1734,8 +1731,6 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
 				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
-				_LOCAL_LIST=()
-				_SORT_TABLE=()
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}

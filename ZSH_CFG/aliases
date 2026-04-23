@@ -27,7 +27,6 @@ alias keyrate='xset r rate 500 33'
 alias locate='/usr/local/bin/system/launchers/run_locate'
 alias lossless='/usr/local/bin/system/launchers/run_losslesscut >/dev/null 2>&1 &'
 alias ls='ls --color=always -XNv --group-directories-first'
-alias mem="echo '\033[0m\033[0;1;37;100mUSER\tPID\tMEM\tCPU\tCMD\033[m';ps -ax -o'user pid %mem %cpu cmd' | tr -s '[:space:]' | cut -d' ' -f1-5 | sort -t' ' -k4r | head -38 | sed 's/ /\t/g'"
 alias mnt='mount -t ext3,ext4,vfat,ntfs,fuseblk'
 alias nf='/usr/local/bin/system/launchers/run_nemo . 2>/dev/null'
 alias ns='sudo ss -turp state established'
