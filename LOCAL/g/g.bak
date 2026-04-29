@@ -95,7 +95,7 @@ usage () {
 	echo -e "${WHITE_FG}-w${RESET} whole word match"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDABILFO:P:lLhm:nort:vw"
@@ -154,7 +154,7 @@ SEARCHTERM=${@}
 [[ ${_DEBUG} -eq 0 && FILELIST == 'false' ]] && do_smcup
 
 # Arg validation
-[[ -z ${SEARCHTERM} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
+[[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
 [[ ! -t 0 ]] && exit_leave $(err_msg_exit W "No support for piped input")
 [[ ${GR_OPT_FN} == '--no-filename' && -z ${FILE_OUT} ]] && exit_leave "${_SCRIPT_TAG} Option:-h is only valid in combination with option:-O"
 
@@ -174,23 +174,18 @@ GREP_OPTS+=${GR_OPT_WORD}
 # Limit to file type if specified
 FTYPE_MSG='all'
 if [[ -n ${FTYPE} ]];then
-	typeset -a FLIST=()
-	FLIST=("${(f)$(find ${PATH_ARG} -maxdepth 1 -type f ! -path ${PATH_ARG} | xargs file | grep --color=never -i ${FTYPE} | cut -d: -f1)}")
-	if [[ -n ${FLIST} ]];then
-		FTYPE_MSG="type:${FTYPE}"
-	else
-		exit_leave $(err_msg_exit E "No files qualified for type:${FTYPE}")
-	fi
+	FLIST="${PATH_ARG}/*${FTYPE}(.)"
+	[[ ${FTYPE} == 'bak' ]] && GR_OPT_BAK=true
+	FTYPE_MSG=${FTYPE}
 else
-	FLIST="${PATH_ARG}/(*|.*)"
+	FLIST="${PATH_ARG}/(*|.*)(.)"
 fi
 
 # Build CMD
-CMD="grep ${GREP_OPTS} '"${SEARCHTERM}"' ${FLIST} 2>/dev/null"
-CMD_MSG="grep ${GREP_OPTS} '"${SEARCHTERM}"' 2>/dev/null"
+CMD="grep --color=never ${GREP_OPTS} '"${SEARCHTERM}"' ${FLIST}"
+CMD_MSG="grep ${GREP_OPTS} \"${SEARCHTERM}\""
 
 # Execute CMD
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 RAWLIST=("${(f)$(eval ${CMD})}")
 [[ ${_DEBUG} -gt 1 ]] && dbg "${0}:${LINENO} RAWLIST:${RAWLIST}" || dbg "${0}:${LINENO} RAWLIST:${#RAWLIST}"
 
@@ -205,7 +200,7 @@ if [[ -n ${FILE_OUT} ]];then
 		done
 		exit_leave "Output saved in:${FILE_OUT}"
 	else
-		exit_leave "No results for $(opt_type s):${WHITE_FG}${SEARCHTERM}${RESET}"
+		exit_leave $(err_msg_exit W "No results for $(opt_type s):${SEARCHTERM}")
 	fi
 fi
 
@@ -226,7 +221,7 @@ for L in ${(uo)RAWLIST};do
 	[[ ${_DEBUG} -gt 0 && (! ${FTYPE} =~ 'text') ]] && dbg "${0}:${LINENO} File:${FN} rejected - not text:${FTYPE}" 
 	[[ ! ${FTYPE} =~ 'text' ]] && continue
 	LN=$(cut -d: -f2- <<<${L})
-	LN=${LN[1,${_COL_MAX}]} # Limit usable line length; some files have no line breaks
+	LN=${LN[1,${_COL_MAX}]} # Limit line length
 	LN=$(tr -d '\012\015' <<<${LN})
 	LN=$(tr -s '[:space:]' <<<${LN})
 	LN=$(sed 's/[\t\n]/ /' <<<${LN})
@@ -267,24 +262,22 @@ if [[ ${FILELIST} == 'true' ]];then
 	done
 else
 	{
-	if [[ ${FILELIST} == 'false' ]];then
-		tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
-		[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
-		[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
-		echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Files:${WHITE_FG}${FTYPE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
-		if [[ -n ${LINENUM_OPT} ]];then
-			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
-			REM=$(( (_COL_MAX - LONGEST_FN) - 8))
-			printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text"
-			echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- )))  ${MAGENTA_FG}$(str_unicode_line 4)${RESET} ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN - 4 )))${RESET}"
-			echo
-		else
-			[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 4 ))
-			REM=$(( (_COL_MAX - LONGEST_FN) - 4))
-			printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text"
-			echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- ))) ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN-- )))${RESET}"
-			echo
-		fi
+	tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
+	[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
+	[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
+	echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Files:${WHITE_FG}${FTYPE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
+	if [[ -n ${LINENUM_OPT} ]];then
+		[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
+		REM=$(( (_COL_MAX - LONGEST_FN) - 8))
+		printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text"
+		echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- )))  ${MAGENTA_FG}$(str_unicode_line 4)${RESET} ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN - 4 )))${RESET}"
+		echo
+	else
+		[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 4 ))
+		REM=$(( (_COL_MAX - LONGEST_FN) - 4))
+		printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text"
+		echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- ))) ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN-- )))${RESET}"
+		echo
 	fi
 
 	NDX=0

@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+ 
 # Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -6,6 +7,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
+BLINK="\033[5m"
 BLACK_BG="\033[40m"
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
@@ -14,6 +16,9 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+CYAN_ON_GREY="\033[0m\033[0;1;36;100m"
+RED_ON_GREY="\033[0m\033[0;1;31;100m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
@@ -23,22 +28,230 @@ source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
-# Constants
-_DEFAULT_DIR=~/Downloads/Torrents/Library/web
-_VID_REGEX='.*\.\(mp4\|avi\|mkv\)$'
-_WORKDIR=/tmp/.mp4_merge
-_SAFEDIR=/tmp/.mp4_merge_backup
-_FLIST=${_WORKDIR}/flist
-export BAR_SIZE_RATIO=0.25
-
 # Declarations
-typeset -a _FILELIST=()
-typeset -a _FILES_TO_MERGE=()
+typeset -A _AUDIO=()
+typeset -A _BAR_COORDS=(X 0 Y 54 P 54)
+typeset -A _FILTER=()
+typeset -A _INODES=()
+typeset -A _INPUTS=()
+typeset -A _MAXIMUMS=()
+typeset -A _VIDEO=()
+typeset -a _FLIST=()
+typeset -a _INPUT_ARGS=()
 
-# Vars
-_OUT_FILE=vid_merge
-_DESTINATION_FILE=${PWD}/${_OUT_FILE}.mp4
-_SEARCH_PATH=${_DEFAULT_DIR}
+# Constants
+_CFG_DIR=${HOME}/.local/share/${_SCRIPT}
+_DEFAULT_PATH=~/Downloads/Torrents/Library/web
+_FILTER=(ACODEC aac VCODEC libx264)
+_FS_DISK=/dev/nvme0n1p2
+_LOG_FILE=${_CFG_DIR}/${_SCRIPT}.log
+_VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
+_ZV_REGEX='(mkv|mp4|avi)'
+_BAR_WIDTH=25
+_BAR=false
+
+# Functions
+start_bar () {
+	local X
+	local Y=${_BAR_COORDS[Y]}
+	local L_BRACKET="[" # U+005B
+	local R_BRACKET="]" # U+005D
+	local BLOCK="￭" # U+FFED
+
+	_BAR_COORDS[X]=$(cursor_row)
+
+	tcup ${_BAR_COORDS[X]} ${_BAR_COORDS[Y]}
+	echo -n ${BOLD}${CYAN_ON_GREY}${L_BRACKET}${RESET}
+
+	(( Y++ ))
+	for X in {1..${_BAR_WIDTH}};do
+		tcup ${_BAR_COORDS[X]} ${Y}
+		echo -n ${WHITE_ON_GREY}${BLOCK}${RESET}
+		(( Y++ ))
+	done
+
+	tcup ${_BAR_COORDS[X]} ${Y}
+	echo -n ${BOLD}${CYAN_ON_GREY}${R_BRACKET}${RESET}
+}
+
+bar_fwd () {
+	local BLOCK="￭" # U+FFED
+
+	(( _BAR_COORDS[P]++ ))
+	tcup ${_BAR_COORDS[X]} ${_BAR_COORDS[P]}
+	echo -n ${RED_ON_GREY}${BLOCK}
+}
+
+set_duration () {
+	local FRAMES=$(ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of default=noprint_wrappers=1:nokey=1 ${1})
+	local SECONDS=$(ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 ${1})
+	local MINS=$(math -p6 "${SECONDS}/60")
+	local HOURS=$(math -p2 "${MINS}/60")
+
+	echo "FRAMES|${FRAMES},SECS|${SECONDS},MINS|${MINS},HOURS|${HOURS}" >>${_CFG_DIR}/duration
+}
+
+show_progress () {
+	local OPT=${1}
+	local DURATIONS=~/.local/share/mp4_merge/duration
+	local LOG=~/.local/share/mp4_merge/mp4_merge.log
+
+	local TL_FRAMES=0
+	local TL_SECS=0
+	local TL_MINS=0
+	local TL_HOURS=0
+	local PCT=0
+	local F1 F2 F3 F4 FRAMES SECS MINS HOURS CUR_FRAME OTIME PROGRESS
+	local -i T=0
+	local LAST_T=0
+	local LINE
+
+	while read LINE;do
+		F1=$(cut -d',' -f1 <<<${LINE})
+		F2=$(cut -d',' -f2 <<<${LINE})
+		F3=$(cut -d',' -f3 <<<${LINE})
+		F4=$(cut -d',' -f4 <<<${LINE})
+
+		FRAMES=$(cut -d'|' -f2 <<<${F1})
+		SECS=$(cut -d'|' -f2 <<<${F2})
+		MINS=$(cut -d'|' -f2 <<<${F3})
+		HOURS=$(cut -d'|' -f2 <<<${F4})
+
+		TL_FRAMES=$(( TL_FRAMES+FRAMES ))
+		TL_SECS=$(( TL_SECS+SECS ))
+		TL_MINS=$(( TL_MINS+MINS ))
+		TL_HOURS=$(( TL_HOURS+HOURS ))
+	done < ${DURATIONS}
+
+	tail -f ${LOG} | \
+	while read -t5 LINE;do
+		case ${LINE} in
+			frame*) CUR_FRAME=$(cut -d'=' -f2 <<<${LINE});;
+			out_time_ms*) OTIME=$(cut -d'=' -f2 <<<${LINE});;
+			progress*) PROGRESS=$(cut -d'=' -f2 <<<${LINE});;
+		esac
+
+		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( OTIME / 1000000 ) * 100. / ${TL_SECS} )) || PCT=100
+
+		T=$(( (PCT / 100) * _BAR_WIDTH ))
+		if [[ ${OPT} == 'noframes' ]];then
+			printf "\r ${BOLD}${CYAN_FG}Merge completion:${WHITE_FG}%.2f%%${RESET}" ${PCT}
+		else
+			printf "\r ${BOLD}${CYAN_FG}Rendering frame${RESET}:${WHITE_FG}%s${RESET} of ${WHITE_FG}%d${RESET} - Completed:${WHITE_FG}%.2f%%${RESET}" ${CUR_FRAME} ${TL_FRAMES} ${PCT}
+		fi
+		[[ ${_BAR} == 'false' ]] && start_bar && _BAR=true
+		[[ ${T} -ne 0 && ${T} -gt ${LAST_T} ]] && bar_fwd 
+		LAST_T=${T}
+	done
+}
+
+scan_media () {
+	local INODE=${1}
+	local FN=$(get_inode_fn ${F:h} ${INODE})
+	local -a LIST=("${(f)$(mediainfo ${FN})}")
+	local LINE=''
+	local LINE_LBL=''
+	local LINE_VALUES=''
+	local LINE_VAL=''
+	local in_video=''
+	local in_audio=''
+	local L
+
+	for L in ${LIST};do
+		LINE=$(tr -s '[:space:]' <<<${L} | tr '[\t]' '[ ]')
+		LINE_LBL=$(cut -d: -f1- <<<${LINE} | str_trim | cut -d: -f1)
+		LINE=$(sed -E 's/([0-9])\s([0-9][0-9])/\1\2/' <<<${LINE})
+		LINE_VALUES=$(cut -d: -f2- <<<${LINE} | str_trim | tr '[ ]' '[|]')
+		LINE_VAL=$(cut -d'|' -f1 <<<${LINE_VALUES})
+
+		case ${L:l} in
+			"video") 
+				in_video=true
+				in_audio=false
+				;;
+			"audio") 
+				in_video=false
+				in_audio=true
+				;;
+		esac
+
+		if [[ ${in_video} == 'true' ]];then
+			[[ ${LINE_LBL:l} =~ 'height' ]] && _VIDEO[${INODE}_height]=${LINE_VAL}
+			[[ ${LINE_LBL:l} =~ 'width' ]] && _VIDEO[${INODE}_width]=${LINE_VAL}
+			[[ ${LINE_LBL:l} =~ 'frame rate' ]] && _VIDEO[${INODE}_vfps]=${LINE_VAL}
+		fi
+
+		if [[ ${in_audio} == 'true' ]];then
+			[[ ${LINE_LBL:l} =~ 'bit rate' ]] && _AUDIO[${INODE}_abrate]=${LINE_VAL}
+			[[ ${LINE_LBL:l} =~ 'frame rate' ]] && _AUDIO[${INODE}_afps]=${LINE_VAL}
+		fi
+	done
+}
+
+is_mixed_video () {
+	local -A LAST=(VFPS 0 HEIGHT 0 WIDTH 0 AFPS 0 ABRATE 0)
+	local -A MIXED=(VFPS false HEIGHT false WIDTH false AFPS false ABRATE false)
+	local AFPS=0
+	local ABRATE=0
+	local HEIGHT=0
+	local LBL=''
+	local VAL=''
+	local VFPS=0
+	local WIDTH=0
+	local K
+
+	for K in ${(k)_VIDEO};do
+		LBL=${K:l}
+		VAL=$(cut -d: -f2 <<<${_VIDEO[${K}]})
+		if [[ ${LBL} =~ '_height' ]];then
+			HEIGHT=${VAL}
+			if [[ ${LAST[HEIGHT]} -ne 0 ]];then
+				[[ ${HEIGHT} -ne ${LAST[HEIGHT]} ]] && MIXED[HEIGHT]=true && echo "Detected dissimilar HEIGHTS: ${HEIGHT} != ${LAST[HEIGHT]}" >&2
+				_MAXIMUMS[HEIGHT]=$(max ${HEIGHT} ${LAST[HEIGHT]})
+			fi
+			LAST[HEIGHT]=${HEIGHT}
+		fi
+		if [[ ${LBL} =~ '_width' ]];then
+			WIDTH=${VAL}
+			if [[ ${LAST[WIDTH]} -ne 0 ]];then
+				[[ ${WIDTH} -ne ${LAST[WIDTH]} ]] && MIXED[WIDTH]=true && echo "Detected dissimilar WIDTHS: ${WIDTH} != ${LAST[WIDTH]}" >&2
+				_MAXIMUMS[WIDTH]=$(max ${WIDTH} ${LAST[WIDTH]})
+			fi
+			LAST[WIDTH]=${WIDTH}
+		fi
+		if [[ ${LBL} =~ '_vfps' ]];then
+			VFPS=${VAL}
+			if [[ ${LAST[VFPS]} -ne 0 ]];then
+				[[ ${VFPS} -ne ${LAST[VFPS]} ]] && MIXED[VFPS]=true && echo "Detected dissimilar Video FPS: ${VFPS} != ${LAST[VFPS]}" >&2
+				_MAXIMUMS[VFPS]=$(max ${VFPS} ${LAST[VFPS]})
+			fi
+			LAST[VFPS]=${VFPS}
+		fi
+	done
+
+	for K in ${(k)_AUDIO};do
+		LBL=${K:l}
+		VAL=$(cut -d: -f2 <<<${_AUDIO[${K}]})
+		if [[ ${LBL} =~ '_afps' ]];then
+			AFPS=${VAL}
+			if [[ ${LAST[AFPS]} -ne 0 ]];then
+				[[ ${AFPS} -ne ${LAST[AFPS]} ]] && MIXED[AFPS]=true && echo "Detected dissimilar Audio FPS: ${AFPS} != ${LAST[AFPS]}" >&2
+				_MAXIMUMS[AFPS]=$(max ${AFPS} ${LAST[AFPS]})
+			fi
+			LAST[AFPS]=${AFPS}
+		fi
+		if [[ ${LBL} =~ '_abrate' ]];then
+			ABRATE=${VAL}
+			if [[ ${LAST[ABRATE]} -ne 0 ]];then
+				[[ ${ABRATE} -ne ${LAST[ABRATE]} ]] && MIXED[ABRATE]=true && echo "Detected dissimilar Audio Bit Rate: ${ABRATE} != ${LAST[ABRATE]}" >&2
+				_MAXIMUMS[ABRATE]=$(max ${ABRATE} ${LAST[ABRATE]})
+			fi
+			LAST[ABRATE]=${ABRATE}
+		fi
+	done
+
+	[[ ${(kv)MIXED} =~ 'true' ]] && return 0 || return 1
+}
 
 #--Begin GetOpts--
 local -a OPTIONS
@@ -46,8 +259,9 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-Merge multiple mp4 files into a single file
-\tIf no <SEARCHTERM> is provided, all files in the media path are candidates
+Merge multiple video files into a single file
+\tIf no <SEARCHTERM> or <FILELIST> is provided, all media files in the path are considered candidates
+\tIf the video formats differ, they are first normalized prior to merge.
 EOF
 
 parse_opts () {
@@ -75,6 +289,7 @@ opt_type () {
 	case ${OPT} in
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
+		l) echo "<FILELIST>";;
 		s) echo "<SEARCHTERM>";;
 		t) echo "<FILE_TYPE>";;
 	esac
@@ -88,33 +303,27 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type s)]\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [ [$(opt_type s)] [$(opt_type l)] ]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-a${RESET} normalize audio prior to merge"
-	echo -e "${WHITE_FG}-m${RESET} move original files to ${_SAFEDIR}"
-	echo -e "${WHITE_FG}-o${RESET} $(opt_type f) output file name"
-	echo -e "${WHITE_FG}-p${RESET} $(opt_type d) alternate media path [default:${_DEFAULT_DIR}]"
+	echo -e "${WHITE_FG}-o${RESET} $(opt_type f) file name for merged video (default:output.mp4)"
+	echo -e "${WHITE_FG}-p${RESET} $(opt_type d) alternate media path [default:${_DEFAULT_PATH}]"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDamo:p:"
+OPTSTR=":HDmo:p:"
 OPTIND=0
 
-OUT_FILE=''
+OUT_FILE='output.mp4'
 ALT_PATH=''
-NORM_AUDIO=false
-MOVE_FILES=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     a) NORM_AUDIO=true;;
-     m) MOVE_FILES=true;;
      o) OUT_FILE=${OPTARG};;
      p) ALT_PATH=${OPTARG};;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
@@ -124,109 +333,116 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND -1 ))
 #--End GetOpts--
-
 # Execution
-clear
-SEARCHTERM=''
-[[ ${#} -ne 0 ]] && SEARCHTERM=${@}
+clear 
+
+[[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR}
 
 if [[ -n ${ALT_PATH} ]];then
-	[[ -d ${ALT_PATH} ]] && _SEARCH_PATH=${ALT_PATH} || exit_leave $(err_msg_exit "Invalid path:${ALT_PATH}")
+	[[ -d ${ALT_PATH} ]] && _DEFAULT_PATH=${ALT_PATH} || exit_leave $(err_msg_exit "Invalid alternate path:${ALT_PATH}")
 fi
 
-if [[ ! -d ${_WORKDIR} ]];then
-	mkdir ${_WORKDIR}
-	[[ ${?} -ne 0 ]] && exit_leave "Unable to create _WORKDIR:${_WORKDIR}"
-else
-	(
-	/bin/rm -f ${_WORKDIR}/* 
-	) >/dev/null 2>&1 # Clear work area
-fi
-
-if [[ ! -d ${_SAFEDIR} ]];then
-	mkdir ${_SAFEDIR}
-	[[ ${?} -ne 0 ]] && exit_leave "Unable to create _SAFEDIR:${_SAFEDIR}"
-fi
-
-echo "Searching for media files in path:${WHITE_FG}${_SEARCH_PATH}${RESET}..."
-
-if [[ -z ${SEARCHTERM} ]];then
-	echo "${ITALIC}${BOLD}${YELLOW_FG}No <SEARCHTERM> provided${RESET} - defaulting to all media files in path"
-	[[ -n ${OUT_FILE} ]] && _DESTINATION_FILE=${PWD}/${OUT_FILE:r}.mp4
-	CMD="find ${_SEARCH_PATH} -regextype 'posix-basic' -maxdepth 1 -type f -regex '${_VID_REGEX}'"
-	_FILELIST=("${(f)$(eval ${CMD})}")
-else
-	echo "Adding all media files matching:\"${WHITE_FG}${SEARCHTERM}${RESET}\""
-	[[ -z ${OUT_FILE} ]] && _DESTINATION_FILE=${PWD}/${SEARCHTERM}.mp4 || _DESTINATION_FILE=${PWD}/${OUT_FILE:r}.mp4
-	CMD="find ${_SEARCH_PATH} -maxdepth 1 -type f -iname '${SEARCHTERM}*' ! -path ${_SEARCH_PATH}"
-	_FILELIST=("${(f)$(eval ${CMD})}")
-fi
-
-if [[ -z ${_FILELIST} ]];then
-	exit_leave 1 "${_SCRIPT_TAG} ${RED_FG}No media file matches for argument${RESET}:${SEARCHTERM}"
-else
-	[[ ${NORM_AUDIO} == 'true' ]] && echo "Audio normalization is ${GREEN_FG}active${RESET}"
-	echo "DESTINATION_FILE:${_DESTINATION_FILE:h}/${WHITE_FG}${ITALIC}${_DESTINATION_FILE:t}${RESET}"
-	[[ -e ${_DESTINATION_FILE} ]] && /bin/rm -f ${_DESTINATION_FILE}
-
-	echo ${MAGENTA_FG}$(str_unicode_line 80)${RESET}
-	NDX=0
-	for F in ${_FILELIST};do
-		((NDX++))
-		echo "${WHITE_FG}${NDX}${RESET}) ${F:t}"
+[[ ${#} -ne 0 ]] && ARGS=(${@})
+[[ ${#ARGS} -eq 1 ]] && SEARCHTERM=${ARGS} || SEARCHTERM='' # Assume SEARCHTERM
+if [[ ${#ARGS} -gt 1 ]];then # Assume list of files
+	for A in ${ARGS};do
+		[[ ! -e ${A} ]] && usage "File:${A} not found"
 	done
-	echo ${MAGENTA_FG}$(str_unicode_line 80)${RESET}
+	FLIST=(${ARGS})
+fi
 
-	ALERT="Found ${WHITE_FG}${#_FILELIST}${RESET} candidates"
-	ACTION="${WHITE_FG}Continue?${RESET}"
-
-	echo -n "\n${ALERT}! ${ACTION}:(${WHITE_FG}y/n${RESET})?"
-	read -s -q RESPONSE
-	echo
-	if [[ ${RESPONSE} == "y" ]];then # Only 'y' will execute task
-		echo "Filtering and formatting filelist..."
-	else # All other keys terminate
-		exit_leave "${RED_FG}Operation cancelled${RESET}..."
+if [[ -n ${_FLIST} ]];then
+	echo "Merging ${#_FLIST} files"
+else
+	if [[ -n ${SEARCHTERM} ]];then
+		LIST=("${(f)$(find ${_DEFAULT_PATH} -iname "${SEARCHTERM}*")}") # All media matching searchterm
+	else
+		LIST=("${(f)$(find ${_DEFAULT_PATH} -regex "${_VIDEO_REGEX}" ! -path ${_DEFAULT_PATH})}") # All media in path
 	fi
 fi
 
-for F in ${(o)_FILELIST};do
-	[[ ${F:t:r} == 'vid_merge' ]] && continue
-	FTYPE=$(file -b ${F})
-	if [[ ${FTYPE:l} =~ 'media|matroska' ]];then
-		FN=$(fsub -Cs <<<${F} | tr -d $'\x27') # Compact file names to eliminate problematic spaces in file names
-		echo "${GREEN_FG}Adding${RESET} ${F} to worklist..."
-		cp ${F} ${_WORKDIR}/${FN:t} >/dev/null 2>&1
-		_FILES_TO_MERGE+=${_WORKDIR}/${FN:t}
-		echo "${CYAN_FG}Backing up${RESET} ${F} to ${WHITE_FG}${_SAFEDIR}${RESET}..."
-		if [[ ${MOVE_FILES} == 'true' ]];then
-			echo "Moving ${F} to ${_SAFEDIR}"
-			mv -f ${F} ${_SAFEDIR} # >/dev/null 2>&1
-		fi
-	else
-		echo "File:${F} not eligible media - skipped" >&2
-	fi
+for F in ${LIST};do
+	[[ ${F:t} == ${OUT_FILE:t} ]] && continue
+	[[ ${F:e} =~ ${_ZV_REGEX} ]] && _FLIST+=${F} || exit_leave $(err_msg_exit "File not found:${F}")
 done
 
-if [[ ${NORM_AUDIO} == 'true' ]];then
-	echo "Normalizing audio..."
-	NDX=0
-	for F in ${_FILES_TO_MERGE};do
-		((NDX++))
-		RECODE_OUT="${_WORKDIR}/aud_recode_${NDX}.mp4"
-		export BAR_FILENAME_LENGTH=${#RECODE_OUT:t}
-		ffmpeg-bar -y -i ${F} -c:v copy -c:a aac -b:a 128k ${RECODE_OUT}
-		echo "file '${RECODE_OUT}'" >> ${_FLIST}
-	done
-else
-	echo "Creating worklist..."
-	for F in ${_FILES_TO_MERGE};do
-		echo "file '${F}'" >> ${_FLIST}
-	done
+echo "Matched ${#_FLIST} files"
+[[ ${#_FLIST} -lt 2 ]] && exit_leave $(err_msg_exit "Need at least 2 files")
+
+
+NDX=0
+for F in ${_FLIST};do
+	[[ -e ${F:t} ]] && FN=${F:t} || FN=${F} # Include path if needed
+	_INPUTS[${NDX}]="${FN}"
+	((NDX++))
+done
+
+echo "\nINPUTS"
+for K in ${(onk)_INPUTS};do
+	printf "v:%s FILE:%s\n" ${K} $(pathabv -l20 ${_INPUTS[${K}]:Q:h})/${_INPUTS[${K}]:Q:t}
+done
+
+OUT_FILE=${_FLIST[1]:h}/${OUT_FILE:r}.mp4
+QUESTION="${CYAN_FG}These files will be merged to DESTINATION${RESET}:${WHITE_FG}${OUT_FILE}${RESET}"
+echo -n "\n${QUESTION}:(y/n)?"
+read -q RESPONSE
+echo
+if [[ ${RESPONSE} != "y" ]];then # Only 'y' will not exit
+	exit_leave "${RED_FG}Operation cancelled${RESET}..."
 fi
 
-echo "Merging ${WHITE_FG}${#_FILES_TO_MERGE}${RESET} files..."
-ffmpeg -y -loglevel error -f concat -safe 0 -i ${_FLIST} -c copy ${_DESTINATION_FILE}
-[[ ${?} -ne 0 ]] && echo "${RED_FG}ffmpeg had errors${RESET}"
-[[ -e ${_DESTINATION_FILE} ]] && echo "${_DESTINATION_FILE:h}/${ITALIC}${WHITE_FG}${_DESTINATION_FILE:t}${RESET} was created"
+for F in ${_FLIST};do
+	INODE=$(stat -c "%i" ${F})
+	[[ ${?} -eq 0 ]] && _INODES[${INODE}]=${F} || exit_leave $(err_msg_exit "stat failed for file:${F}")
+	scan_media ${INODE}
+done
 
+[[ -e ${_CFG_DIR}/duration ]] && /bin/rm ${_CFG_DIR}/duration # clear duration
+for K in ${(onk)_INODES};do
+	printf "INODE:%s FN:%s\n" ${K} ${_INODES[${K}]}
+	set_duration ${_INODES[${K}]}
+done
+
+[[ -e ${_LOG_FILE} ]] && /bin/rm ${_LOG_FILE} # clear log
+
+echo ${CSR_OFF}
+if is_mixed_video;then
+	echo "Normalizing and merging dissimilar videos..."
+	SCALE="${_MAXIMUMS[WIDTH]}:${_MAXIMUMS[HEIGHT]}"
+	TAG="v=1:a=1[v][a]"
+	MAP="-map \"[v]\" -map \"[a]\" -c:v ${_FILTER[VCODEC]} -crf 23 -preset medium ${OUT_FILE}"
+	I_STR=''
+	for K in ${(onk)_INPUTS};do
+		I_STR+="-i ${(qqq)_INPUTS[${K}]} "
+		P1_STR+="[${K}:v]fps=${_MAXIMUMS[VFPS]},scale=${SCALE}:force_original_aspect_ratio=decrease,pad=${SCALE}:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p[v${K}];"
+		P2_STR+="[v${K}][${K}:a]"
+	done
+	CMD="ffmpeg -y ${I_STR} -loglevel 8 -progress ${_LOG_FILE} -filter_complex \"${P1_STR}${P2_STR}concat=n=${#_INPUTS}:${TAG}\" ${MAP}"
+
+	echo "${CMD}" | sed -e 's/\-i \"/\n\-i \"/g' -e 's/\-loglevel/\n\-loglevel/' -e 's/\-filter/\n\-filter/' -e 's/;/;\n/g' > ${_LOG_FILE}.cmd
+	eval "${CMD}" &
+	while true;do
+		[[ -e ${_LOG_FILE} ]] && break
+		sleep 1
+	done
+	show_progress
+else
+	[[ -e ${_CFG_DIR}/merge_files ]] && /bin/rm ${_CFG_DIR}/merge_files # clear file list
+	echo "Merging similar videos..."
+	echo "Creating worklist..."
+	for F in ${_FLIST};do
+		echo "file ${F:q}" >> ${_CFG_DIR}/merge_files
+	done
+	CMD="ffmpeg -y -loglevel 8 -progress ${_LOG_FILE} -f concat -safe 0 -i ${_CFG_DIR}/merge_files -c copy ${OUT_FILE}"
+
+	echo "${CMD}" > ${_LOG_FILE}.cmd
+	eval "${CMD}" &
+	while true;do
+		[[ -e ${_LOG_FILE} ]] && break
+		sleep 1
+	done
+	show_progress noframes
+fi
+echo ${RESET}${CSR_ON}
+
+exit_leave

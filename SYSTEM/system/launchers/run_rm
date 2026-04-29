@@ -232,24 +232,30 @@ shift $((OPTIND -1))
 #---Execution---
 [[ ${#} -eq 0 ]] && usage "Missing argument <FILE>"
 
-ARGS=()
-RAW_ARGS=($(path_get_raw_args))
-for A in ${RAW_ARGS};do
-	ARGS+=$(eval "realpath ${A}")
-done
 OBJ_COUNT=${#ARGS}
 
-[[ $(str_contains $(path_get_raw_args) '\x2a') ]] && WILDCARD=true || WILDCARD=false
+typeset -a FLIST=()
+
+RAW_ARGS=($(path_get_raw_args))
+for R in ${RAW_ARGS};do
+	if [[ $(str_contains ${R} '\x2a') ]];then
+		WILDCARD=true
+		FLIST+=("${(f)$(eval "find . -name '${R}'")}")
+	else
+		FLIST+=${R}
+		WILDCARD=false
+	fi
+done
 [[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"
+
+OBJ_COUNT=${#FLIST}
 
 MYID=$(get_myid)
 MYGROUP=$(get_mygroup)
 [[ ${_DEBUG} -gt 0 ]] && dbg "MYID:${MYID}, MYGROUP:${MYGROUP}, WILDCARD:${WILDCARD}"
 
 # Prescan
-LIST=(${ARGS}) 
-[[ ${_DEBUG} -gt 0 ]] && dbg "LIST COUNT:${#LIST}"
-
+[[ ${_DEBUG} -gt 0 ]] && dbg "FLIST COUNT:${#FLIST}"
 
 # Store meta information
 DIRS=0
@@ -258,7 +264,7 @@ LINKS=0
 FIELD_LEN[OWNER]=0
 FIELD_LEN[GROUP]=0
 FIELD_LEN[NAME]=0
-for L in ${LIST};do
+for L in ${FLIST};do
 	[[ ! -L ${L} && ! -e ${L} ]] && exit_leave $(err_msg_exit E "file not found:${L}")
 	[[ ${_DEBUG} -ge 2 ]] && dbg "L:${L}"
 	if [[ ! -e ${L} && -L ${L} ]];then
@@ -289,7 +295,7 @@ done
 
 # Detect/warn wildcard 
 if [[ ${WILDCARD} == "true" ]];then
-	echo "${BOLD}${RED_FG}Wildcard${RESET}${BOLD}${WHITE_FG} * ${RESET}detected ${ITALIC}WILDCARD${RESET} (${#LIST} $(str_pluralize item ${#LIST}))"
+	echo "${BOLD}${RED_FG}Wildcard${RESET}${BOLD}${WHITE_FG} * ${RESET}detected ${ITALIC}WILDCARD${RESET} (${#FLIST} $(str_pluralize item ${#FLIST}))"
 fi
 
 [[ (${OBJ_COUNT} -gt ${_WARN_LIMIT}) || ${WILDCARD} == "true" ]] && WARN=true || WARN=false
@@ -304,7 +310,7 @@ if [[ ${WARN} == 'true' ]];then
 	printf "${CYAN_FG}%14s %s %s %s${RESET}\n" $(str_unicode_line 14) $(str_unicode_line ${FIELD_LEN[NAME]}) $(str_unicode_line ${FIELD_LEN[OWNER]}) $(str_unicode_line ${FIELD_LEN[GROUP]})
 
 	NDX=0
-	for L in ${(onk)LIST};do
+	for L in ${(onk)FLIST};do
 		[[ ${L:h} == ${_PWD} ]] && OBJ_NAME=${L:t} || OBJ_NAME=${L}
 
 		[[ ${_DEBUG} -ge 2 ]] && dbg "OBJ_NAME:${OBJ_NAME}"
@@ -324,7 +330,7 @@ fi
 # Always warn for directories unless options were passed
 RM_DIRS=false
 if [[ -z ${OPTIONS} && ${DIRS} -ne 0 ]];then
-	DIR_OBJ_COUNT=$(dir_obj_count ${LIST})
+	DIR_OBJ_COUNT=$(dir_obj_count ${FLIST})
 	echo -n "\n${WHITE_FG}${DIRS}${RESET} $(str_pluralize directory ${DIRS}) to be ${RED_FG}removed${RESET} containing ${WHITE_FG}${DIR_OBJ_COUNT} ${RESET}$(str_pluralize object ${DIR_OBJ_COUNT}) (y/n):"
 	read -q RESPONSE
 	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Directories will be skipped${RESET}\n"
@@ -339,7 +345,7 @@ fi
 
 # Get user approval to proceed
 APPROVED=false
-if [[ ${REMAINING} -ne 0 && (${REMAINING} -gt ${_WARN_LIMIT} || ${WARN} == "true") ]];then
+if [[ ${REMAINING} -ne 0 && (${REMAINING} -le ${_WARN_LIMIT} || ${WARN} == "true") ]];then
 	echo -n "${WHITE_FG}Continue${MSG}${RESET}:(y/n):"
 	read -q RESPONSE
 	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Operation cancelled${RESET}\n" && exit_leave
@@ -348,8 +354,8 @@ fi
 
 OPTS_SHOWN=false
 OPTS=($(echo "-"${^OPTIONS}))
-if [[ ${APPROVED} == "true" || ${REMAINING} -lt ${_WARN_LIMIT} ]];then
-	for L in ${(onk)LIST};do
+if [[ ${APPROVED} == "true" || ${REMAINING} -le ${_WARN_LIMIT} ]];then
+	for L in ${(onk)FLIST};do
 		if [[ -n ${OPTIONS} ]];then
 			eval "${_RM} ${OPTS} ${L:q}"
 			if [[ ${OPTS_SHOWN} == 'false' ]];then

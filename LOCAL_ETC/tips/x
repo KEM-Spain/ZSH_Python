@@ -1,0 +1,31 @@
+Parsing FFmpeg progress is most reliably achieved using the built-in -progress option, which provides machine-readable output.  
+
+1. Using the -progress Flag The most efficient method is to tell FFmpeg to output progress data to a specific
+destination (file, pipe, or URL). 
+
+Command Syntax: ffmpeg -i input.mp4 -progress [destination] output.mp4 
+Destination Options: File: -progress log.txt appends updates to a file.  
+Stdout/Pipe: -progress pipe:1 (or unix://socket_path) sends data to a stream for real-time parsing. 
+
+2. Interpreting the Output FFmpeg outputs a series of key=value pairs for each update, followed by 
+progress=continue or progress=end. 
+
+out_time_ms: Current processing time in microseconds.  
+frame: Total frames processed.  
+fps: Current processing speed in frames per second.  
+bitrate: Current output bitrate.  
+speed: Encoding speed relative to real-time (e.g., 2.5x). 
+
+3. Calculating Percentage FFmpeg's progress output does not include a percentage because it may not know the total
+duration. You must calculate it manually: 
+
+Get Total Duration: 
+Use the FFprobe tool to find the input's total frames or duration before starting.  
+Calculate: Divide the frame (or out_time_ms) from the progress log by the total from FFprobe. 
+
+4. Language-Specific Libraries If you prefer not to write a custom parser, several libraries automate this:
+
+Python: ffmpeg-python or the ffmpeg-progress-yield utility.  
+Node.js: fluent-ffmpeg provides a .on('progress', callback) event that returns a pre-parsed object.  
+Java: ffmpeg-cli-wrapper includes a dedicated ProgressParser class. 
+

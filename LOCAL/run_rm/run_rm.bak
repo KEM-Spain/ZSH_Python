@@ -232,14 +232,21 @@ shift $((OPTIND -1))
 #---Execution---
 [[ ${#} -eq 0 ]] && usage "Missing argument <FILE>"
 
-ARGS=()
-RAW_ARGS=($(path_get_raw_args))
-for A in ${RAW_ARGS};do
-	ARGS+=$(realpath ${A})
-done
 OBJ_COUNT=${#ARGS}
 
-[[ $(str_contains $(path_get_raw_args) '\x2a') ]] && WILDCARD=true || WILDCARD=false
+typeset -a LIST=()
+RAW_ARGS=($(path_get_raw_args))
+for R in ${RAW_ARGS};do
+	if [[ $(str_contains ${R} '\x2a') ]];then
+		WILDCARD=true
+		LIST+=("${(f)$(eval "find . -name '${R}'")}")
+	else
+		LIST+=${R}
+		WILDCARD=false
+	fi
+done
+OBJ_COUNT=${#LIST}
+
 [[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"
 
 MYID=$(get_myid)
@@ -247,9 +254,7 @@ MYGROUP=$(get_mygroup)
 [[ ${_DEBUG} -gt 0 ]] && dbg "MYID:${MYID}, MYGROUP:${MYGROUP}, WILDCARD:${WILDCARD}"
 
 # Prescan
-LIST=(${ARGS}) 
 [[ ${_DEBUG} -gt 0 ]] && dbg "LIST COUNT:${#LIST}"
-
 
 # Store meta information
 DIRS=0
@@ -259,6 +264,7 @@ FIELD_LEN[OWNER]=0
 FIELD_LEN[GROUP]=0
 FIELD_LEN[NAME]=0
 for L in ${LIST};do
+	echo "L:${L}" >&2
 	[[ ! -L ${L} && ! -e ${L} ]] && exit_leave $(err_msg_exit E "file not found:${L}")
 	[[ ${_DEBUG} -ge 2 ]] && dbg "L:${L}"
 	if [[ ! -e ${L} && -L ${L} ]];then
@@ -339,7 +345,7 @@ fi
 
 # Get user approval to proceed
 APPROVED=false
-if [[ ${REMAINING} -ne 0 && (${REMAINING} -gt ${_WARN_LIMIT} || ${WARN} == "true") ]];then
+if [[ ${REMAINING} -ne 0 && (${REMAINING} -le ${_WARN_LIMIT} || ${WARN} == "true") ]];then
 	echo -n "${WHITE_FG}Continue${MSG}${RESET}:(y/n):"
 	read -q RESPONSE
 	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Operation cancelled${RESET}\n" && exit_leave
@@ -348,7 +354,7 @@ fi
 
 OPTS_SHOWN=false
 OPTS=($(echo "-"${^OPTIONS}))
-if [[ ${APPROVED} == "true" || ${REMAINING} -lt ${_WARN_LIMIT} ]];then
+if [[ ${APPROVED} == "true" || ${REMAINING} -le ${_WARN_LIMIT} ]];then
 	for L in ${(onk)LIST};do
 		if [[ -n ${OPTIONS} ]];then
 			eval "${_RM} ${OPTS} ${L:q}"

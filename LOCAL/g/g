@@ -95,7 +95,7 @@ usage () {
 	echo -e "${WHITE_FG}-w${RESET} whole word match"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDABILFO:P:lLhm:nort:vw"
@@ -154,7 +154,7 @@ SEARCHTERM=${@}
 [[ ${_DEBUG} -eq 0 && FILELIST == 'false' ]] && do_smcup
 
 # Arg validation
-[[ -z ${SEARCHTERM} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<SEARCHTERM>"
+[[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
 [[ ! -t 0 ]] && exit_leave $(err_msg_exit W "No support for piped input")
 [[ ${GR_OPT_FN} == '--no-filename' && -z ${FILE_OUT} ]] && exit_leave "${_SCRIPT_TAG} Option:-h is only valid in combination with option:-O"
 
@@ -174,26 +174,18 @@ GREP_OPTS+=${GR_OPT_WORD}
 # Limit to file type if specified
 FTYPE_MSG='all'
 if [[ -n ${FTYPE} ]];then
-	FLIST="${PATH_ARG}/*${FTYPE}"
+	FLIST="${PATH_ARG}/*${FTYPE}(.)"
 	[[ ${FTYPE} == 'bak' ]] && GR_OPT_BAK=true
 	FTYPE_MSG=${FTYPE}
-#	typeset -a FLIST=()
-#	FLIST=("${(f)$(find ${PATH_ARG} -maxdepth 1 -type f ! -path ${PATH_ARG} | xargs file | grep --color=never -i ${FTYPE} | cut -d: -f1)}")
-#	if [[ -n ${FLIST} ]];then
-#		FTYPE_MSG="type:${FTYPE}"
-#	else
-#		exit_leave $(err_msg_exit E "No files qualified for type:${FTYPE}")
-#	fi
 else
-	FLIST="${PATH_ARG}/(*|.*)"
+	FLIST="${PATH_ARG}/(*|.*)(.)"
 fi
 
 # Build CMD
-CMD="grep ${GREP_OPTS} '"${SEARCHTERM}"' ${FLIST} 2>/dev/null"
-CMD_MSG="grep ${GREP_OPTS} '"${SEARCHTERM}"' 2>/dev/null"
+CMD="grep --color=never ${GREP_OPTS} '"${SEARCHTERM}"' ${FLIST}"
+CMD_MSG="grep ${GREP_OPTS} \"${SEARCHTERM}\""
 
 # Execute CMD
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} CMD:${CMD}"
 RAWLIST=("${(f)$(eval ${CMD})}")
 [[ ${_DEBUG} -gt 1 ]] && dbg "${0}:${LINENO} RAWLIST:${RAWLIST}" || dbg "${0}:${LINENO} RAWLIST:${#RAWLIST}"
 
@@ -208,7 +200,7 @@ if [[ -n ${FILE_OUT} ]];then
 		done
 		exit_leave "Output saved in:${FILE_OUT}"
 	else
-		exit_leave "No results for $(opt_type s):${WHITE_FG}${SEARCHTERM}${RESET}"
+		exit_leave $(err_msg_exit W "No results for $(opt_type s):${SEARCHTERM}")
 	fi
 fi
 
@@ -297,6 +289,7 @@ else
 		if [[ -n ${LINENUM_OPT} ]];then
 			LNUM=$(cut -d: -f1 <<<${LN})
 			LN=$(cut -d: -f2- <<<${LN})
+			LN=$(str_to_ascii <<<${LN})
 			LN=$(tr -d '\012\015' <<<${LN})
 			LN=$(tr -s '[:space:]' <<<${LN})
 			LN=$(sed 's/[\t\n]/ /' <<<${LN})

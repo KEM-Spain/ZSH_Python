@@ -654,6 +654,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
+# TODO: CHECK INFFUT OUTPUT (YACER) multiple choices separated by comma
 [[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage "Missing argument:<VERB>"
 [[ -z ${OPTIONS} ]] && VERTICAL=true # Default format
 

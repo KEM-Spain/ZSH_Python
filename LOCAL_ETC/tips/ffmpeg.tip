@@ -1,0 +1,208 @@
+(
+cat << tip_ffmpeg_EOF_1
+${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+Force all media files to same codec, frame rate, and bit rate
+
+${E_BOLD}${E_WHITE_FG}filter_complex${E_RESET}
+
+ffmpeg -i input1.mp4 -i input2.mp4 -filter_complex \\
+"[0:v]fps=30,scale=1920:1080[v0]; \\
+[1:v]fps=30,scale=1920:1080[v1]; \\
+[v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]" \\
+-map "[outv]" -map "[outa]" -c:v libx264 -b:v 5000k -c:a aac -b:a 192k output.mp4
+
+${E_BOLD}${E_WHITE_FG}Key Parameters Explained${E_RESET}
+
+    fps=30: Forces all video segments to a specific frame rate (e.g., 30 fps) before merging.
+    scale=1920:1080: Ensures all videos have the same resolution (required for the concat filter to work seamlessly).
+    -c:v libx264: Forces the output to a specific codec (H.264).
+    -b:v 5000k: Forces a specific constant or average video bitrate.
+    concat
+
+${E_BOLD}${E_WHITE_FG}Average Video Bitrate${E_RESET}
+
+In FFmpeg, the average video bitrate is primarily controlled using the -b:v flag. This sets a target bitrate that the 
+encoder will attempt to average across the entire duration of the video.  To set a specific average bitrate, use the 
+following command structure.
+
+ffmpeg -i input.mp4 -b:v 2M output.mp4
+
+    -b:v: Specifies the target video bitrate (e.g., 2M for 2 Mbps, 500k for 500 kbps).
+
+Advanced Bitrate Control
+For more precise control, especially in streaming or when strict file size limits apply, you can combine the average 
+bitrate with maximum rates and buffer sizes:
+
+    Targeted Variable Bitrate (VBR): Use -maxrate and -bufsize to allow the bitrate to fluctuate while keeping it 
+    within a specific range.
+                            
+    ffmpeg -i input.mp4 -b:v 2M -maxrate 3M -bufsize 4M output.mp4
+
+    Two-Pass Encoding: Recommended for achieving the highest quality at a specific target average bitrate. The first i
+    pass analyzes the video, and the second pass performs the actual encoding.
+
+    # Pass 1
+    ffmpeg -i input.mp4 -c:v libx264 -b:v 2M -pass 1 -f mp4 /dev/null
+    # Pass 2
+    ffmpeg -i input.mp4 -c:v libx264 -b:v 2M -pass 2 output.mp4
+
+ In FFmpeg, the average video bitrate is primarily controlled using the -b:v flag. This sets a target bitrate that the
+ encoder will attempt to average across the entire duration of the video. To set a specific average bitrate, use the
+ following command structure:
+ 
+ ffmpeg -i input.mp4 -b:v 2M output.mp4
+ 
+     -b:v: Specifies the target video bitrate (e.g., 2M for 2 Mbps, 500k for 500 kbps).
+ 
+ Advanced Bitrate Control # For more precise control, especially in streaming or when strict file size limits apply, you
+ can combine the average bitrate with maximum rates and buffer sizes:
+ 
+     Targeted Variable Bitrate (VBR): Use -maxrate and -bufsize to allow the bitrate to fluctuate while keeping it
+     within a specific range.
+ 
+     ffmpeg -i input.mp4 -b:v 2M -maxrate 3M -bufsize 4M output.mp4
+ 
+     Two-Pass Encoding: Recommended for achieving the highest quality at a specific target average bitrate. The first
+     pass analyzes the video, and the second pass performs the actual encoding.
+ 
+     Pass 1 ffmpeg -i input.mp4 -c:v libx264 -b:v 2M -pass 1 -f mp4 /dev/null
+     Pass 2 ffmpeg -i input.mp4 -c:v libx264 -b:v 2M -pass 2 output.mp4
+ 
+${E_BOLD}${E_WHITE_FG}Recommended Bitrates (H.264)${E_RESET}
+
+ The optimal bitrate depends on your video's resolution and frame rate: 
+
+ Resolution/Frame Rate - Recommended Bitrate Range 
+
+ 1080p 30 fps 3,500 – 5,000 kbps 
+ 1080p 60 fps 4,500 – 9,000 kbps 
+ 720p 30 fps 2,500 – 4,000 kbps 
+ 4K (UHD) 30/60 fps 13,000 – 50,000 kbps 
+
+ ${E_BOLD}${E_CYAN_FG}Alternative: Constant Rate Factor (CRF)${E_RESET}
+ If your primary goal is quality rather than a specific file size, use CRF instead of a target bitrate.
+ 
+     CRF 23 is the default for H.264 and offers a good balance between quality and size.  
+     CRF 17-18 is considered "visually lossless".  
+
+     Command: ffmpeg -i input.mp4 -c:v libx264 -crf 23 output.mp4.
+ 
+${E_BOLD}${E_WHITE_FG}Merging dissimilar files${E_RESET}
+To merge dissimilar files using filter_complex, you must manually conform all streams to 
+identical parameters before the concat filter can execute properly. 
+
+${E_BOLD}${E_CYAN_FG}Best Scale and Frame Rate(CRF)${E_RESET}
+The "best" settings depend on which file you want to prioritize for quality or which standard you need to meet.
+
+Scale (Resolution): Choose the highest common resolution between your files (e.g., if one is 720p and another is 1080p, 
+use 1080p) to avoid losing detail from the high-quality source. 
+
+To handle different aspect ratios, use the force_original_aspect_ratio=decrease and pad filter to add black bars 
+(pillarbox/letterbox) rather than stretching the image.
+
+Frame Rate (FPS): Choose the highest frame rate among your inputs to ensure motion remains smooth in the higher-FPS clip. 
+For example, if merging 30fps and 60fps clips, set both to 60fps; FFmpeg will duplicate frames for the 30fps clip to match. 
+
+${E_BOLD}${E_CYAN_FG}Recommended Filter Chain(CRF)${E_RESET}
+Apply these filters to each input stream before the concat segment: 
+
+fps: Standardize the frame rate first to improve processing efficiency.
+scale: Resize to your target resolution.
+pad: Add black bars to maintain the original aspect ratio without distortion.
+setsar: Force the Sample Aspect Ratio to 1 to prevent playback issues.
+format: Ensure all videos use the same pixel format, typically yuv420p for maximum compatibility. 
+
+${E_BOLD}${E_WHITE_FG}Example Merge Command${E_RESET}
+This command merges clip1.mp4 and clip2.mp4 into a single 1080p, 30fps video:
+
+ffmpeg -i clip1.mp4 -i clip2.mp4 -filter_complex \\
+"[0:v]fps=30,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p[v0]; \\
+ [1:v]fps=30,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p[v1]; \\
+ [v0][0:a][v1][1:a]concat=n=2:v=1:a=1[v][a]" \\
+-map "[v]" -map "[a]" -c:v libx264 -crf 23 -preset medium output.mp4
+
+For high-quality upscaling, you can add flags=lanczos to the scale filter. 
+Refer to the FFmpeg Filtering Guide for detailed syntax on complex chains. 
+
+${E_BOLD}${E_WHITE_FG}Parsing ffmpeg Progress${E_RESET}
+
+Parsing FFmpeg progress is most reliably achieved using the built-in -progress option, which provides machine-readable output.  
+
+1. Using the -progress Flag The most efficient method is to tell FFmpeg to output progress data to a specific
+destination (file, pipe, or URL). 
+
+Command Syntax: ffmpeg -i input.mp4 -progress [destination] output.mp4 
+Destination Options: File: -progress log.txt appends updates to a file.  
+Stdout/Pipe: -progress pipe:1 (or unix://socket_path) sends data to a stream for real-time parsing. 
+
+2. Interpreting the Output FFmpeg outputs a series of key=value pairs for each update, followed by 
+progress=continue or progress=end. 
+
+out_time_ms: Current processing time in microseconds.  
+frame: Total frames processed.  
+fps: Current processing speed in frames per second.  
+bitrate: Current output bitrate.  
+speed: Encoding speed relative to real-time (e.g., 2.5x). 
+
+3. Calculating Percentage FFmpeg's progress output does not include a percentage because it may not know the total
+duration. You must calculate it manually: 
+
+Get Total Duration: 
+Use the FFprobe tool to find the input's total frames or duration before starting.  
+Calculate: Divide the frame (or out_time_ms) from the progress log by the total from FFprobe. 
+
+4. Language-Specific Libraries If you prefer not to write a custom parser, several libraries automate this:
+
+Python: ffmpeg-python or the ffmpeg-progress-yield utility.  
+Node.js: fluent-ffmpeg provides a .on('progress', callback) event that returns a pre-parsed object.  
+Java: ffmpeg-cli-wrapper includes a dedicated ProgressParser class. 
+
+
+${E_BOLD}${E_WHITE_FG}Extracting Audio${E_RESET}
+To extract audio from an MP4 file using FFmpeg, you can either copy the original audio stream directly to preserve
+quality or re-encode it into a specific format like MP3.  If the audio inside your MP4 is already in a format you want
+(typically AAC), use this command to extract it without re-encoding. This is nearly instant and loses zero quality.
+
+${E_BOLD}${E_WHITE_FG}1. Extract and Copy (Fastest, Original Quality)${E_RESET}
+
+ffmpeg -i input.mp4 -vn -acodec copy output.m4a
+
+-i input.mp4: Specifies the input file.  -vn: Disables video recording (skips the video stream).  -acodec copy: Copies
+the audio data exactly as it is.  output.m4a: The output file name. Use .m4a for AAC audio found in MP4s. 
+
+${E_BOLD}${E_WHITE_FG}2. Extract and Convert to MP3${E_RESET}
+
+Use this if you specifically need an MP3 file. This process re-encodes the audio, which
+takes slightly longer.
+
+ffmpeg -i input.mp4 -vn -acodec libmp3lame -q:a 2 output.mp3
+
+-acodec libmp3lame: Uses the standard MP3 encoder.  -q:a 2: Sets a high variable bitrate (VBR) quality (roughly 190
+		kbps). Lower numbers (like 0) are higher quality. 
+
+${E_BOLD}${E_WHITE_FG}3. Extract to Lossless WAV${E_RESET}
+
+If you need uncompressed audio for editing, extract to the WAV format.
+
+ffmpeg -i input.mp4 -vn output.wav
+
+${E_BOLD}${E_WHITE_FG}4. Advanced: Selecting a Specific Audio Track${E_RESET}
+
+If your MP4 has multiple audio tracks (e.g., different languages), use the -map flag to choose one. 
+
+List tracks first: ffprobe input.mp4 to find the stream ID (e.g., 0:1 or 0:2).  
+
+Extract specific track:
+ffmpeg -i input.mp4 -map 0:a:1 -vn -acodec copy output.m4a
+
+-map 0:a:1: Selects the second audio stream (indexing starts at 0). 
+
+${E_BOLD}${E_WHITE_FG}5. Batch Extract All MP4s in a Folder${E_RESET}
+
+Run this in your terminal (Linux/macOS) to extract audio from every MP4 file in
+the current directory.
+
+for f in *.mp4; do ffmpeg -i "$f" -vn -acodec copy "${f%.mp4}.m4a"; done
+
+tip_ffmpeg_EOF_1
+) | mypager

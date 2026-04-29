@@ -77,6 +77,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-p $(opt_type p)${RESET} mathematical precision"
+	echo -e "${WHITE_FG}-v${RESET} verbose"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
@@ -86,12 +87,14 @@ usage () {
 OPTSTR=":HDp:"
 OPTIND=0
 PRECISION=2
+VERBOSE=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
      p) PRECISION=${OPTARG};;
+     v) VERBOSE=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -101,7 +104,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ ${#} -eq 0 ]] && usage "Missing argument:$(opt_type f)" || FORMULA=${1}
 
@@ -110,7 +113,7 @@ if ! validate_is_integer ${PRECISION};then
 fi
 
 do_rmcup
-echo "${CYAN_FG}Precision${RESET}=${WHITE_FG}${PRECISION}${RESET}"
-echo "scale=${PRECISION}; ${FORMULA}" | bc 
+[[ ${VERBOSE} == 'true' ]] && echo "${CYAN_FG}Precision${RESET}=${WHITE_FG}${PRECISION}${RESET}"
+echo "scale=${PRECISION}; ${FORMULA}" | bc
 
-exit_leave
+exit_leave >&2

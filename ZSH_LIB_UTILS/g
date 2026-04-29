@@ -16,7 +16,7 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Constants
-_COL_MAX=140
+_COL_MAX=138
 
 # Imports
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
@@ -30,6 +30,7 @@ typeset -a LIST
 typeset -a RAWLIST
 typeset -a GREP_OPTS=()
 typeset LINE_LIMIT=100
+typeset -A _SKIPPED=()
 
 read -r -d '' DESC<<EOF
 Find files containing <SEARCHTERM> in or below the current directory
@@ -196,8 +197,9 @@ if [[ -n ${FILE_OUT} ]];then
 		for L in ${RAWLIST};do
 			FN=$(cut -d: -f1 <<<${L})
 			LN=$(cut -d: -f2- <<<${L} | str_trim)
-			echo "${FN}: ${LN}" >>${FILE_OUT}
+			echo "${FN}: ${LN[1,${_COL_MAX}]}" >>${FILE_OUT}
 		done
+		[[ ${SKIPCNT} -ne 0 ]] && msg_box -p -PK "${SKIPCNT} lines were skipped due to line length"
 		exit_leave "Output saved in:${FILE_OUT}"
 	else
 		exit_leave $(err_msg_exit W "No results for $(opt_type s):${SEARCHTERM}")
@@ -227,6 +229,7 @@ for L in ${(uo)RAWLIST};do
 	LN=$(sed 's/[\t\n]/ /' <<<${LN})
 	LN=$(sed 's/\x2a//g' <<<${LN})
 	LN=$(str_trim <<<${LN})
+	[[ ${#L} -gt ${_COL_MAX} ]] && ((SKIPCNT++)) && continue
 	if [[ ${GR_OPT_COLOR} =~ 'always' ]];then
 		LN=$(perl -pe 's/^\x1b\x5b\x6d\x1b\x5b\x4b\x20/\x1b\x5b\x6d\x1b\x5b\x4b/' <<<${LN}) # Kill the space after 1st seq for even margin
 	fi

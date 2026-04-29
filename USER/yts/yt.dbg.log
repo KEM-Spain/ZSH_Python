@@ -1,101 +1,61 @@
-2026-04-23_22:18: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-23_22:18: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-04-23_22:18: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-04-23_22:18: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
-2026-04-23_22:18: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
-2026-04-23_22:18: query_youtube: Query matched 20 lines, _LOCAL_LIST has 18 lines
-2026-04-23_22:18: query_youtube: Listing for QKEY:judgingfreedom contains 18 rows
-2026-04-23_22:18: query_youtube: Creating listing for QKEY:aaron mate STRICT:null
-2026-04-23_22:18: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Aaron Mate ENGINE:youtube EOPT:null FKEY:aaron mate QKEY:aaron mate SMSG:0.0% TYPE:custom 
-2026-04-23_22:18: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "aaron mate"
-2026-04-23_22:18: query_youtube: Query matched 4 lines, _LOCAL_LIST has 3 lines
-2026-04-23_22:18: query_youtube: Listing for QKEY:aaron mate contains 3 rows
-2026-04-23_22:18: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.g7VItJ
-2026-04-23_22:18: job_start: TITLE:Aaron Mate Why Israel is Losing to Iran
-2026-04-23_22:18: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=YWKdzwPd6EM" PID:2666110
-2026-04-23_22:18: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-23_22:18: action_do: GENERATING HEADER
-2026-04-23_22:18: title_scrubber: UCASE_WORDS:1
-2026-04-23_22:18: title_scrubber: Preserving acronym:Is
-2026-04-23_22:18: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=YWKdzwPd6EM PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-23_22:18: action_do: COMPLETED
-2026-04-23_22:18: action_do: POST-PROCESSING
-2026-04-23_22:18: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Aaron_Mate_Why_Israel_is_Losing_to_Iran.mp4
-2026-04-23_22:18: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Aaron_Mate_Why_Israel_is_Losing_to_Iran.mp4
-2026-04-23_22:18: title_scrubber: UCASE_WORDS:1
-2026-04-23_22:18: title_scrubber: Preserving acronym:Is
-2026-04-23_22:18: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Aaron_Mate_Why_Israel_is_Losing_to_Iran.mp4 with:Judging Freedom - Aaron Mate Why Israel IS Losing To Iran.mp4
-2026-04-23_22:18: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Aaron Mate Why Israel IS Losing To Iran.mp4
-2026-04-23_22:18: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.g7VItJ was cleared for:aaron mate from:action_do
-2026-04-23_22:19: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
-2026-04-23_22:19: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG: TYPE:standard 
-2026-04-23_22:19: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
-2026-04-23_22:19: query_youtube: Search engine returned no rows - QKEY:dialogueworks, STRICT:s
-2026-04-23_22:19: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
-2026-04-23_22:19: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG:0.0% TYPE:standard 
-2026-04-23_22:19: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
-2026-04-23_22:19: query_youtube: Query matched 15 lines, _LOCAL_LIST has 13 lines
-2026-04-23_22:19: query_youtube: Listing for QKEY:dialogueworks contains 13 rows
-2026-04-23_22:19: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.jLUc6U
-2026-04-23_22:19: job_start: TITLE:Alex Krainer: Trump Trapped Himself in the Persian Gulf - Iran's Comeback
-2026-04-23_22:19: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=aaryUcXYr6k" PID:2672739
-2026-04-23_22:19: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-23_22:19: action_do: GENERATING HEADER
-2026-04-23_22:19: title_scrubber: UCASE_WORDS:1
-2026-04-23_22:19: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=aaryUcXYr6k PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-23_22:19: action_do: COMPLETED
-2026-04-23_22:19: action_do: POST-PROCESSING
-2026-04-23_22:19: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Alex_Krainer_-_Trump_Trapped_Himself_in_the_Persian_Gulf_Iran_s_Comeback_Just_Chang.mp4
-2026-04-23_22:19: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Alex_Krainer_-_Trump_Trapped_Himself_in_the_Persian_Gulf_Iran_s_Comeback_Just_Chang.mp4
-2026-04-23_22:19: title_scrubber: UCASE_WORDS:1
-2026-04-23_22:19: set_final_fn: Overwriting file:Dialogue_Works - Alex_Krainer_-_Trump_Trapped_Himself_in_the_Persian_Gulf_Iran_s_Comeback_Just_Chang.mp4 with:Dialogue Works - Alex Krainer - Trump Trapped Himself In The Persian.mp4
-2026-04-23_22:19: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Dialogue Works - Alex Krainer - Trump Trapped Himself In The Persian.mp4
-2026-04-23_22:19: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.jLUc6U was cleared for:dialogueworks from:action_do
-2026-04-23_22:19: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
-2026-04-23_22:19: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG:0.0% TYPE:standard 
-2026-04-23_22:19: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
-2026-04-23_22:19: query_youtube: Query matched 16 lines, _LOCAL_LIST has 14 lines
-2026-04-23_22:19: query_youtube: Listing for QKEY:dialogueworks contains 14 rows
-2026-04-23_22:19: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
-2026-04-23_22:19: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou SMSG:0.0% TYPE:standard 
-2026-04-23_22:19: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "alexchristoforou"
-2026-04-23_22:19: query_youtube: Query matched 6 lines, _LOCAL_LIST has 3 lines
-2026-04-23_22:19: query_youtube: Listing for QKEY:alexchristoforou contains 3 rows
-2026-04-23_22:19: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.YXVGR4
-2026-04-23_22:19: job_start: TITLE:EU focus on fighting Russia. Naughty-Nice NATO list. FT: Blockade failing,
-2026-04-23_22:19: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=Cp-JM0f4AqM" PID:2679885
-2026-04-23_22:19: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-23_22:20: action_do: GENERATING HEADER
-2026-04-23_22:20: title_scrubber: UCASE_WORDS:4
-2026-04-23_22:20: title_scrubber: Preserving acronym:Eu
-2026-04-23_22:20: title_scrubber: Preserving acronym:Nato
-2026-04-23_22:20: title_scrubber: Preserving uppercase:Ft
-2026-04-23_22:20: title_scrubber: Preserving acronym:Navy
-2026-04-23_22:20: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=Cp-JM0f4AqM PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-04-23_22:20: action_do: COMPLETED
-2026-04-23_22:20: action_do: POST-PROCESSING
-2026-04-23_22:20: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - EU_focus_on_fighting_Russia._Naughty-Nice_NATO_list._FT_-_Blockade_failing_NAVY_chief_fired.mp4
-2026-04-23_22:20: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - EU_focus_on_fighting_Russia._Naughty-Nice_NATO_list._FT_-_Blockade_failing_NAVY_chief_fired.mp4
-2026-04-23_22:20: title_scrubber: UCASE_WORDS:4
-2026-04-23_22:20: title_scrubber: Preserving acronym:Eu
-2026-04-23_22:20: title_scrubber: Preserving acronym:Nato
-2026-04-23_22:20: title_scrubber: Preserving uppercase:Ft
-2026-04-23_22:20: title_scrubber: Preserving acronym:Navy
-2026-04-23_22:20: set_final_fn: Overwriting file:Alex_Christoforou - EU_focus_on_fighting_Russia._Naughty-Nice_NATO_list._FT_-_Blockade_failing_NAVY_chief_fired.mp4 with:Alex Christoforou - EU Focus On Fighting Russia. Naughty-Nice NATO.mp4
-2026-04-23_22:20: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Alex Christoforou - EU Focus On Fighting Russia. Naughty-Nice NATO.mp4
-2026-04-23_22:20: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.YXVGR4 was cleared for:alexchristoforou from:action_do
-2026-04-23_22:20: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
-2026-04-23_22:20: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:100.0% TYPE:standard 
-2026-04-23_22:20: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
-2026-04-23_22:20: query_youtube: Query matched 5 lines, _LOCAL_LIST has 3 lines
-2026-04-23_22:20: query_youtube: Translated TITLE:Crash landing of Twin Comanche PA-30 N741TJ on April 18, 2026
-2026-04-23_22:20: query_youtube: Translated TITLE:Another fatal VMCA road test demonstration on April 13,
-2026-04-23_22:20: query_youtube: Listing for QKEY:blancolirio contains 3 rows
-2026-04-23_22:20: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
-2026-04-23_22:20: parse_rumble: Parsing list for QKEY:glenndiesen
-2026-04-23_22:20: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-04-23_22:20: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-04-23_22:20: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-04-23_22:20: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-04-23_22:20: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-04-23_22:20: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
+2026-04-29_11:07: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-29_11:07: log_update: Skipping expired inode:6373729
+2026-04-29_11:07: log_update: Skipping expired inode:6378723
+2026-04-29_11:07: log_update: Skipping expired inode:6378855
+2026-04-29_11:07: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-04-29_11:07: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
+2026-04-29_11:07: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio TYPE:standard 
+2026-04-29_11:07: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
+2026-04-29_11:07: query_youtube: Query matched 7 lines, _LOCAL_LIST has 5 lines
+2026-04-29_11:07: query_youtube: Translated TITLE:N8032X Plus 4 Plus April 28
+2026-04-29_11:07: query_youtube: Translated TITLE:NTSB preliminary report on the collision of the Jazz 646 airplane in the
+2026-04-29_11:08: query_youtube: Translated TITLE:Air France LAX April 8, 2026
+2026-04-29_11:08: query_youtube: Translated TITLE:Crash landing of Twin Comanche PA-30 N741TJ on April 18, 2026
+2026-04-29_11:08: query_youtube: Translated TITLE:Another fatal VMCA road test demonstration on April 13,
+2026-04-29_11:08: query_youtube: Listing for QKEY:blancolirio contains 5 rows
+2026-04-29_11:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.WqZkTS
+2026-04-29_11:08: job_start: TITLE:N8032X Plus 4 Plus April 28
+2026-04-29_11:08: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=AQr3ecAxznE" PID:1931671
+2026-04-29_11:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-29_11:08: action_do: GENERATING HEADER
+2026-04-29_11:08: title_scrubber: UCASE_WORDS:1
+2026-04-29_11:08: title_scrubber: Preserving uppercase:N8032x
+2026-04-29_11:08: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=AQr3ecAxznE PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-29_11:08: action_do: COMPLETED
+2026-04-29_11:08: action_do: POST-PROCESSING
+2026-04-29_11:08: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/blancolirio - N8032X_Plus_4_More_28_April.mp4
+2026-04-29_11:08: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/blancolirio - N8032X_Plus_4_More_28_April.mp4
+2026-04-29_11:08: title_scrubber: UCASE_WORDS:1
+2026-04-29_11:08: title_scrubber: Preserving uppercase:N8032x
+2026-04-29_11:08: set_final_fn: Overwriting file:blancolirio - N8032X_Plus_4_More_28_April.mp4 with:Blan Colirio - N8032X Plus 4 More 28 April.mp4
+2026-04-29_11:08: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Blan Colirio - N8032X Plus 4 More 28 April.mp4
+2026-04-29_11:08: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.WqZkTS was cleared for:blancolirio from:action_do
+2026-04-29_11:08: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
+2026-04-29_11:08: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom SMSG:0.0% TYPE:standard 
+2026-04-29_11:08: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
+2026-04-29_11:08: query_youtube: Query matched 15 lines, _LOCAL_LIST has 13 lines
+2026-04-29_11:08: query_youtube: Listing for QKEY:judgingfreedom contains 13 rows
+2026-04-29_11:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.YMx9Hj
+2026-04-29_11:08: job_start: TITLE:CPT. Matt Hoh : Will US Troops Kill Innocents?
+2026-04-29_11:08: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=-VpTHqhMZlk" PID:1936116
+2026-04-29_11:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-29_11:08: action_do: GENERATING HEADER
+2026-04-29_11:08: title_scrubber: UCASE_WORDS:2
+2026-04-29_11:08: title_scrubber: Preserving acronym:Us
+2026-04-29_11:08: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=-VpTHqhMZlk PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-29_11:08: action_do: COMPLETED
+2026-04-29_11:08: action_do: POST-PROCESSING
+2026-04-29_11:08: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - CPT._Matt_Hoh_-_Will_US_Troops_Kill_Innocents.mp4
+2026-04-29_11:08: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - CPT._Matt_Hoh_-_Will_US_Troops_Kill_Innocents.mp4
+2026-04-29_11:08: title_scrubber: UCASE_WORDS:2
+2026-04-29_11:08: title_scrubber: Preserving acronym:Us
+2026-04-29_11:08: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - CPT._Matt_Hoh_-_Will_US_Troops_Kill_Innocents.mp4 with:Judging Freedom - Cpt. Matt Hoh - Will US Troops Kill Innocents.mp4
+2026-04-29_11:08: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Cpt. Matt Hoh - Will US Troops Kill Innocents.mp4
+2026-04-29_11:08: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.YMx9Hj was cleared for:judgingfreedom from:action_do
+2026-04-29_11:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.T0qBDb
+2026-04-29_11:08: job_start: TITLE:Prof. Mohammad Marandi : FROM TEHRAN: US Asking For Ceasefire, Again.
+2026-04-29_11:08: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=vjLWGdS3QxU" PID:1939091
+2026-04-29_11:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-29_11:08: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=vjLWGdS3QxU PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-04-29_11:08: action_do: FUTURE
+2026-04-29_11:09: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.T0qBDb was cleared for:judgingfreedom from:action_do
