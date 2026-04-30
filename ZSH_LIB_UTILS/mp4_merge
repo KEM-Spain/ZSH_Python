@@ -338,7 +338,7 @@ usage () {
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDmo:p:"
+OPTSTR=":HDdmo:p:"
 OPTIND=0
 
 OUT_FILE='output.mp4'
@@ -380,7 +380,10 @@ if [[ ${DEL_ARCHIVE} == 'true' ]];then
 			done
 			echo  "${#ARCHIVED} files deleted"
 		fi
+	else
+		exit_leave "${_SCRIPT_TAG} No archived files found"
 	fi
+	exit_leave 
 fi
 
 [[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR}

@@ -329,6 +329,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [ [$(opt_type s)] [$(opt_type l)] ]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-d${RESET} Delete archived files"
 	echo -e "${WHITE_FG}-o${RESET} $(opt_type f) file name for merged video (default:output.mp4)"
 	echo -e "${WHITE_FG}-p${RESET} $(opt_type d) alternate media path [default:${_DEFAULT_PATH}]"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -337,16 +338,18 @@ usage () {
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDmo:p:"
+OPTSTR=":HDdmo:p:"
 OPTIND=0
 
 OUT_FILE='output.mp4'
 ALT_PATH=''
+DEL_ARCHIVE=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     d) DEL_ARCHIVE=true;;
      o) OUT_FILE=${OPTARG};;
      p) ALT_PATH=${OPTARG};;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
@@ -359,23 +362,28 @@ shift $(( OPTIND -1 ))
 # Execution
 clear 
 
-BACKUPS=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}")
-if [[ -n ${BACKUPS} ]];then
-	echo "${WHITE_ON_GREY}Found ${#BACKUPS} backup files in${RESET}:${_CFG_DIR}"
-	for B in ${BACKUPS};do
-		echo ${B}
-	done
-
-	QUESTION="${RED_FG}Delete ${#BACKUPS} ${RED_FG}backup files${RESET}"
-	echo -n "\n${QUESTION}:(y/n)?"
-	read -q RESPONSE
-	echo
-	if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
-		for F in ${BACKUPS};do
-			/bin/rm -f ${F}
+if [[ ${DEL_ARCHIVE} == 'true' ]];then
+	ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}")
+	if [[ -n ${ARCHIVED} ]];then
+		echo "${WHITE_ON_GREY}Found ${#ARCHIVED} archived files in${RESET}:${_CFG_DIR}"
+		for B in ${ARCHIVED};do
+			echo ${B}
 		done
-		echo  "${#BACKUPS} files deleted"
+
+		QUESTION="${RED_FG}Delete ${#ARCHIVED} ${RED_FG}archived files${RESET}"
+		echo -n "\n${QUESTION}:(y/n)?"
+		read -q RESPONSE
+		echo
+		if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
+			for F in ${ARCHIVED};do
+				/bin/rm -f ${F}
+			done
+			echo  "${#ARCHIVED} files deleted"
+		fi
+	else
+		exit_leave "${_SCRIPT_TAG} No archived files found"
 	fi
+	exit_leave 
 fi
 
 [[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR}
@@ -385,12 +393,19 @@ if [[ -n ${ALT_PATH} ]];then
 fi
 
 [[ ${#} -ne 0 ]] && ARGS=(${@})
-[[ ${#ARGS} -eq 1 ]] && SEARCHTERM=${ARGS} || SEARCHTERM='' # Assume SEARCHTERM
+if [[ ${#ARGS} -eq 1 ]];then
+	SEARCHTERM=${ARGS}
+	echo "Got SEARCHTERM:${SEARCHTERM}"
+else
+	SEARCHTERM='' # Assume SEARCHTERM
+fi
+
 if [[ ${#ARGS} -gt 1 ]];then # Assume list of files
+	echo "Got a list of files..."
 	for A in ${ARGS};do
 		[[ ! -e ${A} ]] && usage "File:${A} not found"
 	done
-	FLIST=(${ARGS})
+	_FLIST=(${ARGS})
 fi
 
 if [[ -n ${_FLIST} ]];then
