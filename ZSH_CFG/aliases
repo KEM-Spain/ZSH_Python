@@ -36,6 +36,7 @@ alias postit='gtk-launch xpad.desktop'
 alias prefs='/usr/bin/gnome-control-center >/dev/null 2>&1 &'
 alias prt='libreoffice -p'
 alias regexdbg="perl -MRegexp::Debugger -E 'Regexp::Debugger::rxrx(@ARGV)'"
+alias rm='/usr/local/bin/system/launchers/run_rm '
 alias s2e='trans -no-pager es:en'
 alias sc='sudo systemctl'
 alias spot='/usr/local/bin/system/launchers/run_spotify >/dev/null 2>&1 &'
@@ -79,7 +80,6 @@ alias upgrades='sudo apt-get -s dist-upgrade '
 # linux
 alias md='mkdir'
 alias mv='mv -i'
-alias rm='/usr/local/bin/system/launchers/run_rm '
 alias cls='tput clear'
 
 # bunzip2

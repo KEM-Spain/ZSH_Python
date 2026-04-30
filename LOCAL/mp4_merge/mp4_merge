@@ -26,11 +26,12 @@ CSR_ON="\033[?25h"
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/PATH.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
 typeset -A _AUDIO=()
-typeset -A _BAR_COORDS=(X 0 Y 52 P 52)
+typeset -A _BAR_COORDS=(X 0 Y 54 P 54)
 typeset -A _FILTER=()
 typeset -A _INODES=()
 typeset -A _INPUTS=()
@@ -45,6 +46,8 @@ _DEFAULT_PATH=~/Downloads/Torrents/Library/web
 _FILTER=(ACODEC aac VCODEC libx264)
 _FS_DISK=/dev/nvme0n1p2
 _LOG_FILE=${_CFG_DIR}/${_SCRIPT}.log
+_ERR_FILE=${_CFG_DIR}/${_SCRIPT}.errors
+_CMD_FILE=${_CFG_DIR}/${_SCRIPT}.cmd
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
 _ZV_REGEX='(mkv|mp4|avi)'
 _BAR_WIDTH=25
@@ -59,6 +62,8 @@ start_bar () {
 	local BLOCK="￭" # U+FFED
 
 	_BAR_COORDS[X]=$(cursor_row)
+
+	echo -n ${CSR_OFF}
 
 	tcup ${_BAR_COORDS[X]} ${_BAR_COORDS[Y]}
 	echo -n ${BOLD}${CYAN_ON_GREY}${L_BRACKET}${RESET}
@@ -75,7 +80,18 @@ start_bar () {
 }
 
 bar_fwd () {
+	local FILL=${1}
 	local BLOCK="￭" # U+FFED
+	local P=0
+
+	if [[ ${FILL} == 'fill' ]];then
+		for P in {${_BAR_COORDS[P]}..$(( _BAR_COORDS[Y] + _BAR_WIDTH ))};do
+			tcup ${_BAR_COORDS[X]} ${P}
+			echo -n ${RED_ON_GREY}${BLOCK}
+		done
+		echo -n ${CSR_ON}${RESET}
+		return
+	fi
 
 	(( _BAR_COORDS[P]++ ))
 	tcup ${_BAR_COORDS[X]} ${_BAR_COORDS[P]}
@@ -132,7 +148,15 @@ show_progress () {
 		esac
 
 		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( OTIME / 1000000 ) * 100. / ${TL_SECS} )) || PCT=100
+
 		T=$(( (PCT / 100) * _BAR_WIDTH )) # Tick value
+		[[ ${_BAR} == 'false' ]] && start_bar && _BAR=true # Draw the bar
+
+		if [[ ${PCT} -eq 100 ]];then
+			bar_fwd fill # Fill the bar
+		else
+			[[ ${T} -ne 0 && ${T} -gt ${LAST_T} ]] && bar_fwd # Advance the tick
+		fi
 
 		if [[ ${OPT} == 'noframes' ]];then
 			printf "\r ${BOLD}${CYAN_FG}Merge completion:${WHITE_FG}%.2f%%${RESET}" ${PCT}
@@ -140,8 +164,6 @@ show_progress () {
 			printf "\r ${BOLD}${CYAN_FG}Rendering frame${RESET}:${WHITE_FG}%s${RESET} of ${WHITE_FG}%d${RESET} - Completed:${WHITE_FG}%.2f%%${RESET}" ${CUR_FRAME} ${TL_FRAMES} ${PCT}
 		fi
 
-		[[ ${_BAR} == 'false' ]] && start_bar && _BAR=true # Draw the bar
-		[[ ${T} -ne 0 && ${T} -gt ${LAST_T} ]] && bar_fwd # Advance the tick
 		LAST_T=${T}
 	done
 }
@@ -337,6 +359,25 @@ shift $(( OPTIND -1 ))
 # Execution
 clear 
 
+BACKUPS=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}")
+if [[ -n ${BACKUPS} ]];then
+	echo "${WHITE_ON_GREY}Found ${#BACKUPS} backup files in${RESET}:${_CFG_DIR}"
+	for B in ${BACKUPS};do
+		echo ${B}
+	done
+
+	QUESTION="${RED_FG}Delete ${#BACKUPS} ${RED_FG}backup files${RESET}"
+	echo -n "\n${QUESTION}:(y/n)?"
+	read -q RESPONSE
+	echo
+	if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
+		for F in ${BACKUPS};do
+			/bin/rm -f ${F}
+		done
+		echo  "${#BACKUPS} files deleted"
+	fi
+fi
+
 [[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR}
 
 if [[ -n ${ALT_PATH} ]];then
@@ -363,11 +404,11 @@ else
 fi
 
 for F in ${LIST};do
-	[[ ${F:t} == ${OUT_FILE:t} ]] && continue
+	[[ ${F:t:r} == ${OUT_FILE:t:r} ]] && continue
 	[[ ${F:e} =~ ${_ZV_REGEX} ]] && _FLIST+=${F} || exit_leave $(err_msg_exit "File not found:${F}")
 done
 
-echo "Matched ${#_FLIST} files"
+echo "Arguments:${WHITE_FG}$(path_get_raw_cmdline)${RESET} matched ${#_FLIST} files"
 [[ ${#_FLIST} -lt 2 ]] && exit_leave $(err_msg_exit "Need at least 2 files")
 
 
@@ -384,7 +425,7 @@ for K in ${(onk)_INPUTS};do
 done
 
 OUT_FILE=${_FLIST[1]:h}/${OUT_FILE:r}.mp4
-QUESTION="${CYAN_FG}These files will be merged to DESTINATION${RESET}:${WHITE_FG}${OUT_FILE}${RESET}"
+QUESTION="${CYAN_FG}These ${#_FLIST} files will be merged to DESTINATION${RESET}:${WHITE_FG}${OUT_FILE}${RESET}"
 echo -n "\n${QUESTION}:(y/n)?"
 read -q RESPONSE
 echo
@@ -400,13 +441,13 @@ done
 
 [[ -e ${_CFG_DIR}/duration ]] && /bin/rm ${_CFG_DIR}/duration # clear duration
 for K in ${(onk)_INODES};do
-	printf "INODE:%s FN:%s\n" ${K} ${_INODES[${K}]}
+	#printf "INODE:%s FN:%s\n" ${K} ${_INODES[${K}]}
 	set_duration ${_INODES[${K}]}
 done
 
 [[ -e ${_LOG_FILE} ]] && /bin/rm ${_LOG_FILE} # clear log
+[[ -e ${_ERR_FILE} ]] && /bin/rm ${_ERR_FILE} # clear errors
 
-echo ${CSR_OFF}
 if is_mixed_video;then
 	echo "Normalizing and merging dissimilar videos..."
 	SCALE="${_MAXIMUMS[WIDTH]}:${_MAXIMUMS[HEIGHT]}"
@@ -420,11 +461,11 @@ if is_mixed_video;then
 	done
 	CMD="ffmpeg -y ${I_STR} -loglevel 8 -progress ${_LOG_FILE} -filter_complex \"${P1_STR}${P2_STR}concat=n=${#_INPUTS}:${TAG}\" ${MAP}"
 
-	echo "${CMD}" | sed -e 's/\-i \"/\n\-i \"/g' -e 's/\-loglevel/\n\-loglevel/' -e 's/\-filter/\n\-filter/' -e 's/;/;\n/g' > ${_LOG_FILE}.cmd
-	eval "${CMD}" &
-	while true;do
+	echo "${CMD}" | sed -e 's/\-i \"/\n\-i \"/g' -e 's/\-loglevel/\n\-loglevel/' -e 's/\-filter/\n\-filter/' -e 's/;/;\n/g' > ${_CMD_FILE}
+	eval "${CMD}" 2>${_ERR_FILE} &
+	while true;do # Wait for log generation to begin
 		[[ -e ${_LOG_FILE} ]] && break
-		sleep 1
+		sleep .5
 	done
 	show_progress
 else
@@ -432,18 +473,27 @@ else
 	echo "Merging similar videos..."
 	echo "Creating worklist..."
 	for F in ${_FLIST};do
-		echo "file ${F:q}" >> ${_CFG_DIR}/merge_files
+		echo "file $(realpath ${F:q})" >> ${_CFG_DIR}/merge_files
 	done
 	CMD="ffmpeg -y -loglevel 8 -progress ${_LOG_FILE} -f concat -safe 0 -i ${_CFG_DIR}/merge_files -c copy ${OUT_FILE}"
 
-	echo "${CMD}" > ${_LOG_FILE}.cmd
-	eval "${CMD}" &
-	while true;do
+	echo "${CMD}" > ${_CMD_FILE}
+	eval "${CMD}" 2>${_ERR_FILE} &
+	while true;do # Wait for log generation to begin
 		[[ -e ${_LOG_FILE} ]] && break
-		sleep 1
+		sleep .5
 	done
 	show_progress noframes
 fi
-echo ${RESET}${CSR_ON}
+
+if [[ -s ${_ERR_FILE} ]];then
+	/bin/cat ${_ERR_FILE}
+	/bin/cat ${_CMD_FILE}
+else
+	for F in ${_FLIST};do
+		mv -f ${F} ${_CFG_DIR} # Move originals
+	done
+	echo  "\nBackups of the ${#_FLIST} original files are located in:${WHITE_FG}${_CFG_DIR}${RESET}"
+fi
 
 exit_leave

@@ -2457,7 +2457,7 @@ ${E_WHITE_FG}-r${E_RESET}     Raw mode: a '\' at the end of a line does not sign
  
 ${E_WHITE_FG}-s${E_RESET}     Don't echo back characters if reading from the terminal.  Currently does not work with the -q option.
  
-${E_WHITE_FG}-q${E_RESET}     Read only one character from the terminal and set name to 'y' if this character was 'y' or 'Y' and to 'n' other- wise. With this flag set the return 
+${E_WHITE_FG}-q${E_RESET}     Read only one character from the terminal and set name to 'y' if this character was 'y' or 'Y' and to 'n' otherwise. With this flag set the return 
        status is zero only if the character was 'y' or 'Y'. This option may be used with a timeout; if the read times out, or encounters end of file, 
        status 2 is returned.  Input is read from the terminal unless one of -u or -p is present.  This option may also be used within zle widgets.
  
@@ -2473,11 +2473,11 @@ ${E_WHITE_FG}-e -E${E_RESET}  The input read is printed (echoed) to the standard
  
 ${E_WHITE_FG}-A${E_RESET}     The first name is taken as the name of an array and all words are assigned to it.
  
-${E_WHITE_FG}-c -l${E_RESET}  These flags are allowed only if called inside a function used for completion (specified with the -K flag to com- pctl).  If the -c flag is given, 
+${E_WHITE_FG}-c -l${E_RESET}  These flags are allowed only if called inside a function used for completion (specified with the -K flag to compctl).  If the -c flag is given, 
        the words of the current command are read. If the -l flag is given, the whole line is assigned as a scalar. If both flags are present, -l is used 
        and -c is ignored.
  
-${E_WHITE_FG}-n${E_RESET}     Together with -c, the number of the word the cursor is on is read. With -l, the index of the character the cur- sor is on is read. Note that the 
+${E_WHITE_FG}-n${E_RESET}     Together with -c, the number of the word the cursor is on is read. With -l, the index of the character the cursor is on is read. Note that the 
        command name is word number 1, not word 0, and that when the cursor is at the end of the line, its character index is the length of the line plus one.
  
 ${E_WHITE_FG}-u n${E_RESET}   Input is read from file descriptor n.
@@ -2504,7 +2504,7 @@ ${E_WHITE_FG}-t[n]${E_RESET}  Test if input is available before attempting to re
        The value (exit status) of read is 1 when an end-of-file is encountered, or when -c or -l is present and the command is not called from a compctl 
        function, or as described for -q. Otherwise the value is 0.
 
-       The behavior of some combinations of the -k, -p, -q, -u and -z flags is undefined. Presently -q cancels all the oth- ers, -p cancels -u, 
+       The behavior of some combinations of the -k, -p, -q, -u and -z flags is undefined. Presently -q cancels all the others, -p cancels -u, 
        -k cancels -z, and otherwise -z cancels both -p and -u.
 
        The -c or -l flags cancel any and all of -kpquz.
@@ -2909,7 +2909,7 @@ ${E_MAGENTA_FG}BUILTINS${E_RESET}
 
        eval [ arg ... ]
 	      Read the arguments as input to the shell and execute the resulting command(s) in the current shell process.  The return
-	      status is the same as if the  com‐ mands had been executed directly by the shell; if there are no args or they contain no
+	      status is the same as if the  commands had been executed directly by the shell; if there are no args or they contain no
 	      commands (i.e. are an empty string or whitespace) the return status is zero.
 
        exec [ -cl ] [ -a argv0 ] [ command [ arg ... ] ]

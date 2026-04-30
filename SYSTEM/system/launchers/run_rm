@@ -345,7 +345,8 @@ fi
 
 # Get user approval to proceed
 APPROVED=false
-if [[ ${REMAINING} -ne 0 && (${REMAINING} -le ${_WARN_LIMIT} || ${WARN} == "true") ]];then
+#echo "REMAINING:${REMAINING}, _WARN_LIMIT:${_WARN_LIMIT}" >&2
+if [[ ${REMAINING} -ne 0 && (${REMAINING} -ge ${_WARN_LIMIT} || ${WARN} == "true") ]];then
 	echo -n "${WHITE_FG}Continue${MSG}${RESET}:(y/n):"
 	read -q RESPONSE
 	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Operation cancelled${RESET}\n" && exit_leave
@@ -355,6 +356,7 @@ fi
 OPTS_SHOWN=false
 OPTS=($(echo "-"${^OPTIONS}))
 if [[ ${APPROVED} == "true" || ${REMAINING} -le ${_WARN_LIMIT} ]];then
+	#echo "APPROVED:${APPROVED}, REMAINING:${REMAINING}, _WARN_LIMIT:${_WARN_LIMIT}" >&2
 	for L in ${(onk)FLIST};do
 		if [[ -n ${OPTIONS} ]];then
 			eval "${_RM} ${OPTS} ${L:q}"

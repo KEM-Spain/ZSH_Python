@@ -33,6 +33,8 @@ m2k "Miles to Kilometers" \
 k2m "Kilometers to Miles" \
 m2o "Milliliters to Ounces" \
 o2m "Ounces to Milliliters" \
+o2g "Ounces to Grams" \
+g2o "Grams to Ounces" \
 )
 
 usage () {
@@ -118,6 +120,14 @@ case ${0:t} in
 	o2m) echo "Ounces to Milliliters"
 			((ML = ${1} * 29.57353))
 			printf "${WHITE_FG} %3.2f ${RESET}$(str_pluralize ounce ${1}) is ${WHITE_FG}%3.2f${RESET} $(str_pluralize milliliter ${ML})" ${1} ${ML}
+			;;
+	o2g) echo "Ounces to Grams"
+			((GR = ${1} * 28.3495))
+			printf "${WHITE_FG} %3.2f ${RESET}$(str_pluralize ounce ${1}) is ${WHITE_FG}%3.2f${RESET} $(str_pluralize gram ${GR})" ${1} ${GR}
+			;;
+	g2o) echo "Grams to Ounces"
+			((OZ = ${1} * .035799 ))
+			printf "${WHITE_FG} %3.2f ${RESET}$(str_pluralize gram ${1}) is ${WHITE_FG}%3.2f${RESET} $(str_pluralize ounce ${OZ})" ${1} ${OZ}
 			;;
 esac
 

@@ -45,7 +45,6 @@ typeset -A _PARTIALS=()
 typeset -A _QUERY_OPTS=()
 typeset -A _REJECTS=()
 typeset -A _RUMBLE_QTYPES=(l live g general u user c channel)
-typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
@@ -218,7 +217,6 @@ action_do () {
 						break
 						;;
 					*error*)
-						_DEBUG=5
 						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
@@ -282,7 +280,6 @@ action_do () {
 						break
 						;;
 					*error*)
-						_DEBUG=5
 						if grep -Eiq 'cannot reuse http' ${g_YTS_LOG};then # Check for live broadcast - whole file grep
 							MSG="Live broadcast - unable to download"
 							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG}<N>"
@@ -519,6 +516,8 @@ download_select () {
 		fi
 	done
 
+	_LOCAL_LIST=()
+	_SORT_TABLE=()
 	_CANCELLED=()
 	_DOWNLOADS=()
 	_FAILED=()
@@ -1132,6 +1131,7 @@ parse_rumble () {
 	local PARSE_TYPE=${1}
 	local -A GENERAL=()
 	local -A NON_GENERAL=()
+	local -A _RUMBLE_ROWS=()
 	local -a HTML=()
 	local DATA=''
 	local LAST_ROW=0
@@ -1186,7 +1186,6 @@ parse_rumble () {
 
 	LAST_ROW=0
 	NDX=0
-	_LOCAL_LIST=()
 	for K in ${(onk)_RUMBLE_ROWS};do
 		ROW=$(cut -d'_' -f1 <<<${K})
 		TAB=$(cut -d'_' -f2 <<<${K})
@@ -1319,6 +1318,7 @@ query_rumble () {
 }
 
 query_youtube () {
+	local -a LIST=()
 	local -a WORK_LIST=()
 	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
 	local -A FILTER_MSGS=()
@@ -1330,7 +1330,9 @@ query_youtube () {
 	local PROXY_CMD=''
 	local STR=''
 	local STRICT_ARG=''
-	local F
+	local TRY=0
+	local RETRIES=3
+	local F L
 
 	ping -w1 www.youtube.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
@@ -1350,27 +1352,34 @@ query_youtube () {
 		dbg "${0}:${LINENO} YOUTUBE QUERY:${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
-	_LOCAL_LIST=()
-
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 
+
+	while true;do
+		(( TRY++ ))
+		LIST=("${(f)$(eval ${g_PROXY_CMD} 2>/dev/null)}")
+		[[ -n ${LIST} && ${#LIST} -gt 1 ]] && break
+		[[ ${TRY} -gt ${RETRIES} ]] && break
+		sleep .5
+	done
+
 	NDX=0
-	while read LINE;do
+	for L in ${LIST};do
 		((NDX++))
 
-		[[ ${LINE:l} =~ 'matched' ]] && DATA=true && continue
-		[[ ${LINE:l} =~ 'strict filter' ]] && continue
-		[[ ${LINE:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
-		[[ ${LINE:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
-		[[ ${LINE:l} =~ 'strict reject' ]] && _REJECTS[${NDX}]=true || _REJECTS[${NDX}]=false
+		[[ ${L:l} =~ 'matched' ]] && DATA=true && continue
+		[[ ${L:l} =~ 'strict filter' ]] && continue
+		[[ ${L:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
+		[[ ${L:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
+		[[ ${L:l} =~ 'strict reject' ]] && _REJECTS[${NDX}]=true || _REJECTS[${NDX}]=false
 
-		STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
+		STR=$(str_to_ascii <<<${L}) # Scrub non ascii
 		STR=${STR:s/Streamed //} # Strip age of excess text
 
 		# Author verification
 		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]];then # Apply filtering to non strict results unless query is custom
 			HIT=false
-			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
+			AUTHOR=$(cut -d'|' -f2 <<<${L}) && AUTHOR=$(str_to_ascii ${AUTHOR})
 			[[ ${AUTHOR:l} =~ "${_QUERY_OPTS[DKEY]:l}" ]] && HIT=true || logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
 		else
 			HIT=true
@@ -1381,8 +1390,7 @@ query_youtube () {
 		else
 			_QUERY_REJECTS+=${STR}
 		fi
-	done < <(eval ${g_PROXY_CMD} 2>/dev/null)
-
+	done
 
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
 
@@ -1734,8 +1742,6 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
 				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
-				_LOCAL_LIST=()
-				_SORT_TABLE=()
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}

@@ -1318,6 +1318,7 @@ query_rumble () {
 }
 
 query_youtube () {
+	local -a LIST=()
 	local -a WORK_LIST=()
 	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
 	local -A FILTER_MSGS=()
@@ -1329,7 +1330,9 @@ query_youtube () {
 	local PROXY_CMD=''
 	local STR=''
 	local STRICT_ARG=''
-	local F
+	local TRY=0
+	local RETRIES=3
+	local F L
 
 	ping -w1 www.youtube.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
@@ -1351,23 +1354,32 @@ query_youtube () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 
+
+	while true;do
+		(( TRY++ ))
+		LIST=("${(f)$(eval ${g_PROXY_CMD} 2>/dev/null)}")
+		[[ -n ${LIST} && ${#LIST} -gt 1 ]] && break
+		[[ ${TRY} -gt ${RETRIES} ]] && break
+		sleep .5
+	done
+
 	NDX=0
-	while read LINE;do
+	for L in ${LIST};do
 		((NDX++))
 
-		[[ ${LINE:l} =~ 'matched' ]] && DATA=true && continue
-		[[ ${LINE:l} =~ 'strict filter' ]] && continue
-		[[ ${LINE:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
-		[[ ${LINE:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
-		[[ ${LINE:l} =~ 'strict reject' ]] && _REJECTS[${NDX}]=true || _REJECTS[${NDX}]=false
+		[[ ${L:l} =~ 'matched' ]] && DATA=true && continue
+		[[ ${L:l} =~ 'strict filter' ]] && continue
+		[[ ${L:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
+		[[ ${L:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
+		[[ ${L:l} =~ 'strict reject' ]] && { _REJECTS[${NDX}]=true && continue } || _REJECTS[${NDX}]=false
 
-		STR=$(str_to_ascii <<<${LINE}) # Scrub non ascii
+		STR=$(str_to_ascii <<<${L}) # Scrub non ascii
 		STR=${STR:s/Streamed //} # Strip age of excess text
 
 		# Author verification
 		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]];then # Apply filtering to non strict results unless query is custom
 			HIT=false
-			AUTHOR=$(cut -d'|' -f2 <<<${LINE}) && AUTHOR=$(str_to_ascii ${AUTHOR})
+			AUTHOR=$(cut -d'|' -f2 <<<${L}) && AUTHOR=$(str_to_ascii ${AUTHOR})
 			[[ ${AUTHOR:l} =~ "${_QUERY_OPTS[DKEY]:l}" ]] && HIT=true || logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
 		else
 			HIT=true
@@ -1378,8 +1390,7 @@ query_youtube () {
 		else
 			_QUERY_REJECTS+=${STR}
 		fi
-	done < <(eval ${g_PROXY_CMD} 2>/dev/null)
-
+	done
 
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
 

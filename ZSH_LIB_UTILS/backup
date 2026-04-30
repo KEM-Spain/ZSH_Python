@@ -270,7 +270,7 @@ if [[ (-f ${_MARKER}) && (${FORCE} == "false") && (${g_LAST_RUN:l} =~ 'today') ]
 	fi
 fi
 
-[[ -z ${DRYRUN} ]] && clear
+[[ -z ${DRYRUN} ]] && clear || echo "<r><B>DRY RUN<N>"
 msg_box -t2 "Checking mounted drives..."
 while true;do
 	if is_mounted;then

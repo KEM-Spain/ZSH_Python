@@ -1,0 +1,8 @@
+#compdef mp4_merge
+_files -W ~/Downloads/Torrents/Library/web mp4_merge
+
+_arguments \
+'-H[help]' \
+'-D[debug]' \
+'-o[Destination file name]' \
+'-p[Alternate path]' \
