@@ -245,7 +245,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -277,6 +277,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [<FILTER>]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-L${RESET} dereference links"
 	echo -e "${WHITE_FG}-a${RESET} all files"
 	echo -e "${WHITE_FG}-d [$(opt_type d)]${RESET} directories only"
 	echo -e "${WHITE_FG}-f [$(opt_type f)]${RESET} files only"
@@ -286,11 +287,11 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDadfilrt"
+OPTSTR=":HDLadfilrt"
 OPTIND=0
 
 [[ ${_CALLER} =~ 'listing' ]] && _CALLER='l'
@@ -304,6 +305,7 @@ while getopts ${OPTSTR} OPTION;do
 				usage
 			fi;;
 		D) dbg_set_level;;
+		L) _LS_FORMAT=$(sed 's/\-L//' <<<${_LS_FORMAT});;
 		a) _ALL_FILES=true;_LS_OPTS+='-A';;
 		d) _DIRS_ONLY=true;_F_TYPE='d';;
 		f) _FILES_ONLY=true;_F_TYPE='f';;
@@ -316,7 +318,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
@@ -394,7 +396,9 @@ _LS_ARGS=$(get_filter_glob ${_LS_ARGS}) && [[ ${?} -eq 0 ]] && _GLOB=true
 
 [[ ${_GLOB} == 'true' ]] && _LS_OPTS+=' -d' # No deep listings
 
-[[ -d ${_LS_ARGS} ]] && echo "${WHITE_ON_GREY}$(realpath ${_LS_ARGS})${RESET}\n" || echo "${WHITE_ON_GREY}${PWD}${RESET}\n"
+if [[ -d ${_LS_ARGS} ]];then
+	echo "${WHITE_ON_GREY}${PWD}${RESET}\n"
+fi
 
 # Set hidden marker
 if [[ ${_ALL_FILES} == 'false' && ${_HIDDEN_ONLY} == 'false' ]];then
@@ -424,17 +428,17 @@ if [[ ${_DIRS_ONLY} == 'true' || ${_FILES_ONLY} == 'true' || ${_LINKS_ONLY} == '
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}find ${_LS_ARGS:h} -maxdepth 1 -name ${_LS_ARGS:t} -type ${_F_TYPE} ! -path ${_LS_ARGS:h}${RESET}"
 	F_LIST=("${(f)$(find ${_LS_ARGS:h} -maxdepth 1 -name ${_LS_ARGS:t} -type ${_F_TYPE} ! -path ${_LS_ARGS:h} 2>/dev/null)}")
 
-
 	for F in ${F_LIST};do
 		if [[ ${_ALL_FILES} == 'false' ]];then
 			[[ ${_HIDDEN_ONLY} == 'false' && ${F:t} =~ '^\.' ]] && continue
 			[[ ${_HIDDEN_ONLY} == 'true' && ! ${F:t} =~ '^\.' ]] && continue
 		fi
 		[[ ${_DEBUG} -gt 1 ]] && dbg "${0}:${LINENO} _HIDDEN_ONLY:${_HIDDEN_ONLY} F tail:${(qqq)F:t}"
-		_LS_LIST+=${(qqq)F} # Enclose file names w/spaces
+		_LS_LIST+=${(qqq)F:t} # Enclose file names w/spaces
 	done
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST} || echo No matching$(not_found)found${RESET}"
+
 	[[ -n ${_LS_LIST} ]] && eval "ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST}" || echo "No${MATCHED}$(not_found)found"
 
 	exit_leave
@@ -444,6 +448,12 @@ fi
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} 2>/dev/null${RESET}"
 eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS}" 2>/dev/null
+if [[ ${0} =~ 'll' ]];then
+	CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | grep -P '(^\d{7}|^.{10}\s)' | wc -l") 
+else
+	CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | wc -l")
+fi
+echo "${CNT} $(str_pluralize item ${CNT})"
 [[ ${?} -ne 0 ]] && echo "No${MATCHED}$(not_found)found"
 [[ -n ${H_MARK} ]] && echo ${H_MARK}
 

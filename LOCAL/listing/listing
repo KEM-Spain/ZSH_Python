@@ -38,6 +38,7 @@ _CALLER=${0:t}
 _LS_FORMAT+='--time=birth'
 _LS_FORMAT+='--color=always'
 _LS_FORMAT+='--group-directories-first'
+_LS_FORMAT+='-L'
 _LS_FORMAT+='-h'
 _LS_FORMAT+='-v'
 _LS_FORMAT+='-N'
@@ -245,7 +246,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -277,6 +278,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [<FILTER>]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
+	echo -e "${WHITE_FG}-L${RESET} dereference links"
 	echo -e "${WHITE_FG}-a${RESET} all files"
 	echo -e "${WHITE_FG}-d [$(opt_type d)]${RESET} directories only"
 	echo -e "${WHITE_FG}-f [$(opt_type f)]${RESET} files only"
@@ -286,11 +288,11 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDadfilrt"
+OPTSTR=":HDLadfilrt"
 OPTIND=0
 
 [[ ${_CALLER} =~ 'listing' ]] && _CALLER='l'
@@ -304,6 +306,7 @@ while getopts ${OPTSTR} OPTION;do
 				usage
 			fi;;
 		D) dbg_set_level;;
+		L) _LS_FORMAT=$(sed 's/\-L//' <<<${_LS_FORMAT});;
 		a) _ALL_FILES=true;_LS_OPTS+='-A';;
 		d) _DIRS_ONLY=true;_F_TYPE='d';;
 		f) _FILES_ONLY=true;_F_TYPE='f';;
@@ -432,7 +435,7 @@ if [[ ${_DIRS_ONLY} == 'true' || ${_FILES_ONLY} == 'true' || ${_LINKS_ONLY} == '
 			[[ ${_HIDDEN_ONLY} == 'true' && ! ${F:t} =~ '^\.' ]] && continue
 		fi
 		[[ ${_DEBUG} -gt 1 ]] && dbg "${0}:${LINENO} _HIDDEN_ONLY:${_HIDDEN_ONLY} F tail:${(qqq)F:t}"
-		_LS_LIST+=${(qqq)F} # Enclose file names w/spaces
+		_LS_LIST+=${(qqq)F:t} # Enclose file names w/spaces
 	done
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} -d ${_LS_LIST} || echo No matching$(not_found)found${RESET}"

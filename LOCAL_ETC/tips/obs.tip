@@ -1,0 +1,9 @@
+(
+echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+cat << tip_obs_EOF
+
+Fixing ${E_WHITE_FG}"Output failed to start"${E_RESET} error
+Goto settings/output.  Change Video Encoder to Software (x264)
+
+tip_obs_EOF
+) | mypager wait

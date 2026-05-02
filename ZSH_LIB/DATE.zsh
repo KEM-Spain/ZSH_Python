@@ -88,6 +88,11 @@ date_diff_mins_fmod () {
 	return 0
 }
 
+date_fage_days () {
+	local FN=${1}
+	echo $(( ($(date +%s) - $(date -r ${FN} +%s)) / 86400 )) days 
+}
+
 date_mod_diff () {
 	local FN_1=${1}
 	local FN_2=${2}

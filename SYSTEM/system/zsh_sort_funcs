@@ -75,6 +75,7 @@ sort_functions () {
 	local -a LIST
 	local L
 	local -R3 NDX=0
+	local -R3 WNDX=0
 	local LONGEST=0
 
 	[[ ! -e ${FN}.normalized ]] && echo "Unable to proceed.  No file containing normalized functions found." && cleanup
@@ -93,18 +94,22 @@ sort_functions () {
 
 	# Sort function alpha
 	for L in ${(o)LIST};do
-		[[ ${USE_BLACKLIST} == 'true' && ${_BLACKLIST[${L}]} -eq 1 ]] && continue
 		((NDX++))
+		if [[ ${USE_BLACKLIST} == 'true' && ${_BLACKLIST[${L}]} -eq 1 ]];then
+			tput el; printf "\rBlacklisting function ${WHITE_FG}%2d${RESET} of ${WHITE_FG}%2d${RESET} functions ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET} \t%*s\n" ${NDX} ${#LIST} $(( NDX * 100. / ${#LIST} )) ${LONGEST} ${L}
+			continue
+		fi
 		if [[ ${LIST_FUNCS} == 'true' ]];then
 			[[ ${NDX} -eq 1 ]] && echo "${WHITE_FG}Functions in ${FN}${RESET}"
 			echo "${WHITE_FG}${NDX}${RESET}) ${L}"
 		else
-			tput el; printf "\rProcessing function ${WHITE_FG}%2d${RESET} of ${WHITE_FG}%2d${RESET} functions ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET} \t%*s\n" ${NDX} ${#LIST} $(( NDX * 100. / ${#LIST} )) ${LONGEST} ${L}
+			((WNDX++))
+			tput el; printf "\r  Processing function ${WHITE_FG}%2d${RESET} of ${WHITE_FG}%2d${RESET} functions ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET} \t%*s\n" ${NDX} ${#LIST} $(( NDX * 100. / ${#LIST} )) ${LONGEST} ${L}
 			func_print ${FN}.normalized ${L} >>${FN}.sorted.functions
 		fi
 	done
 
-	[[ ${LIST_FUNCS} == 'false' ]] && echo "\n${WHITE_FG}${NDX}${RESET} ${FN} functions written\nto:${WHITE_FG}${FN}.sorted.functions${RESET}\nby function name in alphanumeric order"
+	[[ ${LIST_FUNCS} == 'false' ]] && echo "\n${WHITE_FG}${WNDX}${RESET} ${FN} functions sorted\nto:${WHITE_FG}${FN}.sorted.functions${RESET}\nby function name in alphanumeric order"
 	echo
 }
 

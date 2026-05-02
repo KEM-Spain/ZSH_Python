@@ -27,9 +27,11 @@ CSR_ON="\033[?25h"
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/PATH.zsh
+source ${_LIB_DIR}/DATE.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
+typeset -A _ARCH_LIST=()
 typeset -A _AUDIO=()
 typeset -A _BAR_COORDS=(X 0 Y 54 P 54)
 typeset -A _FILTER=()
@@ -329,7 +331,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [ [$(opt_type s)] [$(opt_type l)] ]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
-	echo -e "${WHITE_FG}-d${RESET} Delete archived files"
+	echo -e "${WHITE_FG}-d${RESET} Delete archived files at least 1 day old"
 	echo -e "${WHITE_FG}-o${RESET} $(opt_type f) file name for merged video (default:output.mp4)"
 	echo -e "${WHITE_FG}-p${RESET} $(opt_type d) alternate media path [default:${_DEFAULT_PATH}]"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -338,7 +340,7 @@ usage () {
 	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
-OPTSTR=":HDmo:p:"
+OPTSTR=":HDdmo:p:"
 OPTIND=0
 
 OUT_FILE='output.mp4'
@@ -362,31 +364,45 @@ shift $(( OPTIND -1 ))
 # Execution
 clear 
 
-if [[ ${DEL_ARCHIVE} == 'true' ]];then
-	ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}")
-	if [[ -n ${ARCHIVED} ]];then
-		echo "${WHITE_ON_GREY}Found ${#ARCHIVED} archived files in${RESET}:${_CFG_DIR}"
-		for B in ${ARCHIVED};do
-			echo ${B}
-		done
-
-		QUESTION="${RED_FG}Delete ${#ARCHIVED} ${RED_FG}archived files${RESET}"
-		echo -n "\n${QUESTION}:(y/n)?"
-		read -q RESPONSE
-		echo
-		if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
-			for F in ${ARCHIVED};do
-				/bin/rm -f ${F}
-			done
-			echo  "${#ARCHIVED} files deleted"
-		fi
-	fi
-fi
-
 [[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR}
 
 if [[ -n ${ALT_PATH} ]];then
 	[[ -d ${ALT_PATH} ]] && _DEFAULT_PATH=${ALT_PATH} || exit_leave $(err_msg_exit "Invalid alternate path:${ALT_PATH}")
+fi
+
+ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}")
+for F in ${ARCHIVED};do
+	AGE=$(date_fage_days ${F})
+	DAYS=$(cut -d' ' -f1 <<<${AGE})
+	[[ ${DAYS} -eq 0 ]] && continue
+	_ARCH_LIST[${F}]=${DAYS}
+done
+
+if [[ ${DEL_ARCHIVE} == 'true' || -n ${_ARCH_LIST} ]];then
+	if [[ -n ${_ARCH_LIST} ]];then
+		echo "${WHITE_ON_GREY}Found ${#_ARCH_LIST} archived files in${RESET}:${_CFG_DIR}"
+		printf "%-10s %s\n" "Age" "File"
+		printf "%-10s %s\n" $(str_unicode_line 10) $(str_unicode_line 50)
+		for K in ${(k)_ARCH_LIST};do
+			printf "%-10s %s\n" "${_ARCH_LIST[${K}]} days" ${K:t}
+		done
+
+		QUESTION="${RED_FG}Delete ${WHITE_FG}${#ARCHIVED}${RESET} archived files"
+		echo -n "\n${QUESTION}:(y/n)?"
+		read -q RESPONSE && echo
+		if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
+			for F in ${(k)_ARCH_LIST};do
+				/bin/rm -f ${F}
+			done
+			echo  "${#_ARCH_LIST} files deleted"
+		else
+			exit_leave "${RED_FG}Operation cancelled${RESET}..."
+		fi
+	else
+		[[ ${DEL_ARCHIVE} == 'true' ]] && exit_leave "${_SCRIPT_TAG} No archived files found"
+	fi
+
+	[[ ${DEL_ARCHIVE} == 'true' ]] && exit_leave
 fi
 
 [[ ${#} -ne 0 ]] && ARGS=(${@})
@@ -437,7 +453,7 @@ for K in ${(onk)_INPUTS};do
 done
 
 OUT_FILE=${_FLIST[1]:h}/${OUT_FILE:r}.mp4
-QUESTION="${CYAN_FG}These ${#_FLIST} files will be merged to DESTINATION${RESET}:${WHITE_FG}${OUT_FILE}${RESET}"
+QUESTION="${CYAN_FG}These ${WHITE_FG}${#_FLIST}${CYAN_FG} files will be merged to DESTINATION${RESET}:${OUT_FILE:h}/${WHITE_FG}${OUT_FILE:t}${RESET}"
 echo -n "\n${QUESTION}:(y/n)?"
 read -q RESPONSE
 echo
