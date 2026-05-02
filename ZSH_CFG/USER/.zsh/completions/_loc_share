@@ -1,0 +1,5 @@
+#compdef loc_share
+ 
+local DIR=/home/kmiller/.local/share
+_files -W ${DIR} loc_share
+

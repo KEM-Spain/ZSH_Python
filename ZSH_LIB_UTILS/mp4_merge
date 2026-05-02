@@ -79,7 +79,7 @@ archive_del () {
 			done
 			echo  "${#_ARCH_LIST} files deleted"
 		else
-			exit_leave "${RED_FG}Operation cancelled${RESET}..."
+			echo "${RED_FG}Operation cancelled${RESET}..."
 		fi
 	else
 		[[ ${GOT_OPT} == 'true' ]] && exit_leave "${_SCRIPT_TAG} No archived files found"
@@ -377,13 +377,13 @@ OPTIND=0
 
 OUT_FILE='output.mp4'
 ALT_PATH=''
-DEL_ARCHIVE=false
+DEL_ARCH_OPT=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     d) DEL_ARCHIVE=true;;
+     d) DEL_ARCH_OPT=true;;
      o) OUT_FILE=${OPTARG};;
      p) ALT_PATH=${OPTARG};;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
@@ -421,12 +421,12 @@ ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})
 for F in ${ARCHIVED};do
 	AGE=$(date_fage_days ${F})
 	DAYS=$(cut -d' ' -f1 <<<${AGE})
-	[[ ${DAYS} -eq 0 ]] && continue
+	[[ ${DAYS} -eq 0 && ${DEL_ARCH_OPT} == 'false' ]] && continue
 	_ARCH_LIST[${F}]=${DAYS}
 done
 
-if [[ ${DEL_ARCHIVE} == 'true' || -n ${_ARCH_LIST} ]];then # Maintain archives
-	archive_del ${DEL_ARCHIVE}
+if [[ ${DEL_ARCH_OPT} == 'true' || -n ${_ARCH_LIST} ]];then # Maintain archives
+	archive_del ${DEL_ARCH_OPT}
 fi
 
 if [[ ${#ARGS} -gt 1 ]];then # Assume list of files

@@ -56,7 +56,58 @@ _BAR_WIDTH=25
 _BAR=false
 
 # Functions
-start_bar () {
+archive_del () {
+	local GOT_OPT=${1}
+	local QUESTION=''
+	local RESPONSE=''
+	local F K
+
+	if [[ -n ${_ARCH_LIST} ]];then
+		echo "${WHITE_ON_GREY}Found ${#_ARCH_LIST} archived files in${RESET}:${_CFG_DIR}"
+		printf "%-10s %s\n" "Age" "File"
+		printf "%-10s %s\n" $(str_unicode_line 10) $(str_unicode_line 50)
+		for K in ${(k)_ARCH_LIST};do
+			printf "%-10s %s\n" "${_ARCH_LIST[${K}]} days" ${K:t}
+		done
+
+		QUESTION="${RED_FG}Delete ${WHITE_FG}${#ARCHIVED}${RESET} archived files"
+		echo -n "\n${QUESTION}:(y/n)?"
+		read -q RESPONSE && echo
+		if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
+			for F in ${(k)_ARCH_LIST};do
+				/bin/rm -f ${F}
+			done
+			echo  "${#_ARCH_LIST} files deleted"
+		else
+			exit_leave "${RED_FG}Operation cancelled${RESET}..."
+		fi
+	else
+		[[ ${GOT_OPT} == 'true' ]] && exit_leave "${_SCRIPT_TAG} No archived files found"
+	fi
+
+	[[ ${GOT_OPT} == 'true' ]] && exit_leave
+}
+
+bar_fwd () {
+	local FILL=${1}
+	local BLOCK="￭" # U+FFED
+	local P=0
+
+	if [[ ${FILL} == 'fill' ]];then
+		for P in {${_BAR_COORDS[P]}..$(( _BAR_COORDS[Y] + _BAR_WIDTH ))};do
+			tcup ${_BAR_COORDS[X]} ${P}
+			echo -n ${RED_ON_GREY}${BLOCK}
+		done
+		echo -n ${CSR_ON}${RESET}
+		return
+	fi
+
+	(( _BAR_COORDS[P]++ ))
+	tcup ${_BAR_COORDS[X]} ${_BAR_COORDS[P]}
+	echo -n ${RED_ON_GREY}${BLOCK}
+}
+
+bar_start () {
 	local X
 	local Y=${_BAR_COORDS[Y]}
 	local L_BRACKET="[" # U+005B
@@ -79,138 +130,6 @@ start_bar () {
 
 	tcup ${_BAR_COORDS[X]} ${Y}
 	echo -n ${BOLD}${CYAN_ON_GREY}${R_BRACKET}${RESET}
-}
-
-bar_fwd () {
-	local FILL=${1}
-	local BLOCK="￭" # U+FFED
-	local P=0
-
-	if [[ ${FILL} == 'fill' ]];then
-		for P in {${_BAR_COORDS[P]}..$(( _BAR_COORDS[Y] + _BAR_WIDTH ))};do
-			tcup ${_BAR_COORDS[X]} ${P}
-			echo -n ${RED_ON_GREY}${BLOCK}
-		done
-		echo -n ${CSR_ON}${RESET}
-		return
-	fi
-
-	(( _BAR_COORDS[P]++ ))
-	tcup ${_BAR_COORDS[X]} ${_BAR_COORDS[P]}
-	echo -n ${RED_ON_GREY}${BLOCK}
-}
-
-set_duration () {
-	local FRAMES=$(ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of default=noprint_wrappers=1:nokey=1 ${1})
-	local SECONDS=$(ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 ${1})
-	local MINS=$(math -p6 "${SECONDS}/60")
-	local HOURS=$(math -p2 "${MINS}/60")
-
-	echo "FRAMES|${FRAMES},SECS|${SECONDS},MINS|${MINS},HOURS|${HOURS}" >>${_CFG_DIR}/duration
-}
-
-show_progress () {
-	local OPT=${1}
-	local DURATIONS=~/.local/share/mp4_merge/duration
-	local LOG=~/.local/share/mp4_merge/mp4_merge.log
-
-	local TL_FRAMES=0
-	local TL_SECS=0
-	local TL_MINS=0
-	local TL_HOURS=0
-	local PCT=0
-	local F1 F2 F3 F4 FRAMES SECS MINS HOURS CUR_FRAME OTIME PROGRESS
-	local -i T=0
-	local LAST_T=0
-	local LINE
-
-	while read LINE;do
-		F1=$(cut -d',' -f1 <<<${LINE})
-		F2=$(cut -d',' -f2 <<<${LINE})
-		F3=$(cut -d',' -f3 <<<${LINE})
-		F4=$(cut -d',' -f4 <<<${LINE})
-
-		FRAMES=$(cut -d'|' -f2 <<<${F1})
-		SECS=$(cut -d'|' -f2 <<<${F2})
-		MINS=$(cut -d'|' -f2 <<<${F3})
-		HOURS=$(cut -d'|' -f2 <<<${F4})
-
-		TL_FRAMES=$(( TL_FRAMES+FRAMES ))
-		TL_SECS=$(( TL_SECS+SECS ))
-		TL_MINS=$(( TL_MINS+MINS ))
-		TL_HOURS=$(( TL_HOURS+HOURS ))
-	done < ${DURATIONS}
-
-	tail -f ${LOG} | \
-	while read -t5 LINE;do
-		case ${LINE} in
-			frame*) CUR_FRAME=$(cut -d'=' -f2 <<<${LINE});;
-			out_time_ms*) OTIME=$(cut -d'=' -f2 <<<${LINE});;
-			progress*) PROGRESS=$(cut -d'=' -f2 <<<${LINE});;
-		esac
-
-		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( OTIME / 1000000 ) * 100. / ${TL_SECS} )) || PCT=100
-
-		T=$(( (PCT / 100) * _BAR_WIDTH )) # Tick value
-		[[ ${_BAR} == 'false' ]] && start_bar && _BAR=true # Draw the bar
-
-		if [[ ${PCT} -eq 100 ]];then
-			bar_fwd fill # Fill the bar
-		else
-			[[ ${T} -ne 0 && ${T} -gt ${LAST_T} ]] && bar_fwd # Advance the tick
-		fi
-
-		if [[ ${OPT} == 'noframes' ]];then
-			printf "\r ${BOLD}${CYAN_FG}Merge completion:${WHITE_FG}%.2f%%${RESET}" ${PCT}
-		else
-			printf "\r ${BOLD}${CYAN_FG}Rendering frame${RESET}:${WHITE_FG}%s${RESET} of ${WHITE_FG}%d${RESET} - Completed:${WHITE_FG}%.2f%%${RESET}" ${CUR_FRAME} ${TL_FRAMES} ${PCT}
-		fi
-
-		LAST_T=${T}
-	done
-}
-
-scan_media () {
-	local INODE=${1}
-	local FN=$(get_inode_fn ${F:h} ${INODE})
-	local -a LIST=("${(f)$(mediainfo ${FN})}")
-	local LINE=''
-	local LINE_LBL=''
-	local LINE_VALUES=''
-	local LINE_VAL=''
-	local in_video=''
-	local in_audio=''
-	local L
-
-	for L in ${LIST};do
-		LINE=$(tr -s '[:space:]' <<<${L} | tr '[\t]' '[ ]')
-		LINE_LBL=$(cut -d: -f1- <<<${LINE} | str_trim | cut -d: -f1)
-		LINE=$(sed -E 's/([0-9])\s([0-9][0-9])/\1\2/' <<<${LINE})
-		LINE_VALUES=$(cut -d: -f2- <<<${LINE} | str_trim | tr '[ ]' '[|]')
-		LINE_VAL=$(cut -d'|' -f1 <<<${LINE_VALUES})
-
-		case ${L:l} in
-			"video") 
-				in_video=true
-				in_audio=false
-				;;
-			"audio") 
-				in_video=false
-				in_audio=true
-				;;
-		esac
-
-		if [[ ${in_video} == 'true' ]];then
-			[[ ${LINE_LBL:l} =~ 'height' ]] && _VIDEO[${INODE}_height]=${LINE_VAL}
-			[[ ${LINE_LBL:l} =~ 'width' ]] && _VIDEO[${INODE}_width]=${LINE_VAL}
-			[[ ${LINE_LBL:l} =~ 'frame rate' ]] && _VIDEO[${INODE}_vfps]=${LINE_VAL}
-		fi
-
-		if [[ ${in_audio} == 'true' ]];then
-			[[ ${LINE_LBL:l} =~ 'bit rate' ]] && _AUDIO[${INODE}_abrate]=${LINE_VAL}
-			[[ ${LINE_LBL:l} =~ 'frame rate' ]] && _AUDIO[${INODE}_afps]=${LINE_VAL}
-		fi
-	done
 }
 
 is_mixed_video () {
@@ -276,6 +195,119 @@ is_mixed_video () {
 	done
 
 	[[ ${(kv)MIXED} =~ 'true' ]] && return 0 || return 1
+}
+
+scan_media () {
+	local INODE=${1}
+	local FN=$(get_inode_fn ${F:h} ${INODE})
+	local -a LIST=("${(f)$(mediainfo ${FN})}")
+	local LINE=''
+	local LINE_LBL=''
+	local LINE_VALUES=''
+	local LINE_VAL=''
+	local in_video=''
+	local in_audio=''
+	local L
+
+	for L in ${LIST};do
+		LINE=$(tr -s '[:space:]' <<<${L} | tr '[\t]' '[ ]')
+		LINE_LBL=$(cut -d: -f1- <<<${LINE} | str_trim | cut -d: -f1)
+		LINE=$(sed -E 's/([0-9])\s([0-9][0-9])/\1\2/' <<<${LINE})
+		LINE_VALUES=$(cut -d: -f2- <<<${LINE} | str_trim | tr '[ ]' '[|]')
+		LINE_VAL=$(cut -d'|' -f1 <<<${LINE_VALUES})
+
+		case ${L:l} in
+			"video") 
+				in_video=true
+				in_audio=false
+				;;
+			"audio") 
+				in_video=false
+				in_audio=true
+				;;
+		esac
+
+		if [[ ${in_video} == 'true' ]];then
+			[[ ${LINE_LBL:l} =~ 'height' ]] && _VIDEO[${INODE}_height]=${LINE_VAL}
+			[[ ${LINE_LBL:l} =~ 'width' ]] && _VIDEO[${INODE}_width]=${LINE_VAL}
+			[[ ${LINE_LBL:l} =~ 'frame rate' ]] && _VIDEO[${INODE}_vfps]=${LINE_VAL}
+		fi
+
+		if [[ ${in_audio} == 'true' ]];then
+			[[ ${LINE_LBL:l} =~ 'bit rate' ]] && _AUDIO[${INODE}_abrate]=${LINE_VAL}
+			[[ ${LINE_LBL:l} =~ 'frame rate' ]] && _AUDIO[${INODE}_afps]=${LINE_VAL}
+		fi
+	done
+}
+
+set_duration () {
+	local FRAMES=$(ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of default=noprint_wrappers=1:nokey=1 ${1})
+	local SECONDS=$(ffprobe -v error -select_streams v:0 -show_entries stream=duration -of default=noprint_wrappers=1:nokey=1 ${1})
+	local MINS=$(math -p6 "${SECONDS}/60")
+	local HOURS=$(math -p2 "${MINS}/60")
+
+	echo "FRAMES|${FRAMES},SECS|${SECONDS},MINS|${MINS},HOURS|${HOURS}" >>${_CFG_DIR}/duration
+}
+
+show_progress () {
+	local OPT=${1}
+	local DURATIONS=~/.local/share/mp4_merge/duration
+	local LOG=~/.local/share/mp4_merge/mp4_merge.log
+
+	local TL_FRAMES=0
+	local TL_SECS=0
+	local TL_MINS=0
+	local TL_HOURS=0
+	local PCT=0
+	local F1 F2 F3 F4 FRAMES SECS MINS HOURS CUR_FRAME OTIME PROGRESS
+	local -i T=0
+	local LAST_T=0
+	local LINE
+
+	while read LINE;do
+		F1=$(cut -d',' -f1 <<<${LINE})
+		F2=$(cut -d',' -f2 <<<${LINE})
+		F3=$(cut -d',' -f3 <<<${LINE})
+		F4=$(cut -d',' -f4 <<<${LINE})
+
+		FRAMES=$(cut -d'|' -f2 <<<${F1})
+		SECS=$(cut -d'|' -f2 <<<${F2})
+		MINS=$(cut -d'|' -f2 <<<${F3})
+		HOURS=$(cut -d'|' -f2 <<<${F4})
+
+		TL_FRAMES=$(( TL_FRAMES+FRAMES ))
+		TL_SECS=$(( TL_SECS+SECS ))
+		TL_MINS=$(( TL_MINS+MINS ))
+		TL_HOURS=$(( TL_HOURS+HOURS ))
+	done < ${DURATIONS}
+
+	tail -f ${LOG} | \
+	while read -t5 LINE;do
+		case ${LINE} in
+			frame*) CUR_FRAME=$(cut -d'=' -f2 <<<${LINE});;
+			out_time_ms*) OTIME=$(cut -d'=' -f2 <<<${LINE});;
+			progress*) PROGRESS=$(cut -d'=' -f2 <<<${LINE});;
+		esac
+
+		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( OTIME / 1000000 ) * 100. / ${TL_SECS} )) || PCT=100
+
+		T=$(( (PCT / 100) * _BAR_WIDTH )) # Tick value
+		[[ ${_BAR} == 'false' ]] && bar_start && _BAR=true # Draw the bar
+
+		if [[ ${PCT} -eq 100 ]];then
+			bar_fwd fill # Fill the bar
+		else
+			[[ ${T} -ne 0 && ${T} -gt ${LAST_T} ]] && bar_fwd # Advance the tick
+		fi
+
+		if [[ ${OPT} == 'noframes' ]];then
+			printf "\r ${BOLD}${CYAN_FG}Merge completion:${WHITE_FG}%.2f%%${RESET}" ${PCT}
+		else
+			printf "\r ${BOLD}${CYAN_FG}Rendering frame${RESET}:${WHITE_FG}%s${RESET} of ${WHITE_FG}%d${RESET} - Completed:${WHITE_FG}%.2f%%${RESET}" ${CUR_FRAME} ${TL_FRAMES} ${PCT}
+		fi
+
+		LAST_T=${T}
+	done
 }
 
 #--Begin GetOpts--
@@ -364,48 +396,14 @@ shift $(( OPTIND -1 ))
 # Execution
 clear 
 
-[[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR}
+[[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR} # Create _CFG_DIR
+[[ -e ${_CFG_DIR}/duration ]] && /bin/rm ${_CFG_DIR}/duration # Init duration file
+[[ -e ${_LOG_FILE} ]] && /bin/rm ${_LOG_FILE} # Init log
+[[ -e ${_ERR_FILE} ]] && /bin/rm ${_ERR_FILE} # Init errors
+[[ -e ${_CFG_DIR}/merge_files ]] && /bin/rm ${_CFG_DIR}/merge_files # Init file list
 
-if [[ -n ${ALT_PATH} ]];then
-	[[ -d ${ALT_PATH} ]] && _DEFAULT_PATH=${ALT_PATH} || exit_leave $(err_msg_exit "Invalid alternate path:${ALT_PATH}")
-fi
+[[ ${#} -ne 0 ]] && ARGS=(${@}) # Collect args
 
-ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}")
-for F in ${ARCHIVED};do
-	AGE=$(date_fage_days ${F})
-	DAYS=$(cut -d' ' -f1 <<<${AGE})
-	[[ ${DAYS} -eq 0 ]] && continue
-	_ARCH_LIST[${F}]=${DAYS}
-done
-
-if [[ ${DEL_ARCHIVE} == 'true' || -n ${_ARCH_LIST} ]];then
-	if [[ -n ${_ARCH_LIST} ]];then
-		echo "${WHITE_ON_GREY}Found ${#_ARCH_LIST} archived files in${RESET}:${_CFG_DIR}"
-		printf "%-10s %s\n" "Age" "File"
-		printf "%-10s %s\n" $(str_unicode_line 10) $(str_unicode_line 50)
-		for K in ${(k)_ARCH_LIST};do
-			printf "%-10s %s\n" "${_ARCH_LIST[${K}]} days" ${K:t}
-		done
-
-		QUESTION="${RED_FG}Delete ${WHITE_FG}${#ARCHIVED}${RESET} archived files"
-		echo -n "\n${QUESTION}:(y/n)?"
-		read -q RESPONSE && echo
-		if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
-			for F in ${(k)_ARCH_LIST};do
-				/bin/rm -f ${F}
-			done
-			echo  "${#_ARCH_LIST} files deleted"
-		else
-			exit_leave "${RED_FG}Operation cancelled${RESET}..."
-		fi
-	else
-		[[ ${DEL_ARCHIVE} == 'true' ]] && exit_leave "${_SCRIPT_TAG} No archived files found"
-	fi
-
-	[[ ${DEL_ARCHIVE} == 'true' ]] && exit_leave
-fi
-
-[[ ${#} -ne 0 ]] && ARGS=(${@})
 if [[ ${#ARGS} -eq 1 ]];then
 	SEARCHTERM=${ARGS}
 	echo "Got SEARCHTERM:${SEARCHTERM}"
@@ -413,10 +411,28 @@ else
 	SEARCHTERM='' # Assume SEARCHTERM
 fi
 
+if [[ -n ${ALT_PATH} ]];then # Parse options
+	[[ -d ${ALT_PATH} ]] && _DEFAULT_PATH=${ALT_PATH} || exit_leave $(err_msg_exit "Invalid alternate path:${ALT_PATH}")
+fi
+
+[[ ! ${OUT_FILE} == 'output.mp4' ]] && OUT_FILE=${_FLIST[1]:h}/${OUT_FILE:r:gs/ /_/}.mp4
+
+ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}") # Check for archived files
+for F in ${ARCHIVED};do
+	AGE=$(date_fage_days ${F})
+	DAYS=$(cut -d' ' -f1 <<<${AGE})
+	[[ ${DAYS} -eq 0 ]] && continue
+	_ARCH_LIST[${F}]=${DAYS}
+done
+
+if [[ ${DEL_ARCHIVE} == 'true' || -n ${_ARCH_LIST} ]];then # Maintain archives
+	archive_del ${DEL_ARCHIVE}
+fi
+
 if [[ ${#ARGS} -gt 1 ]];then # Assume list of files
 	echo "Got a list of files..."
 	for A in ${ARGS};do
-		[[ ! -e ${A} ]] && usage "File:${A} not found"
+		[[ ! -e ${A} ]] && usage "File:${A} not found" # Assumes FQFN; TODO: should prefix w/_CFG_DIR?
 	done
 	_FLIST=(${ARGS})
 fi
@@ -432,16 +448,16 @@ else
 fi
 
 for F in ${LIST};do
-	[[ ${F:t:r} == ${OUT_FILE:t:r} ]] && continue
+	[[ ${F:t:r} == ${OUT_FILE:t:r} ]] && continue # Skip destination file
 	[[ ${F:e} =~ ${_ZV_REGEX} ]] && _FLIST+=${F} || exit_leave $(err_msg_exit "File not found:${F}")
 done
 
-echo "Arguments:${WHITE_FG}$(path_get_raw_cmdline)${RESET} matched ${#_FLIST} files"
 [[ ${#_FLIST} -lt 2 ]] && exit_leave $(err_msg_exit "Need at least 2 files")
 
+echo "Arguments:${WHITE_FG}$(path_get_raw_cmdline)${RESET} matched ${#_FLIST} files"
 
 NDX=0
-for F in ${_FLIST};do
+for F in ${_FLIST};do # Set inputs
 	[[ -e ${F:t} ]] && FN=${F:t} || FN=${F} # Include path if needed
 	_INPUTS[${NDX}]="${FN}"
 	((NDX++))
@@ -452,7 +468,6 @@ for K in ${(onk)_INPUTS};do
 	printf "v:%s FILE:%s\n" ${K} $(pathabv -l20 ${_INPUTS[${K}]:Q:h})/${_INPUTS[${K}]:Q:t}
 done
 
-OUT_FILE=${_FLIST[1]:h}/${OUT_FILE:r}.mp4
 QUESTION="${CYAN_FG}These ${WHITE_FG}${#_FLIST}${CYAN_FG} files will be merged to DESTINATION${RESET}:${OUT_FILE:h}/${WHITE_FG}${OUT_FILE:t}${RESET}"
 echo -n "\n${QUESTION}:(y/n)?"
 read -q RESPONSE
@@ -461,20 +476,15 @@ if [[ ${RESPONSE} != "y" ]];then # Only 'y' will not exit
 	exit_leave "${RED_FG}Operation cancelled${RESET}..."
 fi
 
-for F in ${_FLIST};do
+for F in ${_FLIST};do # Get inodes
 	INODE=$(stat -c "%i" ${F})
 	[[ ${?} -eq 0 ]] && _INODES[${INODE}]=${F} || exit_leave $(err_msg_exit "stat failed for file:${F}")
 	scan_media ${INODE}
 done
 
-[[ -e ${_CFG_DIR}/duration ]] && /bin/rm ${_CFG_DIR}/duration # clear duration
 for K in ${(onk)_INODES};do
-	#printf "INODE:%s FN:%s\n" ${K} ${_INODES[${K}]}
 	set_duration ${_INODES[${K}]}
 done
-
-[[ -e ${_LOG_FILE} ]] && /bin/rm ${_LOG_FILE} # clear log
-[[ -e ${_ERR_FILE} ]] && /bin/rm ${_ERR_FILE} # clear errors
 
 if is_mixed_video;then
 	echo "Normalizing and merging dissimilar videos..."
@@ -482,39 +492,46 @@ if is_mixed_video;then
 	TAG="v=1:a=1[v][a]"
 	MAP="-map \"[v]\" -map \"[a]\" -c:v ${_FILTER[VCODEC]} -crf 23 -preset medium ${OUT_FILE}"
 	I_STR=''
+
 	for K in ${(onk)_INPUTS};do
 		I_STR+="-i ${(qqq)_INPUTS[${K}]} "
 		P1_STR+="[${K}:v]fps=${_MAXIMUMS[VFPS]},scale=${SCALE}:force_original_aspect_ratio=decrease,pad=${SCALE}:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p[v${K}];"
 		P2_STR+="[v${K}][${K}:a]"
 	done
+
 	CMD="ffmpeg -y ${I_STR} -loglevel 8 -progress ${_LOG_FILE} -filter_complex \"${P1_STR}${P2_STR}concat=n=${#_INPUTS}:${TAG}\" ${MAP}"
 
 	echo "${CMD}" | sed -e 's/\-i \"/\n\-i \"/g' -e 's/\-loglevel/\n\-loglevel/' -e 's/\-filter/\n\-filter/' -e 's/;/;\n/g' > ${_CMD_FILE}
 	eval "${CMD}" 2>${_ERR_FILE} &
+
 	while true;do # Wait for log generation to begin
 		[[ -e ${_LOG_FILE} ]] && break
 		sleep .5
 	done
+
 	show_progress
 else
-	[[ -e ${_CFG_DIR}/merge_files ]] && /bin/rm ${_CFG_DIR}/merge_files # clear file list
 	echo "Merging similar videos..."
 	echo "Creating worklist..."
+
 	for F in ${_FLIST};do
 		echo "file $(realpath ${F:q})" >> ${_CFG_DIR}/merge_files
 	done
+
 	CMD="ffmpeg -y -loglevel 8 -progress ${_LOG_FILE} -f concat -safe 0 -i ${_CFG_DIR}/merge_files -c copy ${OUT_FILE}"
 
 	echo "${CMD}" > ${_CMD_FILE}
 	eval "${CMD}" 2>${_ERR_FILE} &
+
 	while true;do # Wait for log generation to begin
 		[[ -e ${_LOG_FILE} ]] && break
 		sleep .5
 	done
+
 	show_progress noframes
 fi
 
-if [[ -s ${_ERR_FILE} ]];then
+if [[ -s ${_ERR_FILE} ]];then # Detect ffmpeg errors
 	/bin/cat ${_ERR_FILE}
 	/bin/cat ${_CMD_FILE}
 else
