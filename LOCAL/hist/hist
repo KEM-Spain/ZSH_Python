@@ -20,14 +20,16 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 _LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
  
 # Constants
 _HIST_FILE=~/.zsh_history
 _LAST_ACTION=/tmp/hist_action
+_OBJ_TYPE="command"
 
 typeset -A _HIST_KEYS=()
+typeset -a _HIST_LIST=()
 
 # Vars
 _ALL=false
@@ -39,15 +41,62 @@ _SCRIPT=${0:t}
 _ACTION_MSG=''
 
 # Functions
+action_do () {
+	local M X
+	local RC
+	local NDX=0
+	local HIT=false
+
+	msg_box -t.5 "Removing ${#_MARKED} lines from history"
+
+	for M in ${_MARKED};do
+		list_set_selected ${M} ${_STALE_ROW}
+		HIT=true
+	done
+
+	[[ ${HIT} == 'true' ]] && upd_history
+}
+
+action_warn () {
+	local CNT=$(list_get_selected_count)
+	local M 
+	local -a DLIST
+	local FN
+	local HDRS=2
+	
+	msg_box "Working..."
+	for M in ${_MARKED};do
+		[[ ${_LOCAL_LIST[${M}]:h} == ${PWD} ]] && FN=${_LOCAL_LIST[${M}]:t} || FN=${_LOCAL_LIST[${M}]}
+		DLIST+=${FN}
+	done
+
+	[[ -n ${_OFFSCREEN_ROWS_MSG} ]] && ((HDRS++))
+
+	msg_box -O${RED_FG} -H${HDRS} -x10 -c -p -PD "<I><w>Please respond...<N>|$(str_pluralize ${OBJTYPE} ${CNT} true) queued for deletion|${_OFFSCREEN_ROWS_MSG}|$(msg_list_bullet ${(o)DLIST})"
+
+	if [[ ${_MSG_KEY} == 'n' ]];then
+		for M in ${_MARKED};do
+			list_clear_selected ${M}
+		done
+	fi
+}
+
+item_decorate () {
+	local NDX=${1}
+	local _MAX=$(( _MAX_COLS - 10 ))
+
+	case ${_LIST_SELECTED[${NDX}]} in
+		2) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:gs/#/ /}${E_RESET} ${E_ITALIC}deleted${E_RESET}";;
+		*) tput el;echo -n "${_LIST[${NDX}]:gs/#/ /}";;
+	esac
+}
+
 collect_hist () {
 	local SEARCHTERM=${1}
 	local DATE TM CMD
 	local D U
 
-	clear
 	fc -R
-	msg_box "<w>Collecting history...<N>"
-
 	while read DATE TM CMD;do
 		[[ ${CMD} =~ "${_SCRIPT}$" ]] && continue
 		if [[ -n ${_SEARCHTERM} ]];then
@@ -56,61 +105,28 @@ collect_hist () {
 		D="${DATE} ${TM}"
 		U=$(date -d ${D} +%s)
 		echo "${U}#${D}#${CMD}" 
-	done < <(fc -nrlt'%Y-%m-%d  %H:%M:%S' 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r | print_hist
+	done < <(fc -nrlt'%Y-%m-%d  %H:%M:%S' 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r
 }
 
-print_hist () {
-	local HDR=''
-	local LINE=''
-	local -a LIST=()
+upd_history () {
 	local NDX=0
-	local HK=''
-	local UT=''
-	local M1=''
-	local M2=''
+	local LINE
+	local F1 F3 L
 
-	while read LINE;do
-		if [[ ${_ALL} == 'false' ]];then
-			((NDX++))
-			[[ ${NDX} -gt ${_HIST_LINES} ]] && break
-		fi
-		UT=$(cut -d# -f1 <<<${LINE})
-		LINE=$(cut -d# -f2,3 <<<${LINE})
-		HK=$(cut -d# -f1 <<<${LINE})
-		_HIST_KEYS[${HK:s/ /_/}]=${UT} # Stash unix time
-		LIST+=${LINE[1,100]}
+	cp ${_HIST_FILE} ${_HIST_FILE}.bak
+	[[ -e ${_HIST_FILE}.new ]] && /bin/rm -f ${_HIST_FILE}.new
+
+	[[ -n ${_SEARCHTERM} ]] && grep -av "${_SEARCHTERM}" < ${_HIST_FILE} > ${_HIST_FILE}.new
+
+	NDX=0
+	for L in ${(on)_LIST};do
+		((NDX++))
+		[[ -n ${_LIST_SELECTED[${NDX}]} ]] && continue
+		IFS='#';read -r F1 F3 <<<$(cut -d# -f1,3 <<<${_LIST[${NDX}]});IFS=' '
+		printf ": %s:0:%s\n" ${F1} "${F3}" >> ${_HIST_FILE}.new
 	done
 
-	msg_box_clear
-
-	if [[ -n ${_SEARCHTERM} ]];then
-		HDR="<c>History containing<N>: \"${_SEARCHTERM}\""
-	elif [[ ${_ALL} == 'true' ]];then
-		HDR="<c>All History<N> (<w>${#LIST} lines<N>)"
-	else
-		HDR="<c>Last ${_HIST_LINES} $(str_pluralize line ${_HIST_LINES}) of History<N>"
-	fi
-
-	[[ ${#LIST} -eq 1 ]] && msg_box -p -PK -H1 "${HDR}|$(cut -d# -f1 <<<${LIST[1]}) $(cut -d# -f2 <<<${LIST[1]})" && return
-
-	sel_set_list ${LIST}
-
-	sel_set_app_keys d
-
-	if [[ -e ${_LAST_ACTION} ]];then
-		read _ACTION_MSG < ${_LAST_ACTION}
-		M1=$(cut -d# -f1 <<<${_ACTION_MSG})
-		M2=$(cut -d# -f2- <<<${_ACTION_MSG})
-		msg_box -t.6 -H1 "<m>History line was deleted<N>|${M1}|\"${M2}\""
-		/bin/rm -f ${_LAST_ACTION}
-	fi
-
-	sel_list -S -C -O${MAGENTA_FG} -sn -d'#' -H${HDR} -F"Selected command will be copied to the clipboard. Use keypad for extended page navigation" -M"(<w>d<N>)elete"
-	if [[ -n ${_SEL_VAL} ]];then
-		case ${_SEL_KEY} in
-			d) _DELETE=true;;
-		esac
-	fi
+	mv -f ${_HIST_FILE}.new ${_HIST_FILE} # Replace history
 }
 
 #--Begin GetOpts--
@@ -166,7 +182,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDan:"
@@ -195,17 +211,39 @@ if ! validate_is_integer ${_HIST_LINES};then
 	exit_leave $(err_msg_exit E "Option <-n> invalid - integer required")
 fi
 
-collect_hist ${_SEARCHTERM}
+msg_box "<w>Collecting history...<N>"
+_HIST_LIST=("${(f)$(collect_hist ${_SEARCHTERM})}")
 
-if [[ ${_DELETE} == 'true' ]];then
-	_DELETE=false
-	HK=$(cut -d# -f1 <<<${_SEL_VAL})
-	HK=${HK:s/ /_/}
-	sed -in "/${_HIST_KEYS[${HK}]}/d" ${_HIST_FILE} # Key is epoch time
-	echo "${_SEL_VAL}" > ${_LAST_ACTION}
-	exec ${0} ${@}
-else
-	cut -d'#' -f2 <<<${_SEL_VAL} | tr -d \\n | xclip -i -selection clipboard
-fi
+# Set headings
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize ${_OBJ_TYPE} ${#_LIST}) Filter:${WHITE_FG}%s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} "${_SEARCHTERM}" ${SELECTED_COUNT}'
+list_add_header_break
+list_set_header_break_color ${RED_FG}
+
+# Set line item
+list_set_line_item ' 
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"
+'
+
+list_set_select_action "delete"
+list_set_action_msgs delete command
+list_set_searchable true
+
+while true;do
+	# Display list
+	list_select ${(on)_HIST_LIST}
+	RC=${?}
+
+	[[ ${RC} -eq 0 ]] && break
+
+	# Get user selections
+	_MARKED=($(list_get_selected))
+	
+	if [[ $(list_get_selected_count) -ne 0 ]];then
+		action_warn
+		if [[ ${_MSG_KEY} == "y" ]];then
+			action_do
+		fi
+	fi
+done
 
 exit_leave

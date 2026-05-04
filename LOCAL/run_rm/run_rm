@@ -236,13 +236,13 @@ OBJ_COUNT=${#ARGS}
 
 typeset -a FLIST=()
 
-RAW_ARGS=($(path_get_raw_args))
+RAW_ARGS=("${(f)$(path_get_raw_args)}")
 for R in ${RAW_ARGS};do
 	if [[ $(str_contains ${R} '\x2a') ]];then
 		WILDCARD=true
 		FLIST+=("${(f)$(eval "find . -name '${R}'")}")
 	else
-		FLIST+=${R}
+		FLIST+=$(eval "echo ${R}") # Expand any quoted
 		WILDCARD=false
 	fi
 done

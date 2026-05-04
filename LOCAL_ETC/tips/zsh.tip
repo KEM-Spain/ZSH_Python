@@ -2440,14 +2440,22 @@ shell functions.
 ===================
 ${E_MAGENTA_FG}READ${E_RESET}
 ===================
-read [ -rszpqAclneE ] [ -t [ num ] ] [ -k [ num ] ] [ -d delim ] [ -u n ] [ name[?prompt] ] [ name ... ]
+${E_WHITE_FG}Tips${E_RESET}
 
+${E_WHITE_FG}READ within READ${E_RESET}
 while read -u3 F;do # To embed a read within a read loop use a different file descriptor
     cat \${F}
     echo -n "Next..."
     read -s -k1 RESPONSE
     [[ \${RESPONSE} == $'\n' ]] && exit # Test for newline using ANSI quoting
 done 3< ./media
+
+${E_WHITE_FG}Multi field assignment${E_RESET}
+IFS='#';read -r F1 F3 <<<\$(cut -d# -f1,3 <<<\${_LIST[\${NDX}]});IFS=' '
+
+${E_WHITE_FG}Usage${E_RESET}
+
+read [ -rszpqAclneE ] [ -t [ num ] ] [ -k [ num ] ] [ -d delim ] [ -u n ] [ name[?prompt] ] [ name ... ]
 
 Read one line and break it into fields using the characters in \${IFS} as separators, except as noted below. The first field is
 assigned to the first name, the second field to the second name, etc., with leftover fields assigned to the last name. If name is
