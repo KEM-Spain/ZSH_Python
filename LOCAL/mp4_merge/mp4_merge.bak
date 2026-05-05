@@ -31,7 +31,6 @@ source ${_LIB_DIR}/DATE.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
-typeset -A _ARCH_LIST=()
 typeset -A _AUDIO=()
 typeset -A _BAR_COORDS=(X 0 Y 54 P 54)
 typeset -A _FILTER=()
@@ -41,6 +40,7 @@ typeset -A _MAXIMUMS=()
 typeset -A _VIDEO=()
 typeset -a _FLIST=()
 typeset -a _INPUT_ARGS=()
+typeset -a _ARCHIVED=()
 
 # Constants
 _CFG_DIR=${HOME}/.local/share/${_SCRIPT}
@@ -55,37 +55,48 @@ _ZV_REGEX='(mkv|mp4|avi)'
 _BAR_WIDTH=25
 _BAR=false
 
+
 # Functions
 archive_del () {
-	local GOT_OPT=${1}
+	local -A ARCHIVE_LIST=()
+	local AGE=0
+	local DAYS=0
+	local MSG=''
 	local QUESTION=''
 	local RESPONSE=''
 	local F K
 
-	if [[ -n ${_ARCH_LIST} ]];then
-		echo "${WHITE_ON_GREY}Found ${#_ARCH_LIST} archived files in${RESET}:${_CFG_DIR}"
+	for F in ${_ARCHIVED};do
+		AGE=$(date_fage_days ${F})
+		DAYS=$(cut -d' ' -f1 <<<${AGE})
+		[[ ${DAYS} -eq 0 ]] && continue
+		ARCHIVE_LIST[${F}]=${DAYS}
+	done
+
+	if [[ -n ${ARCHIVE_LIST} ]];then
+		echo "${WHITE_ON_GREY}Found ${#ARCHIVE_LIST} archived files in${RESET}:${_CFG_DIR}"
 		printf "%-10s %s\n" "Age" "File"
 		printf "%-10s %s\n" $(str_unicode_line 10) $(str_unicode_line 50)
-		for K in ${(k)_ARCH_LIST};do
-			printf "%-10s %s\n" "${_ARCH_LIST[${K}]} days" ${K:t}
+		for K in ${(k)ARCHIVE_LIST};do
+			printf "%-10s %s\n" "${ARCHIVE_LIST[${K}]} days" ${K:t}
 		done
 
 		QUESTION="${RED_FG}Delete ${WHITE_FG}${#ARCHIVED}${RESET} archived files"
 		echo -n "\n${QUESTION}:(y/n)?"
 		read -q RESPONSE && echo
 		if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
-			for F in ${(k)_ARCH_LIST};do
+			for F in ${(k)ARCHIVE_LIST};do
 				/bin/rm -f ${F}
 			done
-			echo  "${#_ARCH_LIST} files deleted"
+			MSG="${#ARCHIVE_LIST} files deleted"
 		else
-			echo "${RED_FG}Operation cancelled${RESET}..."
+			MSG="${RED_FG}Operation cancelled${RESET}..."
 		fi
 	else
-		[[ ${GOT_OPT} == 'true' ]] && exit_leave "${_SCRIPT_TAG} No archived files found"
+		MSG="${_SCRIPT_TAG} No archived files found"
 	fi
 
-	[[ ${GOT_OPT} == 'true' ]] && exit_leave
+	exit_leave ${MSG}
 }
 
 bar_fwd () {
@@ -289,7 +300,7 @@ show_progress () {
 			progress*) PROGRESS=$(cut -d'=' -f2 <<<${LINE});;
 		esac
 
-		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( OTIME / 1000000 ) * 100. / ${TL_SECS} )) || PCT=100
+		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( ${OTIME:=1} / 1000000 ) * 100. / ${TL_SECS:=1} )) || PCT=100
 
 		T=$(( (PCT / 100) * _BAR_WIDTH )) # Tick value
 		[[ ${_BAR} == 'false' ]] && bar_start && _BAR=true # Draw the bar
@@ -375,8 +386,8 @@ usage () {
 OPTSTR=":HDdmo:p:"
 OPTIND=0
 
-OUT_FILE='output.mp4'
-ALT_PATH=''
+OUT_FILE_OPT='output.mp4'
+ALT_PATH_OPT=''
 DEL_ARCH_OPT=false
 
 while getopts ${OPTSTR} OPTION;do
@@ -384,8 +395,8 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
      D) dbg_set_level;;
      d) DEL_ARCH_OPT=true;;
-     o) OUT_FILE=${OPTARG};;
-     p) ALT_PATH=${OPTARG};;
+     o) OUT_FILE_OPT=${OPTARG};;
+     p) ALT_PATH_OPT=${OPTARG};;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
@@ -395,6 +406,9 @@ shift $(( OPTIND -1 ))
 #--End GetOpts--
 # Execution
 clear 
+
+_ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}") # Check for archived files
+[[ -n ${_ARCHIVED} ]] && echo "${WHITE_FG}${#_ARCHIVED}${RESET} archived $(str_pluralize file ${#_ARCHIVED})"
 
 [[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR} # Create _CFG_DIR
 [[ -e ${_CFG_DIR}/duration ]] && /bin/rm ${_CFG_DIR}/duration # Init duration file
@@ -406,28 +420,17 @@ clear
 
 if [[ ${#ARGS} -eq 1 ]];then
 	SEARCHTERM=${ARGS}
-	echo "Got SEARCHTERM:${SEARCHTERM}"
 else
 	SEARCHTERM='' # Assume SEARCHTERM
 fi
 
-if [[ -n ${ALT_PATH} ]];then # Parse options
-	[[ -d ${ALT_PATH} ]] && _DEFAULT_PATH=${ALT_PATH} || exit_leave $(err_msg_exit "Invalid alternate path:${ALT_PATH}")
+if [[ -n ${ALT_PATH_OPT} ]];then # Parse options
+	[[ -d ${ALT_PATH_OPT} ]] && _DEFAULT_PATH=${ALT_PATH_OPT} || exit_leave $(err_msg_exit "Invalid alternate path:${ALT_PATH_OPT}")
 fi
 
-[[ ! ${OUT_FILE} == 'output.mp4' ]] && OUT_FILE=${_FLIST[1]:h}/${OUT_FILE:r:gs/ /_/}.mp4
+[[ ! ${OUT_FILE_OPT} == 'output.mp4' ]] && OUT_FILE_OPT=${_FLIST[1]:h}/${OUT_FILE_OPT:r:gs/ /_/}.mp4
 
-ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}") # Check for archived files
-for F in ${ARCHIVED};do
-	AGE=$(date_fage_days ${F})
-	DAYS=$(cut -d' ' -f1 <<<${AGE})
-	[[ ${DAYS} -eq 0 && ${DEL_ARCH_OPT} == 'false' ]] && continue
-	_ARCH_LIST[${F}]=${DAYS}
-done
-
-if [[ ${DEL_ARCH_OPT} == 'true' || -n ${_ARCH_LIST} ]];then # Maintain archives
-	archive_del ${DEL_ARCH_OPT}
-fi
+[[ ${DEL_ARCH_OPT} == 'true' ]] && archive_del ${DEL_ARCH_OPT}
 
 if [[ ${#ARGS} -gt 1 ]];then # Assume list of files
 	echo "Got a list of files..."
@@ -448,7 +451,7 @@ else
 fi
 
 for F in ${LIST};do
-	[[ ${F:t:r} == ${OUT_FILE:t:r} ]] && continue # Skip destination file
+	[[ ${F:t:r} == ${OUT_FILE_OPT:t:r} ]] && continue # Skip destination file
 	[[ ${F:e} =~ ${_ZV_REGEX} ]] && _FLIST+=${F} || exit_leave $(err_msg_exit "File not found:${F}")
 done
 
@@ -468,7 +471,7 @@ for K in ${(onk)_INPUTS};do
 	printf "v:%s FILE:%s\n" ${K} $(pathabv -l20 ${_INPUTS[${K}]:Q:h})/${_INPUTS[${K}]:Q:t}
 done
 
-QUESTION="${CYAN_FG}These ${WHITE_FG}${#_FLIST}${CYAN_FG} files will be merged to DESTINATION${RESET}:${OUT_FILE:h}/${WHITE_FG}${OUT_FILE:t}${RESET}"
+QUESTION="${CYAN_FG}These ${WHITE_FG}${#_FLIST}${CYAN_FG} files will be merged to DESTINATION${RESET}:${OUT_FILE_OPT:h}/${WHITE_FG}${OUT_FILE_OPT:t}${RESET}"
 echo -n "\n${QUESTION}:(y/n)?"
 read -q RESPONSE
 echo
@@ -476,7 +479,7 @@ if [[ ${RESPONSE} != "y" ]];then # Only 'y' will not exit
 	exit_leave "${RED_FG}Operation cancelled${RESET}..."
 fi
 
-for F in ${_FLIST};do # Get inodes
+for F in ${(o)_FLIST};do # Get inodes
 	INODE=$(stat -c "%i" ${F})
 	[[ ${?} -eq 0 ]] && _INODES[${INODE}]=${F} || exit_leave $(err_msg_exit "stat failed for file:${F}")
 	scan_media ${INODE}
@@ -490,7 +493,7 @@ if is_mixed_video;then
 	echo "Normalizing and merging dissimilar videos..."
 	SCALE="${_MAXIMUMS[WIDTH]}:${_MAXIMUMS[HEIGHT]}"
 	TAG="v=1:a=1[v][a]"
-	MAP="-map \"[v]\" -map \"[a]\" -c:v ${_FILTER[VCODEC]} -crf 23 -preset medium ${OUT_FILE}"
+	MAP="-map \"[v]\" -map \"[a]\" -c:v ${_FILTER[VCODEC]} -crf 23 -preset medium ${OUT_FILE_OPT}"
 	I_STR=''
 
 	for K in ${(onk)_INPUTS};do
@@ -514,11 +517,11 @@ else
 	echo "Merging similar videos..."
 	echo "Creating worklist..."
 
-	for F in ${_FLIST};do
+	for F in ${(o)_FLIST};do
 		echo "file $(realpath ${F:q})" >> ${_CFG_DIR}/merge_files
 	done
 
-	CMD="ffmpeg -y -loglevel 8 -progress ${_LOG_FILE} -f concat -safe 0 -i ${_CFG_DIR}/merge_files -c copy ${OUT_FILE}"
+	CMD="ffmpeg -y -loglevel 8 -progress ${_LOG_FILE} -f concat -safe 0 -i ${_CFG_DIR}/merge_files -c copy ${OUT_FILE_OPT}"
 
 	echo "${CMD}" > ${_CMD_FILE}
 	eval "${CMD}" 2>${_ERR_FILE} &
@@ -535,7 +538,7 @@ if [[ -s ${_ERR_FILE} ]];then # Detect ffmpeg errors
 	/bin/cat ${_ERR_FILE}
 	/bin/cat ${_CMD_FILE}
 else
-	for F in ${_FLIST};do
+	for F in ${(o)_FLIST};do
 		mv -f ${F} ${_CFG_DIR} # Move originals
 	done
 	echo  "\nBackups of the ${#_FLIST} original files are located in:${WHITE_FG}${_CFG_DIR}${RESET}"
