@@ -53,7 +53,7 @@ _SRC_CODE=${HOME}/Code/LOCAL
 _SRC_LIB=/usr/local/lib
 _SRC_LOCAL_ETC=/usr/local/etc
 _SRC_LOCAL_SHARE=${HOME}/.local/share
-_SRC_PYTHON=${HOME}/Code/LANG/Python/PROJECTS/ts
+_SRC_PYTHON=${HOME}/Code/LANG/Python
 _SRC_VIM_CFG=${HOME}/.vim
 _SRC_ZSH_CFG=/etc/zsh
 _SRC_ZSH_CFG_USER=${HOME}/.zsh
@@ -145,7 +145,7 @@ copy_python_dev_files () {
 	RS_EXCL+=(--exclude='.idea')
 
 	echo "${GREEN_FG}PYTHON PROJECT FILES${RESET}" >&2
-	rsync -a --no-links --exclude 'lib' ${RS_EXCL} /home/kmiller/Code/LANG/Python/PROJECTS/ts /home/kmiller/Code/REPO/PYTHON
+	rsync -a --no-links --exclude 'lib' ${RS_EXCL} /home/kmiller/Code/LANG/Python /home/kmiller/Code/REPO/PYTHON
 }
 
 copy_sys_files () {
@@ -366,8 +366,6 @@ if [[ ${RESPONSE} == 'y' ]];then
 	#echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
 	#read -q RESPONSE
 	) | mypager wait
-else
-	echo "${RED_FG}Operation Cancelled${RESET}"
 fi
 
 exit_leave

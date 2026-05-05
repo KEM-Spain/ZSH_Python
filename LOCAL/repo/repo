@@ -232,10 +232,12 @@ compare_utils () {
 	local RESPONSE=''
 	local F
 
-	echo "${CYAN_FG}Checking _REPO_UTILS:${_REPO_UTILS}${RESET}"
+	echo -n "${CYAN_FG}Checking _REPO_UTILS:${_REPO_UTILS}${RESET}"
 
 	COMP=$(diff -q ${_SRC_REPO_UTILS} ${_REPO_UTILS} | grep -iv "only in")
-	if [[ -n ${COMP} ]];then
+	if [[ -z ${COMP} ]];then
+		echo ":${GREEN_FG}up to date${RESET}"
+	else
 		echo "${RED_FG}WARNING${RESET}: ${WHITE_FG}${_SRC_REPO_UTILS}${RESET} differs from ${WHITE_FG}${_REPO_UTILS}${RESET}"
 		echo -n "Should ${WHITE_FG}${_REPO_UTILS}${RESET} be updated to match ${WHITE_FG}${_SRC_REPO_UTILS}${RESET} (y/n)?"
 		read -k1 RESPONSE
@@ -252,8 +254,6 @@ compare_utils () {
 		else
 			echo "No files were copied"
 		fi
-	else
-		echo "${GREEN_FG}_REPO_UTILS is up to date${RESET}"
 	fi
 }
 
@@ -394,7 +394,7 @@ if [[ ${RESPONSE} == 'y' ]];then
 	pushd ${_REPO}
 	sudo chown -R kmiller:kmiller *
 	sudo chown -R kmiller:kmiller .*
-	do_commit | grep -v 'CRLF will be replaced'
+	do_commit 2>&1 | grep -v 'CRLF will be replaced'
 	popd
 	touch ${_TSTAMP}
 	#echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
