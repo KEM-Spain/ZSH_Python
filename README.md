@@ -1,16 +1,21 @@
 # KEM-Projects
--- Stuff I develop and use everyday --
+-- Code developed for everyday use --
 
-Zsh, Python, Perl, Javascript.
+Zsh, Python, Perl, Javascript
 
-Zsh: function library
-Zsh: Youtube/Rumble search and download
-Javascript: search utility for YouTube.
+Zsh: 
+    Robust function library
+    Youtube/Rumble search and download
+    Many command line utilities
+    Built in debugging support
 
-For apps based on the library, there is built in debugging support.
+Javascript: 
+    Search utility for YouTube videos
 
-Python: torrent search engine to supplement torrent clients.
-Currently, Deluge is the client.
+Python: 
+    Torrent search engine
+    Deluge is the client
 
-Perl code is embedded in a few functions.
+Perl:
+    Embedded in zsh scripts when needed
 
