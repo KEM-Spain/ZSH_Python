@@ -94,10 +94,14 @@ item_decorate () {
 collect_hist () {
 	local SEARCHTERM=${1}
 	local DATE TM CMD
+	local NDX=0
 	local D U
+	local HL=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
 
 	fc -R
 	while read DATE TM CMD;do
+		((NDX++))
+		printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${HL} $(( NDX * 100. / ${HL} )) >&2
 		[[ ${CMD} =~ "${_SCRIPT}$" ]] && continue
 		if [[ -n ${_SEARCHTERM} ]];then
 			[[ ! ${CMD} =~ ${_SEARCHTERM} ]] && continue

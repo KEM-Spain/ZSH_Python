@@ -476,7 +476,7 @@ if [[ ${RESPONSE} != "y" ]];then # Only 'y' will not exit
 	exit_leave "${RED_FG}Operation cancelled${RESET}..."
 fi
 
-for F in ${_FLIST};do # Get inodes
+for F in ${(o)_FLIST};do # Get inodes
 	INODE=$(stat -c "%i" ${F})
 	[[ ${?} -eq 0 ]] && _INODES[${INODE}]=${F} || exit_leave $(err_msg_exit "stat failed for file:${F}")
 	scan_media ${INODE}
@@ -514,7 +514,7 @@ else
 	echo "Merging similar videos..."
 	echo "Creating worklist..."
 
-	for F in ${_FLIST};do
+	for F in ${(o)_FLIST};do
 		echo "file $(realpath ${F:q})" >> ${_CFG_DIR}/merge_files
 	done
 
@@ -535,7 +535,7 @@ if [[ -s ${_ERR_FILE} ]];then # Detect ffmpeg errors
 	/bin/cat ${_ERR_FILE}
 	/bin/cat ${_CMD_FILE}
 else
-	for F in ${_FLIST};do
+	for F in ${(o)_FLIST};do
 		mv -f ${F} ${_CFG_DIR} # Move originals
 	done
 	echo  "\nBackups of the ${#_FLIST} original files are located in:${WHITE_FG}${_CFG_DIR}${RESET}"

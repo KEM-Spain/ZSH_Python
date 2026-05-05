@@ -33,7 +33,7 @@ typeset -A _CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _LOCATE_OPTS=()
-typeset -a FREQ_OPT_CMDS=()
+typeset -a _FREQ_OPT_CMDS=()
 
 # Constants
 _TESTING_DIR=${PWD}/testing
@@ -46,7 +46,7 @@ _HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
-FREQ_OPT_CMDS=(
+_FREQ_OPT_CMDS=(
 bak
 doit
 find
@@ -201,7 +201,7 @@ hist_parse () {
 		elif [[ ${FREQ_OPT} == 'true' ]];then
 			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
 			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
-			if $(arr_in_array "FREQ_OPT_CMDS" ${CMD_ONLY:gs/ //});then
+			if $(arr_in_array "_FREQ_OPT_CMDS" ${CMD_ONLY:gs/ //});then
 				CMD=${CMD_ONLY}
 			fi
 		else
