@@ -145,7 +145,7 @@ copy_python_dev_files () {
 	RS_EXCL+=(--exclude='.idea')
 
 	echo "${GREEN_FG}PYTHON PROJECT FILES${RESET}" >&2
-	rsync -a --no-links --exclude 'lib' ${RS_EXCL} /home/kmiller/Code/LANG/Python/PROJECTS/ts /home/kmiller/Code/REPO/PYTHON
+	rsync -a --no-links --exclude 'lib' ${RS_EXCL} /home/kmiller/Code/LANG/Python /home/kmiller/Code/REPO/PYTHON
 }
 
 copy_sys_files () {
