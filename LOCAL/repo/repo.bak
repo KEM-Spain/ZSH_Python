@@ -28,7 +28,7 @@ source ${_LIB}/STR.zsh
 source ${_LIB}/ARRAY.zsh
 source ${_LIB}/LIB_DEPS.zsh # Must be last
 
-# TODO: Add GTK3_Object_Examples
+# TODO: Add GTK3_Object_Examples to repo
 # Constants
 _REPO=~/Code/REPO
 _REPO_LOCAL_ETC=${_REPO}/LOCAL_ETC
@@ -366,6 +366,8 @@ if [[ ${RESPONSE} == 'y' ]];then
 	#echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
 	#read -q RESPONSE
 	) | mypager wait
+else
+	echo "${RED_FG}Operation Cancelled${RESET}"
 fi
 
 exit_leave
