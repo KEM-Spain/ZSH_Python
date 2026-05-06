@@ -217,21 +217,18 @@ action_do () {
 						break
 						;;
 					*error*)
+						((TRANS_ERR_CNT++))
 						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
-						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
-							((TRANS_ERR_CNT++))
-							LAST_TRANS_MSG=${TRANS_ERR_MSG}
-							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
-							logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
-							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
-							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
-								_FAILED[${M}]=true
-								_DOWNLOADS[${M}]=false
-								break
-							else
-								continue
-							fi
+						msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
+						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
+						logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
+						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
+							_FAILED[${M}]=true
+							_DOWNLOADS[${M}]=false
+							break
+						else
+							continue
 						fi
 						;;
 					*)
