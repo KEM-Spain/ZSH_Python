@@ -58,7 +58,7 @@ action_do () {
 			V_PATH=${${_FN_ARG}##${_GIT_REPO_DIR}/}
 			msg_box -p -P"(d)iff, (e)dit, (s)ave" "Diff, Edit, or Save file?"
 			if [[ ${_MSG_KEY} == 's' ]];then
-				FN_OUT=${_APP_DIR}/${COMMIT}:${V_PATH:t}.log.out
+				FN_OUT=${_APP_DIR}/${COMMIT}#${V_PATH:t}.log.out
 				if overwrite_file ${FN_OUT};then
 					git show -P ${COMMIT}:${V_PATH} > ${FN_OUT} && msg_box -p -PK "Wrote file:<w>${FN_OUT}<N>"
 				fi
@@ -68,7 +68,7 @@ action_do () {
 			elif [[ ${_MSG_KEY} == 'd' ]];then
 				VIEW=$(git diff ${COMMIT} HEAD^^ ${V_PATH})
 				if [[ -z ${VIEW} ]];then
-					msg_box -p -PK "No references to file ${V_PATH} in this commit:${COMMIT}"
+					msg_box -p -PK "No references file ${V_PATH} in this commit:${COMMIT}"
 				else
 					git -p diff ${COMMIT} HEAD^^ ${V_PATH}
 				fi
@@ -175,7 +175,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDRe"
@@ -279,7 +279,7 @@ popd # -- POPD ---
 
 # Set headings
 list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_GIT_REPO_DIR} ${_GIT_REPO_DIR} ${SELECTED_COUNT}'
-[[ -n ${_FN_ARG} ]] && list_set_header 'printf "Commits containing FILE:${MAGENTA_FG}${_FN_ARG:h}/${WHITE_FG}${_FN_ARG:t}${RESET}"'
+[[ -n ${_FN_ARG} ]] && list_set_header 'printf "Commits containing FILE:${MAGENTA_FG}${_FN_ARG:h}/${BOLD}${CYAN_FG}${_FN_ARG:t}${RESET}"'
 list_add_header_break
 
 # Set line item
