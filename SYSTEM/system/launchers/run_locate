@@ -1,0 +1,25 @@
+#!/usr/bin/zsh
+typeset -A OPTS=()
+typeset -A ARGS=()
+
+parse () {
+	local LIMIT=${1}
+	local NDX
+
+	for (( NDX=1; NDX<=LIMIT; NDX++ ));do
+		[[ -n ${OPTS[${NDX}]} ]] && printf '%s ' ${OPTS[${NDX}]}
+		[[ -n ${ARGS[${NDX}]} ]] && printf '%s ' ${(qq)ARGS[${NDX}]}
+	done
+}
+
+if [[ ${1} == '-u' ]];then
+	echo "Updating locate db" && sudo updatedb --prunepaths='/media/${USER}' >/dev/null 2>&1 
+else
+	NDX=0
+	for A in ${@};do
+		((NDX++))
+		[[ ${A} =~ '-' ]] && OPTS[${NDX}]="${A}"
+		[[ ! ${A} =~ '-' ]] && ARGS[${NDX}]=${A}
+	done
+	eval /usr/bin/locate $(parse ${#}) # Basename only
+fi

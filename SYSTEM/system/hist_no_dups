@@ -1,0 +1,395 @@
+#!/usr/bin/zsh
+
+#Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+
+BLACK_BG="\033[40m"
+
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/STR.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+# Declarations
+typeset -A _CMDS=()
+typeset -a _HIST_BUILD=()
+typeset -a _HIST_IN=()
+typeset -a _LOCATE_OPTS=()
+typeset -a _FREQ_OPT_CMDS=()
+
+# Constants
+_TESTING_DIR=${PWD}/testing
+_HIST_DIR=${HOME}
+_HIST_TMP=/tmp
+_CFG_DIR=~/.local/share/${_SCRIPT}
+_HIST_BAK=${_CFG_DIR}/.zsh_history.bak
+_HIST_CACHE=${_CFG_DIR}/hist_cache
+_HIST_FILE=${_HIST_DIR}/.zsh_history
+_HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
+_LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+
+_FREQ_OPT_CMDS=(
+bak
+doit
+find
+for
+g
+git
+google
+grep
+peip
+sed
+testit
+while
+vi
+)
+
+size_diff () {
+	local HIST_BAK=$(find ${_HIST_DIR} -maxdepth 1 -name '*zsh*bak')
+	local CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
+	local LAST_SIZE=$(stat -c"%s" ${HIST_BAK})
+	local DIFF=0
+	local -F PCT=0
+	local -F THRESHOLD=4
+	local -F AVG=0
+
+	[[ ${CUR_SIZE} -gt ${LAST_SIZE} ]] && DIFF=$(( CUR_SIZE - LAST_SIZE )) || DIFF=$(( LAST_SIZE - CUR_SIZE ))
+	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
+	PCT=$(( ${DIFF} / ${AVG} * 10 ))
+
+	printf "Growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
+	if [[ (( ${PCT} < ${THRESHOLD})) ]];then
+		return 1
+	else
+		return 0 # No rebuilds until THRESHOLD difference
+	fi
+}
+
+cmd_filter () {
+	local ARRAY_NAME=${1}
+	local -A SEEN=()
+	local CMD_IN=''
+	local CMD_MSK=''
+	local CMD_OUT=''
+	local CMD_TGT=''
+	local LOC=0
+	local MYA=0
+	local NDX=0
+	local RJT=0
+	local ROWS=${#${(P)ARRAY_NAME}}
+	local VALID=false
+	local WCH=0
+	local CACHE=0
+	local K RC
+
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
+
+	[[ ! -e ${_CFG_DIR} ]] && md ${_CFG_DIR}
+	[[ ! -e ${_HIST_CACHE} ]] && touch ${_HIST_CACHE}
+
+	for K in ${(k)${(P)ARRAY_NAME}};do
+		((NDX++))
+		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
+		CMD_IN=$(cut -d';' -f2 <<<${K})
+		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN:t}) # Strip any path
+		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
+		[[ -z ${CMD_TGT} ]] && continue
+		[[ ${SEEN[${CMD_TGT}]} -eq 1 ]] && continue # no repeated validations
+
+		[[ ${VERBOSE_OPT} == 'true' ]] && echo "Processing command:${CMD_TGT}" >&2
+
+		VALID=false
+		if [[ -n ${CMD_TGT} && -n ${_HIST_CACHE} ]];then
+			if grep -Fq "${CMD_TGT}" ${_HIST_CACHE};then
+				VALID='true'
+				((CACHE++))
+				printf '%s\n' "${K}"
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling which..." >&2
+			which -s ${CMD_TGT} >/dev/null
+			if [[ ${?} -eq 0 ]];then
+				VALID='true'
+				((WCH++))
+				printf '%s\n' "${K}"
+				printf '%s\n' "${CMD_TGT}">>${_HIST_CACHE}
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found by which:%s\n' "${CMD_TGT}" >&2
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling mya..." >&2
+			mya -q -- ${CMD_TGT} >/dev/null
+			if [[ ${?} -eq 0 ]];then
+				VALID='true'
+				((MYA++))
+				printf '%s\n' "${K}"
+				printf '%s\n' "${CMD_TGT}">>${_HIST_CACHE}
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found by mya:%s\n' "${CMD_TGT}" >&2
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling locate..." >&2
+			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
+			CMD_OUT=$(locate -b -e ${CMD_MSK})
+			if [[ ${?} -eq 0 ]];then
+				if [[ $(file ${CMD_OUT}) =~ 'executable' ]];then
+					VALID='true'
+					((LOC++))
+					printf '%s\n' "${K}"
+					printf '%s\n' "${CMD_OUT}">>${_HIST_CACHE}
+				fi
+			fi
+		fi
+
+		if [[ ${VALID} == 'false' ]];then
+			((RJT++))
+			[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Rejected:%s\n' "${CMD_TGT}" >&2
+		fi
+		SEEN[${CMD_TGT}]=1
+	done
+
+	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CFG_DIR}/accumulators
+	[[ ${PROD_OPT} == 'false' ]] && echo >&2 # Clear progress
+}
+
+hist_parse () {
+	local ARRAY_NAME=${1}
+	local -A RECENT=()
+	local CMD
+	local CMD_ONLY
+	local L
+	local LINE
+	local TS
+	local TS_NDX
+
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
+
+	for L in ${(on)${(P)ARRAY_NAME}};do
+		[[ -z ${L} ]] && continue # Blank hist line
+		#[[ ${L} =~ ';\[\[' ]] && continue # test commands
+
+		LINE=$(tr -d '\n' <<<${L})
+		TS=$(cut -d';' -f1 <<<${LINE})
+		TS_NDX=$(cut -d':' -f2 <<<${TS} | str_trim)
+
+		if [[ ${DEEP_OPT} == 'true' ]];then
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
+			CMD=${CMD_ONLY}
+		elif [[ ${FREQ_OPT} == 'true' ]];then
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
+			if $(arr_in_array "_FREQ_OPT_CMDS" ${CMD_ONLY:gs/ //});then
+				CMD=${CMD_ONLY}
+			fi
+		else
+			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+		fi
+
+		RECENT[${CMD}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time key as they are hit
+	done
+
+	for K in ${(onk)RECENT};do
+		LINE=$(cut -d'|' -f2 <<<${RECENT[${K}]})
+		printf "%s\n" ${LINE}
+	done
+}
+
+build_hist () {
+	local ARRAY_NAME=${1}
+	local -a _CMD_LIST
+	local -a _VALID_CMDS
+	local K
+
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
+
+	#echo "ARRAY_NAME:${ARRAY_NAME} ${#${(P)ARRAY_NAME}}" >&2
+
+	echo -n "${ITALIC}Parsing unique commands...${RESET}" >&2
+	_CMD_LIST=("${(f)$(hist_parse ${ARRAY_NAME})}") # Order unique commands by timestamp
+	echo "${ITALIC}got ${#_CMD_LIST} commands...done${RESET}" >&2
+
+	echo "${ITALIC}Filtering out invalid commands...${RESET}" >&2
+	_VALID_CMDS=("${(f)$(cmd_filter _CMD_LIST)}") # Retain valid commands
+	echo "\n${ITALIC}Identified ${#_VALID_CMDS} valid commands...done${RESET}" >&2
+
+	for L in ${(on)_VALID_CMDS};do
+		printf "%s\n" "${L}"
+	done | sort -n # Print valid commands in time order
+}
+
+#--Begin GetOpts--
+local -a OPTIONS
+local OPTION
+local DESC
+
+read -r -d '' DESC<<EOF
+Clean command history
+EOF
+
+parse_opts () {
+	local OPTS=${@}
+	local -a OPTSTR
+	local LETTER_OPT
+	local O
+
+	for O in {1..${#OPTS}};do
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+		OPTSTR+="-${OPTS[${O}]}"
+	done
+	echo ${OPTSTR}
+}
+
+opt_exists () {
+	local OPT=${1}
+	[[ $(( $OPTIONS[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+}
+
+opt_type () {
+	local OPT=${1}
+	case ${OPT} in
+		d) echo "<DIR>";;
+		f) echo "<FILE>";;
+		t) echo "<FILE_TYPE>";;
+	esac
+}
+
+usage () {
+	local -a PENDING_MSGS=(${@})
+	local OPTS=$(parse_opts ${OPTSTR})
+
+	[[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+	tabs 5
+	(
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "${WHITE_FG}-H${RESET} help"
+	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-F${RESET} force rebuild"
+	echo -e "${WHITE_FG}-d${RESET} deep - unique commands w/o arguments"
+	echo -e "${WHITE_FG}-f${RESET} frequent - commands w/o arguments"
+	echo -e "${WHITE_FG}-p${RESET} production - unique command w/arguments"
+	echo -e "${WHITE_FG}-t${RESET} testing mode"
+	echo -e "${WHITE_FG}-v${RESET} verbose output"
+	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
+	) >&2
+
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
+}
+
+OPTSTR=":HDFpdfvt"
+OPTIND=0
+
+FORCE_OPT=false
+PROD_OPT=false
+DEEP_OPT=false
+FREQ_OPT=false
+VERBOSE_OPT=false
+TESTING_OPT=false
+
+while getopts ${OPTSTR} OPTION;do
+	case $OPTION in
+     H) usage;;
+     D) dbg_set_level;;
+     F) FORCE_OPT=true;;
+     p) PROD_OPT=true;;
+     d) DEEP_OPT=true;;
+     f) FREQ_OPT=true;;
+     v) VERBOSE_OPT=true;;
+     t) TESTING_OPT=true;;
+     :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+    \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+done
+shift $((OPTIND -1))
+#--End GetOpts--
+
+# Execution
+[[ ${VERBOSE_OPT} == 'true' && ${FORCE_OPT} == 'true' ]] && echo "Forcing rebuild..." >&2
+
+if [[ ${FORCE_OPT} == 'false' && ${TESTING_OPT} == 'false' ]];then
+	MSG=$(size_diff)
+	if [[ ${?} -ne 0 ]];then
+		echo -n "History rebuild not required / ${MSG}"
+		exit_leave
+	fi
+fi
+
+[[ ${PROD_OPT} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
+cp ${_HIST_FILE} ${_HIST_BAK}
+
+echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
+upd_locate -u 2>/dev/null
+
+HL=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
+echo -n "${ITALIC}Collating ${HL} lines of history...${RESET}" >&2
+_HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
+echo "${ITALIC}done${RESET}" >&2
+[[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
+
+[[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
+_REBUILT_HIST=("${(f)$(build_hist _HIST_IN)}")
+
+if ! arr_is_populated "_REBUILT_HIST";then
+	echo "No valid history found"
+	exit_leave
+fi
+ 
+NDX=0
+for L in ${_REBUILT_HIST};do
+	((NDX++))
+	printf "%s\n" "${L}" >> ${_HIST_NEW}
+done
+
+if [[ ${TESTING_OPT} == 'true' ]];then
+	[[ ! -d ${_TESTING_DIR} ]] && mkdir ${_TESTING_DIR}
+	echo "History output file:${_TESTING_DIR}/${_HIST_NEW}"
+	cp ${_HIST_NEW} ${_TESTING_DIR}
+else
+	cp ${_HIST_NEW} ${_HIST_FILE}
+fi
+
+if [[ ${PROD_OPT} == 'false' ]];then
+	CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
+	read ACC <${_CFG_DIR}/accumulators
+	echo "   SIZE:${WHITE_FG}${CUR_SIZE}${RESET}"
+	echo " CACHED:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
+	echo "  WHICH:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
+	echo " LOCATE:${WHITE_FG}$(cut -d'|' -f3 <<<${ACC})${RESET}"
+	echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
+	echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
+	echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_REBUILT_HIST}${RESET}"
+	echo "${WHITE_ON_GREY}Done.${RESET}\n"
+else
+	tput el
+	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
+fi
+
+exit_leave

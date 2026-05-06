@@ -28,7 +28,6 @@ source ${_LIB}/STR.zsh
 source ${_LIB}/ARRAY.zsh
 source ${_LIB}/LIB_DEPS.zsh # Must be last
 
-# TODO: Add GTK3_Object_Examples to repo
 # Constants
 _REPO=~/Code/REPO
 _REPO_LOCAL_ETC=${_REPO}/LOCAL_ETC
@@ -60,6 +59,7 @@ _SRC_ZSH_CFG_USER=${HOME}/.zsh
 _SRC_REPO_UTILS=${_SRC_CODE}/repo/utils
 
 _REPO_UTILS=${_SRC_USR_LOCAL_BIN}/system/repo_utils
+
 _TSTAMP=${_REPO_UTILS}/.last_run
 
 # Declarations
@@ -151,11 +151,11 @@ copy_python_dev_files () {
 
 copy_sys_files () {
 	local CONF_DIR=${HOME}/.local/share/repo
-	local REPO_FLTR=${_CONF_DIR}/repo-filter.rules
-	local FILTER="--filter=\"${REPO_FLTR}\"" # Set filter option
+	local REPO_FLTR=${CONF_DIR}/repo-filter.rules
+	local FILTER="--filter=\"merge ${REPO_FLTR}\"" # Set filter option
 
 	echo "${GREEN_FG}SYSTEM FILES${RESET}" >&2
-	rsync -ar --no-links ${FILTER} ${_SRC_USR_LOCAL_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
+	eval "rsync ${FILTER} -ar --no-links ${_SRC_USR_LOCAL_BIN_SYS} ${_REPO_SYSTEM}" >/dev/null
 }
 
 copy_user_files () {
