@@ -282,6 +282,8 @@ if [[ -e ${_REPO} ]];then
 		echo "${GREEN_FG}Copied git commit script to:${WHITE_FG}${_REPO}${RESET}"
 		cp ${_REPO_UTILS}/gitignore ${_REPO}/.gitignore # Git ignore
 		echo "${GREEN_FG}Copied git ignore to:${WHITE_FG}${_REPO}/.gitignore${RESET}"
+		cp ${_REPO_UTILS}/gitattributes ${_REPO}/.gitattributes # Git /.gitattributes
+		echo "${GREEN_FG}Copied .gitattributes to:${WHITE_FG}${_REPO}/.gitattributes${RESET}"
 		cp ${_REPO_UTILS}/README.md ${_REPO} # Git readme
 		echo "${GREEN_FG}Copied README.MD to:${WHITE_FG}${_REPO}${RESET}"
 	else
