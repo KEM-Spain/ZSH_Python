@@ -146,12 +146,16 @@ copy_python_dev_files () {
 	RS_EXCL+=(--exclude='.idea')
 
 	echo "${GREEN_FG}PYTHON PROJECT FILES${RESET}" >&2
-	rsync -a --no-links --exclude 'lib' ${RS_EXCL} /home/kmiller/Code/LANG/Python /home/kmiller/Code/REPO/PYTHON
+	rsync -ar --no-links --exclude 'lib' ${RS_EXCL} /home/kmiller/Code/LANG/Python /home/kmiller/Code/REPO/PYTHON
 }
 
 copy_sys_files () {
+	local CONF_DIR=${HOME}/.local/share/repo
+	local REPO_FLTR=${_CONF_DIR}/repo-filter.rules
+	local FILTER="--filter=\"${REPO_FLTR}\"" # Set filter option
+
 	echo "${GREEN_FG}SYSTEM FILES${RESET}" >&2
-	rsync -a --no-links --exclude 'node' ${_SRC_USR_LOCAL_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
+	rsync -ar --no-links ${FILTER} ${_SRC_USR_LOCAL_BIN_SYS} ${_REPO_SYSTEM} >/dev/null
 }
 
 copy_user_files () {

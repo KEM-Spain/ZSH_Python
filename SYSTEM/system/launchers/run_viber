@@ -1,9 +1,0 @@
-#!/usr/bin/zsh
-_DELAY=1
-
-CNT=$(pgrep -c -f /opt/viber/Viber)
-if [[ ${CNT} -eq 0 ]];then
-	/opt/viber/Viber &
-else
-	send-notification ${_DELAY} "Viber is already running..."
-fi

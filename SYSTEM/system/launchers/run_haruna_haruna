@@ -1,3 +1,0 @@
-#!/usr/bin/zsh
-send-notification 20 "Launching Haruna..." &
-/snap/bin/haruna ${@} &
