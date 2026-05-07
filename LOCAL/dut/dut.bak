@@ -20,14 +20,6 @@ BLINK="\033[5m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/TPUT.zsh
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SELECT.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
-
 # Declarations
 typeset -A _UTILS=(
 external 1
@@ -51,6 +43,13 @@ _WRAPPER=${0:t}
 # Globals
 g_USAGE=false
 g_UTIL=''
+
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIST.zsh
+source ${_LIB_DIR}/SELECT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 external () {
@@ -392,7 +391,9 @@ ___EOF
 
 		(
 		tabs 5
+		set -xv
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
+		set +xv;read
 		echo -e "${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type p)]\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"

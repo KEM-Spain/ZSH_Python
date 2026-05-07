@@ -18,6 +18,6 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-STR="XXXXXXXX#YYYYYYYY#ZZZZZZZZ"
-IFS='#';read -r F1 F2 F3 <<<${STR}
-echo "${F1} ${F2} ${F3}"
+SEARCHTERM=${1}
+grep -n ${SEARCHTERM} ~/.zsh_history
+read

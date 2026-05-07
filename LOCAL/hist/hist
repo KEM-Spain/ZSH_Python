@@ -28,12 +28,12 @@ _HIST_FILE=~/.zsh_history
 _LAST_ACTION=/tmp/hist_action
 _OBJ_TYPE="command"
 
-typeset -A _HIST_KEYS=()
+# Declarations
 typeset -a _HIST_LIST=()
 
 # Vars
 _ALL=false
-_HIST_LINES=46
+_HIST_MAX=46
 _SEARCHTERM=''
 _DELETE=false
 _HIST_KEY=''
@@ -42,19 +42,44 @@ _ACTION_MSG=''
 
 # Functions
 action_do () {
-	local M X
+	local M L
 	local RC
 	local NDX=0
-	local HIT=false
+	local LINE_NO=''
+	local LINE_TEXT=''
+	local HIST_NEW="/tmp/${_HIST_FILE:t}.new"
+	local SED_CMD=''
+	local B_LINES=0
+	local A_LINES=0
 
 	msg_box -t.5 "Removing ${#_MARKED} lines from history"
 
 	for M in ${_MARKED};do
 		list_set_selected ${M} ${_STALE_ROW}
-		HIT=true
 	done
 
-	[[ ${HIT} == 'true' ]] && upd_history
+	cp ${_HIST_FILE} ${HIST_NEW}
+
+	for L in ${_HIST_LIST};do
+		LINE_NO=$(cut -d: -f1 <<<${L})
+		if [[ -z ${_SEARCHTERM} ]];then
+			[[ ${_MARKED[(i)${LINE_NO}]} -le ${#_MARKED} ]] || continue
+		fi
+		SED_CMD+="${LINE_NO}d;"
+	done
+
+	sed -i -e ${SED_CMD} ${HIST_NEW}
+
+	B_LINES=$(wc -l ${_HIST_FILE} | cut -d' ' -f1)
+	A_LINES=$(wc -l ${HIST_NEW} | cut -d' ' -f1)
+	msg_box -p -P"Save modified history (y/n)?" "History file lines reduced from ${B_LINES} to ${A_LINES}"
+	if [[ ${_MSG_KEY} == 'y' ]];then
+		cp ${HIST_NEW} ${_HIST_FILE}
+	else
+		for M in ${_MARKED};do
+			list_set_selected ${M} ${_AVALABLE_ROW}
+		done
+	fi
 }
 
 action_warn () {
@@ -84,53 +109,34 @@ action_warn () {
 item_decorate () {
 	local NDX=${1}
 	local _MAX=$(( _MAX_COLS - 10 ))
+	local CMD=''
+	local TM=''
+	local DATE=''
+	local LINE_NO=''
+
+	LINE_NO=$(cut -d: -f1 <<< ${_LIST[${NDX}]})
+	TM=$(cut -d: -f3 <<< ${_LIST[${NDX}]})
+	CMD=$(cut -d: -f4- <<< ${_LIST[${NDX}]} | cut -d';' -f2-)
+	DATE=$(date -d @${TM} +%Y-%m-%d)
 
 	case ${_LIST_SELECTED[${NDX}]} in
 		2) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:gs/#/ /}${E_RESET} ${E_ITALIC}deleted${E_RESET}";;
-		*) tput el;echo -n "${_LIST[${NDX}]:gs/#/ /}";;
+		*) echo "${DATE}#${CMD}";;
 	esac
 }
 
 collect_hist () {
 	local SEARCHTERM=${1}
-	local DATE TM CMD
 	local NDX=0
-	local D U
-	local HL=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
 
-	fc -R
-	while read DATE TM CMD;do
-		((NDX++))
-		printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${HL} $(( NDX * 100. / ${HL} )) >&2
-		[[ ${CMD} =~ "${_SCRIPT}$" ]] && continue
-		if [[ -n ${_SEARCHTERM} ]];then
-			[[ ! ${CMD} =~ ${_SEARCHTERM} ]] && continue
-		fi
-		D="${DATE} ${TM}"
-		U=$(date -d ${D} +%s)
-		echo "${U}#${D}#${CMD}" 
-	done < <(fc -nrlt'%Y-%m-%d  %H:%M:%S' 1 100000) | sort -t'#' -k3 -u | sort -t'#' -k1 -r
-}
-
-upd_history () {
-	local NDX=0
-	local LINE
-	local F1 F3 L
-
-	cp ${_HIST_FILE} ${_HIST_FILE}.bak
-	[[ -e ${_HIST_FILE}.new ]] && /bin/rm -f ${_HIST_FILE}.new
-
-	[[ -n ${_SEARCHTERM} ]] && grep -av "${_SEARCHTERM}" < ${_HIST_FILE} > ${_HIST_FILE}.new
-
-	NDX=0
-	for L in ${(on)_LIST};do
-		((NDX++))
-		[[ -n ${_LIST_SELECTED[${NDX}]} ]] && continue
-		IFS='#';read -r F1 F3 <<<$(cut -d# -f1,3 <<<${_LIST[${NDX}]});IFS=' '
-		printf ": %s:0:%s\n" ${F1} "${F3}" >> ${_HIST_FILE}.new
-	done
-
-	mv -f ${_HIST_FILE}.new ${_HIST_FILE} # Replace history
+	if [[ -n ${SEARCHTERM} ]];then
+		grep --color=never -n ${SEARCHTERM} ${_HIST_FILE}
+	else
+		while read LINE;do
+			((NDX++))
+			echo ${NDX}:${LINE}
+		done < ${_HIST_FILE}
+	fi
 }
 
 #--Begin GetOpts--
@@ -182,7 +188,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-a${RESET} all history lines"
-	echo -e "${WHITE_FG}-n${RESET} history lines (default: ${_HIST_LINES})"
+	echo -e "${WHITE_FG}-n${RESET} history lines (default: ${_HIST_MAX})"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
@@ -192,12 +198,14 @@ usage () {
 OPTSTR=":HDan:"
 OPTIND=0
 
+HIST_MAX_OPT=''
+
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
 	  a) _ALL=true;;
-	  n) _HIST_LINES=${OPTARG};;
+	  n) _HIST_MAX_OPT=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -211,21 +219,36 @@ shift $(( OPTIND - 1 ))
 
 [[ -n ${1} ]] && _SEARCHTERM=${1}
 
-if ! validate_is_integer ${_HIST_LINES};then
-	exit_leave $(err_msg_exit E "Option <-n> invalid - integer required")
+if [[ -n ${HIST_MAX_OPT} ]];then
+	if ! validate_is_integer ${_HIST_MAX};then
+		exit_leave $(err_msg_exit E "Option <-n> invalid - integer required")
+	else
+		_HIST_MAX=${HIST_MAX_OPT}
+	fi
 fi
 
 msg_box "<w>Collecting history...<N>"
 _HIST_LIST=("${(f)$(collect_hist ${_SEARCHTERM})}")
 
+if ! arr_is_populated "${_HIST_LIST}";then
+	if [[ -n ${_SEARCHTERM} ]];then
+		exit_leave "No history lines matched SEARCHTERM:${SEARCHTERM}"
+	else
+		exit_leave "No history lines found"
+	fi
+fi
+
 # Set headings
-list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize ${_OBJ_TYPE} ${#_LIST}) Filter:${WHITE_FG}%s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} "${_SEARCHTERM}" ${SELECTED_COUNT}'
+list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize ${_OBJ_TYPE} ${#_LIST}) Filter:${WHITE_FG}%s${RESET}  Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} "${_SEARCHTERM:=None}" ${SELECTED_COUNT}'
 list_add_header_break
 list_set_header_break_color ${RED_FG}
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"
+local D C;
+D=$(item_decorate ${_LIST_NDX} | cut -d'#' -f1)
+C=$(item_decorate ${_LIST_NDX} | cut -d'#' -f2-)
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${CYAN_FG}%s${RESET} %s\n" ${_LIST_NDX} ${D} "${C}"
 '
 
 list_set_select_action "delete"
@@ -234,7 +257,7 @@ list_set_searchable true
 
 while true;do
 	# Display list
-	list_select ${(on)_HIST_LIST}
+	list_select ${(onv)_HIST_LIST}
 	RC=${?}
 
 	[[ ${RC} -eq 0 ]] && break

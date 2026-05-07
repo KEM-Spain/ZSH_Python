@@ -391,9 +391,7 @@ ___EOF
 
 		(
 		tabs 5
-		set -xv
 		[[ ${_SMCUP} == 'true' ]] && do_rmcup
-		set +xv;read
 		echo -e "${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type p)]\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
@@ -936,10 +934,10 @@ local OPTION
 local K
 
 read -r -d '' DESC<<EOF
-Execute disk utilities
+Execute Disk Utilities
 \t----------------------
 $(for K in ${(k)_UTILS_DESC};do
-	printf "${WHITE_FG}%s${RESET} %s\n" ${K} ${_UTILS_DESC[${K}]}
+	printf "\t${WHITE_FG}%s${RESET} - %s\n" ${K} ${_UTILS_DESC[${K}]}
 done)
 EOF
 
@@ -1004,10 +1002,10 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
-[[ -n ${UTIL} && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "UTIL:${UTIL} not found"
+[[ -n ${UTIL} && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "command:${WHITE_FG}${UTIL}${RESET} not found"
 
 if [[ -n ${UTIL} ]];then
 	UTIL=${1}

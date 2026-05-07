@@ -175,7 +175,7 @@ if [[ ${PRE_APPROVED} == false ]];then
 			fi
 			if [[ ${L} =~ "autoremove" ]];then
 				echo -n "\n${RED_FG}Remove${RESET} obsolete packages${WHITE_FG}?${RESET}:"
-				read -sq RESPONSE
+				read -k1 RESPONSE
 				if [[ ${RESPONSE} == "y" ]];then
 					echo && sudo apt-get -y autoremove | tee -a ${LOG}
 				else
@@ -189,7 +189,7 @@ if [[ ${PRE_APPROVED} == false ]];then
 
 	if [[ ${DOUPGRADE} == true && ${PRE_APPROVED} == false ]];then
 		echo -n "\n${GREEN_FG}Install${RESET} updates${WHITE_FG}?${RESET}:"
-		read -sq RESPONSE
+		read -k1 RESPONSE
 		if [[ ${RESPONSE} == "y" || ${PRE_APPROVED} == true ]];then
 			echo && sudo apt-get -y dist-upgrade | tee -a ${LOG}
 		else

@@ -1482,7 +1482,7 @@ list_warn_invisible_rows () {
 			fi
 		fi
 	done
-	[[ -n ${_OFF_SCREEN_ROWS_MSG} ]] && msg_box -H1 -p -PK "<r>Warning<N>|${_OFF_SCREEN_ROWS_MSG}"
+	[[ -n ${_OFF_SCREEN_ROWS_MSG} ]] && msg_box -x2 -H1 -p -PK "<r>Warning<N>|${_OFF_SCREEN_ROWS_MSG}" && msg_box_clear
 }
 
 list_write_to_file () {
