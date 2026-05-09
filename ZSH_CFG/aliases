@@ -1,8 +1,8 @@
-# sourced scripts
+# Sourced scripts
 alias tc='. ~/.tc'
 alias gd='. ~/.gd'
 
-# apps
+# Apps
 alias Cat='/bin/cat'
 alias MP42mp4="for X in *MP4;do mv ${X} ${X:r}.mp4;done"
 alias anthem='/opt/anthemscore/run_app_image 2>&1 &'
@@ -47,7 +47,7 @@ alias top='/usr/local/bin/system/launchers/run_htop'
 alias unf='unfunction '
 alias vi='/usr/local/bin/system/launchers/run_vim'
 
-# conversion
+# Conversion
 alias c2f='/usr/local/bin/conversion/c2f'
 alias c2g='/usr/local/bin/conversion/c2g'
 alias f2c='/usr/local/bin/conversion/f2c'
@@ -60,11 +60,11 @@ alias i2c='/usr/local/bin/conversion/i2c'
 alias m2k='/usr/local/bin/conversion/m2k'
 alias k2m='/usr/local/bin/conversion/k2m'
 
-#session
+# Session
 alias logout='gnome-session-quit --logout --no-prompt'
 alias pow='sudo shutdown -P now'
 
-#apt
+# Apt
 alias dpkg='sudo dpkg'
 alias aptfix='sudo apt --fix-broken install '
 alias doupgrade='sudo apt-get -y dist-upgrade '
@@ -77,76 +77,71 @@ alias reinstall='sudo apt-get -y --reinstall install '
 alias syminstall='sudo apt-get -sy install '
 alias upgrades='sudo apt-get -s dist-upgrade '
 
-# linux
+# Linux
 alias md='mkdir'
 alias mv='mv -i'
 alias cls='tput clear'
 
-# bunzip2
+# Bunzip2
 alias bu='bunzip2'
 
-# ps
+# Ps
 alias xps='ps --rows 42 --forest -ww -e| sort -n -k2| less'
 
-# cpan
+# Cpan
 alias mcpan='perl -MCPAN -e shell'
 
-# permissions
-alias me='chmod 755'
-alias meg='chmod 775'
-alias nme="chmod 664"
+# Permissions
+alias me='chmod 755' # Excutable user
+alias meg='chmod 775' # Excutable group
+alias men="chmod 664" # Regular 
 
-# enable default color support of grep
+# Enable default color support of grep
 alias grep='grep --color=always'
 alias fgrep='fgrep --color=always'
 alias egrep='egrep --color=always'
 
-#Directory shortcuts
+# Directory shortcuts
 alias ,='cd -'
 alias ....='cd ../../..'
 alias ...='cd ../..'
 alias ..='cd ..'
-
 alias .c='cd ~/.config'
 alias .ls='loc_share'
 alias .z='cd ~/.zsh'
 alias .zc='cd ~/.zsh/completions'
-
 alias B="cd /media/kmiller/EXT_1/$(hostname)_RSYNC2"
-alias C='cd ~/Downloads/Torrents/Completed'
 alias D='cd ~/Documents'
 alias E1="cd /media/kmiller/EXT_1"
 alias E2="cd /media/kmiller/EXT_2"
 alias E='cd /etc'
-alias I='cd ~/Downloads/Torrents/Incomplete'
-alias L='cd ~/Downloads/Torrents/Library'
-alias Lm='cd ~/Downloads/Torrents/Library/movies'
-alias Lp='cd ~/Downloads/Torrents/Library/piano'
-alias Ls='cd ~/Downloads/Torrents/Library/series'
-alias Lw='cd ~/Downloads/Torrents/Library/web'
 alias M="cd /media/kmiller/EXT_2/Music"
 alias O='cd /opt'
 alias P='cd ~/Pictures'
+alias Ps='cd ~/Pictures/Screenshots'
 alias T='cd ~/Downloads/Torrents'
+alias Tc='cd ~/Downloads/Torrents/Completed'
+alias Ti='cd ~/Downloads/Torrents/Incomplete'
+alias Tl='cd ~/Downloads/Torrents/Library'
+alias Tm='cd ~/Downloads/Torrents/Library/movies'
+alias Tp='cd ~/Downloads/Torrents/Library/piano'
+alias Ts='cd ~/Downloads/Torrents/Library/series'
+alias Tw='cd ~/Downloads/Torrents/Library/web'
 alias V='cd ~/Videos'
-alias ss='cd ~/Pictures/Screenshots'
-
 alias b='cd /usr/local/bin'
 alias c='cd ~/Code'
 alias d='cd ~/Downloads'
 alias h='cd ~'
 alias m='cd ~/Documents/Music'
-alias s='cd /usr/local/bin/system'
-alias v='cd /var'
-alias vl='cd /var/log'
-alias z='cd /etc/zsh'
-
 alias mk='cd /media/kmiller'
 alias ms='cd ~/Documents/MuseScore4/Scores'
-alias us='cd /usr/share/'
-
+alias s='cd /usr/local/bin/system'
 alias ule='cd /usr/local/etc'
 alias ull='cd /usr/local/lib'
 alias uls='cd /usr/local/src'
+alias us='cd /usr/share/'
 alias usa='cd /usr/share/applications'
 alias usd='cd /usr/share/doc'
+alias v='cd /var'
+alias vl='cd /var/log'
+alias z='cd /etc/zsh'

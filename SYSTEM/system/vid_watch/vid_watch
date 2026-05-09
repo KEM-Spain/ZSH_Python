@@ -1,16 +1,17 @@
 #!/usr/bin/zsh
 
 # Constants
-_MUSIC_REGEX='.*\(\.ape\|\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\)$'
+_CFG_DIR=~/.local/share/vid_watch
 _COMPLETED=~/Downloads/Torrents/Completed
-_FIFO=/tmp/${0:t}.fifo
+_FIFO=${_CFG_DIR}/${0:t}.fifo
+_GTKUI_STATE=~/.config/deluge/gtk3ui.conf
 _INOT_PID=''
-_LOG=/tmp/${0:t}.log
+_LOG=${_CFG_DIR}/${0:t}.log
 _MUSIC=~/Downloads/Torrents/Music
-_PID_FN=/tmp/${0:t}.pid
+_MUSIC_REGEX='.*\(\.ape\|\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\)$'
+_PID_FN=${_CFG_DIR}/${0:t}.pid
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
 _VW=/usr/local/bin/system/vid_watch
-_GTKUI_STATE=~/.config/deluge/gtk3ui.conf
 
 # Declarations
 typeset -a _QUEUE

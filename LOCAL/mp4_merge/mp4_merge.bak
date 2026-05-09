@@ -264,7 +264,6 @@ show_progress () {
 	local OPT=${1}
 	local DURATIONS=~/.local/share/mp4_merge/duration
 	local LOG=~/.local/share/mp4_merge/mp4_merge.log
-
 	local TL_FRAMES=0
 	local TL_SECS=0
 	local TL_MINS=0
@@ -275,6 +274,8 @@ show_progress () {
 	local LAST_T=0
 	local LINE
 
+	# TODO: not showing progress for similar video merge (arg:OPT=noframes)
+	
 	while read LINE;do
 		F1=$(cut -d',' -f1 <<<${LINE})
 		F2=$(cut -d',' -f2 <<<${LINE})
@@ -292,6 +293,11 @@ show_progress () {
 		TL_HOURS=$(( TL_HOURS+HOURS ))
 	done < ${DURATIONS}
 
+	while true;do # Wait for log generation to begin
+		[[ -s ${_LOG_FILE} ]] && break
+		sleep .5
+	done
+
 	tail -f ${LOG} | \
 	while read -t5 LINE;do
 		case ${LINE} in
@@ -300,7 +306,11 @@ show_progress () {
 			progress*) PROGRESS=$(cut -d'=' -f2 <<<${LINE});;
 		esac
 
-		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( ${OTIME:=1} / 1000000 ) * 100. / ${TL_SECS:=1} )) || PCT=100
+		[[ -z ${CUR_FRAME} || ${OTIME} == 'N/A' ]] && continue
+
+		#echo "CUR_FRAME:${CUR_FRAME} OTIME:${OTIME} PROGRESS:${PROGRESS}" && continue
+
+		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( OTIME / 1000000 ) * 100. / TL_SECS )) || PCT=100
 
 		T=$(( (PCT / 100) * _BAR_WIDTH )) # Tick value
 		[[ ${_BAR} == 'false' ]] && bar_start && _BAR=true # Draw the bar
@@ -525,11 +535,6 @@ else
 
 	echo "${CMD}" > ${_CMD_FILE}
 	eval "${CMD}" 2>${_ERR_FILE} &
-
-	while true;do # Wait for log generation to begin
-		[[ -e ${_LOG_FILE} ]] && break
-		sleep .5
-	done
 
 	show_progress noframes
 fi

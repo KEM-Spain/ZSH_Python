@@ -36,14 +36,13 @@ typeset -a _LOCATE_OPTS=()
 typeset -a _FREQ_OPT_CMDS=()
 
 # Constants
+_CFG_DIR=~/.local/share/${_SCRIPT}
 _TESTING_DIR=${PWD}/testing
 _HIST_DIR=${HOME}
-_HIST_TMP=/tmp
-_CFG_DIR=~/.local/share/${_SCRIPT}
 _HIST_BAK=${_CFG_DIR}/.zsh_history.bak
 _HIST_CACHE=${_CFG_DIR}/hist_cache
 _HIST_FILE=${_HIST_DIR}/.zsh_history
-_HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
+_HIST_NEW=$(mktemp ${_CFG_DIR}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
 _FREQ_OPT_CMDS=(

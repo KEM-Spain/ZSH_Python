@@ -39,10 +39,10 @@ typeset -a _FREQ_OPT_CMDS=()
 _TESTING_DIR=${PWD}/testing
 _HIST_DIR=${HOME}
 _HIST_TMP=/tmp
-_CACHE_DIR=~/.local/share/${_SCRIPT}
-_HIST_CACHE=${_CACHE_DIR}/hist_cache
+_CFG_DIR=~/.local/share/${_SCRIPT}
+_HIST_BAK=${_CFG_DIR}/.zsh_history.bak
+_HIST_CACHE=${_CFG_DIR}/hist_cache
 _HIST_FILE=${_HIST_DIR}/.zsh_history
-_HIST_BAK=${_HIST_DIR}/.zsh_history.bak
 _HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
@@ -98,11 +98,11 @@ cmd_filter () {
 	local VALID=false
 	local WCH=0
 	local CACHE=0
-	local K
+	local K RC
 
 	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
 
-	[[ ! -e ${_CACHE_DIR} ]] && md ${_CACHE_DIR}
+	[[ ! -e ${_CFG_DIR} ]] && md ${_CFG_DIR}
 	[[ ! -e ${_HIST_CACHE} ]] && touch ${_HIST_CACHE}
 
 	for K in ${(k)${(P)ARRAY_NAME}};do
@@ -118,7 +118,7 @@ cmd_filter () {
 
 		VALID=false
 		if [[ -n ${CMD_TGT} && -n ${_HIST_CACHE} ]];then
-			if grep -Fq ${CMD_TGT} ${_HIST_CACHE};then
+			if grep -Fq "${CMD_TGT}" ${_HIST_CACHE};then
 				VALID='true'
 				((CACHE++))
 				printf '%s\n' "${K}"
@@ -170,7 +170,8 @@ cmd_filter () {
 		fi
 		SEEN[${CMD_TGT}]=1
 	done
-	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CACHE_DIR}/accumulators
+
+	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CFG_DIR}/accumulators
 	[[ ${PROD_OPT} == 'false' ]] && echo >&2 # Clear progress
 }
 
@@ -227,11 +228,15 @@ build_hist () {
 
 	#echo "ARRAY_NAME:${ARRAY_NAME} ${#${(P)ARRAY_NAME}}" >&2
 
+	echo -n "${ITALIC}Parsing unique commands...${RESET}" >&2
 	_CMD_LIST=("${(f)$(hist_parse ${ARRAY_NAME})}") # Order unique commands by timestamp
+	echo "${ITALIC}got ${#_CMD_LIST} commands...done${RESET}" >&2
 
+	echo "${ITALIC}Filtering out invalid commands...${RESET}" >&2
 	_VALID_CMDS=("${(f)$(cmd_filter _CMD_LIST)}") # Retain valid commands
+	echo "\n${ITALIC}Identified ${#_VALID_CMDS} valid commands...done${RESET}" >&2
 
-	for L in ${_VALID_CMDS};do
+	for L in ${(on)_VALID_CMDS};do
 		printf "%s\n" "${L}"
 	done | sort -n # Print valid commands in time order
 }
@@ -343,8 +348,10 @@ cp ${_HIST_FILE} ${_HIST_BAK}
 echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
 upd_locate -u 2>/dev/null
 
-echo "${ITALIC}Collating history...${RESET}" >&2
+HL=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
+echo -n "${ITALIC}Collating ${HL} lines of history...${RESET}" >&2
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
+echo "${ITALIC}done${RESET}" >&2
 [[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
 [[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
@@ -371,7 +378,7 @@ fi
 
 if [[ ${PROD_OPT} == 'false' ]];then
 	CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
-	read ACC <${_CACHE_DIR}/accumulators
+	read ACC <${_CFG_DIR}/accumulators
 	echo "   SIZE:${WHITE_FG}${CUR_SIZE}${RESET}"
 	echo " CACHED:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
 	echo "  WHICH:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"

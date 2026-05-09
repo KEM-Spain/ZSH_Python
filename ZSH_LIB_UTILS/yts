@@ -643,7 +643,7 @@ fav_get () {
 	local HDR=''
 	local HDR_TAG=" <I>(Custom List)<N> "
 	local LIST=''
-	local MAP="(<w>r<N>)umble list, (<w>y<N>)outube list, (<w>c<N>)ustom list, (<w>d<N>)elete favorite"
+	local MAP="(<w>r<N>)umble, (<w>y<N>)outube, (<w>c<N>)ustom, (<w>d<N>)elete favorite"
 	local MENU_LBL=''
 	local MENU_TYPE=''
 	local OPTS=''

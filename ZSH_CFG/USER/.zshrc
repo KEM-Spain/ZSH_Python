@@ -208,6 +208,40 @@ _term_wid () {
 	[[ -z ${WID} ]] && echo "Unable to obtain WID" >&2 || echo ${WID}
 }
 
+_is_top_term () {
+	local -a TERMS=()
+	local -a TTYS=()
+	local TTY=''
+	local MIN=0
+	local NDX=0
+	local CURRENT=''
+	local L T
+
+	TERMS=("${(f)$(terms)}")
+
+	for L in ${TERMS};do
+		TTY=''
+		case ${L} in
+			*session*) SESSIONS=$(tr -s '[:space:]' <<<${L} | cut -d' ' -f1);;
+			*pts*)	TTY+=$(tr -s '[:space:]' <<<${L} | cut -d'/' -f2)
+						if [[ ${TTY} =~ '\*' ]];then
+							CURRENT=$(cut -d' ' -f1 <<<${TTY})
+							TTYS+=${CURRENT}
+						else
+							TTYS+=${TTY}
+						fi
+						;;
+		esac
+	done
+
+	for T in ${(n)TTYS};do
+		((NDX++))
+		[[ ${T} -lt ${MIN} || ${NDX} -eq 1 ]] && MIN=${T}
+	done
+
+	[[ ${CURRENT} == ${MIN} ]] && return 0 || return 1
+}
+
 _wifi_on () {
 	local R=$(nmcli -c no r | tail -1 | cut -d' ' -f1)
 
@@ -261,7 +295,7 @@ add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
 
 # Execution
-if [[ ${_TERMCNT} -eq 1 ]];then
+if _is_top_term;then
 	INTERACTIVE=''
 
 	if [[ -o interactive ]]; then
@@ -295,6 +329,7 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		tput el1
 		tput rc
 		wmctrl -R Terminal 
+		tput ed
 		echo ${HIST}
 
 		setopt >~/.cur_setopts
@@ -330,14 +365,12 @@ if [[ ${_TERMCNT} -eq 1 ]];then
 		remind # post any reminders
 
 		# show calendar
-		if [[ $(_term_count) -eq 1 ]];then
+		#if [[ ${$(tty):t} -eq 0 ]];then
 			TERM_LINES=$(tput lines)
 			CAL_TOP_ROW=$(( TERM_LINES - _CAL_LINES ))
 			tput cup ${CAL_TOP_ROW} 0
 			cal_clr
-		else
-			terms
-		fi
+		#fi
 
 		xdotool mousemove $((1920/2)) $((1080/2)) # center the mouse  pointer
 

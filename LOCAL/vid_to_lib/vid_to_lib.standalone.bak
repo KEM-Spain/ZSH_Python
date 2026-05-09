@@ -153,7 +153,7 @@ exit_leave () {
 
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup # Restore if needed
 
-	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" # Display any exit messages
+	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
 
 	exit ${_EXIT_VALUE}
 }
@@ -631,7 +631,7 @@ for V in ${_VIDEOS};do
 done
 
 if [[ ${HIT} == 'true' ]];then
-	# TODO: Modify fsub.standalone to accecpt this list
+	# TODO: Modify fsub.standalone to accept this list
 	logit ${_LOG} "=========================="
 	for M in ${_MOVELIST};do
 		logit ${_LOG} "Moved ${M} to ${MEDIA_DEST}"

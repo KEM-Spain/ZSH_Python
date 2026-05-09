@@ -1,28 +1,34 @@
-2026-05-07_10:41: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-07_10:41: log_update: Skipping expired inode:6291481
-2026-05-07_10:41: log_update: Skipping expired inode:6307571
-2026-05-07_10:41: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-07_10:41: query_youtube: Creating listing for QKEY:danieldavisdeepdive STRICT:null
-2026-05-07_10:41: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Daniel Davis ENGINE:youtube EOPT:null FKEY:daniel davis QKEY:danieldavisdeepdive TYPE:custom 
-2026-05-07_10:41: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "danieldavisdeepdive"
-2026-05-07_10:41: query_youtube: Query matched 18 lines, _LOCAL_LIST has 17 lines
-2026-05-07_10:41: query_youtube: Listing for QKEY:danieldavisdeepdive contains 17 rows
-2026-05-07_10:41: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.w0cYid
-2026-05-07_10:41: job_start: TITLE:SCOTT RITTER: We've Not Impacted Iran As We're Being Told
-2026-05-07_10:41: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=yeSOZPgNars" PID:424236
-2026-05-07_10:41: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-07_10:41: action_do: GENERATING HEADER
-2026-05-07_10:41: title_scrubber: UCASE_WORDS:2
-2026-05-07_10:41: title_scrubber: Preserving uppercase:Scott
-2026-05-07_10:41: title_scrubber: Preserving uppercase:Ritter
-2026-05-07_10:41: action_do: COMPLETED
-2026-05-07_10:41: action_do: POST-PROCESSING
-2026-05-07_10:41: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=yeSOZPgNars PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-07_10:41: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - SCOTT_RITTER_-_We_ve_Not_Impacted_Iran_As_We_re_Being_Told.mp4
-2026-05-07_10:41: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - SCOTT_RITTER_-_We_ve_Not_Impacted_Iran_As_We_re_Being_Told.mp4
-2026-05-07_10:41: title_scrubber: UCASE_WORDS:2
-2026-05-07_10:41: title_scrubber: Preserving uppercase:Scott
-2026-05-07_10:41: title_scrubber: Preserving uppercase:Ritter
-2026-05-07_10:41: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - SCOTT_RITTER_-_We_ve_Not_Impacted_Iran_As_We_re_Being_Told.mp4 with:Daniel Davis - SCOTT RITTER - We've Not Impacted Iran As We're Being.mp4
-2026-05-07_10:41: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - SCOTT RITTER - We've Not Impacted Iran As We're Being.mp4
-2026-05-07_10:41: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.w0cYid was cleared for:danieldavisdeepdive from:action_do
+2026-05-09_00:09: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-05-09_00:09: log_update: Skipping expired inode:6309056
+2026-05-09_00:09: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-05-09_00:09: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
+2026-05-09_00:09: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
+2026-05-09_00:09: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "alexchristoforou"
+2026-05-09_00:09: query_youtube: Query matched 7 lines, _LOCAL_LIST has 5 lines
+2026-05-09_00:09: query_youtube: Listing for QKEY:alexchristoforou contains 5 rows
+2026-05-09_00:09: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.mMGMNR
+2026-05-09_00:09: job_start: TITLE:Starmer refuses to quit. Zelensky warns diplomats, do not go to Moscow. Trump
+2026-05-09_00:09: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=C0s1f3RCz-A" PID:1998519
+2026-05-09_00:09: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-09_00:09: action_do: GENERATING HEADER
+2026-05-09_00:09: title_scrubber: UCASE_WORDS:1
+2026-05-09_00:09: title_scrubber: Preserving acronym:Do
+2026-05-09_00:09: title_scrubber: Preserving uppercase:Glow
+2026-05-09_00:09: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=C0s1f3RCz-A PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-09_00:09: action_do: COMPLETED
+2026-05-09_00:09: action_do: POST-PROCESSING
+2026-05-09_00:09: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - Starmer_refuses_to_quit._Zelensky_warns_diplomats_do_not_go_to_Moscow._Trump_Nuclear_GLOW.mp4
+2026-05-09_00:09: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - Starmer_refuses_to_quit._Zelensky_warns_diplomats_do_not_go_to_Moscow._Trump_Nuclear_GLOW.mp4
+2026-05-09_00:09: title_scrubber: UCASE_WORDS:1
+2026-05-09_00:09: title_scrubber: Preserving acronym:Do
+2026-05-09_00:09: title_scrubber: Preserving uppercase:Glow
+2026-05-09_00:09: set_final_fn: Overwriting file:Alex_Christoforou - Starmer_refuses_to_quit._Zelensky_warns_diplomats_do_not_go_to_Moscow._Trump_Nuclear_GLOW.mp4 with:Alex Christoforou - Starmer Refuses To Quit. Zelensky Warns Diplomats.mp4
+2026-05-09_00:09: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Alex Christoforou - Starmer Refuses To Quit. Zelensky Warns Diplomats.mp4
+2026-05-09_00:09: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.mMGMNR was cleared for:alexchristoforou from:action_do
+2026-05-09_00:34: query_rumble: Creating listing for QKEY:thejimmydoreshow TYPE:channel
+2026-05-09_00:34: parse_rumble: Parsing list for QKEY:thejimmydoreshow
+2026-05-09_00:34: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-05-09_00:34: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-05-09_00:34: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-05-09_00:34: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-05-09_00:34: query_rumble: Listing for QKEY:thejimmydoreshow contains 24 rows

@@ -106,44 +106,31 @@ action_do () {
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "CMD:${CMD}"
 
-	set -xv
 	for K in ${(k)FILE_APP};do # Allow each app to have a unique filelist
 		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
 			LAST_APP=${FILE_APP[${K}]}
 			FLIST=()
-			FLIST+=${K}
+			FLIST+=${(qqq)K}
 		else
-			FLIST+=${K}
+			FLIST+=${(qqq)K}
 		fi
 		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
 	done
-	set +xv;read
 
 	for K in ${(k)RUN_LIST};do
 		/bin/rm -f ${ERR_LOG}
 		if is_foreground_only ${K};then
 			logit ${_APP_LOG} "Foreground job: APP:${K} ARGS:${RUN_LIST[${K}]}"
-			if [[ ${TEST} == 'true' ]];then
-				msg_box -p -PK -H2 "TEST MODE|FOREGROUND|K:${K} RUN_LIST:${(qqq)RUN_LIST[${K}]}"
-				eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
-			else
-				eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
-				MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
-				RC=$(wc -w <<<${MSG})
-				[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
-			fi
+			eval "${K} ${RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
+			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
+			RC=$(wc -w <<<${MSG})
+			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
 		else
 			logit ${_APP_LOG} "Background job: APP:${K} ARGS:${RUN_LIST[${K}]}"
-			if [[ ${TEST} == 'true' ]];then
-				msg_box -p -PK -H2 "TEST MODE|BACKGROUND|K:${K} RUN_LIST:${(qqq)RUN_LIST[${K}]}"
-				eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
-			else
-				eval "${K} ${(qqq)RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
-				win_max -p ${!} # Maximize window using PID of background job
-				MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
-				RC=$(wc -w <<<${MSG})
-				[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
-			fi
+			eval "${K} ${RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
+			win_max -p ${!} # Maximize window using PID of background job
+			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
+			RC=$(wc -w <<<${MSG})
 		fi
 	done
 

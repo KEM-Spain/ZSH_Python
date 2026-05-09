@@ -20,6 +20,7 @@ typeset -a _VIDEOS=()
 typeset -a _MOVELIST=()
 
 # Constants
+_CFG_DIR=~/.local/share/wid_watch
 _LIB=/usr/local/lib
 _VW=/usr/local/bin/system/vid_watch
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
@@ -32,7 +33,7 @@ _COMPLETED_DIR=${_BASEDIR}/Completed
 _DELUGE_STATE=~/.config/deluge/state
 _INCOMPLETED_DIR=${_BASEDIR}/Incomplete
 _LIBRARY_DIR=${_BASEDIR}/Library
-_LOG=/tmp/${0:t}.log
+_LOG=${_CFG_DIR}/${0:t}.log
 _MOVIES_SUB=movies
 _SERIES_SUB=series
 
@@ -82,7 +83,7 @@ exit_pre_exit () {
 			if [[ -n ${_MY_PID} ]];then
 				SCRUB=("${(f)$(find /tmp/*${_MY_PID}* -type f)}")
 				for F in ${SCRUB};do
-					echo "${0}: Scrubbed: ${F}" >> /tmp/scrub.log
+					echo "${0}: Scrubbed: ${F}" >> /tmp/exit_scrub.log
 					/bin/rm -f ${F}
 				done
 			fi
@@ -118,9 +119,11 @@ arr_is_populated () {
 	
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARR:${#ARR}"
 
-	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires an argument${RESET} of type <ARRAY> ${#}" >&2
+	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires a quoted argument${RESET} of type <ARRAY> ${#}" >&2
 
-	[[ ${ARR[@]} =~ "^ *$" ]] && RC=1 || RC=0
+	ARR=$(tr -d '[:space:]' <<<${ARR})
+
+	[[ -z ${ARR[@]} ]] && RC=1 || RC=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RC:${RC}"
 
@@ -153,7 +156,9 @@ exit_leave () {
 
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup # Restore if needed
 
-	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
+	if [[ -n ${_EXIT_MSGS} ]];then
+		echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
+	fi
 
 	exit ${_EXIT_VALUE}
 }
@@ -214,74 +219,6 @@ str_unicode_line () {
 
 	do_rmso
 	printf "\\u2500%.0s" {1..$(( ${LENGTH} ))}
-}
-
-title_info () {
-	local -a TITLE_ARG=(${@})
-	local INFO_TYPE=${1}
-	local INFO_TITLE=${2}
-	local TITLE_REGEX
-	local LONG_INFO
-	local YEAR SERIES RES
-	local SHORT_TITLE
-	local LONG_TITLE
-	local NDX
-
-	# Find regexes (posix-basic syntax)
-	local _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
-
-	# Perl regexes (extended syntax)
-	local _SERIES_REGEX='((?<!^)[Ss]\d{2}[Ee]\d{2}|\d{4}.\d{2}.\d{2})'
-	local _YEAR_REGEX='(?<!^)(?<=[(. ])(\d{4})(?=[). ])'
-	local _RES_REGEX='(?<!^)(720p|1080p)'
-	local _SHORT_TITLE_REGEX='s/^([^.]*[.][^.]*)[.].*$'
-
-	# Sed regexes (posix-basic syntax)
-	local _TITLE_JUNK_REGEX='[.(_ ]'
-
-	YEAR=$(perl -p -e "s/(.*)(${_YEAR_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${YEAR} == ${INFO_TITLE} ]] && YEAR=''
-
-	SERIES=$(perl -p -e "s/(.*)(${_SERIES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${SERIES} == ${INFO_TITLE} ]] && SERIES=''
-
-	RES=$(perl -p -e "s/(.*)(${_RES_REGEX})(.*)/\$2/" <<<${INFO_TITLE})
-	[[ ${RES} == ${INFO_TITLE} ]] && RES=''
-
-	LONG_INFO=true
-	if [[ -n ${YEAR} ]];then
-		TITLE_REGEX=${_YEAR_REGEX}
-	elif [[ -n ${SERIES} ]];then
-		TITLE_REGEX=${_SERIES_REGEX}
-	elif [[ -n ${RES} ]];then
-		TITLE_REGEX=${_RES_REGEX}
-	else
-		TITLE_REGEX='(.*)'
-		LONG_INFO=false
-	fi
-
-	SHORT_TITLE=$(perl -p -e "s/^(.*)(${TITLE_REGEX})(.*)/\$1/" <<<${INFO_TITLE})
-
-	NDX=0
-	while true;do
-		((NDX++))
-		if [[ ${SHORT_TITLE[-1]} =~ "${_TITLE_JUNK_REGEX}$" ]];then
-			SHORT_TITLE=$(sed "s/${_TITLE_JUNK_REGEX}$//" <<<${SHORT_TITLE})
-			[[ ${NDX} -ge 5 ]] && break # Safety break
-		else
-			break
-		fi
-	done
-
-	[[ ${LONG_INFO} == 'true' ]] && LONG_TITLE=$(echo "${(C)SHORT_TITLE} ${YEAR} ${(U)SERIES} ${RES}" | tr -s '[:space:]')
-
-	[[ -z ${LONG_TITLE} ]] && LONG_TITLE=${SHORT_TITLE} # Don't return an empty string
-
-	case ${INFO_TYPE} in
-		short) echo ${SHORT_TITLE:gs/\./ /};;
-		long) echo ${LONG_TITLE:gs/\./ /};;
-		series) echo ${SERIES:gs/\./ /};;
-	esac
 }
 
 clean_media () {
