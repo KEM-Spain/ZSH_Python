@@ -187,7 +187,7 @@ ___EOF
 	if [[ ${#} -eq 0 ]];then
 		LIST=("${(f)$(find . -maxdepth 1 -type f -regex "${_VID_REGEX_F}")}")
 	else
-		[[ -e ${@} ]] && LIST=(${@}) || exit_leave $(err_msg_exit E "File not found:${@}")
+		LIST=(${@})
 	fi
 
 	HIT=false
@@ -216,7 +216,7 @@ ___EOF
 		BARLINE=$(( NDX % 2 )) # Barlining 
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
-	done | sort -t' ' -k2rn | mypager wait
+	done | mypager wait
 
 }
 

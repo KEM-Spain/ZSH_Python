@@ -72,19 +72,26 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-e${RESET} exists return query status"
+	echo -e "${WHITE_FG}-u${RESET} return list of current user processes"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HD"
+OPTSTR=":HDeu"
 OPTIND=0
+
+EXISTS_OPT=false
+USER_OPT=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     e) EXISTS_OPT=true;;
+     u) USER_OPT=true;;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
@@ -94,30 +101,45 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
-[[ ${#} -eq 0 ]] && exit_leave $(err_msg_exit "Missing argument:<SEARCHTERM>") || SEARCHTERM=${1}
 
-PS=("${(f)$(ps --headers -aux | grep --color=never -i ${SEARCHTERM} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
-[[ -z ${PS} ]] && exit_leave $(err_msg_exit "Process:${SEARCHTERM} not found")
+if [[ ${USER_OPT} == 'false' ]];then
+	[[ ${#} -eq 0 ]] && exit_leave $(err_msg_exit "Missing argument:<SEARCHTERM>") || SEARCHTERM=${1}
+fi
 
-(
-printf "[${WHITE_FG}%s${RESET}]:${WHITE_FG} %d${RESET} %s found matching:${WHITE_FG}${SEARCHTERM}${RESET}\n\n" ${0:t} ${#PS} $(str_pluralize "process" ${#PS})
-printf "${WHITE_FG}%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s${RESET}\n" "User" "PID" "CPU" "MEM" "TTY" "Start" "Duration" "Command"
-printf "${MAGENTA_FG}%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s${RESET}\n" $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 70) 
-for P in ${(O)PS};do
-	F1=$(cut -d' ' -f1 <<<${P})
-	F2=$(cut -d' ' -f2 <<<${P})
-	F3=$(cut -d' ' -f3 <<<${P})
-	F4=$(cut -d' ' -f4 <<<${P})
-	F5=$(cut -d' ' -f5 <<<${P})
-	F6=$(cut -d' ' -f6 <<<${P})
-	F7=$(cut -d' ' -f7 <<<${P})
-	F8=$(cut -d' ' -f8 <<<${P})
-	F9=$(cut -d' ' -f9 <<<${P})
-	F10=$(cut -d' ' -f10 <<<${P})
-	F11=$(cut -d' ' -f11- <<<${P})
-	printf "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s\n" ${F1} ${F2} ${F3} ${F4} ${F7} ${F9} ${F10} ${F11[1,70]}
-done
-) | sort -n -t' ' -k6 | mypager wait
+if [[ ${USER_OPT} == 'true' ]];then
+	PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
+	for P in ${(O)PS};do
+		F2=$(cut -d' ' -f2 <<<${P})
+		echo ${F2}
+	done
+else
+	[[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+	PS=("${(f)$(ps --headers -aux | grep --color=never -i ${SEARCHTERM} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
+	[[ ${EXISTS_OPT} == 'true' && -z ${PS} ]] && return 1
+	[[ -z ${PS} ]] && exit_leave $(err_msg_exit "Process:${SEARCHTERM} not found")
+
+	set_exit_value 0
+
+	(
+	printf "[${WHITE_FG}%s${RESET}]:${WHITE_FG} %d${RESET} %s found matching:${WHITE_FG}${SEARCHTERM}${RESET}\n\n" ${0:t} ${#PS} $(str_pluralize "process" ${#PS})
+	printf "${WHITE_FG}%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s${RESET}\n" "User" "PID" "CPU" "MEM" "TTY" "Start" "Duration" "Command"
+	printf "${MAGENTA_FG}%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s${RESET}\n" $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 70) 
+	for P in ${(O)PS};do
+		F1=$(cut -d' ' -f1 <<<${P})
+		F2=$(cut -d' ' -f2 <<<${P})
+		F3=$(cut -d' ' -f3 <<<${P})
+		F4=$(cut -d' ' -f4 <<<${P})
+		F5=$(cut -d' ' -f5 <<<${P})
+		F6=$(cut -d' ' -f6 <<<${P})
+		F7=$(cut -d' ' -f7 <<<${P})
+		F8=$(cut -d' ' -f8 <<<${P})
+		F9=$(cut -d' ' -f9 <<<${P})
+		F10=$(cut -d' ' -f10 <<<${P})
+		F11=$(cut -d' ' -f11- <<<${P})
+		printf "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s\n" ${F1} ${F2} ${F3} ${F4} ${F7} ${F9} ${F10} ${F11[1,70]}
+	done
+	) | sort -n -t' ' -k6 | mypager wait
+fi
 
 exit_leave

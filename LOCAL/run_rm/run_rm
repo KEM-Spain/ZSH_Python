@@ -32,12 +32,14 @@ for D in ${=_DEPS_};do
 done
 
 # Declarations
-typeset -a OPTIONS
-typeset -a LIST
-typeset -A OBJ_OWNER
-typeset -A OBJ_GROUP
-typeset -A FIELD_OBJ
-typeset -A FIELD_LEN
+typeset -a OPTIONS=()
+typeset -a LIST=()
+typeset -A OBJ_OWNER=()
+typeset -A OBJ_GROUP=()
+typeset -A FIELD_OBJ=()
+typeset -A FIELD_LEN=()
+typeset -a FLIST=()
+typeset -a ARGS=()
 
 # Constants
 _WARN_LIMIT=3
@@ -129,7 +131,7 @@ get_response () {
 	[[ -z ${PROMPT} ]] && PROMPT="Continue"
 
 	echo -n "\n${WHITE_FG}${PROMPT}${RESET} (y/n):"
-	read -q RESPONSE
+	read -q RESPONSE;echo
 
 	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Operation cancelled${RESET}\n" && exit_leave
 	[[ ${RESPONSE} == "y" ]] && echo && return 0
@@ -232,21 +234,19 @@ shift $((OPTIND -1))
 #---Execution---
 [[ ${#} -eq 0 ]] && usage "Missing argument <FILE>"
 
-OBJ_COUNT=${#ARGS}
-
-typeset -a FLIST=()
-
 RAW_ARGS=("${(f)$(path_get_raw_args)}")
+
+WILDCARD=false
 for R in ${RAW_ARGS};do
-	if [[ $(str_contains ${R} '\x2a') ]];then
-		WILDCARD=true
-		FLIST+=("${(f)$(eval "find . -name '${R}'")}")
-	else
-		FLIST+=$(eval "echo ${R}") # Expand any quoted
-		WILDCARD=false
-	fi
+	[[ $(str_contains ${R} '\x2a') ]] && WILDCARD=true
 done
-[[ ${_DEBUG} -gt 0 ]] && dbg "WILDCARD:${WILDCARD}"
+[[ ${_DEBUG} -gt 0 ]] && dbg "GOT WILDCARD:${WILDCARD}"
+
+FLIST=(${@})
+
+if ! arr_is_populated "${FLIST}";then
+	exit_leave $(err_msg_exit E "file not found:${ARGS}")
+fi
 
 OBJ_COUNT=${#FLIST}
 
@@ -331,9 +331,9 @@ fi
 RM_DIRS=false
 if [[ -z ${OPTIONS} && ${DIRS} -ne 0 ]];then
 	DIR_OBJ_COUNT=$(dir_obj_count ${FLIST})
-	echo -n "\n${WHITE_FG}${DIRS}${RESET} $(str_pluralize directory ${DIRS}) to be ${RED_FG}removed${RESET} containing ${WHITE_FG}${DIR_OBJ_COUNT} ${RESET}$(str_pluralize object ${DIR_OBJ_COUNT}) (y/n):"
-	read -q RESPONSE
-	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Directories will be skipped${RESET}\n"
+	echo -n "\n${WHITE_FG}${DIRS}${RESET} $(str_pluralize directory ${DIRS}) to be ${RED_FG}removed${RESET} containing ${WHITE_FG}${DIR_OBJ_COUNT} ${RESET}$(str_pluralize object ${DIR_OBJ_COUNT}) (y/n)?"
+	read -q RESPONSE;echo
+	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Directories will be skipped${RESET}\n" && DMSG=''
 	[[ ${RESPONSE} == "y" ]] && RM_DIRS=true && echo
 fi
 
@@ -347,8 +347,9 @@ fi
 APPROVED=false
 #echo "REMAINING:${REMAINING}, _WARN_LIMIT:${_WARN_LIMIT}" >&2
 if [[ ${REMAINING} -ne 0 && (${REMAINING} -ge ${_WARN_LIMIT} || ${WARN} == "true") ]];then
-	echo -n "${WHITE_FG}Continue${MSG}${RESET}:(y/n):"
-	read -q RESPONSE
+	echo "Deleting ${WHITE_FG}$(echo "${DMSG}${FMSG}${LMSG}" | tr -s '[:space:]' | sed 's/^[ ]*//g')${RESET}"
+	echo -n "${WHITE_FG}Continue${MSG}${RESET}:(y/n)?"
+	read -q RESPONSE;echo
 	[[ ${RESPONSE} == "n" ]] && echo "${RED_FG}Operation cancelled${RESET}\n" && exit_leave
 	[[ ${RESPONSE} == "y" ]] && APPROVED=true && echo
 fi

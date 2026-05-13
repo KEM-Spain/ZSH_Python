@@ -796,8 +796,10 @@ parse_find_valid_delim () {
 }
 
 parse_get_last_field () {
-	local DELIM=${1};shift
-	local LINE=${@}
+	local DELIM=${1:=' '} # Optional delim
+	local LINE=''
+
+	read -r LINE
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 

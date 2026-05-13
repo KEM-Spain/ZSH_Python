@@ -3,6 +3,7 @@ _DEPS_+=(DBG.zsh MSG.zsh UTILS.zsh)
 
 # LIB declarations
 typeset -a _EXIT_CALLBACKS=()
+typeset -a _PIDS=()
 
 # LIB vars
 _PRE_EXIT_RAN=false
@@ -44,7 +45,8 @@ exit_leave () {
 
 exit_pre_exit () {
 	local -a SCRUB=()
-	local C F
+	local -a USER_PIDS=()
+	local C F P
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -60,15 +62,8 @@ exit_pre_exit () {
 	fi
 
 	if [[ ${_EXIT_SCRUB} == 'true' ]];then
-		{
-			if [[ -n ${_MY_PID} ]];then
-				SCRUB=("${(f)$(find /tmp/*${_MY_PID}* -type f)}")
-				for F in ${SCRUB};do
-					echo "${0}: Scrubbed: ${F}" >> /tmp/exit_scrub.log
-					/bin/rm -f ${F}
-				done
-			fi
-		} >/dev/null 2>&1
+		_PIDS=("${(f)$(get_user_pids)}")
+		scrub_tmp
 	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
@@ -156,5 +151,44 @@ set_exit_value () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_EXIT_VALUE=${1}
+}
+
+get_user_pids () {
+	local PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
+	local F2
+	local P
+
+	for P in ${PS};do
+		F2=$(cut -d' ' -f2 <<<${P})
+		echo ${F2}
+	done
+}
+
+is_active_pid () {
+	local FN=${1}
+	local P
+
+	for P in ${_PIDS};do
+		[[ ${FN} =~ ${P} ]] && return 0
+	done
+	return 1
+}
+
+scrub_tmp () {
+	local -a MARKERS=(debug state tag)
+	local -a FLIST=()
+	local M F
+
+	FLIST=("${(f)$(
+	for M in ${MARKERS};do
+		ls /tmp/*${M}*
+	done 2>/dev/null
+	)}")
+
+	for F in ${FLIST};do
+		if ! is_active_pid ${F};then
+			/bin/rm -f ${F}
+		fi
+	done
 }
 

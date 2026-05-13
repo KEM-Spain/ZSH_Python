@@ -20,7 +20,7 @@ typeset -a _TARGETS=() # Target indexes
 _ACTIVE_SEARCH=false
 _BARLINES=false
 _REUSE_STALE=false
-_CLIENT_WARN=true
+_HIDDEN_MARKED=true
 _CURSOR_NDX=0
 _HEADER_CALLBACK_FUNC=''
 _LINE_MARKER=')'
@@ -370,7 +370,7 @@ list_item () {
 	_CURSOR_NDX=${X_POS}
 }
 
-list_nav_handler () {
+list_navigator () {
 	local KEY=${1}
 	local -A PG_LIMITS=()
 	local MODE=''
@@ -851,8 +851,8 @@ list_select () {
 					if [[ ${SELECTED_COUNT} -eq 0 ]];then
 						break 2
 					else
-						if [[ ${_CLIENT_WARN} == 'true' ]];then
-							list_warn_invisible_rows
+						if [[ ${_HIDDEN_MARKED} == 'true' ]];then
+							list_warn_hidden_marked
 							break 2
 						else
 							if [[ ${_SELECTION_LIMIT} -ne 0 ]];then
@@ -869,7 +869,7 @@ list_select () {
 					fi;;
 			esac
 		done
-		list_nav_handler ${NAV_KEY}
+		list_navigator ${NAV_KEY}
 	done
 
 	return $(list_get_selected_count)
@@ -905,7 +905,7 @@ list_set_barlines () {
 list_set_client_warn () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	_CLIENT_WARN=${1}
+	_HIDDEN_MARKED=${1}
 }
 
 list_set_header () {
@@ -1460,7 +1460,7 @@ list_toggle_selected () {
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}
 }
 
-list_warn_invisible_rows () {
+list_warn_hidden_marked () {
 	local PAGE=${_PAGE_DATA[PAGE]}
 	local FIRST_ITEM=$(( (PAGE * _MAX_DISPLAY_ROWS - _MAX_DISPLAY_ROWS) + 1 ))
 	local LAST_ITEM=$(( PAGE * _MAX_DISPLAY_ROWS ))
@@ -1482,7 +1482,7 @@ list_warn_invisible_rows () {
 			fi
 		fi
 	done
-	[[ -n ${_OFF_SCREEN_ROWS_MSG} ]] && msg_box -x2 -H1 -p -PK "<r>Warning<N>|${_OFF_SCREEN_ROWS_MSG}" && msg_box_clear
+	[[ -n ${_OFF_SCREEN_ROWS_MSG} ]] && msg_box -t1 -H1 "<r>Warning<N>|${_OFF_SCREEN_ROWS_MSG}" && msg_box_clear
 }
 
 list_write_to_file () {

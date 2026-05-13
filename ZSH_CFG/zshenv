@@ -1,6 +1,7 @@
 # Extend PATH
 PATHS=(
 ${HOME} \
+${HOME}/.cargo/bin
 ${HOME}/.zsh \
 ${HOME}/.local/bin \
 ${HOME}/.deno/bin/deno \

@@ -22,6 +22,7 @@ alias disks='/usr/bin/gnome-disks '
 alias e2s='trans -no-pager en:es'
 alias fdsk="sudo fdisk -l | sed -e '/Disk \/dev\/loop/,+5d'"
 alias feh='feh -F'
+alias G='glances'
 alias help='run-help'
 alias keyrate='xset r rate 500 33'
 alias locate='/usr/local/bin/system/launchers/run_locate'

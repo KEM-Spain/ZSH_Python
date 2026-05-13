@@ -120,7 +120,7 @@ item_decorate () {
 	DATE=$(date -d @${TM} +%Y-%m-%d)
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		2) echo -n "${E_STRIKE}${E_RED_FG}${_LIST[${NDX}]:gs/#/ /}${E_RESET} ${E_ITALIC}deleted${E_RESET}";;
+		2) echo -n "${DATE}#${E_STRIKE}${E_RED_FG}${CMD}${E_RESET} ${E_ITALIC}deleted${E_RESET}";;
 		*) echo "${DATE}#${CMD}";;
 	esac
 }

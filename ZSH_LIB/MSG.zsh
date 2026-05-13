@@ -61,7 +61,7 @@ msg_box () {
 	local MSG_STR=''
 	local MSG_X_COORD=0
 	local MSG_Y_COORD=0
-	local NAV_BAR="<c>Navigation keys<N>: <w>t<N>,<w>h<N>=top <w>b<N>,<w>l<N>=bottom <w>p<N>,<w>k<N>=up <w>n<N>,<w>j<N>=down, <w>Esc<N>=close<N>"
+	local NAV_BAR="<c>Navigation keys<N>: <w>c<N>=continue <w>t<N>,<w>h<N>=top <w>b<N>,<w>l<N>=bottom <w>p<N>,<w>k<N>=up <w>n<N>,<w>j<N>=down, <w>Esc<N>=close<N>"
 	local OPTION=''
 	local PAGING_BOT=0
 	local PARTIAL=0
@@ -471,6 +471,7 @@ msg_box () {
 					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}_MSG_KEY:${_MSG_KEY}"
 					case ${_MSG_KEY} in
 						27) return;;
+						c) break;;
 						q) exit_request $(msg_box_ebox_coords ${BOX_X_COORD} ${BOX_Y_COORD} ${BOX_WIDTH} ${#MSG_HEADER});(( MSG_NDX-=PG_LINES ));; # No advance if declined
 					esac
 					MSG_NDX=$(msg_paging ${_MSG_KEY} ${MSG_NDX} ${#MSG_BODY} ${PG_LINES})

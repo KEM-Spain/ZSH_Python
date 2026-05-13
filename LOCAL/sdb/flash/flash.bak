@@ -1,12 +1,16 @@
 #!/usr/bin/zsh
 # Declarations
+typeset -A _TENSE_DEFS
+typeset -A _QUESTION_INDEX
+typeset -a _QUESTION_TEXT
+typeset -a _MSGS
 typeset -A _QUESTIONS=()
 typeset -A _ANSWERS=()
 typeset -A _TENSES=()
 
 # Constants
-_TEST_QUESTIONS=/home/kmiller/Code/LOCAL/sdb/flash/test_questions
-_TENSE_DEFS=/home/kmiller/Code/LOCAL/sdb/flash/tense_defs
+_QUESTIONS=/home/kmiller/Code/LOCAL/sdb/flash/test_questions
+_TENSES=/home/kmiller/Code/LOCAL/sdb/flash/tense_defs
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -91,22 +95,76 @@ shift $((OPTIND -1))
 # Execution
 #[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-NDX=1
 while read LINE;do
-	[[ ${LINE} =~ "^Q:" ]] && _QUESTIONS[${NDX}]=${LINE[3,-1]}
-	[[ ${LINE} =~ "^A:" ]] && _ANSWERS[${NDX}]=${LINE[3,-1]}
-	[[ ${LINE} =~ "^T:" ]] && _TENSES[${NDX}]=${LINE[3,-1]} && ((NDX++))
-done < ${_TEST_QUESTIONS}
+	K=$(cut -d '|' -f1 <<<${LINE})
+	V=$(cut -d '|' -f3- <<<${LINE})
+	_TENSE_DEFS[${K}]=${V}
+done < ${_TENSES}
 
-for Q in ${(k)_QUESTIONS};do
-	clear
-	NEXT=$(shuf -i 1-${#_QUESTIONS} -n 1)
-	msg_box -x4 -p "${_QUESTIONS[${NEXT}]}"
-	[[ ${_MSG_KEY} == 'q' ]] && exit_request
+#for K in ${(k)_TENSE_DEFS};do
+#	printf "KEY:%s\n" ${K}
+#	printf "VAL:%s\n" ${_TENSE_DEFS[${K}]}
+#done
 
-	msg_box -x8 "$(sed -e 's/<ANSWER://' -e 's/:>//' <<<${_ANSWERS[${NEXT}]})"
-	msg_box -x14 -p -PK "${_TENSES[${NEXT}]}"
-	[[ ${_MSG_KEY} == 'q' ]] && exit_request
+_QUESTIONS_LEN=1
+while read LINE;do
+	[[ ${LINE} =~ "^Q:" ]] && _QUESTION_TEXT+=${LINE[3,-1]}
+	((_QUESTIONS_LEN++))
+done < ${_QUESTIONS}
+
+#for L in ${_QUESTION_TEXT};do
+#	printf "%s\n" ${L}
+#done
+ 
+NDX=${RANDOM}
+SEQ=1
+Q_CNT=0
+for ((L=1; L<_QUESTIONS_LEN; L++));do
+	if [[ $((${L} % 3)) -eq 0 ]];then
+		_QUESTION_INDEX[Q${NDX}_A]=${_QUESTION_TEXT[${L}]}
+		NDX=${RANDOM}
+		SEQ=1
+		((Q_CNT++))
+	else
+		_QUESTION_INDEX[Q${NDX}_${SEQ}]=${_QUESTION_TEXT[${L}]}
+		((SEQ++))
+	fi
 done
-
-exit_leave
+#
+#((NDX--))
+#_MSGS_W=100
+#_MSGS_H=6
+#K_CNT=1
+#
+#for K in ${(onk)_QUESTION_INDEX};do
+#	tcup 0 0
+#	echo "${WHITE_FG}${K_CNT}${RESET} of ${WHITE_FG}${Q_CNT}${RESET}"
+#	if [[ ! ${K} =~ '_A' ]];then
+#		_MSG_READY=false
+#		[[ ! "${_QUESTION_INDEX[${K}]}" =~ 'ANSWER' ]] && Q="${_QUESTION_INDEX[${K}]}"
+#		[[ "${_QUESTION_INDEX[${K}]}" =~ 'ANSWER' ]] && A="${_QUESTION_INDEX[${K}]}"
+#		continue
+#	else
+#		_MSG_READY=true
+#	fi
+#
+#	A=$(sed -E -e 's/ANSWER://' -e 's/\:>/>/' <<<${A})
+#
+#	if [[ ${_MSG_READY} == 'true' ]];then
+#		msg_box -c -q -p -x2 -y1 -w${_MSGS_W} -h${_MSGS_H} "${Q}|${A}"
+#	fi
+#
+#	[[ ${_MSG_KEY} == 'q' ]] && exit_leave
+#
+#	if [[ ${K} =~ '_A' ]];then
+#		_MSGS="<w>${_QUESTION_INDEX[${K}]}<N>|"
+#		_MSGS+=$(echo ${_TENSE_DEFS[${_QUESTION_INDEX[${K}]}]} | fold -w70 -s | sed 's/$/|/g')
+#		msg_box -q -p -x10 -y1 -w${_MSGS_W} ${_MSGS}
+#		[[ ${_MSG_KEY} == 'q' ]] && exit_leave
+#	fi
+#
+#	_MSGS=()
+#	((K_CNT++))
+#done
+#
+#exit_leave

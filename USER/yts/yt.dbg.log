@@ -1,34 +1,149 @@
-2026-05-09_00:09: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-09_00:09: log_update: Skipping expired inode:6309056
-2026-05-09_00:09: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-09_00:09: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
-2026-05-09_00:09: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
-2026-05-09_00:09: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "alexchristoforou"
-2026-05-09_00:09: query_youtube: Query matched 7 lines, _LOCAL_LIST has 5 lines
-2026-05-09_00:09: query_youtube: Listing for QKEY:alexchristoforou contains 5 rows
-2026-05-09_00:09: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.mMGMNR
-2026-05-09_00:09: job_start: TITLE:Starmer refuses to quit. Zelensky warns diplomats, do not go to Moscow. Trump
-2026-05-09_00:09: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=C0s1f3RCz-A" PID:1998519
-2026-05-09_00:09: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-09_00:09: action_do: GENERATING HEADER
-2026-05-09_00:09: title_scrubber: UCASE_WORDS:1
-2026-05-09_00:09: title_scrubber: Preserving acronym:Do
-2026-05-09_00:09: title_scrubber: Preserving uppercase:Glow
-2026-05-09_00:09: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=C0s1f3RCz-A PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-09_00:09: action_do: COMPLETED
-2026-05-09_00:09: action_do: POST-PROCESSING
-2026-05-09_00:09: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - Starmer_refuses_to_quit._Zelensky_warns_diplomats_do_not_go_to_Moscow._Trump_Nuclear_GLOW.mp4
-2026-05-09_00:09: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Alex_Christoforou - Starmer_refuses_to_quit._Zelensky_warns_diplomats_do_not_go_to_Moscow._Trump_Nuclear_GLOW.mp4
-2026-05-09_00:09: title_scrubber: UCASE_WORDS:1
-2026-05-09_00:09: title_scrubber: Preserving acronym:Do
-2026-05-09_00:09: title_scrubber: Preserving uppercase:Glow
-2026-05-09_00:09: set_final_fn: Overwriting file:Alex_Christoforou - Starmer_refuses_to_quit._Zelensky_warns_diplomats_do_not_go_to_Moscow._Trump_Nuclear_GLOW.mp4 with:Alex Christoforou - Starmer Refuses To Quit. Zelensky Warns Diplomats.mp4
-2026-05-09_00:09: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Alex Christoforou - Starmer Refuses To Quit. Zelensky Warns Diplomats.mp4
-2026-05-09_00:09: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.mMGMNR was cleared for:alexchristoforou from:action_do
-2026-05-09_00:34: query_rumble: Creating listing for QKEY:thejimmydoreshow TYPE:channel
-2026-05-09_00:34: parse_rumble: Parsing list for QKEY:thejimmydoreshow
-2026-05-09_00:34: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-05-09_00:34: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-05-09_00:34: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-05-09_00:34: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-05-09_00:34: query_rumble: Listing for QKEY:thejimmydoreshow contains 24 rows
+2026-05-13_08:42: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-05-13_08:42: log_update: Skipping expired inode:6309385
+2026-05-13_08:42: log_update: Skipping expired inode:6309060
+2026-05-13_08:42: log_update: Skipping expired inode:6347747
+2026-05-13_08:42: log_update: Skipping expired inode:6350206
+2026-05-13_08:42: log_update: Skipping expired inode:6351830
+2026-05-13_08:42: log_update: Skipping expired inode:6351835
+2026-05-13_08:42: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-05-13_08:43: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
+2026-05-13_08:43: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks TYPE:standard 
+2026-05-13_08:43: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
+2026-05-13_08:43: query_youtube: Query matched 13 lines, _LOCAL_LIST has 11 lines
+2026-05-13_08:43: query_youtube: Listing for QKEY:dialogueworks contains 11 rows
+2026-05-13_08:43: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
+2026-05-13_08:43: parse_rumble: Parsing list for QKEY:kimiversen
+2026-05-13_08:43: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-05-13_08:43: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-05-13_08:43: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-05-13_08:43: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-05-13_08:43: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-05-13_08:43: query_rumble: Listing for QKEY:kimiversen contains 25 rows
+2026-05-13_08:43: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.c5Yz75
+2026-05-13_08:43: job_start: TITLE:THIS News Network IS Ratcheting Up Hantavirus Panic - Why?
+2026-05-13_08:43: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v79reio-this-news-network-is-ratcheting-up-hantavirus-panic-why.html?e9s=src_v1_ucp_a" PID:2638847
+2026-05-13_08:43: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-13_08:43: action_do: GENERATING HEADER
+2026-05-13_08:43: title_scrubber: UCASE_WORDS:2
+2026-05-13_08:43: title_scrubber: Preserving uppercase:This
+2026-05-13_08:43: title_scrubber: Preserving acronym:Is
+2026-05-13_08:43: title_scrubber: Preserving uppercase:Why
+2026-05-13_08:44: action_do: COMPLETED
+2026-05-13_08:44: action_do: POST-PROCESSING
+2026-05-13_08:44: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v79reio-this-news-network-is-ratcheting-up-hantavirus-panic-why.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-13_08:44: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - THIS_News_Network_Is_Ratcheting_Up_Hantavirus_Panic_WHY.mp4
+2026-05-13_08:44: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - THIS_News_Network_Is_Ratcheting_Up_Hantavirus_Panic_WHY.mp4
+2026-05-13_08:44: title_scrubber: UCASE_WORDS:2
+2026-05-13_08:44: title_scrubber: Preserving uppercase:This
+2026-05-13_08:44: title_scrubber: Preserving acronym:Is
+2026-05-13_08:44: title_scrubber: Preserving uppercase:Why
+2026-05-13_08:44: set_final_fn: Overwriting file:Kim_Iversen - THIS_News_Network_Is_Ratcheting_Up_Hantavirus_Panic_WHY.mp4 with:Kim Iversen - THIS News Network IS Ratcheting Up Hantavirus Panic WHY.mp4
+2026-05-13_08:44: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Kim Iversen - THIS News Network IS Ratcheting Up Hantavirus Panic WHY.mp4
+2026-05-13_08:44: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.c5Yz75 was cleared for:kimiversen from:action_do
+2026-05-13_08:45: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
+2026-05-13_08:45: parse_rumble: Parsing list for QKEY:glenndiesen
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-05-13_08:45: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-05-13_08:45: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
+2026-05-13_08:45: query_rumble: Creating listing for QKEY:deepfocuswithjohnkiriakou TYPE:channel
+2026-05-13_08:45: parse_rumble: Parsing list for QKEY:deepfocuswithjohnkiriakou
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-05-13_08:45: query_rumble: Listing for QKEY:deepfocuswithjohnkiriakou contains 24 rows
+2026-05-13_08:45: query_rumble: Creating listing for QKEY:deepfocuswithjohnkiriakou TYPE:channel
+2026-05-13_08:45: parse_rumble: Parsing list for QKEY:deepfocuswithjohnkiriakou
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-05-13_08:45: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-05-13_08:45: query_rumble: Listing for QKEY:deepfocuswithjohnkiriakou contains 24 rows
+2026-05-13_08:46: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.JZHmnl
+2026-05-13_08:46: job_start: TITLE:"I Can DO Anything": The Most Dangerous Idea In U.S. Politics - Bruce Fein #
+2026-05-13_08:46: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v79fibi-i-can-do-anything-the-most-dangerous-idea-in-u.s.-politics-bruce-fein-deep-.html?e9s=src_v1_ucp_a" PID:2668529
+2026-05-13_08:46: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-13_08:46: action_do: GENERATING HEADER
+2026-05-13_08:46: title_scrubber: UCASE_WORDS:6
+2026-05-13_08:46: title_scrubber: Preserving acronym:I
+2026-05-13_08:46: title_scrubber: Preserving acronym:Do
+2026-05-13_08:47: action_do: COMPLETED
+2026-05-13_08:47: action_do: POST-PROCESSING
+2026-05-13_08:47: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v79fibi-i-can-do-anything-the-most-dangerous-idea-in-u.s.-politics-bruce-fein-deep-.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-13_08:47: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/DeepFocuswithJohnKiriakou - I_Can_Do_Anything_-_The_Most_Dangerous_Idea_in_U.S._Politics_-_Bruce_Fein_DEEP_FOCUS_w_J_Kiriakou.mp4
+2026-05-13_08:47: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/DeepFocuswithJohnKiriakou - I_Can_Do_Anything_-_The_Most_Dangerous_Idea_in_U.S._Politics_-_Bruce_Fein_DEEP_FOCUS_w_J_Kiriakou.mp4
+2026-05-13_08:47: title_scrubber: UCASE_WORDS:6
+2026-05-13_08:47: title_scrubber: Preserving acronym:I
+2026-05-13_08:47: title_scrubber: Preserving acronym:Do
+2026-05-13_08:47: set_final_fn: Overwriting file:DeepFocuswithJohnKiriakou - I_Can_Do_Anything_-_The_Most_Dangerous_Idea_in_U.S._Politics_-_Bruce_Fein_DEEP_FOCUS_w_J_Kiriakou.mp4 with:John Kiriakou - I Can DO Anything - The Most Dangerous Idea In U.S.mp4
+2026-05-13_08:47: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/John Kiriakou - I Can DO Anything - The Most Dangerous Idea In U.S.mp4
+2026-05-13_08:47: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.JZHmnl was cleared for:deepfocuswithjohnkiriakou from:action_do
+2026-05-13_08:47: query_rumble: Creating listing for QKEY:newordertv TYPE:channel
+2026-05-13_08:47: parse_rumble: Parsing list for QKEY:newordertv
+2026-05-13_08:47: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-05-13_08:47: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-05-13_08:47: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-05-13_08:47: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-05-13_08:47: query_rumble: Listing for QKEY:newordertv contains 9 rows
+2026-05-13_08:48: query_rumble: Creating listing for QKEY:rtnews TYPE:channel
+2026-05-13_08:48: parse_rumble: Parsing list for QKEY:rtnews
+2026-05-13_08:48: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-05-13_08:48: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-05-13_08:48: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-05-13_08:48: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-05-13_08:48: parse_rumble: ROW:3 NO DATA from TAG:videostream__time text{}
+2026-05-13_08:48: parse_rumble: Omitting NDX:2 - URL - ucp_f
+2026-05-13_08:48: parse_rumble: Omitting NDX:4 - TIME no colon
+2026-05-13_08:48: query_rumble: Listing for QKEY:rtnews contains 24 rows
+2026-05-13_08:48: query_youtube: Creating listing for QKEY:danieldavisdeepdive STRICT:null
+2026-05-13_08:48: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Daniel Davis ENGINE:youtube EOPT:null FKEY:daniel davis QKEY:danieldavisdeepdive SMSG:0.0% TYPE:custom 
+2026-05-13_08:48: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "danieldavisdeepdive"
+2026-05-13_08:48: query_youtube: Query matched 19 lines, _LOCAL_LIST has 18 lines
+2026-05-13_08:48: query_youtube: Listing for QKEY:danieldavisdeepdive contains 18 rows
+2026-05-13_08:48: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.LkYIit
+2026-05-13_08:48: job_start: TITLE:Iran War Both Sides Declaring Victory Robert Barnes & Lt Col Daniel Davis
+2026-05-13_08:48: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=F96pMYCZK84" PID:2696105
+2026-05-13_08:48: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-13_08:49: action_do: GENERATING HEADER
+2026-05-13_08:49: title_scrubber: UCASE_WORDS:1
+2026-05-13_08:49: title_scrubber: Preserving acronym:Lt
+2026-05-13_08:49: title_scrubber: Preserving acronym:Col
+2026-05-13_08:49: action_do: COMPLETED
+2026-05-13_08:49: action_do: POST-PROCESSING
+2026-05-13_08:49: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=F96pMYCZK84 PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-13_08:49: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Iran_War_Both_Sides_Declaring_Victory_Robert_Barnes_Lt_Col_Daniel_Davis.mp4
+2026-05-13_08:49: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Iran_War_Both_Sides_Declaring_Victory_Robert_Barnes_Lt_Col_Daniel_Davis.mp4
+2026-05-13_08:49: title_scrubber: UCASE_WORDS:1
+2026-05-13_08:49: title_scrubber: Preserving acronym:Lt
+2026-05-13_08:49: title_scrubber: Preserving acronym:Col
+2026-05-13_08:49: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - Iran_War_Both_Sides_Declaring_Victory_Robert_Barnes_Lt_Col_Daniel_Davis.mp4 with:Daniel Davis - Iran War Both Sides Declaring Victory Robert Barnes LT.mp4
+2026-05-13_08:49: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - Iran War Both Sides Declaring Victory Robert Barnes LT.mp4
+2026-05-13_08:49: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.LkYIit was cleared for:danieldavisdeepdive from:action_do
+2026-05-13_08:49: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.4asDDH
+2026-05-13_08:49: job_start: TITLE:Col Douglas Macgregor: IF WE Go Back To BOMBING IRAN
+2026-05-13_08:49: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=ntHXdIvOcIk" PID:2697954
+2026-05-13_08:49: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-13_08:49: action_do: GENERATING HEADER
+2026-05-13_08:49: title_scrubber: UCASE_WORDS:4
+2026-05-13_08:49: title_scrubber: Preserving acronym:Col
+2026-05-13_08:49: title_scrubber: Preserving uppercase:If
+2026-05-13_08:49: title_scrubber: Preserving uppercase:We
+2026-05-13_08:49: title_scrubber: Preserving uppercase:Bombing
+2026-05-13_08:49: title_scrubber: Preserving uppercase:Iran
+2026-05-13_08:49: action_do: COMPLETED
+2026-05-13_08:49: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=ntHXdIvOcIk PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-13_08:49: action_do: POST-PROCESSING
+2026-05-13_08:49: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_IF_WE_Go_Back_To_BOMBING_IRAN.mp4
+2026-05-13_08:49: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_IF_WE_Go_Back_To_BOMBING_IRAN.mp4
+2026-05-13_08:49: title_scrubber: UCASE_WORDS:4
+2026-05-13_08:49: title_scrubber: Preserving acronym:Col
+2026-05-13_08:49: title_scrubber: Preserving uppercase:If
+2026-05-13_08:49: title_scrubber: Preserving uppercase:We
+2026-05-13_08:49: title_scrubber: Preserving uppercase:Bombing
+2026-05-13_08:49: title_scrubber: Preserving uppercase:Iran
+2026-05-13_08:49: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_IF_WE_Go_Back_To_BOMBING_IRAN.mp4 with:Daniel Davis - COL Douglas Macgregor - IF WE Go Back To BOMBING IRAN.mp4
+2026-05-13_08:49: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - COL Douglas Macgregor - IF WE Go Back To BOMBING IRAN.mp4
+2026-05-13_08:49: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.4asDDH was cleared for:danieldavisdeepdive from:action_do

@@ -36,14 +36,12 @@ typeset -a _LOCATE_OPTS=()
 typeset -a _FREQ_OPT_CMDS=()
 
 # Constants
-_TESTING_DIR=${PWD}/testing
-_HIST_DIR=${HOME}
-_HIST_TMP=/tmp
 _CFG_DIR=~/.local/share/${_SCRIPT}
+_TESTING_DIR=${PWD}/testing
 _HIST_BAK=${_CFG_DIR}/.zsh_history.bak
 _HIST_CACHE=${_CFG_DIR}/hist_cache
-_HIST_FILE=${_HIST_DIR}/.zsh_history
-_HIST_NEW=$(mktemp ${_HIST_TMP}/hist.new.XXXXXX)
+_HIST_FILE=${HOME}/.zsh_history
+_HIST_NEW=$(mktemp ${_CFG_DIR}/hist.new.XXXXXX)
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
 
 _FREQ_OPT_CMDS=(
@@ -63,9 +61,8 @@ vi
 )
 
 size_diff () {
-	local HIST_BAK=$(find ${_HIST_DIR} -maxdepth 1 -name '*zsh*bak')
 	local CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
-	local LAST_SIZE=$(stat -c"%s" ${HIST_BAK})
+	local LAST_SIZE=$(stat -c"%s" ${_HIST_BAK})
 	local DIFF=0
 	local -F PCT=0
 	local -F THRESHOLD=4
@@ -348,8 +345,9 @@ cp ${_HIST_FILE} ${_HIST_BAK}
 echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
 upd_locate -u 2>/dev/null
 
-HL=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
-echo -n "${ITALIC}Collating ${HL} lines of history...${RESET}" >&2
+HIST_LINES=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
+echo -n "${ITALIC}Collating ${HIST_LINES} lines of history...${RESET}" >&2
+
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
 echo "${ITALIC}done${RESET}" >&2
 [[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
@@ -373,7 +371,7 @@ if [[ ${TESTING_OPT} == 'true' ]];then
 	echo "History output file:${_TESTING_DIR}/${_HIST_NEW}"
 	cp ${_HIST_NEW} ${_TESTING_DIR}
 else
-	cp ${_HIST_NEW} ${_HIST_FILE}
+	mv -f ${_HIST_NEW} ${_HIST_FILE}
 fi
 
 if [[ ${PROD_OPT} == 'false' ]];then

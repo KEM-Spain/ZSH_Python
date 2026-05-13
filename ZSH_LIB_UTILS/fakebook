@@ -169,7 +169,7 @@ fi
 for L in ${_RAWLIST};do
 	BOOK=$(cut -d'|' -f1 <<<${L})
 	TITLE=$(cut -d'|' -f2 <<<${L})
-	PG=$(parse_get_last_field ' ' "${TITLE}")
+	PG=$(parse_get_last_field ' ' <<<${TITLE})
 	[[ -z ${PG} ]] && continue
 	TITLE=$(sed -e "s/${PG}//g" <<<${TITLE})
 	[[ ${#BOOK} -gt ${_COL_WIDTHS[BOOK]} ]] && _COL_WIDTHS[BOOK]=${#BOOK}
