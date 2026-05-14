@@ -20,6 +20,7 @@ typeset -a _VIDEOS=()
 typeset -a _MOVELIST=()
 
 # Constants
+_CFG_DIR=~/.local/share/wid_watch
 _LIB=/usr/local/lib
 _VW=/usr/local/bin/system/vid_watch
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
@@ -32,7 +33,7 @@ _COMPLETED_DIR=${_BASEDIR}/Completed
 _DELUGE_STATE=~/.config/deluge/state
 _INCOMPLETED_DIR=${_BASEDIR}/Incomplete
 _LIBRARY_DIR=${_BASEDIR}/Library
-_LOG=/tmp/${0:t}.log
+_LOG=${_CFG_DIR}/${0:t}.log
 _MOVIES_SUB=movies
 _SERIES_SUB=series
 

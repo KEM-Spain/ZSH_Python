@@ -801,9 +801,9 @@ parse_get_last_field () {
 
 	read -r LINE
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
-	echo -n ${LINE} | rev | cut -d"${DELIM}" -f1 | rev
+	[[ -n ${LINE} ]] && echo -n ${LINE} | rev | cut -d"${DELIM}" -f1 | rev
 }
 
 reset_rate () {

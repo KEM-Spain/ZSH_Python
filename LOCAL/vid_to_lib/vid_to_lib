@@ -395,7 +395,7 @@ for V in ${_VIDEOS};do
 done
 
 if [[ ${HIT} == 'true' ]];then
-	# TODO: Modify fsub to accept this list
+	# TODO: fsub was modified to accept this list
 	logit ${_LOG} "=========================="
 	for M in ${_MOVELIST};do
 		logit ${_LOG} "Moved ${M} to ${MEDIA_DEST}"

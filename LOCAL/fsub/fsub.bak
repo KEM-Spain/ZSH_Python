@@ -29,8 +29,17 @@ typeset -A _CHAIN_LIST
 typeset -a _PIPELINE
 typeset -a _KEYWORDS
 
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
+source ${_LIB_DIR}/PATH.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Constants
-_LOG=/tmp/${0:t}.log
+_CFG_DIR=~/.local/share/${_SCRIPT}
+_LOG=${_CFG_DIR}/${0:t}.log
 _KEYWORDS=(bluray)
 _TERM=xterm
 
@@ -40,15 +49,9 @@ g_EXT_TEXT=''
 g_FROM_TEXT=''
 g_LIMIT_TO_EXT=false
 g_NO_PROMPTING=false
+g_SERVICE_MODE=false
 g_TO_TEXT=''
 g_VERBOSE=false
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/VALIDATE.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 get_fn_noext () {
@@ -64,30 +67,52 @@ get_fn_ext () {
 }
 
 inode_ndx () {
-	local FILE_OR_PATH=${1}
-	local DEPTH=${2:=1}
+	local ARGS=(${@})
+	local -a FILE_OR_PATH=()
 	local -a LIST=()
 	local CMD=''
+	local DEPTH=1
 	local FN=''
 	local HEAD=''
 	local INODE=''
-	local TYPE=f
-	local L
+	local TYPE='f'
+	local F L
 
-	logit ${_LOG} "${0}: Received FILE_OR_PATH:${FILE_OR_PATH}"
+	for F in  ${ARGS};do
+		if [[ -f ${F} ]];then
+			FILE_OR_PATH+=${F}
+		elif [[ -d ${F} ]];then
+			FILE_OR_PATH+=${F}
+		else
+			if validate_is_integer ${F};then
+				DEPTH=${F}
+			fi
+		fi
+	done
 
-	[[ -f ${FILE_OR_PATH} || -d ${FILE_OR_PATH} ]] && HEAD=${FILE_OR_PATH:h} || HEAD="."
-	[[ ${g_ALLOW_DIRS} == 'true' ]] && TYPE=d
-	[[ ${g_LIMIT_TO_EXT} == 'true' ]] && g_EXT_TEXT="*${g_EXT_TEXT}" || g_EXT_TEXT='*'
+	logit ${_LOG} "${0}: FILE_OR_PATH:${FILE_OR_PATH}, DEPTH:${DEPTH}"
 
-	logit ${_LOG} "${0}: HEAD:${HEAD}, g_ALLOW_DIRS:${g_ALLOW_DIRS}, g_LIMIT_TO_EXT:${g_LIMIT_TO_EXT}"
+	if [[ ${#FILE_OR_PATH} -eq 1 ]];then
+		HEAD=${$(realpath ${FILE_OR_PATH}):h}
+		[[ ${g_ALLOW_DIRS} == 'true' ]] && TYPE=d # Limit to directories
+		[[ ${g_LIMIT_TO_EXT} == 'true' ]] && g_EXT_TEXT="*${g_EXT_TEXT}" || g_EXT_TEXT='*' # Limit to extension
 
-	CMD='find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf "%i|%p\n"'
-	[[ ${SERVICE_MODE} == 'true' ]] && CMD+=' -mtime 0' # Limit to most recent files
+		logit ${_LOG} "${0}: HEAD:${HEAD}, g_ALLOW_DIRS:${g_ALLOW_DIRS}, g_LIMIT_TO_EXT:${g_LIMIT_TO_EXT}"
 
-	LIST=("${(f)$(eval ${CMD})}")
-	logit ${_LOG} "${0}: Find CMD:${CMD}"
-	logit ${_LOG} "${0}: LIST contains ${#LIST} elements"
+		CMD='find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf "%i|%p\n"'
+		[[ ${g_SERVICE_MODE} == 'true' ]] && CMD=$(sed "s/-type/-mtime 0 -type/" <<<${CMD}) # Limit to most recent files
+
+		LIST=("${(f)$(eval ${CMD})}")
+		logit ${_LOG} "${0}: Find CMD:${CMD}"
+		logit ${_LOG} "${0}: LIST contains ${#LIST} elements"
+	else
+		for L in ${FILE_OR_PATH};do
+			[[ ${g_ALLOW_DIRS} == 'true' && ! -d ${L} ]] && continue # Limit to directories
+			[[ ${g_LIMIT_TO_EXT} == 'true' && -f ${L} && ${L:e} != "${g_EXT_TEXT}" ]] && continue # Limit to extension
+			[[ ${g_SERVICE_MODE} == 'true' && ! $(stat -c"%y" ${L}) =~ $(date +"%Y-%m-%d") ]] && continue # Limit to most recent files
+			LIST+="$(stat -c"%i" ${L})|${L}"
+		done
+	fi
 
 	for L in ${LIST};do
 		INODE=$(cut -d '|' -f1 <<<${L})
@@ -669,6 +694,8 @@ save_changes () {
 			fi
 			echo "Not overwriting existing file:${_OUT_LIST[${C}]}" >> ${_LOG}
 			continue # No collisions
+		else
+			logit ${_LOG} "${0}: File:${C}"
 		fi
 		if [[ ! -e ${_OUT_LIST[${C}]} ]];then
 			[[ ${TRUNCATE} == 'true' ]] && echo "${WHITE_FG}${_SCRIPT}${RESET}:Truncating\nFrom: ${_IN_LIST[${C}]:t} \n  To: ${_OUT_LIST[${C}]:t}" >&2
@@ -776,7 +803,6 @@ PREPEND_TAG=''
 PROPER_CASE=false
 SPACES=false
 STRIP_LEADING_DIGITS=false
-SERVICE_MODE=false
 TRUNCATE=false
 TRIM=false
 UNCAMEL=false
@@ -793,7 +819,7 @@ while getopts ${OPTSTR} OPT;do
      I) INTERACTIVE=true;;
      N) ADD_LEADING_DIGITS=true;;
      P) PROPER_CASE=true;;
-     S) SERVICE_MODE=true;;
+     S) g_SERVICE_MODE=true;;
      T) TRIM=true;;
      Y) YT_TAGS=true;;
      b) EXTENDED=true;;
@@ -819,6 +845,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
+[[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
@@ -837,7 +864,7 @@ fi
 
 # Handle input method
 _PIPED=false
-if [[ ${SERVICE_MODE} == 'false' ]];then # SERVICE_MODE ignores piped inputs
+if [[ ${g_SERVICE_MODE} == 'false' ]];then # SERVICE_MODE ignores piped inputs
 	if [[ ! -t 0 ]];then
 		_PIPED=true
 		while read PIPE;do
@@ -917,16 +944,16 @@ else
 		logit ${_LOG} "MEDIA_ARG:${MEDIA_ARG}"
 		inode_ndx "${MEDIA_ARG}"
 		PATHLBL=${_FIND_PATH:h}
+	elif path_has_wildcard;then
+		# Handle wildcard
+		logit ${_LOG} "WILDCARD"
+		inode_ndx "${@}"
+		PATHLBL=${_FIND_PATH:h}
 	elif [[ -f ${_FIND_PATH} ]];then
 		# Convert file name to list member
 		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
 		inode_ndx "${_FIND_PATH}"
 		PATHLBL=${_FIND_PATH:h}
-	elif [[ ${_FIND_PATH} != 'null' ]];then
-		# Find files in path
-		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
-		PATHLBL=${_FIND_PATH}
-		inode_ndx "${_FIND_PATH}" 2
 	else
 		# Find files in current directory
 		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
@@ -950,8 +977,6 @@ if [[ ${_DEBUG} -gt 0 ]];then
 	{
 	echo "COMMAND LINE AND OPTIONS"
 	echo "----------------------- "
-	echo FPATH=${FPATH}
-	echo FGLOB=${FGLOB}
 	echo OPTIONS=\[${OPTIONS}\]
 	echo _FIND_PATH=${_FIND_PATH}
 	echo g_ALLOW_DIRS=${g_ALLOW_DIRS}

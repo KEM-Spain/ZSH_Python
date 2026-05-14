@@ -29,8 +29,17 @@ typeset -A _CHAIN_LIST
 typeset -a _PIPELINE
 typeset -a _KEYWORDS
 
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
+source ${_LIB_DIR}/PATH.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Constants
-_LOG=/tmp/${0:t}.log
+_CFG_DIR=~/.local/share/${_SCRIPT}
+_LOG=${_CFG_DIR}/${0:t}.log
 _KEYWORDS=(bluray)
 _TERM=xterm
 
@@ -40,20 +49,15 @@ g_EXT_TEXT=''
 g_FROM_TEXT=''
 g_LIMIT_TO_EXT=false
 g_NO_PROMPTING=false
+g_SERVICE_MODE=false
 g_TO_TEXT=''
 g_VERBOSE=false
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/VALIDATE.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 exit_pre_exit () {
 	local -a SCRUB=()
-	local C F
+	local -a USER_PIDS=()
+	local C F P
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -69,15 +73,8 @@ exit_pre_exit () {
 	fi
 
 	if [[ ${_EXIT_SCRUB} == 'true' ]];then
-		{
-			if [[ -n ${_MY_PID} ]];then
-				SCRUB=("${(f)$(find /tmp/*${_MY_PID}* -type f)}")
-				for F in ${SCRUB};do
-					echo "${0}: Scrubbed: ${F}" >> /tmp/scrub.log
-					/bin/rm -f ${F}
-				done
-			fi
-		} >/dev/null 2>&1
+		_PIDS=("${(f)$(get_user_pids)}")
+		scrub_tmp
 	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
@@ -97,6 +94,170 @@ exit_pre_exit () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
 }
 
+path_get_raw () {
+	local RAW_CMD_LINE
+	local -a TOKENIZED
+	local -a PATH_TOKENS
+	local -a RAW_CMD_LINE
+	local -a TOKENS
+	local WORDS
+	local A I
+	local PATH_HEAD=?
+	local PATH_TAIL=?
+	local RAW_PATH
+	local FNDX
+	local T
+	local PATH_EXPANDED
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	if [[ ${_DURABLE[TESTMODE]} == 'true' ]];then
+		RAW_CMD_LINE=${_RAW_CMD_LINE}
+	else
+		fc -R
+		RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
+	fi
+
+	[[ ${RAW_CMD_LINE} =~ '\|\s+${_SCRIPT}' ]] && echo "Input is piped" && return 1
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
+
+	RAW_CMD_LINE=($(echo ${RAW_CMD_LINE} | perl -p -e 's/[^\s]+//')) # Strip leading word (script name)
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Stripped command name: RAW_CMD_LINE:${RAW_CMD_LINE}"
+
+	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Stripped options: RAW_CMD_LINE:${RAW_CMD_LINE}"
+
+	[[ -z ${RAW_PATH} ]] && PATH_HEAD=. # Empty path resolves to PWD
+
+	if [[ ${PATH_HEAD} == '?' ]];then
+		if is_glob ${RAW_PATH};then
+			TOKENIZED=("${(f)$(eval "find ${RAW_PATH} 2>&1")}") # Expand glob - a clean file list will resolve PATH_HEAD
+
+			for T in ${TOKENIZED};do
+				[[ ! -f ${T} ]] && break
+				PATH_HEAD=${T:h}
+			done
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RAW_PATH:${RAW_PATH} PATH_HEAD:${PATH_HEAD}"
+		fi
+	fi
+
+	if [[ ${PATH_HEAD} == '?' ]];then
+		TOKENIZED=("${(f)$(path_parse_cmd ${RAW_PATH})}") # Parse tokens incl names w/ spaces)
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Tokenized: TOKENIZED:${TOKENIZED}"
+
+		# Eliminate all bare words from command line
+		WORDS=0
+		for T in ${TOKENIZED};do
+			if is_bare_word "${T}";then
+				((WORDS++))
+				continue
+			else
+				TOKENS+=${T}
+			fi
+		done
+
+		if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+			dbg "${0}: ${WHITE_FG}RAW_CMD_LINE${RESET}:${RAW_CMD_LINE}"
+			dbg "${0}: ${WHITE_FG}${WORDS}${RESET} plain words eliminated from command line"
+			dbg "${0}: ${WHITE_FG}${#TOKENS}${RESET} remaining tokens"
+		fi
+
+		RAW_PATH=${TOKENS:=.} # Default to PWD
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${RED_FG}RAW_PATH STRIPPED${RESET}:[${WHITE_FG}${RAW_PATH}${RESET}]"
+
+		PATH_EXPANDED=$(path_expand_token ${RAW_PATH})
+
+		PATH_HEAD=${PATH_EXPANDED}
+	fi
+
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${GREEN_FG}PATH_HEAD${RESET}:${WHITE_FG}${PATH_HEAD}${RESET} is set"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${MAGENTA_FG}Parsing TAIL${RESET}:${RAW_PATH:t}"
+
+	case ${RAW_PATH:t} in
+	   '*') PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is ASTERISK:${RAW_PATH:t}${RESET}";;
+		 "") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is NULL:${RAW_PATH:t}${RESET}";;
+		"~") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is TILDE:${RAW_PATH:t}${RESET}";;
+		".") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is DOT:${RAW_PATH:t}${RESET}";;
+		  *)	if is_dir ${RAW_PATH};then
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}PATH is DIR:${RAW_PATH}${RESET}"
+					PATH_TAIL="-name '*'"
+				elif is_file ${PATH_HEAD}/${RAW_PATH:t};then
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}HEAD/TAIL is FILE:${PATH_HEAD}/${RAW_PATH:t}${RESET}"
+					I=$(path_get_inode "${PATH_HEAD}/${RAW_PATH:t}")
+					[[ ${?} -eq 0 ]] && PATH_TAIL="-inum ${I}" || PATH_TAIL='?' # Fallback to prevent empty inode being passed
+				elif is_dir ${PATH_HEAD}/${RAW_PATH:t};then
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}HEAD/TAIL is DIR:${PATH_HEAD}/${RAW_PATH:t}${RESET}"
+					PATH_TAIL="-name '${RAW_PATH:t}'"
+				elif is_glob ${RAW_PATH:t};then
+					[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is GLOB:${RAW_PATH:t}${RESET}"
+					PATH_TAIL="-name '${RAW_PATH:t}'"
+				else
+					PATH_TAIL=?
+				fi;;
+	esac
+
+	if [[ ${PATH_TAIL} = '?' ]];then # Resolve PATH_TAIL
+		for T in ${TOKENIZED};do
+			if is_file "${T}" || is_dir "${T}";then
+				I=$(path_get_inode ${T})
+				[[ ${?} -ne 0 ]] && dbg "${RED_FG}BAD INODE CALL${RESET}" && FNDX=0 && break  # Bad inode call
+				((FNDX++))
+				_ARGS[list${FNDX}]=${I} # Gather all items on command line
+			else
+				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "TOKEN is neither file nor dir"
+			fi
+		done
+
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: FNDX:${FNDX}"
+
+		if [[ ${FNDX} -ne 0 ]];then
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Resolving PATH_HEAD and PATH_TAIL"
+			PATH_HEAD=$(realpath $(eval echo ${RAW_PATH:h}))
+			PATH_TAIL=$(path_find_prep) # Prepare for find command
+		fi
+	fi
+
+	if [[ ${PATH_TAIL} == '?' && ${FNDX} -eq 0 ]];then
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "No TOKENS were valid paths or files (invalid path or file name)" >&2
+		echo "${PATH_HEAD}|Invalid Path:${RAW_PATH}" # Return result
+		return 1
+	fi
+
+	if [[ ${PATH_HEAD} = '?' || ${PATH_TAIL} = '?' ]];then
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${RED_FG}Unable to parse command line${RESET}"
+		return 1
+	fi
+
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}PATH_HEAD:${PATH_HEAD} PATH_TAIL:${PATH_TAIL}${RESET}" 
+
+	PATH_HEAD=$(realpath ${PATH_HEAD})
+
+	echo -n "${PATH_HEAD}|${PATH_TAIL}" # Return result
+	return 0
+}
+
+path_get_raw_args () {
+	local RAW_CMD_LINE
+	local -a TOKENIZED
+	local -a TOKENS
+	local A
+	local RAW_PATH
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	fc -R
+	RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
+	[[ ${RAW_CMD_LINE} =~ '\|' ]] && echo "Input is piped" && return 0
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
+
+	RAW_CMD_LINE=($(echo ${RAW_CMD_LINE} | perl -p -e 's/[^\s]+//')) # Strip leading word (script name)
+
+	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_PATH:${RAW_PATH} (removed script name & options)${RESET}" 
+
+	echo -n ${RAW_PATH}
+}
+
 set_exit_value () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -110,6 +271,8 @@ arr_is_populated () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARR:${#ARR}"
 
 	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires a quoted argument${RESET} of type <ARRAY> ${#}" >&2
+
+	ARR=$(tr -d '[:space:]' <<<${ARR})
 
 	[[ -z ${ARR[@]} ]] && RC=1 || RC=0
 
@@ -127,10 +290,11 @@ do_rmcup () {
 }
 
 err_msg_exit () {
-	local E_MSG
-	local E_TYPE
+	local E_MSG=''
+	local E_TYPE=''
 	local LABEL=''
 	local LCOLOR=''
+	local IS_FILE=''
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -138,14 +302,11 @@ err_msg_exit () {
 		read E_MSG
 		E_TYPE=E
 	else
-		if [[ ${#} -eq 1 ]];then
+		if [[ ${#} -eq 0 ]];then
+			return 1 # No args
+		elif [[ ${#} -eq 1 ]];then
 			E_MSG=${1}
-			if [[ ${#E_MSG} -eq 1 && ! ${E_MSG} =~ '^(W|E|I)$' ]];then
-				return 1 # No message passed
-			else
-				E_TYPE=E # Default type
-				E_MSG=${1}
-			fi
+			E_TYPE=E # Default type
 		elif [[ ${#} -eq 2 ]];then
 			E_TYPE=${1}
 			E_MSG=${2}
@@ -156,12 +317,17 @@ err_msg_exit () {
 		W) LABEL="Warning";LCOLOR=${ITALIC}${BOLD}${MAGENTA_FG};;
 		E) LABEL="Error";LCOLOR=${ITALIC}${BOLD}${RED_FG};;
 		I) LABEL="Info";LCOLOR=${ITALIC}${CYAN_FG};;
-		*) LABEL="Unknown E_TYPE:${E_TYPE}";;
 	esac
 
-	[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe "s/^(.*:)(\w+)(.*)$/\1\e[37m\2\e[m\3/" <<<${E_MSG})
-
-	printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "$(echo ${E_MSG})"
+	if [[ -n ${E_MSG} ]];then
+		IS_FILE=$(rev <<<$(cut -d: -f1 <<<$(rev <<<${E_MSG})))
+		if [[ -f ${IS_FILE} || ${IS_FILE} =~ ".\.." ]];then
+			E_MSG="$(cut -d: -f1 <<<${E_MSG}):${WHITE_FG}${IS_FILE}${RESET}"
+		else
+			[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe 's/(.*:)(.*?\s+)(.*)/\1\e[37m\2\e[m\3/g' <<<${E_MSG})
+		fi
+		printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "$(echo ${E_MSG})"
+	fi
 }
 
 exit_leave () {
@@ -190,7 +356,9 @@ exit_leave () {
 
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup # Restore if needed
 
-	[[ -n ${_EXIT_MSGS} ]] && echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
+	if [[ -n ${_EXIT_MSGS} ]];then
+		echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
+	fi
 
 	exit ${_EXIT_VALUE}
 }
@@ -243,6 +411,11 @@ min () {
 	echo ${MIN}
 }
 
+path_has_wildcard () {
+	local RARGS=$(path_get_raw_args)
+	[[ ${RARGS} =~ '\x2A' ]] && return 0 || return 1
+}
+
 str_pluralize () {
 	local WORD=${1}
 	local CNT=${2}
@@ -257,6 +430,7 @@ str_pluralize () {
 	fi
 
 	case ${WORD:l} in
+		is) RETURN_WORD="are";;
 		app) RETURN_WORD="apps";;
 		candidate) RETURN_WORD="candidates";;
 		choice) RETURN_WORD="choices";;
@@ -356,30 +530,22 @@ str_trim () {
 
 title_scrubber () {
 	local TITLE=${1}
+	local LOG=${2}
 	local -A SEEN=()
 	local -a UCASE_WORDS=()
-	local CFG_DIR=~/.local/share/yts
-	local ACRONYM_FN=${CFG_DIR}/yts.acronyms
-	local LINE=''
 	local STR=''
 	local UCASE_LIMIT=4
+	local PLURAL=''
 	local W U
 
-	if [[ -e ${ACRONYM_FN} && -z ${_ACRONYMS} ]];then # Load acronyms
-		while read LINE;do
-			_ACRONYMS+=${LINE}
-		done < ${ACRONYM_FN}
-	else
-		exit_leave "${0}: Unable to load ACRONYMS from ${ACRONYM_FN}"
-	fi
-
-	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE}) # Convert UTF-8
-	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR}) # Convert any HTML 
+	STR=$(recode UTF8..ISO-8859-15 <<<${TITLE} 2>/dev/null) # Convert UTF-8
+	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${STR} 2>/dev/null) # Convert any HTML 
 
 	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
 	for U in ${UCASE_WORDS};do
 		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
 	done
+	logit ${LOG} "${0}: UCASE_WORDS:${#UCASE_WORDS}"
 
 	STR=${(C)STR} # Proper case
 
@@ -390,23 +556,26 @@ title_scrubber () {
 	STR=$(echo "${STR}" | perl -pe 's/\.*$//g' 2>/dev/null) # Dots
 
 	for W in ${=STR};do
+		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} ]];then
+		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
+			logit ${LOG} "${0}: Preserving acronym:${W}"
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
 			SEEN[${W}]=1
 		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
+				logit ${LOG} "${0}: Preserving uppercase:${W}"
 				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) 
 				SEEN[${W}]=1
 			fi
 		fi
 	done
 
-	STR=$(echo "${STR}" | perl -pe 's/(.)\s([Rr]e|[Ss]|[Tt]|[Vv]e)(\s|[[:punct:]]|$)/\1\x{027}\2 /g') # Replace missing apostrophes
+	STR=$(echo "${STR}" | perl -pe 's/(.)\s([Rr]e|[Ll]l|[Ss]|[Tt]|[Vv]e)(\s|[[:punct:]]|$)/\1\x{027}\2 /g') # Replace missing apostrophes
 	STR=$(echo "${STR}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
 	STR=$(echo "${STR}" | perl -pe 's/[Ww]\x{02f}/w\x{02f}/g') # Fix 'with' abbv
 
-	[[ -n ${STR} ]] && TITLE=${STR} || logit "TITLE failed scrubbing"
+	[[ -n ${STR} ]] && TITLE=${STR} || logit ${LOG} "TITLE failed scrubbing"
 
 	echo ${TITLE}
 }
@@ -417,9 +586,10 @@ validate_is_integer () {
 
 	[[ ${#} -eq 0 ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${WHITE_FG}${@}${RESET}"
 
-	RET=$( echo "${VAL}" | sed 's/^[-+]*[0-9]*//g' )
+	RET=$(echo "${VAL}" | sed 's/^[-+]*[0-9]*//g')
+
 	[[ -z ${RET} ]] && return 0 || return 1
 }
 
@@ -436,30 +606,52 @@ get_fn_ext () {
 }
 
 inode_ndx () {
-	local FILE_OR_PATH=${1}
-	local DEPTH=${2:=1}
+	local ARGS=(${@})
+	local -a FILE_OR_PATH=()
 	local -a LIST=()
 	local CMD=''
+	local DEPTH=1
 	local FN=''
 	local HEAD=''
 	local INODE=''
-	local TYPE=f
-	local L
+	local TYPE='f'
+	local F L
 
-	logit ${_LOG} "${0}: Received FILE_OR_PATH:${FILE_OR_PATH}"
+	for F in  ${ARGS};do
+		if [[ -f ${F} ]];then
+			FILE_OR_PATH+=${F}
+		elif [[ -d ${F} ]];then
+			FILE_OR_PATH+=${F}
+		else
+			if validate_is_integer ${F};then
+				DEPTH=${F}
+			fi
+		fi
+	done
 
-	[[ -f ${FILE_OR_PATH} || -d ${FILE_OR_PATH} ]] && HEAD=${FILE_OR_PATH:h} || HEAD="."
-	[[ ${g_ALLOW_DIRS} == 'true' ]] && TYPE=d
-	[[ ${g_LIMIT_TO_EXT} == 'true' ]] && g_EXT_TEXT="*${g_EXT_TEXT}" || g_EXT_TEXT='*'
+	logit ${_LOG} "${0}: FILE_OR_PATH:${FILE_OR_PATH}, DEPTH:${DEPTH}"
 
-	logit ${_LOG} "${0}: HEAD:${HEAD}, g_ALLOW_DIRS:${g_ALLOW_DIRS}, g_LIMIT_TO_EXT:${g_LIMIT_TO_EXT}"
+	if [[ ${#FILE_OR_PATH} -eq 1 ]];then
+		HEAD=${$(realpath ${FILE_OR_PATH}):h}
+		[[ ${g_ALLOW_DIRS} == 'true' ]] && TYPE=d # Limit to directories
+		[[ ${g_LIMIT_TO_EXT} == 'true' ]] && g_EXT_TEXT="*${g_EXT_TEXT}" || g_EXT_TEXT='*' # Limit to extension
 
-	CMD='find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf "%i|%p\n"'
-	[[ ${SERVICE_MODE} == 'true' ]] && CMD+=' -mtime 0' # Limit to most recent files
+		logit ${_LOG} "${0}: HEAD:${HEAD}, g_ALLOW_DIRS:${g_ALLOW_DIRS}, g_LIMIT_TO_EXT:${g_LIMIT_TO_EXT}"
 
-	LIST=("${(f)$(eval ${CMD})}")
-	logit ${_LOG} "${0}: Find CMD:${CMD}"
-	logit ${_LOG} "${0}: LIST contains ${#LIST} elements"
+		CMD='find ${FILE_OR_PATH} -maxdepth ${DEPTH} -type ${TYPE} -name ${g_EXT_TEXT} ! -path ${HEAD} -printf "%i|%p\n"'
+		[[ ${g_SERVICE_MODE} == 'true' ]] && CMD=$(sed "s/-type/-mtime 0 -type/" <<<${CMD}) # Limit to most recent files
+
+		LIST=("${(f)$(eval ${CMD})}")
+		logit ${_LOG} "${0}: Find CMD:${CMD}"
+		logit ${_LOG} "${0}: LIST contains ${#LIST} elements"
+	else
+		for L in ${FILE_OR_PATH};do
+			[[ ${g_ALLOW_DIRS} == 'true' && ! -d ${L} ]] && continue # Limit to directories
+			[[ ${g_LIMIT_TO_EXT} == 'true' && -f ${L} && ${L:e} != "${g_EXT_TEXT}" ]] && continue # Limit to extension
+			[[ ${g_SERVICE_MODE} == 'true' && ! $(stat -c"%y" ${L}) =~ $(date +"%Y-%m-%d") ]] && continue # Limit to most recent files
+			LIST+="$(stat -c"%i" ${L})|${L}"
+		done
+	fi
 
 	for L in ${LIST};do
 		INODE=$(cut -d '|' -f1 <<<${L})
@@ -821,7 +1013,9 @@ do_sdc () {
 						CANDIDATE=${CANDIDATE:gs/\[//} # Scrub brackets
 						CANDIDATE=${CANDIDATE:gs/\]//} # Scrub brackets
 						CANDIDATE=$(tr -d '()' <<<${CANDIDATE}) # Scrub parens
+						CANDIDATE=$(sed -E 's/([[:alnum:]])\x27([[:alnum:]])/\1%!%\2/g' <<<${CANDIDATE}) # Mask apostrophes
 						CANDIDATE=$(tr -d \' <<<${CANDIDATE}) # Scrub single quotes
+						CANDIDATE=$(sed -E 's/([[:alnum:]])%!%([[:alnum:]])/\1\x27\2/g' <<<${CANDIDATE}) # Restore apostrophes
 						CANDIDATE=$(tr -d \" <<<${CANDIDATE}) # Scrub double quotes
 						CANDIDATE=$(tr -s "[:space:]" <<<${CANDIDATE}) # Squeeze space
 						CANDIDATE=$(str_to_ascii <<<${CANDIDATE}) # Scrub extended ascii/non ascii
@@ -877,7 +1071,7 @@ do_subs () {
 		CANDIDATE=${_CHAIN_LIST[${C}]:t} # W/o path
 		[[ -d ${_CHAIN_LIST[${C}]} ]] && OBJECT=Dir || OBJECT=File
 		[[ ${_DEBUG} -ge 1 ]] && dbg "${0}:${LINENO} grep ${GREP_OPTS} ${g_FROM_TEXT} <<<${CANDIDATE}"
-		eval "grep -q ${GREP_OPTS} ${g_FROM_TEXT} <<<${(qqq)CANDIDATE}"
+		eval "grep -q ${GREP_OPTS} ${(qqq)g_FROM_TEXT} <<<${(qqq)CANDIDATE}"
 		if [[ $? -eq 0 ]];then
 			HIT=true
 			_OUT_LIST[${C}]=${_CHAIN_LIST[${C}]}
@@ -890,7 +1084,6 @@ do_subs () {
 	if ! arr_is_populated "${_OUT_LIST}";then
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		logit ${_LOG} "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
-		[[ ${g_VERBOSE} == 'true' ]] && echo "${0}:${LINENO} ${RED_FG}No matches for${RESET}:[${WHITE_FG}${g_FROM_TEXT}${RESET}]"
 		return 1 
 	fi
 
@@ -899,6 +1092,8 @@ do_subs () {
 	
 	[[ ${CASE} == "I" ]] && SED_OPT=I || SED_OPT=''
 	
+	[[ ${g_FROM_TEXT} =~ '-' ]] && sed 's/\x2d/\x5b\x2d\x5d/g' <<<${g_FROM_TEXT}
+	[[ ${g_TO_TEXT} =~ '-' ]] && sed 's/\x2d/\x5b\x2d\x5d/g' <<<${g_TO_TEXT}
 	SED_CMD="/bin/sed -E -e 's/${g_FROM_TEXT}/${g_TO_TEXT}/${SED_OPT}g'"
 	
 	[[ ${_DEBUG} -gt 0 && ${HIT} == true ]] && dbg "${0}:${LINENO} ${GREEN_FG}SED COMMAND${RESET}:${SED_CMD}"
@@ -1038,6 +1233,8 @@ save_changes () {
 			fi
 			echo "Not overwriting existing file:${_OUT_LIST[${C}]}" >> ${_LOG}
 			continue # No collisions
+		else
+			logit ${_LOG} "${0}: File:${C}"
 		fi
 		if [[ ! -e ${_OUT_LIST[${C}]} ]];then
 			[[ ${TRUNCATE} == 'true' ]] && echo "${WHITE_FG}${_SCRIPT}${RESET}:Truncating\nFrom: ${_IN_LIST[${C}]:t} \n  To: ${_OUT_LIST[${C}]:t}" >&2
@@ -1105,7 +1302,7 @@ usage () {
 	echo -e "${WHITE_FG}-I${RESET} interactive changes"
 	echo -e "${WHITE_FG}-N${RESET} add leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-P${RESET} proper case"
-	echo -e "${WHITE_FG}-S${RESET} service mode (background job)"
+	echo -e "${WHITE_FG}-S${RESET} service mode (background job - affects only files modified today)"
 	echo -e "${WHITE_FG}-T${RESET} trim leading/trailing whitespace from files or dirs (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-Y${RESET} eliminate YouTube tags"
 	echo -e "${WHITE_FG}-b${RESET} eliminate extended/non-ascii (${CYAN_FG}M${RESET})"
@@ -1126,7 +1323,7 @@ usage () {
 	echo -e "${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HCDINPSTYabe:irscdm:p:nt:uxyv"
@@ -1145,7 +1342,6 @@ PREPEND_TAG=''
 PROPER_CASE=false
 SPACES=false
 STRIP_LEADING_DIGITS=false
-SERVICE_MODE=false
 TRUNCATE=false
 TRIM=false
 UNCAMEL=false
@@ -1162,7 +1358,7 @@ while getopts ${OPTSTR} OPT;do
      I) INTERACTIVE=true;;
      N) ADD_LEADING_DIGITS=true;;
      P) PROPER_CASE=true;;
-     S) SERVICE_MODE=true;;
+     S) g_SERVICE_MODE=true;;
      T) TRIM=true;;
      Y) YT_TAGS=true;;
      b) EXTENDED=true;;
@@ -1188,7 +1384,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${@} == '-' ]] && usage
+[[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
@@ -1199,7 +1395,7 @@ if [[ ${MEDIA} == "true" ]];then
 	MEDIA_ARG_TYPE=''
 	[[ -f ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="file"
 	[[ -d ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="path"
-	[[ -z ${MEDIA_ARG} ]] && exit_leave "${_SCRIPT_TAG} Media argument:${MEDIA_ARG} is neither file nor path"
+	[[ -z ${MEDIA_ARG} ]] && exit_leave $(err_msg_exit "Media argument:${MEDIA_ARG} is neither file nor path")
 
 	MEDIA_ARG=$(realpath ${MEDIA_ARG}) # FQFN
 	logit ${_LOG} "MEDIA_ARG_TYPE:${MEDIA_ARG_TYPE}, realpath:${MEDIA_ARG}"
@@ -1207,7 +1403,7 @@ fi
 
 # Handle input method
 _PIPED=false
-if [[ ${SERVICE_MODE} == 'false' ]];then # SERVICE_MODE ignores piped inputs
+if [[ ${g_SERVICE_MODE} == 'false' ]];then # SERVICE_MODE ignores piped inputs
 	if [[ ! -t 0 ]];then
 		_PIPED=true
 		while read PIPE;do
@@ -1233,7 +1429,6 @@ fi
 
 # Validate args and options
 [[ ${#_ARG_LIST} -eq 0 && ${#OPTIONS} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing arguments or options${RESET}"
-[[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
 
 if [[ ${TRUNCATE} == 'true' && -n ${TRUNC_FN_LEN} ]];then
 	validate_is_integer ${TRUNC_FN_LEN}
@@ -1267,6 +1462,8 @@ _FIND_PATH=null
 [[ ${_ARG_LIST[1]} == 'bare_word' ]] && g_FROM_TEXT=${1} && SEARCH_REPLACE=true
 [[ ${_ARG_LIST[2]} == 'bare_word' ]] && g_TO_TEXT=${2} && SEARCH_REPLACE=true
 
+[[ $(( $OPTIONS[(Ie)i] )) -ne 0 && ${SEARCH_REPLACE} == 'false' ]] && usage "Option: -i only valid for search and replace"
+
 if [[ ${g_VERBOSE} == 'true' && ${SEARCH_REPLACE} == 'true' ]];then
 	[[ -z ${g_TO_TEXT} ]] && echo "Deleting:${WHITE_FG}${g_FROM_TEXT}${RESET}\n" >&2
 	[[ -n ${g_TO_TEXT} ]] && echo "Search:${WHITE_FG}${g_FROM_TEXT}${RESET} Replace:${WHITE_FG}${g_TO_TEXT}${RESET}\n" >&2
@@ -1286,16 +1483,16 @@ else
 		logit ${_LOG} "MEDIA_ARG:${MEDIA_ARG}"
 		inode_ndx "${MEDIA_ARG}"
 		PATHLBL=${_FIND_PATH:h}
+	elif path_has_wildcard;then
+		# Handle wildcard
+		logit ${_LOG} "WILDCARD"
+		inode_ndx "${@}"
+		PATHLBL=${_FIND_PATH:h}
 	elif [[ -f ${_FIND_PATH} ]];then
 		# Convert file name to list member
 		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
 		inode_ndx "${_FIND_PATH}"
 		PATHLBL=${_FIND_PATH:h}
-	elif [[ ${_FIND_PATH} != 'null' ]];then
-		# Find files in path
-		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
-		PATHLBL=${_FIND_PATH}
-		inode_ndx "${_FIND_PATH}" 2
 	else
 		# Find files in current directory
 		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
@@ -1319,8 +1516,6 @@ if [[ ${_DEBUG} -gt 0 ]];then
 	{
 	echo "COMMAND LINE AND OPTIONS"
 	echo "----------------------- "
-	echo FPATH=${FPATH}
-	echo FGLOB=${FGLOB}
 	echo OPTIONS=\[${OPTIONS}\]
 	echo _FIND_PATH=${_FIND_PATH}
 	echo g_ALLOW_DIRS=${g_ALLOW_DIRS}
@@ -1374,7 +1569,7 @@ if [[ ${PREPEND} == "true" ]];then
 	logit ${_LOG} "Prepend was called with:${PREPEND_TAG}"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Prepending file names" >&2
 	do_prepend ${PREPEND_TAG}
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for prepend" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for prepend" >&2
 fi
 
 # Substitutions
@@ -1383,7 +1578,7 @@ if [[ ${SEARCH_REPLACE} == 'true' ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}Calling do_subs${RESET}..."
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${WHITE_ON_GREY}Substituting \"${g_FROM_TEXT}\" with \"${g_TO_TEXT}\"${RESET}" >&2
 	do_subs
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for substitution" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for substitution" >&2
 fi
 
 # Space_Dot_Camel
@@ -1407,19 +1602,17 @@ if [[ ${#_SPACE_DOT} -gt 0 ]];then
 	do_sdc
 
 	if [[ ${?} -ne 0 ]];then
-		if [[ ${g_VERBOSE} == 'true' ]];then
-			{
-			for X in ${(o)_SPACE_DOT};do
-				case ${X} in
-					B) echo "No matches for extended/non-ascii";;
-					S) echo "No matches for eliminating spaces";;
-					D) echo "No matches for eliminating dots, dashes, and commas";;
-					C) echo "No matches for camel casing";;
-					U) echo "No matches for uncamel casing";;
-				esac
-			done
-			} >&2
-		fi
+		{
+		for X in ${(o)_SPACE_DOT};do
+			case ${X} in
+				B) echo "No matches for extended/non-ascii";;
+				S) echo "No matches for eliminating spaces";;
+				D) echo "No matches for eliminating dots, dashes, and commas";;
+				C) echo "No matches for camel casing";;
+				U) echo "No matches for uncamel casing";;
+			esac
+		done
+		} >&2
 	fi
 fi
 
@@ -1428,7 +1621,7 @@ if [[ ${PROPER_CASE} == "true" ]];then
 	logit ${_LOG} "Proper Case was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Proper casing files${RESET}" >&2
 	do_proper_case
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for proper case" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for proper case" >&2
 fi
 
 # Clean leading digits (usually for audio files)
@@ -1436,7 +1629,7 @@ if [[ ${CLEAN_LEADING_DIGITS} == "true" ]];then
 	logit ${_LOG} "Clean Leading Digits was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Cleaning leading digits with hyphen${RESET}" >&2
 	do_clean_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for clean leading digits" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for clean leading digits" >&2
 fi
 
 # Add leading digits (usually for audio files)
@@ -1444,7 +1637,7 @@ if [[ ${ADD_LEADING_DIGITS} == "true" ]];then
 	logit ${_LOG} "All leading digits was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Adding leading digits with hyphen${RESET}" >&2
 	do_add_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for add leading digits" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for add leading digits" >&2
 fi
 
 # Strip leading digits (usually for audio files)
@@ -1452,7 +1645,7 @@ if [[ ${STRIP_LEADING_DIGITS} == "true" ]];then
 	logit ${_LOG} "Strip Leading Digits was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Stripping leading digits with hyphen${RESET}" >&2
 	do_strip_leading_digits
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for strip leading digits" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for strip leading digits" >&2
 fi
 
 # Truncations
@@ -1460,7 +1653,7 @@ if [[ ${TRUNC_FN_LEN} -gt 0 ]];then
 	logit ${_LOG} "Truncation called - Length:${TRUNC_FN_LEN} chars"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Truncating file names to:${TRUNC_FN_LEN} chars" >&2
 	do_truncate
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for truncation" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for truncation" >&2
 fi
 
 # Trimming
@@ -1468,7 +1661,7 @@ if [[ ${TRIM} == "true" ]];then
 	logit ${_LOG} "Trim was called"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Trimming file names" >&2
 	do_trim
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for trim" >&2
+	[[ ${?} -ne 0 ]] && echo "No matches for trim" >&2
 fi
 
 # YouTube tags
@@ -1488,7 +1681,7 @@ if [[ ${YT_TAGS} == "true" ]];then
 
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Eliminating YouTube tags" >&2
 	do_yt_tag
-	[[ ${g_VERBOSE} == 'true' && ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 
+	[[ ${?} -ne 0 ]] && echo "No matches for YouTube tags" >&2 
 fi
 
 # Finalize

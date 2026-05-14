@@ -367,6 +367,11 @@ path_get_tokens () {
 	echo -n ${RAW_PATH}
 }
 
+path_has_wildcard () {
+	local RARGS=$(path_get_raw_args)
+	[[ ${RARGS} =~ '\x2A' ]] && return 0 || return 1
+}
+
 path_parse_cmd () {
 	local RAWCMD=${@}
 	local -a TEXT
