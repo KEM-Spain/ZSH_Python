@@ -15,12 +15,19 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+# Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -a _VIDEOS=()
 typeset -a _MOVELIST=()
 
 # Constants
-_CFG_DIR=~/.local/share/wid_watch
+_CFG_DIR=~/.local/share/${_SCRIPT}
 _LIB=/usr/local/lib
 _VW=/usr/local/bin/system/vid_watch
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
@@ -39,13 +46,6 @@ _SERIES_SUB=series
 
 # Vars 
 _SERVICE_MODE=''
-
-# Imports
-_LIB_DIR=/usr/local/lib
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 clean_media () {
@@ -310,9 +310,10 @@ shift $((OPTIND -1))
 #--End GetOpts--
  
 # Execution
-[[ -e ${_LOG} ]] && rm -f ${_LOG}
-logit "start"
-logit "_SERVICE_MODE:${_SERVICE_MODE}"
+[[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR} # Create _CFG_DIR if needed
+[[ -e ${_LOG} ]] && rm -f ${_LOG} # Clear log
+
+logit "${_SCRIPT} started, _SERVICE_MODE:${_SERVICE_MODE}"
 
 [[ ! -e ${_LIBRARY_DIR}/movies ]] && mkdir ${_LIBRARY_DIR}/movies 
 [[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
@@ -395,7 +396,6 @@ for V in ${_VIDEOS};do
 done
 
 if [[ ${HIT} == 'true' ]];then
-	# TODO: Modify fsub to accept this list
 	logit ${_LOG} "=========================="
 	for M in ${_MOVELIST};do
 		logit ${_LOG} "Moved ${M} to ${MEDIA_DEST}"

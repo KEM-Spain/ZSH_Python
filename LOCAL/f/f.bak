@@ -102,7 +102,7 @@ typeset -a OPTIONS
 
 LISTING=false
 LEADING=false
-TYPE=''
+TYPE_ARG=''
 OPTIND=0
 REGEX_ARG=''
 FIND_PATH=${PWD}
@@ -116,7 +116,7 @@ while getopts ${OPTSTR} OPTION;do
      L) LISTING=true;;
      d) depth_set_level;;
      p) FIND_PATH=${OPTARG};;
-     t) TYPE="${OPTARG}";;
+     t) TYPE_ARG="${OPTARG}";;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac
@@ -139,21 +139,25 @@ if [[ ${#} -ne 0 ]];then
 	REGEX="-regextype 'posix-extended' -regex ${(qqq)REGEX} -o -regex ${(qqq)L_REGEX} -o -regex ${(qqq)C_REGEX}"
 fi
 
-case ${TYPE} in
-	f) TYPE='-type f';TDESC='Regular File';;
-	d) TYPE='-type d';TDESC='Directory';;
-	l) TYPE='-type l';TDESC='Symbolic Link';;
-	p) TYPE='-type p';TDESC='Named Pipe';;
-	c) TYPE='-type c';TDESC='Char Special';;
-	s) TYPE='-type s';TDESC='Socket';;
-	b) TYPE='-type b';TDESC='Block Special';;
-	*) usage "Invalid type:${TYPE}"
-esac
+if [[ -n ${TYPE_ARG} ]];then
+	case ${TYPE_ARG} in
+		f) TYPE_ARG='-type f';TDESC='Regular File';;
+		d) TYPE_ARG='-type d';TDESC='Directory';;
+		l) TYPE_ARG='-type l';TDESC='Symbolic Link';;
+		p) TYPE_ARG='-type p';TDESC='Named Pipe';;
+		c) TYPE_ARG='-type c';TDESC='Char Special';;
+		s) TYPE_ARG='-type s';TDESC='Socket';;
+		b) TYPE_ARG='-type b';TDESC='Block Special';;
+		*) usage "Invalid type:${TYPE_ARG}"
+	esac
+else
+	TDESC=None
+fi
 
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nTYPE:${TYPE:-any}"
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} LISTING:${LISTING}\nMAXDEPTH:${MAXDEPTH}\nREGEX:${REGEX}\nTYPE_ARG:${TYPE_ARG:-any}"
 
 
-CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE}"
+CMD="sudo find ${FIND_PATH:q} -maxdepth ${MAXDEPTH} ${REGEX} ${TYPE_ARG}"
 
 LIST=("${(f)$(eval ${CMD})}")
 if ! arr_is_populated "${LIST}" ;then

@@ -398,7 +398,7 @@ path_split_cmd () {
 }
 
 path_strip_options () {
-	local LINE=${@}
+	local LINE=${@:Q}
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${@}"
 

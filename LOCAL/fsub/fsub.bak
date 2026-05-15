@@ -763,7 +763,7 @@ usage () {
 	echo -e "${WHITE_FG}-I${RESET} interactive changes"
 	echo -e "${WHITE_FG}-N${RESET} add leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-P${RESET} proper case"
-	echo -e "${WHITE_FG}-S${RESET} service mode (background job)"
+	echo -e "${WHITE_FG}-S${RESET} service mode (background job - affects only files modified today)"
 	echo -e "${WHITE_FG}-T${RESET} trim leading/trailing whitespace from files or dirs (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-Y${RESET} eliminate YouTube tags"
 	echo -e "${WHITE_FG}-b${RESET} eliminate extended/non-ascii (${CYAN_FG}M${RESET})"

@@ -54,17 +54,20 @@ info () {
 	# Declarations
 	local -A _VLIST=()
 	local -a LIST
+	local ARG=''
+	local ARG_PATH=''
+	local AUD=''
 	local BAR=''
 	local BARLINE=0
-	local HIT
-	local TIT=''
 	local DUR=''
-	local VID=''
-	local RES=''
-	local AUD=''
-	local SUB=''
+	local HIT=false
 	local LONGEST=0
+	local MSG=''
 	local NDX=0
+	local RES=''
+	local SUB=''
+	local TIT=''
+	local VID=''
 	local K L
 
 	# Constants
@@ -92,8 +95,6 @@ info () {
 		local SUB=None
 		local VAL
 		local VID=Video:None
-		local MSG=''
-		local ARGS=''
 		local L
 
 		for L in ${LIST};do
@@ -188,8 +189,11 @@ ___EOF
 	if [[ ${#} -eq 0 ]];then
 		LIST=("${(f)$(find . -maxdepth 1 -type f -regex "${_VID_REGEX_F}")}")
 	else
-		ARGS=$(path_get_raw_args | parse_get_last_field)
-		LIST=(${@})
+		ARG=$(path_get_raw_args | parse_get_last_field)
+		ARG=$(eval realpath ${ARG})
+		[[ -d ${ARG} ]] && ARG_PATH=${ARG}
+		[[ -f ${ARG} ]] && ARG_PATH=${ARG:h}
+		LIST=("${(f)$(find ${ARG} ! -path ${ARG_PATH})}")
 	fi
 
 	HIT=false
@@ -198,17 +202,17 @@ ___EOF
 		[[ -d ${L} ]] && continue
 		HIT=true
 		parse_info ${L} # Create _VLIST
-		[[ ${#L} -gt ${LONGEST} ]] && LONGEST=${#L}
+		[[ ${#L:t} -gt ${LONGEST} ]] && LONGEST=${#L:t}
 	done
 
-	[[ -n ${ARGS} ]] && MSG="for:${ARGS}"
+	[[ -n ${ARG} ]] && MSG="for:${ARG}"
 	[[ ${HIT} == 'false' ]] && exit_leave $(err_msg_exit "No video files found in:${PWD} ${MSG}")
 
 	tcup 0 0
 	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"
 	printf "${MAGENTA_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} $(str_unicode_line ${LONGEST}) $(str_unicode_line 11) $(str_unicode_line 5) $(str_unicode_line 10) $(str_unicode_line 5) $(str_unicode_line 8)
 	NDX=0
-	for K in ${(Ok)_VLIST};do
+	for K in ${(k)_VLIST};do
 		((NDX++))
 		TIT=$(cut -d':' -f2 <<<${K})
 		DUR=$(cut -d'|' -f1 <<<${_VLIST[${K}]})
@@ -219,8 +223,7 @@ ___EOF
 		BARLINE=$(( NDX % 2 )) # Barlining 
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
-	done | mypager wait
-
+	done | sort -k3 | mypager wait
 }
 
 length () {
@@ -267,10 +270,11 @@ ___EOF
 	fi
 	[[ ${#} -eq 0 ]] && FN_ARG=${PWD} || FN_ARG=(${@})
 	
+	set -xv
 	if [[ ${FN_ARG} == ${PWD} ]];then
 		FILELIST=("${(f)$(find ${PWD} -maxdepth 2 -type f ! -path ${PWD})}")
 	else
-		FILELIST=${FN_ARG}
+		FILELIST=(${FN_ARG})
 	fi
 
 	for F in ${FILELIST};do
@@ -282,6 +286,7 @@ ___EOF
 		PRELIST+=${F}
 		HIT=true
 	done
+	set +xv;read
 
 	[[ ${HIT} == 'false' ]] && exit_leave "No video files found"
 

@@ -52,7 +52,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 info () {
 	# Declarations
-	local -A FLIST=()
+	local -A _VLIST=()
 	local -a LIST
 	local BAR=''
 	local BARLINE=0
@@ -65,6 +65,8 @@ info () {
 	local SUB=''
 	local LONGEST=0
 	local NDX=0
+	local MSG=''
+	local ARGS=''
 	local K L
 
 	# Constants
@@ -82,14 +84,13 @@ info () {
 
 	parse_info () {
 		local FN=${1:t:r}
-		local LIST=("${(f)$(ffprobe ${1}  2>&1 | grep -i 'duration\|stream')}")
-		local -a INFO
+		local -a LIST=("${(f)$(ffprobe ${1}  2>&1 | grep -i 'duration\|stream')}")
 		local AUD=Audio:None
 		local DESC
-		local SDUR=''
 		local DUR=Duration:None
 		local HDR
 		local RES=None
+		local SDUR=''
 		local SUB=None
 		local VAL
 		local VID=Video:None
@@ -114,7 +115,7 @@ info () {
 		VID=$(cut -d: -f2- <<<${VID} | trim)
 		AUD=$(cut -d: -f2- <<<${AUD} | trim)
 
-		FLIST[${SDUR}:${@:t}]="${DUR}|${(U)VID}|${RES}|${(U)AUD}|${(C)SUB}"
+		_VLIST[${SDUR}:${@:t}]="${DUR}|${(U)VID}|${RES}|${(U)AUD}|${(C)SUB}"
 	}
 
 	#--Begin GetOpts--
@@ -187,6 +188,7 @@ ___EOF
 	if [[ ${#} -eq 0 ]];then
 		LIST=("${(f)$(find . -maxdepth 1 -type f -regex "${_VID_REGEX_F}")}")
 	else
+		ARGS=$(path_get_raw_args | parse_get_last_field)
 		LIST=(${@})
 	fi
 
@@ -195,24 +197,25 @@ ___EOF
 		[[ ! ${L} =~ ${_VID_REGEX_Z} ]] && continue
 		[[ -d ${L} ]] && continue
 		HIT=true
-		parse_info ${L}
+		parse_info ${L} # Create _VLIST
 		[[ ${#L} -gt ${LONGEST} ]] && LONGEST=${#L}
 	done
 
-	[[ ${HIT} == 'false' ]] && exit_leave $(err_msg_exit "No video files found in:${PWD}")
+	[[ -n ${ARGS} ]] && MSG="for:${ARGS}"
+	[[ ${HIT} == 'false' ]] && exit_leave $(err_msg_exit "No video files found in:${PWD} ${MSG}")
 
 	tcup 0 0
 	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"
 	printf "${MAGENTA_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} $(str_unicode_line ${LONGEST}) $(str_unicode_line 11) $(str_unicode_line 5) $(str_unicode_line 10) $(str_unicode_line 5) $(str_unicode_line 8)
 	NDX=0
-	for K in ${(Ok)FLIST};do
+	for K in ${(k)_VLIST};do
 		((NDX++))
 		TIT=$(cut -d':' -f2 <<<${K})
-		DUR=$(cut -d'|' -f1 <<<${FLIST[${K}]})
-		VID=$(cut -d'|' -f2 <<<${FLIST[${K}]})
-		RES=$(cut -d'|' -f3 <<<${FLIST[${K}]})
-		AUD=$(cut -d'|' -f4 <<<${FLIST[${K}]})
-		SUB=$(cut -d'|' -f5 <<<${FLIST[${K}]})
+		DUR=$(cut -d'|' -f1 <<<${_VLIST[${K}]})
+		VID=$(cut -d'|' -f2 <<<${_VLIST[${K}]})
+		RES=$(cut -d'|' -f3 <<<${_VLIST[${K}]})
+		AUD=$(cut -d'|' -f4 <<<${_VLIST[${K}]})
+		SUB=$(cut -d'|' -f5 <<<${_VLIST[${K}]})
 		BARLINE=$(( NDX % 2 )) # Barlining 
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
 		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}

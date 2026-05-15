@@ -136,7 +136,7 @@ if [[ ${#} -ne 0 ]];then
 	REGEX=".*${REGEX_ARG}.*"
 	C_REGEX=".*${(C)REGEX_ARG}.*"
 	L_REGEX=".*${REGEX_ARG:l}.*"
-	REGEX="-regextype 'posix-extended' -regex ${(qqq)REGEX} -o -regex ${(qqq)L_REGEX} -o -regex ${(qqq)C_REGEX}"
+	REGEX="-regextype 'posix-extended' -iregex ${(qqq)REGEX}"
 fi
 
 if [[ -n ${TYPE_ARG} ]];then

@@ -271,7 +271,7 @@ precmd () {
 	local P
 
 	if [[ -e /tmp/pwd.last ]];then
-		read LPWD < /tmp/pwd.last
+		read LPWD < /tmp/pwd.last # Just use ${OLDPWD}?
 		/bin/rm -f /tmp/pwd.last >/dev/null 2>&1
 	fi
 

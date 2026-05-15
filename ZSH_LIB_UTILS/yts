@@ -267,7 +267,7 @@ action_do () {
 						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
 						continue
 						;;
-					*100%*|*'fixing mpeg-ts'*|*fixup*|*remux*)
+					*100%*|*fix*|*remux*)
 						logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 						msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
 						_DOWNLOADS[${M}]=true

@@ -945,12 +945,12 @@ else
 		inode_ndx "${MEDIA_ARG}"
 		PATHLBL=${_FIND_PATH:h}
 	elif path_has_wildcard;then
-		# Handle wildcard
+		# Pass list to _IN_LIST
 		logit ${_LOG} "WILDCARD"
 		inode_ndx "${@}"
 		PATHLBL=${_FIND_PATH:h}
-	elif [[ -f ${_FIND_PATH} ]];then
-		# Convert file name to list member
+	elif [[ -f ${_FIND_PATH} || -d ${_FIND_PATH} ]];then
+		# Add dir or file name to _IN_LIST
 		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
 		inode_ndx "${_FIND_PATH}"
 		PATHLBL=${_FIND_PATH:h}

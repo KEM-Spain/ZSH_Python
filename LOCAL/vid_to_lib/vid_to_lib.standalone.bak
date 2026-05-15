@@ -15,12 +15,19 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+# Imports
+_LIB_DIR=/usr/local/lib
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/ARRAY.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -a _VIDEOS=()
 typeset -a _MOVELIST=()
 
 # Constants
-_CFG_DIR=~/.local/share/wid_watch
+_CFG_DIR=~/.local/share/${_SCRIPT}
 _LIB=/usr/local/lib
 _VW=/usr/local/bin/system/vid_watch
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
@@ -40,13 +47,6 @@ _SERIES_SUB=series
 # Vars 
 _SERVICE_MODE=''
 
-# Imports
-_LIB_DIR=/usr/local/lib
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
-
 # Functions
 do_rmcup () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -63,7 +63,8 @@ do_rmso () {
 
 exit_pre_exit () {
 	local -a SCRUB=()
-	local C F
+	local -a USER_PIDS=()
+	local C F P
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -79,15 +80,8 @@ exit_pre_exit () {
 	fi
 
 	if [[ ${_EXIT_SCRUB} == 'true' ]];then
-		{
-			if [[ -n ${_MY_PID} ]];then
-				SCRUB=("${(f)$(find /tmp/*${_MY_PID}* -type f)}")
-				for F in ${SCRUB};do
-					echo "${0}: Scrubbed: ${F}" >> /tmp/exit_scrub.log
-					/bin/rm -f ${F}
-				done
-			fi
-		} >/dev/null 2>&1
+		_PIDS=("${(f)$(get_user_pids)}")
+		scrub_tmp
 	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
@@ -483,9 +477,10 @@ shift $((OPTIND -1))
 #--End GetOpts--
  
 # Execution
-[[ -e ${_LOG} ]] && rm -f ${_LOG}
-logit "start"
-logit "_SERVICE_MODE:${_SERVICE_MODE}"
+[[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR} # Create _CFG_DIR if needed
+[[ -e ${_LOG} ]] && rm -f ${_LOG} # Clear log
+
+logit "${_SCRIPT} started, _SERVICE_MODE:${_SERVICE_MODE}"
 
 [[ ! -e ${_LIBRARY_DIR}/movies ]] && mkdir ${_LIBRARY_DIR}/movies 
 [[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
@@ -568,7 +563,6 @@ for V in ${_VIDEOS};do
 done
 
 if [[ ${HIT} == 'true' ]];then
-	# TODO: Modify fsub.standalone to accept this list
 	logit ${_LOG} "=========================="
 	for M in ${_MOVELIST};do
 		logit ${_LOG} "Moved ${M} to ${MEDIA_DEST}"

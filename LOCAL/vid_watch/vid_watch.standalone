@@ -9,7 +9,7 @@ _INOT_PID=''
 _LOG=${_CFG_DIR}/${0:t}.log
 _MUSIC=~/Downloads/Torrents/Music
 _MUSIC_REGEX='.*\(\.ape\|\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\)$'
-_PID_FN=${_CFG_DIR}/${0:t}.pid
+__PID_FILE=${_CFG_DIR}/${0:t}.pid
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
 _VW=/usr/local/bin/system/vid_watch
 
@@ -34,8 +34,8 @@ on_exit () {
 	ps -p ${_INOT_PID} >/dev/null 2>&1
 	[[ ${?} -eq 0 ]] && kill ${_INOT_PID}
 
-	echo "Deleting ${_PID_FN}" | tee -a >>${_LOG}
-	/bin/rm -f ${_PID_FN}
+	echo "Deleting ${__PID_FILE}" | tee -a >>${_LOG}
+	/bin/rm -f ${__PID_FILE}
 
 	exit
 }
@@ -52,8 +52,8 @@ tweak_deluge_gtk () {
 }
 
 # Execution
-# Start instance or reject multiple instances
-[[ ! -e ${_PID_FN} ]] && echo $$ >${_PID_FN}
+[[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR} # Create _CFG_DIR if needed
+[[ ! -e ${__PID_FILE} ]] && echo $$ >${__PID_FILE} # Start instance or reject multiple instances
 
 # Block additional instance
 while read PID;do
@@ -61,9 +61,9 @@ while read PID;do
 	if [[ ${?} -eq 0 ]];then # Valid pid
 		[[ "$$" != "${PID}" ]] && echo "Only one instance of ${0} allowed" && return
 	else
-		echo $$ >${_PID_FN} # Replace stale pid
+		echo $$ >${__PID_FILE} # Replace stale pid
 	fi
-done<${_PID_FN}
+done<${__PID_FILE}
 
 trap "on_exit" EXIT INT TERM
 
