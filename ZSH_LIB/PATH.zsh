@@ -398,17 +398,20 @@ path_split_cmd () {
 }
 
 path_strip_options () {
-	local LINE=${@:Q}
+	local CMD=${1}
+	local -a OPTS=()
+	local O
+	local RC=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${@}"
+	OPTS=("${(f)$(grep -Po '\-+[A-Za-z0-9]+' <<<${CMD})}")
+	RC=${?}
 
-	while true;do # Strip options
-        grep -qP '^\-\w+' <<<${LINE}
-        [[ ${?} -ne 0 ]] && break
-        LINE=$(echo ${LINE} | perl -pe 's/(-\w+)\s+(.*)/\2/g')
+	for O in ${OPTS};do
+		CMD=$(sed "s/${O}//" <<<${CMD})
 	done
 
-	echo ${LINE}
+	echo ${CMD}
+	return ${RC}
 }
 
 path_abbv () {

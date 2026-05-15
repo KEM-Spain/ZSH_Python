@@ -520,21 +520,20 @@ ___EOF
 	cursor_off
 }
 
-# TODO: All boolean tests should show return vals in DEBUG similar to is_glob
 is_bare_word () {
 	local TEXT="${@}"
 
 	if [[ ${TEXT} =~ '\*' || ${TEXT} =~ '\~' || ${TEXT} =~ '^/.*' ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${TEXT}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 		return 1
 	fi
 
 	if [[ ${_BAREWORD_IS_FILE} == 'false' ]];then # Bare words should be tested as possible file and dir names
 		if [[ -f ${TEXT:Q} || -d ${TEXT:Q} ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${TEXT}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 			return 1
 		else
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${TEXT}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
 			return 0
 		fi
 	fi
@@ -544,10 +543,10 @@ is_binary () {
 	if [[ -f ${1} ]];then
 		grep -q -P '[\x7f-\xff]' ${1}
 		if [[ ${?} -eq 0 ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${1}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${1} RC=0"
 			return 0
 		else
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${1}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${1} RC=1"
 			return 1
 		fi
 	else
@@ -561,10 +560,10 @@ is_dir () {
 
 	TEXT=$(eval "echo ${TEXT}" 2>/dev/null)
 	if [[ -d ${TEXT} ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${TEXT}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${TEXT}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
 		return 1
 	fi
 }
@@ -578,10 +577,10 @@ is_empty_dir () {
 	[[ -d ${DIR} ]] && RVAL=$(ls -A ${DIR} | wc -l)
 
 	if [[ ${RVAL} -eq 0 ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${DIR}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${DIR} RC=0"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${DIR}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${DIR} RC=1"
 		return ${RVAL}
 	fi
 }
@@ -591,17 +590,23 @@ is_file () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ -f ${TEXT:Q} ]] && return 0 || return 1
+	if [[ -f ${TEXT:Q} ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
+		return 0
+	else
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
+		return 1
+	fi
 }
 
 is_glob () {
 	local TEXT="${@}"
 
 	if [[ ${TEXT:Q} =~ '\*' ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true for ${TEXT}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false for ${TEXT}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 		return 1
 	fi
 }
@@ -612,7 +617,13 @@ is_singleton () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ ${INSTANCES} -eq 0 ]] && return 0 || return 1
+	if [[ ${INSTANCES} -eq 0 ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: EXEC:${EXEC_NAME} INSTANCES:${INSTANCES} RC=0"
+		return 0 
+	else
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: EXEC:${EXEC_NAME} INSTANCES:${INSTANCES} RC=1"
+		return 1
+	fi
 }
 
 is_symbol_dir () {
@@ -620,37 +631,77 @@ is_symbol_dir () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ ${ARG} =~ '^[\.~]$' ]] && return 0 || return 1
+	if [[ ${ARG} =~ '^[\.~]$' ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${ARG} RC=0"
+		return 0
+	else
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${ARG} RC=1"
+		return 1
+	fi
 }
 
 kbd_activate () {
+	local KEYBOARD_DEV=''
+	local RC=0
+
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ ${XDG_SESSION_TYPE:l} != 'x11' ]] && return 0
+	if [[ ${XDG_SESSION_TYPE:l} != 'x11' ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NOT X11 RC=1"
+		return 1
+	fi
 
-	local KEYBOARD_DEV=$(kbd_get_keyboard_id)
+	KEYBOARD_DEV=$(kbd_get_keyboard_id)
+	RC=${?}
 
-	xinput reattach ${KEYBOARD_DEV} 3
+	if [[ ${RC} -eq 0 ]];then
+		xinput reattach ${KEYBOARD_DEV} 3
+		RC=${?}
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: xinput ${KEYBOARD_DEV} RC=${RC}"
+	fi
+
+	return ${RC}
 }
 
 kbd_get_keyboard_id () {
+	local KEYBOARD_DEV=''
+	local RC=0
+
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ ${XDG_SESSION_TYPE:l} != 'x11' ]] && return 0
+	if [[ ${XDG_SESSION_TYPE:l} != 'x11' ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NOT X11 RC=1"
+		return 1
+	fi
 
-	local KEYBOARD_DEV=$(xinput list | grep  "AT Translated" | cut -f2 | cut -d= -f2)
+	KEYBOARD_DEV=$(xinput list | grep  "AT Translated" | cut -f2 | cut -d= -f2)
+	RC=${?}
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: xinput ${KEYBOARD_DEV} RC=${RC}"
 
 	echo ${KEYBOARD_DEV}
+
+	return ${RC}
 }
 
 kbd_suspend () {
+	local KEYBOARD_DEV=''
+	local RC=0
+
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	[[ ${XDG_SESSION_TYPE:l} != 'x11' ]] && return 0
+	if [[ ${XDG_SESSION_TYPE:l} != 'x11' ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NOT X11 RC=1"
+		return 1
+	fi
 
-	local KEYBOARD_DEV=$(kbd_get_keyboard_id)
+	KEYBOARD_DEV=$(kbd_get_keyboard_id)
+	RC=${?}
 
-	xinput float ${KEYBOARD_DEV}
+	if [[ ${RC} -eq 0 ]];then
+		xinput float ${KEYBOARD_DEV}
+	fi
+
+	return ${RC}
 }
 
 key_wait () {
@@ -791,8 +842,14 @@ parse_find_valid_delim () {
 		[[ $? -eq 0 ]] && DELIM=${D} && break
 	done
 
-	[[ -n ${DELIM} ]] && echo ${DELIM} && return 0
-	return 1
+	if [[ -n ${DELIM} ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${DELIM} RC=0"
+		echo ${DELIM}
+		return 0
+	else
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${DELIM} RC=1"
+		return 1
+	fi
 }
 
 parse_get_last_field () {
@@ -819,7 +876,14 @@ respond () {
 
 	echo -n "${PROMPT}${WHITE_FG}?${RESET} ${WHITE_FG}(${RESET}${BOLD}${ITALIC}y${BOLD}${WHITE_FG}/${RESET}${BOLD}${ITALIC}n${RESET}${WHITE_FG})${RESET}:"
 	eval "read -q ${TIMEOUT} RESPONSE" && echo >&2
-	[[ ${RESPONSE} == 'y' ]] && return 0 || return 1
+
+	if [[ ${RESPONSE} == 'y' ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${RESPONSE} RC=0"
+		return 0
+	else
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${RESPONSE} RC=1"
+		return 1
+	fi
 }
 
 title_info () { # Shared with fsub and vid_to_lib

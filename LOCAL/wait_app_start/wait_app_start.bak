@@ -281,7 +281,7 @@ while IFS= read -ru3 LINE;do
 		if [[ (${LINE:l} =~ 'string' || ${LINE:l} =~ 'array') && ${LINE:l} =~ '\.desktop' ]];then
 			STR=$(grep --color=never -o -E '["].*.desktop["]' <<<${LINE} | tr -d '["]' | sed 's/.desktop//')
 			_SCAN[${STR:t}]=1
-			logit ${_LOG} "SCAN STR:${STR}"
+			[[ -n ${STR} ]] && logit ${_LOG} "SCAN STR:${STR}"
 			scan_apps
 		fi
 	fi
