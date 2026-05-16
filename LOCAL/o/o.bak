@@ -35,18 +35,20 @@ source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -a _RAWLIST
-typeset -a _MARKED=()
-typeset -a _LOCAL_LIST=()
+typeset -A _APP_EXE
+typeset -A _APP_WIN
 typeset -A _FILE_APP
 typeset -A _FILE_NDX
 typeset -A _FILE_WIN
-typeset -A _APP_EXE
-typeset -A _APP_WIN
+typeset -a _ARG_LIST=()
 typeset -a _FOREGROUND_ONLY=(vim)
+typeset -a _LOCAL_LIST=()
+typeset -a _MARKED=()
+typeset -a _RAWLIST=()
 
 # Constants
-_APP_LOG=/tmp/${_SCRIPT}.log
+_CFG_DIR=~/.local/${_SCRIPT}
+_APP_LOG=${_CFG_DIR}/${_SCRIPT}.log
 
 _APP_EXE[EBOOK]="/usr/bin/python2.7 /usr/bin/ebook-viewer"
 _APP_EXE[OKULAR]=/usr/bin/okular
@@ -204,7 +206,7 @@ item_decorate () {
 	case ${_LIST_SELECTED[${NDX}]} in
 		${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
 		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
-		*)	tput el;echo -n $(pathabv ${_LOCAL_LIST[${NDX}]});;
+		*)	tput el;echo -n ${_LOCAL_LIST[${NDX}]};;
 	esac
 }
 
@@ -255,16 +257,9 @@ mark_unsupported () {
 	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
 }
 
-lcase_mp4s () {
-	local -a LIST=("${(f)$(find . -maxdepth 1 -name '*MP4' -type f ! -path .)}")
-	local L
-
-	if [[ -n ${LIST} ]];then
-		msg_box -t2 "Renaming MP4 files to mp4..."
-		for L in ${LIST};do
-			mv -f ${L} ${L:r}.mp4
-		done
-	fi
+lcase_mp4 () {
+	FN=${1}
+	mv -f ${FN} ${FN:r}.mp4
 }
 
 same_extension () {
@@ -382,17 +377,13 @@ shift $(( OPTIND - 1 ))
 
 #--Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
 [[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
 
-# File(s) passed on command line or pipe
-typeset -a ARGS
-
-lcase_mp4s
-
-# Command line args
-# 1) none - all files in PWD
-# 2) list - process a list of files
-# 3) file - process a single file
+MUSIC_DIRS=false
+[[ -e ${_MD_EXTERNAL} ]] && MUSIC_DIRS=true
+[[ -e ${_MD_LOCAL} ]] && MUSIC_DIRS=true
+[[ -e ${_MD_MUSE} ]] && MUSIC_DIRS=true
 
 RAWPATH=$(path_get_raw)
 FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
@@ -400,40 +391,39 @@ FPATH=${FPATH:q}
 FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
 PATHLBL=$(path_get_label 40)
 
-[[ ${#} -eq 1 && -f ${1} ]] && FILE_ARG=${1} || FILE_ARG='' # Single file arg
-
-# Verify path/file if passed
-if [[ ${#} -eq 0 ]];then # No args - PWD
-	HDR_MSG="Showing all files in:${PWD}"
-else
-	HDR_MSG="Processing file list"
-	_RAWLIST=(${@})
-	for F in ${_RAWLIST};do
-		[[ ! -e ${F} ]] && exit_leave $(err_msg_exit E "File:${F} not found")
-	done
-fi
-
-if [[ -z ${_RAWLIST} ]];then
-	CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
-	_RAWLIST=("${(f)$(eval ${CMD})}")
-fi
+# Command line args
+# 0) none - all files in PWD
+# 1) file - process a single file
+# *) list - process a list of files
+case ${#} in
+	0) HDR_MSG="Showing all files in:$(pathabv <<<${PWD})"
+		CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
+		_ARGLIST=("${(f)$(eval ${CMD})}")
+		;;
+	1) _ARGLIST+=${1};;
+	*) HDR_MSG='Processing file list'
+		_ARGLIST=(${@})
+		;;
+esac
 
 NDX=0
-for F in ${_RAWLIST};do
+for F in ${_ARGLIST};do
+	[[ ! -e ${F} ]] && exit_leave $(err_msg_exit E "File:${F} not found")
+	[[ -d ${F} ]] && continue # Skip any directories
 	((NDX++))
 	[[ -e ${PWD}/${F:t} ]] && _RAWLIST[${NDX}]=${F:t} || _RAWLIST[${NDX}]=$(realpath ${F}) 
 done
 
-MUSIC_DIRS=false
-[[ -e ${_MD_EXTERNAL} ]] && MUSIC_DIRS=true
-[[ -e ${_MD_LOCAL} ]] && MUSIC_DIRS=true
-[[ -e ${_MD_MUSE} ]] && MUSIC_DIRS=true
+if ! arr_is_populated "${_RAWLIST}";then
+	exit_leave $(err_msg_exit "No qualified candidates")
+fi
 
 NDX=0
-for F in ${(o)_RAWLIST};do
-	[[ -d ${F} ]] && continue # Skip any directories
-	APP=$(get_app ${F})
-	APP_WIN=$(get_win ${F})
+for F in ${(o)_RAWLIST};do # Marshal apps
+	FN=${F}
+	[[ ${FN:e} == 'MP4' ]] && { lcase_mp4 ${FN} && FN="${FN:r}.${FN:el}" }
+	APP=$(get_app ${FN})
+	APP_WIN=$(get_win ${FN})
 	[[ ${APP} == '?' && ${FILTER_UNSUPPORTED} == 'true' ]] && continue # Skip any unsupported
 	((NDX++))
 	if [[ ${MUSIC_DIRS} == 'true' ]];then
@@ -460,7 +450,7 @@ if [[ -z ${_LOCAL_LIST} ]];then
 	exit_leave
 fi
 
-if [[ -n ${FILE_ARG} ]];then # Process a single file arg directly
+if [[ ${#_LOCAL_LIST} -eq 1 ]];then # Process a single file arg directly
 	_LIST=(${_LOCAL_LIST})
 	action_do 1
 	exit_leave

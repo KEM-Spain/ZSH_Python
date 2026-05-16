@@ -1,14 +1,41 @@
-2026-05-15_21:37: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-15_21:37: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-15_21:37: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-05-15_21:37: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
-2026-05-15_21:37: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
-2026-05-15_21:37: query_youtube: Query matched 21 lines, _LOCAL_LIST has 19 lines
-2026-05-15_21:37: query_youtube: Listing for QKEY:judgingfreedom contains 19 rows
-2026-05-15_21:37: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.cZN5df
-2026-05-15_21:37: job_start: TITLE:INTEL Roundtable w/ Johnson & McGovern - Weekly Wrap 15-May
-2026-05-15_21:37: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=u4JqT8QCmTc" PID:225938
-2026-05-15_21:37: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-15_21:37: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=u4JqT8QCmTc PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-15_21:37: action_do: FUTURE
-2026-05-15_21:37: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.cZN5df was cleared for:judgingfreedom from:action_do
+2026-05-16_12:15: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-05-16_12:15: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-05-16_12:15: query_youtube: Creating listing for QKEY:danieldavisdeepdive STRICT:null
+2026-05-16_12:15: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Daniel Davis ENGINE:youtube EOPT:null FKEY:daniel davis QKEY:danieldavisdeepdive TYPE:custom 
+2026-05-16_12:15: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "danieldavisdeepdive"
+2026-05-16_12:15: query_youtube: Query matched 16 lines, _LOCAL_LIST has 15 lines
+2026-05-16_12:15: query_youtube: Listing for QKEY:danieldavisdeepdive contains 15 rows
+2026-05-16_12:15: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.2hBBt9
+2026-05-16_12:15: job_start: TITLE:SCOTT RITTER: Russia Retaliation on Europe No Longer In Doubt
+2026-05-16_12:15: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=IynOOHlWMmY" PID:708760
+2026-05-16_12:15: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-16_12:16: action_do: GENERATING HEADER
+2026-05-16_12:16: title_scrubber: UCASE_WORDS:2
+2026-05-16_12:16: title_scrubber: Preserving uppercase:Scott
+2026-05-16_12:16: title_scrubber: Preserving uppercase:Ritter
+2026-05-16_12:16: action_do: COMPLETED
+2026-05-16_12:16: action_do: POST-PROCESSING
+2026-05-16_12:16: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=IynOOHlWMmY PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-16_12:16: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - SCOTT_RITTER_-_Russia_Retaliation_on_Europe_No_Longer_In_Doubt.mp4
+2026-05-16_12:16: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - SCOTT_RITTER_-_Russia_Retaliation_on_Europe_No_Longer_In_Doubt.mp4
+2026-05-16_12:16: title_scrubber: UCASE_WORDS:2
+2026-05-16_12:16: title_scrubber: Preserving uppercase:Scott
+2026-05-16_12:16: title_scrubber: Preserving uppercase:Ritter
+2026-05-16_12:16: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - SCOTT_RITTER_-_Russia_Retaliation_on_Europe_No_Longer_In_Doubt.mp4 with:Daniel Davis - SCOTT RITTER - Russia Retaliation On Europe No Longer In.mp4
+2026-05-16_12:16: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - SCOTT RITTER - Russia Retaliation On Europe No Longer In.mp4
+2026-05-16_12:16: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.2hBBt9 was cleared for:danieldavisdeepdive from:action_do
+2026-05-16_12:16: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.fTBHOs
+2026-05-16_12:16: job_start: TITLE:Russia-West Confrontation Fast Approaching /Dmitry Polyanskiy
+2026-05-16_12:16: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=M0fQsI6L6Lo" PID:711134
+2026-05-16_12:16: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-16_12:16: action_do: GENERATING HEADER
+2026-05-16_12:16: title_scrubber: UCASE_WORDS:1
+2026-05-16_12:16: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=M0fQsI6L6Lo PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-16_12:16: action_do: COMPLETED
+2026-05-16_12:16: action_do: POST-PROCESSING
+2026-05-16_12:16: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Russia-West_Confrontation_Fast_Approaching_Dmitry_Polyanskiy.mp4
+2026-05-16_12:16: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Russia-West_Confrontation_Fast_Approaching_Dmitry_Polyanskiy.mp4
+2026-05-16_12:16: title_scrubber: UCASE_WORDS:1
+2026-05-16_12:16: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - Russia-West_Confrontation_Fast_Approaching_Dmitry_Polyanskiy.mp4 with:Daniel Davis - Russia-West Confrontation Fast Approaching Dmitry.mp4
+2026-05-16_12:16: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - Russia-West Confrontation Fast Approaching Dmitry.mp4
+2026-05-16_12:16: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.fTBHOs was cleared for:danieldavisdeepdive from:action_do

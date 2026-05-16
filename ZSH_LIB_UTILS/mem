@@ -48,7 +48,7 @@ printf "${MAGENTA_FG}%s${RESET}\n"  $(str_unicode_line 120)
 		CPU=$(cut -d' ' -f4 <<<${LINE})
 		CMD=$(cut -d' ' -f5 <<<${LINE})
 		[[ ${MEM} == '0.0' && ${CPU} == '0.0' ]] && continue
-		printf "%10s %8s ${CYAN_FG}%4s ${RED_FG}%4s ${WHITE_FG}%-s${RESET}\n" ${USER} ${PID} ${MEM} ${CPU} ${CMD}
+		printf "%10s %8s ${CYAN_FG}%4s ${RED_FG}%4s ${RESET}${FAINT}${WHITE_FG}%s${RESET}${WHITE_FG}%-s${RESET}\n" ${USER} ${PID} ${MEM} ${CPU} "${CMD:h}/" ${CMD:t}
 	done 
 	} | sort -k4r -k3r | head -36
 } | mypager wait
