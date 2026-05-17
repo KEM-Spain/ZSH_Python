@@ -2,6 +2,50 @@
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_regex_EOF_1
 
+${E_WHITE_FG}To Force A Regex To Stop At First Match${E_RESET}
+
+To force a regular expression to stop at the first match, you must turn off "greedy"
+matching by using a lazy (non-greedy) quantifier or by using a negated character class. 
+
+Here is how to apply each method depending on your exact scenario.
+
+1.  Use Lazy Quantifiers (?)
+
+By default, regex quantifiers like * (zero or more) and + (one or more) are greedy.
+They will match as much text as possible. Adding a question mark ? right after the 
+quantifier forces it to match as little text as possible, stopping at the very first 
+occurrence of your delimiter.
+
+Greedy (Matches too much): ".*" inside "Hello" and "World" 
+matches "Hello" and "World". 
+
+Lazy (Stops at first match): ".*?" inside "Hello" and "World" 
+matches only "Hello". 
+
+Greedy Pattern/Lazy Pattern
+.*?  -> Matches zero or more characters up to the first match.
+.+?  -> Matches one or more characters up to the first match.
+??   -> Matches zero or one character, preferring zero.
+
+2. Use Negated Character Classes (More Efficient)
+
+If you want to stop matching at a specific character (like a quote, comma, or
+bracket), a negated character class is faster and safer than using .*?. 
+You define a set of characters that the engine is not allowed to match by using 
+the caret ^ inside square brackets [^...].  
+
+Example: "[^"]+"
+
+How it works: This matches one or more characters that are not a double quote. 
+Because it physically cannot pass a double quote, it is forced to stop exactly when it 
+hits the next quote.
+
+Common Use Cases: 
+
+To stop at the first forward slash: [^/]+
+To stop at the first HTML bracket: [^<]+ 
+To stop at the first hyphen: [^-]+
+
 ${E_WHITE_FG}Collected POSIX/GNU:${E_RESET}
 
 POSIX Character Classes

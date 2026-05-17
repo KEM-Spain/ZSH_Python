@@ -47,8 +47,9 @@ typeset -a _MARKED=()
 typeset -a _RAWLIST=()
 
 # Constants
-_CFG_DIR=~/.local/${_SCRIPT}
+_CFG_DIR=~/.local/share/${_SCRIPT}
 _APP_LOG=${_CFG_DIR}/${_SCRIPT}.log
+_ERR_LOG=${_CFG_DIR}/err.log
 
 _APP_EXE[EBOOK]="/usr/bin/python2.7 /usr/bin/ebook-viewer"
 _APP_EXE[OKULAR]=/usr/bin/okular
@@ -92,7 +93,6 @@ action_do () {
 	local FN
 	local IN_APP=false
 	local LAST_APP=?
-	local ERR_LOG='/tmp/o.ERR'
 	local MSG=''
 	local RC=''
 	local M K
@@ -120,18 +120,18 @@ action_do () {
 	done
 
 	for K in ${(k)RUN_LIST};do
-		/bin/rm -f ${ERR_LOG}
+		/bin/rm -f ${_ERR_LOG}
 		if is_foreground_only ${K};then
-			logit ${_APP_LOG} "Foreground job: APP:${K} ARGS:${RUN_LIST[${K}]}"
-			eval "${K} ${RUN_LIST[${K}]} 2>${ERR_LOG}" # Foreground
-			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
+			logit ${_APP_LOG} "${0}: Executing foreground job: APP:${K} ARGS:${RUN_LIST[${K}]}"
+			eval "${K} ${RUN_LIST[${K}]} 2>${_ERR_LOG}" # Foreground
+			MSG=$(grep --color=never -Esi 'fail|error' ${_ERR_LOG})
 			RC=$(wc -w <<<${MSG})
-			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${ERR_LOG})<N>| |<w>Press any key...<N>"
+			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${_ERR_LOG})<N>| |<w>Press any key...<N>"
 		else
-			logit ${_APP_LOG} "Background job: APP:${K} ARGS:${RUN_LIST[${K}]}"
-			eval "${K} ${RUN_LIST[${K}]} 2>${ERR_LOG} &" # Background
+			logit ${_APP_LOG} "${0}: Executing background job: APP:${K} ARGS:${RUN_LIST[${K}]}"
+			eval "${K} ${RUN_LIST[${K}]} 2>${_ERR_LOG} &" # Background
 			win_max -p ${!} # Maximize window using PID of background job
-			MSG=$(grep --color=never -Esi 'fail|error' ${ERR_LOG})
+			MSG=$(grep --color=never -Esi 'fail|error' ${_ERR_LOG})
 			RC=$(wc -w <<<${MSG})
 		fi
 	done
@@ -156,22 +156,18 @@ action_warn () {
 	fi
 }
 
-create_list () {
-	local FLIST=(${@})
-	local F
-	local APP
-	local NDX=0
-}
-
-
 get_app () {
 	local FN=${1}
 	local EXT=${FN:e:l}
 	local APP=$(map_ext ${EXT})
 	
 	if [[ ${APP} == '?' ]];then
-		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP=${_APP_EXE[VIM]} # Editable unknown extensions 
+		if [[ -n ${FN} && $(file ${FN}) =~ "text" ]];then
+			APP=${_APP_EXE[VIM]} # Editable unknown extensions 
+		fi
 	fi
+
+	logit ${_APP_LOG} "${0}: ${FN} assigned to $(cut -d' ' -f1 <<<${APP})"
 
 	echo ${APP}
 }
@@ -182,8 +178,12 @@ get_win () {
 	local APP_WIN=$(map_ext ${EXT})
 	
 	if [[ ${APP_WIN} == '?' ]];then
-		[[ -n ${FN} && $(file ${FN}) =~ "text" ]] && APP_WIN=${_APP_WIN[VIM]} # Editable unknown extensions 
+		if [[ -n ${FN} && $(file ${FN}) =~ "text" ]];then
+			APP_WIN=${_APP_WIN[VIM]} # Editable unknown extensions 
+		fi
 	fi
+
+	logit ${_APP_LOG} "${0}: ${FN} assigned to $(cut -d' ' -f1 <<<${APP_WIN})"
 
 	echo ${APP_WIN}
 }
@@ -195,7 +195,12 @@ is_foreground_only () {
 	APP=$(cut -d' ' -f1 <<<${APP}) # Isolate APP name
 
 	for A in ${_FOREGROUND_ONLY};do
-		[[ ${APP} =~ ${A} ]] && return 0 || return 1
+		if [[ ${APP} =~ ${A} ]];then
+			logit ${_APP_LOG} "${0}: ${APP} designated foreground app"
+			return 0
+		else
+			return 1
+		fi
 	done
 }
 
@@ -254,12 +259,16 @@ mark_unsupported () {
 	local SUPPORTED
 
 	SUPPORTED=$(get_app ${_LOCAL_LIST[${NDX}]})
-	[[ ${SUPPORTED} == '?' ]] && _LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
+	if [[ ${SUPPORTED} == '?' ]];then
+		_LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
+		logit ${_APP_LOG} "${0}: ${APP} marked as unsupported"
+	fi
 }
 
 lcase_mp4 () {
 	FN=${1}
 	mv -f ${FN} ${FN:r}.mp4
+	logit ${_APP_LOG} "${0}: Lower cased extension ${FN}"
 }
 
 same_extension () {
@@ -274,7 +283,12 @@ same_extension () {
 		[[ ${LAST_EXT} != ${_LOCAL_LIST[${M}]:e} ]] && SAME_EXT=false
 	done
 
-	[[ ${SAME_EXT} == 'true' ]] && return 0 || return 1
+	if [[ ${SAME_EXT} == 'true' ]];then
+		logit ${_APP_LOG} "${0}: identified same extension ${LAST_EXT}"
+		return 0
+	else
+		return 1
+	fi
 }
 
 single_file_launch () {
@@ -294,6 +308,8 @@ single_file_launch () {
 	echo "_FILE_APP:${_FILE_APP}"
 	echo "_FILE_NDX:${_FILE_NDX}"
 	echo "_FILE_WIN:${_FILE_WIN}"
+
+	logit ${_APP_LOG} "${0}: Launching single file:${FN}"
 
 	action_do 1
 }
@@ -418,6 +434,8 @@ if ! arr_is_populated "${_RAWLIST}";then
 	exit_leave $(err_msg_exit "No qualified candidates")
 fi
 
+logit ${_APP_LOG} "Args provided ${#_RAWLIST} candidates"
+
 NDX=0
 for F in ${(o)_RAWLIST};do # Marshal apps
 	FN=${F}
@@ -441,6 +459,8 @@ for F in ${(o)_RAWLIST};do # Marshal apps
 	_FILE_NDX[${F}]=${NDX}
 	_FILE_WIN[${F}]=${APP_WIN}
 done
+
+logit ${_APP_LOG} "Validated ${#_LOCAL_LIST} candidates"
 
 if [[ -z ${_LOCAL_LIST} ]];then
 	do_rmcup
