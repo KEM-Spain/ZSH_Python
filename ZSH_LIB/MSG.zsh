@@ -251,15 +251,16 @@ msg_box () {
 	MSG_SEP="<SEP>"
 
 	# Process various message types
-	if [[ ${MSG_PAGING}  == 'true' ]];then
+	if [[ ${MSG_PAGING}  == 'true' ]];then # Multi page message
 		MSG_STR=$(msg_nomarkup ${NAV_BAR}) # Strip markup
+		[[ ${_OFF_SCREEN_ROWS} == 'true' ]] && MSG_HEADER+="(<r><B><I>There are <w>marked rows <r>on other pages<N>)"
 
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MSG_STR:${MSG_STR} MSG_COLS:${MSG_COLS}"
 
 		# Adding header lines reduces paging area (PG_LINES)
 		[[ -n ${MSG_HEADER} ]] && (( PG_LINES-=2 )) || (( PG_LINES--)) # With headers add BAR,HDR,SEP else add BAR,SEP only
 
-		# Replace page count token in NAV_BAR
+		# Assign page count token in NAV_BAR
 		MSG_PAGES=$(( ${#MSG_BODY} / PG_LINES ))
 		PARTIAL=$((${#MSG_BODY} % PG_LINES ))
 		[[ ${PARTIAL} -ne 0 ]] && (( MSG_PAGES++))

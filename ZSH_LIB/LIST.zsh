@@ -20,7 +20,7 @@ typeset -a _TARGETS=() # Target indexes
 _ACTIVE_SEARCH=false
 _BARLINES=false
 _REUSE_STALE=false
-_HIDDEN_MARKED=true
+_WARN_HIDDEN_MARKED=true
 _CURSOR_NDX=0
 _HEADER_CALLBACK_FUNC=''
 _LINE_MARKER=')'
@@ -45,7 +45,7 @@ _MARKERS=false
 _MAX_DISPLAY_ROWS=0
 _MSG_KEY=n
 _NO_TOP_OFFSET=false
-_OFF_SCREEN_ROWS_MSG=''
+_OFF_SCREEN_ROWS=false
 _PAGE_CALLBACK_FUNC=''
 _PROMPT_KEYS=''
 _LIST_RESTORE_POS=false
@@ -851,8 +851,8 @@ list_select () {
 					if [[ ${SELECTED_COUNT} -eq 0 ]];then
 						break 2
 					else
-						if [[ ${_HIDDEN_MARKED} == 'true' ]];then
-							list_warn_hidden_marked
+						if [[ ${_WARN_HIDDEN_MARKED} == 'true' ]];then
+							list_set_hidden_marked
 							break 2
 						else
 							if [[ ${_SELECTION_LIMIT} -ne 0 ]];then
@@ -905,7 +905,7 @@ list_set_barlines () {
 list_set_client_warn () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	_HIDDEN_MARKED=${1}
+	_WARN_HIDDEN_MARKED=${1}
 }
 
 list_set_header () {
@@ -1426,8 +1426,6 @@ list_toggle_all () {
 list_toggle_selected () {
 	local COUNT=$(list_get_selected_count)
 
-	# TODO: reexamine this logic - provide sane handling of previously selected (STALE) rows
-	 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST_NDX:${_LIST_NDX} _SELECTION_LIMIT:${_SELECTION_LIMIT}"
 
@@ -1460,7 +1458,7 @@ list_toggle_selected () {
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}
 }
 
-list_warn_hidden_marked () {
+list_set_hidden_marked () {
 	local PAGE=${_PAGE_DATA[PAGE]}
 	local FIRST_ITEM=$(( (PAGE * _MAX_DISPLAY_ROWS - _MAX_DISPLAY_ROWS) + 1 ))
 	local LAST_ITEM=$(( PAGE * _MAX_DISPLAY_ROWS ))
@@ -1470,19 +1468,18 @@ list_warn_hidden_marked () {
 
 	[[ ${LAST_ITEM} -ge ${_PAGE_DATA[MAX_ITEM]} ]] && LAST_ITEM=${_PAGE_DATA[MAX_ITEM]} # Partial page
 
-	# Warn user of marked rows not on current page
-	_OFF_SCREEN_ROWS_MSG=''
+	_OFF_SCREEN_ROWS=false
 	for S in ${(k)_LIST_SELECTED};do
 		if [[ ${S} -ge ${FIRST_ITEM} && ${S} -le ${LAST_ITEM}  ]];then
 			continue 
 		else
 			if [[ ${_LIST_SELECTED[${S}]} -eq ${_SELECTED_ROW} ]];then
-				_OFF_SCREEN_ROWS_MSG="(<w><I>There are marked rows on other pages<N>)|"
+				_OFF_SCREEN_ROWS=true
+				[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: _OFF_SCREEN_ROWS:${_OFF_SCREEN_ROWS}"
 				break
 			fi
 		fi
 	done
-	[[ -n ${_OFF_SCREEN_ROWS_MSG} ]] && msg_box -t1 -H1 "<r>Warning<N>|${_OFF_SCREEN_ROWS_MSG}" && msg_box_clear
 }
 
 list_write_to_file () {
