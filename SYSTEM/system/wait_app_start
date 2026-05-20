@@ -182,7 +182,9 @@ has_waittime () {
 
 	cfg_load
 
+	logit ${_LOG} "Seeking waittime for ${APP}"
 	for A in ${(k)_WAITTIMES};do
+		logit ${_LOG} "Inspecting wait time ${A}"
 		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAITTIMES[${A}]} && break
 	done
 
@@ -247,7 +249,7 @@ scan_apps () {
 							_SEEN[${APP}]=1
 							logit ${_LOG} "ADDED ${APP} TO SEEN"
 							;;
-						2) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
+						*) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
 					esac
 				else
 					logit ${_LOG} "NO ACTION - ALREADY SEEN:${APP}"

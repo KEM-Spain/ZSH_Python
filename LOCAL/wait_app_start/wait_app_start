@@ -13,12 +13,12 @@ _SCRIPT=${0:t}
 _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
-typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna simple-scan "document scanner")
+typeset -A _APP_TAGS=(brave-browser brave google-chrome chrome com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna simple-scan "document scanner")
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
 typeset -A _SCAN=()
 typeset -A _SEEN=()
-typeset -A _WAITTIMES=()
-typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
+typeset -A _WAIT_TIMES=()
+typeset -a _APPS_NON_DOCK=(enpass vlc losslesscut)
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(enpass pyts libreoffice org.gnome.terminal)
 typeset -aU _WIN_LIST=()
@@ -55,9 +55,9 @@ clear_idle_apps () {
 	done
 
 	for S in ${APPS_TO_REMOVE};do
-		logit ${_LOG} "Clearing any idle applications"
+		logit ${_LOG} "${0}: Clearing any idle applications"
 		unset "_SEEN[${S}]"
-		logit ${_LOG} "${S} NOT RUNNING - CLEARED FROM SEEN"
+		logit ${_LOG} "${0}: ${S} NOT RUNNING - CLEARED FROM SEEN"
 	done
 }
 
@@ -96,17 +96,23 @@ cfg_load () {
 	local FN=${_CFG_DIR}/${_SCRIPT}.xml
 	local MAX=$(xmllint --xpath "count(wait_app_start/entry)" ${FN})
 	local X=0
+	local K
 
 	for (( X=1; X<=${MAX}; X++ ));do
 		APP=$(xmllint --xpath "wait_app_start/entry[${X}]/app//text()" ${FN})
 		WT=$(xmllint --xpath "wait_app_start/entry[${X}]/waittime//text()" ${FN})
-		_WAITTIMES=[${APP}]=${WT}
+		_WAIT_TIMES[${APP}]=${WT}
+	done
+
+	for K in ${(k)_WAIT_TIMES};do
+		logit ${_LOG} "${0}: WAIT TIMES: KEY:${K} VAL:${_WAIT_TIMES[${K}]}"
 	done
 }
 
 get_app_tag () {
 	local APP=${1:l} # Lowercase
 	local APP_TAG=''
+	local K
 
 	# Handle any alternate tags
 	if [[ -n ${_APP_TAGS[${APP}]} ]];then
@@ -114,6 +120,10 @@ get_app_tag () {
 	else
 		APP_TAG=${APP}
 	fi
+
+	for K in ${(k)_APP_TAGS};do
+		[[ ${K} == ${APP} ]] && logit ${_LOG} "${0}: APP:${APP} KEY:${K} VAL:${_APP_TAGS[${K}]}"
+	done
 
 	echo ${APP_TAG:l}
 }
@@ -138,6 +148,7 @@ get_cur_win () {
 
 		[[ ${F2} == '-1' ]] && continue # Eliminate invisible
 
+		logit ${_LOG} "${0}: ${F1}|${F2}|${F3}|${F4}|${F5}"
 		_WIN_LIST+="${F1}|${F2}|${F3}|${F4}|${F5}"
 	done
 }
@@ -180,11 +191,13 @@ has_waittime () {
 	local WT=0
 	local A
 
-	cfg_load
-
-	for A in ${(k)_WAITTIMES};do
-		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAITTIMES[${A}]} && break
+	logit ${_LOG} "${0}: Seeking waittime for ${APP}"
+	for A in ${(k)_WAIT_TIMES};do
+		logit ${_LOG} "${0}: Inspecting wait time ${A}"
+		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAIT_TIMES[${A}]} && break
 	done
+
+	logit ${_LOG} "${0}: APP:${APP} WAIT_TIME:${WT}"
 
 	[[ -z ${WT} ]] && echo 0 || echo ${WT}
 }
@@ -226,9 +239,9 @@ scan_apps () {
 	for S in ${(k)_SCAN};do
 		if [[ ${_APPS_TO_SCAN[(i)${S:l}]} -le ${#_APPS_TO_SCAN} ]];then
 			if [[ ${_BLACKLIST[(i)${S:l}]} -le ${#_BLACKLIST} ]];then
-				logit ${_LOG} "BLACKLISTED ${S}"
+				logit ${_LOG} "${0}: BLACKLISTED ${S}"
 			else
-				logit ${_LOG} "SEEKING:${S:l}"
+				logit ${_LOG} "${0}: SEEKING:${S:l}"
 				APP=$(get_app_tag ${S})
 
 				is_maximized ${APP}
@@ -236,25 +249,28 @@ scan_apps () {
 
 				if [[ -z ${_SEEN[${APP}]} ]];then
 					case ${RC} in
-						0) logit ${_LOG} "${APP} ALREADY MAXIMIZED"
+						0) logit ${_LOG} "${0}: ${APP} ALREADY MAXIMIZED"
 							_SEEN[${APP}]=1
-							logit ${_LOG} "ADDED ${APP} TO SEEN"
+							logit ${_LOG} "${0}: ADDED ${APP} TO SEEN"
 							;;
 						1) WT=$(has_waittime ${APP})
-							logit ${_LOG} "${APP} has ${WT} second waittime, waiting..."
-							[[ ${WT} -ne 0 ]] && sleep ${WT}
-							logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP}
+							if [[ ${WT} -ne 0 ]];then
+								logit ${_LOG} "${0}: ${APP} has ${WT} second waittime, waiting..."
+								sleep ${WT}
+							fi
+							logit ${_LOG} "${0}: MAXIMIZING ${APP}"
+							RC=$(win_max ${APP})
 							_SEEN[${APP}]=1
-							logit ${_LOG} "ADDED ${APP} TO SEEN"
+							logit ${_LOG} "${0}: ADDED ${APP} TO SEEN"
 							;;
-						2) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
+						*) logit ${_LOG} "${0}: ${APP} NO WINDOW EXISTS";;
 					esac
 				else
-					logit ${_LOG} "NO ACTION - ALREADY SEEN:${APP}"
+					logit ${_LOG} "${0}: NO ACTION - ALREADY SEEN:${APP}"
 				fi
 			fi
 		else
-			logit ${_LOG} "MONITORING APPS"
+			logit ${_LOG} "${0}: MONITORING APPS"
 		fi
 	done
 
@@ -263,6 +279,7 @@ scan_apps () {
 
 # Execution
 cfg_create
+cfg_load
 
 _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
 _APPS_TO_SCAN+=(${_APPS_NON_DOCK})

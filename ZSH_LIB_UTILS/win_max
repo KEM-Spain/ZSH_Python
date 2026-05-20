@@ -7,7 +7,7 @@ source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
-typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
+typeset -A _APP_TAGS=(brave-browser brave google-chrome chrome com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5 MAX 6)
 typeset -a _CUR_WIN=()
 typeset -aU _WIN_LIST=()
@@ -329,3 +329,4 @@ else
 	logit ${_LOG} "Unable to get WIN_ID for ${WIN_ARG}"
 	return 1
 fi
+set +xv;read

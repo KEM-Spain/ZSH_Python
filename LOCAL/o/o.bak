@@ -167,7 +167,7 @@ get_app () {
 		fi
 	fi
 
-	logit ${_APP_LOG} "${0}: ${FN} assigned to ${APP}"
+	logit ${_APP_LOG} "${0}: ${FN} assigned to $(cut -d' ' -f1 <<<${APP})"
 
 	echo ${APP}
 }
@@ -183,7 +183,7 @@ get_win () {
 		fi
 	fi
 
-	logit ${_APP_LOG} "${0}: ${FN} assigned to ${APP_WIN}"
+	logit ${_APP_LOG} "${0}: ${FN} assigned to $(cut -d' ' -f1 <<<${APP_WIN})"
 
 	echo ${APP_WIN}
 }

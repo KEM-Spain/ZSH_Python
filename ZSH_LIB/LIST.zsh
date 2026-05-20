@@ -22,6 +22,7 @@ _BARLINES=false
 _REUSE_STALE=false
 _WARN_HIDDEN_MARKED=true
 _CURSOR_NDX=0
+_CUSTOM_KEYS=''
 _HEADER_CALLBACK_FUNC=''
 _LINE_MARKER=')'
 _LIST_HEADER_LINES=0
@@ -750,6 +751,7 @@ list_select () {
 	if [[ ${_LIST_IS_SELECTABLE} == 'true' ]];then
 		SEL_ALL=" select <${WHITE_FG}a${RESET}>ll${RESET}, "
 		[[ -n ${_LIST_PROMPT} ]] && SELECT_PROMPT=${_LIST_PROMPT} || SELECT_PROMPT="Hit <${GREEN_FG}SPACE${RESET}> to select then <${GREEN_FG}ENTER${RESET}> to ${_SELECT_ACTION}. ${WHITE_FG}Note${RESET}: <${GREEN_FG}ENTER${RESET}> will ${ITALIC}${WHITE_FG}exit${RESET} if none are selected"
+		[[ -n ${_CUSTOM_KEYS} ]] && SELECT_PROMPT+=${_CUSTOM_KEYS}
 	fi
 	[[ -n ${_LIST_ACTION_MSGS[1]} ]] && ACTION_MSGS[1]=${_LIST_ACTION_MSGS[1]} || ACTION_MSGS[1]="process"
 	[[ -n ${_LIST_ACTION_MSGS[2]} ]] && ACTION_MSGS[2]=${_LIST_ACTION_MSGS[2]} || ACTION_MSGS[2]="item"
@@ -1045,6 +1047,12 @@ list_set_prompt_msg () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_PROMPT_KEYS=${@}
+}
+
+list_set_custom_keys () {
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	_CUSTOM_KEYS=${@}
 }
 
 list_set_reuse_stale () {

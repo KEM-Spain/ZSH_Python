@@ -1,8 +1,6 @@
-# file read response template
 while read -u3 F;do # Separate file descriptor to allow embedded read
-	echo "ACTION goes here"
+	echo "${F}"
 	echo -n "Next..."
 	read -s -k1 RESPONSE
-	[[ ${RESPONSE} == $'\n' ]] && exit # ANSI quoting to detect empty return
+	[[ ${RESPONSE} == $'\n' ]] && exit_leave "${RED_FG}Operation cancelled${RESET}..."
 done 3< <FILE>
-

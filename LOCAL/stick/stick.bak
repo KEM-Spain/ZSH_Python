@@ -20,6 +20,13 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIST.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
 # Declarations
 typeset -A STICK_DATA=()
 typeset -a _STICK_LIST=()
@@ -40,13 +47,6 @@ g_LAST_VIEW=''
 g_NEXT_VIEW=''
 g_LOCAL_LVL=1
 g_STICK_LVL=1
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Functions
 action_do () {
@@ -359,7 +359,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -395,7 +395,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	exit_leave $(msg_exit W ${PENDING_MSGS})
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
@@ -410,7 +410,7 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
@@ -424,7 +424,7 @@ if [[ ${?} -eq 0 ]];then
 	_STICK_PATH=${STICK_DATA[PATH]}
 	msg_box -p -PK -H1 "<w>USB Stick Information<N>|<c>${STICK_DATA[NAME]}<N>|<w>Device<N>:${STICK_DATA[DEVICE]}|<w>Mount<N>:${STICK_DATA[PATH]}"
 else
-	exit_leave $(msg_exit W "No USB stick found")
+	exit_leave $(err_msg_exit W "No USB stick found")
 fi
 
 g_LAST_VIEW="STICK"

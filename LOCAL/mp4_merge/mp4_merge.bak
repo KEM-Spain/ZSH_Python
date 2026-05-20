@@ -69,19 +69,21 @@ archive_del () {
 	for F in ${_ARCHIVED};do
 		AGE=$(date_fage_days ${F})
 		DAYS=$(cut -d' ' -f1 <<<${AGE})
-		[[ ${DAYS} -eq 0 ]] && continue
+		#[[ ${DAYS} -eq 0 ]] && continue
 		ARCHIVE_LIST[${F}]=${DAYS}
 	done
 
 	if [[ -n ${ARCHIVE_LIST} ]];then
-		echo "${WHITE_ON_GREY}Found ${#ARCHIVE_LIST} archived files in${RESET}:${_CFG_DIR}"
+		tcup 0 0
+		echo "${WHITE_ON_GREY}Found ${#ARCHIVE_LIST} archived files${RESET}"
 		printf "%-10s %s\n" "Age" "File"
 		printf "%-10s %s\n" $(str_unicode_line 10) $(str_unicode_line 50)
-		for K in ${(k)ARCHIVE_LIST};do
+
+		for K in ${(onk)ARCHIVE_LIST};do
 			printf "%-10s %s\n" "${ARCHIVE_LIST[${K}]} days" ${K:t}
 		done
 
-		QUESTION="${RED_FG}Delete ${WHITE_FG}${#ARCHIVED}${RESET} archived files"
+		QUESTION="${RED_FG}Delete ${WHITE_FG}${#ARCHIVE_LIST}${RESET} archived files"
 		echo -n "\n${QUESTION}:(y/n)?"
 		read -q RESPONSE && echo
 		if [[ ${RESPONSE} == "y" ]];then # Only 'y' will move
@@ -273,9 +275,11 @@ show_progress () {
 	local -i T=0
 	local LAST_T=0
 	local LINE
+	local TAIL_ARG=''
 
-	# TODO: not showing progress for similar video merge (arg:OPT=noframes)
-	
+	[[ -n ${OPT} ]] && TAIL_ARG="-1000" || TAIL_ARG="-f"
+
+	echo "Getting duration info..." >&2
 	while read LINE;do
 		F1=$(cut -d',' -f1 <<<${LINE})
 		F2=$(cut -d',' -f2 <<<${LINE})
@@ -293,9 +297,10 @@ show_progress () {
 		TL_HOURS=$(( TL_HOURS+HOURS ))
 	done < ${DURATIONS}
 
+	echo "Waiting for log generation..." >&2
 	while true;do # Wait for log generation to begin
 		[[ -s ${_LOG_FILE} ]] && break
-		sleep .5
+		sleep .2
 	done
 
 	tail -f ${LOG} | \
@@ -306,11 +311,12 @@ show_progress () {
 			progress*) PROGRESS=$(cut -d'=' -f2 <<<${LINE});;
 		esac
 
+		[[ ${PROGRESS} == 'end' && -n ${OPT} ]] && echo "${GREEN_FG}Merge completed...${RESET}" && break
+
 		[[ -z ${CUR_FRAME} || ${OTIME} == 'N/A' ]] && continue
+		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( OTIME / 1000000 ) * 100. / TL_SECS )) || PCT=100
 
 		#echo "CUR_FRAME:${CUR_FRAME} OTIME:${OTIME} PROGRESS:${PROGRESS}" && continue
-
-		[[ ${PROGRESS} != 'end' ]] && PCT=$(( ( OTIME / 1000000 ) * 100. / TL_SECS )) || PCT=100
 
 		T=$(( (PCT / 100) * _BAR_WIDTH )) # Tick value
 		[[ ${_BAR} == 'false' ]] && bar_start && _BAR=true # Draw the bar
@@ -418,7 +424,7 @@ shift $(( OPTIND -1 ))
 clear 
 
 _ARCHIVED=("${(f)$(find ${_CFG_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_CFG_DIR})}") # Check for archived files
-[[ -n ${_ARCHIVED} ]] && echo "${WHITE_FG}${#_ARCHIVED}${RESET} archived $(str_pluralize file ${#_ARCHIVED})"
+[[ -n ${_ARCHIVED} ]] && echo "${WHITE_ON_GREY}Found ${#_ARCHIVED} archived $(str_pluralize file ${#_ARCHIVED})${RESET}"
 
 [[ ! -d ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR} # Create _CFG_DIR
 [[ -e ${_CFG_DIR}/duration ]] && /bin/rm ${_CFG_DIR}/duration # Init duration file
@@ -458,6 +464,10 @@ else
 	else
 		LIST=("${(f)$(find ${_DEFAULT_PATH} -regex "${_VIDEO_REGEX}" ! -path ${_DEFAULT_PATH})}") # All media in path
 	fi
+fi
+
+if ! arr_is_populated "${LIST}";then
+	exit_leave $(err_msg_exit "No files found in ${_DEFAULT_PATH} matching:${SEARCHTERM}")
 fi
 
 for F in ${LIST};do

@@ -1002,7 +1002,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
 [[ -n ${UTIL} && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "command:${WHITE_FG}${UTIL}${RESET} not found"

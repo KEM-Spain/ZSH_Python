@@ -51,7 +51,7 @@ _CFG_DIR=~/.local/share/${_SCRIPT}
 _APP_LOG=${_CFG_DIR}/${_SCRIPT}.log
 _ERR_LOG=${_CFG_DIR}/err.log
 
-_APP_EXE[EBOOK]="/usr/bin/python2.7 /usr/bin/ebook-viewer"
+_APP_EXE[EBOOK]="/usr/bin/foliate"
 _APP_EXE[OKULAR]=/usr/bin/okular
 _APP_EXE[MDLESS]=/usr/local/bin/mdless
 _APP_EXE[MUSE]="/usr/local/bin/system/launchers/run_musescore"
@@ -439,7 +439,7 @@ logit ${_APP_LOG} "Args provided ${#_RAWLIST} candidates"
 NDX=0
 for F in ${(o)_RAWLIST};do # Marshal apps
 	FN=${F}
-	[[ ${FN:e} == 'MP4' ]] && { lcase_mp4 ${FN} && FN="${FN:r}.${FN:el}" }
+	[[ ${FN:e} == 'MP4' ]] && { lcase_mp4 ${FN} && FN="${FN:r}.${FN:e:l}" }
 	APP=$(get_app ${FN})
 	APP_WIN=$(get_win ${FN})
 	[[ ${APP} == '?' && ${FILTER_UNSUPPORTED} == 'true' ]] && continue # Skip any unsupported

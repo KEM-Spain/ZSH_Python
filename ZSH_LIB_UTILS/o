@@ -51,7 +51,7 @@ _CFG_DIR=~/.local/share/${_SCRIPT}
 _APP_LOG=${_CFG_DIR}/${_SCRIPT}.log
 _ERR_LOG=${_CFG_DIR}/err.log
 
-_APP_EXE[EBOOK]="/usr/bin/python2.7 /usr/bin/ebook-viewer"
+_APP_EXE[EBOOK]="/usr/bin/foliate"
 _APP_EXE[OKULAR]=/usr/bin/okular
 _APP_EXE[MDLESS]=/usr/local/bin/mdless
 _APP_EXE[MUSE]="/usr/local/bin/system/launchers/run_musescore"

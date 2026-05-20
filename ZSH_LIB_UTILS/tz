@@ -9,6 +9,7 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 BOLD="\033[1m"
 
+E_BOLD=$(echo -n "\033[1m")
 E_RESET=$(echo -n "\033[m")
 E_GREEN_FG=$(echo -n "\033[32m")
 E_RED_FG=$(echo -n "\033[31m")
@@ -137,6 +138,7 @@ for L in ${LIST};do
 	[[ ${L} =~ '\.list' ]] && continue
 	[[ ${L} =~ '\.tab' ]] && continue
 	[[ ${L} =~ 'Factory' ]] && continue
+	[[ ${L} =~ 'right' ]] && continue
 	[[ ${L} =~ 'posix' ]] && continue
 	[[ ${L} =~ 'local' ]] && continue
 	[[ ${L} =~ 'leap' ]] && continue
@@ -215,9 +217,9 @@ for Z in ${ZONES};do
 		dbg "${0}:${LINENO} --> TZ_DIFF_VAL:${TZ_DIFF_VAL} UTC_DIFF_VAL:${UTC_DIFF_VAL}"
 	fi
 
-	[[ ${TZ_DIFF} =~ "^-" ]] && (( HOUR_DIFF = TZ_DIFF_VAL - UTC_DIFF_VAL )) && HOUR_DIFF=$(echo ${HOUR_DIFF} | tr -d -) && DIFF_LBL="You [${E_MAGENTA_FG}${LOCAL_ZONE}${E_RESET}] are ${HOUR_DIFF} hours ${HOUR_LBL}"
-	[[ ${TZ_DIFF} =~ "^\+" ]] && (( HOUR_DIFF = TZ_DIFF_VAL - UTC_DIFF_VAL )) && DIFF_LBL="You [${E_MAGENTA_FG}${LOCAL_ZONE}${E_RESET}] are ${HOUR_DIFF} hours ${HOUR_LBL}"
-	[[ ${HOUR_DIFF} -lt 0 ]] && HOUR_DIFF=$(echo ${HOUR_DIFF} | tr -d -) && DIFF_LBL="You [${E_MAGENTA_FG}${LOCAL_ZONE}${E_RESET}] are ${HOUR_DIFF} hours ${HOUR_LBL}"
+	[[ ${TZ_DIFF} =~ "^-" ]] && (( HOUR_DIFF = TZ_DIFF_VAL - UTC_DIFF_VAL )) && HOUR_DIFF=$(echo ${HOUR_DIFF} | tr -d -) && DIFF_LBL="You [${E_MAGENTA_FG}${LOCAL_ZONE}${E_RESET}] are ${E_CYAN_FG}${E_BOLD}${HOUR_DIFF}${E_RESET} hours ${HOUR_LBL}"
+	[[ ${TZ_DIFF} =~ "^\+" ]] && (( HOUR_DIFF = TZ_DIFF_VAL - UTC_DIFF_VAL )) && DIFF_LBL="You [${E_MAGENTA_FG}${LOCAL_ZONE}${E_RESET}] are ${E_CYAN_FG}${E_BOLD}${HOUR_DIFF}${E_RESET} hours ${HOUR_LBL}"
+	[[ ${HOUR_DIFF} -lt 0 ]] && HOUR_DIFF=$(echo ${HOUR_DIFF} | tr -d -) && DIFF_LBL="You [${E_MAGENTA_FG}${LOCAL_ZONE}${E_RESET}] are ${E_CYAN_FG}${E_BOLD}${HOUR_DIFF}${E_RESET} hours ${HOUR_LBL}"
 	[[ ${HOUR_DIFF} -eq 0 ]] && DIFF_LBL="You [${E_MAGENTA_FG}${LOCAL_ZONE}${E_RESET}] have the same time"
 	[[ ${HOUR_DIFF} -eq 1 ]] && DIFF_LBL=$(echo ${DIFF_LBL} | sed 's/hours/hour/g')
 

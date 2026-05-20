@@ -19,6 +19,15 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
+WHITE_ON_RED="\033[0m\033[1;37;41m"
+
+# Imports
+_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIST.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
 typeset -A STICK_DATA=()
@@ -38,15 +47,8 @@ _STICK_PATH=''
 # Globals
 g_LAST_VIEW=''
 g_NEXT_VIEW=''
-g_LOCAL_LVL=1
-g_STICK_LVL=1
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+g_LOCAL_LVL=4
+g_STICK_LVL=4
 
 # Functions
 action_do () {
@@ -173,6 +175,9 @@ item_decorate () {
 	local NDX=${1}
 	local _MAX=$((_MAX_COLS - 10))
 	local ITEM=${_LIST[${NDX}]}
+	local PWD_MARKER=''
+
+	[[ ${ITEM} =~ ${PWD} ]] && PWD_MARKER='.' || PWD_MARKER=''
 
 	[[ ${g_LAST_VIEW} == "LOCAL" ]] && ITEM=${${ITEM}##${_LOCAL_PATH}} || ITEM=${${ITEM}##${_STICK_PATH}}
 	ITEM=${ITEM[1,${_MAX}]}
@@ -183,8 +188,8 @@ item_decorate () {
 		echo -n "${E_STRIKE}${E_CYAN_FG}${ITEM}${E_RESET} ${E_ITALIC}copied${E_RESET}" || echo -n ${ITEM}
 	else
 		case ${_LIST_OBJS[${NDX}]} in
-			dir) echo "${CYAN_FG}${ITEM}${RESET}";;
-			file) echo "${ITEM}";;
+			dir) echo "${CYAN_FG}${PWD_MARKER}${ITEM}${RESET}";;
+			file) echo "${PWD_MARKER}${ITEM}";;
 		esac
 	fi
 }
@@ -203,14 +208,18 @@ list_detail () {
 
 list_show () {
 	local LIST_NAME=${1}
-	local ALIAS=${_LIST_ALIAS[${LIST_NAME}]}
+	local -A LEVEL_MAP=(1 "Top Directories" 2 "Directories and Sub Directories" 3 "Directories and Files" 4 "Files Only")
+	local ALIAS_COLOR=''
+	local ALIAS=''
 	local DETAIL_LVL=''
 	local RC=0
 
+	[[ ${g_LAST_VIEW} == 'LOCAL' ]] && ALIAS_COLOR=${WHITE_ON_GREY} || ALIAS_COLOR=${WHITE_ON_RED}
+	ALIAS="${ALIAS_COLOR}${_LIST_ALIAS[${LIST_NAME}]}${RESET}"
 	[[ ${g_LAST_VIEW} == 'LOCAL' ]] && DETAIL_LVL=${g_LOCAL_LVL} || DETAIL_LVL=${g_STICK_LVL}
 
 	#set headings
-	list_set_header 'printf Content:"${WHITE_ON_GREY}${ALIAS}${RESET} Level:${DETAIL_LVL} Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET} Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_PATHLBL} ${_PATHLBL} ${SELECTED_COUNT}'
+	list_set_header 'printf Content:"${ALIAS} Level:${WHITE_FG}${LEVEL_MAP[${DETAIL_LVL}]}${RESET} Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET} Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_PATHLBL} ${_PATHLBL} ${SELECTED_COUNT}'
 	list_add_header_break
 
 	#set line item
@@ -219,9 +228,10 @@ list_show () {
 	'
 
 	list_set_select_action "view"
-	list_set_key_callback_quit KEY T FUNC list_switch RET true
-	list_set_key_callback_quit KEY D FUNC list_detail RET true
-	list_set_searchable false
+	list_set_key_callback KEY T FUNC list_switch RET true
+	list_set_key_callback KEY D FUNC list_detail RET true
+	list_set_custom_keys ". ${WHITE_ON_GREY}Special KEYS${RESET} (${WHITE_FG}T${RESET})oggle List, (${WHITE_FG}D${RESET})etail Level"
+	list_set_searchable true
 
 	while true;do
 		#get selection
@@ -279,15 +289,17 @@ load_local () {
 	local HAS_DIRS=false
 	local F
 
+	# TODO: Build inode table for all files and dirs
+
 	[[ ${DETAIL_LVL} -eq 4 ]] && TYPE=f || TYPE=d
-	[[ ${DETAIL_LVL} -gt 1 ]] && msg_box -c -t.2 "Level ${DETAIL_LVL}|Working..."
+	#[[ ${DETAIL_LVL} -gt 1 ]] && msg_box -c -t.2 "Level ${DETAIL_LVL}|Working..."
 
 	for F in ${PWD}/*;do
 		[[ -d ${F} ]] && HAS_DIRS=true
 	done
 	[[ ${HAS_DIRS} == 'false' ]] && TYPE=f && g_LOCAL_LVL=4 # No directories - override DETAIL_LVL
 
-	_LOCAL_LIST=("${(f)$(eval "find ${PWD:q} -maxdepth ${DETAIL_LVL} -type ${TYPE} ! -path ${PWD:q}" 2>/dev/null | sort)}")
+	_LOCAL_LIST=("${(f)$(eval "find ${PWD} -maxdepth ${DETAIL_LVL} -type ${TYPE} ! -path ${PWD:q}" 2>/dev/null | sort)}")
 	if [[ ${?} -ne 0 ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${PWD} -maxdepth 1 -type f ! -path ${PWD}"
 	else
@@ -307,6 +319,8 @@ load_stick () {
 	local HAS_DIRS=false
 	local F
 
+	# TODO: Build inode table for all files and dirs
+	 
 	[[ ${DETAIL_LVL} -eq 4 ]] && TYPE=f || TYPE=d
 	[[ ${DETAIL_LVL} -gt 1 ]] && msg_box -c -t.2 "Level ${DETAIL_LVL}|Working..."
 
