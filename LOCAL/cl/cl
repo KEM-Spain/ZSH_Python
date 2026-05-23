@@ -20,45 +20,45 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
   
-typeset -a LOCAL_FILES
+typeset -a _LOCAL_FILES
 
-CODEBASE=~/Code
-LOCAL=${CODEBASE}/LOCAL
-LANG=${CODEBASE}/LANG
-PYPROJ=${LANG}/Python/PROJECTS
+_CODEBASE=~/Code
+_LOCAL=${_CODEBASE}/LOCAL
+_LANG=${_CODEBASE}/LANG
+_PYPROJ=${_LANG}/Python/PROJECTS
 
 if [[ ${1} == '-H' ]];then
 	tabs 5
 	echo "\n${WHITE_FG}Usage${RESET}:${0:t} [-H] [<dir>]"
 	echo "${WHITE_FG} Desc${RESET}:Change to development directory\n"
 	echo "Directories searched:\n"
-	echo "${CODEBASE}"
-	echo "${LOCAL}"
-	echo "${LANG}"
-	echo "${PYPROJ}"
+	echo "${_CODEBASE}"
+	echo "${_LOCAL}"
+	echo "${_LANG}"
+	echo "${_PYPROJ}"
 	echo
 	return
 fi
 
-[[ -z ${1} ]] && cd ${CODEBASE}
+[[ -z ${1} ]] && cd ${_CODEBASE}
 
-if [[ -d ${LOCAL}/${1} ]];then
-	cd ${LOCAL}/${1} 
-elif [[ -d ${LOCAL}/${(U)1} ]];then
-	cd ${LOCAL}/${(U)1} 
-elif [[ -d ${LANG}/${1} ]];then
-	cd ${LANG}/${1} 
-elif [[ -d ${LANG}/${(U)1} ]];then
-	cd ${LANG}/${(U)1} 
-elif [[ -d ${CODEBASE}/${1} ]];then
-	cd ${CODEBASE}/${1} 
-elif [[ -d ${CODEBASE}/${(U)1} ]];then
-	cd ${CODEBASE}/${(U)1} 
-elif [[ -d ${PYPROJ}/${1} ]];then
-	cd ${PYPROJ}/${1} 
+if [[ -d ${_LOCAL}/${1} ]];then
+	cd ${_LOCAL}/${1} 
+elif [[ -d ${_LOCAL}/${(U)1} ]];then
+	cd ${_LOCAL}/${(U)1} 
+elif [[ -d ${_LANG}/${1} ]];then
+	cd ${_LANG}/${1} 
+elif [[ -d ${_LANG}/${(U)1} ]];then
+	cd ${_LANG}/${(U)1} 
+elif [[ -d ${_CODEBASE}/${1} ]];then
+	cd ${_CODEBASE}/${1} 
+elif [[ -d ${_CODEBASE}/${(U)1} ]];then
+	cd ${_CODEBASE}/${(U)1} 
+elif [[ -d ${_PYPROJ}/${1} ]];then
+	cd ${_PYPROJ}/${1} 
 	[[ -d venv ]] && cd venv
-elif [[ -d ${PYPROJ}/${(U)1} ]];then
-	cd ${PYPROJ}/${(U)1} 
+elif [[ -d ${_PYPROJ}/${(U)1} ]];then
+	cd ${_PYPROJ}/${(U)1} 
 	[[ -d venv ]] && cd venv
 else
 	echo "No development directory found:${WHITE_FG}${1}${RESET}"
@@ -70,14 +70,14 @@ fi
 	for F in ${PWD}/*;do
 		[[ ${F:e} == 'bak' ]] && continue
 		if [[ $(file ${F}) =~ 'zsh script' || ${F:e} == 'zsh' || ${F:e} == 'js' ]];then
-			LOCAL_FILES+=${F}
+			_LOCAL_FILES+=${F}
 			[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F}
 		fi
 	done
 } >/dev/null 2>&1
 
-if [[ -n ${LOCAL_FILES} ]];then
-	for F in ${LOCAL_FILES};do
+if [[ -n ${_LOCAL_FILES} ]];then
+	for F in ${_LOCAL_FILES};do
 		PROD=$(fut findexe ${F} 2>&1)
 		[[ -z ${PROD} || ${PROD:l} =~ "not found" ]] && continue # No production version exists
 		if [[ ! ${PROD:l} =~ 'code/local' ]];then

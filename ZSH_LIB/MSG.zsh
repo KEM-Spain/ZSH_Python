@@ -391,6 +391,7 @@ msg_box () {
 			for M in ${_CONT_BUFFER};do
 				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Dumping buffer line:${M}"
 				tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
+				tput ech ${BOX_WIDTH}
 				echo -n ${M} # Output line
 				(( _CONT_DATA[SCR]++)) # Increment
 			done

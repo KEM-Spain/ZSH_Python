@@ -237,7 +237,7 @@ set_package_list () {
 
 		for L in ${_LOCAL_LIST};do
 			((NDX++))
-			tput cup 6 0; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#__LOCAL_LIST} $(( NDX * 100. / ${#_LOCAL_LIST} ))
+			tput cup 6 0; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_LOCAL_LIST} $(( NDX * 100. / ${#_LOCAL_LIST} ))
 			P_NAME=$(echo ${L} | cut -d'|' -f2)
 			P_DESC=$(echo ${L} | cut -d'|' -f3)
 			[[ ${#P_NAME} -ge ${LONGEST[NAME]} ]] && LONGEST[NAME]=${#P_NAME}

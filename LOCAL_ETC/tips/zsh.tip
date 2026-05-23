@@ -322,6 +322,12 @@ sudo zsh -c "echo 300 > /sys/block/md0/md/stripe_cache_size"
 
 Execute zsh as root and permissions will cascade.
 
+${E_WHITE_FG}Find command to delete by inode${E_RESET}
+find \${FPATH} -maxdepth 1 -inum \${INODE} -exec rm -rf {} \;
+
+${E_WHITE_FG}Find command with printf${E_RESET}
+find . -type f -printf "%i %p\n" # prints inode and filename
+
 ${E_WHITE_FG}Find command regex types${E_RESET}
 find: valid -regextype values
 -----------------------------

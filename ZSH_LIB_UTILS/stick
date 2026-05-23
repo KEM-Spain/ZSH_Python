@@ -30,10 +30,9 @@ source ${_LIB_DIR}/LIST.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
-typeset -A STICK_DATA=()
+typeset -A _STICK_DATA=()
 typeset -a _STICK_LIST=()
 typeset -a _LOCAL_LIST=()
-typeset -A _LIST_OBJS=()
 typeset -A _LIST_ALIAS=("_STICK_LIST" "STICK" "_LOCAL_LIST" "LOCAL")
 typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
 _PATHLBL=''
@@ -41,62 +40,60 @@ _PATHLBL=''
 # Constants
 _SCRIPT=${0:t}
 _RSYNC_LOG=/tmp/rsync.log
-_LOCAL_PATH=''
-_STICK_PATH=''
- 
+
 # Globals
-g_LAST_VIEW=''
+g_LOCAL_PATH=''
+g_STICK_PATH=''
+g_LAST_VIEW='STICK'
 g_NEXT_VIEW=''
-g_LOCAL_LVL=4
-g_STICK_LVL=4
+g_LOCAL_LVL=d
+g_STICK_LVL=d
 
 # Functions
 action_do () {
 	local -A PAYLOAD=()
+	local FN=''
+	local IN=''
 	local LAST_LINE=''
 	local LINE=''
-	local SZ=''
 	local PCT=''
-	local RATE=''
-	local TM=''
-	local M
 	local PID=''
+	local RATE=''
+	local SZ=''
+	local TM=''
+	local K M
 
 	for M in ${_MARKED};do
+		IN=$(cut -d'|' -f1 <<<${_LIST[${M}]})
+		FN=$(cut -d'|' -f2 <<<${_LIST[${M}]})
 		if [[ ${g_LAST_VIEW} == 'LOCAL' ]];then # Queue copy to STICK
-			if [[ -e ${STICK_DATA[PATH]}/${_LIST[${M}]:t} ]];then
-				msg_box -c -p -PO "${CYAN_FG}${(C)_LIST_OBJS[${M}]}${RESET}:${STICK_DATA[PATH]}/${_LIST[${M}]:t} exists"
-				[[ ${_MSG_KEY} == 'y' ]] && PAYLOAD[${M}]=${_LIST[${M}]} # Overwrite if approved
+			if [[ -e ${g_STICK_PATH}/${FN:t} ]];then
+				msg_box -c -p -PO "${g_STICK_PATH}/${FN:t} exists"
+				[[ ${_MSG_KEY} == 'y' ]] && PAYLOAD[${M}]=${FN} # Overwrite if approved
 			else
-				PAYLOAD[${M}]=${_LIST[${M}]} # Add to list
+				PAYLOAD[${M}]=${FN} # Add to list
 			fi
-		else # Queue delete from STICK
-			if [[ -e ${STICK_DATA[PATH]}/${_LIST[${M}]:t} ]];then
-				msg_box -c -p -PD "${CYAN_FG}${(C)_LIST_OBJS[${M}]}${RESET}:${STICK_DATA[PATH]}/${_LIST[${M}]:t}"
-				[[ ${_MSG_KEY} == 'y' ]] && PAYLOAD[${M}]=${STICK_DATA[PATH]}/${_LIST[${M}]:t} # Overwrite if approved
-			else
-				PAYLOAD[${M}]=${STICK_DATA[PATH]}/${_LIST[${M}]:t} # Add to list
-			fi
+		else
+			PAYLOAD[${M}]=${IN} # Queue delete from STICK
 		fi
 	done
 
-	# Handle PAYLOAD
+	[[ -z ${PAYLOAD} ]] && return
+
 	if [[ ${g_LAST_VIEW} == 'LOCAL' ]];then # Copy from LOCAL to STICK
 
 		[[ ${_DEBUG} -eq 0 ]] && /bin/rm -f ${_RSYNC_LOG} # Clear log
-		sleep .5
 
 		# rsync -v -r ./Dir_1/  --mkpath "./Dir_2/TopDir" This works to add a dir for files - no target dir other than mkpath
 		# if Dir_2 exists then TopDir gets created under Dir_2, if Dir_2 doesn't exist then both are created "/Dir_2/TopDir"
 		# but with a selection of different dirs it quickly becomes unmanageable
 		# Nonetheless it would be necessary to know if we're in a subdirectory that requires a TopDir to categorize it
 
- 		rsync -r -z -h -I -v --info=progress2 --no-R --no-i-r ${(v)PAYLOAD} ${STICK_DATA[PATH]} >>${_RSYNC_LOG} 2>&1 & # Background rsync
+ 		rsync -r -z -h -I -v --info=progress2 --no-R --no-i-r ${(v)PAYLOAD} ${g_STICK_PATH} >>${_RSYNC_LOG} 2>&1 & # Background rsync
 		PID=$!
 		sleep .5
 
-		# Display transfer window
-		msg_box -c -C -H2 -I -x${_COORDS[X]} -y${_COORDS[Y]} -h${_COORDS[H]} -w${_COORDS[W]} "Transferring files to ${STICK_DATA[PATH]}..."
+		msg_box -c -C -H2 -I -x${_COORDS[X]} -y${_COORDS[Y]} -h${_COORDS[H]} -w${_COORDS[W]} "Transferring files to ${_STICK_DATA[PATH]}..." # Display transfer window
 		msg_box -C -jl "<c>$(str_unicode_line $((_COORDS[W]-4)))<N>" # Header line
 
 		coproc { tail -f --pid=${PID} ${_RSYNC_LOG} }
@@ -121,46 +118,51 @@ action_do () {
 			fi
 			sleep .5
 		done
-		msg_box -p -PK -x $((_COORDS[X] + 3)) "Transfer Complete"
+		msg_box -t1 -x $((_COORDS[X] + 3)) "Transfer Complete"
 
 		for M in ${(k)PAYLOAD};do
 			list_set_selected ${M} ${_USED_ROW}
 		done
-	else
-		# Call rm
+	else # Handle stick deletes
 		msg_box "Deleting..."
-		/bin/rm -rf ${(v)PAYLOAD}
+
 		for M in ${(k)PAYLOAD};do
+			find ${g_STICK_PATH} -inum ${PAYLOAD[${M}]} -exec rm -rf {} \;
 			list_set_selected ${M} ${_STALE_ROW}
 		done
+
 		msg_box_clear
 	fi
 }
 
 action_warn () {
-	local M
 	local -A COUNT=()
-	local F=0
-	local D=0
+	local ACTION=''
+	local DETAIL_LVL=''
 	local MSG=''
+	local TYPE=''
+	local M
 
-	if [[ ! -w ${_STICK_PATH} ]];then
-		msg_box -H1 -p -PK "<r>Error - Unable to Copy<N>|Stick is Readonly"
+	if [[ ! -w ${g_STICK_PATH} ]];then
+		[[ ${g_LAST_VIEW} == 'LOCAL' ]] && ACTION="Copy" || ACTION="Delete"
+		msg_box -H1 -p -PK "<r>Error - Unable to ${ACTION}<N>|Stick is Readonly"
 		for M in ${_MARKED};do
 			list_set_selected ${M} ${_AVAIL_ROW}
 		done
 		return -1
 	fi
 	
-	for M in ${_MARKED};do
-		[[ ${_LIST_OBJS[${M}]} == 'file' ]] && ((F++))
-		[[ ${_LIST_OBJS[${M}]} == 'dir' ]] && ((D++))
-	done
+	if [[ ${g_LAST_VIEW} == 'LOCAL' ]];then
+		DETAIL_LVL=${g_LOCAL_LVL}
+		TYPE=$(str_pluralize dir ${#_MARKED})
+		MSG="Copy ${#_MARKED} ${TYPE} to stick?"
+	else
+		DETAIL_LVL=f
+		TYPE=$(str_pluralize file ${#_MARKED})
+		MSG="Delete ${#_MARKED} ${TYPE} from stick?"
+	fi
 
-	[[ ${F} -ne 0 ]] && MSG="${F} $(str_pluralize file ${F})"
-	[[ ${D} -ne 0 ]] && MSG+=" ${D} $(str_pluralize dir ${D})"
-
-	msg_box -p -PP -H1 "<I>Please Respond| |${MSG} selected"
+	msg_box -p -PP -H1 "<I>Please Respond| |${MSG}"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do
@@ -171,44 +173,81 @@ action_warn () {
 	return 0
 }
 
+check_owner () {
+	local OWNER=''
+	local GROUP=''
+	local PERMS=''
+	local DEV_NODE=''
+	local MOUNT_POINT=${g_STICK_PATH}
+	local USER_UID=$(id -u)
+	local USER_GID=$(id -g)
+
+	DEV_NODE=$(mount | grep ${g_STICK_PATH} | tr -s '[:space:]' | cut -d' ' -f1)
+	[[ -z ${DEV_NODE} ]] && exit_leave $(err_msg_exit "Unable to determine device node")
+
+	PERMS=$(stat -c'%U|%G' ${g_STICK_PATH})
+	OWNER=$(cut -d'|' -f1 <<<${PERMS})
+	GROUP=$(cut -d'|' -f2 <<<${PERMS})
+
+	if [[ ${OWNER} == 'root' && ${GROUP} == 'root' ]];then
+		msg_box -p -PY -H1 "<r>Warning<N>|Stick is owned by root - unable to write|Remount as ${USER}?"
+		if [[ ${_MSG_KEY} == 'y' ]];then
+			sudo umount ${g_STICK_PATH}
+			sudo mkdir -p ${g_STICK_PATH}
+			sudo mount -o uid=$USER_UID,gid=$USER_GID ${DEV_NODE} ${MOUNT_POINT}
+			if [[ ${?} -eq 0 ]];then
+				msg_box -p -PK "USB remounted. Ownership reassigned to UID:${USER_UID}"
+			else
+				exit_leave $(err_msg_exit "Unable to change stick permissions")
+			fi
+		else
+			[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit "Stick is not writable")
+		fi
+	fi
+}
+
 item_decorate () {
 	local NDX=${1}
 	local _MAX=$((_MAX_COLS - 10))
-	local ITEM=${_LIST[${NDX}]}
+	local ITEM=$(cut -d'|' -f2 <<<${_LIST[${NDX}]})
 	local PWD_MARKER=''
+	local TYPE=''
 
-	[[ ${ITEM} =~ ${PWD} ]] && PWD_MARKER='.' || PWD_MARKER=''
+	[[ -d ${ITEM} ]] && TYPE=d || TYPE=f
+	[[ ${ITEM} =~ ${PWD} ]] && PWD_MARKER='./' || PWD_MARKER=''
 
-	[[ ${g_LAST_VIEW} == "LOCAL" ]] && ITEM=${${ITEM}##${_LOCAL_PATH}} || ITEM=${${ITEM}##${_STICK_PATH}}
+	[[ ${g_LAST_VIEW} == "LOCAL" ]] && ITEM=${${ITEM}##${g_LOCAL_PATH}/} || ITEM=${${ITEM}##${g_STICK_PATH}/}
 	ITEM=${ITEM[1,${_MAX}]}
 	
 	if [[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]];then # 2 = deleted
-		echo -n "${E_STRIKE}${E_RED_FG}${ITEM}${E_RESET} ${E_ITALIC}deleted${E_RESET}" || echo -n ${ITEM}
+		echo -n "${E_STRIKE}${ITEM}${E_RESET} ${E_ITALIC}${E_RED_FG}deleted${E_RESET}" || echo -n ${ITEM}
 	elif [[ ${_LIST_SELECTED[${NDX}]} -eq ${_USED_ROW} ]];then # 3 = copied
-		echo -n "${E_STRIKE}${E_CYAN_FG}${ITEM}${E_RESET} ${E_ITALIC}copied${E_RESET}" || echo -n ${ITEM}
+		echo -n "${E_STRIKE}${ITEM}${E_RESET} ${E_ITALIC}${E_GREEN_FG}copied${E_RESET}" || echo -n ${ITEM}
 	else
-		case ${_LIST_OBJS[${NDX}]} in
-			dir) echo "${CYAN_FG}${PWD_MARKER}${ITEM}${RESET}";;
-			file) echo "${PWD_MARKER}${ITEM}";;
+		case ${TYPE} in
+			d) echo "${CYAN_FG}${PWD_MARKER}${ITEM}${RESET}";;
+			f) echo "${PWD_MARKER}${ITEM}";;
 		esac
 	fi
 }
 
 list_detail () {
+	_LIST=()
+
 	if [[ ${g_LAST_VIEW} == 'LOCAL' ]];then
-		[[ ${g_LOCAL_LVL} -lt 4 ]] && ((g_LOCAL_LVL++)) || g_LOCAL_LVL=1
-		load_local 
+		[[ ${g_LOCAL_LVL} == 'f' ]] && g_LOCAL_LVL=d || g_LOCAL_LVL=f
+		load_local
 		list_switch LOCAL
 	else
-		[[ ${g_STICK_LVL} -lt 4 ]] && ((g_STICK_LVL++)) || g_STICK_LVL=1
-		load_stick 
+		[[ ${g_STICK_LVL} == 'f' ]] && g_STICK_LVL=d || g_STICK_LVL=f
+		load_stick
 		list_switch STICK
 	fi
 }
 
 list_show () {
 	local LIST_NAME=${1}
-	local -A LEVEL_MAP=(1 "Top Directories" 2 "Directories and Sub Directories" 3 "Directories and Files" 4 "Files Only")
+	local -A LEVEL_MAP=(d Directories f Files)
 	local ALIAS_COLOR=''
 	local ALIAS=''
 	local DETAIL_LVL=''
@@ -216,7 +255,7 @@ list_show () {
 
 	[[ ${g_LAST_VIEW} == 'LOCAL' ]] && ALIAS_COLOR=${WHITE_ON_GREY} || ALIAS_COLOR=${WHITE_ON_RED}
 	ALIAS="${ALIAS_COLOR}${_LIST_ALIAS[${LIST_NAME}]}${RESET}"
-	[[ ${g_LAST_VIEW} == 'LOCAL' ]] && DETAIL_LVL=${g_LOCAL_LVL} || DETAIL_LVL=${g_STICK_LVL}
+	[[ ${g_LAST_VIEW} == 'LOCAL' ]] && DETAIL_LVL=${g_LOCAL_LVL} || DETAIL_LVL=f
 
 	#set headings
 	list_set_header 'printf Content:"${ALIAS} Level:${WHITE_FG}${LEVEL_MAP[${DETAIL_LVL}]}${RESET} Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET} Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#_PATHLBL} ${_PATHLBL} ${SELECTED_COUNT}'
@@ -264,97 +303,105 @@ list_switch () {
 			g_NEXT_VIEW=${_LIST_ALIAS[_STICK_LIST]}
 			load_local ${g_LOCAL_LVL}
 			if ! arr_is_populated "${_LOCAL_LIST}";then
-				msg_box -cp -PK "${g_LAST_VIEW} contains no files or directories"
-			else
-				list_show "_LOCAL_LIST"
-				[[ ${?} -ne 0 ]] && break
+				msg_box -t1 "LOCAL is empty"
 			fi
+			list_show "_LOCAL_LIST"
+			[[ ${?} -ne 0 ]] && break
 		elif [[ ${g_LAST_VIEW} == 'LOCAL' || ${OVERRIDE} == "STICK" ]];then
 			g_LAST_VIEW="STICK"
 			g_NEXT_VIEW=${_LIST_ALIAS[_LOCAL_LIST]}
 			load_stick ${g_STICK_LVL}
 			if ! arr_is_populated "${_STICK_LIST}";then
-				msg_box -cp -PK "${g_LAST_VIEW} contains no files or directories"
-			else
-				list_show "_STICK_LIST"
-				[[ ${?} -ne 0 ]] && break
+				msg_box -t1 "STICK is empty"
 			fi
+			list_show "_STICK_LIST"
 		fi
 	done
 }
 
 load_local () {
-	local DETAIL_LVL=${1:=${g_LOCAL_LVL}}
-	local TYPE=''
-	local HAS_DIRS=false
-	local F
+	local TYPE=${1}
+	local -a RAWLIST=()
+	local DL=''
+	local FN=''
+	local HD=''
+	local IN=''
+	local MASTER=''
+	local NDX=0
+	local SUB=''
+	local TL=''
+	local D L
 
-	# TODO: Build inode table for all files and dirs
+	_LOCAL_LIST=()
 
-	[[ ${DETAIL_LVL} -eq 4 ]] && TYPE=f || TYPE=d
-	#[[ ${DETAIL_LVL} -gt 1 ]] && msg_box -c -t.2 "Level ${DETAIL_LVL}|Working..."
-
-	for F in ${PWD}/*;do
-		[[ -d ${F} ]] && HAS_DIRS=true
-	done
-	[[ ${HAS_DIRS} == 'false' ]] && TYPE=f && g_LOCAL_LVL=4 # No directories - override DETAIL_LVL
-
-	_LOCAL_LIST=("${(f)$(eval "find ${PWD} -maxdepth ${DETAIL_LVL} -type ${TYPE} ! -path ${PWD:q}" 2>/dev/null | sort)}")
-	if [[ ${?} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${PWD} -maxdepth 1 -type f ! -path ${PWD}"
+	if [[ ${TYPE} == 'f' ]];then
+		RAWLIST=("${(f)$(find ${g_LOCAL_PATH} -type f ! -path ${g_LOCAL_PATH} -printf '%i|%p|%d\n' | grep -E -i ${SEARCHTERM})}")
 	else
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
+		RAWLIST=("${(f)$(find ${g_LOCAL_PATH} -type d ! -path ${g_LOCAL_PATH} -printf '%i|%p|%d\n' | grep -E -i ${SEARCHTERM})}")
 	fi
 
+	if [[ ${#RAWLIST} -gt 1000 ]];then
+		msg_box -p -PY "Processing ${#RAWLIST} rows"
+		[[ ${_MSG_KEY} != 'y' ]] && exit_leave $(err_msg_exit I "${RED_FG}Operation Cancelled${RESET}")
+	fi
+
+	for L in ${RAWLIST};do
+		((NDX++))
+		tput cup 0 0; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#RAWLIST} $(( NDX * 100. / ${#RAWLIST} ))
+		IFS='|' read -r IN FN DL <<<${L}
+		TL=${FN:t}
+		HD=${${FN:h}##${g_LOCAL_PATH}}
+
+		if [[ ${TYPE} == 'f' ]];then
+			MASTER=''
+			SUB=''
+			for D in {2..${DL}};do
+				if [[ ${D} -eq 2 ]];then
+					MASTER=$(cut -d'/' -f${D} <<<${HD})
+					[[ -n ${MASTER} ]] && MASTER+="/"
+				elif [[ ${D} -eq ${DL} ]];then
+					SUB=$(cut -d'/' -f${DL} <<<${HD})
+					[[ -n ${SUB} ]] && SUB+="/"
+				fi
+			done
+
+			_LOCAL_LIST+="${ID}|${MASTER}${SUB}${TL}"
+		else
+			_LOCAL_LIST+="${ID}|${${FN}##${g_LOCAL_PATH}/}"
+		fi
+	done
+
 	if arr_is_populated "${_LOCAL_LIST}";then
-		_PATHLBL=$(path_abbv -l40 ${PWD})
-		set_list_objects "_LOCAL_LIST"
-		_LOCAL_PATH=${PWD}
+		_PATHLBL=$(path_abbv -l40 ${g_LOCAL_PATH})
 	fi
 }
 
 load_stick () {
 	local DETAIL_LVL=${1:=${g_STICK_LVL}}
+	local -a LIST=()
 	local TYPE=''
 	local HAS_DIRS=false
+	local MAX_DEPTH=''
 	local F
 
-	# TODO: Build inode table for all files and dirs
-	 
-	[[ ${DETAIL_LVL} -eq 4 ]] && TYPE=f || TYPE=d
-	[[ ${DETAIL_LVL} -gt 1 ]] && msg_box -c -t.2 "Level ${DETAIL_LVL}|Working..."
+	[[ ${DETAIL_LVL} -eq f ]] && TYPE=f || TYPE=d
 
-	for F in ${STICK_DATA[PATH]}/*;do
+	for F in ${_STICK_DATA[PATH]}/*(N);do
 		[[ -d ${F} ]] && HAS_DIRS=true
 	done
-	[[ ${HAS_DIRS} == 'false' ]] && TYPE=f && g_LOCAL_LVL=4 # No directories - override DETAIL_LVL
 
-	_STICK_LIST=("${(f)$(eval "find ${STICK_DATA[PATH]} -maxdepth ${DETAIL_LVL} -type ${TYPE} ! -path ${STICK_DATA[PATH]}" 2>/dev/null | sort)}")
+	[[ ${HAS_DIRS} == 'false' ]] && TYPE=f && g_LOCAL_LVL=f # No directories - override DETAIL_LVL
+
+	_STICK_LIST=("${(f)$(eval "find ${g_STICK_PATH} ${MAX_DEPTH} -type ${TYPE} ! -path ${g_STICK_PATH} -printf '%i|%p\n'" 2>/dev/null)}")
 	if [[ ${?} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${STICK_DATA[PATH]} -maxdepth 1 -type f ! -path ${STICK_DATA[PATH]}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${RED_FG}COMMAND FAILED${RESET}: find ${g_STICK_PATH} -maxdepth 1 -type f ! -path ${g_STICK_PATH}"
 	else
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ${GREEN_FG}_STICK_LIST COUNT${RESET}:${#_STICK_LIST}"
 	fi
 
 	if arr_is_populated "${_STICK_LIST}";then
-		_PATHLBL=$(path_abbv -l40 ${STICK_DATA[PATH]})
-		set_list_objects "_STICK_LIST"
+		_PATHLBL=$(path_abbv -l40 ${g_STICK_PATH})
 	fi
-}
-
-set_list_objects () {
-	local LIST=${1}
-	local NDX=0
-	local L
-
-	_LIST_OBJS=()
-
-	for L in ${(P)LIST};do
-		((NDX++))
-		[[ -f ${L} ]] && _LIST_OBJS[${NDX}]=file
-		[[ -d ${L} ]] && _LIST_OBJS[${NDX}]=dir
-		[[ ! -f ${L} && ! -d ${L} ]] && _LIST_OBJS[${NDX}]=other
-	done
 }
 
 #--Begin GetOpts--
@@ -363,7 +410,7 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-This script does...
+Copy files to USB stick
 EOF
 
 parse_opts () {
@@ -392,6 +439,7 @@ opt_type () {
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
 		t) echo "<FILE_TYPE>";;
+		p) echo "<PATH>";;
 	esac
 }
 
@@ -403,22 +451,29 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [<SEARCHTERM>]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-i${RESET} show stick information"
+	echo -e "${WHITE_FG}-p${RESET} alternate path (default:\${PWD})"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HD"
+OPTSTR=":HDip:"
 OPTIND=0
+
+INFO_OPT=false
+ALT_PATH_OPT=''
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
+     i) INFO_OPT=true;;
+     p) ALT_PATH_OPT=${OPTARG};;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -428,20 +483,28 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
+# Implement SEARCHTERM
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+
+[[ -n ${ALT_PATH_OPT} ]] && g_LOCAL_PATH=${ALT_PATH_OPT} || g_LOCAL_PATH=${PWD}
+[[ ${#} -ne 0 ]] && SEARCHTERM="${ALT_PATH_OPT}/${1}" || SEARCHTERM='/*'
 
 STICK_INFO=$(usb_stick_path)
 if [[ ${?} -eq 0 ]];then
-	STICK_DATA[NAME]=$(cut -d'|' -f1 <<<${STICK_INFO})
-	STICK_DATA[DEVICE]=$(cut -d'|' -f2 <<<${STICK_INFO})
-	STICK_DATA[PATH]=$(cut -d'|' -f3 <<<${STICK_INFO})
-	_STICK_PATH=${STICK_DATA[PATH]}
-	msg_box -p -PK -H1 "<w>USB Stick Information<N>|<c>${STICK_DATA[NAME]}<N>|<w>Device<N>:${STICK_DATA[DEVICE]}|<w>Mount<N>:${STICK_DATA[PATH]}"
+	_STICK_DATA[NAME]=$(cut -d'|' -f1 <<<${STICK_INFO})
+	_STICK_DATA[DEVICE]=$(cut -d'|' -f2 <<<${STICK_INFO})
+	_STICK_DATA[PATH]=$(cut -d'|' -f3 <<<${STICK_INFO})
+	g_STICK_PATH=${_STICK_DATA[PATH]}
+	if [[ ${INFO_OPT} == 'true' ]];then
+		msg_box -p -PK -H1 "<w>USB Stick Information<N>|<c>${_STICK_DATA[NAME]}<N>|<w>Device<N>:${_STICK_DATA[DEVICE]}|<w>Mount<N>:${_STICK_DATA[PATH]}"
+		exit_leave
+	fi
 else
 	exit_leave $(err_msg_exit W "No USB stick found")
 fi
 
-g_LAST_VIEW="STICK"
+check_owner
+
 list_switch
 
 exit_leave
