@@ -37,7 +37,7 @@ typeset -a _STICK_LIST=()
 typeset -a _LOCAL_LIST=()
 typeset -A _LIST_ALIAS=("_LOCAL_LIST" "LOCAL" "_STICK_LIST" "STICK")
 typeset -A _ALIAS_COLOR=("LOCAL" ${WHITE_ON_GREY} "STICK" ${WHITE_ON_RED})
-typeset -A _LIST_COLOR=("LOCAL_DIR" ${CYAN_FG} "LOCAL_FILE" ${AMBER} "STICK_DIR" ${GREEN_FG} "STICK_FILE" ${GREY})
+typeset -A _LIST_COLOR=(LOCAL_DIR CYAN_FG LOCAL_FILE AMBER STICK_DIR GREEN_FG STICK_FILE GREY)
 typeset -A _COORDS=(X 10 Y 33 H 10 W 86)
 
 # Constants
@@ -217,6 +217,7 @@ item_decorate () {
 
 	[[ ${ITEM} =~ ${PWD} ]] && PWD_MARKER='./' || PWD_MARKER=''
 
+	[[ ${g_CONTEXT} == 'LOCAL' ]] && ITEM=${${ITEM}##${g_LOCAL_PATH}/} || ITEM=${${ITEM}##${g_STICK_PATH}/}
 	ITEM=${ITEM[1,${_MAX}]}
 	
 	if [[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]];then # 2 = deleted
@@ -265,32 +266,28 @@ list_show () {
 	local ALIAS=''
 	local DETAIL_TYPE=''
 	local PATHLBL=''
+	local FC=''
+	local DC=''
 	local LC=''
 	local RC=0
 
 	ALIAS="${_LIST_ALIAS[${ARRAY_NAME}]}"
-
-	if [[ ${ALIAS} == 'LOCAL' ]];then
-		DETAIL_TYPE=${g_LOCAL_TYPE}
-		PATHLBL=$(path_abbv -l40 ${g_LOCAL_PATH})
-	else
-		DETAIL_TYPE=${g_STICK_TYPE}
-		PATHLBL=$(path_abbv -l40 ${g_STICK_PATH})
-	fi
-
 	ALIAS="${_ALIAS_COLOR[${ALIAS}]}${ALIAS}${RESET}"
 
 	if [[ ${g_CONTEXT} == 'LOCAL' ]];then
-		DC="LOCAL_DIR"
-		FC="LOCAL_FILE"
-		ITEM=${${ITEM}##${g_LOCAL_PATH}/} 
+		DETAIL_TYPE=${g_LOCAL_TYPE}
+		PATHLBL=$(path_abbv -l40 ${g_LOCAL_PATH})
+		DC=LOCAL_DIR
+		FC=LOCAL_FILE
+		[[ ${g_LOCAL_TYPE} == 'd' ]] && LC=${_LIST_COLOR[${DC}]} || LC=${_LIST_COLOR[${FC}]}
 	else
-		DC="STICK_DIR"
-		FC="STICK_FILE"
-		ITEM=${${ITEM}##${g_STICK_PATH}/}
+		DETAIL_TYPE=${g_STICK_TYPE}
+		PATHLBL=$(path_abbv -l40 ${g_STICK_PATH})
+		DC=STICK_DIR
+		FC=STICK_FILE
+		[[ ${g_STICK_TYPE} == 'd' ]] && LC=${_LIST_COLOR[${DC}]} || LC=${_LIST_COLOR[${FC}]}
 	fi
 
-	[[ ${g_LOCAL_TYPE} == 'd' ]] && LC=${_LIST_COLOR[${DC}]} || LC=${_LIST_COLOR[${FC}]}
 
 	#set headings
 	list_set_header 'printf Content:"${ALIAS} Level:${WHITE_FG}${LEVEL_MAP[${DETAIL_TYPE}]}${RESET} Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET} Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} ${PATHLBL} ${SELECTED_COUNT}'
@@ -298,7 +295,7 @@ list_show () {
 
 	#set line item
 	list_set_line_item ' 
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${LC}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${(P)LC}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
 	'
 
 	list_set_select_action "view"

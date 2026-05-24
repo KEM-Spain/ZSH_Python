@@ -55,6 +55,7 @@ g_STICK_TYPE=d
 # Functions
 action_do () {
 	local -A PAYLOAD=()
+	local ARTIST=''
 	local FN=''
 	local IN=''
 	local LAST_LINE=''
@@ -74,6 +75,7 @@ action_do () {
 				msg_box -c -p -PO "${g_STICK_PATH}/${FN:t} exists"
 				[[ ${_MSG_KEY} == 'y' ]] && PAYLOAD[${M}]=${FN} # Overwrite if approved
 			else
+				ARTIST=$(cut -d'/' -f1 <<<${_LIST[${M}]} | tr -d '|')
 				PAYLOAD[${M}]=${g_LOCAL_PATH}/${FN} # Add to list
 			fi
 		else
@@ -87,7 +89,7 @@ action_do () {
 
 		[[ ${_DEBUG} -eq 0 ]] && /bin/rm -f ${_RSYNC_LOG} # Clear log
 
- 		rsync -r -z -h -I -v --info=progress2 --no-R --no-i-r ${(v)PAYLOAD} ${g_STICK_PATH} >>${_RSYNC_LOG} 2>&1 & # Background rsync
+ 		rsync -r -z -h -I -v --info=progress2 --no-R --no-i-r ${(v)PAYLOAD} ${g_STICK_PATH}/${ARTIST} >>${_RSYNC_LOG} 2>&1 & # Background rsync
 		PID=$!
 		sleep .5
 
