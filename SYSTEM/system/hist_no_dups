@@ -1,15 +1,14 @@
 #!/usr/bin/zsh
 
-#Inline ansi
+# Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
+BLINK="\033[5m"
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -17,7 +16,8 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
-
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Imports
@@ -30,10 +30,11 @@ source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
 typeset -A _CMDS=()
+typeset -a _FREQ_OPT_CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
+typeset -a _HIST_NEW=()
 typeset -a _LOCATE_OPTS=()
-typeset -a _FREQ_OPT_CMDS=()
 
 # Constants
 _CFG_DIR=~/.local/share/${_SCRIPT}
@@ -41,8 +42,8 @@ _TESTING_DIR=${PWD}/testing
 _HIST_BAK=${_CFG_DIR}/.zsh_history.bak
 _HIST_CACHE=${_CFG_DIR}/hist_cache
 _HIST_FILE=${HOME}/.zsh_history
-_HIST_NEW=()
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
+typeset -F _THRESHOLD=4
 
 _FREQ_OPT_CMDS=(
 bak
@@ -65,18 +66,23 @@ size_diff () {
 	local LAST_SIZE=$(stat -c"%s" ${_HIST_BAK})
 	local DIFF=0
 	local -F PCT=0
-	local -F THRESHOLD=4
 	local -F AVG=0
+	local -F PART=0
+	local -F WHOLE=0
 
-	[[ ${CUR_SIZE} -gt ${LAST_SIZE} ]] && DIFF=$(( CUR_SIZE - LAST_SIZE )) || DIFF=$(( LAST_SIZE - CUR_SIZE ))
-	AVG=$(( (CUR_SIZE + LAST_SIZE) / 2 ))
-	PCT=$(( ${DIFF} / ${AVG} * 10 ))
+	PART=${CUR_SIZE}
+	WHOLE=${LAST_SIZE}
+	PCT=$(( (PART / WHOLE) * 100 ))
+	DIFF=$(( PCT - 100 ))
 
-	printf "Growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
-	if [[ (( ${PCT} < ${THRESHOLD})) ]];then
-		return 1
+	if [[ ${PART} -le ${WHOLE} ]];then
+		printf "History size $(wc -l ${_HIST_FILE} | cut -d' ' -f1) lines" ${DIFF}
+		return 0 # No rebuild
 	else
-		return 0 # No rebuilds until THRESHOLD difference
+		if [[ ${DIFF} -gt ${_THRESHOLD} ]];then
+			printf "Rebuld required - Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
+			return 1
+		fi
 	fi
 }
 
@@ -291,6 +297,7 @@ usage () {
 	echo -e "${WHITE_FG}-d${RESET} deep - unique commands w/o arguments"
 	echo -e "${WHITE_FG}-f${RESET} frequent - commands w/o arguments"
 	echo -e "${WHITE_FG}-p${RESET} production - unique command w/arguments"
+	echo -e "${WHITE_FG}-s${RESET} show size diff"
 	echo -e "${WHITE_FG}-t${RESET} testing mode"
 	echo -e "${WHITE_FG}-v${RESET} verbose output"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -300,7 +307,7 @@ usage () {
 	exit_leave ${PENDING_MSGS}
 }
 
-OPTSTR=":HDFpdfvt"
+OPTSTR=":HDFpdfvts"
 OPTIND=0
 
 FORCE_OPT=false
@@ -309,6 +316,7 @@ DEEP_OPT=false
 FREQ_OPT=false
 VERBOSE_OPT=false
 TESTING_OPT=false
+SIZEDIFF=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -319,6 +327,7 @@ while getopts ${OPTSTR} OPTION;do
      d) DEEP_OPT=true;;
      f) FREQ_OPT=true;;
      v) VERBOSE_OPT=true;;
+     s) SIZEDIFF=true;;
      t) TESTING_OPT=true;;
      :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
@@ -331,10 +340,16 @@ shift $((OPTIND -1))
 # Execution
 [[ ${VERBOSE_OPT} == 'true' && ${FORCE_OPT} == 'true' ]] && echo "Forcing rebuild..." >&2
 
+if [[ ${SIZEDIFF} == 'true' ]];then
+	MSG=$(size_diff)
+	echo -n "${MSG}"
+	exit_leave
+fi
+
 if [[ ${FORCE_OPT} == 'false' && ${TESTING_OPT} == 'false' ]];then
 	MSG=$(size_diff)
-	if [[ ${?} -ne 0 ]];then
-		echo -n "History rebuild not required / ${MSG}"
+	if [[ ${?} -eq 0 ]];then
+		echo -n "${MSG}"
 		exit_leave
 	fi
 fi
@@ -353,7 +368,9 @@ echo "${ITALIC}done${RESET}" >&2
 [[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
 [[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
+echo ${CSR_OFF}
 _REBUILT_HIST=("${(f)$(build_hist _HIST_IN)}")
+echo ${CSR_ON}
 
 if ! arr_is_populated "_REBUILT_HIST";then
 	echo "No valid history found"

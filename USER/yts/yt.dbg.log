@@ -1,146 +1,29 @@
-2026-05-24_10:22: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-24_10:22: log_update: Skipping expired inode:6298989
-2026-05-24_10:22: log_update: Skipping expired inode:6298920
-2026-05-24_10:22: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-24_10:22: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
-2026-05-24_10:22: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio TYPE:standard 
-2026-05-24_10:22: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
-2026-05-24_10:22: query_youtube: Query matched 6 lines, _LOCAL_LIST has 4 lines
-2026-05-24_10:22: query_youtube: Translated TITLE:NTSB Hearings on the May 21, 2026 MD-11 UPS Crash
-2026-05-24_10:22: query_youtube: Translated TITLE:N249CP King Air Medivac Montanas Capitan NM May 14, 2026
-2026-05-24_10:22: query_youtube: Translated TITLE:Failure to rejoin EA-18G training in Mountain Home, Idaho. 17
-2026-05-24_10:22: query_youtube: Translated TITLE:P51D crash in Tullulah, Louisiana on May 12, 2026.
-2026-05-24_10:22: query_youtube: Listing for QKEY:blancolirio contains 4 rows
-2026-05-24_10:22: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
-2026-05-24_10:22: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG:0.0% TYPE:standard 
-2026-05-24_10:22: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
-2026-05-24_10:22: query_youtube: Query matched 17 lines, _LOCAL_LIST has 15 lines
-2026-05-24_10:22: query_youtube: Listing for QKEY:dialogueworks contains 15 rows
-2026-05-24_10:22: query_youtube: Creating listing for QKEY:timdillon STRICT:null
-2026-05-24_10:22: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Tim Dillon ENGINE:youtube EOPT:null FKEY:tim dillon QKEY:timdillon SMSG:0.0% TYPE:standard 
-2026-05-24_10:22: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "timdillon"
-2026-05-24_10:22: query_youtube: Query matched 3 lines, _LOCAL_LIST has 2 lines
-2026-05-24_10:22: query_youtube: Listing for QKEY:timdillon contains 2 rows
-2026-05-24_10:22: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.p0uJsH
-2026-05-24_10:22: job_start: TITLE:Thomas Massie, Kevin O'Leary, & The American Psyop : The Tim Dillon Show #497
-2026-05-24_10:22: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=-mQsiOuDuAY" PID:488445
-2026-05-24_10:22: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-24_10:22: action_do: GENERATING HEADER
-2026-05-24_10:22: title_scrubber: UCASE_WORDS:1
-2026-05-24_10:22: title_scrubber: Preserving uppercase:O
-2026-05-24_10:23: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=-mQsiOuDuAY PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-24_10:23: action_do: COMPLETED
-2026-05-24_10:23: action_do: POST-PROCESSING
-2026-05-24_10:23: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/The_Tim_Dillon_Show - Thomas_Massie_Kevin_O_Leary_The_American_Psyop_The_Tim_Dillon_Show_497.mp4
-2026-05-24_10:23: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/The_Tim_Dillon_Show - Thomas_Massie_Kevin_O_Leary_The_American_Psyop_The_Tim_Dillon_Show_497.mp4
-2026-05-24_10:23: title_scrubber: UCASE_WORDS:1
-2026-05-24_10:23: title_scrubber: Preserving uppercase:O
-2026-05-24_10:23: set_final_fn: Overwriting file:The_Tim_Dillon_Show - Thomas_Massie_Kevin_O_Leary_The_American_Psyop_The_Tim_Dillon_Show_497.mp4 with:Tim Dillon - Thomas Massie Kevin O Leary The American Psyop The Tim.mp4
-2026-05-24_10:23: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tim Dillon - Thomas Massie Kevin O Leary The American Psyop The Tim.mp4
-2026-05-24_10:23: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.p0uJsH was cleared for:timdillon from:action_do
-2026-05-24_10:26: query_rumble: Creating listing for QKEY:dannyhaiphong TYPE:channel
-2026-05-24_10:26: parse_rumble: Parsing list for QKEY:dannyhaiphong
-2026-05-24_10:26: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-05-24_10:26: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-05-24_10:26: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-05-24_10:26: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-05-24_10:26: query_rumble: Listing for QKEY:dannyhaiphong contains 24 rows
-2026-05-24_10:27: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
-2026-05-24_10:27: parse_rumble: Parsing list for QKEY:glenndiesen
-2026-05-24_10:27: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-05-24_10:27: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-05-24_10:27: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-05-24_10:27: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-05-24_10:27: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-05-24_10:27: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
-2026-05-24_10:27: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.4vkyIj
-2026-05-24_10:27: job_start: TITLE:Jeffrey Sachs: The Baltic STATES Are Now The "Most Dangerous Place" In The
-2026-05-24_10:27: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7aaa5q-jeffrey-sachs-the-baltic-states-are-now-the-most-dangerous-place-in-the-wor.html?e9s=src_v1_ucp_a" PID:504265
-2026-05-24_10:27: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-24_10:27: action_do: GENERATING HEADER
-2026-05-24_10:27: title_scrubber: UCASE_WORDS:1
-2026-05-24_10:27: title_scrubber: Preserving acronym:States
-2026-05-24_10:27: action_do: COMPLETED
-2026-05-24_10:27: action_do: POST-PROCESSING
-2026-05-24_10:27: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7aaa5q-jeffrey-sachs-the-baltic-states-are-now-the-most-dangerous-place-in-the-wor.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-24_10:27: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Jeffrey_Sachs_-_The_Baltic_States_Are_Now_the_Most_Dangerous_Place_in.mp4
-2026-05-24_10:27: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Jeffrey_Sachs_-_The_Baltic_States_Are_Now_the_Most_Dangerous_Place_in.mp4
-2026-05-24_10:27: title_scrubber: UCASE_WORDS:1
-2026-05-24_10:27: title_scrubber: Preserving acronym:States
-2026-05-24_10:27: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - Jeffrey_Sachs_-_The_Baltic_States_Are_Now_the_Most_Dangerous_Place_in.mp4 with:Glenn Diesen - Jeffrey Sachs - The Baltic STATES Are.mp4
-2026-05-24_10:27: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Glenn Diesen - Jeffrey Sachs - The Baltic STATES Are.mp4
-2026-05-24_10:27: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.4vkyIj was cleared for:glenndiesen from:action_do
-2026-05-24_10:28: query_rumble: Creating listing for QKEY:goingunderground TYPE:channel
-2026-05-24_10:28: parse_rumble: Parsing list for QKEY:goingunderground
-2026-05-24_10:28: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-05-24_10:28: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-05-24_10:28: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-05-24_10:28: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-05-24_10:28: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-05-24_10:28: query_rumble: Listing for QKEY:goingunderground contains 25 rows
-2026-05-24_10:28: query_rumble: Creating listing for QKEY:deepfocuswithjohnkiriakou TYPE:channel
-2026-05-24_10:28: parse_rumble: Parsing list for QKEY:deepfocuswithjohnkiriakou
-2026-05-24_10:28: query_rumble: Listing for QKEY:deepfocuswithjohnkiriakou contains 0 rows
-2026-05-24_10:28: query_rumble: Creating listing for QKEY:deepfocuswithjohnkiriakou TYPE:channel
-2026-05-24_10:28: parse_rumble: Parsing list for QKEY:deepfocuswithjohnkiriakou
-2026-05-24_10:28: query_rumble: Listing for QKEY:deepfocuswithjohnkiriakou contains 0 rows
-2026-05-24_10:28: query_rumble: Creating listing for QKEY:deepfocuswithjohnkiriakou TYPE:channel
-2026-05-24_10:29: parse_rumble: Parsing list for QKEY:deepfocuswithjohnkiriakou
-2026-05-24_10:29: query_rumble: Listing for QKEY:deepfocuswithjohnkiriakou contains 0 rows
-2026-05-24_10:29: query_rumble: Creating listing for QKEY:rtnews TYPE:channel
-2026-05-24_10:29: parse_rumble: Parsing list for QKEY:rtnews
-2026-05-24_10:29: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-05-24_10:29: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-05-24_10:29: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-05-24_10:29: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-05-24_10:29: parse_rumble: ROW:3 NO DATA from TAG:videostream__time text{}
-2026-05-24_10:29: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-05-24_10:29: parse_rumble: Omitting NDX:4 - TIME no colon
-2026-05-24_10:29: query_rumble: Listing for QKEY:rtnews contains 24 rows
-2026-05-24_10:30: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
-2026-05-24_10:30: parse_rumble: Parsing list for QKEY:tuckercarlson
-2026-05-24_10:30: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-05-24_10:30: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-05-24_10:30: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-05-24_10:30: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-05-24_10:30: parse_rumble: Omitting NDX:2 - URL - ucp_f
-2026-05-24_10:30: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
-2026-05-24_10:30: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.nu1kJK
-2026-05-24_10:30: job_start: TITLE:Economist Exposes How Banks Manufacture Wars, False Flags & Famines To Usher
-2026-05-24_10:30: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7a8dk6-economist-exposes-how-banks-manufacture-wars-false-flags-and-famines-to-ush.html?e9s=src_v1_ucp_a" PID:532749
-2026-05-24_10:30: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-24_10:30: action_do: GENERATING HEADER
-2026-05-24_10:30: title_scrubber: UCASE_WORDS:1
-2026-05-24_10:32: action_do: COMPLETED
-2026-05-24_10:32: action_do: POST-PROCESSING
-2026-05-24_10:32: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7a8dk6-economist-exposes-how-banks-manufacture-wars-false-flags-and-famines-to-ush.html?e9s=src_v1_ucp_a PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-24_10:32: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Economist_Exposes_How_Banks_Manufacture_Wars_False_Flags_Famines_to_Usher_in_the_Ne.mp4
-2026-05-24_10:32: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Economist_Exposes_How_Banks_Manufacture_Wars_False_Flags_Famines_to_Usher_in_the_Ne.mp4
-2026-05-24_10:32: title_scrubber: UCASE_WORDS:1
-2026-05-24_10:32: set_final_fn: Overwriting file:Tucker_Carlson - Economist_Exposes_How_Banks_Manufacture_Wars_False_Flags_Famines_to_Usher_in_the_Ne.mp4 with:Tucker Carlson - Economist Exposes How Banks Manufacture Wars False.mp4
-2026-05-24_10:32: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Economist Exposes How Banks Manufacture Wars False.mp4
-2026-05-24_10:32: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.nu1kJK was cleared for:tuckercarlson from:action_do
-2026-05-24_10:32: query_youtube: Creating listing for QKEY:danieldavisdeepdive STRICT:null
-2026-05-24_10:32: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Daniel Davis ENGINE:youtube EOPT:null FKEY:daniel davis QKEY:danieldavisdeepdive SMSG: TYPE:custom 
-2026-05-24_10:32: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "danieldavisdeepdive"
-2026-05-24_10:32: query_youtube: Query matched 12 lines, _LOCAL_LIST has 11 lines
-2026-05-24_10:32: query_youtube: Listing for QKEY:danieldavisdeepdive contains 11 rows
-2026-05-24_10:33: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.06VcGW
-2026-05-24_10:33: job_start: TITLE:All-Out War in Iran, That's What Netanyahu Needs /Alastair Crooke & Lt Col
-2026-05-24_10:33: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=jyVazLRejw8" PID:557362
-2026-05-24_10:33: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-24_10:33: action_do: GENERATING HEADER
-2026-05-24_10:33: title_scrubber: UCASE_WORDS:1
-2026-05-24_10:33: title_scrubber: Preserving acronym:Lt
-2026-05-24_10:33: title_scrubber: Preserving acronym:Col
-2026-05-24_10:33: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=jyVazLRejw8 PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-24_10:33: action_do: COMPLETED
-2026-05-24_10:33: action_do: POST-PROCESSING
-2026-05-24_10:33: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - All-Out_War_in_Iran_That_s_What_Netanyahu_Needs_Alastair_Crooke_Lt_Col_Dani.mp4
-2026-05-24_10:33: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - All-Out_War_in_Iran_That_s_What_Netanyahu_Needs_Alastair_Crooke_Lt_Col_Dani.mp4
-2026-05-24_10:33: title_scrubber: UCASE_WORDS:1
-2026-05-24_10:33: title_scrubber: Preserving acronym:Lt
-2026-05-24_10:33: title_scrubber: Preserving acronym:Col
-2026-05-24_10:33: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - All-Out_War_in_Iran_That_s_What_Netanyahu_Needs_Alastair_Crooke_Lt_Col_Dani.mp4 with:Daniel Davis - All-Out War In Iran That's What Netanyahu Needs Alastair.mp4
-2026-05-24_10:33: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - All-Out War In Iran That's What Netanyahu Needs Alastair.mp4
-2026-05-24_10:33: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.06VcGW was cleared for:danieldavisdeepdive from:action_do
+2026-05-27_09:20: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-05-27_09:20: log_update: Skipping expired inode:6299080
+2026-05-27_09:20: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-05-27_09:21: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
+2026-05-27_09:21: parse_rumble: Parsing list for QKEY:duedissidence
+2026-05-27_09:21: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-05-27_09:21: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-05-27_09:21: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-05-27_09:21: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-05-27_09:21: query_rumble: Listing for QKEY:duedissidence contains 24 rows
+2026-05-27_09:21: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.terVnK
+2026-05-27_09:21: job_start: TITLE:Pope Leo WARNS Of AI "Domination," Massie TEASES 2028 Run, Pompeo & Nuland
+2026-05-27_09:21: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7aeya2-pope-leo-warns-of-ai-domination-massie-teases-2028-run-pompeo-and-nuland-de.html?e9s=src_v1_ucp_l" PID:1542413
+2026-05-27_09:21: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-27_09:21: action_do: GENERATING HEADER
+2026-05-27_09:21: title_scrubber: UCASE_WORDS:5
+2026-05-27_09:21: title_scrubber: Preserving acronym:Ai
+2026-05-27_09:21: title_scrubber: Preserving acronym:I
+2026-05-27_09:25: action_do: COMPLETED
+2026-05-27_09:25: action_do: POST-PROCESSING
+2026-05-27_09:26: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7aeya2-pope-leo-warns-of-ai-domination-massie-teases-2028-run-pompeo-and-nuland-de.html?e9s=src_v1_ucp_l PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-05-27_09:26: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Pope_Leo_WARNS_of_AI_Domination_Massie_TEASES_2028_Run_Pompeo_Nuland_DESTROYED_in_I.mp4
+2026-05-27_09:26: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Pope_Leo_WARNS_of_AI_Domination_Massie_TEASES_2028_Run_Pompeo_Nuland_DESTROYED_in_I.mp4
+2026-05-27_09:26: title_scrubber: UCASE_WORDS:5
+2026-05-27_09:26: title_scrubber: Preserving acronym:Ai
+2026-05-27_09:26: title_scrubber: Preserving acronym:I
+2026-05-27_09:26: set_final_fn: Overwriting file:Due_Dissidence - Pope_Leo_WARNS_of_AI_Domination_Massie_TEASES_2028_Run_Pompeo_Nuland_DESTROYED_in_I.mp4 with:Due Dissidence - Pope Leo Warns Of AI Domination Massie Teases 2028 Run.mp4
+2026-05-27_09:26: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Due Dissidence - Pope Leo Warns Of AI Domination Massie Teases 2028 Run.mp4
+2026-05-27_09:26: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.terVnK was cleared for:duedissidence from:action_do

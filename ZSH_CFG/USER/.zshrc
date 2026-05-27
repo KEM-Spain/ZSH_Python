@@ -295,7 +295,7 @@ add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
 
 # Execution
-if _is_top_term;then
+if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
 	INTERACTIVE=''
 
 	if [[ -o interactive ]]; then

@@ -391,7 +391,6 @@ msg_box () {
 			for M in ${_CONT_BUFFER};do
 				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Dumping buffer line:${M}"
 				tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Place cursor
-				tput ech ${BOX_WIDTH}
 				echo -n ${M} # Output line
 				(( _CONT_DATA[SCR]++)) # Increment
 			done
@@ -402,11 +401,11 @@ msg_box () {
 		MSG_OUT=$(msg_box_align ${_CONT_BOX_TAG} ${MSGS[1]})
 		MSG_OUT=$(str_trim ${MSG_OUT}) # Trim to prevent overwriting indicator
 
-		[[ -n ${_MSG_BOX_DISPLAY_AREA} ]] && DISPLAY_AREA=${_MSG_BOX_DISPLAY_AREA} || DISPLAY_AREA=${BOX_WIDTH} # Limited line clearing
+		[[ -n ${_MSG_BOX_DISPLAY_AREA} ]] && DISPLAY_AREA=${_MSG_BOX_DISPLAY_AREA} || DISPLAY_AREA=$(( BOX_WIDTH - 2 )) # Box interior
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DISPLAY_AREA:${DISPLAY_AREA}"
 
 		tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]} # Cursor is filling display area
-		tput ech ${DISPLAY_AREA} # Clear line
+		tput ech ${DISPLAY_AREA} # Clear box interior
 		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}:Printing pending MSG line:${MSG}"
 		[[ ${BUFFER_FULL} == 'true' ]] && MSG_OUT="${BOLD}${MSG_OUT}${RESET}" # Highlight fresh scroll line
 		echo -n "${MSG_OUT}" # Output line
@@ -663,7 +662,7 @@ msg_box_parse () {
 	local K L T 
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ -n ${MSGS_IN} ]] && dbg "${0}: Incoming messages:\n>>>\n$(for M in ${MSGS_IN};do echo ${M};done)\n<<<\n"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} && -n ${MSGS_IN} ]] && dbg "${0}: Incoming messages:\n>>>\n$(for M in ${MSGS_IN};do echo ${M};done)\n<<<\n"
 
 	MSGS_IN=$(tr -d "\n" <<<${MSGS_IN}) # Convert to string - setup for cut
 	MSGS_IN=$(sed -E "s/[\\\][${_DELIM}]/_DELIM_/g" <<<${MSGS_IN}) # Skip any escaped delimiters
@@ -686,7 +685,7 @@ msg_box_parse () {
 		fi
 	done
 
-	[[ -n ${MSGS_OUT} ]] && dbg "${0}: Outgoing messages:\n>>>\n$(for M in ${MSGS_OUT};do echo ${M};done)\n<<<\n"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} && -n ${MSGS_OUT} ]] && dbg "${0}: Outgoing messages:\n>>>\n$(for M in ${MSGS_OUT};do echo ${M};done)\n<<<\n"
 
 	for M in ${MSGS_OUT};do
 		echo ${M}

@@ -50,6 +50,7 @@ _FS_DISK=/dev/nvme0n1p2
 _LOG_FILE=${_CFG_DIR}/${_SCRIPT}.log
 _ERR_FILE=${_CFG_DIR}/${_SCRIPT}.errors
 _CMD_FILE=${_CFG_DIR}/${_SCRIPT}.cmd
+_MAX_VALUES_LOG=${_CFG_DIR}/${_SCRIPT}.max
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
 _ZV_REGEX='(mkv|mp4|avi)'
 _BAR_WIDTH=25
@@ -452,6 +453,7 @@ if [[ ${#ARGS} -gt 1 ]];then # Assume list of files
 	echo "Got a list of files..."
 	for A in ${ARGS};do
 		[[ ! -e ${A} ]] && usage "File:${A} not found" # Assumes FQFN; TODO: should prefix w/_CFG_DIR?
+		[[ ${A} == ${OUT_FILE_OPT} ]] && exit_leave $(err_msg_exit "Output filename must differ from any input file:${OUT_FILE_OPT}")
 	done
 	_FLIST=(${ARGS})
 fi
@@ -464,16 +466,16 @@ else
 	else
 		LIST=("${(f)$(find ${_DEFAULT_PATH} -regex "${_VIDEO_REGEX}" ! -path ${_DEFAULT_PATH})}") # All media in path
 	fi
-fi
 
-if ! arr_is_populated "${LIST}";then
-	exit_leave $(err_msg_exit "No files found in ${_DEFAULT_PATH} matching:${SEARCHTERM}")
-fi
+	if ! arr_is_populated "${LIST}";then
+		exit_leave $(err_msg_exit "No files found in ${_DEFAULT_PATH} matching:${SEARCHTERM}")
+	fi
 
-for F in ${LIST};do
-	[[ ${F:t:r} == ${OUT_FILE_OPT:t:r} ]] && continue # Skip destination file
-	[[ ${F:e} =~ ${_ZV_REGEX} ]] && _FLIST+=${F} || exit_leave $(err_msg_exit "File not found:${F}")
-done
+	for F in ${LIST};do
+		[[ ${F:t:r} == ${OUT_FILE_OPT:t:r} ]] && continue # Skip destination file
+		[[ ${F:e} =~ ${_ZV_REGEX} ]] && _FLIST+=${F} || exit_leave $(err_msg_exit "File not found:${F}")
+	done
+fi
 
 [[ ${#_FLIST} -lt 2 ]] && exit_leave $(err_msg_exit "Need at least 2 files")
 
@@ -510,6 +512,10 @@ for K in ${(onk)_INODES};do
 done
 
 if is_mixed_video;then
+	for M in ${(k)_MAXIMUMS};do
+		echo "KEY:${M}, VALUE:${_MAXIMUMS[${M}]}"
+	done > ${_MAX_VALUES_LOG}
+
 	echo "Normalizing and merging dissimilar videos..."
 	SCALE="${_MAXIMUMS[WIDTH]}:${_MAXIMUMS[HEIGHT]}"
 	TAG="v=1:a=1[v][a]"
