@@ -619,8 +619,8 @@ list_search_new () {
 	HDR="<m>$(str_unicode_line 12) List Search (Next:<w>><m>, Prev:<w><<m>) $(str_unicode_line 12)<N>"
 	HDR_LEN=$(msg_nomarkup ${HDR});HDR_LEN=${#HDR}
 
-	V_CTR=$(( _MAX_ROWS/2 - 4 )) # Vertical center
-	H_CTR=$(center -h${HDR_LEN}) # Horiz center
+	V_CTR=$(center -V) # Vertical center
+	H_CTR=$(center -H -w${HDR_LEN}) # Horiz center
 
 	for (( ROW=1; ROW<=HEIGHT + 1; ROW++ ));do # Clear a space to place the UI
 		tcup $(( V_CTR + ROW - 3 )) $(( H_CTR -3 ))

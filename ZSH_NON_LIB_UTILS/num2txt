@@ -1,0 +1,30 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLINK="\033[5m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+typeset -A N2T=(0 zero 1 one 2 two 3 three 4 four 5 five 6 six 7 seven 8 eight 9 nine)
+
+while read LINE;do
+	for (( X=1; X<=${#LINE};X++ ));do
+		WORD="${N2T[${LINE[${X}]}]}"
+		[[ -z ${WORD} ]] && WORD=${LINE[${X}]}
+		echo -n "${WORD} "
+	done
+	echo
+done

@@ -304,8 +304,8 @@ msg_box () {
 	else
 		[[ ${WIDTH_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${WIDTH_ARG}
 		[[ ${HEIGHT_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${HEIGHT_ARG}
-		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$(center -v${BOX_HEIGHT}) || MSG_X_COORD=${MSG_X_COORD_ARG}
-		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(center -h${BOX_WIDTH}) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
+		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$(center -V -h${BOX_HEIGHT}) || MSG_X_COORD=${MSG_X_COORD_ARG}
+		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(center -H -w${BOX_WIDTH}) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
 	fi
 
 	BOX_X_COORD=${MSG_X_COORD}
@@ -888,8 +888,8 @@ msg_paging_page () {
 msg_proc () {
 	local BOX_W=20
 	local BOX_H=3
-	local H_POS=$(center -h${BOX_W}) # Horiz center
-	local V_POS=$(center -v${BOX_H}) # Vert center
+	local H_POS=$(center -H -w${BOX_W}) # Horiz center
+	local V_POS=$(center -V -h${BOX_H}) # Vert center
 	local X R C
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"

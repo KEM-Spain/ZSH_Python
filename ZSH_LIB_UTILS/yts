@@ -19,14 +19,14 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
 source ${_LIB_DIR}/VALIDATE.zsh
 source ${_LIB_DIR}/PATH.zsh
 source ${_LIB_DIR}/DATE.zsh
 source ${_LIB_DIR}/UTILS.zsh
 source ${_LIB_DIR}/SELECT.zsh
 source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
 typeset -A _CANCELLED=()
@@ -56,7 +56,7 @@ typeset -a _STRIP_WORDS=()
 typeset -aU _LOCAL_LIST=()
 
 # Display Constants
-_CONT_COORDS=(X 10 Y $(center -h86) H 10 W 86) # Continuous box coords
+_CONT_COORDS=(X 10 Y $(center -H -w86) H 10 W 86) # Continuous box coords
 _INDICATOR_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alert display coords
 _INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Info display coords
 
@@ -167,7 +167,7 @@ action_do () {
 				job_reset
 				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED"
 				MSG="Cancelling download..."
-				msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${MSG}<N>"
+				msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 				_CANCELLED[${M}]=true
 				break
 			fi
@@ -177,7 +177,7 @@ action_do () {
 				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="Download is complete..."
-					msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${MSG}<N>"
+					msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 					_DOWNLOADS[${M}]=true
 					logit ${_YT_DBG_LOG} "${0}: POST-PROCESSING"
 					post_process
@@ -196,14 +196,14 @@ action_do () {
 					*sleeping*|*hlsnative*|*^\[info\]*)
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						logit ${_YT_DBG_LOG} "${0}: PRE-PROCESSING"
-						msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${MSG}<N>"
+						msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 						continue
 						;;
 					*'already been'*|*100%*)
 						logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 						MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${LOG_LINE})
 						MSG=${MSG[1,60]}
-						msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]}  -y$(box_center ${MSG}) "<w>${MSG}<N>|<B>Has already been downloaded<N>"
+						msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]}  -y$(center -H -w${MSG}) "<w>${MSG}<N>|<B>Has already been downloaded<N>"
 						_DOWNLOADS[${M}]=true
 						break
 						;;
@@ -211,8 +211,16 @@ action_do () {
 						logit ${_YT_DBG_LOG} "${0}: FUTURE"
 						[[ ! ${LOG_LINE:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 						MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-						msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(box_center ${TITLE}) "<w>${MSG}<N>"
+						msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(center -H -w${TITLE}) "<w>${MSG}<N>"
 						_FUTURE[${M}]=true
+						_DOWNLOADS[${M}]=false
+						break
+						;;
+					*yt_live_broadcast*)
+						MSG="Live broadcast - unable to download"
+						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<r>${MSG}<N>"
+						logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
+						_FAILED[${M}]=true
 						_DOWNLOADS[${M}]=false
 						break
 						;;
@@ -220,7 +228,7 @@ action_do () {
 						((TRANS_ERR_CNT++))
 						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
-						msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
+						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 						logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
@@ -244,7 +252,7 @@ action_do () {
 							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 							HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
-							HRZ_CTR=$(center -h${HDR_LEN}) # Horiz center
+							HRZ_CTR=$(center -H -w${HDR_LEN}) # Horiz center
 							[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
 							msg_box -C -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 							msg_box -C -jl ${HDR2_TXT}
@@ -277,29 +285,20 @@ action_do () {
 						break
 						;;
 					*error*)
-						if grep -Eiq 'cannot reuse http' ${g_YTS_LOG};then # Check for live broadcast - whole file grep
-							MSG="Live broadcast - unable to download"
-							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG}<N>"
-							logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
-							_FAILED[${M}]=true
-							_DOWNLOADS[${M}]=false
-							break
-						else
-							MSG=${LOG_LINE[1,50]}
-							TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
-							if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
-								((TRANS_ERR_CNT++))
-								msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
-								logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
-								logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
-								LAST_TRANS_MSG=${TRANS_ERR_MSG}
-								if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
-									_FAILED[${M}]=true
-									_DOWNLOADS[${M}]=false
-									break
-								else
-									continue
-								fi
+						MSG=${LOG_LINE[1,50]}
+						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
+						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
+							((TRANS_ERR_CNT++))
+							msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
+							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
+							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
+							LAST_TRANS_MSG=${TRANS_ERR_MSG}
+							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
+								_FAILED[${M}]=true
+								_DOWNLOADS[${M}]=false
+								break
+							else
+								continue
 							fi
 						fi
 						;;
@@ -1231,7 +1230,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -x$(( _CONT_COORDS[X] + 4 )) -y$(box_center ${MSG}) ${MSG}
+	msg_box -x$(( _CONT_COORDS[X] + 4 )) -y$(center -H -w${MSG}) ${MSG}
 
 	NDX=0
 	while true;do

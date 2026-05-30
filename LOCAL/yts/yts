@@ -216,6 +216,14 @@ action_do () {
 						_DOWNLOADS[${M}]=false
 						break
 						;;
+					*yt_live_broadcast*)
+						MSG="Live broadcast - unable to download"
+						msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG}<N>"
+						logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
+						_FAILED[${M}]=true
+						_DOWNLOADS[${M}]=false
+						break
+						;;
 					*error*)
 						((TRANS_ERR_CNT++))
 						MSG=${LOG_LINE[1,60]}
@@ -277,29 +285,20 @@ action_do () {
 						break
 						;;
 					*error*)
-						if grep -Eiq 'cannot reuse http' ${g_YTS_LOG};then # Check for live broadcast - whole file grep
-							MSG="Live broadcast - unable to download"
-							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<r>${MSG}<N>"
-							logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
-							_FAILED[${M}]=true
-							_DOWNLOADS[${M}]=false
-							break
-						else
-							MSG=${LOG_LINE[1,50]}
-							TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
-							if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
-								((TRANS_ERR_CNT++))
-								msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
-								logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
-								logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
-								LAST_TRANS_MSG=${TRANS_ERR_MSG}
-								if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
-									_FAILED[${M}]=true
-									_DOWNLOADS[${M}]=false
-									break
-								else
-									continue
-								fi
+						MSG=${LOG_LINE[1,50]}
+						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
+						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
+							((TRANS_ERR_CNT++))
+							msg_box -c -z -x${_INFO_COORDS[X]} -y$(box_center ${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
+							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
+							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
+							LAST_TRANS_MSG=${TRANS_ERR_MSG}
+							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
+								_FAILED[${M}]=true
+								_DOWNLOADS[${M}]=false
+								break
+							else
+								continue
 							fi
 						fi
 						;;

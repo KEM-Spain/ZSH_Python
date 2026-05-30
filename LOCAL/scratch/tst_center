@@ -1,0 +1,69 @@
+#!/usr/bin/zsh
+ 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/VALIDATE.zsh
+source ${_LIB_DIR}/CENTER.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+
+clear
+
+COORDS=$(center -B -h10 -w50) # Center a 10x50 box
+tcup 0 0;tput el;echo "box center returned COORDS:${COORDS}"
+IFS=':';read X Y H W <<<${COORDS}
+msg_box -p -PK -x${X} -y${Y} -h${H} -w${W} "Centered box"
+H_SAVE=${H}
+W_SAVE=${W}
+  
+COORDS=$(center -R -c${H}:${W} -h5 -w34) # Center a 5x34 box within the 10x50 box
+tcup 0 0;tput el;echo "box relative center returned COORDS:${COORDS}"
+IFS=':';read X Y H W <<<${COORDS}
+msg_box -p -PK -x${X} -y${Y} -h${H} -w${W} "Relative center to outer box"
+
+COORDS=$(center -R -c${H_SAVE}:${W_SAVE} -h5 -w34 -x1 -y5) # Center a 5x34 box within the 10x50 box with offsets
+tcup 0 0;tput el;echo "box relative center returned COORDS:${COORDS}"
+IFS=':';read X Y H W <<<${COORDS}
+msg_box -p -PK -x${X} -y${Y} -h${H} -w${W} "Relative Offset to outer box"
+
+clear
+ROW=$(center -V) # Get the vertical center without a region HEIGHT
+tcup 0 0;tput el;echo "box vert center returned ROW:${ROW} as default (no region HEIGHT provided)"
+tput cup ${ROW} 0;echo "${WHITE_FG}X${RESET}"
+tput cup 1 0;echo -n "Press any key";read
+
+clear
+COL=$(center -H) # Get the horizontal center without a region WIDTH
+tcup 0 0;tput el;echo "box horz center returned ROW:${ROW} as default (no region WIDTH provided)"
+tput cup 0 ${COL};echo "${WHITE_FG}X${RESET}"
+tput cup 1 0;echo -n "Press any key";read
+
+clear
+tcup 0 0;tput el;echo "Combined vert and horz coordinates defaults"
+tput cup ${ROW} ${COL};echo "${WHITE_FG}X${RESET}"
+tput cup 1 0;echo -n "Press any key";read
+
+clear
+ROW=$(center -V -h10) # Get the vertical center to place a region of 10 rows
+tcup 0 0;tput el;echo "box vert center returned ROW:${ROW}"
+for X in {1..10};do
+	tput cup $(( ROW + X )) 0;echo "${WHITE_FG}X${RESET}"
+done
+tput cup 1 0;echo -n "Press any key";read
+
+clear
+COL=$(center -H -w80) # Get the horizontal center to place a region of 80 cols
+tcup 0 0;tput el;echo "box horz center returned COL:${COL}"
+for X in {1..80};do
+	tput cup 10 $(( COL + X ));echo "${WHITE_FG}X${RESET}"
+done
+tput cup 1 0;echo -n "Press any key";read
+
+clear
+TEXT="This is a line of Text used as an argument for the WIDTH"
+COL=$(center -H -w${TEXT}) # Get the horizontal center to place a region containing the text passed
+tcup 0 0;tput el;echo "box horz center returned COL:${COL}"
+tput cup 10 ${COL};echo "${WHITE_FG}${TEXT}${RESET}"
+tput cup 1 0;echo -n "Press any key";read
+
