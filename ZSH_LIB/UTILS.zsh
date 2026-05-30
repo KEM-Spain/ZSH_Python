@@ -1,6 +1,3 @@
-# LIB Dependencies
-_DEPS_+=(MSG.zsh TPUT.zsh)
-
 # LIB Declarations
 typeset -a _DELIMS=('#' '|' ':' ',' '	') # Recognized field delimiters
 typeset -a _POS_ARGS=()
@@ -20,6 +17,7 @@ _FUNC_TRAP=false
 _BAREWORD_IS_FILE=false
 _BOX_TAG="/tmp/${_MY_PID}.box_tag"
 
+# LIB Functions
 arg_parse () {
 	local KWD=false
 	local A

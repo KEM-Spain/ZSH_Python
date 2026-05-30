@@ -1,6 +1,3 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh)
-
 # LIB Vars
 _CURSOR=''
 _TERM=xterm

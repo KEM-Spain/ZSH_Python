@@ -1,3 +1,4 @@
+# LIB Vars
 RESET="\033[m"
 BOLD="\033[1m"
 FAINT="\033[2m"

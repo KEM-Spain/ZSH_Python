@@ -1,11 +1,3 @@
-# Import standard libs
-[[ -z ${ZSH_LIB_DIR} ]] && LIB_DIR=/usr/local/lib || LIB_DIR=${ZSH_LIB_DIR}
-
-source ${LIB_DIR}/ANSI.zsh
-source ${LIB_DIR}/EXIT.zsh
-source ${LIB_DIR}/ERROR.zsh
-source ${LIB_DIR}/LIB_DEPS.zsh
-
 # Default Options
 setopt warncreateglobal # Monitor locals
 setopt rematchpcre # Use perl regex
@@ -39,7 +31,6 @@ _STALE_ROW=2 # Not selectable
 _USED_ROW=3 # Processed row
 
 # LIB declarations
-typeset -aU _DEPS_
 typeset -A _BOX_COORDS=()
 typeset -A _REL_COORDS=()
 
@@ -75,3 +66,25 @@ _FUNC_TRAP=true
 
 # Initialize debugging
 [[ -e ${_DEBUG_FILE} ]] && /bin/rm ${_DEBUG_FILE}
+
+# Import standard libs
+[[ -z ${ZSH_LIB_DIR} ]] && LIB_DIR=/usr/local/lib || LIB_DIR=${ZSH_LIB_DIR}
+
+source ${LIB_DIR}/ANSI.zsh
+source ${LIB_DIR}/ARRAY.zsh
+source ${LIB_DIR}/CENTER.zsh
+source ${LIB_DIR}/DATE.zsh
+source ${LIB_DIR}/DBG.zsh
+source ${LIB_DIR}/DURABLE.zsh
+source ${LIB_DIR}/ERROR.zsh
+source ${LIB_DIR}/EXIT.zsh
+source ${LIB_DIR}/LIB_DEPS.zsh
+source ${LIB_DIR}/LIST.zsh
+source ${LIB_DIR}/MSG.zsh
+source ${LIB_DIR}/PATH.zsh
+source ${LIB_DIR}/SELECT.zsh
+source ${LIB_DIR}/STR.zsh
+source ${LIB_DIR}/TPUT.zsh
+source ${LIB_DIR}/UTILS.zsh
+source ${LIB_DIR}/VALIDATE.zsh
+source ${LIB_DIR}/WIN.zsh

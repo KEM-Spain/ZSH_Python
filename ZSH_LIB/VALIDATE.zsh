@@ -1,7 +1,4 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh)
-
-# LIB functions
+# LIB Functions
 validate_is_integer () {
 	local VAL=${1}
 	local RET

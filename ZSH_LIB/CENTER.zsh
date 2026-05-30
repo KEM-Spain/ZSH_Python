@@ -1,15 +1,15 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh MSG.zsh TPUT.zsh VALIDATE.zsh UTILS.zsh)
-_RCT=0
-_MOD="[${0:t}]"
-
+# LIB Declarations
 typeset _COORDS='' # COORDS of an existing box
 typeset _HEIGHT=0  # HEIGHT of a box to display
 typeset _WIDTH=''  # WIDTH of a box to display, width of text to center, or the text itself
 typeset _X_OFF=0   # Optional Vertical offset from center
 typeset _Y_OFF=0   # Optional Horizontal offset from center
 
-# LIB functions
+# LIB Vars
+_RCT=0
+_MOD="[${0:t}]"
+
+# LIB Functions
 get_relative_center () {
 	local COORDS=${1}
 	local HEIGHT=${2}

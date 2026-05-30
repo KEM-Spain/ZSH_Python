@@ -1,7 +1,4 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh)
-
-# LIB functions
+# LIB Functions
 win_close () {
 	local WDW_ID=$(win_xdo_id_fix ${1})
 

@@ -1,12 +1,3 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh ARRAY.zsh CENTER.zsh MSG.zsh STR.zsh TPUT.zsh VALIDATE.zsh)
-
-# Constants
-_EXIT_BOX=32
-_HILITE=${WHITE_ON_GREY}
-_PAGE_MAX_ROWS=$(( _MAX_ROWS - 15 )) # Longest list that fits the available display
-_DMD="\u25C8"
-
 # LIB Declarations
 typeset -A _CAT_COLS=()
 typeset -A _LIST_DATA=()
@@ -15,6 +6,12 @@ typeset -A _TAG_DATA=()
 typeset -a _APP_KEYS=()
 typeset -a _LIST=()
 typeset -a _PAGE=()
+
+# LIB Constants
+_EXIT_BOX=32
+_HILITE=${WHITE_ON_GREY}
+_PAGE_MAX_ROWS=$(( _MAX_ROWS - 15 )) # Longest list that fits the available display
+_DMD="\u25C8"
 
 # LIB Vars
 _CAT_DELIM=':'
@@ -28,7 +25,7 @@ _SEL_KEY=''
 _SEL_VAL=''
 _TAG=''
 
-# Functtons
+# LIB Functtons
 sel_box_ctr_txt () {
 	local CONTAINER_LEFT=${1};shift # Container Y coord
 	local CONTAINER_WIDTH=${1};shift # Container width

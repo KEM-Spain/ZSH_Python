@@ -1,6 +1,3 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh ARRAY.zsh CENTER.zsh MSG.zsh PATH.zsh STR.zsh TPUT.zsh VALIDATE.zsh)
-
 # LIB Declarations
 typeset -A _KEY_CALLBACKS=()
 typeset -A _CBK_RET=()

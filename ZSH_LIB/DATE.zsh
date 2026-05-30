@@ -1,7 +1,4 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh)
-
-# LIB functions
+# LIB Functions
 date_diff () {
 	local D1=$(date -d "$1" +%s)
 	local D2=$(date -d "$2" +%s)

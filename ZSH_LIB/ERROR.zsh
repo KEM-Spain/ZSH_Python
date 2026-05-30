@@ -1,7 +1,4 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh)
-
-# LIB functions
+# LIB Functions
 err_msg_exit () {
 	local E_MSG=''
 	local E_TYPE=''

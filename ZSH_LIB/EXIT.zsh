@@ -1,11 +1,8 @@
-# LIB Dependencies
-_DEPS_+=(DBG.zsh MSG.zsh UTILS.zsh)
-
-# LIB declarations
+# LIB Declarations
 typeset -a _EXIT_CALLBACKS=()
 typeset -a _PIDS=()
 
-# LIB vars
+# LIB Vars
 _PRE_EXIT_RAN=false
 _EXIT_MSGS=''
 
