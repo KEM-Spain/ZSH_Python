@@ -11,8 +11,9 @@ mbegin=''
 mend=''
 
 # Constants
-[[ -z ${_SCRIPT} ]] && _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
 _MY_PID="$$"
+
+[[ -z ${_SCRIPT} ]] && _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
 _SCRIPT_TAG="[${WHITE_FG}${_SCRIPT}${RESET}]:"
 _DEBUG_FILE=/tmp/${_MY_PID}.${_SCRIPT}_debug.out
 _GEO_KEY="key=uMibiyDeEGlYxeK3jx6J"
@@ -23,7 +24,7 @@ _TERM=xterm
 _XSET_DEFAULT_RATE="r rate 500 33" # Default <delay> <repeat>
 _XSET_MENU_RATE="r rate 600 20" # Menu rate <delay> <repeat>
 
-# LIST ROW status 
+# ROW status 
 _AVAIL_ROW=0 # Selectable
 _SELECTED_ROW=1 # Selected
 _STALE_ROW=2 # Not selectable
@@ -32,10 +33,6 @@ _USED_ROW=3 # Processed row
 # LIB declarations
 typeset -A _BOX_COORDS=()
 typeset -A _REL_COORDS=()
-typeset -aU _DEPS=()
-
-# Default Modules
-_DEPS=(ANSI.zsh DBG.zsh ERROR.zsh EXIT.zsh UTILS.zsh)
 
 # Debug levels
 _LOW_DBG=1
@@ -69,3 +66,25 @@ _FUNC_TRAP=true
 
 # Initialize debugging
 [[ -e ${_DEBUG_FILE} ]] && /bin/rm ${_DEBUG_FILE}
+
+# Import standard libs
+[[ -z ${ZSH_LIB_DIR} ]] && LIB_DIR=/usr/local/lib || LIB_DIR=${ZSH_LIB_DIR}
+
+source ${LIB_DIR}/ANSI.zsh
+source ${LIB_DIR}/ARRAY.zsh
+source ${LIB_DIR}/CENTER.zsh
+source ${LIB_DIR}/DATE.zsh
+source ${LIB_DIR}/DBG.zsh
+source ${LIB_DIR}/DURABLE.zsh
+source ${LIB_DIR}/ERROR.zsh
+source ${LIB_DIR}/EXIT.zsh
+source ${LIB_DIR}/LIB_DEPS.zsh
+source ${LIB_DIR}/LIST.zsh
+source ${LIB_DIR}/MSG.zsh
+source ${LIB_DIR}/PATH.zsh
+source ${LIB_DIR}/SELECT.zsh
+source ${LIB_DIR}/STR.zsh
+source ${LIB_DIR}/TPUT.zsh
+source ${LIB_DIR}/UTILS.zsh
+source ${LIB_DIR}/VALIDATE.zsh
+source ${LIB_DIR}/WIN.zsh

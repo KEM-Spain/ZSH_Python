@@ -15,7 +15,7 @@ MAGENTA_FG="\033[35m"
 CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
-typeset -a DEPS=(PATH.zsh UTILS.zsh STR.zsh)
+typeset -a DEPS=(PATH.zsh UTILS.zsh STR.zsh ARRAY.zsh)
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
