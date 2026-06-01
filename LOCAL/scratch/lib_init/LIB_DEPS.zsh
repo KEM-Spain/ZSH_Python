@@ -1,6 +1,6 @@
 typeset -a APP_DEPS=(${@})
 typeset -A SEEN=()
-DBG=false
+DBG=true
 
 is_valid () {
 	FN=${1}
