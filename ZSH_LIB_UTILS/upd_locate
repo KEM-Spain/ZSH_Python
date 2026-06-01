@@ -115,7 +115,7 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-f${RESET} force"
 	echo -e "${WHITE_FG}-i${RESET} date of last locate update"
-	echo -e "${WHITE_FG}-u${RESET} utility operation (minimal output)"
+	echo -e "${WHITE_FG}-u${RESET} utility operation (minimal output, no prompts)"
 	echo -e "\n${WHITE_FG}Desc${RESET}Refresh locate database"
 	) >&2
 
