@@ -1,5 +1,5 @@
 (
-echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
+echo ${E_BOLD}${E_WHITE_FG}${(U)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_nfs_EOF
 
 ${E_CYAN_FG}Command    Description${E_RESET}
@@ -10,5 +10,37 @@ nfsshare   Control Network File System (NFS) shares.
 nfsstat    Display or reset counts of calls made to Server for NFS.
 rpcinfo    List programs on remote computers.
 showmount  Display mounted directories.
+
+Setting up a Network File System (NFS) share on Ubuntu involves installing 
+the nfs-kernel-server package on the host, exporting a directory via /etc/exports, 
+and configuring the firewall. 
+
+On the client side, you install nfs-common and mount the share using the mount command.
+
+Here is a step-by-step guide to setting up and mounting your NFS share.
+
+${E_BOLD}${E_WHITE_FG}Set Up the NFS Server (Host)${E_RESET}
+
+1. Install the NFS Server Package: Update your package list and install the kernel server daemon 
+   Ex: sudo apt update; sudo apt install nfs-kernel-server -y
+2. Create the Shared Directory: Create the folder you want to share and adjust its permissions so it is accessible to
+   clients. For general testing, you can use nobody:nogroup, or adjust accordingly for specific users.
+   Ex: sudo mkdir -p /mnt/nfsshare sudo chown -R nobody:nogroup /mnt/nfsshare sudo chmod 775 /mnt/nfsshare
+3. Define the Shares: Edit /etc/exports to define shared folders and client access. Add a line to grant access to your 
+   client or subnet Ex: /mnt/nfsshare  192.168.1.0/24(rw,sync,no_subtree_check) 
+4. Export the Shared Directory: Apply changes and restart the service
+   Ex: sudo exportfs -a; sudo systemctl restart nfs-kernel-server
+5. Adjust the Firewall: Open the NFS port for the client subnet via UFW
+   Ex: sudo ufw allow from 192.168.1.0/24 to any port nfs; sudo ufw reload
+
+${E_BOLD}${E_WHITE_FG}Configure the NFS Client${E_RESET}
+
+1. Install the Client Package: Install nfs-common on the client machine
+   Ex: sudo apt update; sudo apt install nfs-common -y 
+2. Create a Local Mount Point and Mount the Share: Create a directory, mount the share (replacing with the server's IP), 
+   and verify
+   Ex: sudo mkdir -p /mnt/nfsdata; sudo mount 192.168.1.50:/mnt/nfsshare /mnt/nfsdata; df -h /mnt/nfsdata 
+3. Make the Mount Permanent: Add an entry to /etc/fstab to ensure automatic mounting on reboot
+   Ex: echo '192.168.1.50:/mnt/nfsshare /mnt/nfsdata nfs defaults 0 0' | sudo tee -a /etc/fstab
 tip_nfs_EOF
 ) | mypager wait

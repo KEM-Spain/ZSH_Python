@@ -2623,7 +2623,7 @@ ${E_MAGENTA_FG}BUILTINS${E_RESET}
 	      as a pattern and all  functions already marked for autoload that match the pattern are loaded.
 
 	      With the -t flag, turn on execution tracing; with -T, turn on execution tracing only for the current function, turning
-	      it off on entry to any called func‐ tions that do not also have tracing enabled.
+	      it off on entry to any called functions that do not also have tracing enabled.
 
 	      With the -U flag, alias expansion is suppressed when the function is loaded.
 
@@ -2897,7 +2897,7 @@ ${E_MAGENTA_FG}BUILTINS${E_RESET}
 
 		  1.     The sticky emulation environment provided by 'emulate shell -c' is identical to that provided by entry to a function marked 
 		  for sticky emulation as a consequence of being defined in such an environment.  Hence, for example, the sticky emulation is inherited 
-		  by subfunctions defined within  func‐ tions with sticky emulation.
+		  by subfunctions defined within  functions with sticky emulation.
 
 	      2.     No  change of options takes place on entry to or exit from functions that are not marked for sticky emulation,
 	      other than those that would normally take place, even if those functions are called within sticky emulation.
@@ -3729,7 +3729,7 @@ ${E_MAGENTA_FG}BUILTINS${E_RESET}
 	      files written  with the -c or -a option will be autoloaded as if the KSH_AUTOLOAD option were unset.
 
 	      The  reason  for	handling  loaded and not-yet-loaded functions with different options is that some definition files for
-	      autoloading define multiple func‐ tions, including the function with the same name as the file, and, at the end, call
+	      autoloading define multiple functions, including the function with the same name as the file, and, at the end, call
 	      that function.  In such cases the output of  'zcompile  -c' does  not include  the additional functions defined in the
 	      file, and any other initialization code in the file is lost.  Using 'zcompile -a' captures all this extra information.
 
@@ -3738,7 +3738,7 @@ ${E_MAGENTA_FG}BUILTINS${E_RESET}
 	      autoloaded will be written.
 
 	      Note  the  second form cannot be used for compiling functions that include redirections as part of the definition rather
-	      than within the body of the func‐ tion; for example
+	      than within the body of the function; for example
 
 		     fn1() { { ... } >~/logfile }
 
