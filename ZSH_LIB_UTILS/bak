@@ -17,6 +17,13 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
+typeset -a DEPS=(DATE.zsh MSG.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Constants
 _LIB_DIR=/usr/local/lib
 _BIN_DIR=/usr/local/bin
@@ -45,12 +52,6 @@ g_PROD_NAME=?
 g_PROD_VERSION=?
 g_PROD_WILL_OVERWRITE=?
 g_PROD_WILL_OVERWRITE_BACKUP=?
-
-# Imports
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/DATE.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 get_prod_dir () {

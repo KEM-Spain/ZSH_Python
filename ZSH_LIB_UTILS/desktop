@@ -18,16 +18,17 @@ CYAN_BG="\033[1;46m"
 WHITE_FG="\033[1;37m"
 WHITE_BG="\033[1;47m"
 
+typeset -a DEPS=(LIST.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Declarations
 typeset -a _DESKTOP_FILES=(~/.config/autostart ~/.local/share/applications /etc/xdg/autostart /usr/share/applications)
 typeset -a _RAWLIST
 typeset -a _LOCAL_LIST
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 action_do () {

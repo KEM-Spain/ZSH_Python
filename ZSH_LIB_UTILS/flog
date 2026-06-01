@@ -7,6 +7,13 @@ GREEN_FG="\033[32m"
 YELLOW_FG="\033[33m"
 WHITE_FG="\033[37m"
 
+typeset -a DEPS=(LIST.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Constants
 SYS_LOGS=/var/log
 LOCAL_LOGS=("${(f)$(find ${HOME} -maxdepth 3 -type f -name '*.log' 2>/dev/null)}")
@@ -20,12 +27,6 @@ typeset -a _ALL_LOGS=(${SYS_LOGS} ${LOCAL_LOGS})
 
 # Imports
 zmodload -F zsh/stat b:zstat
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 action_do () {

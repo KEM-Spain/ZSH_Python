@@ -1,5 +1,6 @@
-ARGS:0 
-APP_DEPS:
+ARGS:1 MSG.zsh
+APP_DEPS:MSG.zsh
+Pre-scan Sourcing MSG.zsh
 _DEPS:ANSI.zsh DBG.zsh ERROR.zsh EXIT.zsh UTILS.zsh ARRAY.zsh CENTER.zsh STR.zsh TPUT.zsh
 Post-scan Sourcing ANSI.zsh
 Post-scan Sourcing DBG.zsh

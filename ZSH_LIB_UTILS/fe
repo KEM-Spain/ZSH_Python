@@ -15,6 +15,13 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+typeset -a DEPS=(LIST.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Declarations
 typeset -a _RAWLIST
 typeset -a _LOCAL_LIST
@@ -29,12 +36,6 @@ _DEPTH=1
 
 # Imports
 zmodload -F zsh/stat b:zstat
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 action_do () {

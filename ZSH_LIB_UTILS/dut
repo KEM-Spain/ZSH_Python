@@ -20,6 +20,13 @@ BLINK="\033[5m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+typeset -a DEPS=(LIST.zsh SELECT.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Declarations
 typeset -A _UTILS=(
 external 1
@@ -43,13 +50,6 @@ _WRAPPER=${0:t}
 # Globals
 g_USAGE=false
 g_UTIL=''
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SELECT.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 external () {

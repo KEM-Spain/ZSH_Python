@@ -7,17 +7,17 @@ typeset -a _MARKED
 typeset -a _URLS
 typeset -a _VALUES
 
+typeset -a DEPS=(LIST.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Constants
 _MAX_DISPLAY_LEN=40
 _TYPE_LABELS=(u "URL" k "Key" v "Value")
 _MAX_FIELD=40 # Max field width
-
-# Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Functions
 action_do () {

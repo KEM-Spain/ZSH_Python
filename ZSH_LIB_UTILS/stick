@@ -24,13 +24,12 @@ WHITE_ON_RED="\033[0m\033[1;37;41m"
 AMBER="\033[38;5;208m"
 GREY="\033[38;5;250m"
 
+typeset -a DEPS=(LIST.zsh CENTER.zsh)
+
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/CENTER.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
 
 # Declarations
 typeset -A _STICK_DATA=()

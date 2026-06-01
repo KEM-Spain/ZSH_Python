@@ -15,6 +15,13 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+typeset -a DEPS=(MSG.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Constants
 AGREP=/usr/bin/agrep
 MUSIC_DIR=''
@@ -24,12 +31,6 @@ typeset -a SEARCHTERM
 typeset -a SUB_DIRS
 typeset -a FILTERED_LIST
 typeset -a QUERY
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Housekeeping
 if [[ -n ${MUSIC_DIR} ]];then

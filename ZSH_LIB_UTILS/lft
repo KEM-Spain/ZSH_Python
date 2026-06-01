@@ -26,6 +26,13 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 BOLD="\033[1m"
 
+typeset -a DEPS=(LIST.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Declarations
 typeset -A _TYPE_LABELS
 typeset -a _RAWLIST
@@ -35,12 +42,6 @@ typeset -a _STATS
 
 # Constants
 _TYPE_LABELS=(b "Change Date" a "Last Access" m "Last Modification")
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 get_stat () {

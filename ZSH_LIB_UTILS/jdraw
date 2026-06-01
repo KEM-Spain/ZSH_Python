@@ -9,16 +9,17 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 BOLD="\033[1m"
 
+typeset -a DEPS=(MSG.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Constants
 _SCRIPT=${0:t}
 JAR=/usr/local/etc/jdraw_v1.1.5.jar
 LOG=/tmp/${_SCRIPT}.log
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 #--Begin GetOpts--
 local -a OPTIONS

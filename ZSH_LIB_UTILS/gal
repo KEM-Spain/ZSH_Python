@@ -49,19 +49,18 @@ E_RED_BG=$(echo -n "\033[41m")
 E_WHITE_BG=$(echo -n "\033[47m")
 E_YELLOW_BG=$(echo -n "\033[43m")
 
+typeset -a DEPS=(MSG.zsh VALIDATE.zsh DURABLE.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Constants
 _ALIAS_FN=/etc/zsh/aliases
 
 # Imports
 zmodload zsh/pcre
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/VALIDATE.zsh
-source ${_LIB_DIR}/DURABLE.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A ALIAS_LIST

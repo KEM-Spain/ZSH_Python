@@ -14,16 +14,15 @@ STRIKE="\033[9m"
 ITALIC="\033[3m"
 UNDER="\033[4m"
 
-# Constants
-_DEPTH=1
+typeset -a DEPS=(ARRAY.zsh MSG.zsh STR.zsh)
 
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/STR.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
+# Constants
+_DEPTH=1
 
 # Functions
 depth_set_level () {

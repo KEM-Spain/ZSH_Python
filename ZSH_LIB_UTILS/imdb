@@ -21,12 +21,12 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
 AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36"
 
+typeset -a DEPS=(MSG.zsh)
+
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
 
 do_imdb () {
 	local ARG=${@}

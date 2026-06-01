@@ -16,11 +16,13 @@ MAGENTA_FG="\033[35m"
 CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 
+
+typeset -a DEPS=(MSG.zsh)
+
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+source ./LIB_INIT.zsh
+source ./LIB_DEPS.zsh ${DEPS}
 
 #Declarations
 typeset -a FILES

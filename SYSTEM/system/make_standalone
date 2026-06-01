@@ -15,19 +15,19 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+typeset -a DEPS=(ARRAY.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Declarations
 typeset -A _BLACKLIST=()
 typeset -A _FUNC_MAP=()
 typeset -A _SEEN=()
 typeset -a _EXTRA_FUNCS=()
 typeset -a _NEEDED_FUNCS=()
-
-# Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/ARRAY.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Constants
 _BLACKLIST+=(usage 1 parse_opts 1 opt_type 1 opt_exists 1 dbg 1 dbg_msg 1 dbg_set_level 1)

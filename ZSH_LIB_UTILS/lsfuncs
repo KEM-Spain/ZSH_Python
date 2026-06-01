@@ -9,6 +9,13 @@ CYAN_FG="\033[36m"
 WHITE_FG="\033[37m"
 BOLD="\033[1m"
 
+typeset -a DEPS=(LIST.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Constants
 FUNC_REGEX='^\S*\s() {$\|^function\s*\S*\s{$'
 GREP_BLACKLIST='usage\|parse_opts\|opt_type'
@@ -17,12 +24,6 @@ GREP_BLACKLIST='usage\|parse_opts\|opt_type'
 typeset -aU _LOCAL_LIST
 typeset -a _BLACKLIST=(usage\|parse_opts\|opt_type)
 typeset -aU _FUNC_MATCH
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 action_do () {

@@ -15,6 +15,13 @@ E_GREEN_FG=$(echo -n "\033[32m")
 E_RED_FG=$(echo -n "\033[31m")
 E_MAGENTA_FG=$(echo -n "\033[35m")
 
+typeset -a DEPS=()
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Declarations
 typeset -a TZ=(Los_Angeles Denver Chicago New_York)
 typeset -a ZONES
@@ -33,12 +40,6 @@ UTC_TIME=$(date -u +"%T")
 UTC_DATE=$(date -u +"%D")
 UTC_HOUR=$(date -u +"%H")
 UTC_DIFF=$(date +"%z")
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/DBG.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 rep () {

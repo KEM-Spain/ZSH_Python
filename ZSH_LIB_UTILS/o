@@ -28,11 +28,12 @@ E_CYAN_FG=$(echo "\033[36m")
 E_WHITE_FG=$(echo "\033[37m")
 E_STRIKE=$(echo "\033[9m")
 
+typeset -a DEPS=(LIST.zsh)
+
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
 
 # Declarations
 typeset -A _APP_EXE
