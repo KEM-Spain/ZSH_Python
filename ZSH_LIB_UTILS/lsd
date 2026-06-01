@@ -29,16 +29,17 @@ E_CYAN_FG=$(echo "\033[36m")
 E_WHITE_FG=$(echo "\033[37m")
 E_STRIKE=$(echo "\033[9m")
 
+typeset -a DEPS=(LIST.zsh)
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
 # Declarations
 typeset -a _MARKED=()
 typeset -a _LOCAL_LIST=()
 typeset -a _FILTER=()
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 action_do () {

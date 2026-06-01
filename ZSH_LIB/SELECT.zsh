@@ -1,3 +1,6 @@
+# LIB Dependencies
+_DEPS+=(ARRAY.zsh CENTER.zsh MSG.zsh STR.zsh TPUT.zsh VALIDATE.zsh)
+
 # LIB Declarations
 typeset -A _CAT_COLS=()
 typeset -A _LIST_DATA=()
@@ -25,7 +28,7 @@ _SEL_KEY=''
 _SEL_VAL=''
 _TAG=''
 
-# LIB Functtons
+# LIB Functions
 sel_box_ctr_txt () {
 	local CONTAINER_LEFT=${1};shift # Container Y coord
 	local CONTAINER_WIDTH=${1};shift # Container width
@@ -574,7 +577,7 @@ sel_scroll () {
 			case ${KEY} in
 				0) sel_set_position ${PAGE} ${NDX}; break 2;;
 				q) exit_request $(sel_set_ebox);break;;
-				s) show_keys; break;;
+				s) sel_show_keys; break;;
 				27) _SEL_KEY=${KEY} && return -1;;
 				1|u|k) SCROLL="U";;
 				2|d|j) SCROLL="D";;
@@ -716,7 +719,7 @@ sel_set_position () {
 	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "_SELECT_TAG_FILE NOT defined"
 }
 
-show_keys () {
+sel_show_keys () {
 	local -a KEY_LIST=()
 
 	KEY_LIST=(
@@ -734,3 +737,4 @@ show_keys () {
 
 	msg_box -H1 -p -PK "Menu Navigation Keys| |$(msg_list_bullet ${KEY_LIST})|<Z>|<L>NumPad/Arrow keys"
 }
+

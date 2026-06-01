@@ -1,26 +1,39 @@
-2026-05-30_13:04: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-30_13:04: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-05-30_13:04: query_youtube: Creating listing for QKEY:theduran STRICT:null
-2026-05-30_13:04: query_youtube: _QUERY_OPTS: AGE:recent DKEY:The Duran ENGINE:youtube EOPT:null FKEY:the duran QKEY:theduran TYPE:standard 
-2026-05-30_13:04: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "theduran"
-2026-05-30_13:04: query_youtube: Query matched 5 lines, _LOCAL_LIST has 4 lines
-2026-05-30_13:04: query_youtube: Listing for QKEY:theduran contains 4 rows
-2026-05-30_13:04: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.R2zI7Z
-2026-05-30_13:04: job_start: TITLE:US-Iran Deal or NO DEAL. July Energy Tipping Point
-2026-05-30_13:04: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=zG5WoqoYhWA" PID:686306
-2026-05-30_13:04: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-30_13:04: action_do: GENERATING HEADER
-2026-05-30_13:04: title_scrubber: UCASE_WORDS:3
-2026-05-30_13:04: title_scrubber: Preserving uppercase:Deal
-2026-05-30_13:04: title_scrubber: Preserving uppercase:No
-2026-05-30_13:04: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=zG5WoqoYhWA PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-05-30_13:04: action_do: COMPLETED
-2026-05-30_13:04: action_do: POST-PROCESSING
-2026-05-30_13:04: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/The_Duran - US-Iran_Deal_or_NO_DEAL._July_Energy_Tipping_Point.mp4
-2026-05-30_13:04: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/The_Duran - US-Iran_Deal_or_NO_DEAL._July_Energy_Tipping_Point.mp4
-2026-05-30_13:04: title_scrubber: UCASE_WORDS:3
-2026-05-30_13:04: title_scrubber: Preserving uppercase:Deal
-2026-05-30_13:04: title_scrubber: Preserving uppercase:No
-2026-05-30_13:04: set_final_fn: Overwriting file:The_Duran - US-Iran_Deal_or_NO_DEAL._July_Energy_Tipping_Point.mp4 with:Duran - Us-Iran DEAL Or NO DEAL. July Energy Tipping Point.mp4
-2026-05-30_13:04: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Duran - Us-Iran DEAL Or NO DEAL. July Energy Tipping Point.mp4
-2026-05-30_13:04: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.R2zI7Z was cleared for:theduran from:action_do
+2026-06-01_00:00: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-01_00:00: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-01_00:00: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
+2026-06-01_00:00: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
+2026-06-01_00:00: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "alexchristoforou"
+2026-06-01_00:00: query_youtube: Query matched 13 lines, _LOCAL_LIST has 8 lines
+2026-06-01_00:00: query_youtube: Listing for QKEY:alexchristoforou contains 8 rows
+2026-06-01_00:01: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
+2026-06-01_00:01: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:Inf% TYPE:standard 
+2026-06-01_00:01: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
+2026-06-01_00:01: query_youtube: Query matched 7 lines, _LOCAL_LIST has 5 lines
+2026-06-01_00:01: query_youtube: Translated TITLE:Fatal aerial towing accident: "Kiting" in Saratoga Springs, NY, December 26
+2026-06-01_00:01: query_youtube: Translated TITLE:Mid-air collision between paraglider and C-182, May 23, 2026
+2026-06-01_00:01: query_youtube: Translated TITLE:NTSB Hearings on the May 21, 2026 MD-11 UPS Crash
+2026-06-01_00:01: query_youtube: Translated TITLE:Failure to rejoin EA-18G training in Mountain Home, Idaho. 17
+2026-06-01_00:01: query_youtube: Translated TITLE:N249CP King Air Medivac Montanas Capitan NM May 14, 2026
+2026-06-01_00:01: query_youtube: Listing for QKEY:blancolirio contains 5 rows
+2026-06-01_00:01: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
+2026-06-01_00:01: parse_rumble: Parsing list for QKEY:duedissidence
+2026-06-01_00:01: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-06-01_00:01: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-06-01_00:01: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-06-01_00:01: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-06-01_00:01: query_rumble: Listing for QKEY:duedissidence contains 24 rows
+2026-06-01_00:01: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.PNT97q
+2026-06-01_00:01: job_start: TITLE:Levin Begs Trump For More War, Platner Hit With Another "Scandal," Artists
+2026-06-01_00:01: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7amrde-levin-begs-trump-for-more-war-platner-hit-with-another-scandal-artists-bail.html?e9s=src_v1_ucp_l" PID:356433
+2026-06-01_00:01: yt PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/LIBS/scratch/lib_init/yts
+2026-06-01_00:01: action_do: GENERATING HEADER
+2026-06-01_00:01: title_scrubber: UCASE_WORDS:7
+2026-06-01_00:14: action_do: COMPLETED
+2026-06-01_00:14: action_do: POST-PROCESSING
+2026-06-01_00:15: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7amrde-levin-begs-trump-for-more-war-platner-hit-with-another-scandal-artists-bail.html?e9s=src_v1_ucp_l PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/LIBS/scratch/lib_init/yts
+2026-06-01_00:15: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Levin_BEGS_TRUMP_For_MORE_WAR_Platner_HIT_With_ANOTHER_Scandal_Artists_BAIL_on_250t.mp4
+2026-06-01_00:15: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Levin_BEGS_TRUMP_For_MORE_WAR_Platner_HIT_With_ANOTHER_Scandal_Artists_BAIL_on_250t.mp4
+2026-06-01_00:15: title_scrubber: UCASE_WORDS:7
+2026-06-01_00:15: set_final_fn: Overwriting file:Due_Dissidence - Levin_BEGS_TRUMP_For_MORE_WAR_Platner_HIT_With_ANOTHER_Scandal_Artists_BAIL_on_250t.mp4 with:Due Dissidence - Levin Begs Trump For More War Platner Hit With Another.mp4
+2026-06-01_00:15: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Due Dissidence - Levin Begs Trump For More War Platner Hit With Another.mp4
+2026-06-01_00:15: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.PNT97q was cleared for:duedissidence from:action_do

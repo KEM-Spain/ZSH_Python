@@ -1,3 +1,6 @@
+# LIB Dependencies
+_DEPS+=(ARRAY.zsh CENTER.zsh MSG.zsh PATH.zsh STR.zsh TPUT.zsh VALIDATE.zsh)
+
 # LIB Declarations
 typeset -A _KEY_CALLBACKS=()
 typeset -A _CBK_RET=()
@@ -1014,7 +1017,7 @@ list_set_pages () {
 	echo "${(kv)PAGES}"
 }
 
- () {
+list_set_position () {
 	local POS=${@}
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"

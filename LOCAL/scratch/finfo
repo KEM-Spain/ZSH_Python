@@ -1,0 +1,30 @@
+funcfiletrace
+	  This array contains the absolute line numbers and corresponding file names for the point where the current function, sourced file, or (if  EVAL_LINENO  is
+	  set)  eval  command  was  called.  The array is of the same length as funcsourcetrace and functrace, but differs from funcsourcetrace in that the line and
+	  file are the point of call, not the point of definition, and differs from functrace in that all values are absolute line numbers  in  files,  rather  than
+	  relative to the start of a function, if any.
+
+funcsourcetrace
+	  This  array contains the file names and line numbers of the points where the functions, sourced files, and (if EVAL_LINENO is set) eval commands currently
+	  being executed were defined.  The line number is the line where the `function name' or `name ()' started.  In the case of an autoloaded function  the line
+	  number is reported as zero.  The format of each element is filename:lineno.
+
+	  For functions autoloaded from a file in native zsh format, where only the body of the function occurs in the file, or for files that have been executed by
+	  the source or `.' builtins, the trace information is shown as filename:0, since the entire file is the definition.  The source file name is resolved to an
+	  absolute path when the function is loaded or the path to it otherwise resolved.
+
+	  Most users will be interested in the information in the funcfiletrace array instead.
+
+funcstack
+	  This array contains the names of the functions, sourced files, and (if EVAL_LINENO is set) eval commands. currently being executed. The first  element  is
+	  the name of the function using the parameter.
+
+	  The standard shell array zsh_eval_context can be used to determine the type of shell construct being executed at each depth: note, however, that is in the
+	  opposite  order,  with the most recent item last, and it is more detailed, for example including an entry for toplevel, the main shell code being executed
+	  either interactively or from a script, which is not present in $funcstack.
+
+functrace
+	  This array contains the names and line numbers of the callers corresponding to the functions currently being executed.  The  format  of  each  element  is
+	  name:lineno.  Callers are also shown for sourced files; the caller is the point where the source or `.' command was executed.
+
+

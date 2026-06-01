@@ -1,3 +1,6 @@
+# LIB Dependencies
+_DEPS+=(ARRAY.zsh CENTER.zsh STR.zsh TPUT.zsh)
+
 # LIB Declarations
 typeset -a _CONT_BUFFER=()
 typeset -A _CONT_DATA=(BOX false COLS 0 HEADER 0 MAX 0 OUT 0 SCR 0 TOP 0 Y 0 W 0)

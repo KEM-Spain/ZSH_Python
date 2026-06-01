@@ -1,3 +1,6 @@
+# LIB Dependencies
+_DEPS+=(TPUT.zsh)
+
 # LIB Functions
 str_array_to_num () {
 	local -a STR=(${@})

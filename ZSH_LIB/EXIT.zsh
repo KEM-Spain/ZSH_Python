@@ -1,3 +1,6 @@
+# LIB Dependencies
+_DEPS+=(MSG.zsh UTILS.zsh)
+
 # LIB Declarations
 typeset -a _EXIT_CALLBACKS=()
 typeset -a _PIDS=()

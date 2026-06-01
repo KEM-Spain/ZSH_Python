@@ -1,3 +1,6 @@
+# LIB Dependencies
+_DEPS+=(MSG.zsh STR.zsh)
+
 # LIB Functions
 arr_get_nonzero_count () {
 	local -a A=(${@})

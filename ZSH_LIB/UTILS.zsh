@@ -1,3 +1,6 @@
+# LIB Dependencies
+_DEPS+=(MSG.zsh STR.zsh TPUT.zsh)
+
 # LIB Declarations
 typeset -a _DELIMS=('#' '|' ':' ',' '	') # Recognized field delimiters
 typeset -a _POS_ARGS=()

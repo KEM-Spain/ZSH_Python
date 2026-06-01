@@ -1,9 +1,7 @@
+# LIB Dependencies
+_DEPS+=(MSG.zsh TPUT.zsh VALIDATE.zsh UTILS.zsh)
+
 # LIB Declarations
-typeset _COORDS='' # COORDS of an existing box
-typeset _HEIGHT=0  # HEIGHT of a box to display
-typeset _WIDTH=''  # WIDTH of a box to display, width of text to center, or the text itself
-typeset _X_OFF=0   # Optional Vertical offset from center
-typeset _Y_OFF=0   # Optional Horizontal offset from center
 
 # LIB Vars
 _RCT=0
@@ -92,11 +90,11 @@ center () {
 	local REL=false
 	local VERT=false
 
-	_HEIGHT=0
-	_X_OFF=0
-	_Y_OFF=0
-	_COORDS=''
-	_WIDTH=''
+	local _COORDS='' # COORDS of an existing box
+	local _HEIGHT=0  # HEIGHT of a box to display
+	local _WIDTH=''  # WIDTH of a box to display, width of text to center, or the text itself
+	local _X_OFF=0   # Optional Vertical offset from center
+	local _Y_OFF=0   # Optional Horizontal offset from center
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
