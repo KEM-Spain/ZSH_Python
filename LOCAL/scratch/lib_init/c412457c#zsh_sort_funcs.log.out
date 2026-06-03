@@ -19,13 +19,6 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-
-# Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh
-_DEPS+=(MSG.zsh)
-source ${_LIB_DIR}/LIB_DEPS.zsh
-
 # Declarations
 typeset -A _BLACKLIST=(usage 1 parse_opts 1 opt_type 1 opt_exists 1)
 typeset -A SEEN
@@ -34,6 +27,13 @@ typeset -A SEEN
 _FUNC_REGEX='^.* () {'
 _FUNC_TAG='^# Functions'
 _LIB_FUNC_TAG='^# LIB Functions'
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 cleanup () {

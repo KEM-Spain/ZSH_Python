@@ -1,0 +1,52 @@
+5745da0b#fsub.standalone.log:source ${_LIB_DIR}/MSG.zsh
+5745da0b#fsub.standalone.log:source ${_LIB_DIR}/VALIDATE.zsh
+5745da0b#fsub.standalone.log:source ${_LIB_DIR}/PATH.zsh
+
+74f6f4b5#vid_to_lib.log:source ${_LIB_DIR}/UTILS.zsh
+74f6f4b5#vid_to_lib.log:source ${_LIB_DIR}/ARRAY.zsh
+74f6f4b5#vid_to_lib.log:	if [[ ${EXTRACT} == 'true' ]];then # If the source is in a subdirectory call fut surface
+74f6f4b5#vid_to_lib.log:			exit_leave "${BOLD}${RED_FG}Error${RESET}:source directory not found:${SOURCE_DIR}"
+74f6f4b5#vid_to_lib.standalone.log:source ${_LIB_DIR}/UTILS.zsh
+74f6f4b5#vid_to_lib.standalone.log:source ${_LIB_DIR}/ARRAY.zsh
+74f6f4b5#vid_to_lib.standalone.log:	if [[ ${EXTRACT} == 'true' ]];then # If the source is in a subdirectory call fut surface
+74f6f4b5#vid_to_lib.standalone.log:			exit_leave "${BOLD}${RED_FG}Error${RESET}:source directory not found:${SOURCE_DIR}"
+
+7ada6daa#hist_no_dups.log:source ${_LIB_DIR}/UTILS.zsh
+7ada6daa#hist_no_dups.log:source ${_LIB_DIR}/STR.zsh
+7ada6daa#hist_no_dups.log:source ${_LIB_DIR}/ARRAY.zsh
+
+c412457c#app_name.log:source ${_LIB_DIR}/UTILS.zsh
+c412457c#app_name.log:source ${_LIB_DIR}/LIST.zsh
+
+c412457c#find_lib_deps.log:source ${_LIB_DIR}/UTILS.zsh
+
+c412457c#find_not_called.log:source ${_LIB_DIR}/MSG.zsh
+
+c412457c#fix_comments.log:source ${_LIB_DIR}/LIST.zsh
+
+c412457c#get_vars.log:source ${_LIB_DIR}/UTILS.zsh
+
+c412457c#install_comp.log:source ${_LIB}/MSG.zsh
+c412457c#install_comp.log:		source ${_LIB}/${D}
+c412457c#install_comp.log:		echo "Cannot source:${_LIB}/${D} - not found"
+
+c412457c#launcher-tweaks.log:source ${_LIB_DIR}/UTILS.zsh
+
+c412457c#lib_func_sorted_tst.log:source ${_LIB_DIR}/UTILS.zsh
+
+c412457c#make_desktop.log:source ${_LIB_DIR}/UTILS.zsh
+
+c412457c#make_standalone.log:source ${_LIB_DIR}/ARRAY.zsh
+c412457c#make_standalone.log:source ${_LIB_DIR}/UTILS.zsh
+
+c412457c#make_zsh_lib_app.log:source ${_LIB_DIR}/UTILS.zsh
+c412457c#make_zsh_lib_app.log:source ${_LIB_DIR}/LIST.zsh' ${_APP_NAME}
+
+c412457c#run_enpass.log:source ${_LIB_DIR}/UTILS.zsh
+
+c412457c#run_vim.log:source ${_LIB_DIR}/UTILS.zsh
+
+c412457c#zsh_sort_funcs.log:source ${_LIB_DIR}/UTILS.zsh
+c412457c#zsh_sort_funcs.log:source ${_LIB_DIR}/MSG.zsh
+
+ca74b4dc#wait_app_start.log:source ${_LIB_DIR}/UTILS.zsh

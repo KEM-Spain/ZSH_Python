@@ -19,13 +19,6 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-
-# Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh
-_DEPS+=(UTILS.zsh)
-source ${_LIB_DIR}/LIB_DEPS.zsh
-
 # Declarations
 typeset -A _LAUNCHER_DESKTOP=()
 typeset -a _DESKTOP_DIRS=()
@@ -36,6 +29,12 @@ _DESKTOP_DIRS+="/var/lib/snapd/desktop/applications"
 
 _LAUNCHER_DIR=/usr/local/bin/system/launchers
 _ORIGINALS_DIR=/usr/local/bin/system/launchers/originals
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Functions
 get_file_state () {

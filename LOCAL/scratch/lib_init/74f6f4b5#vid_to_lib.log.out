@@ -15,11 +15,11 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-
 # Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+_LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh
-_DEPS+=(UTILS.zsh ARRAY.zsh)
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/ARRAY.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
@@ -48,173 +48,6 @@ _SERIES_SUB=series
 _SERVICE_MODE=''
 
 # Functions
-do_rmcup () {
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${_SMCUP} == 'false' ]] && return
-	tput -T ${_TERM} rmcup
-	_SMCUP=false
-}
-
-do_rmso () {
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	tput -T ${_TERM} rmso
-}
-
-exit_pre_exit () {
-	local -a SCRUB=()
-	local -a USER_PIDS=()
-	local C F P
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${_PRE_EXIT_RAN} == 'true' ]] && return
-	
-	_PRE_EXIT_RAN=true
-
-	if [[ -n ${_EXIT_CALLBACKS} ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
-		for C in ${_EXIT_CALLBACKS};do
-			${C}
-		done
-	fi
-
-	if [[ ${_EXIT_SCRUB} == 'true' ]];then
-		_PIDS=("${(f)$(get_user_pids)}")
-		scrub_tmp
-	fi
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
-
-	if [[ ${XDG_SESSION_TYPE:l} == 'x11' ]];then
-		xset r on # Reset key repeat
-		eval "xset ${_XSET_DEFAULT_RATE}" # Reset key rate
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset key rate:${_XSET_DEFAULT_RATE}"
-	fi
-
-	kbd_activate
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: activated keyboard"
-
-	[[ ${$(tabs -d | grep --color=never -o "tabs 8")} != 'tabs 8' ]] && tabs 8
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset tabstops"
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
-}
-
-set_exit_value () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	_EXIT_VALUE=${1}
-}
-
-arr_is_populated () {
-	local -a ARR=(${@})
-	local RC
-	
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARR:${#ARR}"
-
-	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires a quoted argument${RESET} of type <ARRAY> ${#}" >&2
-
-	ARR=$(tr -d '[:space:]' <<<${ARR})
-
-	[[ -z ${ARR[@]} ]] && RC=1 || RC=0
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RC:${RC}"
-
-	return ${RC}
-}
-
-exit_leave () {
-	local OPT=''
-	local RET=''
-
-	if [[ -n ${1} ]];then
-		RET=$( echo "${1}" | sed 's/^[-+]*[0-9]*//g' )
-		[[ -z ${RET} ]] && set_exit_value ${1} && shift
-	fi
-
-	_EXIT_MSGS=(${@})
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
-		dbg "${RED_FG}${0}${RESET}: #_MSGS:${#_MSGS}"
-		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
-		dbg_msg | mypager -n wait
-	fi
-
-	[[ ${functrace[1]} =~ 'usage' && -z ${MSGS} ]] && set_exit_value 1
-
-	exit_pre_exit
-
-	[[ ${_SMCUP} == 'true' ]] && do_rmcup # Restore if needed
-
-	if [[ -n ${_EXIT_MSGS} ]];then
-		echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
-	fi
-
-	exit ${_EXIT_VALUE}
-}
-
-logit () {
-	local LOG=''
-	local MSG=''
-	local STAMP=$(date +'%Y-%m-%d_%H:%M:')
-
-	# Collect args
-	[[ ${#} -gt 1 ]] && LOG=${1} && shift
-	MSG=${@}
-
-	if [[ -z ${LOG} ]];then # No log passed
-		if [[ -n ${_LOG} ]];then
-			LOG=${_LOG} # Log is defined
-		else
-			LOG=/tmp/${0}.log # Define log
-		fi
-	fi
-
-	echo "${STAMP} ${MSG}" >> ${LOG}
-}
-
-max () {
-	local -a NUMLIST=(${@})
-	local MAX=0
-	local N
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	for N in ${NUMLIST};do
-		[[ ${N} -gt ${MAX} ]] && MAX=${N}
-	done
-
-	echo ${MAX}
-}
-
-min () {
-	local -a NUMLIST=(${@})
-	local N
-	local MIN=${NUMLIST[1]}
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	for N in ${NUMLIST};do
-		[[ ${N} -lt ${MIN} ]] && MIN=${N}
-	done
-
-	echo ${MIN}
-}
-
-str_unicode_line () {
-	local LENGTH=${1}
-	local HORIZ_BAR="\\u2500%.0s"
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} LENGTH:${LENGTH}"
-
-	do_rmso
-	printf "\\u2500%.0s" {1..$(( ${LENGTH} ))}
-}
-
 clean_media () {
 	local DEST=${1}
 	local WORKDIR=''
@@ -232,10 +65,10 @@ clean_media () {
 		echo "${CYAN_FG}$(str_unicode_line ${#MSG})${RESET}"
 
 		WORKDIR=${_VIDEOS[1]:h}
-		logit "${0} calling ${_VW}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
-		echo "${0} calling ${_VW}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
-		${_VW}/fsub.standalone "${FSUB_OPTS} ${WORKDIR}"
-		[[ ${?} -ne 0 ]] && logit "${0}: ${_VW}/fsub.standalone returned an error"
+		logit "${0} calling ${_VW}/fsub ${FSUB_OPTS} ${WORKDIR}"
+		echo "${0} calling ${_VW}/fsub ${FSUB_OPTS} ${WORKDIR}"
+		${_VW}/fsub "${FSUB_OPTS} ${WORKDIR}"
+		[[ ${?} -ne 0 ]] && logit "${0}: ${_VW}/fsub returned an error"
 	else
 		logit "${0} No videos found at DEST:${DEST}"
 	fi
@@ -364,7 +197,7 @@ sub_rename () {
 	local HIT=false
 	local MSG="Scanning subtitles for naming errors..."
 
-	# Handle naming issues for subtitles that fsub.standalone misses
+	# Handle naming issues for subtitles that fsub misses
 	# And some that are orphaned due to filenaming
 
 	VIDEOS=("${(f)$(find ${_LIBRARY_DIR}/movies -type f -regex "${_VIDEO_REGEX}")}")
