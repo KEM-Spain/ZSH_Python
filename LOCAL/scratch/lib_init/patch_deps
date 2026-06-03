@@ -18,4 +18,4 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-sed -i -e 's/typeset -a DEPS=/_DEPS=/' -e '/_DEPS=/{h;d;}' -e '/LIB_INIT.zsh/{G;}' ${1}
+sed -i -e 's/typeset -a DEPS=/_DEPS+=/' -e '/_DEPS+=/{h;d;}' -e '/LIB_INIT.zsh/{G;}' ${1}

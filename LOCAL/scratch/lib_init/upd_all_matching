@@ -27,7 +27,9 @@ for L in ${LIST};do
 done
 
 for F in ${ALL_LIB_USERS};do
+	echo "Patching ${F}..." >&2
 	patch_deps ${F}
 done
 
+echo "Upgrading LIB_DEPS" >&2
 cp LIB_DEPS.zsh /usr/local/lib

@@ -20,11 +20,11 @@ WHITE_FG="\033[37m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
-typeset -a DEPS=(STR.zsh)
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(STR.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
 
 # Declarations
