@@ -5,7 +5,7 @@
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 _DEPS+=()
-source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A _APP_TAGS=(brave-browser brave google-chrome chrome com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)

@@ -19,9 +19,8 @@ WHITE_FG="\033[37m"
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-
-
-source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+_DEPS+=(PATH.zsh UTILS.zsh STR.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -a OPTIONS=()

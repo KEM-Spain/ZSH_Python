@@ -23,7 +23,7 @@ YELLOW_FG="\033[33m"
 source ${_LIB_DIR}/LIB_INIT.zsh
 
 
-source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A _BLACKLIST=(usage 1 parse_opts 1 opt_type 1 opt_exists 1 dbg 1 dbg_set_level 1)

@@ -6,7 +6,7 @@
 source ${_LIB_DIR}/LIB_INIT.zsh
 
 
-source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 #Vars
 _ENP_MARKER=/tmp/enpass.init

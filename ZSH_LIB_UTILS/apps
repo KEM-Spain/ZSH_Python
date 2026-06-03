@@ -33,7 +33,7 @@ E_STRIKE=$(echo "\033[9m")
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 _DEPS+=(LIST.zsh)
-source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
 [[ -e /usr/bin/flatpak ]] && _FLATPAK_INSTALLED=true || _FLATPAK_INSTALLED=false

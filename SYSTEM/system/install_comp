@@ -27,7 +27,7 @@ _COMP_DIR=~/.zsh/completions
 source ${_LIB_DIR}/LIB_INIT.zsh
 
 
-source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 #--Begin GetOpts--
 local -a OPTIONS

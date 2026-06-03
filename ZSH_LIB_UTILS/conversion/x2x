@@ -15,7 +15,7 @@ WHITE_FG="\033[37m"
 source ${_LIB_DIR}/LIB_INIT.zsh
 
 
-source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 typeset -i INT
 typeset -F FRACTION

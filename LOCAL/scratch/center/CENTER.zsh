@@ -62,19 +62,41 @@ get_vert_center () {
 }
 
 get_horz_center () {
-	local WIDTH=${1:=$(tput lines)}
-	local REGION=${2:=$(tput cols)}
+	local REGION=$(tput cols)
 	local REGION_CENTER=$(( REGION / 2 ))
-	local WIDTH_CENTER=$(( WIDTH / 2 ))
+	local WIDTH=$(tput lines)
+	local WIDTH_CENTER=0
 	local REM=0
+
+	#--Begin GetOpts--
+	local -a OPTIONS
+	local OPTION
+	local OPTSTR=":w:y:"
+	local OPTIND=0
+
+	local Y_OFF=0   # Optional Horizontal offset from center
+
+	while getopts ${OPTSTR} OPTION;do
+		case $OPTION in
+		  w) WIDTH=${OPTARG};;
+		  y) Y_OFF=${OPTARG};;
+		  :) print -u2 "\n${RED_FG}${_MOD} ${WHITE_FG}${functrace}${RESET}: option: -${OPTARG} requires an argument"; exit_leave;;
+		 \?) print -u2 "\n${RED_FG}${_MOD} ${WHITE_FG}${functrace}${RESET}: unknown option -${OPTARG}"; exit_leave;;
+		esac
+		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+	done
+	shift $((OPTIND -1))
+	#--End GetOpts--
 
 	REM=$(( REGION_CENTER % 2 ))
 	[[ ${REM} -ne 0 ]] && (( REGION_CENTER++ ))
 
+	WIDTH_CENTER=$(( WIDTH / 2 ))
+
 	REM=$(( WIDTH_CENTER % 2 ))
 	[[ ${REM} -ne 0 ]] && (( WIDTH_CENTER++ ))
 
-	echo $(( REGION_CENTER - WIDTH_CENTER ))
+	echo $(( ( REGION_CENTER - WIDTH_CENTER ) + Y_OFF ))
 }
 
 center () {
@@ -126,7 +148,7 @@ center () {
 		get_vert_center ${_HEIGHT} # ${_X_OFF} # Given HEIGHT returns X center
 	elif [[ ${HORZ} == 'true' ]];then
 		validate_opts w
-		get_horz_center ${_WIDTH} # ${_Y_OFF} # Given WIDTH Y center
+		get_horz_center -w${_WIDTH} -y${_Y_OFF} # Given WIDTH Y center
 	elif [[ ${REL} == 'true' ]];then
 		validate_opts c h w x y
 		get_relative_center ${_COORDS} ${_HEIGHT} ${_WIDTH} ${_X_OFF} ${_Y_OFF} # Given COORDS, WIDTH and HEIGHT returns X,Y relative to COORDS

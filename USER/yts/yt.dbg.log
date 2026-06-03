@@ -1,39 +1,29 @@
-2026-06-03_10:08: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-03_10:08: log_update: Skipping expired inode:6401954
-2026-06-03_10:08: log_update: Skipping expired inode:6402098
-2026-06-03_10:08: log_update: Skipping expired inode:6292805
-2026-06-03_10:08: log_update: Skipping expired inode:6297687
-2026-06-03_10:08: log_update: Skipping expired inode:6297720
-2026-06-03_10:08: log_update: Skipping expired inode:6298951
-2026-06-03_10:08: log_update: Skipping expired inode:6299008
-2026-06-03_10:08: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-03_10:08: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
-2026-06-03_10:08: parse_rumble: Parsing list for QKEY:duedissidence
-2026-06-03_10:08: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
-2026-06-03_10:08: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
-2026-06-03_10:08: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
-2026-06-03_10:08: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
-2026-06-03_10:08: query_rumble: Listing for QKEY:duedissidence contains 24 rows
-2026-06-03_10:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Rx3jYs
-2026-06-03_10:08: job_start: TITLE:Trump Scolds Bibi (According To Axios), War Criminals At Israel Parade, Cenk
-2026-06-03_10:08: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7apvss-trump-scolds-bibi-according-to-axios-war-criminals-at-israel-parade-cenk-an.html?e9s=src_v1_ucp_l" PID:1097401
-2026-06-03_10:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-03_10:08: action_do: GENERATING HEADER
-2026-06-03_10:08: title_scrubber: UCASE_WORDS:4
-2026-06-03_10:08: title_scrubber: Preserving uppercase:Scolds
-2026-06-03_10:08: title_scrubber: Preserving uppercase:War
-2026-06-03_10:08: title_scrubber: Preserving uppercase:Criminals
-2026-06-03_10:08: title_scrubber: Preserving uppercase:Bann
-2026-06-03_10:13: action_do: COMPLETED
-2026-06-03_10:13: action_do: POST-PROCESSING
-2026-06-03_10:15: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7apvss-trump-scolds-bibi-according-to-axios-war-criminals-at-israel-parade-cenk-an.html?e9s=src_v1_ucp_l PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-03_10:15: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Trump_SCOLDS_Bibi_According_To_Axios_WAR_CRIMINALS_at_Israel_Parade_Cenk_Hasan_BANN.mp4
-2026-06-03_10:15: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Trump_SCOLDS_Bibi_According_To_Axios_WAR_CRIMINALS_at_Israel_Parade_Cenk_Hasan_BANN.mp4
-2026-06-03_10:15: title_scrubber: UCASE_WORDS:4
-2026-06-03_10:15: title_scrubber: Preserving uppercase:Scolds
-2026-06-03_10:15: title_scrubber: Preserving uppercase:War
-2026-06-03_10:15: title_scrubber: Preserving uppercase:Criminals
-2026-06-03_10:15: title_scrubber: Preserving uppercase:Bann
-2026-06-03_10:15: set_final_fn: Overwriting file:Due_Dissidence - Trump_SCOLDS_Bibi_According_To_Axios_WAR_CRIMINALS_at_Israel_Parade_Cenk_Hasan_BANN.mp4 with:Due Dissidence - Trump SCOLDS Bibi According To Axios WAR CRIMINALS At.mp4
-2026-06-03_10:15: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Due Dissidence - Trump SCOLDS Bibi According To Axios WAR CRIMINALS At.mp4
-2026-06-03_10:15: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Rx3jYs was cleared for:duedissidence from:action_do
+2026-06-03_22:57: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-03_22:57: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-03_22:57: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
+2026-06-03_22:57: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
+2026-06-03_22:57: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
+2026-06-03_22:57: query_youtube: Query matched 19 lines, _LOCAL_LIST has 17 lines
+2026-06-03_22:57: query_youtube: Listing for QKEY:judgingfreedom contains 17 rows
+2026-06-03_22:57: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.XiOSZo
+2026-06-03_22:57: job_start: TITLE:Phil Giraldi : The Israelization of the US Military
+2026-06-03_22:57: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=qpkvg7aFDBI" PID:3877146
+2026-06-03_22:57: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-03_22:57: action_do: GENERATING HEADER
+2026-06-03_22:57: title_scrubber: UCASE_WORDS:1
+2026-06-03_22:57: title_scrubber: Preserving acronym:Us
+2026-06-03_22:58: action_do: COMPLETED
+2026-06-03_22:58: action_do: POST-PROCESSING
+2026-06-03_22:58: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=qpkvg7aFDBI PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-03_22:58: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Phil_Giraldi_-_The_Israelization_of_the_US_Military.mp4
+2026-06-03_22:58: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Phil_Giraldi_-_The_Israelization_of_the_US_Military.mp4
+2026-06-03_22:58: title_scrubber: UCASE_WORDS:1
+2026-06-03_22:58: title_scrubber: Preserving acronym:Us
+2026-06-03_22:58: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Phil_Giraldi_-_The_Israelization_of_the_US_Military.mp4 with:Judging Freedom - Phil Giraldi - The Israelization Of The US Military.mp4
+2026-06-03_22:58: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Phil Giraldi - The Israelization Of The US Military.mp4
+2026-06-03_22:58: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.XiOSZo was cleared for:judgingfreedom from:action_do
+2026-06-03_22:59: yt PPCMD:/usr/bin/zsh
+2026-06-03_22:59: yt PPCMD:/usr/bin/zsh
+2026-06-03_22:59: yt Cleaning file name:Larry_Johnson_-_Does_Iran_Have_the_Bomb_Part_2-[yLSrunuWrns].mp4
+2026-06-03_22:59: Prepending:Judging Freedom to Larry Johnson - DOES Iran Have The Bomb Part 2.mp4
+2026-06-03_22:59: yt Executed from command line:https://www.youtube.com/watch?v=yLSrunuWrns&pp=0gcJCSgLAYcqIYzv PPCMD:/usr/bin/zsh
