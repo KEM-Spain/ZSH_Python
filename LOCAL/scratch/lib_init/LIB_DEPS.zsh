@@ -1,6 +1,5 @@
-typeset -a APP_DEPS=(${@})
 typeset -A SEEN=()
-DBG=true
+DBG=false
 
 is_valid () {
 	FN=${1}
@@ -14,25 +13,19 @@ is_valid () {
 [[ ${DBG} == 'true' ]] && echo "ARGS:${#} ${@}" > debug.log
 [[ ${DBG} == 'true' ]] && echo "APP_DEPS:${APP_DEPS}" >> debug.log
 
-# Pre-scan - each APP module can add it's dependencies 
-# to _DEPS (defined in LIB_INIT) to be sourced by the post scan
-for A in ${=APP_DEPS};do # Pre scan
-	FN=${A:t}
-	if is_valid ${FN};then
-		[[ ${DBG} == 'true' ]] && echo "Pre-scan Sourcing ${FN}" >> debug.log
-		source ${_LIB_DIR}/${FN}
-		SEEN[${FN}]=1
-	fi
-done
-
-[[ ${DBG} == 'true' ]] && echo "_DEPS:${_DEPS}" >> debug.log
-
-# Post-scan - source any modules in _DEPS
-for D in ${_DEPS};do # Post scan
-	FN=${D:t}
-	if is_valid ${FN};then
-		[[ ${DBG} == 'true' ]] && echo "Post-scan Sourcing ${FN}" >> debug.log
-		source ${_LIB_DIR}/${FN}
-		SEEN[${FN}]=1
-	fi
+# Multiple passes may be needed as previously
+# unseen dependencies are added to _DEPS array
+MAX_DEPS=${#_DEPS}
+PASS=1
+while true;do
+	for D in ${_DEPS};do # Post scan
+		FN=${D:t}
+		if is_valid ${FN};then
+			[[ ${DBG} == 'true' ]] && echo "Dependency scan pass ${PASS}: Sourcing ${FN}" >> debug.log
+			source ${_LIB_DIR}/${FN}
+			SEEN[${FN}]=1
+		fi
+	done
+	[[ ${#_DEPS} -gt ${MAX_DEPS} ]] && MAX_DEPS=${#_DEPS} || break
+	((PASS++))
 done

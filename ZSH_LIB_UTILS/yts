@@ -331,14 +331,6 @@ action_warn () {
 	fi
 }
 
-box_center () {
-	local TXT=${@} # Message
-	local BOX=-4 # Compensate for box border
-	local BOX_WIDTH=${_CONT_COORDS[W]} # Width coord
-
-	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT}) # Return Y coord
-}
-
 cfg_init () {
 	local CFG_STATE=0
 	local -A CFG_MSGS=(1 "Missing configuration directory:${_CFG_DIR}" 2 "Missing favorites file:${_YTS_FAVORITES}")

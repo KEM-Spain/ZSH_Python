@@ -1,8 +1,6 @@
 # LIB Dependencies
 _DEPS+=(MSG.zsh TPUT.zsh VALIDATE.zsh UTILS.zsh)
 
-# LIB Declarations
-
 # LIB Vars
 _RCT=0
 _MOD="[${0:t}]"

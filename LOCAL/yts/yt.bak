@@ -130,7 +130,7 @@ if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
 		FN=$(last_file_downloaded | cut -d'|' -f1)
 		if [[ -n ${PREPEND} ]];then
 			logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}"
-			fsub -y -p ${PREPEND} ${FN}
+			fsub -y -p ${(C)PREPEND} ${FN}
 		fi
 	fi
 	logit ${_YTS_URL_LOG} "${0:t} CMDLINE downloaded URL:${@} to ${FN:t}"

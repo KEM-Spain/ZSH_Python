@@ -1,13 +1,17 @@
-ARGS:1 MSG.zsh
-APP_DEPS:MSG.zsh
-Pre-scan Sourcing MSG.zsh
-_DEPS:ANSI.zsh DBG.zsh ERROR.zsh EXIT.zsh UTILS.zsh ARRAY.zsh CENTER.zsh STR.zsh TPUT.zsh
-Post-scan Sourcing ANSI.zsh
-Post-scan Sourcing DBG.zsh
-Post-scan Sourcing ERROR.zsh
-Post-scan Sourcing EXIT.zsh
-Post-scan Sourcing UTILS.zsh
-Post-scan Sourcing ARRAY.zsh
-Post-scan Sourcing CENTER.zsh
-Post-scan Sourcing STR.zsh
-Post-scan Sourcing TPUT.zsh
+ARGS:0 
+APP_DEPS:
+Post-scan pass 1: Sourcing ANSI.zsh
+Post-scan pass 1: Sourcing DBG.zsh
+Post-scan pass 1: Sourcing ERROR.zsh
+Post-scan pass 1: Sourcing EXIT.zsh
+Post-scan pass 1: Sourcing UTILS.zsh
+Post-scan pass 1: Sourcing VALIDATE.zsh
+Post-scan pass 1: Sourcing PATH.zsh
+Post-scan pass 1: Sourcing DATE.zsh
+Post-scan pass 1: Sourcing LIST.zsh
+Post-scan pass 1: Sourcing SELECT.zsh
+Post-scan pass 1: Sourcing CENTER.zsh
+Post-scan pass 2: Sourcing STR.zsh
+Post-scan pass 2: Sourcing MSG.zsh
+Post-scan pass 2: Sourcing TPUT.zsh
+Post-scan pass 2: Sourcing ARRAY.zsh

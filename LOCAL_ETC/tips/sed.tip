@@ -1,25 +1,29 @@
 (
 echo ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 cat << tip_sed_EOF
+=====================
+sed examples
+=====================
 
-${E_WHITE_FG}Delete line number${E_RESET}
+${E_WHITE_FG}Delete by line number${E_RESET}
 If you want to delete lines from 5 through 10 and line 12th:
 
-sed -e '5,10d;12d' <FILE>
+sed -e '5,10d;12d' <FILE> # Print the result to the screen
 
-This will print the results to the screen. 
-
-If you want to save the results to the same file:
-
-sed -i.bak -e '5,10d;12d' <FILE>
+sed -i.bak -e '5,10d;12d' <FILE> # Save the result
 
 ${E_WHITE_FG}Insert line number${E_RESET}
+
 sed -i '3i NEW LINE on line 3' <FILE>
 
-=====================
-advanced sed examples
-=====================
-${E_WHITE_FG}Example 1${E_RESET}
+${E_WHITE_FG}Example: Move a line${E_RESET}
+
+sed -i -e '/PATTERN+1/{h;d;}' -e '/PATTERN_2/{G;}' <FILE>
+
+Explanation: Match PATTERN_1; hold and delete
+             Match PATTERN_2; append PATTERN_1
+
+${E_WHITE_FG}Example: Matching/deleting blocks of text${E_RESET}
 
 sed '/PATTERN_1/,/PATTERN_2/d' FILE # Pattern inclusive
 sed '/PATTERN_1/,/PATTERN_2/-1d' FILE # First pattern inclusive - leave last pattern
@@ -32,22 +36,23 @@ Explanation:
 /PATTERN_1/! means do following if start of line is not PATTERN_1
 /PATTERN_2/! means do following if start of line is not PATTERN_2
 
-So overall it is first matching all the lines from PATTERN_1 to PATTERN_2 
-then from those matched lines, finding lines that don't match PATTERN_1 and don't match PATTERN_2 and deleting
+So overall
+Match all lines from PATTERN_1 to PATTERN_2,
+find lines that don't match PATTERN_1 AND don't match PATTERN_2 and delete
 
-${E_WHITE_FG}Example 2${E_RESET}
+${E_WHITE_FG}Example: Branching${E_RESET}
 
 sed ':a; N; \$!ba; s/\n/ /g'
 
-This command will progess through entire file, removing all newlines while stringing all lines
-together on a single line of output
+This command will progess through entire file,
+remove all newlines, and string all lines together on a single line of output
 
 1) ${E_WHITE_FG}Create${E_RESET} label ${E_CYAN_FG}:a${E_RESET}
 2) ${E_WHITE_FG}Append${E_RESET} the current and next line to the pattern space via ${E_CYAN_FG}N${E_RESET}
 3) If we are ${E_WHITE_FG}NOT LAST LINE${E_RESET} ${E_CYAN_FG}\$!${E_RESET}, branch to the created label ${E_CYAN_FG}ba${E_RESET}
 4) Finally, the substitution ${E_WHITE_FG}replaces every newline with a space${E_RESET} on the pattern space
 
-${E_WHITE_FG}Example 3${E_RESET}
+${E_WHITE_FG}Example: More Branching${E_RESET}
 
 This pattern will find a line ending with a % sign and join it with the line above adding a pipe delimiter
 
@@ -72,87 +77,70 @@ Streaming Nov 21, 2025|88%
 ${E_WHITE_FG}CODE:${E_RESET}
 sed -E ':start;N;s/\n(.*%)/|\1/;t start;P;D' 
 
-N - copy line to pattern space
-P - print pattern space
-D - clear pattern space up to first embedded newline
-
 SED PROGRAM:
-  :start
-  N
-  s/\n(.*%)/|\1/
-  t start
-  P
-  D
+  :start         # create label start
+  N              # copy line to pattern space
+  s/\n(.*%)/|\1/ # do substitution if line has trailing %
+  t start        # true: branch to start, else: continue
+  P              # print pattern
+  D              # clear pattern space up to first embedded newline
+
 INPUT:   'STDIN' line 1
 PATTERN: Holiday Touchdown: A Bills Love Story
 COMMAND: :start
 COMMAND: N
-PATTERN: Holiday Touchdown: A Bills Love Story\nStreaming Nov 22, 2025
+NEW PATTERN: Holiday Touchdown: A Bills Love Story\nStreaming Nov 22, 2025
 COMMAND: s/\n(.*%)/|\1/
-PATTERN: Holiday Touchdown: A Bills Love Story\nStreaming Nov 22, 2025
-COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
+RESULT: Holiday Touchdown: A Bills Love Story\nStreaming Nov 22, 2025
+COMMAND: t start                            ${E_WHITE_FG}# NO MATCH - CONTINUE${E_RESET}
 COMMAND: P
-> Holiday Touchdown: A Bills Love Story     ${E_WHITE_FG}# PRINTED${E_RESET}
+> Holiday Touchdown: A Bills Love Story     ${E_WHITE_FG}# PRINT${E_RESET}
 COMMAND: D
-PATTERN: Streaming Nov 22, 2025
+REMAINING PATTERN: Streaming Nov 22, 2025
 COMMAND: :start
 COMMAND: N
-PATTERN: Streaming Nov 22, 2025\n95%
+NEW PATTERN: Streaming Nov 22, 2025\n95%
 COMMAND: s/\n(.*%)/|\1/
-MATCHED REGEX REGISTERS
-  regex[0] = 22-26 '
-95%'
-  regex[1] = 23-26 '95%'
-PATTERN: Streaming Nov 22, 2025|95%
-COMMAND: t start     ${E_WHITE_FG}# TRUE - BRANCH${E_RESET}
-COMMAND: :start
+RESULT: Streaming Nov 22, 2025|95%
+COMMAND: t start                            ${E_WHITE_FG}# MATCHED - BRANCH${E_RESET}
 COMMAND: N
-PATTERN: Streaming Nov 22, 2025|95%\n83%
+NEW PATTERN: Streaming Nov 22, 2025|95%\n83%
 COMMAND: s/\n(.*%)/|\1/
-MATCHED REGEX REGISTERS
-  regex[0] = 26-30 '
-83%'
-  regex[1] = 27-30 '83%'
-PATTERN: Streaming Nov 22, 2025|95%|83%
-COMMAND: t start     ${E_WHITE_FG}# TRUE - BRANCH${E_RESET}
-COMMAND: :start
+RESULT: Streaming Nov 22, 2025|95%|83%
+COMMAND: t start                            ${E_WHITE_FG}# MATCHED - BRANCH${E_RESET}
 COMMAND: N
-PATTERN: Streaming Nov 22, 2025|95%|83%\nTrain Dreams
+NEW PATTERN: Streaming Nov 22, 2025|95%|83%\nTrain Dreams
 COMMAND: s/\n(.*%)/|\1/
-PATTERN: Streaming Nov 22, 2025|95%|83%\nTrain Dreams
-COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
+RESULT: Streaming Nov 22, 2025|95%|83%\nTrain Dreams
+COMMAND: t start                            ${E_WHITE_FG}# NO MATCH - CONTINUE${E_RESET}
 COMMAND: P
-> Streaming Nov 22, 2025|95%|83%     ${E_WHITE_FG}# PRINTED${E_RESET}
+> Streaming Nov 22, 2025|95%|83%            ${E_WHITE_FG}# PRINT${E_RESET}
 COMMAND: D
-PATTERN: Train Dreams
+REMAINING PATTERN: Train Dreams
 COMMAND: :start
 COMMAND: N
-PATTERN: Train Dreams\nStreaming Nov 21, 2025
+NEW PATTERN: Train Dreams\nStreaming Nov 21, 2025
 COMMAND: s/\n(.*%)/|\1/
 PATTERN: Train Dreams\nStreaming Nov 21, 2025
-COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
+COMMAND: t start                            ${E_WHITE_FG}# NO MATCH - CONTINUE${E_RESET}
 COMMAND: P
-> Train Dreams     ${E_WHITE_FG}# PRINTED${E_RESET}
+> Train Dreams                              ${E_WHITE_FG}# PRINT${E_RESET}
 COMMAND: D
-PATTERN: Streaming Nov 21, 2025
+REMAINING PATTERN: Streaming Nov 21, 2025
 COMMAND: :start
 COMMAND: N
-PATTERN: Streaming Nov 21, 2025\n88%
+NEW PATTERN: Streaming Nov 21, 2025\n88%
 COMMAND: s/\n(.*%)/|\1/
-MATCHED REGEX REGISTERS
-  regex[0] = 22-26 '
-88%'
-  regex[1] = 23-26 '88%'
-PATTERN: Streaming Nov 21, 2025|88%
-COMMAND: t start     ${E_WHITE_FG}# TRUE - BRANCH${E_RESET}
+RESULT: Streaming Nov 21, 2025|88%
+COMMAND: t start                            ${E_WHITE_FG}# MATCHED - BRANCH${E_RESET}
 COMMAND: :start
 COMMAND: N
-PATTERN: Streaming Nov 21, 2025|88%\nThe Age of Disclosure
+NEW PATTERN: Streaming Nov 21, 2025|88%\nThe Age of Disclosure
 COMMAND: s/\n(.*%)/|\1/
-PATTERN: Streaming Nov 21, 2025|88%\nThe Age of Disclosure
-COMMAND: t start     ${E_WHITE_FG}# FALSE - CONTINUE${E_RESET}
+RESULT: Streaming Nov 21, 2025|88%\nThe Age of Disclosure
+COMMAND: t start                            ${E_WHITE_FG}# NO MATCH - CONTINUE${E_RESET}
 COMMAND: P
-> Streaming Nov 21, 2025|88%     ${E_WHITE_FG}# PRINTED${E_RESET}
+> Streaming Nov 21, 2025|88%                ${E_WHITE_FG}# PRINT${E_RESET}
 
 ${E_WHITE_FG}Examples for Sed Branching${E_RESET}
 

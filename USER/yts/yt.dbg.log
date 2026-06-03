@@ -1,24 +1,39 @@
-2026-06-01_13:12: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-01_13:12: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-01_13:12: query_youtube: Creating listing for QKEY:danieldavisdeepdive STRICT:null
-2026-06-01_13:12: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Daniel Davis ENGINE:youtube EOPT:null FKEY:daniel davis QKEY:danieldavisdeepdive TYPE:custom 
-2026-06-01_13:12: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "danieldavisdeepdive"
-2026-06-01_13:12: query_youtube: Query matched 17 lines, _LOCAL_LIST has 16 lines
-2026-06-01_13:12: query_youtube: Listing for QKEY:danieldavisdeepdive contains 16 rows
-2026-06-01_13:12: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.kBnTDv
-2026-06-01_13:12: job_start: TITLE:Col Douglas Macgregor: Trump's Incoherent Foreign Policy Catastrophe
-2026-06-01_13:12: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=M7kREoBHrvY" PID:927034
-2026-06-01_13:12: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-01_13:12: action_do: GENERATING HEADER
-2026-06-01_13:12: title_scrubber: UCASE_WORDS:1
-2026-06-01_13:12: title_scrubber: Preserving acronym:Col
-2026-06-01_13:12: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=M7kREoBHrvY PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-01_13:12: action_do: COMPLETED
-2026-06-01_13:12: action_do: POST-PROCESSING
-2026-06-01_13:12: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_s_Incoherent_Foreign_Policy_Catastrophe.mp4
-2026-06-01_13:12: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_s_Incoherent_Foreign_Policy_Catastrophe.mp4
-2026-06-01_13:12: title_scrubber: UCASE_WORDS:1
-2026-06-01_13:12: title_scrubber: Preserving acronym:Col
-2026-06-01_13:12: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_s_Incoherent_Foreign_Policy_Catastrophe.mp4 with:Daniel Davis - COL Douglas Macgregor - Trump's Incoherent Foreign.mp4
-2026-06-01_13:12: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - COL Douglas Macgregor - Trump's Incoherent Foreign.mp4
-2026-06-01_13:12: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.kBnTDv was cleared for:danieldavisdeepdive from:action_do
+2026-06-03_10:08: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-03_10:08: log_update: Skipping expired inode:6401954
+2026-06-03_10:08: log_update: Skipping expired inode:6402098
+2026-06-03_10:08: log_update: Skipping expired inode:6292805
+2026-06-03_10:08: log_update: Skipping expired inode:6297687
+2026-06-03_10:08: log_update: Skipping expired inode:6297720
+2026-06-03_10:08: log_update: Skipping expired inode:6298951
+2026-06-03_10:08: log_update: Skipping expired inode:6299008
+2026-06-03_10:08: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-03_10:08: query_rumble: Creating listing for QKEY:duedissidence TYPE:live
+2026-06-03_10:08: parse_rumble: Parsing list for QKEY:duedissidence
+2026-06-03_10:08: parse_rumble: ROW:1 NO DATA from TAG:videostream__time text{}
+2026-06-03_10:08: parse_rumble: ROW:1 NO DATA from TAG:title__link attr{href}
+2026-06-03_10:08: parse_rumble: ROW:1 NO DATA from TAG:videostream__badge text{}
+2026-06-03_10:08: parse_rumble: ROW:1 NO DATA from TAG:thumbnail__title attr{title}
+2026-06-03_10:08: query_rumble: Listing for QKEY:duedissidence contains 24 rows
+2026-06-03_10:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Rx3jYs
+2026-06-03_10:08: job_start: TITLE:Trump Scolds Bibi (According To Axios), War Criminals At Israel Parade, Cenk
+2026-06-03_10:08: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7apvss-trump-scolds-bibi-according-to-axios-war-criminals-at-israel-parade-cenk-an.html?e9s=src_v1_ucp_l" PID:1097401
+2026-06-03_10:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-03_10:08: action_do: GENERATING HEADER
+2026-06-03_10:08: title_scrubber: UCASE_WORDS:4
+2026-06-03_10:08: title_scrubber: Preserving uppercase:Scolds
+2026-06-03_10:08: title_scrubber: Preserving uppercase:War
+2026-06-03_10:08: title_scrubber: Preserving uppercase:Criminals
+2026-06-03_10:08: title_scrubber: Preserving uppercase:Bann
+2026-06-03_10:13: action_do: COMPLETED
+2026-06-03_10:13: action_do: POST-PROCESSING
+2026-06-03_10:15: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7apvss-trump-scolds-bibi-according-to-axios-war-criminals-at-israel-parade-cenk-an.html?e9s=src_v1_ucp_l PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-03_10:15: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Trump_SCOLDS_Bibi_According_To_Axios_WAR_CRIMINALS_at_Israel_Parade_Cenk_Hasan_BANN.mp4
+2026-06-03_10:15: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Due_Dissidence - Trump_SCOLDS_Bibi_According_To_Axios_WAR_CRIMINALS_at_Israel_Parade_Cenk_Hasan_BANN.mp4
+2026-06-03_10:15: title_scrubber: UCASE_WORDS:4
+2026-06-03_10:15: title_scrubber: Preserving uppercase:Scolds
+2026-06-03_10:15: title_scrubber: Preserving uppercase:War
+2026-06-03_10:15: title_scrubber: Preserving uppercase:Criminals
+2026-06-03_10:15: title_scrubber: Preserving uppercase:Bann
+2026-06-03_10:15: set_final_fn: Overwriting file:Due_Dissidence - Trump_SCOLDS_Bibi_According_To_Axios_WAR_CRIMINALS_at_Israel_Parade_Cenk_Hasan_BANN.mp4 with:Due Dissidence - Trump SCOLDS Bibi According To Axios WAR CRIMINALS At.mp4
+2026-06-03_10:15: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Due Dissidence - Trump SCOLDS Bibi According To Axios WAR CRIMINALS At.mp4
+2026-06-03_10:15: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Rx3jYs was cleared for:duedissidence from:action_do

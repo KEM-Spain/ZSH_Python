@@ -18,10 +18,16 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-if [[ ${1} == 'in' ]];then
-	cp LIB_INIT.zsh /usr/local/lib
-	cp LIB_DEPS.zsh /usr/local/lib
-else
-	cp LIB_INIT.prod /usr/local/lib/LIB_INIT.zsh
-	cp LIB_DEPS.prod /usr/local/lib/LIB_DEPS.zsh
-fi
+typeset -a ALL_LIB_USERS=()
+
+LIST=("${(f)$(find /usr/local/bin -maxdepth 4 -type f)}")
+for L in ${LIST};do
+	grep -q "LIB_INIT" ${L}
+	[[ $? -eq 0 ]] && ALL_LIB_USERS+=${L}
+done
+
+for F in ${ALL_LIB_USERS};do
+	patch_deps ${F}
+done
+
+cp LIB_DEPS.zsh /usr/local/lib

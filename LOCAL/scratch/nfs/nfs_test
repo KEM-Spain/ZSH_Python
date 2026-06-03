@@ -1,0 +1,21 @@
+#!/usr/bin/zsh
+ 
+SHARE="/media/kmiller/NFS"
+
+if [[ ${1} == 'remove' ]];then
+	if [[ -d ${SHARE} ]];then
+		sudo umount ${SHARE}
+		sudo /bin/rm -rf ${SHARE}
+		exit
+	fi
+fi
+
+sudo exportfs -ra
+sudo systemctl restart nfs-kernel-server
+nfsstat -m
+
+sudo mkdir -p ${SHARE}
+sudo mount -t nfs -o nfsvers=3 192.168.18.100:/media/kmiller/EXT_2/Music ${SHARE}
+
+sudo showmount -a
+
