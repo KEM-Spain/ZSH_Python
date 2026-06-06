@@ -449,10 +449,10 @@ download_indicator () {
 download_select () {
 	local SEARCHTERM=${1}
 	local SEARCHTYPE=''
-	local L F
 	local TITLE
 	local FLST
 	local STR
+	local L F
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
@@ -741,7 +741,7 @@ get_field () {
 
 	case ${FIELD} in
 		age) STR=$(cut -d'|' -f${FIELD_MAP[age]} <<<${_LIST[${NDX}]});;
-		agetime) STR=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${_LIST[${NDX}]} | sed 's/( */(/');;
+		agetime) STR=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${_LIST[${NDX}]});;
 		author) STR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${_LIST[${NDX}]});;
 		time) STR=$(cut -d'|' -f${FIELD_MAP[time]} <<<${_LIST[${NDX}]});;
 		title) STR=$(cut -d'|' -f${FIELD_MAP[title]} <<<${_LIST[${NDX}]});;
@@ -807,7 +807,7 @@ item_decorate () {
 	elif [[ ${_PARTIALS[${NDX}]} == 'true' ]];then
 		STR="Partial..."
 	else
-		STR=${$(get_field agetime ${NDX})[1,${_FIELD_LEN[agetime]}]}
+		STR=$(get_field agetime ${NDX})
 	fi
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: STR:${STR}"
@@ -1214,17 +1214,20 @@ parse_rumble_age () {
 	local DAYS=0
 	local HOURS=0
 	local TODAY=$(date +%s)
+	local STAMP=''
 
 	DAYS=$(( (TODAY - ${SECS}) / 86400 ))
 
 	if [[ ${DAYS} -eq 0 ]];then
 		HOURS=$(( (TODAY - ${SECS}) / 3600 ))
 		[[ ${HOURS} -eq 1 ]] && HTAG=hour
-		echo "${HOURS} ${HTAG} ago"
+		STAMP="${HOURS} ${HTAG} ago"
 	else
 		[[ ${DAYS} -eq 1 ]] && DTAG=day
-		echo "${DAYS} ${DTAG} ago"
+		STAMP="${DAYS} ${DTAG} ago"
 	fi
+
+	echo ${STAMP}
 }
 
 parse_rumble_channel () {
@@ -1248,7 +1251,8 @@ parse_rumble_channel () {
 	local URL=''
 	local K L
 
-	LIST=("${(f)$(wget -q -O - "${QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g')}")
+	# Run query and filter known problem chars
+	LIST=("${(f)$(wget -q -O - "${QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g' -e 's/â€™/\x27/g' -e 's/â€.//g')}")
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "CREATED: yts.dbg"
@@ -1257,14 +1261,8 @@ parse_rumble_channel () {
 		done > "$(date +%s)_yts.dbg"
 	fi
 	
-	grep -q 'locals_community' <<<${LIST}
-	if [[ ${?} -eq 0 ]];then
-		TNDX=3
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Found locals_community tag; TITLE parse (TNDX) set to 3"
-	else
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "NO locals_community tag found; TITLE parse (TNDX) set to 2"
-		TNDX=2
-	fi
+	grep -q -m1 'locals_community' <<<${LIST}
+	[[ ${?} -eq 0 ]] && TNDX=3 || TNDX=2 # Either sets of 3 titles or sets of 2
 
 	for L in ${LIST};do
 		LINE=${L:Q}
@@ -1285,13 +1283,8 @@ parse_rumble_channel () {
 	for L in ${QDATA};do
 		(( SET++ ))
 		ROW+=${L}
-		if [[ $(( SET % 4 )) -eq 0 ]];then
-			if [[ ! ${ROW[4]} =~ 'ago' ]];then
-				ROW[1]="ERROR"
-				ROW[2]="PARSE ERROR ${SET}"
-				ROW[3]="ERROR"
-				ROW[4]="ERROR"
-			fi
+		if [[ $(( SET % 4 )) -eq 0 ]];then # Groups of 4 rows
+			[[ ! ${ROW[4]} =~ 'ago' ]] && ROW[2]="PARSE ERROR ${SET}"
 			set_rumble_row ${ROW}
 			ROW=()
 		fi
@@ -1300,14 +1293,14 @@ parse_rumble_channel () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: _RUMBLE_ROWS:${#_RUMBLE_ROWS}"
 
 	NDX=0
-	for K in ${(onk)_RUMBLE_ROWS};do
+	for K in ${(onk)_RUMBLE_ROWS};do # Marshall final data
 		(( NDX++ ))
-		URL=$(cut -d'|' -f1 <<<${_RUMBLE_ROWS[${K}]})
-		TITLE=$(cut -d'|' -f2 <<<${_RUMBLE_ROWS[${K}]})
-		DURATION=$(cut -d'|' -f3 <<<${_RUMBLE_ROWS[${K}]})
-		AGE=$(cut -d'|' -f4 <<<${_RUMBLE_ROWS[${K}]})
-		_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|${TITLE}|${URL}|${DURATION}|(${AGE} ${DURATION})"
+		IFS='|';read URL TITLE DURATION AGE <<<${_RUMBLE_ROWS[${K}]}
+		TITLE=$(title_scrubber ${TITLE})
+		LINE="${AGE}|${AUTHOR}|${TITLE}|${URL}|${DURATION}|(${AGE} ${DURATION})"
+		_LOCAL_LIST[${NDX}]=${LINE}
 	done
+	IFS=' ' # Reset IFS
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: _LOCAL_LIST:${#_LOCAL_LIST}"
 }

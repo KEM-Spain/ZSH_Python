@@ -151,9 +151,9 @@ if [[ -n ${SEARCHTERM} ]];then
 	fi
 	#set +xv;read
 	for K in ${(ok)ALIASES};do
-		grep -q -i ${SEARCHTERM} <<< ${K}
+		grep -q -i ${SEARCHTERM} <<< ${K} >/dev/null 2>&1
 		RC1=${?}
-		grep -q -i ${SEARCHTERM} <<< ${ALIASES[${K}]}
+		grep -q -i ${SEARCHTERM} <<< ${ALIASES[${K}]} >/dev/null 2>&1
 		RC2=${?}
 		[[ ${RC1} -eq 0 || ${RC2} -eq 0 ]] && MATCHED+="${K} -> ${ALIASES[${K}]}"
 	done

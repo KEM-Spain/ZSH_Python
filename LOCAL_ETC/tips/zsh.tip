@@ -5,6 +5,23 @@ ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 ${E_CYAN_FG}Search headers: MISC STRINGS ARRAYS PARAM TYPESET READ REDIRECTION BUILTIN VI ${E_RESET}
 
 ${E_WHITE_FG}MISC${E_RESET}
+${E_WHITE_FG}ANSI-C Quoting${E_RESET}
+This syntax is primarily used to assign strings containing special, non-printable, 
+or formatted characters to variables:
+
+Newlines: my_var=\$'Line 1\nLine 2' (interprets \n as an actual line break)
+Tabs: my_var=\$'Column 1\tColumn 2' (interprets \t as a horizontal tab)
+Hex/Octal values: my_var=\$'\x41' (assigns the character represented by the hex value, which is 'A')
+
+How it Works vs. Regular Quotes\$'...' (ANSI-C): 
+
+Expands escape sequences like \n and \t, but prevents the evaluation of other variables 
+(e.g., \$USER will be treated as the literal text "\$USER" rather than your username).
+"..." (Double Quotes): 
+   Evaluates variables, but does not interpret C-style escape sequences (writing \n in double quotes just prints a literal "n").
+'...' (Single Quotes): 
+   Preserves the string entirely as literal text. Nothing is expanded or interpreted.
+
 ${E_WHITE_FG}Default Terminal${E_RESET}
 To modify the default terminal emulator to 'terminator' modify the keys in gsettings
 URL: org.cinnamon.desktop.default-application Key: exec          Value: terminator

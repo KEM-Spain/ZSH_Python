@@ -119,8 +119,10 @@ cmd_filter () {
 		[[ ${VERBOSE_OPT} == 'true' ]] && echo "Processing command:${CMD_TGT}" >&2
 
 		VALID=false
-		if [[ -n ${CMD_TGT} && -n ${_HIST_CACHE} ]];then
-			if grep -Fq "${CMD_TGT}" ${_HIST_CACHE};then
+		if [[ -n ${CMD_TGT} && ${CMD_TGT} != ' ' && -n ${_HIST_CACHE} ]];then
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: CMD_TGT:\"${CMD_TGT}\" LEN:${#CMD_TGT} CACHE:${#_HIST_CACHE}"
+			grep -Fq "${CMD_TGT}" ${_HIST_CACHE} >/dev/null 2>&1
+			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((CACHE++))
 				printf '%s\n' "${K}"
@@ -142,7 +144,7 @@ cmd_filter () {
 
 		if [[ ${VALID} == 'false' ]];then
 			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling mya..." >&2
-			mya -q -- ${CMD_TGT} >/dev/null
+			mya -q -- ${CMD_TGT} >/dev/null 2>&1
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((MYA++))
@@ -236,7 +238,7 @@ build_hist () {
 
 	echo "${ITALIC}Filtering out invalid commands...${RESET}" >&2
 	_VALID_CMDS=("${(f)$(cmd_filter _CMD_LIST)}") # Retain valid commands
-	echo "\n${ITALIC}Identified ${#_VALID_CMDS} valid commands...done${RESET}" >&2
+	echo -n "\n${ITALIC}Identified ${#_VALID_CMDS} valid commands...done${RESET}" >&2
 
 	for L in ${(on)_VALID_CMDS};do
 		printf "%s\n" "${L}"

@@ -40,6 +40,7 @@ typeset -A _PARTIALS=()
 typeset -A _QUERY_OPTS=()
 typeset -A _REJECTS=()
 typeset -A _RUMBLE_QTYPES=(l live g general u user c channel)
+typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
@@ -94,6 +95,7 @@ g_PREFER_LIVE=''
 g_PROXY_CMD=''
 g_WHEN=''
 g_YTS_LOG=''
+g_SNDX=0
 
 # Functions
 action_do () {
@@ -447,10 +449,10 @@ download_indicator () {
 download_select () {
 	local SEARCHTERM=${1}
 	local SEARCHTYPE=''
-	local L F
 	local TITLE
 	local FLST
 	local STR
+	local L F
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
@@ -739,7 +741,7 @@ get_field () {
 
 	case ${FIELD} in
 		age) STR=$(cut -d'|' -f${FIELD_MAP[age]} <<<${_LIST[${NDX}]});;
-		agetime) STR=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${_LIST[${NDX}]} | sed 's/( */(/');;
+		agetime) STR=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${_LIST[${NDX}]});;
 		author) STR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${_LIST[${NDX}]});;
 		time) STR=$(cut -d'|' -f${FIELD_MAP[time]} <<<${_LIST[${NDX}]});;
 		title) STR=$(cut -d'|' -f${FIELD_MAP[title]} <<<${_LIST[${NDX}]});;
@@ -805,7 +807,7 @@ item_decorate () {
 	elif [[ ${_PARTIALS[${NDX}]} == 'true' ]];then
 		STR="Partial..."
 	else
-		STR=${$(get_field agetime ${NDX})[1,${_FIELD_LEN[agetime]}]}
+		STR=$(get_field agetime ${NDX})
 	fi
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: STR:${STR}"
@@ -1111,10 +1113,9 @@ open_website () {
 }
 
 parse_rumble () {
-	local PARSE_TYPE=${1}
+	local PARSER=${1}
 	local -A GENERAL=()
 	local -A NON_GENERAL=()
-	local -A _RUMBLE_ROWS=()
 	local -a HTML=()
 	local DATA=''
 	local LAST_ROW=0
@@ -1142,10 +1143,10 @@ parse_rumble () {
 
 	logit ${_YT_DBG_LOG} "${0}: Parsing list for QKEY:${_QUERY_OPTS[QKEY]}"
 
-	if [[ ${PARSE_TYPE} == 'g' ]];then
+	if [[ ${PARSER} == 'g' ]];then
 		TAG_ARRAY="GENERAL"
 		TAGLINE="\"video-item--img\""
-	else
+	elif [[ ${PARSER} == 'ng' ]];then
 		TAG_ARRAY="NON_GENERAL"
 		TAGLINE="thumbnail__grid--item"
 	fi
@@ -1206,6 +1207,130 @@ parse_rumble () {
 	return 0
 }
 
+parse_rumble_age () {
+	local SECS=${1}
+	local	DTAG=days
+	local	HTAG=hours
+	local DAYS=0
+	local HOURS=0
+	local TODAY=$(date +%s)
+	local STAMP=''
+
+	[[ -z ${SECS} ]] && echo "Unknown" && return
+
+	DAYS=$(( (TODAY - ${SECS}) / 86400 ))
+
+	if [[ ${DAYS} -eq 0 ]];then
+		HOURS=$(( (TODAY - ${SECS}) / 3600 ))
+		[[ ${HOURS} -eq 1 ]] && HTAG=hour
+		STAMP="${HOURS} ${HTAG} ago"
+	else
+		[[ ${DAYS} -eq 1 ]] && DTAG=day
+		STAMP="${DAYS} ${DTAG} ago"
+	fi
+
+	[[ -z ${STAMP} ]] && echo ${SECS} || echo ${STAMP}
+}
+
+parse_rumble_channel () {
+	local QRY=${1}
+	local -a LIST=()
+	local -a QDATA=()
+	local -a ROW=()
+	local AGE=''
+	local AUTHOR=${_QUERY_OPTS[DKEY]}
+	local DURATION=''
+	local LINE=''
+	local NDX=0
+	local SET=0
+	local T3=0
+	local TAG=''
+	local TCNT=0
+	local TNDX=0
+	local TEXT=''
+	local TITLE=''
+	local U=0
+	local URL=''
+	local K L
+
+	LIST=("${(f)$(wget -q -O - "${QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g' -e 's/â€™/\x27/g' -e 's/â€.//g')}")
+
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+		dbg "CREATED: yts.dbg"
+		for L in ${LIST};do
+			echo ${L}
+		done > "$(date +%s)_yts.dbg"
+	fi
+	
+	grep -q 'locals_community' <<<${LIST}
+	if [[ ${?} -eq 0 ]];then
+		TNDX=3
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Found locals_community tag; TITLE parse (TNDX) set to 3"
+	else
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "NO locals_community tag found; TITLE parse (TNDX) set to 2"
+		TNDX=2
+	fi
+
+	for L in ${LIST};do
+		LINE=${L:Q}
+		TAG=$(cut -d: -f1 <<<${LINE})
+		TEXT=$(cut -d: -f2- <<<${LINE})
+		case ${LINE} in
+			*relative_url:*) continue;;
+			*url:*) [[ ${TEXT} =~ "\.html" ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
+			*title:*) (( TCNT++));T3=$(( TCNT % TNDX ));[[ ${T3} -eq 0 ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
+			*duration:*) QDATA+=$(parse_rumble_duration ${TEXT});;
+			*upload_date:*) D=$(cut -d'T' -f1 <<<${TEXT});U=$(date -d "${D}" +%s);QDATA+=$(parse_rumble_age ${U});;
+		esac
+	done
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "--- BEGIN QDATA ---\n$(for K in ${QDATA};do echo ${K};done)\n --- END QDATA ---"
+
+	SET=0
+	for L in ${QDATA};do
+		(( SET++ ))
+		ROW+=${L}
+		if [[ $(( SET % 4 )) -eq 0 ]];then
+			[[ ! ${ROW[4]} =~ 'ago' ]] && ROW[2]="PARSE ERROR ${SET}"
+			set_rumble_row ${ROW}
+			ROW=()
+		fi
+	done
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: _RUMBLE_ROWS:${#_RUMBLE_ROWS}"
+
+	NDX=0
+	for K in ${(onk)_RUMBLE_ROWS};do
+		(( NDX++ ))
+		URL=$(cut -d'|' -f1 <<<${_RUMBLE_ROWS[${K}]})
+		TITLE=$(cut -d'|' -f2 <<<${_RUMBLE_ROWS[${K}]})
+		TITLE=$(title_scrubber ${TITLE})
+		DURATION=$(cut -d'|' -f3 <<<${_RUMBLE_ROWS[${K}]})
+		AGE=$(cut -d'|' -f4 <<<${_RUMBLE_ROWS[${K}]})
+		LINE="${AGE}|${AUTHOR}|${TITLE}|${URL}|${DURATION}|(${AGE} ${DURATION})"
+#		echo "LINE:${LINE}" >>x
+#		# TODO: Temporary fix
+#		# TODO: Find the source of the problem - Assignment is prefixed with $' 
+#		# TODO: Result is empty field causing a '||' empty delimeter - why?
+#		# TODO: Related to the string containing 'â¤' which I can't eliminate
+#		LINE=$(sed "s/||/|/g" <<<${LINE})
+		_LOCAL_LIST[${NDX}]=${LINE}
+	done
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: _LOCAL_LIST:${#_LOCAL_LIST}"
+}
+
+parse_rumble_duration () {
+	local SECS=${1}
+	local STAMP=''
+
+	zmodload zsh/datetime
+	STAMP=$(strftime "%H:%M:%S" ${SECS})
+	[[ ${STAMP} =~ "^00:" ]] && STAMP=$(cut -d: -f2- <<<${STAMP})
+
+	echo ${STAMP}
+}
+
 post_process () {
 	local -a LIST=()
 	local -a PIDS=()
@@ -1263,13 +1388,17 @@ query_rumble () {
 
 	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} TYPE:${QRY_TYPE}"
 
+	_RUMBLE_ROWS=() # Clear
+
 	# Queries
 	if [[ ${QRY_TYPE} == 'live' ]];then
 		msg_box -c "<w>Requesting <c><I>livestream channel<N> <w>search<N>..."
 		QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}/livestreams"
+		parse_rumble_channel ${QRY}
 	elif [[ ${QRY_TYPE} == 'channel' ]];then
 		msg_box -c "<w>Requesting <c><I>channel<N> <w>search<N>..."
 		QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}?page=1"
+		parse_rumble_channel ${QRY}
 	elif [[ ${QRY_TYPE} == 'general' ]];then
 		msg_box -c "<w>Requesting <c><I>general<N> <w>search<N>..."
 		GEN_SEARCH=$(sed 's/ /%20/g' <<<${_QUERY_OPTS[QKEY]})
@@ -1278,18 +1407,22 @@ query_rumble () {
 	elif [[ ${QRY_TYPE} == 'user' ]];then
 		msg_box -c "<w>Requesting <c><I>livestream user<N> <w>search<N>..."
 		QRY="https://rumble.com/user/${_QUERY_OPTS[QKEY]}/livestreams"
+		PARSER_OPT='ng'
 	fi
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}:${LINENO} RUMBLE QUERY:${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, {CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
 	fi
 
-	# Do query
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:Query:${QRY}"
-	_RUMBLE_PAGE=$(wget -q -O - ${QRY})
+	if [[ -n ${PARSER_OPT} ]];then
+		# Do query
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:Query:${QRY}"
+		echo "QRY:${QRY}" > rumble.dbg
+		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
 
-	parse_rumble ${PARSER_OPT}
-	_RUMBLE_PAGE=()
+		parse_rumble ${PARSER_OPT}
+		_RUMBLE_PAGE=()
+	fi
 
 	if [[ ${?} -ne 0 ]];then
 		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}"
@@ -1422,6 +1555,19 @@ query_youtube () {
 	return 0
 }
 
+sbox_center () {
+	local MSG=${1}
+	local -A I_COORDS=($(box_coords_get INNER_BOX))
+	local COORDS="${I_COORDS[X]}:${I_COORDS[Y]}"
+	local MSG_LEN=$(( ${#$(msg_nomarkup ${MSG})} ))
+	local X Y H W
+
+	(( MSG_LEN += 6 ))
+	IFS=':'; read X Y W H <<<$(center -R -c${COORDS} -w${MSG_LEN} -h3 -y1)
+
+	echo "${X} ${Y} ${H} ${W}"
+}
+
 set_final_fn () {
 	local FN=${1}
 	local NEW_FN=''
@@ -1507,6 +1653,31 @@ set_query_opts () {
 	_QUERY_OPTS[ENGINE]=${ENGINE}
 }
 
+set_rumble_row () {
+	local -a ROW=(${@})
+	local AGE=''
+	local DURATION=''
+	local NDX=0
+	local TITLE=''
+	local URL=''
+	local L
+
+	for L in ${ROW};do
+		(( NDX++ ))
+		case ${NDX} in
+			1) URL=${L};;
+			2) TITLE=${L};;
+			3) DURATION=${L};;
+			4) AGE=${L};;
+		esac
+
+		if [[ $(( NDX % 4 )) -eq 0 ]];then
+			(( g_SNDX++ ))
+			_RUMBLE_ROWS[${g_SNDX}]="${URL}|${TITLE}|${DURATION}|${AGE}"
+		fi
+	done
+}
+
 total_rejects () {
 	local TL_VIDS=${1}
 	local TL_RJ=0
@@ -1538,19 +1709,6 @@ trim_title () {
 		AUTHOR=$(cut -d' ' -f1,2 <<<${AUTHOR})
 		echo "${AUTHOR} -${TITLE}"
 	fi
-}
-
-sbox_center () {
-	local MSG=${1}
-	local -A I_COORDS=($(box_coords_get INNER_BOX))
-	local COORDS="${I_COORDS[X]}:${I_COORDS[Y]}"
-	local MSG_LEN=$(( ${#$(msg_nomarkup ${MSG})} ))
-	local X Y H W
-
-	(( MSG_LEN += 6 ))
-	IFS=':'; read X Y W H <<<$(center -R -c${COORDS} -w${MSG_LEN} -h3 -y1)
-
-	echo "${X} ${Y} ${H} ${W}"
 }
 
 #--Begin GetOpts--
