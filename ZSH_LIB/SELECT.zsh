@@ -212,25 +212,25 @@ sel_list () {
 	OPTIND=0
 
 	local CLEAR_REGION=false
+	local FRAME_FTR=''
+	local FRAME_HDR=''
 	local HAS_FTR=false
 	local HAS_HDR=false
 	local HAS_MAP=false
 	local HAS_OUTER=false
 	local IB_COLOR=${RESET}
-	local FRAME_FTR=''
-	local FRAME_HDR=''
 	local LIST_MAP=''
-	local LM=0
+	local LONG_ELEM=0
 	local MAX=0
 	local MAX_PAGE=0
 	local MIN=0
 	local OB_COLOR=${RESET}
 	local OB_PAD=0
+	local STR=''
 	local X_COORD_ARG=0
 	local Y_COORD_ARG=0
 	local _HAS_CAT=false
 	local _REFRESH=false
-	local STR=''
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -272,8 +272,8 @@ sel_list () {
 
 		if [[ ${LIST_W} -gt ${_MAX_COLS} ]];then
 			LIST_W=$(( _MAX_COLS - 20 ))
-			local LONG_EL=$(arr_long_elem ${_LIST})
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: arr_long_elem returned: ${LONG_EL}"
+			LONG_ELEM=$(arr_long_elem ${_LIST})
+			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: arr_long_elem returned: ${LONG_ELEM}"
 		fi
 
 		[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}

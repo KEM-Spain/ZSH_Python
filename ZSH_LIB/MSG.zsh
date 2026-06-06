@@ -247,7 +247,7 @@ msg_box () {
 	MAX_ELEM=$(max ${#HDR_MAX} ${#BODY_MAX})
 	MAX_ELEM=$(max ${MAX_ELEM} ${#FOOTER_MAX})
 
-	MSG_COLS=$(( MAX_ELEM + 1 ))
+	MSG_COLS=$(( MAX_ELEM + 2 ))
 	MSG_SEP="<SEP>"
 
 	# Process various message types

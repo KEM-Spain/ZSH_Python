@@ -76,13 +76,12 @@ size_diff () {
 	DIFF=$(( PCT - 100 ))
 
 	if [[ ${PART} -le ${WHOLE} ]];then
-		printf "History size OK" ${DIFF}
+		printf "History size $(wc -l ${_HIST_FILE} | cut -d' ' -f1) lines" ${DIFF}
+		return 0 # No rebuild
 	else
-		printf "Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
 		if [[ ${DIFF} -gt ${_THRESHOLD} ]];then
+			printf "Rebuld required - Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
 			return 1
-		else
-			return 0 # No rebuilds until THRESHOLD difference
 		fi
 	fi
 }
@@ -350,7 +349,7 @@ fi
 if [[ ${FORCE_OPT} == 'false' && ${TESTING_OPT} == 'false' ]];then
 	MSG=$(size_diff)
 	if [[ ${?} -eq 0 ]];then
-		echo -n "History rebuild not required / ${MSG}"
+		echo -n "${MSG}"
 		exit_leave
 	fi
 fi

@@ -17,12 +17,11 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-typeset -a DEPS=(VALIDATE.zsh PATH.zsh DATE.zsh UTILS.zsh LIST.zsh SELECT.zsh CENTER.zsh)
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+_DEPS+=(VALIDATE.zsh PATH.zsh DATE.zsh UTILS.zsh LIST.zsh SELECT.zsh CENTER.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A _CANCELLED=()
@@ -329,14 +328,6 @@ action_warn () {
 			list_set_selected ${M} ${_AVAIL_ROW}
 		done
 	fi
-}
-
-box_center () {
-	local TXT=${@} # Message
-	local BOX=-4 # Compensate for box border
-	local BOX_WIDTH=${_CONT_COORDS[W]} # Width coord
-
-	echo $(center -y${BOX} -t${BOX_WIDTH} ${TXT}) # Return Y coord
 }
 
 cfg_init () {
@@ -1549,6 +1540,19 @@ trim_title () {
 	fi
 }
 
+sbox_center () {
+	local MSG=${1}
+	local -A I_COORDS=($(box_coords_get INNER_BOX))
+	local COORDS="${I_COORDS[X]}:${I_COORDS[Y]}"
+	local MSG_LEN=$(( ${#$(msg_nomarkup ${MSG})} ))
+	local X Y H W
+
+	(( MSG_LEN += 6 ))
+	IFS=':'; read X Y W H <<<$(center -R -c${COORDS} -w${MSG_LEN} -h3 -y1)
+
+	echo "${X} ${Y} ${H} ${W}"
+}
+
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
@@ -1733,7 +1737,9 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		if fav_get;then
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
-				msg_box "<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+				MSG="<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+				MCOORDS=($(sbox_center ${MSG}))
+				msg_box -x${MCOORDS[1]} -y${MCOORDS[2]} -w${MCOORDS[3]} -h${MCOORDS[4]} ${MSG}
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}

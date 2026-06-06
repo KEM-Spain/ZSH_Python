@@ -2146,7 +2146,7 @@ ${E_WHITE_FG}-i${E_RESET}  Use an internal integer representation. If n is nonze
 ${E_WHITE_FG}-E${E_RESET}  Use an internal double-precision floating point representation. On output the variable will be converted to scientific notation. If n is 
     nonzero it defines the number of significant figures to display; the default is ten.
 
-${E_WHITE_FG}-F${E_RESET}  Use an internal double-precision floating point representation. On output the variable will be converted to fixed-point decimal notation. 
+${E_WHITE_FG}-Fn${E_RESET} Use an internal double-precision floating point representation. On output the variable will be converted to fixed-point decimal notation. 
     If n is nonzero it defines the number of digits to display after the decimal point; the default is ten.
 
 ${E_WHITE_FG}-l${E_RESET}  Convert the result to lower case whenever the parameter is expanded. The value is not converted when assigned.
