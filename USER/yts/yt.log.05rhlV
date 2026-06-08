@@ -1,0 +1,4 @@
+job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' ""
+job_start: PID:1395454
+[generic] Extracting URL: 
+ERROR: [generic] '' is not a valid URL

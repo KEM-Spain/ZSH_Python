@@ -792,6 +792,35 @@ min () {
 	echo ${MIN}
 }
 
+assign_vars () {
+	local FLDS=${1}
+	local DATA=${2}
+	local DELIM=${3:='|'} # Default to pipe
+	local CMD=''
+	local FLIST=''
+	local IFS_SAVE=${IFS}
+	local F
+
+	 
+	unsetopt warncreateglobal # Monitor locals
+
+	FLIST=$(
+	for F in {1..${FLDS}};do
+		typeset -x V${F}
+		echo -n "V${F} "
+	done
+	)
+
+	CMD="IFS='${DELIM}';read -r ${FLIST} <<<${(qqq)DATA}"
+	eval "${CMD}"
+
+	# Values are now available in V1, V2, etc...
+
+	IFS=${IFS_SAVE}
+
+	setopt warncreateglobal # Monitor locals
+}
+
 num_byte_conv () {
 	local BYTES=${1}
 	local WANTED=${2}
