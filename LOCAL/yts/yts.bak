@@ -1298,12 +1298,8 @@ parse_rumble_channel () {
 	NDX=0
 	for K in ${(onk)_RUMBLE_ROWS};do # Marshall final data
 		(( NDX++ ))
-		URL=$(cut -d'|' -f1 <<<${_RUMBLE_ROWS[${K}]})
-		TITLE=$(cut -d'|' -f2 <<<${_RUMBLE_ROWS[${K}]})
-		DURATION=$(cut -d'|' -f3 <<<${_RUMBLE_ROWS[${K}]})
-		AGE=$(cut -d'|' -f4 <<<${_RUMBLE_ROWS[${K}]})
-		LINE="${AGE}|${AUTHOR}|${TITLE}|${URL}|${DURATION}|(${AGE} ${DURATION})"
-		_LOCAL_LIST[${NDX}]=${LINE}
+		assign_vars 4 ${_RUMBLE_ROWS[${K}]} # URL TITLE DURATION AGE
+		_LOCAL_LIST[${NDX}]="${V4}|${AUTHOR}|${V2}|${V1}|${V3}|(${V4} ${V3})"
 	done
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: _LOCAL_LIST:${#_LOCAL_LIST}"

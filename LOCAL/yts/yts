@@ -1240,7 +1240,9 @@ parse_rumble_channel () {
 	local -a ROW=()
 	local AGE=''
 	local AUTHOR=${_QUERY_OPTS[DKEY]}
+	local CMD=''
 	local DURATION=''
+	local ERRS=''
 	local LINE=''
 	local NDX=0
 	local SET=0
@@ -1255,7 +1257,15 @@ parse_rumble_channel () {
 	local K L
 
 	# Run query and filter known problem chars
-	LIST=("${(f)$(wget -q -O - "${QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g' -e 's/â€™/\x27/g' -e 's/â€.//g')}")
+	{
+	CMD="wget -q -O - "${(qqq)QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g' -e 's/â€™/\x27/g' -e 's/â€.//g'"
+	LIST=("${(f)$(eval ${CMD})}")
+	} 
+
+	if ! arr_is_populated "${LIST}";then
+		logit ${_YT_DBG_LOG} "Command failed: ${CMD} ${LIST}"
+		return 1
+	fi
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "CREATED: yts.dbg"
@@ -1409,7 +1419,7 @@ query_rumble () {
 		_RUMBLE_PAGE=()
 	fi
 
-	if [[ ${?} -ne 0 ]];then
+	if ! arr_is_populated "${_LOCAL_LIST}";then
 		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}"
 		return 1
 	else

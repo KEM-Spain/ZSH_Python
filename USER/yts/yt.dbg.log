@@ -1,8 +1,27 @@
-2026-06-08_18:50: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-08_18:50: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-08_18:50: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
-2026-06-08_18:50: parse_rumble: Parsing list for QKEY:tuckercarlson
-2026-06-08_18:50: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
-2026-06-08_18:51: query_rumble: Creating listing for QKEY:georgegallowayofficial TYPE:live
-2026-06-08_18:51: parse_rumble: Parsing list for QKEY:georgegallowayofficial
-2026-06-08_18:51: query_rumble: Listing for QKEY:georgegallowayofficial contains 25 rows
+2026-06-08_22:17: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-08_22:17: log_update: Skipping expired inode:6323141
+2026-06-08_22:17: log_update: Skipping expired inode:6323117
+2026-06-08_22:17: log_update: Skipping expired inode:6323149
+2026-06-08_22:17: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-08_22:17: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
+2026-06-08_22:17: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
+2026-06-08_22:17: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
+2026-06-08_22:17: query_youtube: Query matched 12 lines, _LOCAL_LIST has 9 lines
+2026-06-08_22:17: query_youtube: Listing for QKEY:judgingfreedom contains 9 rows
+2026-06-08_22:17: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.BcwLWo
+2026-06-08_22:17: job_start: TITLE:Prof. Jeffrey Sachs : IS Trump Losing It?
+2026-06-08_22:17: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=-vbRhB69TEY" PID:2842865
+2026-06-08_22:17: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-08_22:17: action_do: GENERATING HEADER
+2026-06-08_22:17: title_scrubber: UCASE_WORDS:1
+2026-06-08_22:17: title_scrubber: Preserving acronym:Is
+2026-06-08_22:17: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=-vbRhB69TEY PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-08_22:17: action_do: COMPLETED
+2026-06-08_22:17: action_do: POST-PROCESSING
+2026-06-08_22:17: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Is_Trump_Losing_It.mp4
+2026-06-08_22:17: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Is_Trump_Losing_It.mp4
+2026-06-08_22:17: title_scrubber: UCASE_WORDS:1
+2026-06-08_22:17: title_scrubber: Preserving acronym:Is
+2026-06-08_22:17: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Is_Trump_Losing_It.mp4 with:Judging Freedom - Prof. Jeffrey Sachs - IS Trump Losing It.mp4
+2026-06-08_22:17: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Prof. Jeffrey Sachs - IS Trump Losing It.mp4
+2026-06-08_22:17: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.BcwLWo was cleared for:judgingfreedom from:action_do
