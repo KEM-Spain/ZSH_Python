@@ -1,21 +1,22 @@
 #!/usr/bin/zsh
  
 # Inline ansi
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
 BOLD="\033[1m"
+CYAN_FG="\033[36m"
+FAINT="\033[2m"
+GREEN_FG="\033[32m"
 ITALIC="\033[3m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
 RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-BLACK_BG="\033[40m"
-BLUE_FG="\033[34m"
-CYAN_FG="\033[36m"
-GREEN_FG="\033[32m"
-MAGENTA_FG="\033[35m"
-RED_FG="\033[31m"
 WHITE_FG="\033[37m"
-YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+YELLOW_FG="\033[33m"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -242,10 +243,10 @@ action_do () {
 							logit ${_YT_DBG_LOG} "${0}: GENERATING HEADER"
 							DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Strip path
 							DEST_1=$(cut -d'|' -f1 <<<${DEST})
-							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
+							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<f><w>/")
 							HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
 							HDR1_TXT=$(trim_title ${HDR1_TXT})
-							HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
+							HDR1_TXT="<w>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 							HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
@@ -1890,7 +1891,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		if fav_get;then
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
-				MSG="<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+				MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
 				MCOORDS=($(sbox_center ${MSG}))
 				msg_box -x${MCOORDS[1]} -y${MCOORDS[2]} -w${MCOORDS[3]} -h${MCOORDS[4]} ${MSG}
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor

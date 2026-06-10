@@ -29,8 +29,9 @@ _COL_MAX=138
 typeset -a LIST
 typeset -a RAWLIST
 typeset -a GREP_OPTS=()
-typeset LINE_LIMIT=100
-typeset -A _SKIPPED=()
+
+# Vars
+_TRUNC_CNT=0
 
 read -r -d '' DESC<<EOF
 Find files containing <SEARCHTERM> in or below the current directory
@@ -80,7 +81,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-B${RESET} allow scanning of .bak files (default: skip)"
-	echo -e "${WHITE_FG}-A${RESET} disallow ansi color"
+	echo -e "${WHITE_FG}-A${RESET} no ansi color"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-L${RESET} list files on one line"
 	echo -e "${WHITE_FG}-O $(opt_type O)${RESET} redirect output to $(opt_type O)"
@@ -152,7 +153,7 @@ shift $(( OPTIND - 1 ))
 SEARCHTERM=${@} 
 
 # Execution
-[[ ${_DEBUG} -eq 0 && FILELIST == 'false' ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 # Arg validation
 [[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
@@ -194,12 +195,14 @@ RAWLIST=("${(f)$(eval ${CMD})}")
 if [[ -n ${FILE_OUT} ]];then
 	[[ -e ${FILE_OUT} ]] && /bin/rm -f ${FILE_OUT}
 	if arr_is_populated "${RAWLIST}";then
+		msg_box "Saving output to file:${FILE_OUT}"
 		for L in ${RAWLIST};do
 			FN=$(cut -d: -f1 <<<${L})
 			LN=$(cut -d: -f2- <<<${L} | str_trim)
-			echo "${FN}: ${LN[1,${_COL_MAX}]}" >>${FILE_OUT}
+			[[ ${#LN} -gt ${_COL_MAX} ]] && { LN=${LN[1,${_COL_MAX}]} && (( _TRUNC_CNT++ )) }
+			echo "${FN}: ${LN}" >>${FILE_OUT}
 		done
-		[[ ${SKIPCNT} -ne 0 ]] && msg_box -p -PK "${SKIPCNT} lines were skipped due to line length"
+		[[ ${_TRUNC_CNT} -ne 0 ]] && msg_box -p -PK "${_TRUNC_CNT} lines were truncated due to line length"
 		exit_leave "Output saved in:${FILE_OUT}"
 	else
 		exit_leave $(err_msg_exit W "No results for $(opt_type s):${SEARCHTERM}")
@@ -229,7 +232,6 @@ for L in ${(uo)RAWLIST};do
 	LN=$(sed 's/[\t\n]/ /' <<<${LN})
 	LN=$(sed 's/\x2a//g' <<<${LN})
 	LN=$(str_trim <<<${LN})
-	[[ ${#L} -gt ${_COL_MAX} ]] && ((SKIPCNT++)) && continue
 	if [[ ${GR_OPT_COLOR} =~ 'always' ]];then
 		LN=$(perl -pe 's/^\x1b\x5b\x6d\x1b\x5b\x4b\x20/\x1b\x5b\x6d\x1b\x5b\x4b/' <<<${LN}) # Kill the space after 1st seq for even margin
 	fi
@@ -259,10 +261,13 @@ if [[ ${FILELIST} == 'true' ]];then
 		echo ${FN}
 	done | sort -u
 	)}")
+	MSG="File(s) containing searchterm:${SEARCHTERM}"
+	echo ${MSG}
+	echo "${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}"
 	for L in ${UNIQ};do
 		[[ -h ${L} ]] && continue
 		[[ ${ONE_LINE} == 'true' ]] && echo -n "${L} " || echo ${L}
-	done
+	done | mypager wait
 else
 	{
 	tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
@@ -303,7 +308,7 @@ else
 		fi
 		echo -n ${RESET}
 	done
-	} | mypager
+	} | mypager wait
 fi
 
 exit_leave

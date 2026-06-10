@@ -809,6 +809,7 @@ msg_markup () {
 	"U"=>"[4m",
 	"b"=>"[34m",
 	"c"=>"[36m",
+	"f"=>"[2m",
 	"g"=>"[32m",
 	"h"=>"[0m\e[0;1;37;100m",
 	"m"=>"[35m",
@@ -817,7 +818,7 @@ msg_markup () {
 	"w"=>"[37m",
 	"y"=>"[33m"
 	) }; 
-	{ s/<([BINORSUrughybmcw])>/\e$ES{$1}/g; }' <<<${MSG}
+	{ s/<([BINORSUrughybmcfw])>/\e$ES{$1}/g; }' <<<${MSG}
 }
 
 msg_nomarkup () {

@@ -30,7 +30,8 @@ typeset -a FLIST=()
 typeset -a OTH_MD=()
 
 # Vars
-NOT_FOUND="[${WHITE_FG}${0:t}${RESET}] ${BOLD}${RED_FG}No readme file found${RESET}"
+_NOT_FOUND="[${WHITE_FG}${0:t}${RESET}] ${BOLD}${RED_FG}No readme file found${RESET}"
+_EXE=/usr/local/bin/mdless
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
@@ -53,9 +54,9 @@ if arr_is_populated "${FLIST}";then
 		FN=${FLIST[1]}
 	fi
 
-	[[ ${FN:e} == 'md' ]] && mdless ${FN} || /bin/cat ${FN} | mypager wait
+	[[ ${FN:e} == 'md' ]] && ${_EXE} ${FN} || /bin/cat ${FN} | mypager wait
 else
-	exit_leave ${NOT_FOUND}
+	exit_leave ${_NOT_FOUND}
 fi
 
 if [[ -n ${OTH_MD} ]];then

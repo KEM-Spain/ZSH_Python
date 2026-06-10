@@ -15,21 +15,23 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-# Constants
-_COL_MAX=140
 
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/DURABLE.zsh
+_DEPS+=(MSG.zsh DURABLE.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
+
+# Constants
+_COL_MAX=138
 
 # Declarations
 typeset -a LIST
 typeset -a RAWLIST
 typeset -a GREP_OPTS=()
-typeset LINE_LIMIT=100
+
+# Vars
+_TRUNC_CNT=0
 
 read -r -d '' DESC<<EOF
 Find files containing <SEARCHTERM> in or below the current directory
@@ -79,7 +81,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-B${RESET} allow scanning of .bak files (default: skip)"
-	echo -e "${WHITE_FG}-A${RESET} disallow ansi color"
+	echo -e "${WHITE_FG}-A${RESET} no ansi color"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-L${RESET} list files on one line"
 	echo -e "${WHITE_FG}-O $(opt_type O)${RESET} redirect output to $(opt_type O)"
@@ -151,7 +153,7 @@ shift $(( OPTIND - 1 ))
 SEARCHTERM=${@} 
 
 # Execution
-[[ ${_DEBUG} -eq 0 && FILELIST == 'false' ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 # Arg validation
 [[ -z ${SEARCHTERM} ]] && usage "Missing argument:<SEARCHTERM>"
@@ -193,11 +195,14 @@ RAWLIST=("${(f)$(eval ${CMD})}")
 if [[ -n ${FILE_OUT} ]];then
 	[[ -e ${FILE_OUT} ]] && /bin/rm -f ${FILE_OUT}
 	if arr_is_populated "${RAWLIST}";then
+		msg_box "Saving output to file:${FILE_OUT}"
 		for L in ${RAWLIST};do
 			FN=$(cut -d: -f1 <<<${L})
 			LN=$(cut -d: -f2- <<<${L} | str_trim)
+			[[ ${#LN} -gt ${_COL_MAX} ]] && { LN=${LN[1,${_COL_MAX}]} && (( _TRUNC_CNT++ )) }
 			echo "${FN}: ${LN}" >>${FILE_OUT}
 		done
+		[[ ${_TRUNC_CNT} -ne 0 ]] && msg_box -p -PK "${_TRUNC_CNT} lines were truncated due to line length"
 		exit_leave "Output saved in:${FILE_OUT}"
 	else
 		exit_leave $(err_msg_exit W "No results for $(opt_type s):${SEARCHTERM}")
@@ -256,10 +261,13 @@ if [[ ${FILELIST} == 'true' ]];then
 		echo ${FN}
 	done | sort -u
 	)}")
+	MSG="File(s) containing searchterm:${SEARCHTERM}"
+	echo ${MSG}
+	echo "${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}"
 	for L in ${UNIQ};do
 		[[ -h ${L} ]] && continue
 		[[ ${ONE_LINE} == 'true' ]] && echo -n "${L} " || echo ${L}
-	done
+	done | mypager wait
 else
 	{
 	tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
@@ -289,7 +297,6 @@ else
 		if [[ -n ${LINENUM_OPT} ]];then
 			LNUM=$(cut -d: -f1 <<<${LN})
 			LN=$(cut -d: -f2- <<<${LN})
-			LN=$(str_to_ascii <<<${LN})
 			LN=$(tr -d '\012\015' <<<${LN})
 			LN=$(tr -s '[:space:]' <<<${LN})
 			LN=$(sed 's/[\t\n]/ /' <<<${LN})
@@ -301,7 +308,7 @@ else
 		fi
 		echo -n ${RESET}
 	done
-	} | mypager
+	} | mypager wait
 fi
 
 exit_leave
