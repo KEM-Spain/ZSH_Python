@@ -134,7 +134,7 @@ cleanup () {
 	done
 
 	[[ ${g_FOUND_EXT} == 'true' ]] && external u
-	msg_box -c -x0 -t2 "External drive ${_DISK_MAP[${_DEST_ID}]} was unmounted"
+	msg_box -c -x0 -t2 "External drive <w>${_DISK_MAP[${_DEST_ID}]}<N> was unmounted"
 	clear
 }
 
@@ -250,7 +250,7 @@ fi
 g_LAST_RUN=$(last_backup ${_MARKER})
 
 if [[ -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
-	msg_box -t2 "Clearing orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}${RESET}"
+	msg_box -t2 "Clearing orphaned mountpoints:<w>${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}<N>"
 	external u
 	if [[ ! -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
 		msg_box -t2 -c "Orphaned mounts removed"
@@ -260,10 +260,10 @@ if [[ -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
 fi
 
 # Info option
-[[ ${INFO} == 'true' ]] && msg_box -p -PK "Last backup was ${WHITE_FG}${g_LAST_RUN}${RESET}" && exit_leave
+[[ ${INFO} == 'true' ]] && msg_box -p -PK "Last backup was <w>${g_LAST_RUN}<N>" && exit_leave
 
 if [[ (-f ${_MARKER}) && (${FORCE} == "false") && (${g_LAST_RUN:l} =~ 'today') ]];then
-	msg_box -H1 -p -P"Enter 'F' to Force"  "Backup Status|Last backup was ${g_LAST_RUN}"
+	msg_box -H1 -p -P"Enter 'F' to Force"  "Backup Status|Last backup was <w>${g_LAST_RUN}<N>"
 	if [[ ${_MSG_KEY:l} != 'f' ]];then
 		exit_leave "${RED_FG}Operation cancelled${RESET}"
 	fi
@@ -273,17 +273,17 @@ fi
 msg_box -t2 "Checking mounted drives..."
 while true;do
 	if is_mounted;then
-		msg_box -t2 "External drive ${_DISK_MAP[${_DEST_ID}]} is mounted"
+		msg_box -t2 "External drive <w>${_DISK_MAP[${_DEST_ID}]}<N> is mounted"
 		g_FOUND_EXT=true
 		break
 	else
 		g_FOUND_EXT=false
-		msg_box -t2 "Attempting to mount ${_DISK_MAP[${_DEST_ID}]}..."
+		msg_box -t2 "Attempting to mount <w>${_DISK_MAP[${_DEST_ID}]}<N>..."
 		external m
 		[[ ${?} -ne 0 ]] && exit_leave "\nNo external drives available"
 	fi
 done
-[[ g_FOUND_EXT == 'false' ]] && exit_leave $(err_msg_exit W "Failed to mount ${_DISK_MAP[${_DEST_ID}]}")
+[[ g_FOUND_EXT == 'false' ]] && exit_leave $(err_msg_exit W "Failed to mount <w>${_DISK_MAP[${_DEST_ID}]}<N>")
 
 # Backup
 [[ -n ${DRYRUN} ]] && echo "\n${RED_ON_WHITE}THIS IS A DRY RUN${RESET}"

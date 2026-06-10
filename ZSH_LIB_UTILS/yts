@@ -75,7 +75,6 @@ _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive")
 _TRANS_ERR_LIMIT=3
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
-_YTS_ERROR_LOG=${_CFG_DIR}/yts.err.log
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
 _YTS_FAV_NEW=${_CFG_DIR}/yts.favorites.new
 _YTS_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
@@ -228,7 +227,6 @@ action_do () {
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
-						logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
 							_DOWNLOADS[${M}]=false
@@ -262,17 +260,6 @@ action_do () {
 				esac
 			else # HDRS_OUT == true
 				case ${LOG_LINE:l} in
-					*eta*)
-						SPEED=$(get_speed ${LOG_LINE}) && download_indicator ${SPEED}
-						ETA=${LOG_LINE}
-						case ${LOG_LINE:l} in
-							*100*%) LINE_COLOR='<B><g>';;
-							*mib/s*) LINE_COLOR='<w>';;
-							*kib/s*) LINE_COLOR='<B><y>';;
-						esac
-						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
-						continue
-						;;
 					*100%*|*fix*|*remux*)
 						logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 						msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
@@ -289,7 +276,6 @@ action_do () {
 							((TRANS_ERR_CNT++))
 							msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
-							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
 							LAST_TRANS_MSG=${TRANS_ERR_MSG}
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 								_FAILED[${M}]=true
@@ -299,6 +285,17 @@ action_do () {
 								continue
 							fi
 						fi
+						;;
+					*eta*)
+						SPEED=$(get_speed ${LOG_LINE}) && download_indicator ${SPEED}
+						ETA=${LOG_LINE}
+						case ${LOG_LINE:l} in
+							*100*%) LINE_COLOR='<B><g>';;
+							*mib/s*) LINE_COLOR='<w>';;
+							*kib/s*) LINE_COLOR='<B><y>';;
+						esac
+						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
+						continue
 						;;
 				esac
 			fi
@@ -1571,7 +1568,6 @@ set_final_fn () {
 	logit ${_YT_DBG_LOG} "${0}: FN  IN:${FN}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
-	[[ -e ${_YTS_ERROR_LOG} ]] && /bin/rm -f ${_YTS_ERROR_LOG}
 
 	NEW_FN=${FN:t:r:gs/_/ /} # Tail, no extension, swap underscore
 	NEW_FN=$(clean_title ${NEW_FN}) # Strip problematic chars
@@ -1584,8 +1580,8 @@ set_final_fn () {
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
 		logit ${_YT_DBG_LOG} "${0}: Overwriting file:${FN:t} with:${NEW_FN:t}"
-		mv -f "${FN}" "${NEW_FN}" 2>> ${_YTS_ERROR_LOG} # Write any changes
-		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_YTS_ERROR_LOG}
+		mv -f "${FN}" "${NEW_FN}"
+		[[ ${?} -ne 0 ]] && logit ${_YT_DBG_LOG} "${0}: Move failed ${FN} to ${NEW_FN}"
 	fi
 
 	logit ${_YT_DBG_LOG} "${0}: FN OUT:${NEW_FN}"

@@ -14,8 +14,7 @@ typeset -a LIST=()
 
 # Constants
 _YT_DBG_LOG=~/.local/share/yts/yt.dbg.log
-_YTS_DBG_LOG=~/.local/share/yts/yts.dbg.log
-_YTS_URL_LOG=~/.local/share/yts/yts.url.log
+_YT_URL_LOG=~/.local/share/yts/yt.url.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
 _YT_DLP="/usr/local/bin/yt-dlp"
 
@@ -29,7 +28,7 @@ last_file_downloaded () {
 	FN=$(cut -d'|' -f3 <<<${ST}) # Filename
 	IN=$(cut -d'|' -f2 <<<${ST}) # Inode
 
-	if [[ -e ${FN} ]];then
+	if [[ ${FN:e} == 'mp4' ]];then
 		echo "${FN}|${IN}"
 		return 0
 	else
@@ -121,24 +120,29 @@ if [[ ${CMDLINE} == 'true' ]];then
 #--End GetOpts--
 fi
 
+URL=$(grep -o -E 'http.*' <<<${(qqq)@})
+URL=${URL[1,-2]} # Eliminate trailing quote
 eval "${_YT_DLP} ${(qqq)@}"
 
-if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
-	FN=$(last_file_downloaded | cut -d'|' -f1)
-	if [[ -e ${FN} ]];then
-		logit ${_YT_DBG_LOG} "${0:t} Cleaning file name:${FN:t}"
-		fsub -y -Y ${FN}
-		FN=$(last_file_downloaded | cut -d'|' -f1)
-		if [[ -n ${PREPEND} ]];then
-			logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}"
-			fsub -y -p ${(C)PREPEND} ${FN}
-		fi
+FN=$(last_file_downloaded)
+if [[ ${?} -eq 0 ]];then
+	if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
+			FN=$(cut -d'|' -f1 <<<${FN})
+			if [[ -n ${FN} ]];then
+				logit ${_YT_DBG_LOG} "${0:t} Cleaning file name:${FN:t}"
+				fsub -y -Y ${FN}
+				FN=$(last_file_downloaded | cut -d'|' -f1)
+				if [[ -n ${PREPEND} ]];then
+					logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}"
+					fsub -y -p ${(C)PREPEND} ${FN}
+				fi
+			fi
+			logit ${_YT_URL_LOG} "${0:t} CMDLINE downloaded URL:${URL} to ${FN:t}"
+			logit ${_YT_DBG_LOG} "${0:t} Executed from command line:${@} PPCMD:${PPCMD}, TARGET:${FN:t}"
+	else
+		logit ${_YT_URL_LOG} "${0:t} SCRIPT downloaded URL:${URL} to ${FN:t}"
+		logit ${_YT_DBG_LOG} "${0:t} Executed from script:${@} PPCMD:${PPCMD}, TARGET:${FN:t}"
 	fi
-	logit ${_YTS_URL_LOG} "${0:t} CMDLINE downloaded URL:${@} to ${FN:t}"
-	logit ${_YT_DBG_LOG} "${0:t} Executed from command line:${@} PPCMD:${PPCMD}"
-else
-	logit ${_YTS_URL_LOG} "${0:t} SCRIPT downloaded URL:${@} to ${FN:t}"
-	logit ${_YT_DBG_LOG} "${0:t} Executed from script:${@} PPCMD:${PPCMD}"
 fi
 
 exit_leave 

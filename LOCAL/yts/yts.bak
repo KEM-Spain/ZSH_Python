@@ -1,21 +1,22 @@
 #!/usr/bin/zsh
  
 # Inline ansi
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
 BOLD="\033[1m"
+CYAN_FG="\033[36m"
+FAINT="\033[2m"
+GREEN_FG="\033[32m"
 ITALIC="\033[3m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
 RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-BLACK_BG="\033[40m"
-BLUE_FG="\033[34m"
-CYAN_FG="\033[36m"
-GREEN_FG="\033[32m"
-MAGENTA_FG="\033[35m"
-RED_FG="\033[31m"
 WHITE_FG="\033[37m"
-YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+YELLOW_FG="\033[33m"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -74,7 +75,6 @@ _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive")
 _TRANS_ERR_LIMIT=3
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
-_YTS_ERROR_LOG=${_CFG_DIR}/yts.err.log
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
 _YTS_FAV_NEW=${_CFG_DIR}/yts.favorites.new
 _YTS_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
@@ -227,7 +227,6 @@ action_do () {
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
-						logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
 							_DOWNLOADS[${M}]=false
@@ -242,10 +241,10 @@ action_do () {
 							logit ${_YT_DBG_LOG} "${0}: GENERATING HEADER"
 							DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Strip path
 							DEST_1=$(cut -d'|' -f1 <<<${DEST})
-							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<m>/")
+							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<f><w>/")
 							HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
 							HDR1_TXT=$(trim_title ${HDR1_TXT})
-							HDR1_TXT="<w>Downloading<N>:<m> <c>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
+							HDR1_TXT="<w>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 							HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
@@ -288,7 +287,6 @@ action_do () {
 							((TRANS_ERR_CNT++))
 							msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
-							logit ${_YTS_ERROR_LOG} "${0}: ERROR:${TRANS_ERR_CNT}: ${MSG}"
 							LAST_TRANS_MSG=${TRANS_ERR_MSG}
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 								_FAILED[${M}]=true
@@ -1570,7 +1568,6 @@ set_final_fn () {
 	logit ${_YT_DBG_LOG} "${0}: FN  IN:${FN}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
-	[[ -e ${_YTS_ERROR_LOG} ]] && /bin/rm -f ${_YTS_ERROR_LOG}
 
 	NEW_FN=${FN:t:r:gs/_/ /} # Tail, no extension, swap underscore
 	NEW_FN=$(clean_title ${NEW_FN}) # Strip problematic chars
@@ -1583,8 +1580,8 @@ set_final_fn () {
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
 		logit ${_YT_DBG_LOG} "${0}: Overwriting file:${FN:t} with:${NEW_FN:t}"
-		mv -f "${FN}" "${NEW_FN}" 2>> ${_YTS_ERROR_LOG} # Write any changes
-		[[ ${?} -ne 0 ]] && echo "${0}: Move failed ${FN} to ${NEW_FN}" >> ${_YTS_ERROR_LOG}
+		mv -f "${FN}" "${NEW_FN}"
+		[[ ${?} -ne 0 ]] && logit ${_YT_DBG_LOG} "${0}: Move failed ${FN} to ${NEW_FN}"
 	fi
 
 	logit ${_YT_DBG_LOG} "${0}: FN OUT:${NEW_FN}"
@@ -1890,7 +1887,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		if fav_get;then
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
-				MSG="<w>Querying ${_QUERY_OPTS[ENGINE]} for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+				MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
 				MCOORDS=($(sbox_center ${MSG}))
 				msg_box -x${MCOORDS[1]} -y${MCOORDS[2]} -w${MCOORDS[3]} -h${MCOORDS[4]} ${MSG}
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
