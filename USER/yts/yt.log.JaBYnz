@@ -1,9 +1,0 @@
-job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=jhJcEFad14M"
-job_start: PID:21327
-[youtube] Extracting URL: https://youtube.com/watch?v=jhJcEFad14M
-[youtube] jhJcEFad14M: Downloading webpage
-WARNING: [youtube] Unable to download webpage: HTTP Error 429: Too Many Requests (caused by <HTTPError 429: Too Many Requests>)
-[youtube] jhJcEFad14M: Downloading initial data API JSON
-[youtube] jhJcEFad14M: Downloading android vr player API JSON
-WARNING: [youtube] No title found in player responses; falling back to title from initial data. Other metadata may also be missing
-ERROR: [youtube] jhJcEFad14M: Sign in to confirm you’re not a bot. Use --cookies-from-browser or --cookies for the authentication. See  https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp  for how to manually pass cookies. Also see  https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies  for tips on effectively exporting YouTube cookies
