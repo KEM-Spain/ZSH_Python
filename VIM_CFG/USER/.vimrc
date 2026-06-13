@@ -45,10 +45,9 @@ if !has("gui_running")
 	iabbrev ME $(msg_err <ESC>
 
 	"function key mappings
-	nnoremap <F1> :set number!<CR>
-	nnoremap <F2> :set invpaste paste?<CR>
-	nnoremap <F3> :echom 'Current file:' expand('%:p')<CR>
-	nnoremap <F7> gg=G<C-o><C-o>
+	nnoremap <F2> :set number!<CR>
+	nnoremap <F3> :set invpaste paste?<CR>
+	nnoremap <F5> :echom 'Current file:' expand('%:p')<CR>
 
 	nm <silent> <F4> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name")
     \ . '> trans<' . synIDattr(synID(line("."),col("."),0),"name")

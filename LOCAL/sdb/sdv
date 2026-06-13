@@ -39,6 +39,8 @@ _V_TYPE=''
 _V_TYPE_LBL=''
 _EXIT_MSG=''
 _EXIT_CODE=0
+_XIAOMI_IP=192.168.18.105:5555
+_PAYLOAD_FILE="/tmp/keep_payload.txt"
 
 # Functions
 cleanup () {
@@ -449,12 +451,14 @@ output_vector () {
 	esac
 
 	if [[ ${CLIPBOARD} == 'true' ]];then
-		for L in ${OUTPUT};do
-			TXT=$(str_no_ansi ${L})
-			[[ ${L} == '<SEP>' ]] && echo && continue
-			echo ${TXT}
-		done | gpaste-client
-		_EXIT_MSG="Output was sent to clipboard"
+		[[ -e ${_PAYLOAD_FILE} ]] && rm -f ${_PAYLOAD_FILE}
+		for L in ${OUTPUT}; do
+			 TXT=$(str_no_ansi ${L})
+			 [[ ${L} == "<SEP>" ]] && echo && continue
+			 echo "${TXT}"
+		done > ${_PAYLOAD_FILE}
+		send_payload
+		_EXIT_MSG="Output was sent to Keep Notes"
 	else
 		for L in ${OUTPUT};do
 			[[ ${L} == '<SEP>' ]] && echo && continue
@@ -467,6 +471,11 @@ section_break () {
 	local SECTION=${1}
 
 	[[ ${SECTION} == 'GP' || ${SECTION} == 'INFFUT' ]] && return || echo "<SEP>"
+}
+
+send_payload () {
+	adb -s ${_XIAOMI_IP} shell "am start -a android.intent.action.SEND -t 'text/plain' \
+		--es android.intent.extra.TEXT \"$(cat ${_PAYLOAD_FILE})\" com.google.android.keep"
 }
 
 set_section_longest () {
@@ -566,6 +575,11 @@ vertical_col_out () {
 		done
 		section_break ${SECTION}
 	fi
+}
+
+wake_android () {
+	adb kill-server
+	adb connect ${_XIAOMI_IP}
 }
 
 #--Begin GetOpts--

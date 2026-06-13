@@ -517,7 +517,8 @@ if is_mixed_video;then
 	done > ${_MAX_VALUES_LOG}
 
 	echo "Normalizing and merging dissimilar videos..."
-	SCALE="${_MAXIMUMS[WIDTH]}:${_MAXIMUMS[HEIGHT]}"
+	#SCALE="${_MAXIMUMS[WIDTH]}:${_MAXIMUMS[HEIGHT]}"
+	SCALE="1920:1080"
 	TAG="v=1:a=1[v][a]"
 	MAP="-map \"[v]\" -map \"[a]\" -c:v ${_FILTER[VCODEC]} -crf 23 -preset medium ${OUT_FILE_OPT}"
 	I_STR=''

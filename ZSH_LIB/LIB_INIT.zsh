@@ -37,7 +37,7 @@ typeset -aU _DEPS=()
 # Default Modules
 _DEPS=(ANSI.zsh DBG.zsh ERROR.zsh EXIT.zsh UTILS.zsh)
 
-# Debug levels
+# Debug level constants
 _LOW_DBG=1
 _LOW_DETAIL_DBG=2
 _MID_DBG=3

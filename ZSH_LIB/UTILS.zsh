@@ -318,6 +318,27 @@ center_wdw () {
 	xdotool windowmove ${WID} $PX $PY
 }
 
+clock () {
+	#while true; do
+		 # Capture current snapshot to avoid minute/second rollovers mid-calculation
+		 local TOTAL_SECONDS=${SECONDS}
+
+		 # Mathematical breakdowns for clock segments
+		 local HOURS=$(( TOTAL_SECONDS / 3600 ))
+		 local MINUTES=$(( (TOTAL_SECONDS % 3600) / 60 ))
+		 local SECONDS=$(( TOTAL_SECONDS % 60 ))
+
+		 # Format the time strings to ensure zero-padded double digits (00:00:00)
+		 # \r resets the cursor to the beginning of the line
+		 # \e[K clears the line from the cursor forward to prevent artifact trailing characters
+		 #printf "\r%02d:%02d:%02d\e[K" ${HOURS} ${MINUTES} ${SECONDS}
+		 printf "%02d:%02d:%02d" ${HOURS} ${MINUTES} ${SECONDS}
+
+		 # Sleep exactly 1 second before the next tick
+		 #sleep 1
+	#done
+}
+
 cmd_get_raw () {
 	local CMD_LINE
 

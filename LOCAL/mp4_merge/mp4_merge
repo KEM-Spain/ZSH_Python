@@ -22,13 +22,12 @@ RED_ON_GREY="\033[0m\033[0;1;31;100m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
+
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/PATH.zsh
-source ${_LIB_DIR}/DATE.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(PATH.zsh DATE.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A _AUDIO=()
@@ -276,6 +275,7 @@ show_progress () {
 	local -i T=0
 	local LAST_T=0
 	local LINE
+	local T=''
 	local TAIL_ARG=''
 
 	[[ -n ${OPT} ]] && TAIL_ARG="-1000" || TAIL_ARG="-f"
@@ -328,10 +328,12 @@ show_progress () {
 			[[ ${T} -ne 0 && ${T} -gt ${LAST_T} ]] && bar_fwd # Advance the tick
 		fi
 
+		T=$(clock)
+
 		if [[ ${OPT} == 'noframes' ]];then
-			printf "\r ${BOLD}${CYAN_FG}Merge completion:${WHITE_FG}%.2f%%${RESET}" ${PCT}
+			printf "\r ${BOLD}${CYAN_FG}Merge completion:${WHITE_FG}%.2f%%${RESET} %s" ${PCT} ${T}
 		else
-			printf "\r ${BOLD}${CYAN_FG}Rendering frame${RESET}:${WHITE_FG}%s${RESET} of ${WHITE_FG}%d${RESET} - Completed:${WHITE_FG}%.2f%%${RESET}" ${CUR_FRAME} ${TL_FRAMES} ${PCT}
+			printf "\r ${BOLD}${CYAN_FG}Rendering frame${RESET}:${WHITE_FG}%s${RESET} of ${WHITE_FG}%d${RESET} - Completed:${WHITE_FG}%.2f%%${RESET} %s" ${CUR_FRAME} ${TL_FRAMES} ${PCT} ${T}
 		fi
 
 		LAST_T=${T}

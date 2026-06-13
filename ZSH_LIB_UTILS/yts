@@ -71,6 +71,7 @@ _MAX_FLEN=120
 _MAX_LS_TITLE=80
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
+_PRESERVE_LOG=false
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive")
 _TRANS_ERR_LIMIT=3
@@ -219,6 +220,7 @@ action_do () {
 						logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
 						_FAILED[${M}]=true
 						_DOWNLOADS[${M}]=false
+						_PRESERVE_LOG=true
 						break
 						;;
 					*error*)
@@ -230,6 +232,7 @@ action_do () {
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
 							_DOWNLOADS[${M}]=false
+							_PRESERVE_LOG=true
 							break
 						else
 							continue
@@ -280,6 +283,7 @@ action_do () {
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 								_FAILED[${M}]=true
 								_DOWNLOADS[${M}]=false
+								_PRESERVE_LOG=true
 								break
 							else
 								continue
@@ -954,7 +958,7 @@ log_clear () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
+	if [[ ${_DEBUG} -eq 0 && ${_PRESERVE_LOG} == 'false' && -e ${g_YTS_LOG} ]];then
 		rm -f ${g_YTS_LOG}
 		logit ${_YT_DBG_LOG} "${0}: Temp log file:${g_YTS_LOG} was cleared for:${_QUERY_OPTS[QKEY]} from:${FROM}"
 	else

@@ -260,17 +260,6 @@ action_do () {
 				esac
 			else # HDRS_OUT == true
 				case ${LOG_LINE:l} in
-					*eta*)
-						SPEED=$(get_speed ${LOG_LINE}) && download_indicator ${SPEED}
-						ETA=${LOG_LINE}
-						case ${LOG_LINE:l} in
-							*100*%) LINE_COLOR='<B><g>';;
-							*mib/s*) LINE_COLOR='<w>';;
-							*kib/s*) LINE_COLOR='<B><y>';;
-						esac
-						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
-						continue
-						;;
 					*100%*|*fix*|*remux*)
 						logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 						msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
@@ -296,6 +285,17 @@ action_do () {
 								continue
 							fi
 						fi
+						;;
+					*eta*)
+						SPEED=$(get_speed ${LOG_LINE}) && download_indicator ${SPEED}
+						ETA=${LOG_LINE}
+						case ${LOG_LINE:l} in
+							*100*%) LINE_COLOR='<B><g>';;
+							*mib/s*) LINE_COLOR='<w>';;
+							*kib/s*) LINE_COLOR='<B><y>';;
+						esac
+						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
+						continue
 						;;
 				esac
 			fi
