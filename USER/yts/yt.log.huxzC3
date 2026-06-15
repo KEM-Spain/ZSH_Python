@@ -1,7 +1,0 @@
-job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=G6655oqujD0"
-job_start: PID:990208
-[youtube] Extracting URL: https://youtube.com/watch?v=G6655oqujD0
-[youtube] G6655oqujD0: Downloading webpage
-[youtube] G6655oqujD0: Downloading android vr player API JSON
-[info] G6655oqujD0: Downloading 1 format(s): 18
-ERROR: unable to download video data: HTTP Error 403: Forbidden

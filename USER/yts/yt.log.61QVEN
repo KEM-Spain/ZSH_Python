@@ -1,8 +1,0 @@
-job_start CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=gCBM-9A_w_8"
-job_start: PID:273297
-[youtube] Extracting URL: https://youtube.com/watch?v=gCBM-9A_w_8
-[youtube] gCBM-9A_w_8: Downloading webpage
-[youtube] gCBM-9A_w_8: Downloading android vr player API JSON
-WARNING: [youtube] Unable to download API page: HTTP Error 403: Forbidden (caused by <HTTPError 403: Forbidden>)
-WARNING: Only images are available for download. use --list-formats to see them
-ERROR: [youtube] gCBM-9A_w_8: Requested format is not available. Use --list-formats for a list of available formats
