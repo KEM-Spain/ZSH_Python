@@ -71,9 +71,10 @@ _MAX_FLEN=120
 _MAX_LS_TITLE=80
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
+_PRESERVE_LOG=false
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive")
-_TRANS_ERR_LIMIT=3
+_TRANS_ERR_LIMIT=6
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
 _YTS_FAV_NEW=${_CFG_DIR}/yts.favorites.new
@@ -219,20 +220,24 @@ action_do () {
 						logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
 						_FAILED[${M}]=true
 						_DOWNLOADS[${M}]=false
+						_PRESERVE_LOG=true
 						break
 						;;
 					*error*)
 						((TRANS_ERR_CNT++))
 						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
-						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
+						msg_box -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
 							_DOWNLOADS[${M}]=false
+							_PRESERVE_LOG=true
 							break
 						else
-							continue
+							MSG="Retrying..."
+							msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+							job_retry "${URL}|${TITLE}"
 						fi
 						;;
 					*)
@@ -274,15 +279,18 @@ action_do () {
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))
-							msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${TRANS_ERR_CNT}<N>:<r>${MSG}<N>"
+							msg_box -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 							LAST_TRANS_MSG=${TRANS_ERR_MSG}
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 								_FAILED[${M}]=true
 								_DOWNLOADS[${M}]=false
+								_PRESERVE_LOG=true
 								break
 							else
-								continue
+								MSG="Retrying..."
+								msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+								job_retry "${URL}|${TITLE}"
 							fi
 						fi
 						;;
@@ -848,6 +856,13 @@ job_reset () {
 	logit ${_YT_DBG_LOG} "${0}: Job was reset"
 }
 
+job_retry () {
+	local URL_TITLE=${1}
+
+	job_reset
+	job_start ${URL_TITLE}
+}
+
 job_start () {
 	local URL=$(cut -d'|' -f1 <<<${@})
 	local TITLE=$(cut -d'|' -f2 <<<${@})
@@ -954,7 +969,7 @@ log_clear () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${_DEBUG} -eq 0 && ${_EXIT_SCRUB} == 'true' && -e ${g_YTS_LOG} ]];then
+	if [[ ${_DEBUG} -eq 0 && ${_PRESERVE_LOG} == 'false' && -e ${g_YTS_LOG} ]];then
 		rm -f ${g_YTS_LOG}
 		logit ${_YT_DBG_LOG} "${0}: Temp log file:${g_YTS_LOG} was cleared for:${_QUERY_OPTS[QKEY]} from:${FROM}"
 	else
