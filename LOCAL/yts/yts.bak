@@ -152,7 +152,7 @@ action_do () {
 		unsetopt localtraps # Initialize CTRL-C trap
 		trap job_kill INT
 
-		job_start "${URL}|${TITLE}"
+		job_start ${URL} ${TITLE}
 		msg_box -t${_MSG_DELAY[LONG]} -O${CYAN_FG} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested...<N>"
 
 		while true;do
@@ -227,7 +227,7 @@ action_do () {
 						((TRANS_ERR_CNT++))
 						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
-						msg_box -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
@@ -237,7 +237,7 @@ action_do () {
 						else
 							MSG="Retrying..."
 							msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
-							job_retry "${URL}|${TITLE}"
+							job_retry ${URL} ${TITLE}
 						fi
 						;;
 					*)
@@ -279,7 +279,7 @@ action_do () {
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))
-							msg_box -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+							msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 							LAST_TRANS_MSG=${TRANS_ERR_MSG}
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
@@ -290,7 +290,7 @@ action_do () {
 							else
 								MSG="Retrying..."
 								msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
-								job_retry "${URL}|${TITLE}"
+								job_retry ${URL} ${TITLE}
 							fi
 						fi
 						;;
@@ -857,15 +857,16 @@ job_reset () {
 }
 
 job_retry () {
-	local URL_TITLE=${1}
+	local URL=${1}
+	local TITLE=${2}
 
 	job_reset
-	job_start ${URL_TITLE}
+	job_start ${URL} ${TITLE}
 }
 
 job_start () {
-	local URL=$(cut -d'|' -f1 <<<${@})
-	local TITLE=$(cut -d'|' -f2 <<<${@})
+	local URL=${1}
+	local TITLE=${2}
 	local CMD=''
 	local K 
 

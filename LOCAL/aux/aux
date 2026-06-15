@@ -15,6 +15,13 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(LIST.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _CMDS=()
 typeset -A _HDR_LBL=()
@@ -26,12 +33,6 @@ typeset -a _MARKED=()
 
 # Constants
 _HDR_LBL=(o "Owner" p "PID" c "Command")
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 action_do () {
@@ -97,7 +98,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -135,7 +136,7 @@ usage () {
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HDa"
@@ -163,7 +164,7 @@ shift $(( OPTIND - 1 ))
 RAWLIST=("${(@f)$(ps --no-headers -Ao user,pid,command)}")
 
 NDX=0
-msg_box "Working... ${#RAWLIST} lines"
+[[ ${#RAWLIST} -gt 500 ]] && msg_box "Working... ${#RAWLIST} lines"
 MSG="No matches found for:\"${WHITE_FG}${KEYWORD}${RESET}\""
 
 for R in ${RAWLIST};do

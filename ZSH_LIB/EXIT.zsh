@@ -3,7 +3,7 @@ _DEPS+=(MSG.zsh UTILS.zsh)
 
 # LIB Declarations
 typeset -a _EXIT_CALLBACKS=()
-typeset -a _PIDS=()
+typeset -a _EXIT_SCRUB_PIDS=()
 
 # LIB Vars
 _PRE_EXIT_RAN=false
@@ -44,9 +44,7 @@ exit_leave () {
 }
 
 exit_pre_exit () {
-	local -a SCRUB=()
-	local -a USER_PIDS=()
-	local C F P
+	local C
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -62,8 +60,8 @@ exit_pre_exit () {
 	fi
 
 	if [[ ${_EXIT_SCRUB} == 'true' ]];then
-		_PIDS=("${(f)$(get_user_pids)}")
-		scrub_tmp
+		_EXIT_SCRUB_PIDS=("${(f)$(get_user_pids)}")
+		[[ -n ${_EXIT_SCRUB_PIDS} ]] && scrub_tmp
 	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
@@ -155,12 +153,12 @@ set_exit_value () {
 
 get_user_pids () {
 	local PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
-	local F2
+	local FN
 	local P
 
 	for P in ${PS};do
-		F2=$(cut -d' ' -f2 <<<${P})
-		echo ${F2}
+		FN=$(cut -d' ' -f2 <<<${P})
+		[[ -n ${FN} ]] && echo ${FN}
 	done
 }
 
@@ -168,9 +166,10 @@ is_active_pid () {
 	local FN=${1}
 	local P
 
-	for P in ${_PIDS};do
+	for P in ${_EXIT_SCRUB_PIDS};do
 		[[ ${FN} =~ ${P} ]] && return 0
 	done
+
 	return 1
 }
 
@@ -185,8 +184,11 @@ scrub_tmp () {
 	done 2>/dev/null
 	)}")
 
+	# TODO: This is inefficient - could use elem in array test
 	for F in ${FLIST};do
-		if ! is_active_pid ${F};then
+		if is_active_pid ${F};then 
+			continue
+		else
 			/bin/rm -f ${F}
 		fi
 	done

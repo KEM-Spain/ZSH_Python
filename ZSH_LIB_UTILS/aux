@@ -164,7 +164,7 @@ shift $(( OPTIND - 1 ))
 RAWLIST=("${(@f)$(ps --no-headers -Ao user,pid,command)}")
 
 NDX=0
-msg_box "Working... ${#RAWLIST} lines"
+[[ ${#RAWLIST} -gt 500 ]] && msg_box "Working... ${#RAWLIST} lines"
 MSG="No matches found for:\"${WHITE_FG}${KEYWORD}${RESET}\""
 
 for R in ${RAWLIST};do

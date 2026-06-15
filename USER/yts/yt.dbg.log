@@ -1,75 +1,40 @@
-2026-06-15_00:48: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-15_00:48: log_update: Skipping expired inode:6323217
-2026-06-15_00:48: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-15_00:48: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
-2026-06-15_00:48: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks TYPE:standard 
-2026-06-15_00:48: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "dialogueworks"
-2026-06-15_00:48: query_youtube: Query matched 20 lines, _LOCAL_LIST has 18 lines
-2026-06-15_00:48: query_youtube: Listing for QKEY:dialogueworks contains 18 rows
-2026-06-15_00:48: query_youtube: Creating listing for QKEY:thegrayzone STRICT:s
-2026-06-15_00:48: query_youtube: _QUERY_OPTS: AGE:recent DKEY:The Grayzone ENGINE:youtube EOPT:s FKEY:the grayzone QKEY:thegrayzone SMSG:0.0% TYPE:standard 
-2026-06-15_00:48: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "thegrayzone"
-2026-06-15_00:48: query_youtube: Query matched 3 lines, _LOCAL_LIST has 1 lines
-2026-06-15_00:48: query_youtube: Listing for QKEY:thegrayzone contains 1 rows
-2026-06-15_00:48: query_youtube: Creating listing for QKEY:timdillon STRICT:null
-2026-06-15_00:48: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Tim Dillon ENGINE:youtube EOPT:null FKEY:tim dillon QKEY:timdillon SMSG:0.0% TYPE:standard 
-2026-06-15_00:48: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "timdillon"
-2026-06-15_00:48: query_youtube: Rejected:GaS Digital
-2026-06-15_00:48: query_youtube: Query matched 3 lines, _LOCAL_LIST has 1 lines
-2026-06-15_00:48: query_youtube: Listing for QKEY:timdillon contains 1 rows
-2026-06-15_00:48: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.2pLsBe
-2026-06-15_00:48: job_start: TITLE:Iran Forever, Belfast Riots, & College Commencement : The Tim Dillon Show
-2026-06-15_00:48: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=LOFw1Ot2f4s" PID:141529
-2026-06-15_00:48: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-15_00:48: action_do: GENERATING HEADER
-2026-06-15_00:48: title_scrubber: UCASE_WORDS:0
-2026-06-15_00:49: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=LOFw1Ot2f4s PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:The_Tim_Dillon_Show - Iran_Forever_Belfast_Riots_College_Commencement_The_Tim_Dillon_Show_499.mp4|6298920
-2026-06-15_00:49: action_do: COMPLETED
-2026-06-15_00:49: action_do: POST-PROCESSING
-2026-06-15_00:49: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/The_Tim_Dillon_Show - Iran_Forever_Belfast_Riots_College_Commencement_The_Tim_Dillon_Show_499.mp4
-2026-06-15_00:49: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/The_Tim_Dillon_Show - Iran_Forever_Belfast_Riots_College_Commencement_The_Tim_Dillon_Show_499.mp4
-2026-06-15_00:49: title_scrubber: UCASE_WORDS:0
-2026-06-15_00:49: set_final_fn: Overwriting file:The_Tim_Dillon_Show - Iran_Forever_Belfast_Riots_College_Commencement_The_Tim_Dillon_Show_499.mp4 with:Tim Dillon - Iran Forever Belfast Riots College Commencement The Tim.mp4
-2026-06-15_00:49: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tim Dillon - Iran Forever Belfast Riots College Commencement The Tim.mp4
-2026-06-15_00:49: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.2pLsBe was cleared for:timdillon from:action_do
-2026-06-15_00:49: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
-2026-06-15_00:49: parse_rumble: Parsing list for QKEY:glenndiesen
-2026-06-15_00:49: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
-2026-06-15_00:49: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
-2026-06-15_00:49: parse_rumble: Parsing list for QKEY:tuckercarlson
-2026-06-15_00:49: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
-2026-06-15_00:49: query_rumble: Creating listing for QKEY:rtnews TYPE:channel
-2026-06-15_00:50: parse_rumble: Parsing list for QKEY:rtnews
-2026-06-15_00:50: query_rumble: Listing for QKEY:rtnews contains 25 rows
-2026-06-15_00:50: query_youtube: Creating listing for QKEY:max blumenthal STRICT:null
-2026-06-15_00:50: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Max Blumenthal ENGINE:youtube EOPT:null FKEY:max blumenthal QKEY:max blumenthal SMSG: TYPE:custom 
-2026-06-15_00:50: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "max blumenthal"
-2026-06-15_00:50: query_youtube: Query matched 7 lines, _LOCAL_LIST has 6 lines
-2026-06-15_00:50: query_youtube: Listing for QKEY:max blumenthal contains 6 rows
-2026-06-15_00:50: query_youtube: Creating listing for QKEY:patrick henningsen STRICT:null
-2026-06-15_00:50: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Patrick Henningsen ENGINE:youtube EOPT:null FKEY:patrick henningsen QKEY:patrick henningsen SMSG: TYPE:custom 
-2026-06-15_00:50: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "patrick henningsen"
-2026-06-15_00:50: query_youtube: Query matched 5 lines, _LOCAL_LIST has 4 lines
-2026-06-15_00:50: query_youtube: Listing for QKEY:patrick henningsen contains 4 rows
-2026-06-15_00:51: query_youtube: Creating listing for QKEY:scott ritter STRICT:null
-2026-06-15_00:51: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Scott Ritter ENGINE:youtube EOPT:null FKEY:scott ritter QKEY:scott ritter SMSG: TYPE:custom 
-2026-06-15_00:51: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "scott ritter"
-2026-06-15_00:51: query_youtube: Query matched 13 lines, _LOCAL_LIST has 12 lines
-2026-06-15_00:51: query_youtube: Listing for QKEY:scott ritter contains 12 rows
-2026-06-15_00:51: query_youtube: Creating listing for QKEY:trita parsi STRICT:null
-2026-06-15_00:51: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Trita Parsi ENGINE:youtube EOPT:null FKEY:trita parsi QKEY:trita parsi SMSG: TYPE:custom 
-2026-06-15_00:51: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "trita parsi"
-2026-06-15_00:51: query_youtube: Query matched 21 lines, _LOCAL_LIST has 20 lines
-2026-06-15_00:51: query_youtube: Listing for QKEY:trita parsi contains 20 rows
-2026-06-15_00:52: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
-2026-06-15_00:52: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG: TYPE:standard 
-2026-06-15_00:52: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "blancolirio"
-2026-06-15_00:52: query_youtube: Query matched 8 lines, _LOCAL_LIST has 2 lines
-2026-06-15_00:52: query_youtube: Translated TITLE:N318JF G200 Return From Fatal Emergency In LA Romana June 7, 2026
-2026-06-15_00:52: query_youtube: Translated TITLE:Blancolirio COMPLAINT - Incorrect Entries by Patron Lagrima
-2026-06-15_00:52: query_youtube: Listing for QKEY:blancolirio contains 2 rows
-2026-06-15_00:52: query_youtube: Creating listing for QKEY:theduran STRICT:null
-2026-06-15_00:52: query_youtube: _QUERY_OPTS: AGE:recent DKEY:The Duran ENGINE:youtube EOPT:null FKEY:the duran QKEY:theduran SMSG:400.0% TYPE:standard 
-2026-06-15_00:52: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js  -a recent "theduran"
-2026-06-15_00:52: query_youtube: Query matched 4 lines, _LOCAL_LIST has 3 lines
-2026-06-15_00:52: query_youtube: Listing for QKEY:theduran contains 3 rows
+2026-06-16_00:54: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-16_00:54: log_update: Skipping expired inode:6316715
+2026-06-16_00:54: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-16_00:54: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
+2026-06-16_00:54: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
+2026-06-16_00:54: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
+2026-06-16_00:54: query_youtube: Query matched 22 lines, _LOCAL_LIST has 20 lines
+2026-06-16_00:54: query_youtube: Listing for QKEY:judgingfreedom contains 20 rows
+2026-06-16_00:54: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.TunqYu
+2026-06-16_00:54: job_start: TITLE:Prof. Jeffrey Sachs : Netanyahu Vs. Trump
+2026-06-16_00:54: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=NpUzgQmrCnc" PID:1002747
+2026-06-16_00:54: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-16_00:54: action_do: GENERATING HEADER
+2026-06-16_00:54: title_scrubber: UCASE_WORDS:1
+2026-06-16_00:54: action_do: COMPLETED
+2026-06-16_00:54: action_do: POST-PROCESSING
+2026-06-16_00:54: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=NpUzgQmrCnc PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Netanyahu_vs._Trump.mp4|6316715
+2026-06-16_00:55: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Netanyahu_vs._Trump.mp4
+2026-06-16_00:55: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Netanyahu_vs._Trump.mp4
+2026-06-16_00:55: title_scrubber: UCASE_WORDS:1
+2026-06-16_00:55: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Netanyahu_vs._Trump.mp4 with:Judging Freedom - Prof. Jeffrey Sachs - Netanyahu Vs. Trump.mp4
+2026-06-16_00:55: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Prof. Jeffrey Sachs - Netanyahu Vs. Trump.mp4
+2026-06-16_00:55: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.TunqYu was cleared for:judgingfreedom from:action_do
+2026-06-16_00:55: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.yGPMdF
+2026-06-16_00:55: job_start: TITLE:Sheriff David Hathaway : Israel Spies On US Law Enforcement
+2026-06-16_00:55: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=5NXaJqNbotE" PID:1006698
+2026-06-16_00:55: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-16_00:55: action_do: GENERATING HEADER
+2026-06-16_00:55: title_scrubber: UCASE_WORDS:1
+2026-06-16_00:55: title_scrubber: Preserving acronym:Us
+2026-06-16_00:55: action_do: COMPLETED
+2026-06-16_00:55: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=5NXaJqNbotE PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - Sheriff_David_Hathaway_-_Israel_Spies_on_US_Law_Enforcement.mp4|6323960
+2026-06-16_00:55: action_do: POST-PROCESSING
+2026-06-16_00:55: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Sheriff_David_Hathaway_-_Israel_Spies_on_US_Law_Enforcement.mp4
+2026-06-16_00:55: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Sheriff_David_Hathaway_-_Israel_Spies_on_US_Law_Enforcement.mp4
+2026-06-16_00:55: title_scrubber: UCASE_WORDS:1
+2026-06-16_00:55: title_scrubber: Preserving acronym:Us
+2026-06-16_00:55: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Sheriff_David_Hathaway_-_Israel_Spies_on_US_Law_Enforcement.mp4 with:Judging Freedom - Sheriff David Hathaway - Israel Spies On US Law.mp4
+2026-06-16_00:55: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Sheriff David Hathaway - Israel Spies On US Law.mp4
+2026-06-16_00:55: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.yGPMdF was cleared for:judgingfreedom from:action_do

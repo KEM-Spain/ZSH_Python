@@ -422,7 +422,7 @@ fi
 if [[ ${FILE_IS_CACHED} == 'true' ]];then
 	FN=${CACHED_FN}
 else
-	echo -n "\nContinue to search for:${WHITE_FG}${FILE_ARG}${RESET}?"
+	echo -n "\nContinue to search for:${WHITE_FG}${FILE_ARG}${RESET} (y/n)?"
 	read -sq RESPONSE
 	if [[ ${RESPONSE} != "y" ]];then
 		echo "no\n"

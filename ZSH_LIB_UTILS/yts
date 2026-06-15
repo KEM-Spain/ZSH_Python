@@ -227,7 +227,7 @@ action_do () {
 						((TRANS_ERR_CNT++))
 						MSG=${LOG_LINE[1,60]}
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
-						msg_box -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
@@ -279,7 +279,7 @@ action_do () {
 						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))
-							msg_box -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+							msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 							LAST_TRANS_MSG=${TRANS_ERR_MSG}
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
@@ -435,9 +435,9 @@ download_indicator () {
 	fi
 
 	case ${g_MASK_NDX} in
-		1) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}${OBJS[1]}    ${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
-		2) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}  ${OBJS[2]}  ${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
-		3) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}    ${OBJS[3]}${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
+		1) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}${OBJS[1]}    ${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
+		2) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}  ${OBJS[2]}  ${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
+		3) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}    ${OBJS[3]}${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
 	esac
 
 	if [[ ${g_MASK_NDX} -eq 3 ]];then
