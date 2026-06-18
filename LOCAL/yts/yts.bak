@@ -65,7 +65,7 @@ _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
 _FIELD_LEN[title]=80
-_JS_SCRIPT="/usr/local/etc/yts.js"
+_JS_SCRIPT=${_CFG_DIR}/yts.js
 _MAX_DL_TITLE=74
 _MAX_FLEN=120
 _MAX_LS_TITLE=80
@@ -223,11 +223,9 @@ action_do () {
 						_PRESERVE_LOG=true
 						break
 						;;
-					*error*)
+					*error*warning)
 						((TRANS_ERR_CNT++))
-						MSG=${LOG_LINE[1,60]}
-						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
-						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+						TRANS_ERR_MSG=$(parse_err_msg ${LOG_LINE})
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
@@ -235,8 +233,7 @@ action_do () {
 							_PRESERVE_LOG=true
 							break
 						else
-							MSG="Retrying..."
-							msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+							msg_box -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} "<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
 							job_retry ${URL} ${TITLE}
 						fi
 						;;
@@ -274,12 +271,10 @@ action_do () {
 						log_add ${M}
 						break
 						;;
-					*error*)
-						MSG=${LOG_LINE[1,50]}
-						TRANS_ERR_MSG=$(cut -d: -f2 <<<${MSG})
+					*error*warning)
+						TRANS_ERR_MSG=$(parse_err_msg ${LOG_LINE})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))
-							msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
 							LAST_TRANS_MSG=${TRANS_ERR_MSG}
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
@@ -288,8 +283,7 @@ action_do () {
 								_PRESERVE_LOG=true
 								break
 							else
-								MSG="Retrying..."
-								msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+								msg_box -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} "<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
 								job_retry ${URL} ${TITLE}
 							fi
 						fi
@@ -435,9 +429,9 @@ download_indicator () {
 	fi
 
 	case ${g_MASK_NDX} in
-		1) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}${OBJS[1]}    ${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
-		2) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}  ${OBJS[2]}  ${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
-		3) MASK="${BORDER_COLOR}${L_SIDE}${RESET}${OBJ_COLOR}    ${OBJS[3]}${RESET}${BORDER_COLOR}${R_SIDE}${RESET}";;
+		1) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}${OBJS[1]}    ${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
+		2) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}  ${OBJS[2]}  ${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
+		3) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}    ${OBJS[3]}${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
 	esac
 
 	if [[ ${g_MASK_NDX} -eq 3 ]];then
@@ -861,6 +855,7 @@ job_retry () {
 	local TITLE=${2}
 
 	job_reset
+	sleep .1
 	job_start ${URL} ${TITLE}
 }
 
@@ -876,7 +871,7 @@ job_start () {
 	logit ${_YT_DBG_LOG} "${0}: DOWNLOAD LOG:${g_YTS_LOG}"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Logging to file:${g_YTS_LOG}"
 
-	CMD="nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL}" # Routine download - limit title len
+	CMD="nohup yt -o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL}" # Routine download - limit title len
 
 	[[ ! -w ${g_YTS_LOG} ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
 	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
@@ -1127,6 +1122,19 @@ open_website () {
 		r) firefox "https://www.rumble.com/subscriptions" >/dev/null 2>&1 &;;
 		*) exit_leave $(err_msg_exit E "Invalid $(opt_type w): Enter y for YouTube, r for Rumble")
 	esac
+}
+
+parse_err_msg () {
+	local ERROR=${@}
+	local MSG=''
+
+	case ${ERROR:l} in
+		*439*) MSG="YouTube - Too Many Requests";;
+		*trnsmission*) MSG="Transmission Error";;
+		*) MSG=${ERROR[1,50]};;
+	esac
+	
+	echo ${MSG}
 }
 
 parse_rumble () {

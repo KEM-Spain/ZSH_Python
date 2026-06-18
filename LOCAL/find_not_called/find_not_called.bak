@@ -254,7 +254,6 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
-# TODO: calls to functions via pipe are not recognized
 if [[ ${g_MODE} == 'lib_utilization' ]];then
 	[[ ${#} -ne 0 ]] && usage "Too many arguments. Option:-L requires no argument"
 else

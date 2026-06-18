@@ -1,38 +1,14 @@
 # LIB Dependencies
-_DEPS+=(TPUT.zsh)
-
 # LIB Functions
-str_array_to_num () {
-	local -a STR=(${@})
-	local MAX=${#STR}
-	local NUM=0
-	local MAG=0
-	local S
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	((MAX--))
-	for S in ${STR};do
-		((MAG=10**MAX))
-		NUM=$(( NUM + (S * MAG) ))
-		((MAX--))
-	done
-
-	echo ${NUM}
-}
-
 str_center_pad () {
+	local SPAN=${1};shift
+	local TEXT_IN=${@}
 	local -i GAP=0
 	local -i L_GAP=0
-	local SPAN=0
 	local S_LEN
-	local TEXT_IN=''
 	local TEXT_WIDTH=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	SPAN=${1};shift
-	TEXT_IN=${@}
 
 	(( SPAN -= 2 )) # Minimum 1 space border surrounding text
 	TEXT_WIDTH=$(str_clean_len ${TEXT_IN})
@@ -127,6 +103,19 @@ str_from_hex () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -n ${HEX} ]] && printf $HEX
+}
+
+str_index () {
+	local VAR=${1}
+	local VALUE=${2}
+
+	if [[ ${${(P)VAR}[(i)${VALUE}]} -le ${#${(P)VAR}} ]];then
+		echo ${${(P)VAR}[(i)${VALUE}]}
+		return 0
+	else
+		echo 'None'
+		return 1
+	fi
 }
 
 str_pad_digit () {

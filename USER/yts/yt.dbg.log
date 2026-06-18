@@ -1,40 +1,30 @@
-2026-06-16_00:54: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-16_00:54: log_update: Skipping expired inode:6316715
-2026-06-16_00:54: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-16_00:54: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-06-16_00:54: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
-2026-06-16_00:54: query_youtube: g_PROXY_CMD:node /usr/local/etc/yts.js -s -a recent "judgingfreedom"
-2026-06-16_00:54: query_youtube: Query matched 22 lines, _LOCAL_LIST has 20 lines
-2026-06-16_00:54: query_youtube: Listing for QKEY:judgingfreedom contains 20 rows
-2026-06-16_00:54: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.TunqYu
-2026-06-16_00:54: job_start: TITLE:Prof. Jeffrey Sachs : Netanyahu Vs. Trump
-2026-06-16_00:54: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=NpUzgQmrCnc" PID:1002747
-2026-06-16_00:54: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-16_00:54: action_do: GENERATING HEADER
-2026-06-16_00:54: title_scrubber: UCASE_WORDS:1
-2026-06-16_00:54: action_do: COMPLETED
-2026-06-16_00:54: action_do: POST-PROCESSING
-2026-06-16_00:54: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=NpUzgQmrCnc PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Netanyahu_vs._Trump.mp4|6316715
-2026-06-16_00:55: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Netanyahu_vs._Trump.mp4
-2026-06-16_00:55: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Netanyahu_vs._Trump.mp4
-2026-06-16_00:55: title_scrubber: UCASE_WORDS:1
-2026-06-16_00:55: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_Netanyahu_vs._Trump.mp4 with:Judging Freedom - Prof. Jeffrey Sachs - Netanyahu Vs. Trump.mp4
-2026-06-16_00:55: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Prof. Jeffrey Sachs - Netanyahu Vs. Trump.mp4
-2026-06-16_00:55: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.TunqYu was cleared for:judgingfreedom from:action_do
-2026-06-16_00:55: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.yGPMdF
-2026-06-16_00:55: job_start: TITLE:Sheriff David Hathaway : Israel Spies On US Law Enforcement
-2026-06-16_00:55: job_start: CMD:nohup yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=5NXaJqNbotE" PID:1006698
-2026-06-16_00:55: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-16_00:55: action_do: GENERATING HEADER
-2026-06-16_00:55: title_scrubber: UCASE_WORDS:1
-2026-06-16_00:55: title_scrubber: Preserving acronym:Us
-2026-06-16_00:55: action_do: COMPLETED
-2026-06-16_00:55: yt Executed from script:-N2 -Rinfinite -i -o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=5NXaJqNbotE PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - Sheriff_David_Hathaway_-_Israel_Spies_on_US_Law_Enforcement.mp4|6323960
-2026-06-16_00:55: action_do: POST-PROCESSING
-2026-06-16_00:55: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Sheriff_David_Hathaway_-_Israel_Spies_on_US_Law_Enforcement.mp4
-2026-06-16_00:55: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Sheriff_David_Hathaway_-_Israel_Spies_on_US_Law_Enforcement.mp4
-2026-06-16_00:55: title_scrubber: UCASE_WORDS:1
-2026-06-16_00:55: title_scrubber: Preserving acronym:Us
-2026-06-16_00:55: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Sheriff_David_Hathaway_-_Israel_Spies_on_US_Law_Enforcement.mp4 with:Judging Freedom - Sheriff David Hathaway - Israel Spies On US Law.mp4
-2026-06-16_00:55: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Sheriff David Hathaway - Israel Spies On US Law.mp4
-2026-06-16_00:55: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.yGPMdF was cleared for:judgingfreedom from:action_do
+2026-06-18_08:39: log_update: LOG lines BEFORE update:10 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-18_08:39: log_update: LOG lines AFTER update:10 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-18_08:40: query_youtube: Creating listing for QKEY:danieldavisdeepdive STRICT:null
+2026-06-18_08:40: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Daniel Davis ENGINE:youtube EOPT:null FKEY:daniel davis QKEY:danieldavisdeepdive TYPE:custom 
+2026-06-18_08:40: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "danieldavisdeepdive"
+2026-06-18_08:40: query_youtube: Query matched 15 lines, _LOCAL_LIST has 14 lines
+2026-06-18_08:40: query_youtube: Listing for QKEY:danieldavisdeepdive contains 14 rows
+2026-06-18_08:40: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.xPVvMP
+2026-06-18_08:40: job_start: TITLE:COL Douglas Macgregor: Trump Seeks Get Out Of Jail Card Since US Lost In Iran
+2026-06-18_08:40: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=y8zhwctLKfI" PID:1159107
+2026-06-18_08:40: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-18_08:40: yt URL:https://youtube.com/watch?v=y8zhwctLKfI
+2026-06-18_08:40: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=y8zhwctLKfI"
+2026-06-18_08:40: action_do: GENERATING HEADER
+2026-06-18_08:40: title_scrubber: UCASE_WORDS:2
+2026-06-18_08:40: title_scrubber: Preserving acronym:Col
+2026-06-18_08:40: title_scrubber: Preserving acronym:Us
+2026-06-18_08:40: title_scrubber: Preserving acronym:I
+2026-06-18_08:40: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=y8zhwctLKfI PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_Seeks_Get_out_of_Jail_Card_Since_US_Lost_in_I.mp4|6324031
+2026-06-18_08:40: action_do: COMPLETED
+2026-06-18_08:40: action_do: POST-PROCESSING
+2026-06-18_08:40: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_Seeks_Get_out_of_Jail_Card_Since_US_Lost_in_I.mp4
+2026-06-18_08:40: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_Seeks_Get_out_of_Jail_Card_Since_US_Lost_in_I.mp4
+2026-06-18_08:40: title_scrubber: UCASE_WORDS:2
+2026-06-18_08:40: title_scrubber: Preserving acronym:Col
+2026-06-18_08:40: title_scrubber: Preserving acronym:Us
+2026-06-18_08:40: title_scrubber: Preserving acronym:I
+2026-06-18_08:40: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_Seeks_Get_out_of_Jail_Card_Since_US_Lost_in_I.mp4 with:Daniel Davis - COL Douglas Macgregor - Trump Seeks Get Out Of Jail Card.mp4
+2026-06-18_08:40: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - COL Douglas Macgregor - Trump Seeks Get Out Of Jail Card.mp4
+2026-06-18_08:40: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.xPVvMP was cleared for:danieldavisdeepdive from:action_do

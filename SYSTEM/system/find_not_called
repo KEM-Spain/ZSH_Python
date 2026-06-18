@@ -17,7 +17,6 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -26,44 +25,21 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A _BLACKLIST=(usage 1 parse_opts 1 opt_type 1 opt_exists 1 dbg 1 dbg_set_level 1)
-typeset -A _FOUND
-typeset -A _LIB_FUNC_MASTER
-typeset -A _SEEN
-typeset -a _APP_FUNC_LIST
-typeset -a _FLIST
-typeset -a _LIB_FUNC_LIST
-typeset -aU _APP_FUNC_CALLS
-typeset -aU _APP_LIB_CALLS
-typeset -aU _LIB_FUNCS_CALLED_BY_SCRIPTS
-typeset -aU _LIB_FUNCS_CALLED_WITHIN_LIB
+typeset -A _FOUND=()
+typeset -A _LIB_FUNC_MASTER=()
+typeset -A _SEEN=()
+typeset -a _APP_FUNC_LIST=()
+typeset -a _FLIST=()
+typeset -a _LIB_FUNC_LIST=()
+typeset -aU _APP_FUNC_CALLS=()
+typeset -aU _APP_LIB_CALLS=()
+typeset -aU _LIB_FUNCS_CALLED_BY_SCRIPTS=()
+typeset -aU _LIB_FUNCS_CALLED_WITHIN_LIB=()
 typeset -i _VERBOSE_LVL=0
 
 # Constants
-typeset -a _LIBS=(
-ANSI.zsh
-ARRAY.zsh
-CENTER.zsh
-DATE.zsh
-DBG.zsh
-DURABLE.zsh
-ERROR.zsh
-EXIT.zsh
-LIB_DEPS.zsh
-LIB_INIT.zsh
-
-_DEPS=(MSG.zsh)
-LIST.zsh
-MSG.zsh
-PATH.zsh
-SELECT.zsh
-STR.zsh
-TPUT.zsh
-UTILS.zsh
-VALIDATE.zsh
-WIN.zsh
-)
-
 _SCRIPT_PATH=/usr/local/bin
+_LIB_PATH=/usr/local/lib
 _APP_FUNC_BODIES=/tmp/app_func_bodies.out
 _LIB_FUNC_BODIES=/tmp/lib_func_bodies.out
 _APP_BODY=/tmp/app_body.out
@@ -79,13 +55,18 @@ f_pl () {
 
 get_lib_funcs () {
 	local -a FUNCS
-	local F L K
 	local LIB
 	local FUNC
+	local F L K
+	local -a LIBS=()
+
+	for F in ${_LIB_PATH}/*zsh;do
+		LIBS+=${F}
+	done
 
 	# All library functions
-	for L in ${_LIBS};do
-		FUNCS=("${(f)$(grep -H -P --color=never '() {\s*?$' ${_LIB_DIR}/${L} | sed -E 's/\s*[(][)] \{.*//' | sort)}")
+	for L in ${LIBS};do
+		FUNCS=("${(f)$(grep -H -P --color=never '() {\s*?$' ${L} | sed -E 's/\s*[(][)] \{.*//' | sort)}")
 		if arr_is_populated "${FUNCS}";then
 			for F in ${FUNCS};do
 				LIB=$(cut -d':' -f1 <<<${F})
@@ -257,6 +238,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
+clear
 if [[ ${g_MODE} == 'lib_utilization' ]];then
 	[[ ${#} -ne 0 ]] && usage "Too many arguments. Option:-L requires no argument"
 else
@@ -384,7 +366,6 @@ if [[ ${g_MODE} == 'app_utilization' ]];then
 	summarize ${ORIG_FN} ${#_APP_FUNC_LIST} ${NO_CALL}
 
 else # Lib utilization
-
 	echo "${GREEN_FG}Scanning libraries for internal calls...${RESET}"
 
 	# Test for calls of lib functions within lib itself

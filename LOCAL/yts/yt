@@ -13,10 +13,11 @@ typeset -a VIDEO=()
 typeset -a LIST=()
 
 # Constants
-_YT_DBG_LOG=~/.local/share/yts/yt.dbg.log
-_YT_URL_LOG=~/.local/share/yts/yt.url.log
+_YT_CFG=~/.local/share/yts
+_YT_DBG_LOG=${_YT_CFG}/yt.dbg.log
+_YT_URL_LOG=${_YT_CFG}/yt.url.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
-_YT_DLP="/usr/local/bin/yt-dlp"
+_YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG}"
 
 # Functions
 last_file_downloaded () {
@@ -122,6 +123,10 @@ fi
 
 URL=$(grep -o -E 'http.*' <<<${(qqq)@})
 URL=${URL[1,-2]} # Eliminate trailing quote
+
+logit ${_YT_DBG_LOG} "${0:t} URL:${URL}"
+logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP} ${(qqq)@}"
+
 eval "${_YT_DLP} ${(qqq)@}"
 
 FN=$(last_file_downloaded)

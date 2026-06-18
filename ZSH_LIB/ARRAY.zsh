@@ -2,6 +2,19 @@
 _DEPS+=(MSG.zsh STR.zsh)
 
 # LIB Functions
+arr_elem_index () {
+	local ARRAY_NAME=${1}
+	local VALUE=${2}
+
+	if [[ ${${(P)ARRAY_NAME}[(i)${VALUE}]} -le ${#${(P)ARRAY_NAME}} ]];then
+		echo ${${(P)ARRAY_NAME}[(i)${VALUE}]}
+		return 0
+	else
+		echo 'None'
+		return 1
+	fi
+}
+
 arr_get_nonzero_count () {
 	local -a A=(${@})
 	local CNT=0
@@ -92,17 +105,6 @@ arr_long_elem_len () {
 	echo ${LONGEST} # Trimmed/no markup
 }
 
-arr_in_array () {
-	local ARRAY_NAME=${1}
-	local ELEMENT=${2}
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}, ARRAY_NAME:${ARRAY_NAME}, ELEMENT:${ELEMENT}"
-
-	[[ ${${(P)ARRAY_NAME}[(i)${ELEMENT}]} -le ${#${(P)ARRAY_NAME}} ]] && return 0
-
-	return 1
-}
-
 arr_fn_to_inode () {
 	local -a ARR=(${@})
 	local INODE=0
@@ -113,6 +115,17 @@ arr_fn_to_inode () {
 			echo $(ls -i ${L} | cut -d' ' -f1)
 		fi
 	done
+}
+
+arr_in_array () {
+	local ARRAY_NAME=${1}
+	local ELEMENT=${2}
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}, ARRAY_NAME:${ARRAY_NAME}, ELEMENT:${ELEMENT}"
+
+	[[ ${${(P)ARRAY_NAME}[(i)${ELEMENT}]} -le ${#${(P)ARRAY_NAME}} ]] && return 0
+
+	return 1
 }
 
 arr_inode_to_fn () {

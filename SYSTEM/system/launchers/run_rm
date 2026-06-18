@@ -286,7 +286,7 @@ done
 
 # Detect/warn wildcard 
 if [[ ${WILDCARD} == "true" ]];then
-	echo "${BOLD}${RED_FG}Wildcard${RESET}${BOLD}${WHITE_FG} * ${RESET}detected ${ITALIC}WILDCARD${RESET} (${#FLIST} $(str_pluralize item ${#FLIST}))"
+	echo "${BOLD}${RED_FG}Wildcard${RESET}${BOLD}${WHITE_FG} * ${RESET}detected (${#FLIST} $(str_pluralize item ${#FLIST}))"
 fi
 
 [[ (${OBJ_COUNT} -gt ${_WARN_LIMIT}) || ${WILDCARD} == "true" ]] && WARN=true || WARN=false
