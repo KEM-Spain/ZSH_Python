@@ -7,8 +7,6 @@
 : 1768908854:0;genl -d ctrl 
 : 1768909449:0;toe -a
 : 1768918866:0;tr 
-: 1769270872:0;kdeconnect-cli -l
-: 1769523965:0;journalctl -b
 : 1769766373:0;myperms
 : 1770150841:0;update-alternatives --get-selections 
 : 1770232301:0;zsh -c .zshrc
@@ -22,15 +20,11 @@
 : 1770559468:0;feh Chase_Card_02-08-26.jpg
 : 1770889603:0;v4l-info
 : 1770889674:0;xvinfo
-: 1770915820:0;mpv --volume=40 4fc9d2d8855fcd7dbd7c053e67b23282.mp4
 : 1770941180:0;systemctl --help
-: 1771027611:0;if you see this
-: 1771027616:0;i you see this
 : 1771145523:0;lsfd
 : 1771145645:0;texas
 : 1771152693:0;ping 192.168.18.108
 : 1771153119:0;ns
-: 1771153276:0;arp
 : 1771154005:0;fusermount -q -z /run/user/1000/doc
 : 1771154373:0;fuser -a "Xiaomi 14T"
 : 1771168152:0;cpanel_json_xs help
@@ -52,7 +46,6 @@
 : 1771702278:0;i2c 12.5
 : 1771702344:0;c2i 25
 : 1771769468:0;fc -lnr
-: 1771834609:0;xmodmap -e "keycode  13 = 4 dollar 4 dollar"
 : 1771866778:0;run_rm b c d
 : 1771885463:0;gh repo clone teras/Jubler
 : 1771889410:0;anthem
@@ -78,7 +71,6 @@
 : 1772581067:0;dict_slice -H
 : 1772630994:0;ss
 : 1772637998:0;trans -identify entrega
-: 1772722489:0;for D in *;do NM=$(sed -E -e 's/[(]//' -e 's/[)]//' <<<${D});mv "${D}" "${NM}";done
 : 1772821876:0;gnome-disks
 : 1772906272:0;fsck --help
 : 1772924205:0;k2m 229
@@ -89,7 +81,6 @@
 : 1773183716:0;chmod 755 PATH.zsh
 : 1773339671:0;realpath ~
 : 1773393501:0;pathtst -a -b testdir/f*
-: 1773397442:0;cmd_parser  -a -b --max=0 clean testdir/*
 : 1773486804:0;./brave --help
 : 1773500165:0;lp x
 : 1773688727:0;cd..
@@ -184,7 +175,6 @@
 : 1777585894:0;c2g
 : 1777586256:0;c2f
 : 1777586571:0;ln -s x2x g2o
-: 1777624807:0;date
 : 1777717124:0;lsof 
 : 1777721992:0;kdenlive
 : 1777745595:0;dir
@@ -240,7 +230,6 @@
 : 1778799757:0;Tc
 : 1778923459:0;pathabv -H
 : 1779014869:0;mail
-: 1779034483:0;sd
 : 1779044967:0;Ps
 : 1779049758:0;pip --help
 : 1779050431:0;ci com.github.babluboy.bookworm.desktop
@@ -259,12 +248,8 @@
 : 1779203538:0;jobs
 : 1779203541:0;fg
 : 1779266659:0;installed
-: 1779268074:0;G
 : 1779312831:0;n
 : 1779312965:0;disks
-: 1779314552:0;X="/media/kmiller/STICK_32/A BC - King Without A Crown (The Mendelsohn Mix).mp3"
-: 1779346979:0;fut generate
-: 1779392497:0;install dosfstools
 : 1779392647:0;gparted
 : 1779461797:0;find /media/kmiller/EXT_2/Music 1 -type f ! -path /media/kmiller/EXT_2/Music -printf '%i
 : 1779581768:0;Ts
@@ -276,7 +261,6 @@
 : 1779809151:0;locate chopin
 : 1779809202:0;.
 : 1779809448:0;convert "Arthur Rubinstein - Chopin Nocturne Op. 72 No. 1 In E Minor.mp4" "Arthur Rubinstein - Chopin Nocturne Op. 72 No. 1 In E Minor.wav" 
-: 1779809485:0;m
 : 1779809835:0;clementine output.wav
 : 1779809997:0;ffmpeg -i "Arthur Rubinstein - Chopin Nocturne Op. 72 No. 1 In E Minor.mp4" output.wav 
 : 1779810007:0;play output.wav
@@ -288,13 +272,11 @@
 : 1779838157:0;imdb 'project hail mary'
 : 1779920723:0;tput cols
 : 1779923480:0;./tst_center
-: 1779967340:0;k
 : 1780005802:0;zopts
 : 1780006092:0;g -A -P /usr/local/lib 'center '
 : 1780055360:0;batcat --help
 : 1780055428:0;man batcat
 : 1780066494:0;k/exp
-: 1780066498:0;export LIB_TEST=.
 : 1780134207:0;refs
 : 1780135111:0;./vut
 : 1780135150:0;./gsq
@@ -306,7 +288,6 @@
 : 1780174779:0;mya -c
 : 1780174829:0;men LIB_[0-9]
 : 1780188738:0;Lm
-: 1780233675:0;yt
 : 1780243493:0;zopt warn
 : 1780248733:0;APP_1
 : 1780258191:0;./lsd
@@ -321,7 +302,6 @@
 : 1780310830:0;lst
 : 1780311974:0;./tvi g
 : 1780312306:0;sudo chown kmiller:kmiller run_vlc
-: 1780312856:0;run_enpass
 : 1780312867:0;hist_no_dups
 : 1780313108:0;remind
 : 1780315054:0;tip
@@ -329,26 +309,20 @@
 : 1780334395:0;yt-dlp --cookies-from-browser BROWSER firefox \
 : 1780340154:0;cl LIBS/scratch
 : 1780341670:0;bak CENTER.zsh
-: 1780343164:0;nut 
 : 1780345687:0;aux
-: 1780347985:0;llr
 : 1780359022:0;todo
 : 1780386468:0;upd_locate
 : 1780388613:0;nfsstat -m
 : 1780388856:0;ll /media/kmiller
 : 1780390113:0;ip -a
 : 1780391530:0;k/etc
-: 1780392397:0;.c
 : 1780392419:0;h
 : 1780393355:0;vi /etc/group
-: 1780396437:0;l.
 : 1780412870:0;gsub
 : 1780439116:0;mp4_merge -d
 : 1780439507:0;num2txt <<< "4266 8419 0517 6515"\
 : 1780482363:0;pwd
 : 1780482513:0;ll /home/kmiller/Code/REPO/ZSH_LIB
-: 1780511090:0;t
-: 1780516378:0;md center
 : 1780518240:0;rm ./z
 : 1780518481:0;patch_deps /usr/local/bin/yts
 : 1780522600:0;cl LIBS/scratch/lib_init
@@ -372,1306 +346,1673 @@
 : 1780573314:0;jq --help
 : 1780602707:0;unzip RemoteMouse_x86_64.zip
 : 1780602718:0;./RemoteMouse
-: 1780604459:0;chkupd
-: 1780606339:0;top
 : 1780606427:0;kill 46060
 : 1780606865:0;iv start_remote_mouse
 : 1780607053:0;start_remote_mouse
-: 1780607135:0;flog
-: 1780660314:0;hist
 : 1780660942:0;j
 : 1780685265:0;./new_rumble_parse
 : 1780747795:0;locale
 : 1780748159:0;iconv -l
-: 1780748317:0;s
 : 1780749287:0;uchardet 1780748296_yts.dbg
 : 1780749388:0;recode UTF8..ISO-8859-15 < 1780748296_yts.dbg
-: 1780758158:0;ule
 : 1780758645:0;echo '¤' 
 : 1780790949:0; 
 : 1780826410:0;q
 : 1780838009:0;lsfuncs UTILS.zsh
 : 1780842152:0;kk
-: 1780859985:0;sut cam
 : 1780861138:0;V
-: 1780875353:0;Tm
-: 1780918606:0;Cat multi_vars
-: 1780936087:0;ld
 : 1780936580:0;local -g X
 : 1780939742:0;qps
-: 1780946078:0;.ls
 : 1780947764:0;Lw
-: 1780955068:0;repo
 : 1780989792:0;c
-: 1780991907:0;cl g
-: 1780991915:0;clear
-: 1780993919:0;ull
 : 1781000851:0;cls
-: 1781000968:0;,
-: 1781008445:0;Tw
 : 1781017065:0;type bat
-: 1781017663:0;b
 : 1781017691:0;ln -s /usr/local/src/mdless/mdless .
-: 1781017693:0;l
 : 1781017927:0;ext ladder_linux_amd64.tar.gz
-: 1781018248:0;uls
 : 1781018257:0;readme
 : 1781018466:0;d
-: 1781018500:0;D
-: 1781018510:0;..
-: 1781018525:0;ll
-: 1781020141:0;Tw
-: 1781020143:0;yt 'https://www.youtube.com/watch?v=3WvG3Fkhn1M&t=26s'
-: 1781020170:0;ll
-: 1781029282:0;yts
-: 1781029410:0;ll
-: 1781029415:0;lsd
-: 1781029419:0;ll
-: 1781029422:0;yts
-: 1781029450:0;l
-: 1781029452:0;ll
-: 1781032835:0;yts
-: 1781032885:0;yts -wy
-: 1781032908:0;yts
-: 1781032945:0;yt 'https://www.youtube.com/watch?v=ZsCmk-H7TiE&pp=0gcJCTkLAYcqIYzv'
-: 1781033019:0;fsub -yp "Judging Freedom" "Cpt. Matt Hoh - Why The Resistance Won't End.mp4"
-: 1781033021:0;ll
-: 1781033022:0;lsd
-: 1781033027:0;ll
-: 1781038673:0;.ls
-: 1781038678:0;.ls yts
-: 1781038697:0;rm yt.log.05rhlV
-: 1781038698:0;ll
-: 1781038706:0;rm yt.log.Cba2OJ
-: 1781038707:0;ll
-: 1781038727:0;g koppel
-: 1781038794:0;Tw
-: 1781038795:0;ll
-: 1781038799:0;yts
-: 1781038838:0;ll
-: 1781038846:0;yts
-: 1781038879:0;ll
-: 1781038881:0;lsd
-: 1781041002:0;mp4_merge -oJF Judg
-: 1781045778:0;yt 'https://www.youtube.com/watch?v=XJJmNMmR_Ro'
-: 1781045798:0;fsub -yp "Judging Freedom" "Ltcol. Karen Kwiatkowski - When Israel Attacked The US.mp4"
-: 1781045799:0;ll
-: 1781047241:0;lssd
-: 1781047243:0;lsd
-: 1781047265:0;ll
-: 1781048472:0;lsd
-: 1781048477:0;ll
-: 1781052016:0;lsd
-: 1781052019:0;ll
-: 1781081152:0;lsd
-: 1781081162:0;ll
-: 1781081399:0;backup
-: 1781081496:0;repo
-: 1781081556:0;.ls yts
-: 1781081557:0;ll
-: 1781081626:0;cl yts
-: 1781081631:0;vi yts
-: 1781082379:0;g _YTS_DBG_LOG
-: 1781082400:0;g DBG_LOG
-: 1781082429:0;vi yt
-: 1781082899:0;cl yts
-: 1781082910:0;bak -r yt
-: 1781082920:0;bak -r
-: 1781082926:0;.ls yts
-: 1781082927:0;lsd
-: 1781082937:0;ll
-: 1781082946:0;Tw
-: 1781082948:0;yts
-: 1781083000:0;.ls yts
-: 1781083001:0;ll
-: 1781083016:0;g blan
-: 1781083085:0;ll
-: 1781083092:0;cat yt.url.log
-: 1781083123:0;cl yts
-: 1781083144:0;vi yt
-: 1781083268:0;,
-: 1781083270:0;ll
-: 1781083288:0;vi yt.url.log
-: 1781083393:0;,
-: 1781083399:0;vi yt
-: 1781084038:0;bak -r yt
-: 1781084044:0;.ls yts
-: 1781084047:0;lsd
-: 1781084057:0;ll
-: 1781084061:0;Tw
-: 1781084062:0;lsd
-: 1781084065:0;ll
-: 1781084071:0;yts
-: 1781084097:0;,
-: 1781084099:0;ll
-: 1781084106:0;vi yt.dbg.log
-: 1781084204:0;,
-: 1781084205:0;ll
-: 1781084220:0;,
-: 1781084221:0;ll
-: 1781084225:0;vi yt.url.log
-: 1781084251:0;cl yts
-: 1781084253:0;vi yt
-: 1781084384:0;cl yts
-: 1781084410:0;vi yt
-: 1781084532:0;bak -r yt
-: 1781084535:0;,
-: 1781084536:0;ll
-: 1781084541:0;Tw
-: 1781084543:0;lsd
-: 1781084545:0;ll
-: 1781084554:0;.ls yts
-: 1781084557:0;lsd
-: 1781084563:0;ll
-: 1781084576:0;Tw
-: 1781084579:0;remind -e
-: 1781084586:0;yts
-: 1781084611:0;,
-: 1781084614:0;ll
-: 1781084619:0;vi yt.dbg.log
-: 1781084715:0;cl yts
-: 1781084718:0;vi yt
-: 1781084760:0;bak -r yt
-: 1781084763:0;,
-: 1781084765:0;lsd
-: 1781084772:0;ll
-: 1781084773:0;Tw
-: 1781084774:0;yts
-: 1781084779:0;lsd
-: 1781084781:0;ll
-: 1781084782:0;yts
-: 1781084807:0;,
-: 1781084813:0;vi yt.url.log
-: 1781084820:0;cl yts
-: 1781084822:0;vi yt
-: 1781084838:0;bak -r yt
-: 1781084841:0;,
-: 1781084842:0;lsd
-: 1781084848:0;Tw
-: 1781084849:0;lsd
-: 1781084854:0;yts
-: 1781084879:0;,
-: 1781084881:0;vi yt.url.log
-: 1781084930:0;cl yts
-: 1781084933:0;vi yt
 : 1781085038:0;./yt
-: 1781085044:0;bak -r yt
-: 1781085047:0;,
-: 1781085048:0;lsd
-: 1781085055:0;Tw
-: 1781085056:0;lsd
-: 1781085058:0;ll
-: 1781085060:0;yts
-: 1781085083:0;,
-: 1781085087:0;vi yt.url.log
-: 1781085103:0;cl yts
-: 1781085105:0;svi yt
-: 1781085106:0;vi yt
-: 1781085182:0;bak -r yt
-: 1781085184:0;,
-: 1781085185:0;lsd
-: 1781085190:0;ll
-: 1781085193:0;Tw
-: 1781085193:0;lsd
-: 1781085197:0;ll
-: 1781085198:0;yts
-: 1781085229:0;ll
-: 1781085233:0;,
-: 1781085234:0;ll
-: 1781085244:0;vi yt.url.log
-: 1781085273:0;vi yt.dbg.log
-: 1781085328:0;,
-: 1781085331:0;yts
-: 1781085558:0;cl yts
-: 1781085561:0;vi yts
-: 1781085613:0;.ls yts
-: 1781085615:0;ll
-: 1781085632:0;vi yt.dbg.log
-: 1781085674:0;vi yts.downloads
-: 1781085688:0;Tw
-: 1781085689:0;ll
-: 1781085715:0;fsub -yY "Kim_Iversen - Media_Covers_For_Trump_After_Netanyahu_Humiliates_Him.mp4"
-: 1781085717:0;ll
-: 1781085729:0;cl yts
-: 1781085731:0;vi yts
-: 1781085856:0;yts
-: 1781085957:0;Tw
-: 1781085958:0;ll
-: 1781085971:0;,
-: 1781085973:0;bak -r
-: 1781085975:0;ll
-: 1781085991:0;,
-: 1781085993:0;lsd
-: 1781085997:0;ll
-: 1781086982:0;lsd
-: 1781087260:0;ll
-: 1781087510:0;backup -F
-: 1781087829:0;backup -F
-: 1781087898:0;repo
 : 1781093460:0;sd
-: 1781093461:0;lsd
-: 1781093466:0;ll
 : 1781093474:0;D
-: 1781093489:0;o
-: 1781098175:0;Tw
-: 1781098177:0;ll
-: 1781099324:0;rb -r
-: 1781099380:0;chkupd
-: 1781099472:0;clear
-: 1781101296:0;cl sdb
-: 1781101316:0;sdv -p oler
-: 1781101336:0;sdv -H
-: 1781101351:0;sdv -c oler
-: 1781106228:0;ip -I
-: 1781106242:0;ip a
 : 1781106829:0;sut
-: 1781106849:0;sut lsdeamons
-: 1781106889:0;lsdeamons
-: 1781106899:0;sut lsdaemons
-: 1781106930:0;sut lsdaemons | grep 'dunst'
-: 1781106934:0;sut lsdaemons | grep 'mako'
-: 1781106943:0;sut lsdaemons | grep 'gnome'
-: 1781106969:0;sut lsdaemons | grep 'kde'
-: 1781107146:0;top
-: 1781107396:0;cl
 : 1781107405:0;md autopair
-: 1781107416:0;vi autopair.notes
-: 1781113852:0;t
-: 1781114623:0;vi autopair.notes
-: 1781114652:0;Tw
-: 1781114653:0;yts
-: 1781114846:0;ps -aux | grep ffmpeg
-: 1781114866:0;ps -aux | grep ffmpeg
-: 1781114876:0;aux ffmpeg
-: 1781114923:0;.ls yts
-: 1781114934:0;c yts
-: 1781114936:0;cl yts
-: 1781114941:0;vi yts
-: 1781114978:0;g -nI LOG
-: 1781115044:0;vi yts
-: 1781115248:0;g -nI g_yts_log
-: 1781115252:0;g -n g_yts_log
-: 1781115270:0;vi yts
-: 1781115479:0;bak -r
-: 1781115483:0;Tw
-: 1781115485:0;yts
-: 1781115806:0;aux ffmpeg
-: 1781115818:0;ll
-: 1781115820:0;lsd
-: 1781115829:0;ll
-: 1781115833:0;yts
-: 1781119515:0;lsd
-: 1781119519:0;l
-: 1781119520:0;ll
-: 1781121189:0;yts
-: 1781121259:0;mp4_merge -o"Judging Freedom" judg
-: 1781123224:0;clear
-: 1781123459:0;cl mp4_merge
-: 1781123470:0;bak mp4_merge
-: 1781123473:0;ll
-: 1781123480:0;vi -e doit
-: 1781123489:0;doit
-: 1781123509:0;vi doit
-: 1781123652:0;doit
-: 1781123658:0;vi doit
-: 1781123666:0;doit
-: 1781123673:0;vi doit
 : 1781123711:0;ull
-: 1781123720:0;,
-: 1781123724:0;ll
-: 1781123814:0;vi mp4_merge
-: 1781123883:0;rm doit
-: 1781123892:0;vi -e doit
-: 1781123916:0;doit
-: 1781123923:0;vi -e doit
-: 1781123944:0;doit
-: 1781123995:0;doit
-: 1781124001:0;vi doit
-: 1781124027:0;doit
-: 1781124148:0;doit
-: 1781124199:0;doit
-: 1781124213:0;vi doit
-: 1781124264:0;doit
-: 1781124272:0;vi doit
-: 1781124283:0;doit
-: 1781124304:0;vi doit
-: 1781124410:0;vi mp4_merge
-: 1781124574:0;ll
-: 1781124595:0;lsd
-: 1781124598:0;ll
 : 1781130217:0;ld
-: 1781130218:0;lsd
-: 1781130222:0;ll
-: 1781130274:0;cl autopair
-: 1781130275:0;ll
-: 1781130285:0;vi autopair.notes
-: 1781130581:0;vi autopair.notes
-: 1781130622:0;vi -e doit
-: 1781130636:0;doit
-: 1781130700:0;vi doit
-: 1781130753:0;doit
-: 1781130759:0;vi doit
-: 1781130798:0;doit
-: 1781130816:0;vi doit
-: 1781130826:0;doit
-: 1781130868:0;cat doit
-: 1781130939:0;vi doit
-: 1781130953:0;doit
-: 1781130957:0;vi doit
-: 1781130969:0;doit
-: 1781131123:0;sut lsdeamons
-: 1781131134:0;sut lsdeamons
-: 1781131139:0;sut lsdaemons
-: 1781131151:0;sut lsdaemons | grep gs
-: 1781131248:0;sut lsdaemons | grep kde
-: 1781131260:0;sut lsdaemons | grep pair
-: 1781131357:0;sut lsdaemons | grep kde
 : 1781131497:0;aptitude show qt5-default 
-: 1781131532:0;install qt5-default
-: 1781131542:0;apps qt5
-: 1781131688:0;ps -aux | grep kde
-: 1781131705:0;ps -aux | grep kdeconnect
-: 1781131767:0;ll
 : 1781131774:0;llr
-: 1781132016:0;ps aux -i kdeconnect
-: 1781132027:0;ps aux | grep -i kdeconnect
-: 1781132063:0;ll
-: 1781132080:0;ll k*
-: 1781132108:0;upd_locate -H
-: 1781132116:0;upd_locate -fu
-: 1781132153:0;locate kdeconnect
-: 1781132160:0;locate kdeconnectd
-: 1781132638:0;vi doit
-: 1781132652:0;cl autopair
-: 1781132654:0;vi doit
-: 1781132727:0;doit
-: 1781132881:0;vi doit
-: 1781133098:0;gsq privacy
-: 1781133129:0;gsq org.gnome.desktop
-: 1781133146:0;gsq org.gnome.desktop.privacy
-: 1781133253:0;vi doit
-: 1781133449:0;doit
-: 1781133502:0;vi doit
-: 1781133764:0;vi doit
-: 1781134351:0;vi autopair.notes
-: 1781134458:0;vi autopair.notes
-: 1781135257:0;vi autopair.notes
-: 1781135730:0;vi autopair.notes
-: 1781136292:0;vi autopair.notes
-: 1781136648:0;\
-
-: 1781136648:0;\
-
-: 1781136648:0;\
-
-: 1781136648:0;\
-
-: 1781136601:0;hist
-: 1781136660:0;ll
 : 1781136662:0;hist
-: 1781136669:0;hist dbus
-: 1781136708:0;Tw
-: 1781136710:0;ll
-: 1781163266:0;cl autopair
-: 1781163267:0;ll
-: 1781163271:0;vi autopair.notes
-: 1781163399:0;dbus-monitor --session "type='signal', interface='ca.desrt.dconf.Writer', path='/ca/desrt/dconf/Writer/user'" \
-
-: 1781163482:0;vi doit
-: 1781163630:0;doit
-: 1781163663:0;vi doit
 : 1781163746:0;gdbus
-: 1781163764:0;man gdbus
-: 1781163872:0;gdbus monitor --session
-: 1781164020:0;vi doit
-: 1781164174:0;vi doit
-: 1781164218:0;doit
-: 1781164228:0;vi doit
-: 1781164315:0;vi doit
-: 1781164338:0;doit
-: 1781164346:0;vi doit
-: 1781164384:0;doit
 : 1781164432:0;Cat doit
-: 1781164501:0;vi doit
-: 1781164513:0;doit
-: 1781164587:0;gdbus introspect --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect
-: 1781164635:0;cl autopair
-: 1781164643:0;vi autopair.notes
-: 1781165286:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect --method org.freedesktop.DBus.ObjectManager.GetManagedObjects
-: 1781165331:0;vi doit
-: 1781165526:0;vi doit
-: 1781165539:0;doit
-: 1781165656:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect --method org.freedesktop.DBus.Properties.Get "('org.gnome.Shell.Extensions.GSConnect', 'Id')" 
-: 1781165694:0;gdbus introspect --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect
-: 1781165708:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect --method org.freedesktop.DBus.ObjectManager.GetManagedObjects
-: 1781165724:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect --method org.freedesktop.DBus.Properties.Get "('org.gnome.Shell.Extensions.GSConnect', 'Id')" 
-: 1781165852:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect --method org.freedesktop.DBus.Properties.Get "('org.gnome.Shell.Extensions.GSConnect', 'NotificationId')" 
-: 1781166024:0;vi doit
-: 1781166108:0;gdbus introspect --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a
-: 1781166265:0;vi doit
-: 1781166426:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a --method org.gtk.Actions.List
-: 1781166494:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a --method org.gtk.Actions.Describe "('pair',)"
-: 1781166555:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a --method org.gtk.Actions.Describe "('pair')"
-: 1781166579:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a --method org.gtk.Actions.Describe "'pair'"
-: 1781166637:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a --method org.gtk.Actions.Activate "('pair', [], {})"
-: 1781166708:0;vi doit
-: 1781166745:0;doit
-: 1781166755:0;vi doit
-: 1781166805:0;doit
-: 1781166816:0;gdbus call --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a --method org.gtk.Actions.Activate "('pair', [], {})"
-: 1781166867:0;vi doit
-: 1781166903:0;doit
-: 1781166926:0;gdbus call --session \\
-  --dest org.gnome.Shell.Extensions.GSConnect \\
-  --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a \\
-  --method org.gtk.Actions.Activate \\
-  "('pair', [], @a{sv} {})"
-: 1781167001:0;sut info
-: 1781167044:0;zsh --version
-: 1781167262:0;gdbus call --session \\
-  --dest org.gnome.Shell.Extensions.GSConnect \\
-  --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a \\
-  --method org.gtk.Actions.Activate \\
-  "pair" "[]" "{}"
-: 1781167290:0;vi doit
-: 1781168296:0;vi autopair.notes
-: 1781168411:0;vi autopair.notes
-: 1781169003:0;vi autopair.notes
-: 1781169578:0;vi autopair.notes
-: 1781171278:0;vi doit
-: 1781171333:0;doit
-: 1781171339:0;vi doit
-: 1781171376:0;doit
-: 1781171385:0;vi doit
-: 1781171573:0;doit
-: 1781171591:0;vi doit
-: 1781171622:0;doit
-: 1781171639:0;vi doit
-: 1781171652:0;doit
-: 1781171661:0;vi doit
-: 1781171745:0;doit
-: 1781171785:0;vi doit
-: 1781171817:0;doit
-: 1781171872:0;gdbus INTROspect --session --dest org.gnome.Shell.Extensions.GSConnect --object-path /org/gnome/Shell/Extensions/GSConnect/Device/538231620d8d477593f192e83e1e760a\
-
-: 1781171884:0;vi doit
-: 1781171899:0;doit
-: 1781171933:0;vi doit
-: 1781172063:0;clear
-: 1781172067:0;Tw
-: 1781172068:0;ll
-: 1781172076:0;yts
-: 1781173526:0;yts
-: 1781189113:0;yts
-: 1781198735:0;vi doit
-: 1781198814:0;ll
-: 1781198819:0;vi autopair.notes
-: 1781198907:0;ll
-: 1781198913:0;vi autopair.notes
-: 1781198940:0;ll
-: 1781198970:0;ll
-: 1781198980:0;cl autopair
-: 1781198981:0;ll
-: 1781199366:0;lsd
-: 1781199370:0;ll
-: 1781202958:0;vi autopair.notes
-: 1781203002:0;.c
-: 1781203016:0;md user
-: 1781203049:0;ll
-: 1781203066:0;cl autopair
-: 1781203120:0;vi autopair.notes
-: 1781203204:0;systemctl --user daemon-reload\
-
-: 1781203218:0;systemctl --user enable gsconnect-autopair.service\
-
-: 1781203257:0;,
-: 1781203259:0;ll
-: 1781203266:0;systemctl --user enable gsconnect-autopair.service\
-
-: 1781203277:0;,
-: 1781203279:0;ll
 : 1781203305:0;.c
-: 1781203310:0;ll
-: 1781203317:0;ll
-: 1781203339:0;ll
 : 1781203356:0;...
-: 1781203361:0;rm user
-: 1781203366:0;cl autopair
-: 1781203367:0;ll
-: 1781203383:0;systemctl --user enable gsconnect-autopair.service\
-
-: 1781203406:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781203416:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781203476:0;flog
-: 1781203532:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781203549:0;.ls
-: 1781203561:0;.l
-: 1781203654:0;.l
-: 1781203675:0;.l
-: 1781203683:0;vi gsconnect-autopair.zsh
-: 1781203776:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781203782:0;systemctl --user status gsconnect-autopair.service\
-
 : 1781203797:0;flog
-: 1781203817:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781203822:0;vi gsconnect-autopair.zsh
-: 1781204000:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781204004:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781204048:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781204052:0;vi gsconnect-autopair.zsh
-: 1781204096:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781204102:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781204144:0;vi gsconnect-autopair.zsh
-: 1781204346:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781204368:0;vi gsconnect-autopair.zsh
-: 1781204378:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781204381:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781204384:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781204443:0;top
 : 1781204501:0;glance
-: 1781204512:0;mya glance
-: 1781204519:0;G
 : 1781204728:0;G
-: 1781204812:0;ll
-: 1781204849:0;vi gsconnect-autopair.zsh
-: 1781205293:0;Tw
-: 1781205294:0;ll
-: 1781205297:0;yts
-: 1781205317:0;yts -wy
 : 1781205365:0;t
-: 1781205378:0;yts -wy
-: 1781205436:0;yts
-: 1781205470:0;.ls yts
-: 1781205481:0;vi yt.log*
-: 1781205516:0;rm yt.log*
-: 1781205529:0;yts
-: 1781205561:0;Tw
-: 1781205562:0;ll
-: 1781205580:0;yts
-: 1781205643:0;ll
-: 1781208418:0;lsd
-: 1781208434:0;ll
-: 1781208443:0;lsd
-: 1781208446:0;ll
-: 1781208453:0;yts
-: 1781208557:0;yts -wy
-: 1781208617:0;yt -p "Judging Freedom" 'https://www.youtube.com/watch?v=CSQ5rwTv2p4'
-: 1781208626:0;ll
-: 1781209753:0;clear
 : 1781209756:0;cl
-: 1781209759:0;cl LIBS
-: 1781209765:0;bak UTILS.zsh
-: 1781209767:0;ll
-: 1781209769:0;l
-: 1781211184:0;Tw
-: 1781211185:0;lsd
-: 1781211189:0;ll
-: 1781215318:0;lsd
-: 1781215333:0;ll
 : 1781217143:0;ticker
-: 1781217641:0;cl sdb
-: 1781217665:0;sdv -c sentar
-: 1781217682:0;sdv sentar
-: 1781217740:0;sdv -c sentar
 : 1781217890:0;O
-: 1781217897:0;uls
-: 1781217903:0;b
-: 1781217916:0;rm 1780945374_yts.dbg
-: 1781217922:0;uls
-: 1781217930:0;rm RemoteMouse
-: 1781217937:0;ll
-: 1781217966:0;b
-: 1781217969:0;s
-: 1781217989:0;locate remotemouse
-: 1781217998:0;locate remote-mouse
-: 1781218006:0;locate mouse
-: 1781218020:0;locate mouse | remote
-: 1781218028:0;b
-: 1781218070:0;s
 : 1781218084:0;uls
-: 1781218161:0;Tw
-: 1781218162:0;lsd
-: 1781218168:0;ll
-: 1781218169:0;yts
-: 1781253529:0;clear
-: 1781253552:0;yts
-: 1781253807:0;ll
-: 1781253814:0;lsd
-: 1781253817:0;ll
-: 1781254247:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781254378:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781254389:0;systemctl --user disaabe gsconnect-autopair.service\
-
-: 1781254395:0;systemctl --user disable gsconnect-autopair.service\
-
-: 1781254492:0;cl sdb
-: 1781254547:0;sdv saler
-: 1781254576:0;sdv saler
-: 1781254633:0;sdv -c sentar
-: 1781254699:0;installed paste
-: 1781254721:0;cl sdb
-: 1781254728:0;vi sdv
-: 1781254754:0;reinstall gpaste-client
-: 1781254770:0;locate gpaste-client
-: 1781254790:0;gpaste-client --help
-: 1781254936:0;gpaste-client list-histories
-: 1781255008:0;sdv -c sentar
-: 1781255088:0;sdv -c sentar
-: 1781255108:0;cl sdb
-: 1781255114:0;sdv -c sentar
-: 1781255194:0;gpaste-client daemon-version
-: 1781255211:0;gpaste-client about
-: 1781255391:0;cl sdb
-: 1781255401:0;sdv -c sentar
-: 1781255464:0;cl sdb
-: 1781255489:0;sdv -c sentar
-: 1781255532:0;rb -r
-: 1781255708:0;chkupd
-: 1781255786:0;cl sdb
-: 1781255795:0;sdv -c sentar
-: 1781255848:0;sdv -c sentar
-: 1781255877:0;b
-: 1781255883:0;g journal
-: 1781255904:0;sut journal
 : 1781255990:0;journalctl
-: 1781256008:0;journalctl --help
-: 1781256031:0;journalctl --user
-: 1781256077:0;journalctl --user | grep paste
-: 1781256133:0;clear
-: 1781256188:0;vi /var/log/syslog
-: 1781256238:0;grep gpaste /var/log/syslog
-: 1781256406:0;cl sdb
-: 1781256423:0;sdv -c sentar
-: 1781256534:0;sdv -c sentar
-: 1781256598:0;sdv -c sentar
-: 1781256635:0;journalctl --user | grep paste
-: 1781256664:0;journalctl --system | grep paste
-: 1781256701:0;sdv -c sentar
-: 1781256706:0;journalctl --system | grep paste
-: 1781256715:0;journalctl --user | grep paste
-: 1781256740:0;journalctl --help
-: 1781256857:0;journalctl -S${DATE}
 : 1781256864:0;date
-: 1781256881:0;journalctl -S$r(date)
-: 1781256887:0;journalctl -S$(date)
-: 1781256911:0;journalctl -S$(date "%d")
-: 1781256922:0;date +%d
-: 1781256927:0;date +%D
-: 1781256940:0;journalctl -S$(date +"%D")
-: 1781256948:0;journalctl -S$(date +"%s")
-: 1781256968:0;man journalctl 
-: 1781256996:0;date +%D
-: 1781256999:0;date +%S
-: 1781257008:0;date +%y
-: 1781257013:0;date +%Y
-: 1781257026:0;date +%Y-%M
-: 1781257030:0;date +%Y-%m
-: 1781257041:0;date +%Y-%m-%d
-: 1781257049:0;date +%Y-%m-%d %t
-: 1781257053:0;date +%Y-%m-%d %T
-: 1781257060:0;date '+%Y-%m-%d %T'
-: 1781257076:0;journalctl -S$(date '+%Y-%m-%d %T')
-: 1781257084:0;journalctl -S"$(date '+%Y-%m-%d %T')"
-: 1781257108:0;journalctl -S"$(date '+%Y-%m-%d')"
-: 1781257131:0;journalctl -S"$(date '+%Y-%m-%d')" -g paste
-: 1781257191:0;man journalctl
-: 1781257245:0;journalctl -f -S"$(date '+%Y-%m-%d')" -g paste
-: 1781257284:0;sdv -c sentar
-: 1781257319:0;journalctl -f -S"$(date '+%Y-%m-%d')" 
-: 1781257411:0;sdv -c sentar
-: 1781257729:0;systemctl --user stop org.gnome.GPaste.service\
-systemctl --user start org.gnome.GPaste.service
-: 1781257739:0;systemctl --user stop org.gnome.GPaste.service;systemctl --user start org.gnome.GPaste.service
-: 1781257760:0;systemctl --user stop org.gnome.GPaste.service;systemctl --user start org.gnome.GPaste.service;systemctl --user status org.gnome.GPaste.service
-: 1781257785:0;sdv -c sentar
-: 1781257805:0;man gpaste-client
-: 1781257827:0;gpaste-client add "TEST"
-: 1781257878:0;gpaste-client add test
-: 1781257916:0;gpaste-client history
-: 1781257964:0;gpaste-client history
-: 1781258001:0;installed kde
-: 1781258062:0;installed gsconnect
-: 1781258066:0;installed gs
-: 1781258184:0;reinstalll kdeconnect
-: 1781258197:0;reinstall kdeconnect
-: 1781258265:0;cl sdb
-: 1781258273:0;g gpaste
-: 1781258284:0;vi sdv
-: 1781258308:0;echo "TESTING" | gpaste-client
-: 1781258512:0;sdv -c sentar
-: 1781258927:0;.ls
 : 1781258932:0;.l
-: 1781258948:0;b
 : 1781258951:0;l.
 : 1781258955:0;s
 : 1781258972:0;loc_share
-: 1781258980:0;mya loc
-: 1781259001:0;mya share
 : 1781259104:0;.ls
-: 1781259115:0;.ls shell
-: 1781259136:0;.ls gpaste
-: 1781259137:0;ll
 : 1781259154:0;..
-: 1781259208:0;journalctl -f -S"$(date '+%Y-%m-%d')" -g paste
-: 1781259242:0;reinstall gpaste-client
 : 1781259252:0;reinstall gpaste
-: 1781259260:0;reinstall gpaste-2
-: 1781259275:0;rb -r
 : 1781259357:0;run_enpass
-: 1781259390:0;cl sdb
-: 1781259410:0;sdv -c sentar
-: 1781259433:0;gpaste-client history
-: 1781259444:0;gpaste-client --help
-: 1781259457:0;gpaste-client delete-history
-: 1781259460:0;gpaste-client history
-: 1781259469:0;sdv -c sentar
-: 1781259474:0;gpaste-client history
-: 1781259651:0;vi x
-: 1781259681:0;ll
-: 1781259689:0;vi hist_no_dups.dbg
-: 1781259703:0;rm hist_no_dups.dbg
-: 1781259704:0;ll
-: 1781259790:0;systemctl --user stop org.gnome.GPaste.service;
-: 1781259833:0;aux gpaste
-: 1781259984:0;echo "TESTING" | gpaste-client
-: 1781260038:0;echo "TESTING" | gpaste-client
-: 1781260207:0;man gpaste-client
-: 1781260246:0;gpaste-client start
-: 1781260250:0;echo "TESTING" | gpaste-client
-: 1781260256:0;gpaste-client history
-: 1781260111:0;echo "TESTING" | gpaste-client
-: 1781260317:0;gpaste-client history
-: 1781260380:0;clear
-: 1781260453:0;cl sdb
-: 1781260469:0;sdv -c sentar
-: 1781260984:0;cl autopair
-: 1781261019:0;vi gpaste.notes
-: 1781261494:0;echo "TESTING" | gpaste-client
-: 1781261540:0;echo "TESTING" | gpaste-client
-: 1781261585:0;echo "TESTING" | gpaste-client
-: 1781261614:0;vi gpaste.notes
-: 1781262113:0;echo "TESTING" | gpaste-client
 : 1781262190:0;hostname
-: 1781262340:0;Tw
-: 1781262341:0;ll
-: 1781269092:0;cl sdb
-: 1781269102:0;sdv -c contar
-: 1781269154:0;sdv -c contar
-: 1781273667:0;yts
-: 1781273710:0;Tw
-: 1781273710:0;lsd
-: 1781273714:0;ll
-: 1781273724:0;Tm
-: 1781273725:0;ll
-: 1781273731:0;,
-: 1781273733:0;ll
-: 1781273743:0;ll
-: 1781276387:0;.ls yts
-: 1781276389:0;ll
-: 1781276395:0;cat yt.url.log
-: 1781283471:0;Tw
-: 1781283473:0;ll
-: 1781283481:0;lsd
-: 1781283485:0;ll
-: 1781283589:0;yts
-: 1781283663:0;.ls yts
-: 1781283664:0;ll
-: 1781283679:0;vi yt.log.JaBYnz
-: 1781285431:0;Tw
-: 1781285433:0;ll
-: 1781285436:0;yts
-: 1781285582:0;yts -wy
-: 1781288389:0;echo "This is the test text" | gpaste-client
-: 1781288433:0;echo "This is the test text" | gpaste-client
-: 1781288461:0;echo "This is the test text" | gpaste-client
-: 1781288525:0;echo "This is the test text" | gpaste-client
-: 1781288553:0;echo "This is the test text" | gpaste-client
-: 1781288590:0;echo "This is the test text" | gpaste-client
-: 1781288654:0;Tw
-: 1781288656:0;yts
-: 1781288692:0;cl autopair
-: 1781288694:0;ll
-: 1781288703:0;bak gsconnect-autopair.zsh
-: 1781288734:0;fut gsconnect-autopair.zsh
 : 1781288740:0;fut findexe gsconnect-autopair.zsh
-: 1781288769:0;ll
-: 1781288772:0;cl autopair
-: 1781288787:0;vi gsconnect-autopair.zsh
-: 1781288796:0;ll
-: 1781288813:0;vi question
-: 1781288886:0;vi question
-: 1781290082:0;apps android-tools
-: 1781290103:0;apps android-tools-adb
 : 1781290190:0;install android-tools-adb
-: 1781290409:0;vi -e adb-grant
-: 1781290434:0;adb-grant
-: 1781290531:0;vi adb-grant
-: 1781290603:0;adb-grant
-: 1781290680:0;adb kill-server
-: 1781290712:0;install android-tools-fastboot
-: 1781290723:0;adb kill-server
-: 1781290769:0;sudo killall adb
-: 1781290794:0;ps aux | grep adb
 : 1781290833:0;top
-: 1781290877:0;adb-grant
-: 1781290913:0;adb kill-server
-: 1781290922:0;adb-grant
-: 1781291096:0;adb-grant
-: 1781291106:0;adb kill-server
-: 1781291110:0;adb-grant
-: 1781291150:0;adb kill-server
-: 1781291153:0;adb-grant
 : 1781291178:0;adb-grant
-: 1781291204:0;ll
-: 1781291662:0;ll
-: 1781291702:0;echo "This is the test text" | xclip
-: 1781291747:0;cl sdb
-: 1781291751:0;vi sdv
-: 1781291767:0;g gpaste
-: 1781291774:0;g gpaste
-: 1781291784:0;vi sdmp
-: 1781291792:0;g gpaste
-: 1781291799:0;vi sdvs
-: 1781291860:0;cl sdb
-: 1781291881:0;sdv -c doler
-: 1781292001:0;sdv -c doler
-: 1781292429:0;dbus-monitor -session
 : 1781292439:0;dbus-monitor --session
-: 1781292540:0;	rb -r
 : 1781292612:0;chkupd
-: 1781294080:0;sdv -c doler
-: 1781294087:0;cl sdb
-: 1781294093:0;sdv -c doler
-: 1781294135:0;sdv -c doler
-: 1781294177:0;cl sdb
-: 1781294182:0;sdv -c doler
-: 1781294211:0;echo xxx | gpaste-client
-: 1781294316:0;echo yyy | gpaste-client
-: 1781294363:0;echo zzz | gpaste-client
-: 1781294435:0;systemctl --user enable gsconnect-autopair.service\
-
-: 1781294455:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781294460:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781294518:0;echo 555 | gpaste-client
-: 1781294536:0;echo zzz | gpaste-client
-: 1781294596:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781294605:0;systemctl --user disable gsconnect-autopair.service\
-
-: 1781294640:0;cl autopair
-: 1781294641:0;ll
-: 1781294649:0;o paste-issues.odt
-: 1781294746:0;cl sdb
-: 1781294751:0;ll
 : 1781294766:0;b
-: 1781294772:0;,
-: 1781294773:0;ll
-: 1781294792:0;gsub 'xclip' 'gpaste-client'
-: 1781294811:0;vi sdv
-: 1781294823:0;,
-: 1781294826:0;cl autopair
-: 1781294828:0;ll
-: 1781295042:0;locate gsconnect
-: 1781295129:0;gnome-extensions-app
-: 1781295211:0;locate kdeconnect
-: 1781295304:0;echo zzz | gpaste-client
-: 1781295355:0;echo 777 | gpaste-client
-: 1781295379:0;echo 777 | gpaste-client
 : 1781295421:0;gpaste-client
-: 1781295438:0;gpaste-client --help
-: 1781295450:0;gpaste-client empty
-: 1781295454:0;gpaste-client 
-: 1781295478:0;clear
-: 1781301158:0;Tw
-: 1781301159:0;ll
 : 1781301180:0;Tm
-: 1781301182:0;lsd
-: 1781301185:0;ll
-: 1781301190:0;,
-: 1781301191:0;ll
-: 1781327414:0;ll
-: 1781327425:0;yt
-: 1781327427:0;yts
-: 1781327516:0;yts 'ian proud'
-: 1781327566:0;mp4_merge -o"Judging Freedom" judg
-: 1781327610:0;ll
-: 1781327661:0;cl autopair
-: 1781327663:0;ll
-: 1781327668:0;o paste-issues.odt
-: 1781327678:0;o paste-issues.odt
-: 1781327693:0;o -D paste-issues.odt
-: 1781327721:0;o -DDD paste-issues.odt
-: 1781327754:0;o -DDDDD paste-issues.odt
-: 1781327828:0;o -DDDDDD paste-issues.odt
-: 1781328114:0;o -DDDDDD paste-issues.odt
-: 1781328329:0;o -DDDDDD paste-issues.odt
-: 1781328578:0;o -DDDDDD paste-issues.odt
-: 1781328805:0;o -DDDDDD paste-issues.odt
-: 1781329369:0;o -DDDDDD paste-issues.odt
-: 1781329636:0;o -DDDDDD paste-issues.odt
-: 1781329682:0;o -DDDDDD paste-issues.odt
-: 1781329889:0;o -DDDDDD paste-issues.odt
-: 1781330141:0;o -DDDDDD paste-issues.odt
-: 1781330362:0;o -DDDDDD paste-issues.odt
-: 1781330465:0;o -DDDDDD paste-issues.odt
-: 1781330787:0;o -DDDDDD paste-issues.odt
-: 1781330965:0;o -D paste-issues.odt
-: 1781330998:0;o 
-: 1781331033:0;o 
-: 1781331053:0;o paste-issues.odt
-: 1781331068:0;o 
-: 1781331109:0;o 
 : 1781331127:0;type /usr/bin/libreoffice
-: 1781331189:0;o paste-issues.odt
-: 1781331538:0;o -D paste-issues.odt
-: 1781331626:0;o -D paste-issues.odt
-: 1781331753:0;o -D paste-issues.odt
-: 1781331856:0;o -D paste-issues.odt
-: 1781331873:0;o -D paste-issues.odt
-: 1781331896:0;o -D paste-issues.odt
-: 1781331917:0;o paste-issues.odt
-: 1781331932:0;o paste-issues.odt
-: 1781332050:0;type kdeconnect
-: 1781332061:0;locate kdeconnect
-: 1781332091:0;installed kdeconnect
-: 1781332263:0;clear
-: 1781332441:0;type gsconnect
-: 1781332446:0;locate gsconnect
-: 1781332703:0;gnome-extensions-app
-: 1781332916:0;o paste-issues.odt
-: 1781333207:0;clear
-: 1781334470:0;vi question
-: 1781334624:0;o paste-issues.odt
-: 1781334689:0;vi question
-: 1781335588:0;locate org.kde.kdeconnect
-: 1781335649:0;uninstall kdeconnect
-: 1781335658:0;purge kdeconnect
-: 1781335670:0;gnome-extensions-app
-: 1781335761:0;rb -r
-: 1781335837:0;gnome-extensions-app
-: 1781335868:0;cl sdb
-: 1781335881:0;sdv -c doler
-: 1781335924:0;sdv -c doler
-: 1781335945:0;locate org.kde.kdeconnect
-: 1781335963:0;installed kde
-: 1781335981:0;installed gs
-: 1781336023:0;sut lsdaemons
-: 1781336040:0;sut lsdaemons | grep con
-: 1781336085:0;sut lsdaemons | grep kde
-: 1781336097:0;sut lsdaemons | grep paste
-: 1781336148:0;cl autopair
-: 1781336152:0;o paste-issues.odt
-: 1781336202:0;vi question
-: 1781336256:0;vi question
-: 1781336405:0;sdv -c doler
-: 1781337402:0;type xsel
-: 1781337409:0;install xsel
-: 1781337427:0;cl sdb
-: 1781337432:0;vi sdv
-: 1781337485:0;cl sdb
-: 1781337504:0;sdv -c doler
-: 1781337573:0;clear
-: 1781337583:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781337602:0;systemctl --user enable gsconnect-autopair.service\
-
-: 1781337611:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781337615:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781337621:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781337692:0;sdv -c conseguir
-: 1781337784:0;echo "xxxxxxx" | xsel -ib
-: 1781337816:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781337845:0;echo "xxxxxxx" | xsel -ib
-: 1781337882:0;rb -r
-: 1781337958:0;systemctl --user status gsconnect-autopair.service\
-
-: 1781337969:0;systemctl --user stop gsconnect-autopair.service\
-
-: 1781337974:0;systemctl --user disable gsconnect-autopair.service\
-
-: 1781338018:0;echo "xxxxxxx" | xsel -ib
-: 1781338092:0;echo "xxxxxxx" | xsel -ib
-: 1781338138:0;cl autopair
-: 1781338146:0;vi question
-: 1781338205:0;sut lsdaemons | grep x
-: 1781338215:0;sut lsdaemons | grep sel
-: 1781338266:0;vi question
-: 1781338942:0;install kdeconnect
-: 1781338958:0;kdeconnct-cli 
-: 1781338968:0;kdeconnect-cli -l
-: 1781339022:0;o paste-issues.odt
-: 1781339112:0;o paste-issues.odt
-: 1781339135:0;apps scrcpy
-: 1781339195:0;sut lsdaemons | grep cpy
-: 1781339202:0;sut lsdaemons | grep a
-: 1781339215:0;sut lsdaemons 
-: 1781339440:0;o paste-issues.odt
-: 1781339541:0;adb pair
 : 1781339797:0;nut
-: 1781339819:0;nut lan
-: 1781339835:0;arp
-: 1781340117:0;adb pair 192.168.18.107:46249
-: 1781340204:0;o paste-issues.odt
-: 1781340256:0;locate org.kde.kdeconnect
-: 1781340261:0;locate org.kde.kdeconnect | grep tp
 : 1781340383:0;kdeconnect-cli -l
-: 1781340461:0;vi question_2
-: 1781340529:0;vi question_2
-: 1781341185:0;ll
-: 1781341192:0;o paste-issues.odt
-: 1781341250:0;adb connect 192.168.18.107
-: 1781341275:0;vi question_2
-: 1781341666:0;scrcpy --no-display --tcpip=192.168.18.107:5555 -n
-: 1781341718:0;vi question_2
-: 1781341869:0;adb tcpip 5555
-: 1781341885:0;scrcpy --no-display --tcpip=192.168.18.107:5555 -n
-: 1781341905:0;vi question_2
-: 1781342073:0;adb connect 192.168.18.107:5555
-: 1781342247:0;scrcpy -s 192.168.18.107:5555 --window-width=1 --window-height=1 --window-x=9999 --window-y=9999 --no-audio
-: 1781342254:0;scrcpy -s 192.168.18.107:5555 --window-width=1 --window-height=1 --window-x=9999 --window-y=9999
 : 1781342284:0;scrcpy -s 192.168.18.107:5555 >/dev/null
-: 1781342363:0;cl sdb
-: 1781342366:0;vi sdv
-: 1781342397:0;sdv -c conseguir
-: 1781342461:0;vi sdv
-: 1781342509:0;,
-: 1781342517:0;vi question_2
-: 1781342592:0;vi question_2
-: 1781342942:0;ping -c 3 192.168.18.107
-: 1781342958:0;adb tcpip 5555\
-adb connect 192.168.18.107:5555
-: 1781342974:0;adb tcpip 5555; adb connect 192.168.18.107:5555
-: 1781342984:0;adb devices
-: 1781343008:0;scrcpy -s 192.168.18.107:5555 --window-title="clip_sync" --window-width=1 --window-height=1 --window-x=9999 --window-y=9999 --no-audio --no-control & 
-: 1781343059:0;scrcpy -s 192.168.18.107:5555 --window-title="clip_sync" --max-size=1024 --no-control &
-: 1781343444:0;vi question_2
-: 1781343489:0;scrcpy --version
-: 1781343510:0;vi question_2
-: 1781343785:0;cl sdb
-: 1781343789:0;vi sdv
-: 1781343833:0;sdv -c doler
-: 1781343841:0;vi sdv
-: 1781343857:0;sdv -c doler
-: 1781343860:0;vi sdv
-: 1781343871:0;sdv -c doler
-: 1781343875:0;vi sdv
-: 1781343892:0;sdv -c doler
-: 1781343900:0;vi sdv
-: 1781343911:0;sdv -c doler
-: 1781343994:0;vi sdv
-: 1781344005:0;sdv -c doler
-: 1781344165:0;vi sdv
-: 1781344260:0;vi -e testit
-: 1781344316:0;testit
-: 1781344430:0;Cat testit
-: 1781344537:0;vi testit
-: 1781344577:0;testit
-: 1781345181:0;vi testit
-: 1781345317:0;testit
-: 1781345321:0;vi testit
-: 1781345387:0;testit
-: 1781345430:0;vi testit
-: 1781345615:0;testit
 : 1781345626:0;clear
-: 1781345627:0;testit
-: 1781345687:0;testit
-: 1781345713:0;Cat /tmp/keep_payload.txt
-: 1781345721:0;,
-: 1781345727:0;ll
-: 1781345730:0;,
-: 1781345736:0;vi testit
-: 1781345787:0;testit
-: 1781345798:0;vi testit
-: 1781345813:0;adb tcpip 5555; adb connect 192.168.18.107:5555
-: 1781346013:0;cl autopair
-: 1781346092:0;,
 : 1781346112:0;,
-: 1781346113:0;ll
-: 1781346119:0;vi testit
-: 1781346280:0;ll
-: 1781346753:0;o paste-issues.odt
-: 1781346876:0;vi -e test_reconnect
-: 1781346915:0;test_reconnect
 : 1781346929:0;adb connect
-: 1781346939:0;vi test_reconnect
-: 1781346952:0;adb devices
-: 1781346966:0;vi testit
-: 1781346982:0;testit
-: 1781347009:0;testit
-: 1781347059:0;vi testit
-: 1781347092:0;testit
-: 1781347119:0;vi question_2
-: 1781347215:0;adb devices
-: 1781347231:0;vi question_2
-: 1781347447:0;testit
-: 1781347452:0;vi question_2
-: 1781347479:0;testit
-: 1781347481:0;vi question_2
-: 1781347525:0;vi testit
-: 1781347556:0;testit
-: 1781347559:0;vi testit
-: 1781347572:0;testit
-: 1781347624:0;vi testit
-: 1781347648:0;testit
-: 1781347663:0;vi testit
-: 1781347862:0;testit
-: 1781347887:0;vi testit
-: 1781347894:0;testit
-: 1781347897:0;vi testit
-: 1781347907:0;testit
-: 1781347911:0;vi testit
-: 1781347922:0;testit
-: 1781347935:0;vi testit
-: 1781347946:0;testit
-: 1781347958:0;vi testit
-: 1781347974:0;testit
-: 1781348072:0;vi testit
-: 1781348088:0;testit
-: 1781348162:0;vi testit
-: 1781348174:0;testit
-: 1781348233:0;vi testit
-: 1781348244:0;testit
-: 1781348347:0;vi testit
-: 1781348400:0;o paste-issues.odt
-: 1781348439:0;vi testit
-: 1781348496:0;ll
-: 1781348502:0;./test_reconnect
-: 1781348533:0;vi testit
-: 1781348563:0;testit
-: 1781348613:0;vi testit
-: 1781348781:0;testit
-: 1781348794:0;testit
-: 1781348812:0;testit
-: 1781348828:0;adb devices
-: 1781348840:0;adb kill-server
-: 1781348856:0;adb connect 192.168.18.107:5555
-: 1781348864:0;testit
-: 1781348988:0;testit
-: 1781349018:0;testit
-: 1781349036:0;testit
-: 1781349064:0;testit
-: 1781349089:0;vi testit
-: 1781349128:0;testit
-: 1781349142:0;vi testit
-: 1781349191:0;vi testit
-: 1781349195:0;testit
-: 1781349217:0;vi testit
-: 1781349253:0;testit
-: 1781349265:0;vi testit
-: 1781349593:0;testit
-: 1781349599:0;vi testit
-: 1781349664:0;testit
-: 1781349687:0;vi testit
-: 1781349754:0;arp
 : 1781349825:0;ule
-: 1781349831:0;vi mac_table.zsh
-: 1781350198:0;arp
 : 1781350342:0;arp
-: 1781350509:0;cl autopair
-: 1781350517:0;adb devices
-: 1781350537:0;vi testit
-: 1781350592:0;testit
-: 1781350622:0;adb devices
-: 1781350657:0;systemctl --user enable gsconnect-autopair.service\
-
-: 1781350664:0;systemctl --user start gsconnect-autopair.service\
-
-: 1781350706:0;gnome-extensions-app
 : 1781350736:0;gnome-extensions-app
-: 1781350762:0;testit
-: 1781350803:0;ll
-: 1781350807:0;rm g
-: 1781350807:0;ll
-: 1781350815:0;rm question*
 : 1781350817:0;k
-: 1781350819:0;rm question*
-: 1781350821:0;ll
-: 1781350840:0;rm paste-issues.odt gpaste.notes autopair.notes
-: 1781350843:0;ll
-: 1781350852:0;vi adb-grant
-: 1781350870:0;rm test_reconnect
-: 1781350871:0;ll
-: 1781350880:0;cl sdb
-: 1781350885:0;vi sdv
 : 1781355127:0;m
 : 1781355139:0;l
-: 1781364003:0;Tw
-: 1781364004:0;ll
-: 1781364022:0;lsd
-: 1781364024:0;ll
-: 1781364414:0;cl sdb
-: 1781364421:0;vi sdv
-: 1781364971:0;sdv -c doler
-: 1781365030:0;vi sdv
-: 1781365051:0;adb devices
-: 1781365065:0;adb kill-server
-: 1781365080:0;adb connect 192.168.18.105:5555
-: 1781365092:0;vi sdv
-: 1781365127:0;sdv -c doler
-: 1781365316:0;vi sdv
-: 1781365600:0;zsh_sort_funcs sdv
-: 1781365606:0;vi sdv
-: 1781365681:0;lsd
 : 1781365742:0;verbs
-: 1781365764:0;verbs | sort
-: 1781365814:0;sdv lidiar
-: 1781365832:0;sdv averguiar
-: 1781365838:0;sdv averguar
-: 1781365843:0;sdv averiguar
-: 1781365856:0;sdv -c averiguar
-: 1781367288:0;backup
-: 1781367419:0;repo
-: 1781367442:0;.ls yts
-: 1781367444:0;lsd
 : 1781367450:0;repo
 : 1781367472:0;Tw
-: 1781367474:0;yts
-: 1781367497:0;yts -D
-: 1781367623:0;ll
-: 1781367630:0;yts -DDDDD
-: 1781367854:0;yts
-: 1781367921:0;yt 'https://rumble.com/v7b4xdg-does-iran-have-the-bomb-the-new-rules-reshaping-the-middle-east-mohammad-ma.html?e9s=src_v1_sa%2Csrc_v3_sa_o%2Csrc_v1_upp_l'
-: 1781368271:0;lsd
-: 1781368316:0;fsub -yp'Syriana Analisis' "DOES Iran Have The Bomb The New Rules Reshaping The Middle East Mohammad Marandi.mp4"
-: 1781368318:0;ll
-: 1781368338:0;fsub -t 100 "Syriana Analisis - DOES Iran Have The Bomb The New Rules Reshaping The Middle East Mohammad Marandi.mp4"
-: 1781368339:0;ll
-: 1781368351:0;fsub -t 80 "Syriana Analisis - DOES Iran Have The Bomb The New Rules Reshaping The Middle East Mohammad Marandi.mp4"
-: 1781368354:0;ll
-: 1781368380:0;fsub "Syriana Analisis - DOES Iran Have The Bomb The New Rules Reshaping The Middle Ea.mp4" "Syriana Analysis - DOES Iran Have The Bomb The New Rules Reshaping The Middle Ea.mp4"
-: 1781368382:0;fsub "Syriana Analisis - DOES Iran Have The Bomb The New Rules Reshaping The Middle Ea.mp4" "Syriana Analysis - DOES Iran Have The Bomb The New Rules Reshaping The Middle Ea.mp4"
-: 1781368384:0;ll
-: 1781368390:0;fsub "Syriana Analisis - DOES Iran Have The Bomb The New Rules Reshaping The Middle Ea.mp4" "Syriana Analysis - DOES Iran Have The Bomb The New Rules Reshaping The Middle Ea.mp4"
-: 1781368396:0;yt 'https://rumble.com/v7b4xdg-does-iran-have-the-bomb-the-new-rules-reshaping-the-middle-east-mohammad-ma.html?e9s=src_v1_sa%2Csrc_v3_sa_o%2Csrc_v1_upp_l'
-: 1781368487:0;fsub -yp'Syriana Analysis' "DOES Iran Have The Bomb The New Rules Reshaping The Middle East Mohammad Marandi.mp4"
-: 1781368488:0;ll
-: 1781368505:0;fsub -t 80 "Syriana Analysis - DOES Iran Have The Bomb The New Rules Reshaping The Middle East Mohammad Marandi.mp4"
-: 1781368507:0;ll
-: 1781379564:0;lsd
-: 1781379575:0;rm .mp4
-: 1781379577:0;ll
-: 1781379579:0;yts
-: 1781379644:0;ll
 : 1781379918:0;ll
+: 1781380019:0;ll
+: 1781380030:0;Tw
+: 1781380031:0;ll
+: 1781381597:0;Tm
+: 1781381598:0;ll
+: 1781381605:0;lsd *srt
+: 1781381636:0;ll
+: 1781382635:0;l
+: 1781382656:0;lsd
+: 1781382667:0;ll
+: 1781384732:0;Tw
+: 1781384733:0;ll
+: 1781384739:0;ldf
+: 1781384741:0;lsd
+: 1781384743:0;ll
+: 1781390183:0;Tm
+: 1781390185:0;lsd
+: 1781390189:0;l
+: 1781390190:0;ll
+: 1781390621:0;Tw
+: 1781390622:0;ll
+: 1781390626:0;yts
+: 1781391103:0;ll
+: 1781391302:0;d
+: 1781391303:0;ll
+: 1781391324:0;uls
+: 1781391325:0;ll
+: 1781391333:0;ext hack.zip
+: 1781391350:0;ll
+: 1781391538:0;install font-manager
+: 1781391553:0;font-manager
+: 1781391603:0;font-manager
+: 1781391845:0;ll
+: 1781391852:0;d
+: 1781391853:0;ll
+: 1781391862:0;rm gnome-shell-extension-gsconnect-main.zip
+: 1781391863:0;ll
+: 1781391866:0;uls
+: 1781391871:0;font-manager
+: 1781391961:0;ll
+: 1781391985:0;l
+: 1781391989:0;Tw
+: 1781391991:0;yts
+: 1781392002:0;uls
+: 1781392032:0;l
+: 1781392062:0;l
+: 1781392100:0;rm hack.zip
+: 1781392101:0;l
+: 1781392110:0;ticker
+: 1781392223:0;ll
+: 1781392232:0;vi txt2pdf.c
+: 1781392282:0;rm jetbrains-toolbox-1.28.1.15219
+: 1781392286:0;l
+: 1781392295:0;rm terminal-stocks
+: 1781392298:0;l
+: 1781392331:0;ll
+: 1781392363:0;./atbswp
+: 1781392379:0;ll
+: 1781392386:0;o
+: 1781392453:0;..
+: 1781392454:0;ll
+: 1781392461:0;l.
+: 1781392563:0;git log
+: 1781392624:0;git pull
+: 1781392636:0;ll
+: 1781392652:0;git log
+: 1781392673:0;o
+: 1781392764:0;mpv demo.gif
+: 1781392801:0;ll
+: 1781392803:0;..
+: 1781392804:0;ll
+: 1781392810:0;readme
+: 1781392843:0;ll
+: 1781392898:0;Tw
+: 1781392900:0;top
+: 1781392942:0;clear
+: 1781393268:0;l
+: 1781393270:0;ll
+: 1781393804:0;e2s 'would it be possible to correct this?'
+: 1781393868:0;cl sdb
+: 1781393876:0;sdv -c corregir
+: 1781394838:0;Tw
+: 1781394839:0;ll
+: 1781394843:0;lsd
+: 1781394845:0;ll
+: 1781427144:0;ll
+: 1781427277:0;cl autopair
+: 1781427278:0;ll
+: 1781427325:0;vi gsconnect-autopair.
+: 1781427330:0;vi gsconnect-autopair.zsh
+: 1781427545:0;cat adb-grant
+: 1781427604:0;vi adb.notes
+: 1781427870:0;hist adb
+: 1781427925:0;c
+: 1781427949:0;..
+: 1781427984:0;..
+: 1781427986:0;,
+: 1781427995:0;..
+: 1781428021:0;f -dddd \.zsh
+: 1781428029:0;f -dddd \.zsh_h
+: 1781428057:0;l.
+: 1781428064:0;g adb
+: 1781428162:0;cl autopair
+: 1781428167:0;vi adb-grant
+: 1781428290:0;man adb
+: 1781428463:0;ll
+: 1781428474:0;cat gsconnect-autopair.service
+: 1781428564:0;e
+: 1781428566:0;R
+: 1781428585:0;E
+: 1781428592:0;ll
+: 1781428613:0;..
+: 1781428626:0;llr
+: 1781428816:0;ll
+: 1781428831:0;llr
+: 1781428845:0;..
+: 1781428847:0;ll
+: 1781428868:0;.c
+: 1781428882:0;.l
+: 1781428891:0;ll
+: 1781428907:0;.c
+: 1781428915:0;ll
+: 1781428918:0;ll
+: 1781429029:0;Tw
+: 1781429030:0;ll
+: 1781429262:0;ll
+: 1781431251:0;spell controversy
+: 1781431688:0;yts
+: 1781431726:0;ll
+: 1781431790:0;yts
+: 1781432137:0;ll
+: 1781433223:0;lsd
+: 1781433228:0;ll
+: 1781433956:0;ll
+: 1781434004:0;fsub -y -t80 "Hidden Hand - The Hidden Hand Behind UFOS Episode 1 - Lifting The Esoteric Veil.mp4"
+: 1781434016:0;fsub -y -t80 "Hidden Hand - Hidden Hand Behind UFOS Ep. 2 - H.G. Wells War Of The Worlds And The Dawn Of A New Age.mp4"
+: 1781434028:0;fsub -y -t80 "Hidden Hand - The Hidden Hand Behind UFOS Ep. 3 - The New Age Of The Sorcerers - UFOS MK Ultra And The Cold War.mp4"
+: 1781434038:0;fsub -y -t80 "Hidden Hand - Movie Night With Matt - The Hidden Hand Behind UFOS Ep. 4 Roswell And The Birth Of A New Legend.mp4"
+: 1781434040:0;ll
+: 1781434145:0;ll
+: 1781434204:0;ll
+: 1781434289:0;ll
+: 1781434388:0;ll
+: 1781434513:0;yts
+: 1781434569:0;cl yts
+: 1781434571:0;vi yts
+: 1781434616:0;lsfuncs yts
+: 1781434640:0;vi yts
+: 1781434945:0;clear
+: 1781434947:0;yts
+: 1781435024:0;bak -r
+: 1781435035:0;Tw
+: 1781435036:0;ll
+: 1781435077:0;,
+: 1781435083:0;g job_kill
+: 1781435101:0;g -n job_kill
+: 1781435111:0;vi yts
+: 1781435342:0;bak -r
+: 1781435350:0;Tw
+: 1781435351:0;ll
+: 1781439633:0;m
+: 1781439653:0;fsub
+: 1781439821:0;fsub -C
+: 1781439824:0;ll
+: 1781439833:0;fsub -C "Up to the mountain  Patty Griffin.wav"
+: 1781439844:0;fsub -p "Up to the mountain  Patty Griffin.wav"
+: 1781439858:0;fsub -s "Up to the mountain  Patty Griffin.wav"
+: 1781439864:0;fsub -c "Up to the mountain  Patty Griffin.wav"
+: 1781439887:0;fsub ' ' '_'  "Up to the mountain  Patty Griffin.wav"
+: 1781439902:0;fsub -p ' ' '_'  "Up to the mountain  Patty Griffin.wav"
+: 1781439909:0;fsub ' ' '_'  "Up to the mountain  Patty Griffin.wav"
+: 1781439930:0;fsub -c ' ' '_'  "Up to the mountain  Patty Griffin.wav"
+: 1781439942:0;fsub ' ' '_'  "Up to the mountain  Patty Griffin.wav"
+: 1781439944:0;ll
+: 1781439957:0;fsub -c  "Up to the mountain  Patty Griffin.wav"
+: 1781439981:0;play Up_to_the_mountain__Patty_Griffin.wav
+: 1781440101:0;play Up_to_the_mountain__Patty_Griffin.wav
+: 1781440130:0;play Up_to_the_mountain__Patty_Griffin.wav
+: 1781440453:0;locate gnome-control-center 
+: 1781440467:0;type gnome-control-center 
+: 1781440522:0;installed gnome-control-center 
+: 1781440604:0;install gnome-control-center 
+: 1781440629:0;rb -l
+: 1781440712:0;m
+: 1781440715:0;ll
+: 1781440719:0;ll
+: 1781440730:0;play Up_to_the_mountain__Patty_Griffin.wav
+: 1781442147:0;M
+: 1781442162:0;play 03-How\ Blue\ Can\ You\ Get.mp3
+: 1781442189:0;mpv 03-How\ Blue\ Can\ You\ Get.mp3
+: 1781446208:0;clear
+: 1781446211:0;Tw
+: 1781446212:0;l
+: 1781446213:0;ll
+: 1781446859:0;dict gnostic
+: 1781446884:0;dict agnostic
+: 1781451957:0;lsd
+: 1781451966:0;ll
+: 1781455720:0;lsd
+: 1781455771:0;lsd
+: 1781463293:0;yts
+: 1781463350:0;cl yts
+: 1781463352:0;vi yts
+: 1781463385:0;bak -r
+: 1781463386:0;,
+: 1781463388:0;yts
+: 1781463437:0;,
+: 1781463438:0;vi yts
+: 1781463490:0;bak -r
+: 1781463493:0;,
+: 1781463494:0;yts
+: 1781463528:0;,
+: 1781463530:0;vi yts
+: 1781463653:0;bak -r
+: 1781463656:0;,
+: 1781463657:0;yts
+: 1781463698:0;.ls yts
+: 1781463699:0;ll
+: 1781463704:0;ll -t
+: 1781463720:0;vi yt.log.2AaaVB
+: 1781463762:0;,
+: 1781463772:0;,
+: 1781463773:0;vi yts
+: 1781463779:0;cl yts
+: 1781463784:0;g job_start
+: 1781463804:0;vi yts
+: 1781464070:0;bak -r
+: 1781464072:0;,
+: 1781464073:0;yts
+: 1781464102:0;.ls yts
+: 1781464112:0;lsd *log
+: 1781464118:0;lsd *.log
+: 1781464134:0;lsd yt*log
+: 1781464143:0;lsd yt*
+: 1781464163:0;ll
+: 1781464164:0;,
+: 1781464169:0;Tw
+: 1781464170:0;ll
+: 1781464199:0;,
+: 1781464200:0;,
+: 1781464202:0;cl yts
+: 1781464205:0;vi yts
+: 1781464287:0;g job_
+: 1781464300:0;vi yts
+: 1781464331:0;bak -r
+: 1781464333:0;,
+: 1781464409:0;ll
+: 1781466284:0;lsd
+: 1781466291:0;ll
+: 1781471292:0;yts
+: 1781475106:0;ll
+: 1781475263:0;..
+: 1781475264:0;ll
+: 1781475317:0;md 'Hidden Hand'
+: 1781475332:0;ll
+: 1781475336:0;ll
+: 1781475348:0;Tw
+: 1781475349:0;ll
+: 1781475354:0;lsd
+: 1781475361:0;ll
+: 1781475365:0;yts
+: 1781475508:0;ll
+: 1781475531:0;yts
+: 1781475562:0;vut info
+: 1781475927:0;lsd
+: 1781475933:0;ll
+: 1781477281:0;yts
+: 1781477554:0;ll
+: 1781478200:0;Ts
+: 1781478201:0;ll
+: 1781478204:0;ll
+: 1781478208:0;ll
+: 1781478711:0;..
+: 1781478717:0;lsd -d
+: 1781478726:0;ll
+: 1781478731:0;Tw
+: 1781478732:0;ll
+: 1781478735:0;lsd
+: 1781478740:0;ll
+: 1781510571:0;lsd
+: 1781510760:0;ll
+: 1781510823:0;backup
+: 1781510905:0;cl LIBS
+: 1781510918:0;bak -P LIB_INIT.zsh
+: 1781510928:0;bak LIB_INIT.zsh
+: 1781510938:0;ll
+: 1781510946:0;ll
+: 1781510953:0;cat finfo
+: 1781510962:0;rm finfo
+: 1781510964:0;ll
+: 1781511003:0;h
+: 1781511006:0;clear
+: 1781511009:0;repo
+: 1781511053:0;E
+: 1781511080:0;locate smb.conf
+: 1781511085:0;locate smb
+: 1781511186:0;M
+: 1781511205:0;dut external
+: 1781511219:0;M
+: 1781511332:0;installed samba
+: 1781511337:0;installed smb
+: 1781511346:0;apps samba
+: 1781511448:0;sudo smbpasswd -a kmiller
+: 1781511550:0;ll
+: 1781511616:0;ll
+: 1781511676:0;h
+: 1781511695:0;ll
+: 1781511702:0;,
+: 1781511743:0;sudo chown -R kmiller:sambashare /srv/samba/shared 
+: 1781511768:0;md samba
+: 1781511777:0;sudo md samba
+: 1781511791:0;sudo md shared
+: 1781511794:0;ll
+: 1781511797:0;..
+: 1781511805:0;h
+: 1781511811:0;sudo chown -R kmiller:sambashare /srv/samba/shared 
+: 1781511820:0;ll /srv/samba/shared 
+: 1781511829:0;ll /srv/samba
+: 1781511860:0;ll /srv
+: 1781511866:0;llr /srv
+: 1781511892:0;vi /etc/samba/smb.conf
+: 1781512016:0;sudo systemctl restart smbd nmbd
+: 1781512030:0;sudo systemctl enable smbd nmbd
+: 1781512107:0;sudo apt install cifs-utils smbclient -y
+: 1781512218:0;apps samba
+: 1781512272:0;sudo chmod -R 0755 /srv/samba/shared
+: 1781512334:0;vi /etc/samba/smb.conf
+: 1781512376:0;sudo systemctl restart smbd nmbd
+: 1781512469:0;ll
+: 1781512473:0;ll
+: 1781512518:0;ll
+: 1781514028:0;sudo systemctl restart smbd nmbd
+: 1781514387:0;sudo systemctl restart smbd nmbd
+: 1781514422:0;sudo chmod -R 0755 /srv/samba/shared
+: 1781514718:0;sudo systemctl restart smbd nmbd
+: 1781515143:0;ll
+: 1781515165:0;chmod 775 "Santana - Oye Como Va.mp3"
+: 1781515166:0;ll
+: 1781515237:0;sudo smbpasswd -a kmiller
+: 1781515248:0;sudo systemctl restart smbd nmbd
+: 1781516115:0;sudo smbstatus
+: 1781516186:0;ip r | grep default
+: 1781516241:0;ps -aux | grep ufw
+: 1781516264:0;grep -E "interfaces|bind interfaces only" /etc/samba/smb.conf
+: 1781516793:0;sudo systemctl restart smbd nmbd
+: 1781516820:0;sudo smbpasswd -a kmiller
+: 1781516843:0;sudo smbpasswd -e kmiller
+: 1781517244:0;sudo smbstatus
+: 1781518125:0;sudo systemctl restart smbd nmbd
+: 1781518171:0;llr
+: 1781518277:0;sudo systemctl restart smbd nmbd
+: 1781518676:0;..
+: 1781518677:0;ll
+: 1781518701:0;sudo chmod -R 775 srv
+: 1781518704:0;ll
+: 1781518732:0;sudo chmod 777 srv
+: 1781518733:0;ll
+: 1781518797:0;h
+: 1781518805:0;md SMB
+: 1781518807:0;ll
+: 1781518854:0;/bin/rm rm -fr srv
+: 1781518859:0;sudo /bin/rm rm -fr srv
+: 1781518860:0;ll
+: 1781518902:0;sudo systemctl restart smbd nmbd
+: 1781518912:0;sudo smbstatus
+: 1781518937:0;sudo systemctl restart smbd nmbd
+: 1781519004:0;ll
+: 1781519047:0;sudo chown -R kmiller:sambashare ~/SMB
+: 1781519050:0;ll
+: 1781519064:0;groups
+: 1781519163:0;sudo systemctl restart smbd nmbd
+: 1781519674:0;sudo smbstatus
+: 1781520385:0;h
+: 1781520386:0;ll
+: 1781520393:0;ll
+: 1781520400:0;rm Santana\ -\ Oye\ Como\ Va.mp3
+: 1781520402:0;ll
+: 1781520425:0;ln -s /media/kmiller/EXT_2/Music .
+: 1781520426:0;ll
+: 1781520432:0;llr
+: 1781520479:0;..
+: 1781520480:0;ll
+: 1781520491:0;unlink Music
+: 1781520492:0;ll
+: 1781520509:0;ln -s /media/kmiller/EXT_2/Music/ . 
+: 1781520583:0;unlink Music
+: 1781520602:0;ln -s /media/kmiller/EXT_2/Music/70s80s90s .
+: 1781520603:0;ll
+: 1781520718:0;sudo systemctl restart smbd nmbd
+: 1781521673:0;sudo systemctl restart smbd nmbd
+: 1781521944:0;mount
+: 1781521954:0;mount | grep EXT
+: 1781521978:0;ll
+: 1781521987:0;l
+: 1781521989:0;ll
+: 1781522007:0;..
+: 1781522014:0;chmod 777 70s80s90s
+: 1781522017:0;ll
+: 1781522077:0;..
+: 1781522082:0;ll
+: 1781522130:0;sudo journalctl -xe | grep -i apparmor | grep smbd
+: 1781522188:0;install apparmor-utils
+: 1781522207:0;sudo aa-complain /usr/sbin/smbd
+: 1781522297:0;sudo dmesg | grep -i "audit" | grep -i "smbd"
+: 1781522310:0;sudo dmesg | grep -i "audit" | grep -i "smbd" | grep profile
+: 1781522332:0;sudo dmesg | grep -i "audit" | grep -i "smbd" | grep get
+: 1781522359:0;vi /etc/apparmor.d/usr.sbin.smbd
+: 1781522550:0;sudo systemctl reload apparmor
+: 1781522562:0;sudo systemctl restart smbd nmbd
+: 1781522818:0;locate plex
+: 1781523189:0;clear
+: 1781523202:0;ll
+: 1781523230:0;unlink 70s80s90s
+: 1781523231:0;ll
+: 1781523242:0;ln -s /media/kmiller/EXT_2/Music/ .
+: 1781523243:0;ll
+: 1781527679:0;O
+: 1781527696:0;ll
+: 1781527707:0;lsd
+: 1781527713:0;ll
+: 1781527719:0;me MuseScore-Studio-4.7.3.260608135-x86_64.AppImage
+: 1781527722:0;vi run_app_image
+: 1781535233:0;yts
+: 1781535291:0;Tw
+: 1781535305:0;mp4_merge -o"JD" judg
+: 1781540494:0;M
+: 1781540524:0;..
+: 1781540532:0;llr
+: 1781543326:0;e2s carefully
+: 1781543355:0;Tw
+: 1781543356:0;ll
+: 1781543362:0;lsd
+: 1781543370:0;ll
+: 1781543375:0;t
+: 1781543439:0;rb -p\ 
+: 1781543441:0;rb -p
+: 1781544293:0;T
+: 1781544294:0;ll
+: 1781544297:0;ll
+: 1781544305:0;ll
+: 1781544319:0;M
+: 1781544321:0;m
+: 1781544323:0;M
+: 1781544329:0;dut external
+: 1781544366:0;M
+: 1781544375:0;md "Otis Spann"
+: 1781544413:0;ll
+: 1781544429:0;fsub
+: 1781544437:0;fsub C
+: 1781544446:0;ll
+: 1781544454:0;fsub '('
+: 1781544458:0;fsub '\('
+: 1781544466:0;fsub '\)'
+: 1781544472:0;fsub '\['
+: 1781544475:0;fsub '\['
+: 1781544479:0;fsub '\]'
+: 1781544482:0;fsub '\]'
+: 1781544483:0;ll
+: 1781544488:0;fsub
+: 1781544504:0;fsub -x
+: 1781544518:0;ll
+: 1781544526:0;fsub -x
+: 1781544537:0;fsub 'Otis Spann '
+: 1781544543:0;fsub
+: 1781544555:0;fsub -N
+: 1781544560:0;ll
+: 1781544571:0;fsub -x
+: 1781544588:0;fsub -N *flac
+: 1781544599:0;md extra
+: 1781544620:0;ll
+: 1781544627:0;ll
+: 1781544640:0;fsub -N 
+: 1781544644:0;ll
+: 1781544661:0;ll
+: 1781544671:0;rm extra
+: 1781544673:0;rm extra
+: 1781544675:0;ll
+: 1781549172:0;todo
+: 1781549336:0;Tw
+: 1781549337:0;ll
+: 1781549345:0;yts
+: 1781549515:0;cl yts
+: 1781549517:0;vi yts
+: 1781549740:0;bak -r
+: 1781549743:0;,
+: 1781549745:0;Tw
+: 1781549747:0;,
+: 1781549751:0;yts
+: 1781550259:0;cl yts
+: 1781550261:0;vi yts
+: 1781550338:0;bak -r
+: 1781553859:0;G
+: 1781554121:0;G
+: 1781554238:0;ll
+: 1781554248:0;clear
+: 1781554325:0;t
+: 1781555597:0;t
+: 1781555617:0;yts
+: 1781558471:0;lsd
+: 1781558497:0;ll
+: 1781561349:0;t
+: 1781562235:0;lsd
+: 1781562258:0;aux ffmpeg
+: 1781562276:0;aux -DDDDDD ffmpeg
+: 1781562418:0;aux ffmpeg
+: 1781562429:0;ll
+: 1781562508:0;aux ffmpeg
+: 1781562514:0;aux ffmpeg >x
+: 1781562517:0;ci x
+: 1781562518:0;vi x
+: 1781562538:0;rm x
+: 1781562595:0;aux ffmpeg 
+: 1781562624:0;aux ffmpeg 
+: 1781562655:0;aux ffmpeg 
+: 1781562659:0;aux ffmpeg 
+: 1781562795:0;aux ffmpeg 
+: 1781562818:0;aux ffmpeg 
+: 1781562844:0;ull
+: 1781562854:0;g -I _PIDS
+: 1781562888:0;cl aux
+: 1781562892:0;bak aux
+: 1781562903:0;g -I _PIDS
+: 1781563237:0;ull
+: 1781563248:0;g -I _EXIT_SCRUB
+: 1781563261:0;,
+: 1781563270:0;vi aux
+: 1781563279:0;bak -r
+: 1781563283:0;Tw
+: 1781563288:0;aux ffmpeg
+: 1781563318:0;cl aux
+: 1781563321:0;vi aux
+: 1781563363:0;aux ffmpeg
+: 1781563366:0;vi aux
+: 1781563403:0;aux ffmpeg
+: 1781563415:0;vi aux
+: 1781563426:0;aux ffmpeg
+: 1781563526:0;vi aux
+: 1781563547:0;aux ffmpeg
+: 1781563578:0;cl LIBS
+: 1781563583:0;bak EXIT.zsh
+: 1781563586:0;ll
+: 1781563591:0;vi EXIT.zsh
+: 1781563922:0;bak -r EXIT.zsh
+: 1781563926:0;Tw
+: 1781563929:0;aux
+: 1781563952:0;aux ffmpeg
+: 1781563965:0;cl aux
+: 1781563968:0;bak -r
+: 1781563970:0;,
+: 1781563975:0;aux
+: 1781563985:0;aux ffmpeg
+: 1781564000:0;lsd
+: 1781564007:0;yts
+: 1781564040:0;ll
+: 1781564045:0;vut info
+: 1781564063:0;lsd
+: 1781564072:0;yts
+: 1781564313:0;backup
+: 1781564417:0;repo
+: 1781564440:0;.ls yts
+: 1781564443:0;lsd
+: 1781564453:0;repo
+: 1781564469:0;clear
+: 1781564471:0;Tw
+: 1781564472:0;ll
+: 1781564498:0;mp4_merge -o"JD" Judg
+: 1781564508:0;ll
+: 1781565429:0;t
+: 1781570506:0;lsd
+: 1781570515:0;ll
+: 1781597574:0;yts
+: 1781598300:0;vi ~/.local/share/yts/yt.log*
+: 1781598361:0;rm ~/.local/share/yts/yt.log*
+: 1781598436:0;ll
+: 1781598467:0;cl yts
+: 1781598471:0;vi yts
+: 1781598565:0;yts
+: 1781598666:0;vi yts
+: 1781599260:0;yts
+: 1781599304:0;vi yts
+: 1781599345:0;yts
+: 1781599398:0;vi yts
+: 1781599743:0;vi yts
+: 1781599935:0;yts
+: 1781599976:0;rm ~/.local/share/yts/yt.log*
+: 1781599999:0;bak -r
+: 1781600034:0;yts
+: 1781600079:0;vi yts
+: 1781600182:0;yts
+: 1781600252:0;vi ~/.local/share/yts/yt.log*
+: 1781600583:0;cat x
+: 1781600703:0;vi x
+: 1781601181:0;man grep
+: 1781601908:0;Tw
+: 1781601909:0;lsd
+: 1781601913:0;ll
+: 1781601927:0;ll -t
+: 1781602632:0;me x
+: 1781602633:0;x
+: 1781602658:0;vi x
+: 1781602706:0;x
+: 1781602708:0;vi x
+: 1781602726:0;x
+: 1781602729:0;vi x
+: 1781602747:0;x
+: 1781602759:0;vi x
+: 1781602811:0;x
+: 1781602816:0;vi x
+: 1781602833:0;x
+: 1781602835:0;vi x
+: 1781602844:0;x
+: 1781602852:0;vi x
+: 1781603130:0;yts
+: 1781603183:0;vut info
+: 1781603212:0;bak -r
+: 1781603226:0;Tw
+: 1781603228:0;ll
+: 1781606327:0;t
+: 1781608564:0;lsd
+: 1781608572:0;ll
+: 1781608576:0;ll -t
+: 1781608582:0;lsd
+: 1781608586:0;ll
+: 1781608605:0;ll -t
+: 1781614626:0;ull
+: 1781614631:0;g in_array
+: 1781614651:0;lsfuncs ARRAY.zsh
+: 1781614747:0;vi -e doit
+: 1781614894:0;lsfuncs ARRAY.zsh
+: 1781614907:0;vi -e doit
+: 1781615001:0;doit
+: 1781615003:0;vi -e doit
+: 1781615249:0;doit
+: 1781615282:0;vi -e doit
+: 1781615315:0;cat doit
+: 1781615325:0;vi doit
+: 1781615542:0;doit
+: 1781615545:0;vi doit
+: 1781615582:0;doit
+: 1781615586:0;vi doit
+: 1781615736:0;vi doit
+: 1781615784:0;rm doit
+: 1781615786:0;ll
+: 1781615791:0;cl LIBS
+: 1781615800:0;bak ARRAY.zsh
+: 1781615808:0;bak STR.zsh
+: 1781615811:0;ll
+: 1781615872:0;ticker
+: 1781622959:0;clear
+: 1781622962:0;Tw
+: 1781622963:0;ll
+: 1781628858:0;yts
+: 1781628952:0;vi ~/.local/share/yts/yt.log*
+: 1781628975:0;rm ~/.local/share/yts/yt.log*
+: 1781628981:0;ll
+: 1781629007:0;yts -wy
+: 1781630614:0;spell arthritis
+: 1781630817:0;clear
+: 1781630831:0;ticker
+: 1781636799:0;ll
+: 1781636828:0;fsub -yp'Judging Freedom' "Amb. Chas Freeman - If Trump Says No To Netanyahu.mp4"
+: 1781636835:0;fsub -yp'Judging Freedom' "Matt Hoh - A People Should Know When They're Conquered.mp4"
+: 1781636848:0;fsub -yp'Judging Freedom' "Lt.Col. Bill Astore - Why DOES The Military Fight.mp4"
+: 1781636851:0;lsd
+: 1781636869:0;vut info
+: 1781637101:0;ll
+: 1781637159:0;lsfuncs ARRAY.zsh
+: 1781637220:0;lsfuncs STR.zsh
+: 1781637276:0;lsfuncs STR.zsh
+: 1781637334:0;b
+: 1781637343:0;g str_array_to
+: 1781637349:0;ull
+: 1781637351:0;g str_array_to
+: 1781637356:0;s
+: 1781637359:0;g str_array_to
+: 1781637373:0;c
+: 1781637377:0;cl LIBS
+: 1781637379:0;ll
+: 1781637389:0;ll
+: 1781637397:0;tst_center
+: 1781637476:0;vi -e doit
+: 1781637538:0;lsfuncs ARRAY.zsh
+: 1781637563:0;lsfuncs STR.zsh
+: 1781637577:0;lsfuncs STR.zsh
+: 1781637594:0;vi doit
+: 1781637604:0;vi doit
+: 1781637623:0;lsfuncs STR.zsh
+: 1781637634:0;doit
+: 1781637643:0;vi doit
+: 1781637663:0;doit
+: 1781637883:0;vi doit
+: 1781637901:0;doit
+: 1781637908:0;vi doit
+: 1781637919:0;doit
+: 1781637926:0;vi doit
+: 1781637955:0;doit
+: 1781637958:0;vi doit
+: 1781637972:0;doit
+: 1781637975:0;vi doit
+: 1781637992:0;doit
+: 1781638001:0;vi doit
+: 1781638010:0;doit
+: 1781638014:0;vi doit
+: 1781638082:0;doit 80 "testing"
+: 1781638085:0;doit 80 "testing"
+: 1781638086:0;doit 80 "testing"
+: 1781638090:0;vi doit
+: 1781638101:0;doit 80 "testing"
+: 1781638103:0;vi doit
+: 1781638117:0;doit 80 "testing"
+: 1781638123:0;doit 90 "testing"
+: 1781638128:0;doit 100 "testing"
+: 1781638134:0;doit 190 "testing"
+: 1781638146:0;doit 221 "testing"
+: 1781638159:0;tput cols
+: 1781638166:0;doit 158 "testing"
+: 1781638188:0;b
+: 1781638196:0;g str_center
+: 1781638205:0;ull
+: 1781638207:0;g str_center
+: 1781638253:0;vi MSG.zsh
+: 1781638334:0;ll
+: 1781638340:0;cl LIBS
+: 1781638348:0;bak STR.zsh
+: 1781638356:0;,
+: 1781638358:0;,
+: 1781638362:0;ll
+: 1781638365:0;rm doit
+: 1781638367:0;ll
+: 1781638409:0;ll
+: 1781638415:0;..
+: 1781638418:0;rm lib_init
+: 1781638420:0;ll
+: 1781638427:0;ll
+: 1781638431:0;vi nfs_test
+: 1781642219:0;Tw
+: 1781642221:0;yts
+: 1781642240:0;Tw
+: 1781642241:0;ll
+: 1781642286:0;cl yts
+: 1781642288:0;vi yts
+: 1781642331:0;bak -r
+: 1781642333:0;,
+: 1781642335:0;ll
+: 1781642344:0;lsd
+: 1781642360:0;ll
+: 1781642368:0;Tm
+: 1781642369:0;ll
+: 1781642374:0;lsd
+: 1781642378:0;ll
+: 1781642383:0;,
+: 1781642384:0;ll
+: 1781642833:0;e2s they only hd six percent
+: 1781642839:0;e2s they only had six percent
+: 1781642899:0;e2s the pain
+: 1781642912:0;e2s the pain moves around
+: 1781645554:0;d
+: 1781645556:0;ll
+: 1781645568:0;o
+: 1781645580:0;ll
+: 1781645637:0;D
+: 1781645641:0;ll
+: 1781645645:0;..
+: 1781645653:0;,
+: 1781645670:0;ll
+: 1781645702:0;ll
+: 1781645711:0;o Card_Pickup_Appt.pdf
+: 1781645801:0;d
+: 1781645802:0;ll
+: 1781645811:0;O
+: 1781645816:0;ll
+: 1781645821:0;,
+: 1781645824:0;,
+: 1781645827:0;d
+: 1781645832:0;ll
+: 1781645839:0;rm MuseScore-Studio-4.7.3.260608135-x86_64.AppImage
+: 1781645841:0;ll
+: 1781645848:0;Cat houston_heater
+: 1781645982:0;ll
+: 1781645986:0;lsd
+: 1781646004:0;ll
+: 1781646009:0;o
+: 1781646019:0;ll
+: 1781646026:0;D
+: 1781646050:0;md Insurance
+: 1781646064:0;ll
+: 1781646068:0;D
+: 1781646069:0;ll
+: 1781646081:0;cat Correos_Incident_Number
+: 1781646088:0;rm Correos_Incident_Number
+: 1781646089:0;l
+: 1781646091:0;ll
+: 1781646098:0;o
+: 1781646131:0;ll
+: 1781646178:0;rm UpNotes\ Guide.odt
+: 1781646179:0;ll
+: 1781646190:0;o
+: 1781646237:0;ll
+: 1781646242:0;rm Alhaurin_Restaurants.odt
+: 1781646243:0;ll
+: 1781646251:0;cat Window_Dimemsions
+: 1781646269:0;rm Window_Dimemsions
+: 1781646270:0;ll
+: 1781646288:0;ll
+: 1781646301:0;llr
+: 1781646311:0;ll
+: 1781646706:0;o
+: 1781646761:0;ll
+: 1781646763:0;llr
+: 1781646784:0;ll
+: 1781646789:0;..
+: 1781646790:0;ll
+: 1781646798:0;ll -l
+: 1781646805:0;ulw
+: 1781646807:0;ule
+: 1781646837:0;,
+: 1781646845:0;ll
+: 1781646860:0;ll
+: 1781646876:0;uls
+: 1781646881:0;lue
+: 1781646883:0;ule
+: 1781646898:0;ll
+: 1781646906:0;,
+: 1781646912:0;,
+: 1781646913:0;,
+: 1781647185:0;cl yts
+: 1781647190:0;g yts.js
+: 1781647211:0;.ls yts
+: 1781647212:0;ll
+: 1781647224:0;ll
+: 1781647230:0;cl yts
+: 1781647232:0;vi yts
+: 1781647295:0;bak -r
+: 1781647300:0;ule
+: 1781647471:0;Tw
+: 1781647471:0;ll
+: 1781647474:0;lsd
+: 1781647482:0;ll
+: 1781647486:0;yts
+: 1781647730:0;mp4_merge -o'JD' Jimm
+: 1781651282:0;yts
+: 1781652306:0;ll
+: 1781652316:0;rm JD.mp4
+: 1781652319:0;ll
+: 1781652334:0;rm Judging\ Freedom\ -\ Pepe\ Escobar\ -\ How\ Iran\ Outsmarted\ Trump.mp4
+: 1781652335:0;l
+: 1781652337:0;ll
+: 1781652454:0;s
+: 1781652473:0;find_not_called
+: 1781652484:0;vi find_not_called
+: 1781652536:0;vi find_not_called
+: 1781652616:0;find_not_called
+: 1781652627:0;vi find_not_called
+: 1781652635:0;find_not_called
+: 1781652639:0;clear
+: 1781652641:0;find_not_called
+: 1781652650:0;vi find_not_called
+: 1781652667:0;find_not_called
+: 1781652672:0;vi find_not_called
+: 1781652690:0;find_not_called
+: 1781652710:0;find_not_called -L
+: 1781652730:0;vi find_not_called
+: 1781653082:0;vi -e doit
+: 1781653111:0;doit
+: 1781653129:0;vi -e doit
+: 1781653140:0;doit
+: 1781653144:0;vi -e doit
+: 1781653223:0;vi find_not_called
+: 1781653250:0;find_not_called -L
+: 1781653275:0;vi find_not_called
+: 1781653285:0;find_not_called -L
+: 1781653301:0;doit
+: 1781653309:0;vi doit
+: 1781653359:0;doit
+: 1781653367:0;find_not_called -L
+: 1781653383:0;vi find_not_called
+: 1781653473:0;find_not_called -L
+: 1781653530:0;vi find_not_called
+: 1781653660:0;find_not_called -L
+: 1781653856:0;find_not_called -H
+: 1781653907:0;cat /tmp/logit.log
+: 1781653920:0;,
+: 1781653922:0;ll
+: 1781678926:0;s
+: 1781678935:0;cl find_not_called
+: 1781678939:0;bak
+: 1781678944:0;ll
+: 1781678949:0;vi find_not_called
+: 1781679602:0;find_not_called -L
+: 1781679675:0;vi find_not_called
+: 1781679838:0;find_not_called -L
+: 1781679866:0;ll
+: 1781679870:0;vi find_not_called
+: 1781680023:0;find_not_called -L
+: 1781680050:0;vi find_not_called
+: 1781680221:0;find_not_called -L
+: 1781680360:0;vi find_not_called
+: 1781680475:0;ule
+: 1781680488:0;g csr
+: 1781680505:0;vi color.template.zsh
+: 1781680601:0;,
+: 1781680608:0;cl find_not_called
+: 1781680611:0;vi find_not_called
+: 1781680655:0;,
+: 1781680682:0;vi color*
+: 1781680764:0;cl find_not_called
+: 1781680767:0;vi find_not_called
+: 1781680906:0;find_not_called -L
+: 1781680939:0;vi find_not_called
+: 1781680985:0;find_not_called -L
+: 1781681176:0;vi find_not_called
+: 1781681328:0;find_not_called -L
+: 1781681406:0;find_not_called -L -vvv
+: 1781681491:0;vi find_not_called
+: 1781681643:0;find_not_called -L -vvv
+: 1781681658:0;vi find_not_called
+: 1781681780:0;find_not_called -L -vvv
+: 1781681797:0;vi find_not_called
+: 1781681848:0;find_not_called -L -vvv
+: 1781681856:0;vi find_not_called
+: 1781681970:0;find_not_called -L -vvv
+: 1781682398:0;vi find_not_called
+: 1781682592:0;find_not_called -L -vvv
+: 1781682747:0;vi find_not_called
+: 1781682866:0;find_not_called -L -vvv
+: 1781682907:0;vi find_not_called
+: 1781682935:0;find_not_called -L -vvv
+: 1781683038:0;vi find_not_called
+: 1781683095:0;find_not_called -L -vvv
+: 1781683214:0;vi find_not_called
+: 1781683576:0;Tw
+: 1781683577:0;ll
+: 1781683583:0;yts
+: 1781683609:0;ll
+: 1781683671:0;cl find_not_called
+: 1781683674:0;vi find_not_called
+: 1781683742:0;todo
+: 1781683763:0;todo -d
+: 1781683787:0;cl sdb
+: 1781683793:0;vi sdv
+: 1781683855:0;,
+: 1781683861:0;vi find_not_called
+: 1781684424:0;e2s the dog makes a lot of noise
+: 1781684455:0;e2s the dog moves around
+: 1781684485:0;e2s the dogs move around
+: 1781684498:0;clear
+: 1781685355:0;lsd
+: 1781685359:0;Tw
+: 1781685359:0;lsd
+: 1781685365:0;ll
+: 1781685961:0;e2s strange
+: 1781685978:0;ll
+: 1781695734:0;lsd
+: 1781695739:0;ll
+: 1781695756:0;yts
+: 1781709504:0;yts
+: 1781710430:0;.ls yts
+: 1781710443:0;vi yt.log*
+: 1781710484:0;cl yts
+: 1781710517:0;lsfuncs yts
+: 1781710586:0;vi -e doit
+: 1781710627:0;grep 'ERROR' ~/.local/share/yts/yt.log*
+: 1781710648:0;man grep
+: 1781710750:0;vi doit
+: 1781710774:0;doit
+: 1781710786:0;vi doit
+: 1781710792:0;./doit
+: 1781710798:0;type doit
+: 1781710801:0;s
+: 1781710805:0;ll
+: 1781710807:0;vi doit
+: 1781710812:0;rm doit
+: 1781710813:0;,
+: 1781710815:0;doit
+: 1781710819:0;vi doit
+: 1781710856:0;cat doit
+: 1781710907:0;vi  ~/.local/share/yts/yt.log*
+: 1781710954:0;grep -i 'ERROR' ~/.local/share/yts/yt.log*
+: 1781710976:0;vi doit
+: 1781710991:0;doit
+: 1781710999:0;vi doit
+: 1781711066:0;clear
+: 1781711117:0;grep -Pi 'Error'
+: 1781711124:0;grep -Pi 'Error' <<<${X}
+: 1781711134:0;grep -Pi 'Error.*' <<<${X}
+: 1781711141:0;grep -Pi 'Error.* ' <<<${X}
+: 1781711152:0;grep -Pi 'Error.*\s?' <<<${X}
+: 1781711216:0;grep -Pi 'Error.*\(?' <<<${X}
+: 1781711225:0;grep -Pi 'Error.*\(' <<<${X}
+: 1781711264:0;grep -Pi 'HTTP.*\(' <<<${X}
+: 1781711298:0;grep -Pi 'HTTP.*(' <<<${X}
+: 1781711303:0;grep -Pi 'HTTP.*\(' <<<${X}
+: 1781711326:0;grep -Pi 'error|http.*\(' <<<${X}
+: 1781711355:0;grep -Pi 's/(error|http.*\)(/\1/' <<<${X}
+: 1781711365:0;grep -Pi 's/(error|http.*\))/\1/' <<<${X}
+: 1781711377:0;grep -Pi 's/(error|http.*)\)/\1/' <<<${X}
+: 1781711411:0;sed -E 's/(error|http.*)\)/\1/I' <<<${X}
+: 1781711457:0;sed -E 's/\(error|http.*[\)]\)/\1/I' <<<${X}
+: 1781711490:0;sed -E 's/\(error|http.*\)/\1/I' <<<${X}
+: 1781711510:0;sed -E 's/\((error|http).*\)/\1/I' <<<${X}
+: 1781711537:0;sed -E 's/\((error|http).*/\1/I' <<<${X}
+: 1781711564:0;grep -Pi 's/(error|http.*\))/\1/' <<<${X}
+: 1781711581:0;grep -Pi '(error|http.*)' <<<${X}
+: 1781711609:0;grep -Pi -m1 '(error|http.*)' <<<${X}
+: 1781711626:0;grep -Pi '(error|http.* )' <<<${X}
+: 1781711646:0;grep -Pi '(error|http.*\s)' <<<${X}
+: 1781711701:0;grep -Pi '(error|http.* )' <<<${X}
+: 1781711722:0;grep -Pi '(error|http.*s )' <<<${X}
+: 1781711746:0;grep -Pi -o '(error|http.*s )' <<<${X}
+: 1781712066:0;grep -Pi -o ' (error|http.*s )' <<<${X}
+: 1781712180:0;cut -d: -f1 <<<${X}
+: 1781712193:0;cut -d: -f1-2 <<<${X}
+: 1781712277:0;rm doit
+: 1781712282:0;hist
+: 1781712328:0;hist
+: 1781712363:0;hist
+: 1781712368:0;ll
+: 1781712371:0;rm x
+: 1781712372:0;ll
+: 1781712378:0;bak -r yts
+: 1781712388:0;yts
+: 1781712422:0;vi yts
+: 1781712450:0;yts
+: 1781712484:0;yts -DDD
+: 1781712559:0;vi yts
+: 1781712578:0;yts 
+: 1781712604:0;vi yts
+: 1781712618:0;yts -wy
+: 1781712646:0;yt 'https://www.youtube.com/watch?v=F_ngNnPGbTs'
+: 1781712653:0;yt 'https://www.youtube.com/watch?v=F_ngNnPGbTs'
+: 1781715064:0;vi yts
+: 1781715179:0;yt 'https://www.youtube.com/watch?v=F_ngNnPGbTs'
+: 1781715334:0;.ls yts
+: 1781715337:0;ll
+: 1781715344:0;vi yt.log*
+: 1781715365:0;rm yt.log*
+: 1781715367:0;ll
+: 1781715381:0;vi yts.js
+: 1781715390:0;ule
+: 1781715408:0;cat yt-dlp.conf
+: 1781715442:0;,
+: 1781715443:0;ll
+: 1781715458:0;man yt-dlp
+: 1781715623:0;E
+: 1781715629:0;vi yt-dlp.conf
+: 1781715656:0;ule
+: 1781715659:0;cat yt-dlp.conf
+: 1781715668:0;cat /etc/yt-dlp.conf
+: 1781715693:0;cl yts
+: 1781715703:0;g yt-dlp
+: 1781715719:0;g cmd-dlp
+: 1781715735:0;vi yts
+: 1781715976:0;.ls yts
+: 1781715978:0;ll
+: 1781716001:0;ll
+: 1781716012:0;E
+: 1781716023:0;sudo mv yt-dlp.conf yt-dlp.conf.bak
+: 1781716026:0;cl yts
+: 1781716034:0;bak -r yt
+: 1781716044:0;bak -P yts
+: 1781716051:0;yts
+: 1781716123:0;Lw
+: 1781716126:0;Tw
+: 1781716127:0;ll
+: 1781716136:0;.ls yts
+: 1781716137:0;ll
+: 1781716159:0;vi yt.dbg.log
+: 1781716209:0;cl yts
+: 1781716211:0;vi yt
+: 1781716299:0;bak -r yt
+: 1781716303:0;yts
+: 1781716329:0;k
+: 1781716331:0;yts
+: 1781716362:0;.ls yts
+: 1781716363:0;ll
+: 1781716369:0;,
+: 1781716375:0;yts -D
+: 1781716413:0;.ls yts
+: 1781716414:0;ll
+: 1781716422:0;vi yt.log.BQsBxs
+: 1781716463:0;,
+: 1781716465:0;vi yt
+: 1781716524:0;bak -r yt
+: 1781717054:0;Tw
+: 1781717055:0;ll
+: 1781717058:0;lsd
+: 1781717065:0;ll
+: 1781720791:0;cl yts
+: 1781720793:0;vi yt
+: 1781721077:0;yt 'https://www.youtube.com/watch?v=bhlKeCbwWOo'
+: 1781721110:0;vi yt
+: 1781721165:0;yt 'https://www.youtube.com/watch?v=bhlKeCbwWOo'
+: 1781721199:0;vi ~/.local/share/yts/yt.dbg.log
+: 1781721222:0;vi yt
+: 1781721317:0;vi ~/.local/share/yts/yt.dbg.log
+: 1781721324:0;yt 'https://www.youtube.com/watch?v=bhlKeCbwWOo'
+: 1781721336:0;vi ~/.local/share/yts/yt.dbg.log
+: 1781721425:0;yt 'https://rumble.com/v7bf9to-trump-turns-on-netanyahu-and-backs-syria-in-lebanon.html?e9s=src_v1_mfp'
+: 1781721653:0;vi ~/.local/share/yts/yt.dbg.log
+: 1781721673:0;Tw
+: 1781721674:0;ll
+: 1781721738:0;,
+: 1781721740:0;ll
+: 1781721748:0;.ls yts
+: 1781721750:0;ll
+: 1781721764:0;vi yt.log*
+: 1781721779:0;rm yt.log*
+: 1781721781:0;ll
+: 1781721809:0;cl yts
+: 1781721813:0;bak -r yt
+: 1781721886:0;vi yts
+: 1781722131:0;yts
+: 1781722182:0;.ls yts
+: 1781722183:0;ll
+: 1781722191:0;vi yt.dbg.log
+: 1781722306:0;vi yts
+: 1781722310:0;cl yts
+: 1781722312:0;vi yts
+: 1781722364:0;yts
+: 1781722428:0;yt -N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' 'https://youtube.com/watch?v=jL4q_Jehnso' 
+: 1781722476:0;yt -o '%(channel)s - %(title).200s.%(ext)s' 'https://youtube.com/watch?v=jL4q_Jehnso' 
+: 1781722501:0;yt "-N2 -Rinfinite -i -o '%(channel)s - %(title).200s.%(ext)s' 'https://youtube.com/watch?v=jL4q_Jehnso' "
+: 1781722521:0;.ls yts
+: 1781722526:0;vi yt-dlp.conf
+: 1781722686:0;vi yts
+: 1781722691:0;,
+: 1781722692:0;vi yts
+: 1781722756:0;yts
+: 1781722796:0;.ls yts
+: 1781722797:0;ll
+: 1781722823:0;,
+: 1781722824:0;ll
+: 1781722827:0;vi yts
+: 1781723080:0;yts
+: 1781723127:0;vi ~/.local/share/yts/yt.dbg.log
+: 1781723144:0;vi yt
+: 1781723179:0;yts
+: 1781723215:0;vi yts
+: 1781723306:0;yts
+: 1781723328:0;ll
+: 1781723334:0;vi nohup.out
+: 1781723365:0;.ls yts
+: 1781723382:0;yt-dlp.conf
+: 1781723387:0;vi yt-dlp.conf
+: 1781723399:0;,
+: 1781723402:0;yts
+: 1781723410:0;vi yts
+: 1781723449:0;yts
+: 1781723452:0;vi yts
+: 1781723517:0;yts
+: 1781723559:0;ll
+: 1781723565:0;rm nohup.out
+: 1781723567:0;ll
+: 1781723571:0;vi yts
+: 1781723629:0;yts
+: 1781723655:0;yts -D
+: 1781723698:0;vi ~/.local/share/yts/yt.dbg.log
+: 1781723784:0;/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o %(channel)s - %(title).200s.%(ext)s https://youtube.com
+: 1781723787:0;/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o %(channel)s - %(title).200s.%(ext)s https://youtube.com"
+: 1781723824:0;vi yt
+: 1781723874:0;vi yts
+: 1781723950:0;yts
+: 1781723966:0;ll
+: 1781723970:0;vi yt.args.out
+: 1781724216:0;ll
+: 1781724221:0;rm yt.args.out
+: 1781724230:0;vi yt
+: 1781724269:0;yts
+: 1781724292:0;ll
+: 1781724308:0;vi yts
+: 1781724332:0;yt
+: 1781724334:0;vi yt
+: 1781724434:0;yt
+: 1781724455:0;vi yt
+: 1781724570:0;yt -H
+: 1781724575:0;yt 
+: 1781724584:0;vi yt
+: 1781724608:0;yt 
+: 1781724673:0;gitlog
+: 1781724694:0;gitlog yts
+: 1781724720:0;gitlog yt
+: 1781724741:0;ll
+: 1781724796:0;vi 9bf916f0\#yts.log.out
+: 1781724850:0;ll
+: 1781724854:0;me yt
+: 1781724856:0;me yts
+: 1781724860:0;yts
+: 1781724924:0;bak yts
+: 1781724927:0;yts
+: 1781724959:0;bak -r yt
+: 1781724963:0;yts
+: 1781724994:0;ll
+: 1781725006:0;rm Sabby\ Sabs\ -\ B-52\ Bomber\ CRASHES\ In\ California\!.webm
+: 1781725007:0;ll
+: 1781725012:0;rm yt.args.out
+: 1781725013:0;ll
+: 1781725016:0;vi yt
+: 1781725151:0;bak -r yt
+: 1781725153:0;yts
+: 1781725178:0;ll
+: 1781725190:0;vi yt
+: 1781725213:0;cl yts
+: 1781725222:0;vi yts
+: 1781725328:0;bak yts
+: 1781725332:0;bak -r yts
+: 1781725349:0;tw
+: 1781725351:0;Tw
+: 1781725352:0;yts
+: 1781725359:0;,
+: 1781725362:0;vi yts
+: 1781725379:0;bak -r
+: 1781725382:0;,
+: 1781725383:0;yts
+: 1781725417:0;lsd
+: 1781725436:0;ll
+: 1781725617:0;lsd
+: 1781725620:0;ll
+: 1781725624:0;yts
+: 1781725639:0;yts -wy
+: 1781726215:0;ll
+: 1781726223:0;yts
+: 1781726274:0;ll
+: 1781726369:0;lsd
+: 1781726403:0;ll
+: 1781731522:0;lsd
+: 1781731528:0;ll
+: 1781734456:0;lsd
+: 1781734466:0;ll
+: 1781736200:0;lsd
+: 1781736209:0;yts
+: 1781736653:0;.ls yts
+: 1781736654:0;ll
+: 1781736663:0;vi yt.log*
+: 1781736673:0;rm yt.log*
+: 1781736678:0;cl yts
+: 1781736681:0;vi yt
+: 1781763436:0;cl yts
+: 1781763484:0;clear
+: 1781763486:0;vi yts
+: 1781763607:0;yts
+: 1781763696:0;echo $PATH
+: 1781763760:0;h
+: 1781763763:0;ll
+: 1781763766:0;llr
+: 1781763785:0;type deno
+: 1781763794:0;deno --help
+: 1781763870:0;..
+: 1781763874:0;cl yts
+: 1781763879:0;vi yts
+: 1781764024:0;cl yts
+: 1781764028:0;bak -r
+: 1781764030:0;cl yts
+: 1781764031:0;ll
+: 1781764034:0;vi yt
+: 1781764269:0;bak -r yt
+: 1781764277:0;Tw
+: 1781764287:0;yts
+: 1781764373:0;vi ~/.local/share/yts/yt.dbg.log
+: 1781764575:0;vi ~/.local/share/yts/yts.url.log
+: 1781764597:0;,
+: 1781764598:0;ll
+: 1781764609:0;vi yt
+: 1781764622:0;vi ~/.local/share/yts/yts.url.log
+: 1781764666:0;vi yt
+: 1781764712:0;bak -r yt
+: 1781764719:0;Tw
+: 1781764720:0;ll
+: 1781764729:0;lsd
+: 1781764788:0;ll
+: 1781764792:0;yts
+: 1781764851:0;ll
+: 1781764894:0;vi ~/.local/share/yts/yt.dbg.log
+: 1781765095:0;cl yts
+: 1781765097:0;vi yts
+: 1781765142:0;g title_scrubber
+: 1781765209:0;vi yts
+: 1781765385:0;g title_scrubber
+: 1781765407:0;g -n title_scrubber
+: 1781765416:0;vi yts
+: 1781765540:0;cl yts
+: 1781765544:0;bak 
+: 1781765548:0;bak -r
+: 1781765550:0;ll
+: 1781765558:0;backup
+: 1781765566:0;Tw
+: 1781765567:0;lsd
+: 1781765571:0;ll
+: 1781766034:0;t
+: 1781766512:0;e2s ring the bell
+: 1781768489:0;Lw
+: 1781768491:0;Tw
+: 1781768494:0;lsd
+: 1781768497:0;ll
+: 1781769146:0;lsd
+: 1781769150:0;ll
+: 1781769467:0;e2s i told you 2 weeks ago
+: 1781775142:0;lsd
+: 1781781056:0;ll
+: 1781785676:0;backup
+: 1781785761:0;repo
+: 1781785796:0;tip
+: 1781785803:0;ule
+: 1781785861:0;ll
+: 1781785865:0;..
+: 1781785868:0;ll
+: 1781785889:0;ll
+: 1781785932:0;ll
+: 1781785950:0;..
+: 1781785981:0;ll
+: 1781786000:0;cat spanish_notes.doc
+: 1781786011:0;cat laptop_vpn.txt
+: 1781786331:0;vi laptop_vpn.txt
+: 1781787024:0;vi laptop_vpn.txt
+: 1781787305:0;docs
+: 1781787306:0;ll
+: 1781787312:0;ll
+: 1781787322:0;ll
+: 1781787330:0;ll
+: 1781787333:0;rm DOCS
+: 1781787335:0;ll
+: 1781787365:0;ll
+: 1781787369:0;..
+: 1781787370:0;ll
+: 1781787374:0;ll
+: 1781787386:0;..
+: 1781787389:0;ll
+: 1781787400:0;Tw
+: 1781787401:0;lsd
+: 1781787405:0;ll
+: 1781787484:0;E
+: 1781787509:0;f plex
+: 1781787516:0;f -dddddd plex
+: 1781789316:0;Tw
+: 1781789317:0;ll
+: 1781789332:0;yts
+: 1781789369:0;ll
+: 1781789374:0;cl yts
+: 1781789376:0;vi yts
+: 1781789460:0;G
+: 1781789516:0;,
+: 1781789755:0;ll
+: 1781789759:0;G
+: 1781789780:0;ll
+: 1781789983:0;t
+: 1781791465:0;ticker
+: 1781791514:0;clear
+: 1781791515:0;ll
+: 1781791551:0;flog -H
+: 1781791560:0;flog terminal
+: 1781791633:0;flog crash
+: 1781792256:0;clear
+: 1781792259:0;flog
+: 1781792342:0;clear
+: 1781792345:0;t
+: 1781792353:0;yts
+: 1781795010:0;ll
+: 1781795016:0;t
+: 1781802578:0;yts
+: 1781802622:0;vut info
+: 1781802639:0;lsd
+: 1781802644:0;yts
+: 1781802732:0;.ls yts
+: 1781802742:0;ll
+: 1781802751:0;cat yt.log.jCH0wC
+: 1781802796:0;yts
+: 1781802807:0;ll
+: 1781802819:0;cat yt.log.jCH0wC
+: 1781802824:0;cat yt.log.BQbe9Z
+: 1781802831:0;ll
+: 1781802858:0;cl yts
+: 1781802860:0;vi yts
+: 1781802921:0;bak -r
+: 1781802926:0;yts
+: 1781807974:0;yts
+: 1781807995:0;ll
+: 1781807999:0;lsd
+: 1781808004:0;ll
+: 1781808028:0;vi yts
+: 1781808611:0;bak -r
+: 1781808613:0;ll
+: 1781808618:0;ll
+: 1781809051:0;yts -wy
+: 1781809111:0;yts
+: 1781809176:0;ll
+: 1781809183:0;cl yts
+: 1781809425:0;clear
+: 1781809426:0;ll
+: 1781809443:0;git log -p yts
+: 1781809476:0;git --help | grep repo
+: 1781809493:0;git
+: 1781809558:0;git --git-dir=~/Code/REPO log -p yts
+: 1781809563:0;c
+: 1781809569:0;ll
+: 1781809571:0;l.
+: 1781809577:0;,
+: 1781809579:0;,
+: 1781809606:0;cl yts
+: 1781809608:0;ll
+: 1781809624:0;git --git-dir=~/Code/REPO/.git log -p yts
+: 1781809644:0;git --git-dir=/home/kmiller/Code/REPO log -p yts
+: 1781809651:0;c
+: 1781809657:0;pwd
+: 1781809660:0;l.
+: 1781809834:0;cl yts
+: 1781809852:0;git -C /home/kmiller/Code/REPO log -p yts
+: 1781809891:0;git -C /home/kmiller/Code/REPO log -p -1 yts
+: 1781809903:0;git -C /home/kmiller/Code/REPO log -p -1 ./yts
+: 1781809926:0;git -C /home/kmiller/Code/REPO log -p -1 -- yts
+: 1781810002:0;lsd
+: 1781810016:0;lsd
+: 1781810021:0;ll
+: 1781810038:0;git -C /home/kmiller/Code/REPO log -p
+: 1781810107:0;cl yts
+: 1781810111:0;repo
+: 1781810182:0;yts
+: 1781811728:0;ll
+: 1781811732:0;lsd
+: 1781811756:0;s;d
+: 1781811760:0;,
+: 1781811763:0;Tw
+: 1781811764:0;lsd
+: 1781811771:0;lsd
+: 1781811783:0;ll
+: 1781812195:0;lsd
+: 1781812199:0;ll
+: 1781812209:0;yts
+: 1781813001:0;ll
+: 1781813227:0;ll
+: 1781813246:0;cl
+: 1781813256:0;ll
+: 1781813259:0;terms
+: 1781813278:0;vi -e term_hdr
+: 1781813377:0;term_hdr
+: 1781813407:0;term_hdr
+: 1781813410:0;term_hdr
+: 1781813415:0;cl term
+: 1781813417:0;term_hdr
+: 1781813425:0;cl
+: 1781813428:0;cl terms
+: 1781813431:0;term_hdr
+: 1781813438:0;vi term_hdr
+: 1781813508:0;term_hdr
+: 1781813518:0;term_hdr
+: 1781813521:0;term_hdr
+: 1781813529:0;cl terms
+: 1781813531:0;term_hdr
+: 1781813537:0;k
+: 1781813540:0;term_hdr
+: 1781813544:0;term_hdr
+: 1781813547:0;term_hdr
+: 1781813557:0;vi term_hdr
+: 1781813569:0;term_hdr
+: 1781813576:0;term_hdr
+: 1781813625:0;vi terms.bak
+: 1781813690:0;term_hdr
+: 1781813764:0;vi term_hdr
+: 1781813821:0;term_hdr
+: 1781813829:0;term_hdr
+: 1781813833:0;term_hdr
+: 1781813845:0;vi term_hdr
+: 1781813965:0;term_hdr
+: 1781813988:0;vi term_hdr
+: 1781813997:0;term_hdr
+: 1781814004:0;vi term_hdr
+: 1781814071:0;term_hdr
+: 1781814082:0;vi term_hdr
+: 1781814103:0;term_hdr
+: 1781814122:0;vi term_hdr
+: 1781814154:0;term_hdr
+: 1781814159:0;vi term_hdr
+: 1781814228:0;term_hdr
+: 1781814242:0;vi term_hdr
+: 1781814283:0;term_hdr
+: 1781814287:0;vi term_hdr
+: 1781814308:0;term_hdr
+: 1781814333:0;vi term_hdr
+: 1781814358:0;term_hdr
+: 1781814368:0;vi term_hdr
+: 1781814403:0;term_hdr
+: 1781814410:0;vi term_hdr
+: 1781814419:0;term_hdr
+: 1781814422:0;vi term_hdr
+: 1781814438:0;term_hdr
+: 1781814466:0;cl terms
+: 1781814470:0;term_hdr
+: 1781814491:0;term_hdr
+: 1781814520:0;vi term_hdr
+: 1781814554:0;term_hdr
+: 1781814558:0;vi term_hdr
+: 1781814568:0;term_hdr
+: 1781814576:0;vi term_hdr
+: 1781814583:0;term_hdr
+: 1781814589:0;vi term_hdr
+: 1781814592:0;term_hdr
+: 1781814603:0;vi term_hdr
+: 1781814657:0;term_hdr
+: 1781814661:0;term_hdr
+: 1781814664:0;term_hdr
+: 1781814667:0;term_hdr
+: 1781814675:0;vi term_hdr
+: 1781814733:0;term_hdr
+: 1781814736:0;term_hdr
+: 1781814739:0;term_hdr
+: 1781814741:0;term_hdr
+: 1781814750:0;echo _TERMS
+: 1781814756:0;echo $_TERMS
+: 1781814769:0;vi term_hdr
+: 1781814933:0;term_hdr
+: 1781814945:0;vi term_hdr
+: 1781814958:0;term_hdr
+: 1781814981:0;cl terms
+: 1781814987:0;term_hdr
+: 1781814994:0;term_hdr
+: 1781815001:0;term_hdr
+: 1781815048:0;vi term_hdr
+: 1781815089:0;vi term_hdr
+: 1781815118:0;yyt
+: 1781815120:0;tty
+: 1781815163:0;terms
+: 1781815169:0;terms -c
+: 1781815217:0;vi term_hdr
+: 1781815354:0;term_hdr
+: 1781815357:0;vi term_hdr
+: 1781815382:0;term_hdr
+: 1781815385:0;vi term_hdr
+: 1781815433:0;term_hdr
+: 1781815442:0;vi term_hdr
+: 1781815453:0;term_hdr
+: 1781815459:0;cl terms
+: 1781815461:0;term_hdr
+: 1781815476:0;vi term_hdr
+: 1781815491:0;term_hdr
+: 1781815494:0;term_hdr
+: 1781815502:0;term_hdr
+: 1781815542:0;term_hdr
+: 1781815550:0;vi term_hdr
+: 1781815553:0;term_hdr
+: 1781815589:0;vi term_hdr
+: 1781815643:0;term_hdr
+: 1781815645:0;vi term_hdr
+: 1781815654:0;term_hdr
+: 1781815782:0;chkupd
+: 1781815868:0;ll
+: 1781815873:0;Tw
+: 1781815874:0;lsd
+: 1781815880:0;ll
+: 1781817994:0;yt 'https://www.youtube.com/watch?v=yDUmol4wz4o'
+: 1781818837:0;lsd
+: 1781818972:0;ll
+: 1781818981:0;lsd
+: 1781818991:0;ll
+: 1781819074:0;cl terms
+: 1781819078:0;term_hdr
+: 1781819097:0;cl terms
+: 1781819101:0;term_hdr
+: 1781819132:0;vi term_hdr
+: 1781819149:0;term_hdr
+: 1781819188:0;cl terms
+: 1781819191:0;term_hdr
+: 1781819200:0;term_hdr
+: 1781819227:0;term_hdr
+: 1781819281:0;vi term_hdr
+: 1781819331:0;term_hdr
+: 1781819407:0;vi term_hdr
+: 1781819419:0;term_hdr
+: 1781819426:0;vi term_hdr
+: 1781819441:0;term_hdr
+: 1781819457:0;vi term_hdr
+: 1781819504:0;term_hdr
+: 1781819507:0;vi term_hdr
+: 1781819522:0;term_hdr
+: 1781819533:0;vi term_hdr
+: 1781819544:0;term_hdr
+: 1781819549:0;vi term_hdr
+: 1781819563:0;term_hdr
+: 1781819569:0;term_hdr
+: 1781819582:0;vi term_hdr
+: 1781819594:0;term_hdr
+: 1781819599:0;term_hdr
+: 1781819622:0;vi term_hdr
+: 1781819660:0;term_hdr
+: 1781819667:0;vi term_hdr
+: 1781819685:0;term_hdr
+: 1781819689:0;term_hdr
+: 1781819694:0;term_hdr
+: 1781819697:0;vi term_hdr

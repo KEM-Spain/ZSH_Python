@@ -190,13 +190,19 @@ _set_ssid () {
 }
 
 _set_term_header () {
-	local THIS_TERM=${$(tty):t}
-	local TCNT=$(terms -c)
+	local -a ALL_TTYS=($(find /dev/pts ! -path /dev/pts  -printf "%f\n" | grep -v ptmx))
+	local THIS_TTY=${$(tty):t}
+	local MAX=$(terms -c)
+	local THIS_TERM=0
+	local NDX=0
+	local T
 
-	(( THIS_TERM++ ))
+	for T in ${(n)ALL_TTYS};do
+		((NDX++))
+		[[ ${T} -eq ${THIS_TTY} ]] && THIS_TERM=${NDX}
+	done
 
-	[[ ${THIS_TERM} -gt ${TCNT} ]] && THIS_TERM=${TCNT}
-	print -Pn "\e]0;Terminal ${THIS_TERM} of ${TCNT}\a"
+	print -Pn "\e]0;Terminal ${THIS_TERM} of ${MAX}\a"
 }
 
 _term_count () {
