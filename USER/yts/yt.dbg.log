@@ -1,30 +1,34 @@
-2026-06-18_08:39: log_update: LOG lines BEFORE update:10 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-18_08:39: log_update: LOG lines AFTER update:10 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-18_08:40: query_youtube: Creating listing for QKEY:danieldavisdeepdive STRICT:null
-2026-06-18_08:40: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Daniel Davis ENGINE:youtube EOPT:null FKEY:daniel davis QKEY:danieldavisdeepdive TYPE:custom 
-2026-06-18_08:40: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "danieldavisdeepdive"
-2026-06-18_08:40: query_youtube: Query matched 15 lines, _LOCAL_LIST has 14 lines
-2026-06-18_08:40: query_youtube: Listing for QKEY:danieldavisdeepdive contains 14 rows
-2026-06-18_08:40: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.xPVvMP
-2026-06-18_08:40: job_start: TITLE:COL Douglas Macgregor: Trump Seeks Get Out Of Jail Card Since US Lost In Iran
-2026-06-18_08:40: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=y8zhwctLKfI" PID:1159107
-2026-06-18_08:40: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-18_08:40: yt URL:https://youtube.com/watch?v=y8zhwctLKfI
-2026-06-18_08:40: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=y8zhwctLKfI"
-2026-06-18_08:40: action_do: GENERATING HEADER
-2026-06-18_08:40: title_scrubber: UCASE_WORDS:2
-2026-06-18_08:40: title_scrubber: Preserving acronym:Col
-2026-06-18_08:40: title_scrubber: Preserving acronym:Us
-2026-06-18_08:40: title_scrubber: Preserving acronym:I
-2026-06-18_08:40: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=y8zhwctLKfI PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_Seeks_Get_out_of_Jail_Card_Since_US_Lost_in_I.mp4|6324031
-2026-06-18_08:40: action_do: COMPLETED
-2026-06-18_08:40: action_do: POST-PROCESSING
-2026-06-18_08:40: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_Seeks_Get_out_of_Jail_Card_Since_US_Lost_in_I.mp4
-2026-06-18_08:40: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_Seeks_Get_out_of_Jail_Card_Since_US_Lost_in_I.mp4
-2026-06-18_08:40: title_scrubber: UCASE_WORDS:2
-2026-06-18_08:40: title_scrubber: Preserving acronym:Col
-2026-06-18_08:40: title_scrubber: Preserving acronym:Us
-2026-06-18_08:40: title_scrubber: Preserving acronym:I
-2026-06-18_08:40: set_final_fn: Overwriting file:Daniel_Davis_Deep_Dive - Col_Douglas_Macgregor_-_Trump_Seeks_Get_out_of_Jail_Card_Since_US_Lost_in_I.mp4 with:Daniel Davis - COL Douglas Macgregor - Trump Seeks Get Out Of Jail Card.mp4
-2026-06-18_08:40: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Daniel Davis - COL Douglas Macgregor - Trump Seeks Get Out Of Jail Card.mp4
-2026-06-18_08:40: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.xPVvMP was cleared for:danieldavisdeepdive from:action_do
+2026-06-18_20:58: log_update: LOG lines BEFORE update:11 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-18_20:58: log_update: LOG lines AFTER update:11 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-18_20:58: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
+2026-06-18_20:58: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
+2026-06-18_20:58: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
+2026-06-18_20:58: query_youtube: Query matched 12 lines, _LOCAL_LIST has 8 lines
+2026-06-18_20:58: query_youtube: Listing for QKEY:alexchristoforou contains 8 rows
+2026-06-18_20:58: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
+2026-06-18_20:58: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom SMSG:Inf% TYPE:standard 
+2026-06-18_20:58: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "judgingfreedom"
+2026-06-18_20:58: query_youtube: Query matched 22 lines, _LOCAL_LIST has 20 lines
+2026-06-18_20:58: query_youtube: Listing for QKEY:judgingfreedom contains 20 rows
+2026-06-18_20:59: query_youtube: Creating listing for QKEY:douglas macgregor STRICT:null
+2026-06-18_20:59: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Douglas Macgregor ENGINE:youtube EOPT:null FKEY:douglas macgregor QKEY:douglas macgregor SMSG:0.0% TYPE:custom 
+2026-06-18_20:59: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "douglas macgregor"
+2026-06-18_20:59: query_youtube: Query matched 20 lines, _LOCAL_LIST has 19 lines
+2026-06-18_20:59: query_youtube: Listing for QKEY:douglas macgregor contains 19 rows
+2026-06-18_20:59: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.d9WbVz
+2026-06-18_20:59: job_start: TITLE:Col. Douglas Macgregor : Israel The Real Loser
+2026-06-18_20:59: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=1CJPok38hYA" PID:2852381
+2026-06-18_20:59: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-18_20:59: yt URL:https://youtube.com/watch?v=1CJPok38hYA
+2026-06-18_20:59: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=1CJPok38hYA"
+2026-06-18_20:59: action_do: GENERATING HEADER
+2026-06-18_20:59: title_scrubber: UCASE_WORDS:1
+2026-06-18_20:59: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=1CJPok38hYA PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - COL._Douglas_Macgregor_-_Israel_The_Real_Loser.mp4|6324033
+2026-06-18_20:59: action_do: COMPLETED
+2026-06-18_20:59: action_do: POST-PROCESSING
+2026-06-18_20:59: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - COL._Douglas_Macgregor_-_Israel_The_Real_Loser.mp4
+2026-06-18_20:59: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - COL._Douglas_Macgregor_-_Israel_The_Real_Loser.mp4
+2026-06-18_20:59: title_scrubber: UCASE_WORDS:1
+2026-06-18_20:59: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - COL._Douglas_Macgregor_-_Israel_The_Real_Loser.mp4 with:Judging Freedom - Col. Douglas Macgregor - Israel The Real Loser.mp4
+2026-06-18_20:59: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Col. Douglas Macgregor - Israel The Real Loser.mp4
+2026-06-18_20:59: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.d9WbVz was cleared for:douglas macgregor from:action_do

@@ -220,10 +220,10 @@ action_do () {
 						logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
 						_FAILED[${M}]=true
 						_DOWNLOADS[${M}]=false
-						_PRESERVE_LOG=true
+						/bin/rm -f ${_DOWNLOAD_DIR}/*part # Clear any intermediate files
 						break
 						;;
-					*error*warning)
+					*error*|*warning*)
 						((TRANS_ERR_CNT++))
 						TRANS_ERR_MSG=$(parse_err_msg ${LOG_LINE})
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
@@ -271,7 +271,7 @@ action_do () {
 						log_add ${M}
 						break
 						;;
-					*error*warning)
+					*error*|*warning*)
 						TRANS_ERR_MSG=$(parse_err_msg ${LOG_LINE})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))

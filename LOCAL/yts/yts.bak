@@ -223,7 +223,7 @@ action_do () {
 						_PRESERVE_LOG=true
 						break
 						;;
-					*error*warning)
+					*error*|*warning*)
 						((TRANS_ERR_CNT++))
 						TRANS_ERR_MSG=$(parse_err_msg ${LOG_LINE})
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
@@ -271,7 +271,7 @@ action_do () {
 						log_add ${M}
 						break
 						;;
-					*error*warning)
+					*error*|*warning*)
 						TRANS_ERR_MSG=$(parse_err_msg ${LOG_LINE})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))
@@ -350,15 +350,11 @@ clean_title () {
 	local MAX_HDR=${2:=${_MAX_DL_TITLE}}
 	local STR=''
 
-	#logit ${_YT_DBG_LOG} "${0}: TITLE  IN:${TITLE}"
-	 
 	STR=$(title_scrubber ${TITLE} ${_YT_DBG_LOG})
 	STR=$(keyword_strip <<<${STR})
 	STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${STR}) # Use DKEY
 
 	[[ -n ${STR} ]] && TITLE=$(str_word_clip ${STR} ${MAX_HDR}) # Limit length at word boundary
-
-	#logit ${_YT_DBG_LOG} "${0}: TITLE OUT:${TITLE}"
 
 	echo ${TITLE}
 }
