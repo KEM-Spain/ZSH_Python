@@ -1,6 +1,3 @@
-# LIB Dependencies
-_DEPS+=(MSG.zsh UTILS.zsh)
-
 # LIB Declarations
 typeset -a _EXIT_CALLBACKS=()
 typeset -a _EXIT_SCRUB_PIDS=()
@@ -23,6 +20,13 @@ exit_leave () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
+		dbg "${RED_FG}${0}${RESET}: #_MSGS:${#_MSGS}"
+		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
+		dbg_msg | mypager -n wait
+	fi
+
 	[[ ${functrace[1]} =~ 'usage' && -z ${MSGS} ]] && set_exit_value 1
 
 	exit_pre_exit
@@ -33,18 +37,13 @@ exit_leave () {
 		echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
 	fi
 
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
-		dbg "${RED_FG}${0}${RESET}: #_MSGS:${#_MSGS}"
-		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
-		dbg_msg | mypager -n wait
-	fi
-
 	exit ${_EXIT_VALUE}
 }
 
 exit_pre_exit () {
-	local C
+	local -a SCRUB=()
+	local -a USER_PIDS=()
+	local C F P
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
@@ -59,7 +58,10 @@ exit_pre_exit () {
 		done
 	fi
 
-	[[ ${_EXIT_SCRUB} == 'true' ]] && scrub_tmp
+	if [[ ${_EXIT_SCRUB} == 'true' ]];then
+		_EXIT_SCRUB_PIDS=("${(f)$(get_user_pids)}")
+		scrub_tmp
+	fi
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
 
@@ -146,6 +148,17 @@ set_exit_value () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	_EXIT_VALUE=${1}
+}
+
+get_user_pids () {
+	local PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
+	local F2
+	local P
+
+	for P in ${PS};do
+		F2=$(cut -d' ' -f2 <<<${P})
+		echo ${F2}
+	done
 }
 
 get_active_pids () {

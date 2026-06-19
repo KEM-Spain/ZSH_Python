@@ -1124,6 +1124,8 @@ parse_err_msg () {
 	local ERROR=${@}
 	local MSG=''
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	case ${ERROR:l} in
 		*439*) MSG="YouTube - Too Many Requests";;
 		*trnsmission*) MSG="Transmission Error";;
@@ -1134,124 +1136,6 @@ parse_err_msg () {
 }
 
 parse_rumble () {
-	local PARSER=${1}
-	local -A GENERAL=()
-	local -A NON_GENERAL=()
-	local -a HTML=()
-	local DATA=''
-	local LAST_ROW=0
-	local LINE=''
-	local NDX=0
-	local OMIT_NDX=0
-	local ROW=0
-	local TAB=''
-	local TAG=''
-	local TAGLINE=''
-	local TAG_ARRAY=''
-	local AGE AUTHOR TITLE URL TIME AGETIME
-	local K
-
-	NON_GENERAL[TITLES]='thumbnail__title attr{title}'
-	NON_GENERAL[LINKS]='title__link attr{href}'
-	NON_GENERAL[AGES]='videostream__time text{}'
-	NON_GENERAL[DURATIONS]='videostream__badge text{}'
-
-	GENERAL[AUTHORS]='ellipsis-1 text{}'
-	GENERAL[TITLES]='video-item--title text{}'
-	GENERAL[LINKS]='video-item--a attr{href}'
-	GENERAL[AGES]='video-item--time text{}'
-	GENERAL[DURATIONS]='video-item--duration attr{data-value}'
-
-	logit ${_YT_DBG_LOG} "${0}: Parsing list for QKEY:${_QUERY_OPTS[QKEY]}"
-
-	if [[ ${PARSER} == 'g' ]];then
-		TAG_ARRAY="GENERAL"
-		TAGLINE="\"video-item--img\""
-	elif [[ ${PARSER} == 'ng' ]];then
-		TAG_ARRAY="NON_GENERAL"
-		TAGLINE="thumbnail__grid--item"
-	fi
-
-	ROW=-1
-	while read LINE;do
-		HTML+=${LINE}
-		if [[ ${LINE} =~ ${TAGLINE} ]];then
-			((ROW++))
-			[[ ${ROW} -eq 0 ]] && continue
-			for K in ${(k)${(P)TAG_ARRAY}};do
-				TAG=${${(P)TAG_ARRAY}[${K}]}
-				DATA=$(pup --charset utf8 ".${TAG}" <<<${HTML} | filter_rumble_data)
-				[[ -z ${DATA} ]] && logit ${_YT_DBG_LOG} "${0}: ROW:${ROW} NO DATA from TAG:${TAG}" && continue
-				[[ $(wc -l <<<${DATA}) -ne 1 ]] && DATA="ERROR" # Reject multi line query results
-				_RUMBLE_ROWS[${ROW}_${K}]=${DATA}
-			done
-			HTML=()
-		fi
-	done <<<${_RUMBLE_PAGE}
-
-	LAST_ROW=0
-	NDX=0
-	for K in ${(onk)_RUMBLE_ROWS};do
-		ROW=$(cut -d'_' -f1 <<<${K})
-		TAB=$(cut -d'_' -f2 <<<${K})
-		case ${TAB} in
-			ERROR) continue;;
-			AGES) AGE=${_RUMBLE_ROWS[${K}]};;
-			AUTHORS) AUTHOR=${_RUMBLE_ROWS[${K}]};;
-			DURATIONS) TIME=${_RUMBLE_ROWS[${K}]};;
-			LINKS) URL="https://rumble.com${_RUMBLE_ROWS[${K}]}";;
-			TITLES) TITLE=${_RUMBLE_ROWS[${K}]};;
-		esac
-		if [[ -n ${AGE} && -n ${TITLE} && -n ${URL} && ${TIME} ]];then # All fields populated
-			TITLE=$(title_scrubber ${TITLE})
-			if [[ ${ROW} != ${LAST_ROW} ]];then
-				[[ ${URL} =~ 'ucp_f' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - URL - ucp_f"
-				[[ ! ${TIME} =~ ':' ]] && OMIT_NDX=${ROW} && logit ${_YT_DBG_LOG} "${0}: Omitting NDX:${ROW} - TIME no colon"
-				TIME=$(grep -Po '^\d+:?\d+' <<<${TIME}) # Hours:Mins
-				AGETIME="(${AGE} ${TIME})"
-				[[ -z ${AUTHOR} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
-				if [[ ${ROW} -ne ${OMIT_NDX} ]];then
-					((NDX++))
-					_LOCAL_LIST[${NDX}]="${AGE}|${AUTHOR}|$(str_word_clip ${TITLE} ${_MAX_LS_TITLE})|${URL}|${TIME}|${AGETIME}"
-					OMIT_NDX=0
-				fi
-				AGE='' && AUTHOR='' && TIME='' && URL='' && TITLE='' && AGETIME='' 
-			fi
-			LAST_ROW=${ROW}
-		fi
-	done
-
-	if ! arr_is_populated "${_LOCAL_LIST}";then
-		return 1
-	fi
-
-	return 0
-}
-
-parse_rumble_age () {
-	local SECS=${1}
-	local	DTAG=days
-	local	HTAG=hours
-	local DAYS=0
-	local HOURS=0
-	local TODAY=$(date +%s)
-	local STAMP=''
-
-	DAYS=$(( (TODAY - ${SECS}) / 86400 ))
-
-	if [[ ${DAYS} -eq 0 ]];then
-		HOURS=$(( (TODAY - ${SECS}) / 3600 ))
-		[[ ${HOURS} -eq 1 ]] && HTAG=hour
-		STAMP="${HOURS} ${HTAG} ago"
-	else
-		[[ ${DAYS} -eq 1 ]] && DTAG=day
-		STAMP="${DAYS} ${DTAG} ago"
-	fi
-
-	echo ${STAMP}
-}
-
-parse_rumble_channel () {
 	local QRY=${1}
 	local -a LIST=()
 	local -a QDATA=()
@@ -1273,6 +1157,8 @@ parse_rumble_channel () {
 	local U=0
 	local URL=''
 	local K L
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Run query and filter known problem chars
 	{
@@ -1333,9 +1219,36 @@ parse_rumble_channel () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: _LOCAL_LIST:${#_LOCAL_LIST}"
 }
 
+parse_rumble_age () {
+	local SECS=${1}
+	local	DTAG=days
+	local	HTAG=hours
+	local DAYS=0
+	local HOURS=0
+	local TODAY=$(date +%s)
+	local STAMP=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	DAYS=$(( (TODAY - ${SECS}) / 86400 ))
+
+	if [[ ${DAYS} -eq 0 ]];then
+		HOURS=$(( (TODAY - ${SECS}) / 3600 ))
+		[[ ${HOURS} -eq 1 ]] && HTAG=hour
+		STAMP="${HOURS} ${HTAG} ago"
+	else
+		[[ ${DAYS} -eq 1 ]] && DTAG=day
+		STAMP="${DAYS} ${DTAG} ago"
+	fi
+
+	echo ${STAMP}
+}
+
 parse_rumble_duration () {
 	local SECS=${1}
 	local STAMP=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	zmodload zsh/datetime
 	STAMP=$(strftime "%H:%M:%S" ${SECS})
@@ -1387,10 +1300,12 @@ query_rumble () {
 	local GEN_SEARCH=''
 	local QRY=''
 	local QRY_TYPE=''
-	local PARSER_OPT=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	QRY_TYPE=${_RUMBLE_QTYPES[${_QUERY_OPTS[EOPT]:l}]}
 	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "${0}:Invalid query type:${_QUERY_OPTS[EOPT]}" && return 1
+
 	_QUERY_OPTS[TYPE]=${QRY_TYPE}
 	_QUERY_OPTS[QKEY]=${_QUERY_OPTS[QKEY]}
 
@@ -1405,40 +1320,27 @@ query_rumble () {
 
 	# Queries
 	if [[ ${QRY_TYPE} == 'live' ]];then
-		PARSER_OPT='l'
-		msg_box -c "<w>Requesting <c><I>livestream channel<N> <w>search<N>..."
 		QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}/livestreams"
-		parse_rumble_channel ${QRY}
+		msg_box -c "<w>Requesting <c><I>livestream channel<N> <w>search<N>..."
 	elif [[ ${QRY_TYPE} == 'channel' ]];then
-		PARSER_OPT='c'
-		msg_box -c "<w>Requesting <c><I>channel<N> <w>search<N>..."
 		QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}?page=1"
-		parse_rumble_channel ${QRY}
-	elif [[ ${QRY_TYPE} == 'general' ]];then
-		PARSER_OPT='g'
-		msg_box -c "<w>Requesting <c><I>general<N> <w>search<N>..."
-		GEN_SEARCH=$(sed 's/ /%20/g' <<<${_QUERY_OPTS[QKEY]})
-		QRY="https://rumble.com/search/all?q=${GEN_SEARCH}"
+		msg_box -c "<w>Requesting <c><I>channel<N> <w>search<N>..."
 	elif [[ ${QRY_TYPE} == 'user' ]];then
-		PARSER_OPT='ng'
-		msg_box -c "<w>Requesting <c><I>livestream user<N> <w>search<N>..."
 		QRY="https://rumble.com/user/${_QUERY_OPTS[QKEY]}/livestreams"
+		msg_box -c "<w>Requesting <c><I>livestream user<N> <w>search<N>..."
 	fi
+
+	logit ${_YT_DBG_LOG} "${0}: PARSER:${PARSER}, QUERY:${QRY}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${0}:${LINENO} PARSER_OPT:${PARSER_OPT}, RUMBLE QUERY:${CYAN_FG}_QUERY_OPTS[QKEY]${RESET}:${_QUERY_OPTS[QKEY]}, ${CYAN_FG}g_PROXY_CMD${RESET}:${g_PROXY_CMD}"
+		dbg "${0}:${LINENO} QKEY:${_QUERY_OPTS[QKEY]}, g_PROXY_CMD:${g_PROXY_CMD}"
 	fi
 
-	if [[ -n ${PARSER_OPT} ]];then
-		# Do query
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:Query:${QRY}"
-		_RUMBLE_PAGE=$(wget -q -O - ${QRY})
-		parse_rumble ${PARSER_OPT}
-		_RUMBLE_PAGE=()
-	fi
+	parse_rumble ${QRY}
 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}"
+		msg_box -p -PK "Query Returned No Rows"
 		return 1
 	else
 		logit ${_YT_DBG_LOG} "${0}: Listing for QKEY:${_QUERY_OPTS[QKEY]} contains ${#_LOCAL_LIST} rows"
@@ -1463,13 +1365,12 @@ query_youtube () {
 	local RETRIES=3
 	local F L
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	ping -w1 www.youtube.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
 	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[EOPT]:=null}"
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
-
 	logit ${_YT_DBG_LOG} "${0}: _QUERY_OPTS: $(for K in ${(ok)_QUERY_OPTS};do printf '%s:%s ' ${K} ${_QUERY_OPTS[${K}]};done)"
 
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STRICT_ARG='-s' || STRICT_ARG=''
@@ -1745,6 +1646,8 @@ parse_opts () {
 	local -a OPTSTR
 	local LETTER_OPT
 	local O
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	for O in {1..${#OPTS}};do
 		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}

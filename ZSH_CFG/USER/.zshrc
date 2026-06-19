@@ -190,6 +190,7 @@ _set_ssid () {
 }
 
 _set_term_header () {
+	# TODO: top term never updates term count
 	local -a ALL_TTYS=($(find /dev/pts ! -path /dev/pts  -printf "%f\n" | grep -v ptmx))
 	local THIS_TTY=${$(tty):t}
 	local MAX=$(terms -c)
