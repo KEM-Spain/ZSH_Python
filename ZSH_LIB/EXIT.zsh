@@ -23,13 +23,6 @@ exit_leave () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
-		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
-		dbg "${RED_FG}${0}${RESET}: #_MSGS:${#_MSGS}"
-		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
-		dbg_msg | mypager -n wait
-	fi
-
 	[[ ${functrace[1]} =~ 'usage' && -z ${MSGS} ]] && set_exit_value 1
 
 	exit_pre_exit
@@ -38,6 +31,13 @@ exit_leave () {
 
 	if [[ -n ${_EXIT_MSGS} ]];then
 		echo "\n${_EXIT_MSGS}" >&2 # Display any exit messages
+	fi
+
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
+		dbg "${RED_FG}${0}${RESET}: #_MSGS:${#_MSGS}"
+		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
+		dbg_msg | mypager -n wait
 	fi
 
 	exit ${_EXIT_VALUE}
@@ -59,10 +59,7 @@ exit_pre_exit () {
 		done
 	fi
 
-	if [[ ${_EXIT_SCRUB} == 'true' ]];then
-		_EXIT_SCRUB_PIDS=("${(f)$(get_user_pids)}")
-		[[ -n ${_EXIT_SCRUB_PIDS} ]] && scrub_tmp
-	fi
+	[[ ${_EXIT_SCRUB} == 'true' ]] && scrub_tmp
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
 
@@ -151,32 +148,28 @@ set_exit_value () {
 	_EXIT_VALUE=${1}
 }
 
-get_user_pids () {
+get_active_pids () {
 	local PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
 	local FN
 	local P
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	for P in ${PS};do
+		[[ ${P} =~ $$ ]] && continue
 		FN=$(cut -d' ' -f2 <<<${P})
 		[[ -n ${FN} ]] && echo ${FN}
 	done
 }
 
-is_active_pid () {
-	local FN=${1}
-	local P
-
-	for P in ${_EXIT_SCRUB_PIDS};do
-		[[ ${FN} =~ ${P} ]] && return 0
-	done
-
-	return 1
-}
-
 scrub_tmp () {
 	local -a MARKERS=(debug state tag)
 	local -a FLIST=()
+	local -a _EXIT_ACTIVE_PIDS=("${(f)$(get_active_pids)}")
+	local FPID=''
 	local M F
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	FLIST=("${(f)$(
 	for M in ${MARKERS};do
@@ -184,13 +177,12 @@ scrub_tmp () {
 	done 2>/dev/null
 	)}")
 
-	# TODO: This is inefficient - could use elem in array test
 	for F in ${FLIST};do
-		if is_active_pid ${F};then 
+		FPID=$(cut -d\. -f1 <<<${F:t})
+		if arr_in_array "_EXIT_ACTIVE_PIDS" ${FPID};then
 			continue
 		else
 			/bin/rm -f ${F}
 		fi
 	done
 }
-

@@ -1,53 +1,22 @@
-2026-06-18_21:50: log_update: LOG lines BEFORE update:12 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-18_21:50: log_update: Skipping expired inode:6324031
-2026-06-18_21:50: log_update: Skipping expired inode:6323955
-2026-06-18_21:50: log_update: Skipping expired inode:6323223
-2026-06-18_21:50: log_update: Skipping expired inode:6324035
-2026-06-18_21:50: log_update: LOG lines AFTER update:8 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-18_21:50: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-06-18_21:50: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
-2026-06-18_21:50: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "judgingfreedom"
-2026-06-18_21:50: query_youtube: Query matched 22 lines, _LOCAL_LIST has 20 lines
-2026-06-18_21:50: query_youtube: Listing for QKEY:judgingfreedom contains 20 rows
-2026-06-18_21:50: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.PzlJ34
-2026-06-18_21:50: job_start: TITLE:Max Blumenthal : Israel In Panic
-2026-06-18_21:50: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=gqGpIngzUis" PID:3019441
-2026-06-18_21:50: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-18_21:50: yt URL:https://youtube.com/watch?v=gqGpIngzUis
-2026-06-18_21:50: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=gqGpIngzUis"
-2026-06-18_21:50: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=gqGpIngzUis PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judging Freedom - Col. Douglas Macgregor - Israel The Real Loser.mp4|6324033
-2026-06-18_21:50: action_do: PRE TRANSMISSION ERROR 1 of 6
-2026-06-18_21:50: job_kill: No processes found
-2026-06-18_21:50: job_reset: Job was reset
-2026-06-18_21:50: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ro50KN
-2026-06-18_21:50: job_start: TITLE:Max Blumenthal : Israel In Panic
-2026-06-18_21:50: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=gqGpIngzUis" PID:3020765
-2026-06-18_21:50: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-18_21:50: yt URL:https://youtube.com/watch?v=gqGpIngzUis
-2026-06-18_21:50: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=gqGpIngzUis"
-2026-06-18_21:50: action_do: PRE TRANSMISSION ERROR 2 of 6
-2026-06-18_21:50: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=gqGpIngzUis PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judging Freedom - Col. Douglas Macgregor - Israel The Real Loser.mp4|6324033
-2026-06-18_21:50: job_kill: No processes found
-2026-06-18_21:50: job_reset: Job was reset
-2026-06-18_21:50: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.fFWnPG
-2026-06-18_21:50: job_start: TITLE:Max Blumenthal : Israel In Panic
-2026-06-18_21:50: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=gqGpIngzUis" PID:3021604
-2026-06-18_21:50: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-18_21:50: yt URL:https://youtube.com/watch?v=gqGpIngzUis
-2026-06-18_21:50: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=gqGpIngzUis"
-2026-06-18_21:50: action_do: GENERATING HEADER
-2026-06-18_21:50: title_scrubber: UCASE_WORDS:1
-2026-06-18_21:50: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=gqGpIngzUis PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - Max_Blumenthal_-_Israel_In_Panic.mp4|6323963
-2026-06-18_21:50: action_do: COMPLETED
-2026-06-18_21:50: action_do: POST-PROCESSING
-2026-06-18_21:50: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Max_Blumenthal_-_Israel_In_Panic.mp4
-2026-06-18_21:50: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Max_Blumenthal_-_Israel_In_Panic.mp4
-2026-06-18_21:50: title_scrubber: UCASE_WORDS:1
-2026-06-18_21:50: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Max_Blumenthal_-_Israel_In_Panic.mp4 with:Judging Freedom - Max Blumenthal - Israel In Panic.mp4
-2026-06-18_21:50: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Max Blumenthal - Israel In Panic.mp4
-2026-06-18_21:50: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.fFWnPG was cleared for:judgingfreedom from:action_do
-2026-06-18_23:26: yt PPCMD:/usr/bin/zsh
-2026-06-18_23:26: yt URL:https://www.youtube.com/watch?v=yDUmol4wz4o
-2026-06-18_23:26: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "https://www.youtube.com/watch?v=yDUmol4wz4o"
-2026-06-18_23:26: yt Cleaning file name:The_Real_Reason_They_Called_Off_The_Iran_Strikes_Whitney_Webb-[yDUmol4wz4o].mp4
-2026-06-18_23:26: yt Executed from command line:https://www.youtube.com/watch?v=yDUmol4wz4o PPCMD:/usr/bin/zsh, TARGET:The Real Reason They Called Off The Iran Strikes Whitney Webb.mp4
+2026-06-19_10:31: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-19_10:31: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-19_10:31: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
+2026-06-19_10:31: parse_rumble: Parsing list for QKEY:tuckercarlson
+2026-06-19_10:31: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
+2026-06-19_10:31: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.NvoNPk
+2026-06-19_10:31: job_start: TITLE:Neocon Heads Implode Over Peace in Iran & Trump Puts Bibi in His Place.
+2026-06-19_10:31: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7bg91o-neocon-heads-implode-over-peace-in-iran-and-trump-puts-bibi-in-his-place.-t.html" PID:154082
+2026-06-19_10:31: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-19_10:31: yt URL:https://rumble.com/v7bg91o-neocon-heads-implode-over-peace-in-iran-and-trump-puts-bibi-in-his-place.-t.html
+2026-06-19_10:31: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7bg91o-neocon-heads-implode-over-peace-in-iran-and-trump-puts-bibi-in-his-place.-t.html"
+2026-06-19_10:31: action_do: GENERATING HEADER
+2026-06-19_10:31: title_scrubber: UCASE_WORDS:1
+2026-06-19_10:33: action_do: COMPLETED
+2026-06-19_10:33: action_do: POST-PROCESSING
+2026-06-19_10:33: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7bg91o-neocon-heads-implode-over-peace-in-iran-and-trump-puts-bibi-in-his-place.-t.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Tucker_Carlson - Neocon_Heads_Implode_Over_Peace_in_Iran_Trump_Puts_Bibi_in_His_Place._Tucker_Piers_.mp4|6324025
+2026-06-19_10:33: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Neocon_Heads_Implode_Over_Peace_in_Iran_Trump_Puts_Bibi_in_His_Place._Tucker_Piers_.mp4
+2026-06-19_10:33: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Neocon_Heads_Implode_Over_Peace_in_Iran_Trump_Puts_Bibi_in_His_Place._Tucker_Piers_.mp4
+2026-06-19_10:33: title_scrubber: UCASE_WORDS:1
+2026-06-19_10:33: set_final_fn: Overwriting file:Tucker_Carlson - Neocon_Heads_Implode_Over_Peace_in_Iran_Trump_Puts_Bibi_in_His_Place._Tucker_Piers_.mp4 with:Tucker Carlson - Neocon Heads Implode Over Peace In Iran Trump Puts.mp4
+2026-06-19_10:33: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Neocon Heads Implode Over Peace In Iran Trump Puts.mp4
+2026-06-19_10:33: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.NvoNPk was cleared for:tuckercarlson from:action_do
