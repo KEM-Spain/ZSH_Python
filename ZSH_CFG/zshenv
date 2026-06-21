@@ -30,7 +30,6 @@ for P in ${PATHS};do
 done
 export PATH=${MYPATH}
 export ORIG_PATH=${PATH}
-
 export CAM_DEFAULT=off
 export EDITOR=vim
 export GOPATH=~/Code/go
@@ -65,3 +64,4 @@ bindkey '^[[3~' delete-char
 #bindkey '^[^N' newtab
 bindkey '^?' backward-delete-char 
 
+skip_global_compinit=1 

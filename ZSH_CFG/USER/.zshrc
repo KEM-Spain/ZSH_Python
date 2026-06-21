@@ -43,6 +43,7 @@ typeset -A _NUM_WORDS=(1 one 2 two 3 three 4 four 5 five 6 six 7 seven 8 eight 9
 source ${_SYS_ALIASES}
 source ${_SYS_ZSHRC}
 source ${_USR_LOCAL_SRC}/fast-syntax-highlighting/F-Sy-H.plugin.zsh # fast-syntax-highlighting.plugin
+#source ${_USR_LOCAL_SRC}/zsh-autocomplete/zsh-autocomplete.plugin.zsh # auto completion
 source ${_USR_LOCAL_SRC}/zhooks/zhooks.plugin.zsh # add zhooks command to display active hooks
 
 # Exports
