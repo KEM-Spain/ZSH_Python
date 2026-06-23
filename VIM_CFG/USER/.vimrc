@@ -61,7 +61,7 @@ if !has("gui_running")
 	nnoremap <c-a> :AnsiEsc<CR>:echom "ANSI mode"<CR>
 
 	"enclose bare vars with braces in zsh
-	nnoremap <c-b> :1,$s/\$\@<=[~A-Z_0-9:a-z@#?]\+/{&}/g:echom "Wrapped vars in braces"<CR>
+	nnoremap <c-b> :1,$s/\$\@<=[~A-Z_0-9:a-z@#?]\+/{&}/g<CR>
 
 	"delimit all words
 	nnoremap <silent> <c-d> <Esc>0A<Esc>0y$$<Esc>0:1,$s/ /\|/g<CR>:echom "Delimited all words"<CR>

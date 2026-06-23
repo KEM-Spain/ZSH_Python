@@ -225,6 +225,8 @@ _is_top_term () {
 	local CURRENT=''
 	local L T
 
+	[[ $(terms -c) -eq 1 ]] && return 0
+
 	TERMS=("${(f)$(terms)}")
 
 	for L in ${TERMS};do

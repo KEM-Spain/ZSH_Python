@@ -1,7 +1,7 @@
 #/lib/systemd/system/vid_watch.service
 
 [Unit]
-Description = Monitor and process Deluge completed Torrents
+Description = Monitor torrent downloads for completion
 
 [Service]
 User=kmiller

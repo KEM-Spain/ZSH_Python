@@ -251,6 +251,7 @@ echo "\n" >&2
 
 if ! arr_is_populated "${LIST}";then
 	echo "${WHITE_FG}Grep command${RESET}:${CMD_MSG}" | tr -s '[:space:]'
+	do_rmcup
 	exit_leave $(err_msg_exit W "No files (${FTYPE_MSG}) found containing:${SEARCHTERM}")
 fi
 

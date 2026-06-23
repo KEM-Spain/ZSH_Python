@@ -62,12 +62,12 @@ g_UTIL=''
 
 # Functions
 findexe () {
-	local -aU LIST
-	local -aU RAWLINE
-	local FN
-	local WI
-	local LOCAL
-	local VERBOSE
+	local -a WIS=()
+	local -aU LIST=()
+	local -aU RAWLINE=()
+	local FN=''
+	local LOCAL=''
+	local VERBOSE=''
 	local L R
 
 	read -r -d '' DESC<<______EOF
@@ -147,13 +147,12 @@ ______EOF
 	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Seeking${RESET}: ${FN}" >&2
 
 	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in any location${RESET}" >&2
-	WI=("${(f)$(whereis -b -f ${FN} | cut -d: -f2-)}")
-	RAWLINE=(${=WI})
-	if [[ ${VERBOSE} == 'true' ]];then
-		for R in ${RAWLINE};do
-			echo "Found:${R}" >&2
-		done
-	fi
+	WIS=("${(f)$(whereis -b -f ${FN} | cut -d: -f2-)}")
+	for L in ${=WIS};do
+		[[ -h ${L} ]] && continue # No links allowed
+		RAWLINE+=${L}
+		[[ ${VERBOSE} == 'true' ]] && echo "Found:${L}" >&2
+	done
 
 	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ~/Code${RESET}" >&2
 	LIST+=("${(f)$(find ~/Code -type f -executable | grep -w ${FN} | grep -v -i 'repo')}")
