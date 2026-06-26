@@ -280,49 +280,6 @@ list_get_selection_limit () {
 	echo ${_SELECTION_LIMIT}
 }
 
-list_is_valid_selection () {
-	local -a SELECTED
-	local MAX
-	local MIN
-	local N
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	MIN=${1};shift
-	MAX=${1};shift
-	SELECTED=(${@})
-
-	for N in ${SELECTED};do
-		if ! validate_is_integer ${N};then
-			return 1
-		elif ! list_is_within_range ${N} ${MIN} ${MAX};then
-			return 1
-		elif [[ ${_SELECT_ALL} == 'false' ]];then
-			# Cannot select stale row; select 'all' is the only exception
-			if [[ ${_LIST_SELECTED[${N}]} -eq ${_STALE_ROW} && ${_REUSE_STALE} == 'false' ]];then 
-				return 1
-			fi
-		fi
-	done
-
-	return 0
-}
-
-list_is_within_range () {
-	local NDX=${1}
-	local MIN=${2}
-	local MAX=${3}
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	if [[ ${NDX} -ge ${MIN} && ${NDX} -le ${MAX} ]];then
-		return 0
-	else
-		echo "Selection:${NDX} not in page range ${MIN}-${MAX}"
-		return 1
-	fi
-}
-
 list_item () {
 	local MODE=${1}
 	local LINE_ITEM=${2}
@@ -1447,6 +1404,10 @@ list_toggle_selected () {
 		msg_box -p -PK "Selection is limited to ${_SELECTION_LIMIT}"
 		msg_box_clear
 		return # Ignore over limit
+	fi
+
+	if [[ ${_REUSE_STALE} == 'true' && ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]];then
+		_LIST_SELECTED[${_LIST_NDX}]=${_AVAIL_ROW}
 	fi
 
 	if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_AVAIL_ROW} ]];then
