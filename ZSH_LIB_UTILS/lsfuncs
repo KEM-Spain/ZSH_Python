@@ -181,7 +181,7 @@ elif [[ ${#} -ge 1 ]];then # Either a path, file, or searchterm
 	FILE_ARG=''
 	if [[ -z ${PATH_ARG} ]];then # File?
 		[[ -f ${ARG_1} ]] && FILE_ARG=${ARG_1} && FPATH=${FILE_ARG:h} && FGLOB="-name ${FILE_ARG:t}" && PATHLBL=${FPATH}
-		[[ -z	${FILE_ARG} ]] && FEXE=$(fut findexe ${ARG_1}) # Possible file but not in PWD
+		[[ -z	${FILE_ARG} ]] && FEXE=$(fut findexe -p ${ARG_1}) # Possible file but not in PWD
 		[[ -f ${FEXE} ]] && FILE_ARG=${FEXE} && FPATH=${FILE_ARG:h} && FGLOB="-name ${FILE_ARG:t}" && PATHLBL=${FPATH}
 		[[ -n ${FILE_ARG} ]] && HDR_MSG="Showing functions in file:${WHITE_FG}${FILE_ARG:t}${RESET}"
 	fi

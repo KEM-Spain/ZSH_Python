@@ -39,14 +39,38 @@ _V_TYPE=''
 _V_TYPE_LBL=''
 _EXIT_MSG=''
 _EXIT_CODE=0
-_XIAOMI_IP=192.168.18.105:5555
+_PHONE_IP=192.168.18.105:5555
 _PAYLOAD_FILE="/tmp/keep_payload.txt"
+_PHONE_IP="192.168.18.105"
+_PHONE_PORT=''
 
 # Functions
 cleanup () {
 	[[ -e ${_VERB_ARG}.html ]] && /bin/rm ${_VERB_ARG}.html
 	[[ -e ${_VERB_ARG}_tense.dat ]] && /bin/rm -f ${_VERB_ARG}_tense.dat
 	[[ -e ${_VERB_ARG}_verb.dat ]] && /bin/rm -f ${_VERB_ARG}_verb.dat
+}
+
+adb_is_connected () {
+	local FIELDS=''
+
+	read -A FIELDS < <(ss -t -4 -p | grep adb | tr -s '[:space:]')
+	_PHONE_PORT=$(cut -d: -f2 <<<${FIELDS[5]})
+
+	[[ -z "${_PHONE_PORT}" ]] && return 1
+
+	if adb devices | grep -E "${_PHONE_IP}(:[0-9]+)?\s+device" > /dev/null; then
+	  return 0
+	fi
+
+	adb connect "${_PHONE_IP}:${_PHONE_PORT}"
+	sleep .5
+
+	if adb devices | grep -E "${_PHONE_IP}(:[0-9]+)?\s+device" > /dev/null; then
+	  return 0
+	else
+	  return 1
+	fi
 }
 
 export_block () {
@@ -474,7 +498,7 @@ section_break () {
 }
 
 send_payload () {
-	adb -s ${_XIAOMI_IP} shell "am start -a android.intent.action.SEND -t 'text/plain' \
+	adb -s "${_PHONE_IP}:${_PHONE_PORT}" shell "am start -a android.intent.action.SEND -t 'text/plain' \
 		--es android.intent.extra.TEXT \"$(cat ${_PAYLOAD_FILE})\" com.google.android.keep"
 }
 
@@ -577,11 +601,6 @@ vertical_col_out () {
 	fi
 }
 
-wake_android () {
-	adb kill-server
-	adb connect ${_XIAOMI_IP}
-}
-
 #--Begin GetOpts--
 local -a OPTIONS
 local OPTION
@@ -671,6 +690,12 @@ shift $((OPTIND -1))
 # TODO: CHECK INFFUT OUTPUT (YACER) multiple choices separated by comma
 [[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage "Missing argument:<VERB>"
 [[ -z ${OPTIONS} ]] && VERTICAL=true # Default format
+
+if [[ ${CLIPBOARD} == 'true' ]];then
+	if ! adb_is_connected;then
+		exit_leave $(err_msg_exit "Clipboard option is unavailable - adb is not connected")
+	fi
+fi
 
 set_exit_callback cleanup
 

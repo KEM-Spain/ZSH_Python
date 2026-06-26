@@ -62,18 +62,16 @@ g_UTIL=''
 
 # Functions
 findexe () {
-	local -a PROD_LIST=(${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /usr/local/lib ${HOME}/Code/LOCAL)
 	local -a WIS=()
-	local -a FLIST=()
 	local -aU LIST=()
+	local -aU RAWLINE=()
 	local FN=''
 	local LOCAL=''
 	local VERBOSE=''
-	local PRODUCTION=''
-	local L R D
+	local L R
 
 	read -r -d '' DESC<<______EOF
-Find executable files
+Find files based on priority
 ______EOF
 
 	#--Begin GetOpts--
@@ -116,7 +114,6 @@ ______EOF
 		echo -e "\n${WHITE_FG}Usage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
-		echo -e "${WHITE_FG}-p${RESET} production file"
 		echo -e "${WHITE_FG}-l${RESET} local files have priority"
 		echo -e "${WHITE_FG}-v${RESET} verbose output"
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
@@ -125,19 +122,17 @@ ______EOF
 		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
-	OPTSTR=":HDlvp"
+	OPTSTR=":HDlv"
 	OPTIND=0
 
 	LOCAL=false
 	VERBOSE=false
-	PRODUCTION=false
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 		  H) usage;;
 		  D) dbg_set_level;;
 		  l) LOCAL=true;;
-		  p) PRODUCTION=true;;
 		  v) VERBOSE=true;;
 		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
@@ -149,55 +144,60 @@ ______EOF
 	# Execution
 	[[ ${#} -eq 0 ]] && usage "Missing argument:<FILE>" || FN=${1}
 
-	[[ ${VERBOSE} == 'true' ]] && echo "${CYAN_FG}Searching for:${FN}${RESET}" >&2
+	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Seeking${RESET}: ${FN}" >&2
 
-	if [[ ${PRODUCTION} == 'false' ]];then	
-		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}whereis${RESET}: ${FN}" >&2
-		WIS=("${(f)$(whereis -b -f ${FN} | cut -d: -f2-)}")
-		if [[ -z ${WIS} ]];then
-			[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}No whereis hits${RESET}" >&2
-		else
-			for L in ${=WIS};do
-				FLIST+=${L}
-				[[ ${VERBOSE} == 'true' ]] && echo "${GREEN_FG}Found:${L}${RESET}" >&2
+	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in any location${RESET}" >&2
+	WIS=("${(f)$(whereis -b -f ${FN} | cut -d: -f2-)}")
+	for L in ${=WIS};do
+		[[ -h ${L} ]] && continue # No links allowed
+		RAWLINE+=${L}
+		[[ ${VERBOSE} == 'true' ]] && echo "Found:${L}" >&2
+	done
+
+	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ~/Code${RESET}" >&2
+	LIST+=("${(f)$(find ~/Code -type f -executable | grep -w ${FN} | grep -v -i 'repo')}")
+	if [[ ${VERBOSE} == 'true' ]];then
+		if [[ -n ${LIST} ]];then
+			RAWLINE+=${LIST}
+			for L in ${LIST};do
+				echo "${WHITE_FG}Found${RESET}:${L}" >&2
 			done
+		else
+			echo "${WHITE_FG}Nothing found${RESET}" >&2
 		fi
 	fi
 
-	for D in ${PROD_LIST};do
-		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ${D}${RESET}" >&2
-		FLIST+=("${(f)$(find ${D} -type f -name "${FN}" -executable)}")
-	done
-
-	if ! arr_is_populated "${FLIST}";then
-		set_exit_value 1
-		[[ ${VERBOSE} == 'true' ]] && exit_leave $(err_msg_exit E "File not found:${FN}")
-	fi
-
-	for L in ${FLIST};do
-		if [[ -h ${L} ]];then
-			[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}Eliminating symlink:${L}${RESET}" >&2
-			continue
-		fi
-		if [[ ${LOCAL} == 'true' ]];then
-			if [[ ! ${L:h} == ${PWD} ]];then
-				[[ ${LOCAL} == 'true' ]] && echo "${RED_FG}Discarding non local:${L}${RESET}" >&2
-				continue
-			fi
-		fi
-		LIST+=${L}
-		[[ ${PRODUCTION} == 'true' ]] && break # First file only
-	done
+	LIST=(${RAWLINE})
 
 	if ! arr_is_populated "${LIST}";then
 		set_exit_value 1
 		[[ ${VERBOSE} == 'true' ]] && exit_leave $(err_msg_exit E "File not found:${FN}")
-	else
-		set_exit_value 0
-		do_rmcup
+	fi
+
+	if [[ ${#LIST} -gt 1 ]];then
 		for L in ${LIST};do
-			echo ${L}
+			[[ ${VERBOSE} == 'true' && ${L:l} =~ 'etc' ]] && echo "${WHITE_FG}Eliminating files in etc...${RESET}" >&2
+			[[ ${L:l} =~ 'etc' ]] &&  continue
+			[[ ${VERBOSE} == 'true' && ${L:l} =~ 'repo' ]] && echo "${WHITE_FG}Eliminating files in REPO...${RESET}" >&2
+			[[ ${L:l} =~ 'repo' ]] &&  continue
+			[[ ${VERBOSE} == 'true' && ! -f ${L} ]] && echo "${WHITE_FG}Eliminating directories and links...${RESET}" >&2
+			[[ ! -f ${L} ]] && continue
+
+			if [[ ${LOCAL} == 'true' ]];then
+				if [[ ${L:h} == ${PWD} ]];then
+					echo ${L}
+					return
+				fi
+			elif [[ ${L:h} != ${PWD} ]];then
+				echo ${L}
+				return
+			else
+				continue
+			fi
 		done
+	else
+		echo ${LIST}
+		return
 	fi
 }
 

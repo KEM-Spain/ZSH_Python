@@ -323,7 +323,6 @@
 : 1781017065:0;type bat
 : 1781017691:0;ln -s /usr/local/src/mdless/mdless .
 : 1781085038:0;./yt
-: 1781093460:0;sd
 : 1781107405:0;md autopair
 : 1781131497:0;aptitude show qt5-default 
 : 1781203356:0;...
@@ -335,11 +334,9 @@
 : 1781259357:0;run_enpass
 : 1781290190:0;install android-tools-adb
 : 1781291178:0;adb-grant
-: 1781292439:0;dbus-monitor --session
 : 1781295421:0;gpaste-client
 : 1781331127:0;type /usr/bin/libreoffice
 : 1781339797:0;nut
-: 1781346929:0;adb connect
 : 1781350736:0;gnome-extensions-app
 : 1781365742:0;verbs
 : 1781391333:0;ext hack.zip
@@ -352,7 +349,6 @@
 : 1781442189:0;mpv 03-How\ Blue\ Can\ You\ Get.mp3
 : 1781446884:0;dict agnostic
 : 1781511829:0;ll /srv/samba
-: 1781512107:0;sudo apt install cifs-utils smbclient -y
 : 1781519064:0;groups
 : 1781521944:0;mount
 : 1781522207:0;sudo aa-complain /usr/sbin/smbd
@@ -399,7 +395,6 @@
 : 1781895211:0;diff 1692bfc2\#EXIT.zsh.log.out EXIT.zsh
 : 1781896431:0;y
 : 1781900045:0;ld
-: 1781909372:0;d
 : 1781909376:0;T
 : 1781909380:0;I
 : 1781909421:0;C
@@ -411,118 +406,794 @@
 : 1781949413:0;uls
 : 1781989704:0;Ts
 : 1782028457:0;crontab 
-: 1782032235:0;repo
 : 1782039311:0;smbclient
 : 1782043412:0;c
 : 1782043762:0;upd_locate
 : 1782044847:0;sut
 : 1782044956:0;b
 : 1782045665:0;hist
-: 1782046194:0;fut findexe gsconnect-autopair.zsh
 : 1782046677:0;.ls
-: 1782047312:0;flog
-: 1782047469:0;clear
 : 1782053215:0;test_keep_notes_direct
 : 1782055410:0;xmllint --format < x
 : 1782055914:0;arp
 : 1782056406:0;ule
-: 1782071840:0;chkupd
 : 1782071861:0;lsc
 : 1782071921:0;systemctl 
 : 1782072007:0;llr
 : 1782073288:0;hostname
-: 1782073756:0;killall gjs kdeconnectd 2>/dev/null
-: 1782081369:0;rb -l
 : 1782085332:0;ux gs
-: 1782085417:0;.l
-: 1782113741:0;s
-: 1782115941:0;.c
 : 1782117503:0;ip -4 addr show wlo1 
-: 1782118186:0;get_xiaomi_id
 : 1782118695:0;Cat doit
 : 1782121319:0;./xiaomi_heartbeat.py
 : 1782122681:0;k/dev
-: 1782126829:0;Tw
 : 1782128580:0;t
 : 1782133299:0;sld
-: 1782137712:0;l
-: 1782140534:0;..
-: 1782141789:0;kdeconnect-cli -a
-: 1782144051:0;,
-: 1782144087:0;ll
 : 1782144288:0;./reset
 : 1782144437:0;sudo apt-get update && sudo apt-get install -y gnome-shell-extension-gsconnect
-  --dest org.gnome.Shell.Extensions.GSConnect \\
-  --object-path "/org/gnome/Shell/Extensions/GSConnect" \\
-  --method org.freedesktop.DBus.ObjectManager.GetManagedObjects
 : 1782144470:0;rb -l
-: 1782144494:0;aux gs
-  --dest org.gnome.Shell.Extensions.GSConnect \\
-  --object-path "/org/gnome/Shell/Extensions/GSConnect" \\
-  --method org.freedesktop.DBus.ObjectManager.GetManagedObjects
-: 1782144594:0;cl gsconnect-autopair
-: 1782144599:0;vi reset
-: 1782144625:0;reset
-: 1782144651:0;vi reset
-  --dest org.gnome.Shell.Extensions.GSConnect \\
-  --object-path "/org/gnome/Shell/Extensions/GSConnect" \\
-  --method org.freedesktop.DBus.ObjectManager.GetManagedObjects
-: 1782144790:0;clear
-: 1782144793:0;.c
-: 1782144800:0;ll
-: 1782144988:0;cl gsconnect-autopair
 : 1782144990:0;rm -rf ~/.config/kdeconnect/
 : 1782145014:0;gsettings get org.gnome.Shell.Extensions.GSConnect id
-: 1782145092:0;vi gsconnect-autopair.zsh
-: 1782145107:0;./gsconnect-autopair.zsh
-: 1782145149:0;,
-: 1782145160:0;.ls gsconnect-autopair
-: 1782145163:0;Cat gsconnect-autopair.log
-: 1782145373:0;,
-: 1782145376:0;vi reset
-: 1782145398:0;ll
-: 1782145402:0;./adb_tweak
 : 1782145518:0;kdeconnect-cli
-: 1782145524:0;kdeconnect-cli -l
-: 1782145606:0;vi -e reset
-: 1782145619:0;reset
-: 1782145627:0;vi reset
-: 1782145656:0;cat reset
-: 1782145665:0;reset
-: 1782145676:0;Cat reset
-: 1782145680:0;reset
-: 1782145732:0;kdeconnect-cli -l
-: 1782145775:0;kdeconnect-cli --refresh --device-ajax --refresh -d _3efa35b5_63a6_403b_b26c_e1242d872755_ --pair
-: 1782145810:0;kdeconnect-cli --refresh --pair -a 192.168.18.105
-: 1782145875:0;adb forward --remove-all
-: 1782145886:0;adb forward tcp:1716 tcp:1716
 : 1782145923:0;pkill -f gsconnect
-: 1782145931:0;adb forward tcp:1716 tcp:1716
-: 1782145970:0;adb forward --remove-all
-: 1782145977:0;adb reverse --remove-all
-: 1782145987:0;adb reverse tcp:1716 tcp:1716
-: 1782146033:0;rb -r
 : 1782146128:0;chkupd
-: 1782146627:0;Tw
-: 1782146629:0;yts
-: 1782146683:0;yt
-: 1782146685:0;yts
-: 1782147431:0;ll
-: 1782148677:0;lsd
-: 1782148680:0;ll
-: 1782154325:0;purge kdeconnect
-: 1782154334:0;install kdeconnect
-: 1782154499:0;cl gsconnect-autopair
-: 1782154502:0;ll
-: 1782154507:0;vi reset
-: 1782154522:0;rm reset
-: 1782154526:0;ll
-: 1782154533:0;vi testit
- 75     --dest "${_GS_DEST}" \\
- 76     --object-path "/org/gnome/Shell/Extensions/GSConnect" \\
- 77     --method org.freedesktop.DBus.ObjectManager.GetManagedObjects\
-
-: 1782154599:0;hist \-\-
-: 1782154631:0;hist_no_dups -d
-: 1782154637:0;hist_no_dups -H
-: 1782154652:0;hist_no_dups -Fp
+: 1782155329:0;get_xiaomi_id
+: 1782155561:0;adb connect
+: 1782157111:0;kdeconnect-cli -l 2>/dev/null
+: 1782159738:0;fut findexe gsconnect-autopair.zsh
+: 1782159742:0;d
+: 1782160212:0;l
+: 1782160492:0;s
+: 1782164593:0;Tw
+: 1782165461:0;sd
+: 1782202682:0;.l
+: 1782204280:0;repo
+: 1782205750:0;clear
+: 1782215800:0;flog
+: 1782216083:0;.c
+: 1782217965:0;,
+: 1782218981:0;dbus-monitor --session
+: 1782220130:0;..
+: 1782223878:0;./gsconnect-autopair.zsh
+: 1782228006:0;ll
+: 1782228297:0;nut lan
+: 1782228309:0;nut lan
+: 1782228331:0;ping 192.168.18.105
+: 1782228339:0;nut lan
+: 1782228355:0;kdeconnect-cli -l 
+: 1782228428:0;kdeconnect-cli -l 
+: 1782228458:0;systemctl --user status gsconnect-autopair.service
+: 1782228475:0;systemctl --user enable gsconnect-autopair.service
+: 1782228481:0;systemctl --user status gsconnect-autopair.service
+: 1782228487:0;systemctl --user start gsconnect-autopair.service
+: 1782228490:0;systemctl --user status gsconnect-autopair.service
+: 1782228642:0;Tw
+: 1782228645:0;yts
+: 1782228655:0;ll
+: 1782228662:0;Tw
+: 1782228663:0;ll
+: 1782228664:0;lsd
+: 1782228672:0;ll
+: 1782228702:0;ll
+: 1782229252:0;yts
+: 1782230839:0;cl gsconnect-autopair
+: 1782230844:0;vi gsconnect-autopair.zsh
+: 1782230876:0;Tw
+: 1782230877:0;ll
+: 1782231327:0;lsd
+: 1782238942:0;lsd
+: 1782238970:0;e2s clean this mess today
+: 1782238997:0;e2s clean this huge mess today
+: 1782239060:0;e2s clean this ugly mess today
+: 1782239215:0;yts
+: 1782239303:0;cl yts
+: 1782239306:0;vi yts
+: 1782239452:0;yts
+: 1782239520:0;vi yts
+: 1782239549:0;yts
+: 1782239614:0;vi yts
+: 1782239705:0;yts
+: 1782239749:0;vi yts
+: 1782239776:0;yts
+: 1782242935:0;yts
+: 1782243325:0;ll
+: 1782243335:0;cl yts
+: 1782243340:0;bak -P yts
+: 1782243360:0;bak -r
+: 1782243370:0;cl gsconnect-autopair
+: 1782243372:0;bak -r
+: 1782243440:0;bak -r
+: 1782243507:0;bak -r
+: 1782243578:0;bak -r
+: 1782243667:0;pwd
+: 1782243682:0;fut findexe gsconnect-autopair
+: 1782243699:0;fut findexe gsconnect-autopair.zsh
+: 1782243834:0;bak -r
+: 1782243866:0;bak -r
+: 1782243923:0;bak -r
+: 1782244181:0;cl sdb
+: 1782244193:0;sdv -c hacer
+: 1782244221:0;adb devices
+: 1782244240:0;pingc192.168.18.105
+: 1782244262:0;ping 192.168.18.105
+: 1782244275:0;adb devices
+: 1782244316:0;adb
+: 1782244440:0;kdeconnect-cli
+: 1782244464:0;kdeconnect-cli -l
+: 1782244627:0;adb kill-server
+: 1782244640:0;adb start-server 
+: 1782244648:0;adb devices
+: 1782244685:0;upd_locate
+: 1782244696:0;locate adb
+: 1782244719:0;tput rmcup
+: 1782244738:0;locate adb 
+: 1782244791:0;locate adb | grep ini
+: 1782247693:0;Tw
+: 1782247694:0;ll
+: 1782247702:0;lsd
+: 1782247705:0;ll
+: 1782252544:0;yts
+: 1782253016:0;p2k 169
+: 1782253103:0;k2p 60
+: 1782253131:0;k2p 70
+: 1782253146:0;k2p 75
+: 1782253159:0;k2p 72
+: 1782253168:0;k2p 73
+: 1782257161:0;lsd
+: 1782258531:0;chkupd
+: 1782285201:0;clear
+: 1782285224:0;cl gsconnect-autopair
+: 1782285225:0;ll
+: 1782285231:0;ll
+: 1782285238:0;ll
+: 1782285241:0;vi doit
+: 1782285277:0;vi adb*
+: 1782285491:0;ll
+: 1782285532:0;ll
+: 1782285539:0;me adb_pair
+: 1782285544:0;vi adb_pair
+: 1782285555:0;ll
+: 1782285559:0;vi adb*
+: 1782285673:0;ll
+: 1782285681:0;adb_pair
+: 1782285706:0;adb_pair
+: 1782285721:0;vi adb_pair
+: 1782285762:0;adb_pair
+: 1782285985:0;vi adb_pair
+: 1782286005:0;adb_pair
+: 1782286152:0;adb_pair
+: 1782286255:0;vi adb_pair
+: 1782286400:0;adb_pair
+: 1782286445:0;vi adb_pair
+: 1782286484:0;adb_pair
+: 1782286542:0;kdeconnect-cli -l
+: 1782286597:0;vi q
+: 1782286701:0;Cat q
+: 1782286941:0;vi adb_pair
+: 1782286971:0;vi adb_pair
+: 1782287004:0;adb_pair
+: 1782287026:0;vi adb_pair
+: 1782287048:0;adb_pair
+: 1782287059:0;vi adb_pair
+: 1782287075:0;adb_pair
+: 1782287116:0;vi adb_pair
+: 1782287180:0;adb_pair
+: 1782287207:0;vi adb_pair
+: 1782287224:0;vi adb_pair
+: 1782287229:0;adb_pair
+: 1782287289:0;vi adb_pair
+: 1782287309:0;adb tcpip
+: 1782287316:0;adb tcpip 5555
+: 1782287434:0;cl sdb
+: 1782287437:0;vi sdv
+: 1782287522:0;,
+: 1782287525:0;vi q
+: 1782287813:0;Cat q
+: 1782287907:0;vi adb_verify_connection
+: 1782288770:0;vi adb_verify_connection
+: 1782288786:0;adb_verify_connection
+: 1782288790:0;me adb_verify_connection
+: 1782288795:0;adb_verify_connection
+: 1782288828:0;vi adb_verify_connection
+: 1782288840:0;adb_verify_connection
+: 1782288870:0;adb_verify_connection
+: 1782288882:0;adb devices
+: 1782288982:0;,
+: 1782288990:0;sdv -c hacer
+: 1782289148:0;,
+: 1782289165:0;vi -e adb_get_active_port
+: 1782289185:0;adb_get_active_port
+: 1782289204:0;adb devices
+: 1782289214:0;vi adb_get_active_port
+: 1782289247:0;avahi-browse -rt _adb_secure_connect._tcp
+: 1782289304:0;avahi-browse -rt _adb_secure_connect._tcp
+: 1782289392:0;vi /etc/avahi/avahi-daemon.conf 
+: 1782289407:0;avahi-browse -rt _adb_secure_connect._tcp
+: 1782289432:0;systemctl restart avahi-daemon
+: 1782289438:0;avahi-browse -rt _adb_secure_connect._tcp
+: 1782289509:0;avahi-browse -rt -d local _adb_secure_connect._tcp
+: 1782289520:0;avahi-browse -atc
+: 1782289540:0;sudo journalctl -u avahi-daemon | tail -n 20
+: 1782289635:0;sudo lsof -i -P -n | grep 5353
+: 1782289697:0;E
+: 1782289704:0;vi glances/glances.conf
+: 1782289800:0;sudo systemctl restart glances
+: 1782289806:0;sudo lsof -i -P -n | grep 5353
+: 1782289869:0;sudo killall glances
+: 1782289883:0;sudo systemctl stop glances
+: 1782289889:0;sudo lsof -i -P -n | grep 5353
+: 1782289943:0;glances --config
+: 1782290001:0;glances -v
+: 1782290013:0;glances -V
+: 1782290035:0;.ls glances
+: 1782290036:0;ll
+: 1782290040:0;vi glances.log
+: 1782290124:0;E
+: 1782290133:0;vi glances.conf
+: 1782290165:0;sudo systemctl restart glances
+: 1782290170:0;sudo lsof -i -P -n | grep 5353
+: 1782290192:0;.ls glances
+: 1782290195:0;vi glances.log
+: 1782290228:0;,
+: 1782290232:0;vi glances.conf
+: 1782290278:0;vi glances.conf
+: 1782290335:0;vi glances.conf
+: 1782290374:0;sudo systemctl stop glances
+: 1782290380:0;sudo lsof -i -P -n | grep 5353
+: 1782290403:0;avahi-browse -rt -d local _adb_secure_connect._tcp
+: 1782290487:0;sudo systemctl restart avahi-daemon
+: 1782290489:0;avahi-browse -rt -d local _adb_secure_connect._tcp
+: 1782290747:0;upd_locate
+: 1782290764:0;locate glances | grep service
+: 1782290785:0;vi /usr/lib/systemd/system/glances.service
+: 1782290993:0;sudo systemctl daemon-reload
+: 1782291002:0;sudo systemctl restart glances
+: 1782291008:0;sudo lsof -i -P -n | grep 5353
+: 1782291017:0;aux glances
+: 1782291101:0;E
+: 1782291112:0;ll
+: 1782291139:0;chmod 644 vid_watch.service
+: 1782291141:0;ll
+: 1782291163:0;cl gsconnect-autopair
+: 1782291165:0;ll
+: 1782291169:0;ll
+: 1782291180:0;avahi-browse -rt -d local _adb_secure_connect._tcp
+: 1782291192:0;sudo lsof -i -P -n | grep 5353
+: 1782291306:0;adb server-status
+: 1782291392:0;nmap -p 37000-44000 192.168.18.105
+: 1782291477:0;ll
+: 1782291485:0;vi adb_verify_connection
+: 1782291510:0;vi adb_get_active_port
+: 1782291536:0;adb_get_active_port
+: 1782291562:0;ll
+: 1782291570:0;vi adb_verify_connection
+: 1782291854:0;vi adb_verify_connection
+: 1782292452:0;adb_verify_connection
+: 1782292462:0;echo $?
+: 1782292483:0;adb devices
+: 1782292500:0;vi adb_verify_connection
+: 1782292778:0;adb_verify_connection
+: 1782292785:0;echo $?
+: 1782292791:0;cl adv
+: 1782292797:0;cl sdb
+: 1782292802:0;vi sdv
+: 1782293059:0;sdv -c hacer
+: 1782293085:0;vi sdv
+: 1782293230:0;sdv -c hacer
+: 1782293241:0;vi sdv
+: 1782293306:0;sdv -c hacer
+: 1782293332:0;vi sdv
+: 1782293451:0;sdv -c hacer
+: 1782293473:0;vi sdv
+: 1782293501:0;sdv -c hacer
+: 1782293547:0;vi sdv
+: 1782293596:0;sdv -c hacer
+: 1782293632:0;nmap -p 37000-44000 192.168.18.105
+: 1782293653:0;nmap -p 37000-44000 192.168.18.105 | grep tcp
+: 1782293670:0;nmap -p 37000-44000 192.168.18.105 | grep 'tcp/open'
+: 1782293679:0;nmap -p 37000-44000 192.168.18.105 | grep 'tcp\/open'
+: 1782293695:0;nmap -p 37000-44000 192.168.18.105 | grep 'open'
+: 1782293710:0;vi sdv
+: 1782293741:0;sdv -c hacer
+: 1782293793:0;vi sdv
+: 1782293814:0;sdv -c hacer
+: 1782293829:0;vi sdv
+: 1782293852:0;sdv -c hacer
+: 1782294017:0;vi sdv
+: 1782294147:0;kdeconnect-cli -l
+: 1782294177:0;rb -r
+: 1782294255:0;kdeconnect-cli -l
+: 1782294290:0;cl sdb
+: 1782294295:0;sdv -c hacer
+: 1782294993:0;Tw
+: 1782294994:0;ll
+: 1782295414:0;cl gsconnect-autopair
+: 1782295415:0;ll
+: 1782295422:0;ll
+: 1782295430:0;rm q
+: 1782295431:0;ll
+: 1782295438:0;vi doit
+: 1782295480:0;ll
+: 1782295500:0;mya chmod
+: 1782295551:0;mya chmod
+: 1782295564:0;nme gdbus.cmd.log
+: 1782295565:0;ll
+: 1782295577:0;mya chmod
+: 1782295607:0;ll
+: 1782295629:0;vi adp*
+: 1782295635:0;vi adb*
+: 1782295800:0;rm adb_tweak
+: 1782295801:0;ll
+: 1782295823:0;ll
+: 1782295834:0;adb_get_active_port
+: 1782295839:0;adb_active_port
+: 1782295859:0;vi adb_active_port
+: 1782295918:0;adb_active_port
+: 1782295925:0;vi adb_active_port
+: 1782296002:0;adb_active_port
+: 1782296014:0;vi adb_active_port
+: 1782296064:0;adb_active_port
+: 1782296073:0;vi adb_active_port
+: 1782296089:0;adb_active_port
+: 1782296101:0;vi adb_active_port
+: 1782296123:0;adb_active_port
+: 1782296127:0;vi adb_active_port
+: 1782296208:0;adb_active_port
+: 1782296224:0;vi adb_active_port
+: 1782296291:0;adb_active_port
+: 1782296304:0;vi adb_active_port
+: 1782296310:0;adb_active_port
+: 1782296327:0;ss 40763
+: 1782296338:0;ss | grep 40763
+: 1782296545:0;ss -t | grep 40763
+: 1782296559:0;ss -t -4 | grep 40763
+: 1782296584:0;ss -t -4 -l | grep 40763
+: 1782296605:0;ss -t -4 -s | grep 40763
+: 1782296654:0;ss -t -4  | mypager
+: 1782296709:0;ss -t -4 -p | mypager
+: 1782296735:0;ss -t -4 -p | grep adb
+: 1782296819:0;ss -t -4 -p | grep adb | tr -s '[:space:]'
+: 1782296862:0;ss -t -4 -p | grep adb | tr -s '[:space:]' | cut -d' ' -f5
+: 1782296886:0;ss -t -4 -p | grep adb | tr -s '[:space:]' | cut -d' ' -f5 | cut -d: -f2
+: 1782296933:0;./adb_active_port
+: 1782297005:0;vi -e doit
+: 1782297263:0;doit
+: 1782297279:0;vi -e doit
+: 1782297289:0;doit
+: 1782297292:0;vi -e doit
+: 1782297396:0;adb_active_port
+: 1782297413:0;vi adb_active_port
+: 1782297615:0;Tw
+: 1782297616:0;ll
+: 1782297619:0;sd
+: 1782297620:0;lsd
+: 1782297623:0;ll
+: 1782316894:0;yts
+: 1782317180:0;ll
+: 1782325385:0;yts
+: 1782325436:0;t
+: 1782325539:0;ll
+: 1782325548:0;lsd
+: 1782334291:0;lsdd
+: 1782334292:0;lsd
+: 1782334297:0;ll
+: 1782339944:0;y5w
+: 1782339946:0;yts
+: 1782342021:0;rb -l
+: 1782372119:0;ll
+: 1782372126:0;Tw
+: 1782372127:0;ll
+: 1782372271:0;e2s there was some pain
+: 1782372301:0;e2s there is some pain
+: 1782372334:0;cl sdb
+: 1782372344:0;sdv haber
+: 1782372552:0;e2s there is some ain
+: 1782372556:0;e2s there is some money
+: 1782372565:0;e2s there waas some money
+: 1782372570:0;e2s there was some money
+: 1782372593:0;e2s there was some pain
+: 1782372648:0;e2s i was having some pain
+: 1782372659:0;e2s i am having some pain
+: 1782372754:0;vi x
+: 1782372812:0;Cat x | e2s
+: 1782372901:0;e2s i had some pain
+: 1782372920:0;e2s i have some pain
+: 1782372955:0;vi x
+: 1782372973:0;Cat x | e2s
+: 1782373076:0;yts
+: 1782374453:0;Tw
+: 1782374455:0;ll
+: 1782374456:0;lsd
+: 1782374461:0;ll
+: 1782374571:0;G
+: 1782374610:0;cl gsconnect-autopair
+: 1782374613:0;ll
+: 1782374619:0;ll
+: 1782374627:0;./adb_verify_connection
+: 1782374644:0;vi adb*
+: 1782374721:0;vi adb*
+: 1782374735:0;./adb_verify_connection
+: 1782374748:0;adb devices
+: 1782374758:0;vi adb*
+: 1782374768:0;vi adb_verify_connection
+: 1782374857:0;adb_verify_connection
+: 1782374969:0;vi adb_pair
+: 1782374990:0;vi adb_verify_connection
+: 1782375019:0;adb_verify_connection
+: 1782375065:0;adb_pair
+: 1782375076:0;adb_verify_connection
+: 1782375103:0;hist pair
+: 1782375130:0;clear
+: 1782375373:0;adb_pair
+: 1782375417:0;adb_verify_connection
+: 1782375441:0;ss -t -4 -p | grep adb 
+: 1782375464:0;nmap -p 37000-44000 192.168.18.105 
+: 1782375547:0;ll
+: 1782375551:0;vi doit
+: 1782375560:0;doit
+: 1782375564:0;rm doit
+: 1782375565:0;ll
+: 1782375572:0;cat reset
+: 1782375591:0;kdeconnect--cli -l
+: 1782375594:0;kdeconnect-cli -l
+: 1782375658:0;kdeconnect-cli -l
+: 1782375674:0;adb_verify_connection
+: 1782375684:0;vi adb_verify_connection
+: 1782375690:0;adb_verify_connection
+: 1782375721:0;nmap -p 37000-44000 192.168.18.105 
+: 1782375757:0;ll
+: 1782375764:0;vi testit
+: 1782375778:0;rm testit
+: 1782375780:0;ll
+: 1782375786:0;./test_keep_notes_direct
+: 1782375840:0;adb_verify_connection
+: 1782376061:0;adb tcpip 5555
+: 1782376223:0;./test_keep_notes_direct
+: 1782376239:0;adb_verify_connection
+: 1782376249:0;nmap -p 37000-44000 192.168.18.105 
+: 1782376319:0;ss -t -4 -p | grep adb 
+: 1782376343:0;kdeconnect-cli -l
+: 1782377368:0;chkupd
+: 1782383916:0;kdeconnect-cli -l
+: 1782383955:0;nut ip_int
+: 1782383970:0;ping 192.168.18.105
+: 1782384010:0;kdeconnect-cli -l
+: 1782384015:0;kdeconnect-cli -l
+: 1782384027:0;kdeconnect-cli -l
+: 1782384086:0;kdeconnect-cli -l
+: 1782384922:0;adb tcpip 5555
+: 1782384941:0;adb devices
+: 1782384972:0;kdeconnect-cli -l
+: 1782384995:0;kdeconnect-cli --pair -d 7217255faf374d38ab30d3de01301e7c
+: 1782385022:0;adb devices
+: 1782385074:0;adb pair 192.168.18.105:5555
+: 1782385091:0;adb connect 192.168.18.105:5555
+: 1782385113:0;adb devices
+: 1782385192:0;cl sdb
+: 1782385196:0;vi sdv
+: 1782385255:0;vi sdv
+: 1782385301:0;cl gsconnect-autopair/notes
+: 1782385306:0;lll
+: 1782385307:0;ll
+: 1782385312:0;adb_verify_connection
+: 1782385321:0;ss -t -4 -p | grep adb 
+: 1782385338:0;adb_verify_connection
+: 1782385344:0;vi adb_verify_connection
+: 1782385361:0;adb_verify_connection
+: 1782385369:0;vi adb_verify_connection
+: 1782385382:0;ss -t -4 -p | grep adb 
+: 1782385386:0;vi adb_verify_connection
+: 1782385420:0;ss -t -4 -p | grep adb | tr -s '[:space:]' 
+: 1782385452:0;vi adb_verify_connection
+: 1782385471:0;read -A FIELDS < <(ss -t -4 -p | grep adb | tr -s '[:space:]')
+: 1782385485:0;echo ${FIELDS}
+: 1782385489:0;echo ${FIELDS[5]}
+: 1782385499:0;vi adb_verify_connection
+: 1782385567:0;adb_verify_connection
+: 1782385673:0;vi adb_verify_connection
+: 1782385723:0;Tw
+: 1782385724:0;lsd
+: 1782385748:0;yts
+: 1782385778:0;yts
+: 1782385844:0;ll
+: 1782392057:0;lsd
+: 1782392572:0;type rec
+: 1782392580:0;type rec --help
+: 1782392588:0;rec --help
+: 1782392608:0;man rec
+: 1782392718:0;rcp
+: 1782392967:0;f dahl
+: 1782392973:0;f -dddd dahl
+: 1782392999:0;s
+: 1782393015:0;b
+: 1782393042:0;cl
+: 1782393044:0;ll
+: 1782393054:0;cl scratch
+: 1782393055:0;ll
+: 1782393076:0;vi cmd_parser
+: 1782393085:0;vi cmd_parser
+: 1782393103:0;rm *
+: 1782393110:0;ll
+: 1782393123:0;vi frcp
+: 1782393134:0;vi -e frcp
+: 1782393424:0;frcp
+: 1782393445:0;vi frcp
+: 1782393458:0;yts
+: 1782393523:0;frcp
+: 1782393531:0;find_rcp
+: 1782393533:0;frcp
+: 1782393537:0;vi frcp
+: 1782393635:0;frcp
+: 1782393642:0;frcp dahl
+: 1782393653:0;D
+: 1782393659:0;,
+: 1782393663:0;vi frcp
+: 1782393678:0;frcp dahl
+: 1782393694:0;vi frcp
+: 1782393705:0;frcp dahl
+: 1782393719:0;frcp green
+: 1782393804:0;rcp
+: 1782393811:0;llr
+: 1782393845:0;,
+: 1782393847:0;vi frcp
+: 1782393985:0;frcp blue
+: 1782393991:0;vi frcp
+: 1782394034:0;frcp blue
+: 1782394036:0;vi frcp
+: 1782394101:0;frcp blue
+: 1782394105:0;vi frcp
+: 1782394128:0;frcp blue
+: 1782394143:0;vi frcp
+: 1782394152:0;frcp all
+: 1782394164:0;vi frcp
+: 1782394193:0;frcp all
+: 1782394197:0;vi frcp
+: 1782394206:0;frcp all
+: 1782394267:0;vi frcp
+: 1782394332:0;frcp green
+: 1782394366:0;lsfuncs LIST.zsh
+: 1782394383:0;vi frcp
+: 1782394405:0;frcp green
+: 1782394410:0;vi frcp
+: 1782394442:0;frcp green
+: 1782394585:0;ll
+: 1782394588:0;,
+: 1782394925:0;frcp green
+: 1782394936:0;vi frcp
+: 1782394964:0;frcp green
+: 1782394966:0;vi frcp
+: 1782394979:0;frcp green
+: 1782394991:0;vi frcp
+: 1782395032:0;frcp dahl
+: 1782395046:0;vi frcp
+: 1782395142:0;frcp dahl
+: 1782395166:0;vi frcp
+: 1782395200:0;frcp dahl
+: 1782395206:0;vi frcp
+: 1782395216:0;vi frcp
+: 1782395227:0;frcp dahl
+: 1782395233:0;vi frcp
+: 1782395261:0;frcp dahl
+: 1782395277:0;vi frcp
+: 1782395297:0;frcp dahl
+: 1782395306:0;vi frcp
+: 1782395316:0;frcp dahl
+: 1782395326:0;vi frcp
+: 1782395341:0;frcp dahl
+: 1782395360:0;vi frcp
+: 1782395372:0;frcp dahl
+: 1782401725:0;ll
+: 1782401731:0;frcp
+: 1782401740:0;vi frcp
+: 1782401760:0;frcp
+: 1782401768:0;vi frcp
+: 1782401806:0;frcp all
+: 1782401808:0;vi frcp
+: 1782401848:0;frcp all
+: 1782401849:0;vi frcp
+: 1782401862:0;frcp all
+: 1782401863:0;vi frcp
+: 1782401880:0;frcp all
+: 1782401886:0;vi frcp
+: 1782401910:0;frcp all
+: 1782401921:0;frcp dahl
+: 1782401931:0;vi frcp
+: 1782401977:0;frcp dahl
+: 1782401982:0;vi frcp
+: 1782402007:0;frcp dahl
+: 1782402019:0;vi frcp
+: 1782402038:0;frcp dahl
+: 1782402044:0;vi frcp
+: 1782402058:0;frcp dahl
+: 1782402067:0;frcp all
+: 1782402072:0;vi frcp
+: 1782402091:0;frcp all
+: 1782402097:0;frcp dahl
+: 1782402100:0;vi frcp
+: 1782402134:0;frcp dahl
+: 1782402139:0;frcp
+: 1782402145:0;vi frcp
+: 1782402186:0;frcp
+: 1782402190:0;frcp dahl
+: 1782402195:0;frcp
+: 1782402219:0;vi frcp
+: 1782402234:0;frcp
+: 1782402336:0;vi frcp
+: 1782402381:0;frcp
+: 1782402415:0;frcp chana
+: 1782402422:0;frcp
+: 1782402434:0;frcp achari
+: 1782402440:0;frcp
+: 1782402454:0;frcp chapati
+: 1782402491:0;Tw
+: 1782402492:0;lsd
+: 1782402499:0;ll
+: 1782402502:0;yts
+: 1782402536:0;yts -wy
+: 1782405565:0;yt
+: 1782405568:0;ytd
+: 1782405570:0;yts
+: 1782411562:0;G
+: 1782411890:0;lsd
+: 1782411900:0;ll
+: 1782411907:0;lsd
+: 1782412643:0;e2s earthquake
+: 1782413972:0;s2e choque
+: 1782414447:0;clear
+: 1782414456:0;yts
+: 1782416954:0;cl gsconnect-autopair
+: 1782416960:0;ll
+: 1782416966:0;./adb_verify_connection
+: 1782416983:0;vi adb_active_port
+: 1782416993:0;adb_active_port
+: 1782417003:0;vi adb_verify_connection
+: 1782417345:0;adb_verify_connection
+: 1782417354:0;vi adb_verify_connection
+: 1782417366:0;rm adb_active_port
+: 1782417367:0;ll
+: 1782417385:0;vi adb_pair
+: 1782417439:0;adb_verify_connection
+: 1782417451:0;vi adb_verify_connection
+: 1782417465:0;adb_verify_connection
+: 1782417503:0;vi adb_verify_connection
+: 1782417531:0;adb_verify_connection
+: 1782417536:0;vi adb_verify_connection
+: 1782417610:0;adb_verify_connection
+: 1782417616:0;vi adb_verify_connection
+: 1782417624:0;adb_verify_connection
+: 1782417626:0;vi adb_verify_connection
+: 1782417634:0;adb_verify_connection
+: 1782417644:0;vi adb_verify_connection
+: 1782417649:0;adb_verify_connection
+: 1782417741:0;flog
+: 1782417816:0;tsl
+: 1782417862:0;cl scratch
+: 1782417864:0;ll
+: 1782417885:0;vi -e qsl
+: 1782418333:0;qsl
+: 1782418360:0;qsl kde
+: 1782418368:0;vi -e qsl
+: 1782418382:0;qsl kde
+: 1782418391:0;vi -e qsl
+: 1782418412:0;qsl kde
+: 1782418499:0;qsl -H
+: 1782418512:0;vi qsl
+: 1782418555:0;qsl 
+: 1782418561:0;qsl -l20
+: 1782418573:0;qsl -l30
+: 1782418579:0;vi qsl
+: 1782418623:0;qsl -l30
+: 1782418641:0;vi qsl
+: 1782418652:0;qsl -l30
+: 1782418671:0;qsl -l30
+: 1782418678:0;vi qsl
+: 1782418717:0;qsl -l30
+: 1782418731:0;qsl -l30 -f
+: 1782418754:0;vi qsl
+: 1782418791:0;vi qsl
+: 1782418854:0;qsl -l30 -f
+: 1782418868:0;vi qsl
+: 1782418876:0;qsl -l30 -f
+: 1782418897:0;vi qsl
+: 1782418938:0;qsl -l30 -f
+: 1782418948:0;vi qsl
+: 1782419010:0;qsl -l30 -f
+: 1782419017:0;vi qsl
+: 1782419032:0;qsl -l30 -f
+: 1782419054:0;qsl wpa
+: 1782419068:0;cl
+: 1782419072:0;md qsl
+: 1782419095:0;ll
+: 1782419101:0;bak -r qsl
+: 1782419107:0;ll
+: 1782419119:0;cl qsl
+: 1782419124:0;qsl
+: 1782419127:0;qsl
+: 1782419129:0;qsl
+: 1782419136:0;vi qsl
+: 1782419226:0;qsl
+: 1782419234:0;qsl -H
+: 1782419523:0;Tw
+: 1782419524:0;ll
+: 1782419529:0;lsd
+: 1782428611:0;lsd
+: 1782428616:0;ll
+: 1782428618:0;yts
+: 1782428683:0;yts
+: 1782430500:0;yts
+: 1782430627:0;yts
+: 1782430661:0;yts
+: 1782430707:0;.ls yts
+: 1782430708:0;ll
+: 1782430712:0;lsd
+: 1782430725:0;o
+: 1782430748:0;yts
+: 1782430763:0;o
+: 1782430837:0;node /home/kmiller/.local/share/yts/yts.js "transistion_protocol" 
+: 1782430862:0;node /home/kmiller/.local/share/yts/yts.js "transistion_protocol/videos" 
+: 1782430883:0;node /home/kmiller/.local/share/yts/yts.js "transistion protocol" 
+: 1782430914:0;yts
+: 1782430975:0;yts
+: 1782432427:0;Tw
+: 1782432428:0;lsd
+: 1782432431:0;ll
+: 1782432438:0;lsd
+: 1782432442:0;ll
+: 1782458269:0;yts
+: 1782458564:0;s2e pelicula
+: 1782458632:0;ll
+: 1782458696:0;cl yts
+: 1782458702:0;vi yts
+: 1782458772:0;g js
+: 1782458805:0;ll
+: 1782458830:0;fut findexe yts.js
+: 1782458849:0;fut findexe -H
+: 1782458860:0;fut findexe -v yts.js
+: 1782459677:0;fut findexe -v yts.js
+: 1782459796:0;fut findexe -v yts.js
+: 1782459838:0;fut findexe -v yts.js
+: 1782459929:0;fut findexe -v yts.js
+: 1782460036:0;fut findexe -v yts.js
+: 1782460071:0;fut findexe -v yts.js
+: 1782460137:0;find /home/kmiller/.local/share -type f -executable
+: 1782460195:0;.ls yts
+: 1782460196:0;ll
+: 1782460216:0;me yts.js
+: 1782460217:0;,
+: 1782460221:0;find /home/kmiller/.local/share -type f -executable
+: 1782460255:0;find /home/kmiller/.local/share -type f -executable | grep yts
+: 1782460264:0;find /home/kmiller/.local/share -type f -executable | grep yts.js
+: 1782460306:0;fut findexe -v yts.js
+: 1782460356:0;fut findexe -v yts.js
+: 1782460362:0;fut findexe yts.js
+: 1782460505:0;fut findexe yts.js
+: 1782460509:0;fut findexe -v yts.js
+: 1782460528:0;tip zsh
+: 1782460576:0;fut findexe -v yts.js
+: 1782460607:0;whereis yts.js
+: 1782460663:0;man whereis
+: 1782460694:0;whereis -l yts.js
+: 1782460716:0;s
+: 1782460743:0;,
+: 1782461138:0;fut findexe -v yts.js
+: 1782461218:0;fut findexe yts.js
+: 1782461246:0;fut findexe -l yts.js
+: 1782461488:0;fut findexe -v yts.js
+: 1782462338:0;fut findexe -v yts.js
+: 1782462522:0;fut findexe -v yts.js
+: 1782462694:0;fut findexe -v yts.js
+: 1782462760:0;fut findexe -v yts.js
+: 1782462775:0;fut findexe -v yts.js
+: 1782462905:0;fut findexe -v yts.js
+: 1782462930:0;fut findexe -v yts.js
+: 1782462946:0;fut findexe -v yts.js
+: 1782462962:0;fut findexe -v yts.js
+: 1782463080:0;fut findexe -v yts.js
+: 1782463091:0;fut findexe yts.js
+: 1782463121:0;fut findexe -l yts.js
+: 1782463144:0;cl yts
+: 1782463146:0;ll
+: 1782463260:0;cl yts
+: 1782463308:0;cl yts
+: 1782463314:0;type xl
+: 1782463317:0;type cl
+: 1782463338:0;rb -l

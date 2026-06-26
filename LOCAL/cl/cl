@@ -20,13 +20,36 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
   
+# Declarations
 typeset -a _LOCAL_FILES
+typeset -a _PROD_DIRS=(/usr/local/bin /usr/local/lib ${HOME}/.local/bin ${HOME}/.local/share)
 
+# Constants
 _CODEBASE=~/Code
 _LOCAL=${_CODEBASE}/LOCAL
 _LANG=${_CODEBASE}/LANG
 _PYPROJ=${_LANG}/Python/PROJECTS
 
+# Functions
+get_prod () {
+	local FN=${1}
+	local EXELIST=("${(f)$(fut findexe ${FN:t})}")
+	local F D
+	local FX DX
+
+	for F in ${EXELIST};do
+		FX=$(tr '/' '_' <<<${F})
+		for D in ${_PROD_DIRS};do
+			DX=$(tr '/' '_' <<<${D})
+			if grep -q ${DX} <<<${FX};then
+				echo ${F}
+				return
+			fi
+		done
+	done
+}
+
+# Usage
 if [[ ${1} == '-H' ]];then
 	tabs 5
 	echo "\n${WHITE_FG}Usage${RESET}:${0:t} [-H] [<dir>]"
@@ -40,6 +63,7 @@ if [[ ${1} == '-H' ]];then
 	return
 fi
 
+# Execution
 [[ -z ${1} ]] && cd ${_CODEBASE}
 
 if [[ -d ${_LOCAL}/${1} ]];then
@@ -65,6 +89,7 @@ else
 	return
 fi
 
+_LOCAL_FILES=()
 {
 	LONGEST=0
 	for F in ${PWD}/*;do
@@ -76,11 +101,11 @@ fi
 	done
 } >/dev/null 2>&1
 
+
 if [[ -n ${_LOCAL_FILES} ]];then
 	for F in ${_LOCAL_FILES};do
-		PROD=$(fut findexe ${F} 2>&1)
-		[[ -z ${PROD} || ${PROD:l} =~ "not found" ]] && continue # No production version exists
-		if [[ ! ${PROD:l} =~ 'code/local' ]];then
+		PROD=$(get_prod ${F})
+		if [[ -n ${PROD} ]];then
 			diff -b ${F} ${PROD} >/dev/null 2>&1
 			if [[ ${?} -ne 0 ]];then
 				printf "Development:${WHITE_FG}%*s${RESET} ${BOLD}${RED_FG}%-15s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F}   'does not match' ${PROD}

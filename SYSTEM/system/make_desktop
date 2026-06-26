@@ -81,7 +81,7 @@ get_hint () {
 	local FE IC
 
 	case ${FIELD:l} in
-		exec) FE=$(fut findexe ${VAL})
+		exec) FE=$(fut findexe -p ${VAL})
 				FE=$(tut strip_ansi <<<${FE})
 				[[ ! ${FE:l} =~ "not found" ]] && echo ${FE}
 				;;

@@ -20,6 +20,13 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(MSG.zsh VALIDATE.zsh PATH.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _ARG_LIST
 typeset -a _SPACE_DOT
@@ -28,14 +35,6 @@ typeset -A _OUT_LIST
 typeset -A _CHAIN_LIST
 typeset -a _PIPELINE
 typeset -a _KEYWORDS
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/VALIDATE.zsh
-source ${_LIB_DIR}/PATH.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
 _CFG_DIR=~/.local/share/${_SCRIPT}
@@ -73,7 +72,7 @@ exit_pre_exit () {
 	fi
 
 	if [[ ${_EXIT_SCRUB} == 'true' ]];then
-		_PIDS=("${(f)$(get_user_pids)}")
+		_EXIT_SCRUB_PIDS=("${(f)$(get_user_pids)}")
 		scrub_tmp
 	fi
 
@@ -1484,12 +1483,12 @@ else
 		inode_ndx "${MEDIA_ARG}"
 		PATHLBL=${_FIND_PATH:h}
 	elif path_has_wildcard;then
-		# Handle wildcard
+		# Pass list to _IN_LIST
 		logit ${_LOG} "WILDCARD"
 		inode_ndx "${@}"
 		PATHLBL=${_FIND_PATH:h}
-	elif [[ -f ${_FIND_PATH} ]];then
-		# Convert file name to list member
+	elif [[ -f ${_FIND_PATH} || -d ${_FIND_PATH} ]];then
+		# Add dir or file name to _IN_LIST
 		logit ${_LOG} "_FIND_PATH:${_FIND_PATH}"
 		inode_ndx "${_FIND_PATH}"
 		PATHLBL=${_FIND_PATH:h}

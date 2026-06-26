@@ -94,8 +94,8 @@ alias mcpan='perl -MCPAN -e shell'
 
 # Permissions
 alias me='chmod 755' # Excutable user
-alias meg='chmod 775' # Excutable group
-alias men="chmod 664" # Regular 
+alias nme="chmod 664" # Regular 
+alias gme='chmod 775' # Excutable group
 
 # Enable default color support of grep
 alias grep='grep --color=always'
@@ -145,6 +145,7 @@ alias uls='cd /usr/local/src'
 alias us='cd /usr/share/'
 alias usa='cd /usr/share/applications'
 alias usd='cd /usr/share/doc'
+alias rcp='cd ~/Documents/Recipes'
 alias v='cd /var'
 alias vl='cd /var/log'
 alias z='cd /etc/zsh'

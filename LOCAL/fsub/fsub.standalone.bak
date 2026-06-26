@@ -20,6 +20,13 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(MSG.zsh VALIDATE.zsh PATH.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _ARG_LIST
 typeset -a _SPACE_DOT
@@ -28,14 +35,6 @@ typeset -A _OUT_LIST
 typeset -A _CHAIN_LIST
 typeset -a _PIPELINE
 typeset -a _KEYWORDS
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/VALIDATE.zsh
-source ${_LIB_DIR}/PATH.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
 _CFG_DIR=~/.local/share/${_SCRIPT}
@@ -1302,7 +1301,7 @@ usage () {
 	echo -e "${WHITE_FG}-I${RESET} interactive changes"
 	echo -e "${WHITE_FG}-N${RESET} add leading numbers (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-P${RESET} proper case"
-	echo -e "${WHITE_FG}-S${RESET} service mode (background job)"
+	echo -e "${WHITE_FG}-S${RESET} service mode (background job - affects only files modified today)"
 	echo -e "${WHITE_FG}-T${RESET} trim leading/trailing whitespace from files or dirs (${CYAN_FG}M${RESET})"
 	echo -e "${WHITE_FG}-Y${RESET} eliminate YouTube tags"
 	echo -e "${WHITE_FG}-b${RESET} eliminate extended/non-ascii (${CYAN_FG}M${RESET})"

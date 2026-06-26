@@ -1157,6 +1157,8 @@ parse_rumble () {
 	local URL=''
 	local K L
 
+	# TODO: live broadcasts are seeping in; identify & block
+
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Run query and filter known problem chars

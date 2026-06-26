@@ -73,8 +73,8 @@ clean_media () {
 		logit "${0} No videos found at DEST:${DEST}"
 	fi
 
-	logit "${0} Cleaned Movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
-	logit "${0} Cleaned Series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
+	#logit "${0} Cleaned Movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
+	#logit "${0} Cleaned Series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
 }
 
 clear_deluge_state () {

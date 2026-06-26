@@ -19,6 +19,13 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(SELECT.zsh VALIDATE.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _UTILS=(
 comments 1
@@ -53,25 +60,20 @@ _WRAPPER=${0:t}
 g_USAGE=false
 g_UTIL=''
 
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/SELECT.zsh
-source ${_LIB_DIR}/VALIDATE.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
-
 # Functions
 findexe () {
-	local -aU LIST
-	local -aU RAWLINE
-	local FN
-	local WI
-	local LOCAL
-	local VERBOSE
-	local L R
+	local -a PROD_LIST=(${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /usr/local/lib ${HOME}/Code/LOCAL)
+	local -a WIS=()
+	local -a FLIST=()
+	local -aU LIST=()
+	local FN=''
+	local LOCAL=''
+	local VERBOSE=''
+	local PRODUCTION=''
+	local L R D
 
 	read -r -d '' DESC<<______EOF
-Find files based on priority
+Find executable files
 ______EOF
 
 	#--Begin GetOpts--
@@ -114,25 +116,28 @@ ______EOF
 		echo -e "\n${WHITE_FG}Usage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
+		echo -e "${WHITE_FG}-p${RESET} production file"
 		echo -e "${WHITE_FG}-l${RESET} local files have priority"
 		echo -e "${WHITE_FG}-v${RESET} verbose output"
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
 
-		exit_leave ${PENDING_MSGS}
+		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
-	OPTSTR=":HDlv"
+	OPTSTR=":HDlvp"
 	OPTIND=0
 
 	LOCAL=false
 	VERBOSE=false
+	PRODUCTION=false
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 		  H) usage;;
 		  D) dbg_set_level;;
 		  l) LOCAL=true;;
+		  p) PRODUCTION=true;;
 		  v) VERBOSE=true;;
 		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
@@ -142,63 +147,57 @@ ______EOF
 	#--End GetOpts--
 	 
 	# Execution
-	[[ ${#} -eq 0 ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FILE>" || FN=${1}
+	[[ ${#} -eq 0 ]] && usage "Missing argument:<FILE>" || FN=${1}
 
-	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Seeking${RESET}: ${FN}" >&2
+	[[ ${VERBOSE} == 'true' ]] && echo "${CYAN_FG}Searching for:${FN}${RESET}" >&2
 
-	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in any location${RESET}" >&2
-	WI=("${(f)$(whereis -b -f ${FN} | cut -d: -f2-)}")
-	RAWLINE=(${=WI})
-	if [[ ${VERBOSE} == 'true' ]];then
-		for R in ${RAWLINE};do
-			echo "Found:${R}" >&2
-		done
-	fi
-
-	[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ~/Code${RESET}" >&2
-	LIST+=("${(f)$(find ~/Code -type f -executable | grep -w ${FN} | grep -v -i 'repo')}")
-	if [[ ${VERBOSE} == 'true' ]];then
-		if [[ -n ${LIST} ]];then
-			RAWLINE+=${LIST}
-			for L in ${LIST};do
-				echo "${WHITE_FG}Found${RESET}:${L}" >&2
-			done
+	if [[ ${PRODUCTION} == 'false' ]];then	
+		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}whereis${RESET}: ${FN}" >&2
+		WIS=("${(f)$(whereis -b -f ${FN} | cut -d: -f2-)}")
+		if [[ -z ${WIS} ]];then
+			[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}No whereis hits${RESET}" >&2
 		else
-			echo "${WHITE_FG}Nothing found${RESET}" >&2
+			for L in ${=WIS};do
+				FLIST+=${L}
+				[[ ${VERBOSE} == 'true' ]] && echo "${GREEN_FG}Found:${L}${RESET}" >&2
+			done
 		fi
 	fi
 
-	LIST=(${RAWLINE})
+	for D in ${PROD_LIST};do
+		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ${D}${RESET}" >&2
+		FLIST+=("${(f)$(find ${D} -type f -name "${FN}" -executable)}")
+	done
+
+	if ! arr_is_populated "${FLIST}";then
+		set_exit_value 1
+		[[ ${VERBOSE} == 'true' ]] && exit_leave $(err_msg_exit E "File not found:${FN}")
+	fi
+
+	for L in ${FLIST};do
+		if [[ -h ${L} ]];then
+			[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}Eliminating symlink:${L}${RESET}" >&2
+			continue
+		fi
+		if [[ ${LOCAL} == 'true' ]];then
+			if [[ ! ${L:h} == ${PWD} ]];then
+				[[ ${LOCAL} == 'true' ]] && echo "${RED_FG}Discarding non local:${L}${RESET}" >&2
+				continue
+			fi
+		fi
+		LIST+=${L}
+		[[ ${PRODUCTION} == 'true' ]] && break # First file only
+	done
 
 	if ! arr_is_populated "${LIST}";then
 		set_exit_value 1
-		exit_leave $(err_msg_exit E "File not found:${FN}")
-	fi
-
-	if [[ ${#LIST} -gt 1 ]];then
-		for L in ${LIST};do
-			[[ ${VERBOSE} == 'true' && ${L:l} =~ 'etc' ]] && echo "${WHITE_FG}Eliminating files in etc...${RESET}" >&2
-			[[ ${L:l} =~ 'etc' ]] &&  continue
-			[[ ${VERBOSE} == 'true' && ${L:l} =~ 'repo' ]] && echo "${WHITE_FG}Eliminating files in REPO...${RESET}" >&2
-			[[ ${L:l} =~ 'repo' ]] &&  continue
-			[[ ${VERBOSE} == 'true' && ! -f ${L} ]] && echo "${WHITE_FG}Eliminating directories and links...${RESET}" >&2
-			[[ ! -f ${L} ]] && continue
-
-			if [[ ${LOCAL} == 'true' ]];then
-				if [[ ${L:h} == ${PWD} ]];then
-					echo ${L}
-					return
-				fi
-			elif [[ ${L:h} != ${PWD} ]];then
-				echo ${L}
-				return
-			else
-				continue
-			fi
-		done
+		[[ ${VERBOSE} == 'true' ]] && exit_leave $(err_msg_exit E "File not found:${FN}")
 	else
-		echo ${LIST}
-		return
+		set_exit_value 0
+		do_rmcup
+		for L in ${LIST};do
+			echo ${L}
+		done
 	fi
 }
 
@@ -289,7 +288,7 @@ surface () {
 				if [[ ${DO_PROMPTS} = 'true' ]];then
 					echo -n "Should files from ${GREEN_FG}${1}${RESET} be moved to ${TARGET_DIR_MSG}? (y/n):"
 					if ! get_response;then
-						exit_leave $(err_msg_exit I "Operation cancelled")
+						exit_leave "${RED_FG}Operation cancelled${RESET}"
 					fi
 				fi
 			fi
@@ -458,8 +457,7 @@ _____EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":DHit:djs"
@@ -555,7 +553,7 @@ _____EOF
 					echo "Removing ${WHITE_FG}${D}${RESET}"
 					[[ ${DO_SIM} == 'false' ]] && /bin/rm -rf ${D} >/dev/null 2>&1
 				else
-					exit_leave $(err_msg_exit I "Operation cancelled")
+					exit_leave "${RED_FG}Operation cancelled${RESET}"
 				fi
 			fi  
 		done
@@ -646,8 +644,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDhs"
@@ -669,8 +666,8 @@ ______EOF
 		
 		local -a ARGS=(${@})
 
-		[[ -z ${ARGS} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:$(opt_type f)"
-		[[ $(is_file ${ARGS}) -eq 0 ]] && FN=${ARGS} || usage "file not found:${ARGS}"
+		[[ -z ${ARGS} ]] && usage "Missing argument:$(opt_type f)"
+		[[ $(is_file ${ARGS}) -eq 0 ]] && FN=${ARGS} || usage "File not found:${ARGS}"
 
 		[[ ${HIDE} == 'true' ]] && hide_comments <${FN}
 		[[ ${SHOW} == 'true' ]] && show_comments <${FN}
@@ -734,8 +731,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDc"
@@ -756,7 +752,7 @@ ______EOF
 		 
 		local -a ARGS=(${@})
 
-		[[ ${#ARGS} -lt 2 ]] &&  usage "${_SCRIPT_TAG} ${RED_FG}Missing required (2) arguments${RESET}:$(opt_type e) $(opt_type e)"
+		[[ ${#ARGS} -lt 2 ]] &&  usage "Missing arguments:$(opt_type e) $(opt_type e)"
 
 		FROM_EXT=${ARGS[1]}
 		TO_EXT=${ARGS[2]}
@@ -840,8 +836,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDe:fdhl"
@@ -866,8 +861,8 @@ ______EOF
 		
 		local -a ARGS=(${@})
 
-		[[ -z ${ARGS} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing required argument${RESET}:$(opt_type c)"
-		[[ $(validate_is_number ${ARGS}) -eq 0 ]] && CNT=${ARGS} || usage "count must be a positive integer"
+		[[ -z ${ARGS} ]] && usage "Missing argument:$(opt_type c)"
+		[[ $(validate_is_number ${ARGS}) -eq 0 ]] && CNT=${ARGS} || usage "Count must be a positive integer"
 
 		[[ ${#OPTIONS} -eq 0 ]] && FILE=true # Default
 
@@ -973,8 +968,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDdfl"
@@ -1323,8 +1317,7 @@ ______EOF
 			echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 			) >&2
 
-			echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-			exit_leave
+			exit_leave $(err_msg_exit ${PENDING_MSGS})
 		}
 
 		OPTSTR=":HDcdn"
@@ -1398,7 +1391,7 @@ ___EOF
 		exit_leave
 	fi
 
-	[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FN>"
+	[[ -z ${1} ]] && usage "Missing argument:<FN>"
 	[[ $(is_file ${1}) -eq 0 ]] && FN=${1} || usage "file is invalid:${1}"
 
 	INODE=$(cut -d':' -f1 <<<$(inode_get ${FN}))
@@ -1420,7 +1413,7 @@ ___EOF
 		exit_leave
 	fi
 
-	[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<FN>"
+	[[ -z ${1} ]] && usage "Missing argument:<FN>"
 	[[ $(is_file ${1}) -eq 0 ]] && FN=${1} || usage "file is invalid:${1}"
 	stat -c "%i:%n" ${FN}
 }
@@ -1479,8 +1472,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
-	echo "\n$(err_msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"

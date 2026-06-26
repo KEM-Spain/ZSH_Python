@@ -17,12 +17,8 @@ YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
-
-# Imports
-[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh
-_DEPS+=(DATE.zsh MSG.zsh)
-source ${_LIB_DIR}/LIB_DEPS.zsh
+# Declarations
+typeset -a _PROD_DIRS=(/usr/local/bin /usr/local/lib ${HOME}/.local/bin ${HOME}/.local/share)
 
 # Constants
 _LIB_DIR=/usr/local/lib
@@ -53,26 +49,30 @@ g_PROD_VERSION=?
 g_PROD_WILL_OVERWRITE=?
 g_PROD_WILL_OVERWRITE_BACKUP=?
 
+# Imports
+source ${_LIB_DIR}/LIB_INIT.zsh
+source ${_LIB_DIR}/DATE.zsh
+source ${_LIB_DIR}/MSG.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Functions
 get_prod_dir () {
-	local FN=${@}
-	local PROD_DIR
-	local CANDIDATE
+	local FN=${1}
+	local EXELIST=("${(f)$(fut findexe -p ${FN:t})}")
+	local F D
+	local FX DX
 
-	if is_lib ${FN};then
-		echo ${_LIB_DIR}
-	else
-		CANDIDATE="$(fut findexe ${FN})"
-		if [[ -f ${CANDIDATE} ]];then # A regular file 
-			if [[ ${CANDIDATE:l} =~ "/usr/local" ]];then # Not sure what this for?
-				echo ${CANDIDATE:h}
-			else
-				echo "NOT_FOUND"
+	for F in ${EXELIST};do
+		FX=$(tr '/' '_' <<<${F})
+		for D in ${_PROD_DIRS};do
+			DX=$(tr '/' '_' <<<${D})
+			if grep -q ${DX} <<<${FX};then
+				echo ${F:h}
+				return
 			fi
-		else
-			echo "NOT_FOUND"
-		fi
-	fi
+		done
+	done
+	echo "NOT FOUND"
 }
 
 is_lib () {
@@ -502,7 +502,7 @@ else
 		if [[ ${DEV_RELEASE} == 'true' ]];then
 			LIST=('1) Normal Production' '2) Library Module' '3) System Utility')
 			tput sc
-			msg_box -p -H1 -P"Select Type" "<r><I>New production copy of<N>:<w>${FILE_ARG}<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
+			msg_box -p -H1 -P"Select Type" "<r>No production copy exists<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
 			msg_box_clear
 			tput rc
 			case ${_MSG_KEY} in
@@ -516,11 +516,11 @@ else
 		fi
 	fi
 
-	FN=$(fut findexe ${FILE_ARG})
+	FN=$(fut findexe -p ${FILE_ARG})
 	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} fut findexe returned: ${FN} for FILE_ARG:${FILE_ARG}"
 
 	if [[ -f ${FN} && -x ${FN} ]];then # A regular file - executable
-		FN_PATH=$(realpath ${FN:h})
+		FN_PATH=${FN:h}
 	else
 		FN_PATH=${g_PRODUCTION_DIR}
 	fi

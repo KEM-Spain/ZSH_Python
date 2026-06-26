@@ -10,9 +10,10 @@ _TARGET_NAME="Xiaomi 14T"
 
 # Functions
 execution_section () {
-  if target_is_device;then
+  if target_is_device; then
     pair_phone ${_TARGET_ID}
   fi
+  return 0 # Always return success
 }
 
 logit () {
@@ -54,6 +55,15 @@ target_is_device () {
   logit "Device:${_TARGET_NAME} not visible to kdeconnect"
   return 1
 }
+
+# Clean systemd shutdown handler
+cleanup () {
+  logit "Stopping script via systemd request. Exiting cleanly."
+  exit 0
+}
+
+# Capture termination signals from systemd (SIGINT/SIGTERM)
+trap cleanup SIGINT SIGTERM
 
 # Execution
 mkdir -p ${AUTOPAIR_CFG}

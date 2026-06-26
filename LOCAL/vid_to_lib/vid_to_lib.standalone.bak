@@ -15,11 +15,11 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+
 # Imports
-_LIB_DIR=/usr/local/lib
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/ARRAY.zsh
+_DEPS+=(UTILS.zsh ARRAY.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
@@ -240,8 +240,8 @@ clean_media () {
 		logit "${0} No videos found at DEST:${DEST}"
 	fi
 
-	logit "${0} Cleaned Movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
-	logit "${0} Cleaned Series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
+	#logit "${0} Cleaned Movies\n $(tree ${_LIBRARY_DIR}/${_MOVIES_SUB})"
+	#logit "${0} Cleaned Series\n $(tree ${_LIBRARY_DIR}/${_SERIES_SUB})"
 }
 
 clear_deluge_state () {
