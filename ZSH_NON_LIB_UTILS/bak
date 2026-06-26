@@ -72,7 +72,7 @@ get_prod_dir () {
 			fi
 		done
 	done
-	echo "NOT FOUND"
+	echo "NOT_FOUND"
 }
 
 is_lib () {

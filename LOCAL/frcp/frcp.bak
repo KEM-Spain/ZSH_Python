@@ -1,0 +1,126 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLINK="\033[5m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+CYAN_ON_GREY="\033[0m\033[0;1;36;100m"
+GREEN_ON_GREY="\033[0m\033[0;1;32;100m"
+MAGENTA_ON_GREY="\033[0m\033[0;1;35;100m"
+RED_ON_GREY="\033[0m\033[0;1;31;100m"
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+YELLOW_ON_GREY="\033[0m\033[0;1;33;100m"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+="LIST.zsh"
+source ${_LIB_DIR}/LIB_DEPS.zsh ${DEPS}
+
+_RCP_DIR=~/Documents/Recipes
+
+action_do () {
+	local M X
+
+	for M in ${_MARKED};do
+		/usr/local/bin/o ${_LIST[${M}]}
+	done
+
+	for M in ${_MARKED};do
+		_MARKED[${M}]=0
+		list_set_selected ${M} ${_USED_ROW}
+	done
+}
+
+action_warn () {
+	local CNT=$(list_get_selected_count)
+	local M 
+	local FN
+	
+	msg_box -p "<w><I>Please respond<N>|==============| |${CNT} $(str_pluralize file $CNT) queued for opening.| |<B><w>Open<N>? (<w>y/n<N>)"
+	if [[ ${_MSG_KEY} == 'n' ]];then
+		for M in ${_MARKED};do
+			list_clear_selected ${M}
+		done
+	fi
+}
+
+item_decorate () {
+	local NDX=${1}
+
+	case ${_LIST_SELECTED[${NDX}]} in
+		3) tput el;echo -n "${STRIKE}${_LIST[${NDX}]:t}${RESET} ${RED_FG}viewed${RESET}";;
+		*) tput el;echo -n "${_LIST[${NDX}]:t}";;
+	esac
+}
+
+find_rcp () {
+	local SEARCHTERM=${1}
+	local FINDSEARCH=''
+	local -a LIST=()
+	local RC=0
+
+	if [[ -z ${SEARCHTERM} ]];then
+		FINDSEARCH='*'
+	else
+		FINDSEARCH="*${SEARCHTERM}*"
+	fi
+
+	LIST=("${(f)$(eval 'find ${_RCP_DIR} -type f -iname "${FINDSEARCH}"')}")
+
+	if [[ -z ${LIST} ]];then
+		echo "No recipes matching:${WHITE_FG}${SEARCHTERM}${RESET} found"
+	else
+		list_add_header_break
+		list_set_header_break_color ${CYAN_FG}
+		list_set_searchable true
+		list_set_reuse_stale true
+		list_set_select_action "open"
+
+		# Set headings
+		list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize file ${#_LIST}) Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${SELECTED_COUNT}'
+
+		list_set_line_item ' 
+		printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
+		'
+
+		while true;do
+			# Display list
+			list_select ${(on)LIST}
+			RC=${?}
+
+			[[ ${RC} -eq 0 ]] && break
+
+			# Get user selections
+			_MARKED=($(list_get_selected))
+			
+			if [[ $(list_get_selected_count) -ne 0 ]];then
+				action_warn
+				if [[ ${_MSG_KEY} == "y" ]];then
+					action_do
+				fi
+			fi
+		done
+	fi
+}
+
+[[ ${#} -eq 1 ]] && SEARCHTERM=${1} || SEARCHTERM=''
+
+find_rcp ${SEARCHTERM}
+
+exit_leave
