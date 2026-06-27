@@ -119,6 +119,8 @@ find_rcp () {
 	fi
 }
 
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -eq 1 ]] && SEARCHTERM=${1} || SEARCHTERM=''
 
 find_rcp ${SEARCHTERM}

@@ -18,7 +18,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
 # Declarations
-typeset -a _PROD_DIRS=(/usr/local/bin /usr/local/lib ${HOME}/.local/bin ${HOME}/.local/share)
+typeset -a _PROD_DIRS=(${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /usr/local/lib)
 
 # Constants
 _LIB_DIR=/usr/local/lib
@@ -72,7 +72,7 @@ get_prod_dir () {
 			fi
 		done
 	done
-	echo "NOT FOUND"
+	echo "NOT_FOUND"
 }
 
 is_lib () {
@@ -267,6 +267,8 @@ local_to_prod () {
 				echo "${WHITE_ON_GREY}DEVELOPMENT CONTAINS THE MOST RECENT CHANGES!${RESET}"
 				echo ${g_LOCAL_IS_MORE_RECENT}
 			fi
+			diff -b ${g_LOCAL_VERSION} ${g_BACKUP_VERSION} >/dev/null 2>&1
+			[[ $? -ne 0 ]] && echo ${g_PROD_WILL_OVERWRITE_BACKUP}
 		fi
 
 		get_response "${RED_FG}Overwrite the ${_EM}production version${RESET}: ${WHITE_FG}${g_PROD_NAME}${RESET}\nwith the ${_EM}development${RESET} version: ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
@@ -316,8 +318,8 @@ set_messages () {
 	g_PROD_MATCHES_LOCAL="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}development${RESET} version:${g_LOCAL_NAME}"
 	g_PROD_IS_MORE_RECENT="The ${GREEN_FG}${_EM}production${RESET} file:${g_PROD_NAME} is ${GREEN_FG}${_EM}more recent${RESET}"
 	g_PROD_WILL_OVERWRITE="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}development${RESET} version:${g_LOCAL_NAME}"
-	g_PROD_MATCHES_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}backup${RESET} version:${g_BACKUP_NAME}"
-	g_PROD_WILL_OVERWRITE_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}development${RESET} version:${g_BACKUP_NAME}"
+	g_PROD_MATCHES_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}backup${RESET} backup:${g_BACKUP_NAME}"
+	g_PROD_WILL_OVERWRITE_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}development${RESET} backup:${g_BACKUP_NAME}"
 
 	if [[ ${_DEBUG} -gt 0 ]];then
 		dbg "${0}:${LINENO} g_BACKUP_NAME ${g_BACKUP_NAME}"

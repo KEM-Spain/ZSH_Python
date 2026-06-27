@@ -6,6 +6,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
+BLINK="\033[5m"
 BLACK_BG="\033[40m"
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
@@ -17,17 +18,14 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh
-_DEPS+=(UTILS.zsh LIST.zsh)
-source ${_LIB_DIR}/LIB_DEPS.zsh
+source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
+source ${_LIB_DIR}/UTILS.zsh
+source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
-# Declarations
-# Constants
-# Globals
-# Functions
+# Module Vars
+GREP_FILTER=''
 
 #--Begin GetOpts--
 local -a OPTIONS
@@ -35,7 +33,8 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-This script does...
+Find any text in zsh moudules and libraries
+\tAccepts any number of targets i.e. FPATH FGLOB str_trim, etc...
 EOF
 
 parse_opts () {
@@ -81,8 +80,7 @@ usage () {
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
 
-	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit "${PENDING_MSGS}")
 }
 
 OPTSTR=":HD"
@@ -97,48 +95,41 @@ while getopts ${OPTSTR} OPTION;do
 	esac
 	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
-shift $((OPTIND -1))
+shift $(( OPTIND -1 ))
 #--End GetOpts--
-
 # Execution
-item_decorate () {
-	local NDX=${1}
-	# Add code for any decorations
-	echo ${_LIST[${NDX}]}
-}
+[[ ${#} -eq 0 ]] && usage $(err_msg_exit "Missing Argument:<SEARCHTERM>")
+clear
 
-PATHLBL=$(path_get_label 40) 
+FLIST=("${(f)$(find /usr/local/bin -maxdepth 3 ! -path /usr/local/bin )}")
+LIBS=("${(f)$(find /usr/local/lib -maxdepth 3 ! -path /usr/local/lib )}")
 
-LOCAL_LIST=("${(f)$(eval "find ${PWD} -maxdepth 1 -type f ! -path ." 2>/dev/null )}")
-if ! arr_is_populated "${LOCAL_LIST}";then
-	exit_leave $(msg_exit E "LOCAL_LIST was not populated")
-fi
+LIST=(${FLIST})
+LIST+=(${LIBS})
 
-# Set headings
-list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Path:${WHITE_FG}%-*s${RESET} Selected:${WHITE_FG}%-d${RESET}  ${_PG}" ${#_LIST} ${#PATHLBL} ${PATHLBL} ${SELECTED_COUNT}'
-list_add_header_break
-
-# Set line item
-list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})" 
-'
-
-list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${g_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${g_ACTION} ${g_OBJECT}(s) (${ITALIC}or exit if none selected${RESET})"
-
-while true;do
-	# Get selection
-	list_select ${LOCAL_LIST}
-	[[ ${?} -eq 0 ]] && break
-
-	# Get selections
-	_MARKED=($(list_get_selected))
-	
-	if [[ $(list_get_selected_count) -ne 0 ]];then
-		action_warn
-		if [[ ${_MSG_KEY} == "y" ]];then
-			action_do
-		fi
-	fi
+for A in ${@};do
+	GREP_FILTER+="${A}|"
 done
 
+GREP_FILTER="(${GREP_FILTER[1,-2]})"
+
+tcup 0 0
+echo "Received ${#@} args:${=@}"
+echo "grep filter: ${GREP_FILTER}"
+echo "Searching ${WHITE_FG}${#LIST}${RESET} files..."
+
+NDX=0
+for L in ${LIST};do
+	if [[ ! ${L:e} == 'zsh' ]];then
+		[[ ! $(file -b ${L}) =~ 'zsh' ]] && continue
+	fi
+	((NDX++))
+	grep -dskip -Eq "${GREP_FILTER}" ${L}
+	if [[ ${?} -eq 0 ]];then
+		echo "${GREEN_FG}$(str_unicode_line ${#L})${RESET}"
+		echo ${WHITE_FG}${L}${RESET}
+		echo "${GREEN_FG}$(str_unicode_line ${#L})${RESET}"
+		grep --color=always -dskip -En "${GREP_FILTER}" ${L}
+	fi
+done
 exit_leave

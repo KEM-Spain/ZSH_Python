@@ -116,8 +116,8 @@ ______EOF
 		echo -e "\n${WHITE_FG}Usage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
-		echo -e "${WHITE_FG}-p${RESET} production file"
 		echo -e "${WHITE_FG}-l${RESET} local files have priority"
+		echo -e "${WHITE_FG}-p${RESET} production file"
 		echo -e "${WHITE_FG}-v${RESET} verbose output"
 		echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 		) >&2
