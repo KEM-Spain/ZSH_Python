@@ -259,7 +259,11 @@ sel_list () {
 
 	_TAG=$(str_no_ansi "${_TAG}") # Clean tag
 
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST_DATA:${#_LIST_DATA}, _REFRESH:${_REFRESH}"
+
 	if [[ -z ${_LIST_DATA} || ${_REFRESH} == 'true' ]];then
+		_REFRESH=false # Reset
+
 		[[ ${#_LIST} -gt 100 ]] && msg_box -x1 -y1 -c "<w>Building select list...<N>"
 
 		if [[ -n ${_TAG}  ]];then

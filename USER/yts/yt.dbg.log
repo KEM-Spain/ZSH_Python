@@ -1,30 +1,122 @@
-2026-06-27_00:35: log_update: LOG lines BEFORE update:9 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-27_00:35: log_update: Skipping expired inode:6402523
-2026-06-27_00:35: log_update: Skipping expired inode:6324031
-2026-06-27_00:35: log_update: Skipping expired inode:6402619
-2026-06-27_00:35: log_update: Skipping expired inode:6402700
-2026-06-27_00:35: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-27_00:35: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-06-27_00:35: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
-2026-06-27_00:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "judgingfreedom"
-2026-06-27_00:35: query_youtube: Query matched 22 lines, _LOCAL_LIST has 19 lines
-2026-06-27_00:35: query_youtube: Listing for QKEY:judgingfreedom contains 19 rows
-2026-06-27_00:35: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.aTTjKC
-2026-06-27_00:35: job_start: TITLE:Gilbert Doctorow : IS Russia Winning The Ukraine War?
-2026-06-27_00:35: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=uDThkooEPYg" PID:438473
-2026-06-27_00:35: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-27_00:35: yt URL:https://youtube.com/watch?v=uDThkooEPYg
-2026-06-27_00:35: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=uDThkooEPYg"
-2026-06-27_00:36: action_do: GENERATING HEADER
-2026-06-27_00:36: title_scrubber: UCASE_WORDS:1
-2026-06-27_00:36: title_scrubber: Preserving acronym:Is
-2026-06-27_00:36: action_do: COMPLETED
-2026-06-27_00:36: action_do: POST-PROCESSING
-2026-06-27_00:36: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=uDThkooEPYg PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - Gilbert_Doctorow_-_Is_Russia_Winning_the_Ukraine_War.mp4|6402523
-2026-06-27_00:36: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Gilbert_Doctorow_-_Is_Russia_Winning_the_Ukraine_War.mp4
-2026-06-27_00:36: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Gilbert_Doctorow_-_Is_Russia_Winning_the_Ukraine_War.mp4
-2026-06-27_00:36: title_scrubber: UCASE_WORDS:1
-2026-06-27_00:36: title_scrubber: Preserving acronym:Is
-2026-06-27_00:36: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Gilbert_Doctorow_-_Is_Russia_Winning_the_Ukraine_War.mp4 with:Judging Freedom - Gilbert Doctorow - IS Russia Winning The Ukraine War.mp4
-2026-06-27_00:36: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Gilbert Doctorow - IS Russia Winning The Ukraine War.mp4
-2026-06-27_00:36: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.aTTjKC was cleared for:judgingfreedom from:action_do
+2026-06-28_21:42: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-28_21:42: log_update: Skipping expired inode:6298946
+2026-06-28_21:42: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-06-28_21:42: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
+2026-06-28_21:42: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio TYPE:standard 
+2026-06-28_21:42: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "blancolirio"
+2026-06-28_21:42: query_youtube: Query matched 8 lines, _LOCAL_LIST has 5 lines
+2026-06-28_21:42: query_youtube: Translated TITLE:Another Crash Against Cables! N3877V June 24, 2026
+2026-06-28_21:42: query_youtube: Translated TITLE:NTSB Preliminary Report on the Medivac King Air Accident in Ruidoso, Nm, May 14
+2026-06-28_21:42: query_youtube: Translated TITLE:Netjets Cessna Citation Accident in Laredo, TX 06/16/26
+2026-06-28_21:42: query_youtube: Translated TITLE:Loss of control of a skydiving plane during takeoff in Butler, Mo, June 14
+2026-06-28_21:42: query_youtube: Listing for QKEY:blancolirio contains 5 rows
+2026-06-28_21:43: query_youtube: Creating listing for QKEY:thechrishedgesyoutubechannel STRICT:s
+2026-06-28_21:43: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Chris Hedges Report ENGINE:youtube EOPT:s FKEY:chris hedges report QKEY:thechrishedgesyoutubechannel SMSG:Inf% TYPE:standard 
+2026-06-28_21:43: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "thechrishedgesyoutubechannel"
+2026-06-28_21:43: query_youtube: Query matched 5 lines, _LOCAL_LIST has 3 lines
+2026-06-28_21:43: query_youtube: Listing for QKEY:thechrishedgesyoutubechannel contains 3 rows
+2026-06-28_21:43: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
+2026-06-28_21:43: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG:0.0% TYPE:standard 
+2026-06-28_21:43: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "dialogueworks"
+2026-06-28_21:43: query_youtube: Query matched 22 lines, _LOCAL_LIST has 20 lines
+2026-06-28_21:43: query_youtube: Listing for QKEY:dialogueworks contains 20 rows
+2026-06-28_21:44: query_youtube: Creating listing for QKEY:katiehalper STRICT:s
+2026-06-28_21:44: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Katie Halper ENGINE:youtube EOPT:s FKEY:katie halper QKEY:katiehalper SMSG:0.0% TYPE:standard 
+2026-06-28_21:44: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "katiehalper"
+2026-06-28_21:44: query_youtube: Query matched 11 lines, _LOCAL_LIST has 9 lines
+2026-06-28_21:44: query_youtube: Listing for QKEY:katiehalper contains 9 rows
+2026-06-28_21:44: query_youtube: Creating listing for QKEY:neil-oliver STRICT:null
+2026-06-28_21:44: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Neil Oliver ENGINE:youtube EOPT:null FKEY:neil oliver QKEY:neil-oliver SMSG:0.0% TYPE:standard 
+2026-06-28_21:44: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "neil-oliver"
+2026-06-28_21:44: query_youtube: Query matched 3 lines, _LOCAL_LIST has 2 lines
+2026-06-28_21:44: query_youtube: Listing for QKEY:neil-oliver contains 2 rows
+2026-06-28_21:44: query_youtube: Creating listing for QKEY:timdillon STRICT:null
+2026-06-28_21:44: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Tim Dillon ENGINE:youtube EOPT:null FKEY:tim dillon QKEY:timdillon SMSG: TYPE:standard 
+2026-06-28_21:44: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "timdillon"
+2026-06-28_21:44: query_youtube: Rejected:PowerfulJRE
+2026-06-28_21:44: query_youtube: Rejected:2lazy2try
+2026-06-28_21:44: query_youtube: Rejected:The Young Turks
+2026-06-28_21:44: query_youtube: Rejected:Podcast Cringe
+2026-06-28_21:44: query_youtube: Query matched 7 lines, _LOCAL_LIST has 2 lines
+2026-06-28_21:44: query_youtube: Listing for QKEY:timdillon contains 2 rows
+2026-06-28_21:44: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Emxemx
+2026-06-28_21:44: job_start: TITLE:Donald Trump's Endgame : The Tim Dillon Show #501
+2026-06-28_21:44: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=CC6S25XJ0Ks" PID:3202465
+2026-06-28_21:44: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-28_21:44: yt URL:https://youtube.com/watch?v=CC6S25XJ0Ks
+2026-06-28_21:44: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=CC6S25XJ0Ks"
+2026-06-28_21:45: action_do: GENERATING HEADER
+2026-06-28_21:45: title_scrubber: UCASE_WORDS:0
+2026-06-28_21:45: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=CC6S25XJ0Ks PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:The_Tim_Dillon_Show - Donald_Trump_s_Endgame_The_Tim_Dillon_Show_501.mp4|6402523
+2026-06-28_21:45: action_do: COMPLETED
+2026-06-28_21:45: action_do: POST-PROCESSING
+2026-06-28_21:45: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/The_Tim_Dillon_Show - Donald_Trump_s_Endgame_The_Tim_Dillon_Show_501.mp4
+2026-06-28_21:45: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/The_Tim_Dillon_Show - Donald_Trump_s_Endgame_The_Tim_Dillon_Show_501.mp4
+2026-06-28_21:45: title_scrubber: UCASE_WORDS:0
+2026-06-28_21:45: set_final_fn: Overwriting file:The_Tim_Dillon_Show - Donald_Trump_s_Endgame_The_Tim_Dillon_Show_501.mp4 with:Tim Dillon - Donald Trump's Endgame The Tim Dillon Show 501.mp4
+2026-06-28_21:45: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tim Dillon - Donald Trump's Endgame The Tim Dillon Show 501.mp4
+2026-06-28_21:45: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Emxemx was cleared for:timdillon from:action_do
+2026-06-28_21:45: query_rumble: Creating listing for QKEY:dannyhaiphong TYPE:channel
+2026-06-28_21:45: query_rumble: PARSER:, QUERY:https://rumble.com/c/dannyhaiphong?page=1
+2026-06-28_21:45: query_rumble: Listing for QKEY:dannyhaiphong contains 25 rows
+2026-06-28_21:46: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Ab8uYk
+2026-06-28_21:46: job_start: TITLE:Iran RAINS MISSILES on EIGHT US Bases as Trump's Attack BACKFIRES # KJ Noh
+2026-06-28_21:46: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7byers-iran-rains-missiles-on-eight-us-bases-as-trumps-attack-backfires-kj-noh.html" PID:3216437
+2026-06-28_21:46: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-28_21:46: yt URL:https://rumble.com/v7byers-iran-rains-missiles-on-eight-us-bases-as-trumps-attack-backfires-kj-noh.html
+2026-06-28_21:46: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7byers-iran-rains-missiles-on-eight-us-bases-as-trumps-attack-backfires-kj-noh.html"
+2026-06-28_21:46: action_do: PRE-PROCESSING
+2026-06-28_21:46: action_do: GENERATING HEADER
+2026-06-28_21:46: title_scrubber: UCASE_WORDS:6
+2026-06-28_21:46: title_scrubber: Preserving acronym:Us
+2026-06-28_21:48: action_do: COMPLETED
+2026-06-28_21:48: action_do: POST-PROCESSING
+2026-06-28_21:49: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7byers-iran-rains-missiles-on-eight-us-bases-as-trumps-attack-backfires-kj-noh.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Danny_Haiphong - Iran_RAINS_MISSILES_on_EIGHT_US_Bases_as_Trump_s_Attack_BACKFIRES_KJ_Noh.mp4|6402728
+2026-06-28_21:49: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Danny_Haiphong - Iran_RAINS_MISSILES_on_EIGHT_US_Bases_as_Trump_s_Attack_BACKFIRES_KJ_Noh.mp4
+2026-06-28_21:49: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Danny_Haiphong - Iran_RAINS_MISSILES_on_EIGHT_US_Bases_as_Trump_s_Attack_BACKFIRES_KJ_Noh.mp4
+2026-06-28_21:49: title_scrubber: UCASE_WORDS:6
+2026-06-28_21:49: title_scrubber: Preserving acronym:Us
+2026-06-28_21:49: set_final_fn: Overwriting file:Danny_Haiphong - Iran_RAINS_MISSILES_on_EIGHT_US_Bases_as_Trump_s_Attack_BACKFIRES_KJ_Noh.mp4 with:Danny Haiphong - Iran Rains Missiles On Eight US Bases As Trump's.mp4
+2026-06-28_21:49: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Danny Haiphong - Iran Rains Missiles On Eight US Bases As Trump's.mp4
+2026-06-28_21:49: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Ab8uYk was cleared for:dannyhaiphong from:action_do
+2026-06-28_21:49: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
+2026-06-28_21:49: query_rumble: PARSER:, QUERY:https://rumble.com/c/glenndiesen?page=1
+2026-06-28_21:49: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
+2026-06-28_21:50: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.sVbG6s
+2026-06-28_21:50: job_start: TITLE:Gilbert Doctorow: Kremlin Hawks Demand Escalation Against Ukraine &
+2026-06-28_21:50: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7by1qu-gilbert-doctorow-kremlin-hawks-demand-escalation-against-ukraine-and-retali.html" PID:3252603
+2026-06-28_21:50: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-28_21:50: yt URL:https://rumble.com/v7by1qu-gilbert-doctorow-kremlin-hawks-demand-escalation-against-ukraine-and-retali.html
+2026-06-28_21:50: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7by1qu-gilbert-doctorow-kremlin-hawks-demand-escalation-against-ukraine-and-retali.html"
+2026-06-28_21:50: action_do: PRE-PROCESSING
+2026-06-28_21:50: action_do: GENERATING HEADER
+2026-06-28_21:50: title_scrubber: UCASE_WORDS:1
+2026-06-28_21:50: action_do: COMPLETED
+2026-06-28_21:50: action_do: POST-PROCESSING
+2026-06-28_21:50: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7by1qu-gilbert-doctorow-kremlin-hawks-demand-escalation-against-ukraine-and-retali.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Glenn_Diesen_Greater_Eurasia - Gilbert_Doctorow_-_Kremlin_Hawks_Demand_Escalation_Against_Ukraine_Re.mp4|6402812
+2026-06-28_21:50: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Gilbert_Doctorow_-_Kremlin_Hawks_Demand_Escalation_Against_Ukraine_Re.mp4
+2026-06-28_21:50: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Gilbert_Doctorow_-_Kremlin_Hawks_Demand_Escalation_Against_Ukraine_Re.mp4
+2026-06-28_21:50: title_scrubber: UCASE_WORDS:1
+2026-06-28_21:50: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - Gilbert_Doctorow_-_Kremlin_Hawks_Demand_Escalation_Against_Ukraine_Re.mp4 with:Glenn Diesen - Gilbert Doctorow - Kremlin Hawks Demand.mp4
+2026-06-28_21:50: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Glenn Diesen - Gilbert Doctorow - Kremlin Hawks Demand.mp4
+2026-06-28_21:50: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.sVbG6s was cleared for:glenndiesen from:action_do
+2026-06-28_21:50: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.G5rZ6Y
+2026-06-28_21:50: job_start: TITLE:Larry Johnson: Putin Warns the West - Russia is Ready for War
+2026-06-28_21:50: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7bwsl0-larry-johnson-putin-warns-the-west-russia-is-ready-for-war.html" PID:3258364
+2026-06-28_21:50: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-06-28_21:50: yt URL:https://rumble.com/v7bwsl0-larry-johnson-putin-warns-the-west-russia-is-ready-for-war.html
+2026-06-28_21:50: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7bwsl0-larry-johnson-putin-warns-the-west-russia-is-ready-for-war.html"
+2026-06-28_21:51: action_do: PRE-PROCESSING
+2026-06-28_21:51: action_do: GENERATING HEADER
+2026-06-28_21:51: title_scrubber: UCASE_WORDS:1
+2026-06-28_21:51: title_scrubber: Preserving acronym:Is
+2026-06-28_21:51: action_do: COMPLETED
+2026-06-28_21:51: action_do: POST-PROCESSING
+2026-06-28_21:51: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7bwsl0-larry-johnson-putin-warns-the-west-russia-is-ready-for-war.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Glenn_Diesen_Greater_Eurasia - Larry_Johnson_-_Putin_Warns_the_West_-_Russia_is_Ready_for_War.mp4|6402831
+2026-06-28_21:51: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Larry_Johnson_-_Putin_Warns_the_West_-_Russia_is_Ready_for_War.mp4
+2026-06-28_21:51: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Larry_Johnson_-_Putin_Warns_the_West_-_Russia_is_Ready_for_War.mp4
+2026-06-28_21:51: title_scrubber: UCASE_WORDS:1
+2026-06-28_21:51: title_scrubber: Preserving acronym:Is
+2026-06-28_21:51: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - Larry_Johnson_-_Putin_Warns_the_West_-_Russia_is_Ready_for_War.mp4 with:Glenn Diesen - Larry Johnson - Putin Warns The West -.mp4
+2026-06-28_21:51: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Glenn Diesen - Larry Johnson - Putin Warns The West -.mp4
+2026-06-28_21:51: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.G5rZ6Y was cleared for:glenndiesen from:action_do

@@ -566,7 +566,7 @@ info () {
 		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
-		echo -e "${WHITE_FG}-v${RESET} verbosity level - repeats increase detail"
+		echo -e "${WHITE_FG}-v${RESET} verbose detail level - repeats increase detail"
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 

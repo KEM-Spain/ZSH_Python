@@ -39,10 +39,9 @@ _V_TYPE=''
 _V_TYPE_LBL=''
 _EXIT_MSG=''
 _EXIT_CODE=0
-_PHONE_IP=192.168.18.105:5555
+_PHONE_IP=192.168.18.105
+_PHONE_PORT=5555
 _PAYLOAD_FILE="/tmp/keep_payload.txt"
-_PHONE_IP="192.168.18.105"
-_PHONE_PORT=''
 
 # Functions
 cleanup () {
@@ -54,6 +53,15 @@ cleanup () {
 adb_is_connected () {
 	local FIELDS=''
 
+	if ! pgrep adb >/dev/null 2>&1;then
+		adb start-server >/dev/null 2>&1
+		sleep .5
+	fi
+
+	adb connect "${_PHONE_IP}:${_PHONE_PORT}" >/dev/null 2>&1
+
+	sleep .5
+
 	read -A FIELDS < <(ss -t -4 -p | grep adb | tr -s '[:space:]')
 	_PHONE_PORT=$(cut -d: -f2 <<<${FIELDS[5]})
 
@@ -61,15 +69,6 @@ adb_is_connected () {
 
 	if adb devices | grep -E "${_PHONE_IP}(:[0-9]+)?\s+device" > /dev/null; then
 	  return 0
-	fi
-
-	adb connect "${_PHONE_IP}:${_PHONE_PORT}"
-	sleep .5
-
-	if adb devices | grep -E "${_PHONE_IP}(:[0-9]+)?\s+device" > /dev/null; then
-	  return 0
-	else
-	  return 1
 	fi
 }
 
@@ -498,6 +497,8 @@ section_break () {
 }
 
 send_payload () {
+	# TODO: possible switch to kdeconnect --send-clipboard if adb connection is too difficult to maintain
+	# TODO: due to setting or obtaining port information
 	adb -s "${_PHONE_IP}:${_PHONE_PORT}" shell "am start -a android.intent.action.SEND -t 'text/plain' \
 		--es android.intent.extra.TEXT \"$(cat ${_PAYLOAD_FILE})\" com.google.android.keep"
 }
