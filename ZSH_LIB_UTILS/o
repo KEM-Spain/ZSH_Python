@@ -421,8 +421,8 @@ done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
-#--Execution
-[[ ${_DEBUG} -ne 0 ]] && do_smcup
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
 [[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
 

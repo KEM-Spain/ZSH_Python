@@ -66,6 +66,7 @@
 			}
 		} 
 		v.title = v.title.replace(/\|/g, ':') /* titles contain pipe separators */
+		v.author.name = v.author.name.replace(/\|/g, '') /* author contains pipe separators */
 		if (has_match) {
 			if (strict) { /* searchterm must be in author */
 				t_arg = searchterm.toLowerCase()

@@ -28,10 +28,11 @@ E_CYAN_FG=$(echo "\033[36m")
 E_WHITE_FG=$(echo "\033[37m")
 E_STRIKE=$(echo "\033[9m")
 
+
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
+_DEPS+=(LIST.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
@@ -51,7 +52,7 @@ _CFG_DIR=~/.local/share/${_SCRIPT}
 _APP_LOG=${_CFG_DIR}/${_SCRIPT}.log
 _ERR_LOG=${_CFG_DIR}/err.log
 
-_APP_EXE[EBOOK]="/usr/bin/python2.7 /usr/bin/ebook-viewer"
+_APP_EXE[EBOOK]="/usr/bin/foliate"
 _APP_EXE[OKULAR]=/usr/bin/okular
 _APP_EXE[MDLESS]=/usr/local/bin/mdless
 _APP_EXE[MUSE]="/usr/local/bin/system/launchers/run_musescore"
@@ -88,8 +89,8 @@ action_do () {
 	local -a FLIST=()
 	local APP_EXE_PATH
 	local APP_WIN
-	local CMD
-	local CMD_PID
+	local CMD=''
+	local CMD_PID=''
 	local FN
 	local IN_APP=false
 	local LAST_APP=?
@@ -97,7 +98,7 @@ action_do () {
 	local RC=''
 	local M K
 
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	for M in ${_MARKED};do
 		FN=${(k)_FILE_NDX[(r)${M}]}
@@ -106,7 +107,7 @@ action_do () {
 		FILE_APP[${FN}]=${APP_EXE_PATH}
 	done
 
-	[[ ${_DEBUG} -gt 0 ]] && dbg "CMD:${CMD}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: FN=${FN} APP_EXE_PATH=${APP_EXE_PATH} APP_WIN=${APP_WIN} FILE_APP:${FILE_APP[${FN}]}"
 
 	for K in ${(k)FILE_APP};do # Allow each app to have a unique filelist
 		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
@@ -117,19 +118,25 @@ action_do () {
 			FLIST+=${(qqq)K}
 		fi
 		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Built RUN_LIST:${RUN_LIST[${LAST_APP}]}, FLIST:${FLIST}"
 	done
 
 	for K in ${(k)RUN_LIST};do
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Executing RUN_LIST:${RUN_LIST}"
 		/bin/rm -f ${_ERR_LOG}
 		if is_foreground_only ${K};then
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Is foreground only"
 			logit ${_APP_LOG} "${0}: Executing foreground job: APP:${K} ARGS:${RUN_LIST[${K}]}"
 			eval "${K} ${RUN_LIST[${K}]} 2>${_ERR_LOG}" # Foreground
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Foreground CMD:${K} ${RUN_LIST[${K}]} returned ${?}"
 			MSG=$(grep --color=never -Esi 'fail|error' ${_ERR_LOG})
 			RC=$(wc -w <<<${MSG})
 			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${_ERR_LOG})<N>| |<w>Press any key...<N>"
 		else
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Not foreground only"
 			logit ${_APP_LOG} "${0}: Executing background job: APP:${K} ARGS:${RUN_LIST[${K}]}"
 			eval "${K} ${RUN_LIST[${K}]} 2>${_ERR_LOG} &" # Background
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Background CMD:${K} ${RUN_LIST[${K}]} returned ${?}"
 			win_max -p ${!} # Maximize window using PID of background job
 			MSG=$(grep --color=never -Esi 'fail|error' ${_ERR_LOG})
 			RC=$(wc -w <<<${MSG})
@@ -147,6 +154,8 @@ action_warn () {
 	local _MARKED=(${@})
 	local CNT=$(list_get_selected_count ${_MARKED})
 	local M
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	
 	msg_box -p "<I>Please respond<N>|==============| |${CNT} $(str_pluralize item $CNT) queued for opening.| |<B>Open? (y/n)<N>"
 	if [[ ${_MSG_KEY} == 'n' ]];then
@@ -161,6 +170,8 @@ get_app () {
 	local EXT=${FN:e:l}
 	local APP=$(map_ext ${EXT})
 	
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	if [[ ${APP} == '?' ]];then
 		if [[ -n ${FN} && $(file ${FN}) =~ "text" ]];then
 			APP=${_APP_EXE[VIM]} # Editable unknown extensions 
@@ -176,6 +187,8 @@ get_win () {
 	local FN=${1}
 	local EXT=${FN:e:l}
 	local APP_WIN=$(map_ext ${EXT})
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 	
 	if [[ ${APP_WIN} == '?' ]];then
 		if [[ -n ${FN} && $(file ${FN}) =~ "text" ]];then
@@ -191,6 +204,8 @@ get_win () {
 is_foreground_only () {
 	local APP=${1}
 	local A
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	APP=$(cut -d' ' -f1 <<<${APP}) # Isolate APP name
 
@@ -208,6 +223,8 @@ item_decorate () {
 	local NDX=$1
 	local FN=${_LOCAL_LIST[${NDX}]}
 
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	case ${_LIST_SELECTED[${NDX}]} in
 		${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
 		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
@@ -218,6 +235,8 @@ item_decorate () {
 map_ext () {
 	local EXT=${1}
 	local APP=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	case ${EXT} in
 		avi) APP=${_APP_EXE[MPV]};;
@@ -258,6 +277,8 @@ mark_unsupported () {
 	local NDX=$1
 	local SUPPORTED
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	SUPPORTED=$(get_app ${_LOCAL_LIST[${NDX}]})
 	if [[ ${SUPPORTED} == '?' ]];then
 		_LIST_SELECTED[${NDX}]=${_UNSUPPORTED}
@@ -266,7 +287,10 @@ mark_unsupported () {
 }
 
 lcase_mp4 () {
-	FN=${1}
+	local FN=${1}
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
 	mv -f ${FN} ${FN:r}.mp4
 	logit ${_APP_LOG} "${0}: Lower cased extension ${FN}"
 }
@@ -276,6 +300,8 @@ same_extension () {
 	local SAME_EXT=true
 	local LAST_EXT=?
 	local M
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	for M in ${_MARKED};do
 		[[ ! -f ${_LOCAL_LIST[${M}]} ]] && continue
@@ -295,6 +321,10 @@ single_file_launch () {
 	local FN=${1}
 	local APP=$(get_app ${FN})
 	local APP_WIN=$(get_win ${FN})
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: FN:${FN}, APP:${APP}, APP_WIN:${APP_WIN}"
 
 	[[ ${APP} == '?' ]] && exit_leave $(err_msg_exit "No application to handle file:${FN} of type: [$(file -b ${FN})]")
 
@@ -392,7 +422,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 #--Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${_DEBUG} -ne 0 ]] && do_smcup
 [[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
 [[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
 
@@ -413,14 +443,18 @@ PATHLBL=$(path_get_label 40)
 # *) list - process a list of files
 case ${#} in
 	0) HDR_MSG="Showing all files in:$(pathabv <<<${PWD})"
-		CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
-		_ARGLIST=("${(f)$(eval ${CMD})}")
+		FIND_CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
+		_ARGLIST=("${(f)$(eval ${FIND_CMD})}")
 		;;
-	1) _ARGLIST+=${1};;
-	*) HDR_MSG='Processing file list'
+	1) _ARGLIST+=${1}
+		HDR_MSG='Processing single file'
+		;;
+	*) HDR_MSG='Processing multiple args'
 		_ARGLIST=(${@})
 		;;
 esac
+
+[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGC:${#}, FIND_CMD:${FIND_CMD}, HDR_MSG:${HDR_MSG}, _ARGLIST:${_ARGLIST}"
 
 NDX=0
 for F in ${_ARGLIST};do
@@ -434,12 +468,13 @@ if ! arr_is_populated "${_RAWLIST}";then
 	exit_leave $(err_msg_exit "No qualified candidates")
 fi
 
-logit ${_APP_LOG} "Args provided ${#_RAWLIST} candidates"
+[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_RAWLIST:${#_RAWLIST}"
+logit ${_APP_LOG} "_RAWLIST:${#_RAWLIST}"
 
 NDX=0
 for F in ${(o)_RAWLIST};do # Marshal apps
 	FN=${F}
-	[[ ${FN:e} == 'MP4' ]] && { lcase_mp4 ${FN} && FN="${FN:r}.${FN:el}" }
+	[[ ${FN:e} == 'MP4' ]] && { lcase_mp4 ${FN} && FN="${FN:r}.${FN:e:l}" }
 	APP=$(get_app ${FN})
 	APP_WIN=$(get_win ${FN})
 	[[ ${APP} == '?' && ${FILTER_UNSUPPORTED} == 'true' ]] && continue # Skip any unsupported
@@ -460,10 +495,13 @@ for F in ${(o)_RAWLIST};do # Marshal apps
 	_FILE_WIN[${F}]=${APP_WIN}
 done
 
+[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_FILE_APP:${_FILE_APP}, _FILE_NDX:${_FILE_NDX}, _FILE_WIN:${_FILE_WIN}"
+
 logit ${_APP_LOG} "Validated ${#_LOCAL_LIST} candidates"
 
 if [[ -z ${_LOCAL_LIST} ]];then
 	do_rmcup
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "No application found to handle file"
 	for F in ${(on)_RAWLIST};do
 		echo "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${F:t}${RESET} of type: [$(file -b ${F})]"
 	done
@@ -471,6 +509,7 @@ if [[ -z ${_LOCAL_LIST} ]];then
 fi
 
 if [[ ${#_LOCAL_LIST} -eq 1 ]];then # Process a single file arg directly
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Single file launch: ${_LOCAL_LIST}"
 	_LIST=(${_LOCAL_LIST})
 	action_do 1
 	exit_leave

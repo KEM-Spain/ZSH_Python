@@ -52,20 +52,21 @@
 				if ( v.ago.indexOf("hour") >= 0 || v.ago.indexOf("day") >= 0 || v.ago.indexOf("min") >= 0 ) {
 					has_match = true
 					if (msgout === false) {
-						console.log("match on age:recent")
+						console.log("matched on age:recent")
 						msgout = true
 					}
 				}
 		} else {
 			if (v.ago.indexOf(age) >= 0) { /* age was specified */
 				has_match = true
-				console.log("match on age:"+age)
+				console.log("matched on age:"+age)
 				msgout = true
 			} else {
 				console.log("no match on age:"+age)
 			}
 		} 
 		v.title = v.title.replace(/\|/g, ':') /* titles contain pipe separators */
+		v.author.name = v.author.name.replace(/\|/g, ' ') /* author contains pipe separators */
 		if (has_match) {
 			if (strict) { /* searchterm must be in author */
 				t_arg = searchterm.toLowerCase()

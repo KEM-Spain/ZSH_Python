@@ -83,7 +83,7 @@ _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve a
 _OBJECT="video"
 _PRESERVE_LOG=false
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
-_STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive")
+_STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive" "deep focus podcast")
 _TRANS_ERR_LIMIT=6
 _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
@@ -1441,10 +1441,8 @@ query_youtube () {
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		# Search failed
 		if [[ ${#_QUERY_REJECTS} -ne 0 ]];then
-			msg_box -p -PY "Search engine returned ${NDX} results|but blocking a non-matching author caused all to be <r>rejected<N>|AUTHOR:${AUTHOR} DKEY:#{_QUERY_OPTS[DKEY]}|<w>Should these rows be accepted to investigate<N>?"
-			if [[ ${_MSG_KEY} == 'y' ]];then
-				_LOCAL_LIST=(${_QUERY_REJECTS})
-			fi
+			msg_box -t2 "A non-matching author caused all titles to be rejected"
+			_LOCAL_LIST=(${_QUERY_REJECTS})
 		else
 			[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STR="|<I>Strict filter is active<N>" || STR=''
 			msg_box -t2 "<r>Query returned no rows<N>${STR}"
