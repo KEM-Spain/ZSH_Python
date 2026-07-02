@@ -33,6 +33,7 @@ _USED_ROW=3 # Processed row
 typeset -A _BOX_COORDS=()
 typeset -A _REL_COORDS=()
 typeset -aU _DEPS=()
+typeset -a _SCREEN=() # Holds displayed list content
 
 # Default Modules
 _DEPS=(ANSI.zsh DBG.zsh ERROR.zsh EXIT.zsh UTILS.zsh)

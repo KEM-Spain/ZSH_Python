@@ -10,7 +10,6 @@ typeset -A _PAGES=()
 typeset -A _PAGE_DATA=()
 typeset -A _SORT_DATA=()
 typeset -a _LIST=() # Holds the values to be managed by the menu
-typeset -a _SCREEN=() # Holds the displayed content
 typeset -a _LIST_ACTION_MSGS=() # Holds text for contextual prompts
 typeset -a _LIST_HEADER=() # Holds header lines
 typeset -a _MARKED=()
@@ -272,12 +271,6 @@ list_get_selected_count () {
 	done
 
 	echo ${COUNT}
-}
-
-list_get_selection_limit () {
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	echo ${_SELECTION_LIMIT}
 }
 
 list_item () {
@@ -673,7 +666,6 @@ list_select () {
 	local REM=0
 	local ROWS=$(tput lines)
 	local SELECTED_COUNT=0
-	local SELECTION_LIMIT=$(list_get_selection_limit)
 	local SHADE=''
 	local SORT_SOURCE="USER"
 	local SWAP_NDX=''
@@ -842,7 +834,7 @@ list_select_range () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} RANGE:${RANGE}"
 
 	for (( NDX=${RANGE[1]}; NDX <= ${RANGE[2]}; NDX++ ));do
-		[[ ${_REUSE_STALE} == 'false' && ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]] && continue
+		[[ ${_REUSE_STALE} == 'false' && ${_LIST_SELECTED[${NDX}]} -gt 1 ]] && continue # STALE and USED
 		SELECTED[${NDX}]=${NDX}
 	done
 
@@ -1406,7 +1398,7 @@ list_toggle_selected () {
 		return # Ignore over limit
 	fi
 
-	if [[ ${_REUSE_STALE} == 'true' && ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_USED_ROW} ]];then
+	if [[ ${_REUSE_STALE} == 'true' ]];then
 		_LIST_SELECTED[${_LIST_NDX}]=${_AVAIL_ROW}
 	fi
 

@@ -1,0 +1,22 @@
+			  echo "=== MSG BOX ARGS === \
+						  \nH) HDR_LINES=\${OPTARG} # Number of msg lines that comprise header \
+						  \nC) CONTINUOUS=true # Message is added to the existing continuous msg \
+						  \nO) FRAME_COLOR=\${OPTARG} # Set color for message frame \
+						  \nP) PROMPT_ARG=\${OPTARG} # Text for message prompt \
+						  \nI) _CONT_DATA[BOX]=false # Trigger initialization of continuous message \
+						  \nR) RELATIVE=true # Use this tag to retreive an alternative placement coord \
+						  \nT) TAG_ARG=\${OPTARG} # TAG name to use when saving message coordinates \
+						  \nc) CLEAR_MSG=true # Clear the previous message before displaying the current message \
+						  \nf) FOLD_WIDTH=\${OPTARG} # Fold the message text using this line width \
+						  \nh) HEIGHT_ARG=\${OPTARG} # Specify a message box height other than the default \
+						  \nj) TEXT_STYLE=\${OPTARG} # Specify desired text justification (center, left) \
+						  \np) PROMPT_USER=true # Request user input following message display \
+						  \nq) QUIET=true # Suppress any messages \
+						  \nr) SO=true # Request standout mode \
+						  \ns) DELIM_ARG=\${OPTARG} # Use this delimiter to parse message sections \
+						  \nt) TIMEOUT=\${OPTARG} # Display message for this time limit \
+						  \nu) SAFE=false # Ensure no coordinates violate available screen dimensions \
+						  \nw) WIDTH_ARG=\${OPTARG} # Specify a message box width other than the default \
+						  \nx) MSG_X_COORD_ARG=\${OPTARG} # Specify a message display row other than the default \
+						  \ny) MSG_Y_COORD_ARG=\${OPTARG} # Specify a message display col other than the default \
+						  \nz) _REPAINT=false # No repaints"

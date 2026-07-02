@@ -235,7 +235,7 @@ path_get_raw () {
 	fi
 
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${GREEN_FG}PATH_HEAD${RESET}:${WHITE_FG}${PATH_HEAD}${RESET} is set"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${MAGENTA_FG}Parsing TAIL${RESET}:${RAW_PATH:t}"
+	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} && -n ${RAW_PATH:t} ]] && dbg "${0}: ${MAGENTA_FG}Parsing TAIL${RESET}:${RAW_PATH:t}"
 
 	case ${RAW_PATH:t} in
 	   '*') PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is ASTERISK:${RAW_PATH:t}${RESET}";;

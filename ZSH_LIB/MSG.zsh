@@ -14,7 +14,7 @@ _PROC_BOX_TAG=PROC_BOX
 _CONT_BOX_TAG=CONT_BOX
 _DELIM='|'
 _LAST_MSG_TAG=''
-_REPAINT=true
+_REPAINT=false
 _HDR_SECTION=false
 
 # LIB Functions
@@ -97,7 +97,7 @@ msg_box () {
 	local TIMEOUT=0
 	local WIDTH_ARG=0
 
-	local OPTSTR=":H:P:O:CIRT:cf:h:j:pqrs:t:uw:x:y:z"
+	local OPTSTR=":H:P:O:CIRT:cf:h:j:pqrs:t:uw:x:y:Zz"
 	OPTIND=0
 
 	while getopts ${OPTSTR} OPTION;do
@@ -107,22 +107,23 @@ msg_box () {
 			O) FRAME_COLOR=${OPTARG};; # Set color for message frame
 			P) PROMPT_ARG=${OPTARG};; # Text for message prompt
 			I) _CONT_DATA[BOX]=false;; # Trigger initialization of continuous message
-			R) RELATIVE=true;; # Use this tag to retreive a alternative placement coord
+			R) RELATIVE=true;; # Use this tag to retreive an alternative placement coord
 			T) TAG_ARG=${OPTARG};; # TAG name to use when saving message coordinates
+			Z) _REPAINT=true;; # Repaint screen from buffer
 			c) CLEAR_MSG=true;; # Clear the previous message before displaying the current message
 			f) FOLD_WIDTH=${OPTARG};; # Fold the message text using this line width
 			h) HEIGHT_ARG=${OPTARG};; # Specify a message box height other than the default
 			j) TEXT_STYLE=${OPTARG};; # Specify desired text justification (center, left)
 			p) PROMPT_USER=true;; # Request user input following message display
-			q) QUIET=true;; # Suppress progress messages
+			q) QUIET=true;; # Suppress any messages
 			r) SO=true;; # Request standout mode
-			s) DELIM_ARG="${OPTARG}";; # Use this delimiter to break message parts
-			t) TIMEOUT="${OPTARG}";; # Display message only for this time limit
+			s) DELIM_ARG="${OPTARG}";; # Use this delimiter to parse message sections
+			t) TIMEOUT="${OPTARG}";; # Display message for this time limit
 			u) SAFE=false;; # Ensure no coordinates violate available screen dimensions
 			w) WIDTH_ARG=${OPTARG};; # Specify a message box width other than the default
 			x) MSG_X_COORD_ARG=${OPTARG};; # Specify a message display row other than the default
 			y) MSG_Y_COORD_ARG=${OPTARG};; # Specify a message display col other than the default
-			z) _REPAINT=false;; # Override repaints
+			z) _REPAINT=false;; # No repaints
 			:) print -u2 " ${_SCRIPT}: ${0}: option: -${OPTARG} requires an argument" >&2;read ;;
 			\?) print -u2 " ${_SCRIPT}: ${0}: unknown option -${OPTARG}" >&2; read;;
 		esac
@@ -637,9 +638,7 @@ msg_box_clear () {
 		tput ech ${BOX_COORDS[W]}
 	done
 
-	[[ ${_REPAINT} == 'true' ]] && box_coords_repaint ${TAG}
-
-	_REPAINT=true # Reset to default until subsequent override
+	[[ ${_REPAINT} == 'true' ]] && box_coords_repaint ${TAG} # Resides in UTILS.zsh
 
 	return 0
 }

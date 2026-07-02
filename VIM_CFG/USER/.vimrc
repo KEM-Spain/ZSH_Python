@@ -1,8 +1,20 @@
 if !has("gui_running")
+	let mapleader = ","
 	" rainbow brackets settings
 	let g:rainbow_active = 1
 	let g:rainbow_guifgs = ['RoyalBlue3', 'DarkOrange3', 'DarkOrchid3', 'FireBrick']
 	let g:rainbow_ctermfgs = ['lightblue', 'lightgreen', 'yellow', 'red', 'magenta']
+
+	function! DisplayList(list)
+		 redraw
+		 if a:list == 'msgp'
+			 source ~/.vim/msgp.list
+		 elseif a:list == 'msga'
+			 source ~/.vim/msga.list
+		 else
+			  echo "No list found for: " . a:list
+		 endif
+	endfunction
 
 	"Begin (Keyword Detection) related
 	function! InsertTabWrapper(direction)
@@ -53,6 +65,12 @@ if !has("gui_running")
     \ . '> trans<' . synIDattr(synID(line("."),col("."),0),"name")
     \ . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name")
     \ . ">"<CR>
+
+	"display help lists for MSG.zsh
+	command! -nargs=1 ShowList call DisplayList(<q-args>)
+
+	nnoremap <leader>m :ShowList msgp<CR>
+	nnoremap <leader>n :ShowList msga<CR>
 
 	"example of mapping with input - could be used to prompt before executing a mapping
 	nnoremap <expr> <c-t> "oHello, " . input("Please give your name: ") . ". You have a very nice name.\<ESC>"

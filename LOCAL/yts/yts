@@ -615,7 +615,7 @@ fav_delete () {
 	for K in ${FAV_KEYS};do
 		F3=$(cut -d'|' -f3 <<<${K}) # 3rd field
 		MK=${F3[1]} # First char
-		[[ ${MK} == ${MKEY} ]] && KEY_MATCH=${K} # Ensure corresponding menu matches
+		[[ ${MK:l} == ${MKEY:l} ]] && KEY_MATCH=${K} # Ensure corresponding menu matches
 	done
 
 	if [[ -n ${KEY_MATCH} ]];then
@@ -1360,20 +1360,22 @@ query_rumble () {
 }
 
 query_youtube () {
+	local -A FILTER_MSGS=()
+	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
 	local -a LIST=()
 	local -a WORK_LIST=()
-	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
-	local -A FILTER_MSGS=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local DATA=false
+	local DKEY=''
+	local QKEY=''
 	local HIT=false
 	local LINE=''
 	local NDX=0
 	local PROXY_CMD=''
+	local RETRIES=3
 	local STR=''
 	local STRICT_ARG=''
 	local TRY=0
-	local RETRIES=3
 	local F L
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -1419,8 +1421,10 @@ query_youtube () {
 		# Author verification
 		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]];then # Apply filtering to non strict results unless query is custom
 			HIT=false
-			AUTHOR=$(cut -d'|' -f2 <<<${L}) && AUTHOR=$(str_to_ascii ${AUTHOR})
-			[[ ${AUTHOR:l} =~ "${_QUERY_OPTS[DKEY]:l}" ]] && HIT=true || logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
+			AUTHOR=$(cut -d'|' -f2 <<<${L} | tr -d '[:space:]') && AUTHOR=$(str_to_ascii ${AUTHOR:l})
+			QKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[QKEY]:l})
+			DKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[DKEY]:l})
+			[[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]] && HIT=true || logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
 		else
 			HIT=true
 		fi
@@ -1485,7 +1489,7 @@ sbox_center () {
 	local X Y H W
 
 	(( MSG_LEN += 6 ))
-	IFS=':'; read X Y W H <<<$(center -R -c${COORDS} -w${MSG_LEN} -h3 -y1)
+	IFS=':'; read X Y W H <<<$(center -R -c${COORDS} -w${MSG_LEN} -h3 -y'-1')
 
 	echo "${X} ${Y} ${H} ${W}"
 }

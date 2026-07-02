@@ -1,29 +1,24 @@
-2026-06-29_22:23: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-29_22:23: log_update: Skipping expired inode:6396282
-2026-06-29_22:23: log_update: Skipping expired inode:6402714
-2026-06-29_22:23: log_update: Skipping expired inode:6402838
-2026-06-29_22:23: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-06-29_22:23: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-06-29_22:23: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
-2026-06-29_22:23: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "judgingfreedom"
-2026-06-29_22:23: query_youtube: Query matched 21 lines, _LOCAL_LIST has 18 lines
-2026-06-29_22:23: query_youtube: Listing for QKEY:judgingfreedom contains 18 rows
-2026-06-29_22:23: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.OFXJ8c
-2026-06-29_22:23: job_start: TITLE:Prof. Jeffrey Sachs : The Greater Israel Project IS Collapsing
-2026-06-29_22:23: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=F90ZRnR_goU" PID:1552593
-2026-06-29_22:23: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-06-29_22:23: yt URL:https://youtube.com/watch?v=F90ZRnR_goU
-2026-06-29_22:23: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=F90ZRnR_goU"
-2026-06-29_22:23: action_do: GENERATING HEADER
-2026-06-29_22:23: title_scrubber: UCASE_WORDS:1
-2026-06-29_22:23: title_scrubber: Preserving acronym:Is
-2026-06-29_22:24: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=F90ZRnR_goU PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_The_Greater_Israel_Project_Is_Collapsing.mp4|6322918
-2026-06-29_22:24: action_do: COMPLETED
-2026-06-29_22:24: action_do: POST-PROCESSING
-2026-06-29_22:24: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_The_Greater_Israel_Project_Is_Collapsing.mp4
-2026-06-29_22:24: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_The_Greater_Israel_Project_Is_Collapsing.mp4
-2026-06-29_22:24: title_scrubber: UCASE_WORDS:1
-2026-06-29_22:24: title_scrubber: Preserving acronym:Is
-2026-06-29_22:24: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Prof._Jeffrey_Sachs_-_The_Greater_Israel_Project_Is_Collapsing.mp4 with:Judging Freedom - Prof. Jeffrey Sachs - The Greater Israel Project IS.mp4
-2026-06-29_22:24: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Judging Freedom - Prof. Jeffrey Sachs - The Greater Israel Project IS.mp4
-2026-06-29_22:24: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.OFXJ8c was cleared for:judgingfreedom from:action_do
+2026-07-02_13:34: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-02_13:34: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-02_13:35: query_youtube: Creating listing for QKEY:TheDeepFocusPodcast STRICT:c
+2026-07-02_13:35: query_youtube: _QUERY_OPTS: AGE:recent DKEY:John Kiriakou ENGINE:youtube EOPT:c FKEY:john kiriakou QKEY:TheDeepFocusPodcast TYPE:standard 
+2026-07-02_13:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "TheDeepFocusPodcast"
+2026-07-02_13:35: query_youtube: Query matched 15 lines, _LOCAL_LIST has 14 lines
+2026-07-02_13:35: query_youtube: Listing for QKEY:TheDeepFocusPodcast contains 14 rows
+2026-07-02_13:35: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Czru0J
+2026-07-02_13:35: job_start: TITLE:Deep Focus Podcast With John Kiriakou - What Happens When You Expose
+2026-07-02_13:35: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=CFGzt_HWEV4" PID:2737811
+2026-07-02_13:35: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-07-02_13:35: yt URL:https://youtube.com/watch?v=CFGzt_HWEV4
+2026-07-02_13:35: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=CFGzt_HWEV4"
+2026-07-02_13:35: action_do: GENERATING HEADER
+2026-07-02_13:35: title_scrubber: UCASE_WORDS:1
+2026-07-02_13:35: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=CFGzt_HWEV4 PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:The_Deep_Focus_Podcast - Deep_Focus_Podcast_with_John_Kiriakou_-_What_Happens_When_You_Expose_Govern.mp4|6292855
+2026-07-02_13:35: action_do: COMPLETED
+2026-07-02_13:35: action_do: POST-PROCESSING
+2026-07-02_13:35: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/The_Deep_Focus_Podcast - Deep_Focus_Podcast_with_John_Kiriakou_-_What_Happens_When_You_Expose_Govern.mp4
+2026-07-02_13:35: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/The_Deep_Focus_Podcast - Deep_Focus_Podcast_with_John_Kiriakou_-_What_Happens_When_You_Expose_Govern.mp4
+2026-07-02_13:35: title_scrubber: UCASE_WORDS:1
+2026-07-02_13:35: set_final_fn: Overwriting file:The_Deep_Focus_Podcast - Deep_Focus_Podcast_with_John_Kiriakou_-_What_Happens_When_You_Expose_Govern.mp4 with:Deep Focus - What Happens When You Expose.mp4
+2026-07-02_13:35: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Deep Focus - What Happens When You Expose.mp4
+2026-07-02_13:35: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Czru0J was cleared for:TheDeepFocusPodcast from:action_do

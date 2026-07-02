@@ -120,32 +120,7 @@ sel_clear_region () {
 	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Cleared ${H_ARG} rows starting from row:${X_ARG}, col:${Y_ARG} for:${W_ARG} columns"
 }
 
-sel_disp_page () {
-	local NDX=0
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
-
-	for (( NDX=1; NDX <= ${#_PAGE}; NDX++ ));do
-		sel_norm $(( _LIST_DATA[X] + NDX - 1 )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
-	done
-}
-
-sel_get_position () {
-	local PAGE=0
-	local NDX=0
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
-
-	if [[ -e ${_SELECT_TAG_FILE} ]];then
-		IFS='|' read -r PAGE NDX < ${_SELECT_TAG_FILE} # Retrieve stored position
-		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
-		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
-		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
-		/bin/rm -f ${_SELECT_TAG_FILE}
-	fi
-}
-
-sel_hilite () {
+sel_cursor_hilite () {
 	local X=${1}
 	local Y=${2}
 	local TEXT=${3}
@@ -167,6 +142,51 @@ sel_hilite () {
 	do_rmso
 
 	_HILITE_X=${X}
+}
+
+sel_cursor_norm () {
+	local X=${1}
+	local Y=${2}
+	local TEXT=${3}
+	local F1 F2
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: X:${X} Y:${Y} TEXT:${TEXT}"
+
+	tcup ${X} ${Y}
+	do_rmso
+	if [[ ${_HAS_CAT} == 'true' ]];then
+		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
+		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
+		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+		printf "${WHITE_FG}%-*s${RESET} %-*s\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
+	else
+		echo ${TEXT}
+	fi
+}
+
+sel_disp_page () {
+	local NDX=0
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+
+	for (( NDX=1; NDX <= ${#_PAGE}; NDX++ ));do
+		sel_cursor_norm $(( _LIST_DATA[X] + NDX - 1 )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+	done
+}
+
+sel_get_position () {
+	local PAGE=0
+	local NDX=0
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+
+	if [[ -e ${_SELECT_TAG_FILE} ]];then
+		IFS='|' read -r PAGE NDX < ${_SELECT_TAG_FILE} # Retrieve stored position
+		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
+		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
+		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
+		/bin/rm -f ${_SELECT_TAG_FILE}
+	fi
 }
 
 sel_list () {
@@ -447,26 +467,6 @@ sel_load_page () {
 	_CURRENT_PAGE=${PAGE} # Set the currently displayed page
 }
 
-sel_norm () {
-	local X=${1}
-	local Y=${2}
-	local TEXT=${3}
-	local F1 F2
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: X:${X} Y:${Y} TEXT:${TEXT}"
-
-	tcup ${X} ${Y}
-	do_rmso
-	if [[ ${_HAS_CAT} == 'true' ]];then
-		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
-		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
-		printf "${WHITE_FG}%-*s${RESET} %-*s\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
-	else
-		echo ${TEXT}
-	fi
-}
-
 sel_scroll () {
 	local PAGE=${1}
 	local -A D_COORDS=($(box_coords_get DECOR))
@@ -558,7 +558,7 @@ sel_scroll () {
 
 		_SEL_VAL=${_PAGE[${NDX}]} # Initialize return value
 
-		sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]} # Initial item hilite
+		sel_cursor_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]} # Initial item hilite
 
 		# Get user inputs
 		while true;do
@@ -598,21 +598,21 @@ sel_scroll () {
 			if [[ ${SCROLL} == 'U' ]];then # Up
 				NORM_NDX=${NDX} && ((NDX--))
 				[[ ${NDX} -lt 1 ]] && NDX=${#_PAGE}
-				sel_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
-				sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+				sel_cursor_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
+				sel_cursor_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 			elif [[ ${SCROLL} == 'D' ]];then # Down
 				NORM_NDX=${NDX} && ((NDX++))
 				[[ ${NDX} -gt ${#_PAGE} ]] && NDX=1
-				sel_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
-				sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+				sel_cursor_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
+				sel_cursor_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 			elif [[ ${SCROLL} == 'T' ]];then # Top
 				NORM_NDX=${NDX} && NDX=1
-				sel_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
-				sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+				sel_cursor_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
+				sel_cursor_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 			elif [[ ${SCROLL} == 'B' ]];then # Bot
 				NORM_NDX=${NDX} && NDX=${#_PAGE}
-				sel_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
-				sel_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
+				sel_cursor_norm $(( NORM_NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NORM_NDX}]}
+				sel_cursor_hilite $(( NDX + X_OFF )) ${_LIST_DATA[Y]} ${_PAGE[${NDX}]}
 			elif [[ ${SCROLL} == 'N' ]];then # Next Page
 				((PAGE++))
 				PAGE_CHANGE=true
