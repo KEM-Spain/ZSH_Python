@@ -5,6 +5,14 @@ _DEPS+=(STR.zsh)
 typeset -a _DEBUG_LINES=()
 
 # LIB Functions
+dbg_caller () {
+	local FUNC=${1}
+	local CALLER=${2}
+	local OPTS=${3}
+
+	dbg "${FUNC}:${CYAN_FG}CALLED BY${RESET}:${CALLER} OPTS:${OPTS}"
+}
+
 dbg () {
 	local -a ARGS=(${@})
 	local LINE

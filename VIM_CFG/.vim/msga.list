@@ -6,6 +6,7 @@
 						  \nI) _CONT_DATA[BOX]=false # Trigger initialization of continuous message \
 						  \nR) RELATIVE=true # Use this tag to retreive an alternative placement coord \
 						  \nT) TAG_ARG=\${OPTARG} # TAG name to use when saving message coordinates \
+						  \nZ) _REPAINT=true # Repaint screen from buffer \
 						  \nc) CLEAR_MSG=true # Clear the previous message before displaying the current message \
 						  \nf) FOLD_WIDTH=\${OPTARG} # Fold the message text using this line width \
 						  \nh) HEIGHT_ARG=\${OPTARG} # Specify a message box height other than the default \

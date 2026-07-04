@@ -1,24 +1,15 @@
-2026-07-02_13:34: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-02_13:34: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-02_13:35: query_youtube: Creating listing for QKEY:TheDeepFocusPodcast STRICT:c
-2026-07-02_13:35: query_youtube: _QUERY_OPTS: AGE:recent DKEY:John Kiriakou ENGINE:youtube EOPT:c FKEY:john kiriakou QKEY:TheDeepFocusPodcast TYPE:standard 
-2026-07-02_13:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "TheDeepFocusPodcast"
-2026-07-02_13:35: query_youtube: Query matched 15 lines, _LOCAL_LIST has 14 lines
-2026-07-02_13:35: query_youtube: Listing for QKEY:TheDeepFocusPodcast contains 14 rows
-2026-07-02_13:35: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Czru0J
-2026-07-02_13:35: job_start: TITLE:Deep Focus Podcast With John Kiriakou - What Happens When You Expose
-2026-07-02_13:35: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=CFGzt_HWEV4" PID:2737811
-2026-07-02_13:35: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-02_13:35: yt URL:https://youtube.com/watch?v=CFGzt_HWEV4
-2026-07-02_13:35: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=CFGzt_HWEV4"
-2026-07-02_13:35: action_do: GENERATING HEADER
-2026-07-02_13:35: title_scrubber: UCASE_WORDS:1
-2026-07-02_13:35: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=CFGzt_HWEV4 PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:The_Deep_Focus_Podcast - Deep_Focus_Podcast_with_John_Kiriakou_-_What_Happens_When_You_Expose_Govern.mp4|6292855
-2026-07-02_13:35: action_do: COMPLETED
-2026-07-02_13:35: action_do: POST-PROCESSING
-2026-07-02_13:35: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/The_Deep_Focus_Podcast - Deep_Focus_Podcast_with_John_Kiriakou_-_What_Happens_When_You_Expose_Govern.mp4
-2026-07-02_13:35: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/The_Deep_Focus_Podcast - Deep_Focus_Podcast_with_John_Kiriakou_-_What_Happens_When_You_Expose_Govern.mp4
-2026-07-02_13:35: title_scrubber: UCASE_WORDS:1
-2026-07-02_13:35: set_final_fn: Overwriting file:The_Deep_Focus_Podcast - Deep_Focus_Podcast_with_John_Kiriakou_-_What_Happens_When_You_Expose_Govern.mp4 with:Deep Focus - What Happens When You Expose.mp4
-2026-07-02_13:35: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Deep Focus - What Happens When You Expose.mp4
-2026-07-02_13:35: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Czru0J was cleared for:TheDeepFocusPodcast from:action_do
+2026-07-04_12:52: log_update: LOG lines BEFORE update:10 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-04_12:52: log_update: LOG lines AFTER update:10 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-04_12:52: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
+2026-07-04_12:52: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
+2026-07-04_12:52: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
+2026-07-04_12:52: query_youtube: Query matched 12 lines, _LOCAL_LIST has 8 lines
+2026-07-04_12:53: query_youtube: Listing for QKEY:alexchristoforou contains 8 rows
+2026-07-04_12:53: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
+2026-07-04_12:53: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:Inf% TYPE:standard 
+2026-07-04_12:53: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "blancolirio"
+2026-07-04_12:53: query_youtube: Query matched 8 lines, _LOCAL_LIST has 4 lines
+2026-07-04_12:53: query_youtube: Translated TITLE:Golden Full-Size Electric Motorcycle Prototype Test
+2026-07-04_12:53: query_youtube: Translated TITLE:USAF Oa-1k $18 Million Pilot Error Report
+2026-07-04_12:53: query_youtube: Translated TITLE:Another Crash Against Cables! N3877V June 24, 2026
+2026-07-04_12:53: query_youtube: Listing for QKEY:blancolirio contains 4 rows
