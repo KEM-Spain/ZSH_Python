@@ -16,13 +16,15 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+_PTS_DIR=/dev/pts
+typeset -a _RAWLIST=()
+typeset -a _LIST=()
+
 read -r -d '' DESC<<EOF
 Display active terminal sessions
 \tOption: -c provides a count only
 \tOption: -p shows pid of term(s)
 EOF
-
-typeset -a _LIST=("${(@f)$(ps aux | grep -v root | grep pts | tr -s '[:space:]' | cut -d\  -f1,7 | sort -u)}")
 
 usage () {
 	tabs 6
@@ -46,7 +48,18 @@ term_pids () {
 }
 
 # Execution
+_RAWLIST=("${(@f)$(find ${_PTS_DIR} ! -path ${_PTS_DIR})}")
+
+for L in ${_RAWLIST};do
+	NOT_INT=$(sed 's/^[-+]*[0-9]*//g' <<<${L:t})
+	[[ -n ${NOT_INT} ]] && continue
+	read -r U P D T IP < <(who | grep ${L:s/\/dev\///} | tr -s '[:space:]') # who will display IP if tty is ssh
+	[[ -n ${IP} ]] && SSH=' (ssh)' || SSH='' # ID ssh terms
+	_LIST+="${L:s/\/dev\///}${SSH}"
+done
+
 [[ ${#_LIST} -gt 1 ]] && TAG=sessions || TAG=session
+
 COUNT_ONLY=false
 TERM_PID=$(ps | grep --color=never terminator | head -1 | tr -s ' ' | cut -d' ' -f2)
 THIS_TTY=$(tty)
@@ -65,9 +78,9 @@ done
 
 MSG=''
 if [[ ${COUNT_ONLY} == 'true' ]];then
-	echo ${#_LIST}
+	for L in ${_LIST};do echo ${L};done | grep -c -v ssh
 else
-	echo "${#_LIST} ${TAG}"
+	echo "${#_LIST} terminal ${TAG}"
 	for T in ${(no)_LIST};do
 		[[ "${THIS_TTY:t}" == "${T:t}" ]] && FLAG='*' || FLAG=''
 		echo ${T} ${MSG} ${FLAG}

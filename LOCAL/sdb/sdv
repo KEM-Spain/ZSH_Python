@@ -481,7 +481,6 @@ output_vector () {
 			 echo "${TXT}"
 		done > ${_PAYLOAD_FILE}
 		send_payload
-		_EXIT_MSG="Output was sent to Keep Notes"
 	else
 		for L in ${OUTPUT};do
 			[[ ${L} == '<SEP>' ]] && echo && continue
@@ -496,11 +495,20 @@ section_break () {
 	[[ ${SECTION} == 'GP' || ${SECTION} == 'INFFUT' ]] && return || echo "<SEP>"
 }
 
+get_kde_device () {
+	grep -i 'Xiaomi 14T' < <(kdeconnect-cli -l 2>/dev/null) | tr -d '[:space:]' | cut -d: -f2 | sed 's/(.*//'
+}
+
 send_payload () {
-	# TODO: possible switch to kdeconnect --send-clipboard if adb connection is too difficult to maintain
-	# TODO: due to setting or obtaining port information
-	adb -s "${_PHONE_IP}:${_PHONE_PORT}" shell "am start -a android.intent.action.SEND -t 'text/plain' \
-		--es android.intent.extra.TEXT \"$(cat ${_PAYLOAD_FILE})\" com.google.android.keep"
+	if adb_is_connected;then
+		adb -s "${_PHONE_IP}:${_PHONE_PORT}" shell "am start -a android.intent.action.SEND -t 'text/plain' \
+			--es android.intent.extra.TEXT \"$(cat ${_PAYLOAD_FILE})\" com.google.android.keep"
+		_EXIT_MSG="Clipboard was sent to Keep Notes"
+	else
+		kdeconnect-cli --send-clipboard -d $(get_kde_device)
+		gpaste-client file ${_PAYLOAD_FILE}
+		_EXIT_MSG="Clipboard was sent"
+	fi
 }
 
 set_section_longest () {
@@ -692,11 +700,11 @@ shift $((OPTIND -1))
 [[ ${#} -ne 0 ]] && _VERB_ARG=${1} || usage "Missing argument:<VERB>"
 [[ -z ${OPTIONS} ]] && VERTICAL=true # Default format
 
-if [[ ${CLIPBOARD} == 'true' ]];then
-	if ! adb_is_connected;then
-		exit_leave $(err_msg_exit "Clipboard option is unavailable - adb is not connected")
-	fi
-fi
+#if [[ ${CLIPBOARD} == 'true' ]];then
+#	if ! adb_is_connected;then
+#		exit_leave $(err_msg_exit "Clipboard option is unavailable - adb is not connected")
+#	fi
+#fi
 
 set_exit_callback cleanup
 

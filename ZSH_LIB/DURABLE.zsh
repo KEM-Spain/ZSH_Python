@@ -8,7 +8,7 @@ durable_array () {
 	local KEY
 	local VAL
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ -e /tmp/${NAME} ]];then
 		while read LINE;do
@@ -26,7 +26,7 @@ durable_get () {
 	local KEY=${2}
 	local VAL
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ -e /tmp/${NAME} ]];then
 		VAL=$(grep --color=never "${KEY}:" < /tmp/${NAME} | cut -d: -f2)
@@ -44,7 +44,7 @@ durable_set () {
 	local KEY=${2}
 	local VAL="${3}"
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Remove old value
 	if [[ -e /tmp/${NAME} ]];then

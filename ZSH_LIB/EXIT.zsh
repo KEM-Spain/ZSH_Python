@@ -1,3 +1,6 @@
+# LIB Dependencies
+_DEPS+=(BOX.zsh)
+
 # LIB Declarations
 typeset -a _EXIT_CALLBACKS=()
 typeset -a _EXIT_SCRUB_PIDS=()

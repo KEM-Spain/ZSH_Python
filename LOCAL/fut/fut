@@ -560,35 +560,54 @@ _____EOF
 }
 
 comments () {
-		local A F
 		local FN=none
 		local HIDE=false
 		local SHOW=false
+		local A F
 
 		# Functions
 		hide_comments () {
-			local LINE
+			local FN=${1}
+			local HIT=false
+			local SPACER=false
+			local HAS_SECTIONS=false
 
-			IFS=''
+			if grep -qE '\[.*\]' ${FN};then
+				HAS_SECTIONS=true
+			fi
+
+			echo "${WHITE_ON_GREY}Hiding any comments in:${FN}${RESET}"
 			while read -r LINE;do
-				if [[ -n ${LINE} && ! ${LINE} =~ '^#' ]];then
-					if [[ ${_DEBUG} -gt 0 ]];then
-						echo ">>>"
-						echo "${LINE}" | xxd -c 1
-						echo "<<<"
-					fi
-					printf '%s\n' "${LINE}"
+				[[ -z ${LINE:gs/ //} ]] && HIT=true && SPACER=true && continue
+				if grep -qE '\[.*\]' <<<${LINE};then
+					echo 
 				fi
-			done
+				echo ${LINE}
+				[[ ${HIT} == 'true' && ${SPACER} == 'true' && ${HAS_SECTIONS} == 'false' ]] && echo && SPACER=false
+				HIT=false
+			done < <(grep -Ev "\h*[;#]" ${FN})
 		}
 
 		show_comments () {
-			local LINE
+			local FN=${1}
+			local HIT=false
+			local SPACER=false
+			local HAS_SECTIONS=false
 
-			IFS=''
-			while read LINE;do
-				[[ ${LINE} =~ '^#' ]] && printf '%s\n' "${LINE}"
-			done
+			if grep -qE '\[.*\]' ${FN};then
+				HAS_SECTIONS=true
+			fi
+
+			echo "${WHITE_ON_GREY}Showing ONLY comments in:${FN}${RESET}"
+			while read -r LINE;do
+				[[ -z ${LINE:gs/ //} ]] && HIT=true && SPACER=true && continue
+				if grep -qE '\[.*\]' <<<${LINE};then
+					echo 
+				fi
+				echo ${LINE}
+				[[ ${HIT} == 'true' && ${SPACER} == 'true' && ${HAS_SECTIONS} == 'false' ]] && echo && SPACER=false
+				HIT=false
+			done < <(grep -E "\h*[;#]" ${FN})
 		}
 
 		#--Begin GetOpts--
@@ -669,10 +688,10 @@ ______EOF
 		[[ -z ${ARGS} ]] && usage "Missing argument:$(opt_type f)"
 		[[ $(is_file ${ARGS}) -eq 0 ]] && FN=${ARGS} || usage "File not found:${ARGS}"
 
-		[[ ${HIDE} == 'true' ]] && hide_comments <${FN}
-		[[ ${SHOW} == 'true' ]] && show_comments <${FN}
+		[[ ${HIDE} == 'true' ]] && hide_comments ${FN}
+		[[ ${SHOW} == 'true' ]] && show_comments ${FN}
 
-		[[ ${HIDE} == 'false' && ${SHOW} == 'false' ]] && hide_comments <${FN} # Default
+		[[ ${HIDE} == 'false' && ${SHOW} == 'false' ]] && hide_comments ${FN} # Default
 }
 
 extensions () {

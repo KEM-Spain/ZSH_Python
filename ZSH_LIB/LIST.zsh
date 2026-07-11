@@ -95,7 +95,7 @@ list_display_page () {
 
 	[[ ${HILITE} == 'nohilite' ]] && HILITE=false || HILITE=true 
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}GENERATING HEADER FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}GENERATING HEADER FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
 
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}
 
@@ -105,7 +105,7 @@ list_display_page () {
 		${_PAGE_CALLBACK_FUNC} ${PG_LIMITS[TOP]} ${PG_LIMITS[BOT]}
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}DISPLAYING LIST FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}DISPLAYING LIST FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
 
 	_SCREEN=()
 
@@ -239,7 +239,7 @@ list_get_page_limits () {
 	local MAX_CURSOR=$(( _PAGE_DATA[TOP_OFFSET] + _MAX_DISPLAY_ROWS - ( _MAX_DISPLAY_ROWS - (BOT - TOP) ) ))
 	local MIN_CURSOR=$(( _PAGE_DATA[TOP_OFFSET] ))
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	echo "TOP ${TOP} BOT ${BOT} MAX_CURSOR ${MAX_CURSOR} MIN_CURSOR ${MIN_CURSOR}"
 }
@@ -247,7 +247,7 @@ list_get_page_limits () {
 list_get_selected () {
 	local S
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	[[ -z ${_LIST_SELECTED} ]] && echo 0 && return 1
 
@@ -376,7 +376,7 @@ list_navigator () {
 
 	elif [[ ${KEY} =~ 'mark' ]];then # Search new
 		if [[ ${_LIST_IS_SEARCHABLE} == 'false' ]];then
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SEARCH REJECTED: _LIST_IS_SEARCHABLE:${_LIST_IS_SEARCHABLE}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SEARCH REJECTED: _LIST_IS_SEARCHABLE:${_LIST_IS_SEARCHABLE}"
 			return # Ignore not searchable
 		fi
 
@@ -476,13 +476,13 @@ list_search () {
 					;;
 	esac
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL} ]] && dbg "${0}: list_search_${MODE} RETURNED: ${RC}"
+	[[ ${_DEBUG} -ge ${_MID} ]] && dbg "${0}: list_search_${MODE} RETURNED: ${RC}"
 
 	if [[ ${RC} -eq 0 ]];then
 		_ACTIVE_SEARCH=true
 		KEY=${_TARGETS[(i)*next_target]} # Index of current target
 		IFS=":" read _TARGET_NDX _TARGET_CURSOR _TARGET_PAGE K_TEXT <<<${_TARGETS[${KEY}]}
-		[[ ${_DEBUG} -ge ${_MID_DETAIL} ]] && dbg "${0}: ${WHITE_FG}KEY:${KEY}, SEARCH TARGETS SET${RESET} - _TARGET_NDX:${_TARGET_NDX} _TARGET_CURSOR:${_TARGET_CURSOR} _TARGET_PAGE:${_TARGET_PAGE}"
+		[[ ${_DEBUG} -ge ${_MID} ]] && dbg "${0}: ${WHITE_FG}KEY:${KEY}, SEARCH TARGETS SET${RESET} - _TARGET_NDX:${_TARGET_NDX} _TARGET_CURSOR:${_TARGET_CURSOR} _TARGET_PAGE:${_TARGET_PAGE}"
 	else
 		_ACTIVE_SEARCH=false
 	fi
@@ -500,20 +500,20 @@ list_search_find () {
 
 	[[ -z ${_TARGETS} ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DIR: ${DIR}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: DIR: ${DIR}"
 
 	NEXT_TARGET=$(list_search_get_key ${DIR})
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: NEXT KEY: ${NEXT_TARGET}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: NEXT KEY: ${NEXT_TARGET}"
 
 	IFS=":" read R C P T <<<${NEXT_TARGET}
 
 	KEY=${_TARGETS[(i)*next_target]} # Index of last target
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LAST KEY: ${KEY}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: LAST KEY: ${KEY}"
 
 	_TARGETS[${KEY}]=$(sed "s/next_target/seen/" <<<${_TARGETS[${KEY}]}) # Cancel last target
 	_TARGETS[${T}]="${R}:${C}:${P}:next_target" # Set next_target
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: LAST_TARGET:${_TARGETS[${KEY}]}, NEXT_TARGET:${_TARGETS[${T}]}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: LAST_TARGET:${_TARGETS[${KEY}]}, NEXT_TARGET:${_TARGETS[${T}]}"
 
 	return 0
 }
@@ -528,7 +528,7 @@ list_search_get_key () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
 
 	CUR_TGT_NDX=${_TARGETS[(i)*next_target]}
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CUR_TGT_NDX:${CUR_TGT_NDX} TARGET:${_TARGETS[${CUR_TGT_NDX}]}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CUR_TGT_NDX:${CUR_TGT_NDX} TARGET:${_TARGETS[${CUR_TGT_NDX}]}"
 
 	[[ -z ${CUR_TGT_NDX} ]] && return 1
 
@@ -537,11 +537,11 @@ list_search_get_key () {
 		rev) [[ $(( CUR_TGT_NDX - 1 )) -le 0 ]] && NDX=${MAX_TARGETS} || NDX=$(( CUR_TGT_NDX - 1 ));;
 	esac
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: NDX:${CUR_TGT_NDX} NEXT TARGET:${_TARGETS[${NDX}]}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: NDX:${CUR_TGT_NDX} NEXT TARGET:${_TARGETS[${NDX}]}"
 
 	IFS=":" read R C P T <<<${_TARGETS[${NDX}]}
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PARSED TARGET: R:${R} C:${C} P:${P} NDX:${NDX}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: PARSED TARGET: R:${R} C:${C} P:${P} NDX:${NDX}"
 
 	echo "${R}:${C}:${P}:${NDX}" # Pass the next index
 
@@ -589,7 +589,7 @@ list_search_new () {
 		return 1
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: TARGET:${TARGET}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: TARGET:${TARGET}"
 
 	if ! list_search_set_targets ${SEARCHTERM};then
 		for (( ROW=0; ROW<=${HEIGHT}; ROW++ ));do # Clear a space to place the MSG
@@ -615,7 +615,7 @@ list_search_set_targets () {
 	local C P R
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SEARCHTERM:${SEARCHTERM} SEARCHING LIST FOR TARGETS"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SEARCHTERM:${SEARCHTERM} SEARCHING LIST FOR TARGETS"
 
 	_TARGETS=("${(f)$(
 	for P in ${(onk)_PAGES};do
@@ -623,18 +623,18 @@ list_search_set_targets () {
 		for (( R=TOP; R<=BOT; R++ ));do
 			C=$(( R - TOP + _PAGE_DATA[TOP_OFFSET] ))
 			echo "${C}:${P}:${_LIST[${R}]}"
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SEARCHING in ${_LIST[${R}]} for ${SEARCHTERM}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SEARCHING in ${_LIST[${R}]} for ${SEARCHTERM}"
 		done
 	done | grep --color=never -ni -P ":.*${SEARCHTERM}.*" | perl -p -e "s/^(\d+:\d+:\d+)(.*)$/\1/" # Return key:NDX/CURSOR/PAGE
 	)}")
 
 	if ! arr_is_populated "${_TARGETS}";then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL} ]] && dbg "${0}: NO TARGETS FOUND"
+		[[ ${_DEBUG} -ge ${_MID} ]] && dbg "${0}: NO TARGETS FOUND"
 		return 1
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL} ]] && dbg "${0}: FOUND ${#_TARGETS} TARGETS - TARGET LIST:"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "\n$(for R in ${_TARGETS};do echo ${WHITE_FG}${R}${RESET};done)"
+	[[ ${_DEBUG} -ge ${_MID} ]] && dbg "${0}: FOUND ${#_TARGETS} TARGETS - TARGET LIST:"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "\n$(for R in ${_TARGETS};do echo ${WHITE_FG}${R}${RESET};done)"
 
 	msg_box -c -t1 "Found: ${#_TARGETS} $(str_pluralize match ${#_TARGETS})"
 
@@ -737,8 +737,8 @@ list_select () {
 		else
 			SORT_SOURCE="PASSED FROM APP"
 		fi
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT INIT: _SORT_DATA:${(kv)_SORT_DATA} SORT_SOURCE:${SORT_SOURCE}"
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: CALLING INITIAL SORT"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT INIT: _SORT_DATA:${(kv)_SORT_DATA} SORT_SOURCE:${SORT_SOURCE}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CALLING INITIAL SORT"
 		list_sort # Invoke default sort
 	fi
 	# End of Sort Init
@@ -754,7 +754,7 @@ list_select () {
 
 	# Main navigation loop
 	while true;do
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ${WHITE_FG}STARTING NAVIGATION FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}STARTING NAVIGATION FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
 
 		while true;do
 			NAV_KEY=unset
@@ -898,7 +898,7 @@ list_set_key_callback () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	KEY_DATA=(${@})
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: KEY_DATA: ${(kv)KEY_DATA}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: KEY_DATA: ${(kv)KEY_DATA}"
 
 	for K in ${(k)KEY_DATA};do
 		if [[ ${VALID_OPTS[(i)${K}]} -gt ${#KEY_DATA} ]];then
@@ -961,7 +961,7 @@ list_set_pages () {
 	(( PG++))
 	PAGES[${PG}]=${TOP}:${BOT}
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: RETURNING page boundaries for ${#PAGES} pages"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RETURNING page boundaries for ${#PAGES} pages"
 
 	echo "${(kv)PAGES}"
 }
@@ -1097,7 +1097,7 @@ list_sort () {
 	if [[ ${_SORT_DATA[MAXCOL]} -eq 0 ]];then
 		_SORT_DATA[MAXCOL]=$(get_delim_field_cnt ${_LIST[1]})
 		if [[ ${_SORT_DATA[MAXCOL]} -eq 0 ]];then
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: DEFAULTING MAXCOL TO 1 COL"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: DEFAULTING MAXCOL TO 1 COL"
 			_SORT_DATA[MAXCOL]=1
 		else
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAXCOL BASED ON DELIM:${_SORT_DATA[MAXCOL]}"
@@ -1169,7 +1169,7 @@ list_sort_assoc () {
 
 	# Handle sort table
 	if [[ -n ${_SORT_DATA[TABLE]} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
 
 		[[ ! ${_SORT_DATA[TABLE]} =~ 'null' ]] && TABLE=(${=_SORT_DATA[TABLE]}) || TABLE=()
 	fi
@@ -1177,7 +1177,7 @@ list_sort_assoc () {
 	TCNT=${#TABLE}
 	SORT_TABLE=${TABLE[${_SORT_DATA[COL]}]}
 
-	if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
 		dbg "${0}: TABLE COUNT:${TCNT}"
 		dbg "${0}: TABLE DATA:${(kv)TABLE}"
 		dbg "${0}: SORT KEY:${_SORT_DATA[COL]}"
@@ -1191,18 +1191,18 @@ list_sort_assoc () {
 	_LIST=("${(f)$(
 		for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
 			echo -n "${${(P)SORT_TABLE}[${R}]}"
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT_TABLE[${R}]:${${(P)SORT_TABLE}[${R}]}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT_TABLE[${R}]:${${(P)SORT_TABLE}[${R}]}"
 
 			for (( T=1; T<=TCNT; T++ ));do
 				echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
-				[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: (k)TABLE[${T}][${R}]:${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
+				[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: (k)TABLE[${T}][${R}]:${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
 			done
 			echo
 		done | sort ${REV} -n -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2
 	)}")
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORTED ${#_LIST} ROWS"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST DATA SAMPLE:${_LIST[1,2]}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _LIST DATA SAMPLE:${_LIST[1,2]}"
 }
 
 list_sort_flat () {
@@ -1253,16 +1253,16 @@ list_sort_flat () {
 	else
 		# Handle sort table
 		if [[ -n ${_SORT_DATA[TABLE]} && ! ${_SORT_DATA[TABLE]} =~ 'none' ]];then
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
 			TABLE=(${=_SORT_DATA[TABLE]})
 			FIELD=${TABLE[${_SORT_DATA[COL]}]} # Mapped keys
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: MAPPED SORT KEY IS:${FIELD}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: MAPPED SORT KEY IS:${FIELD}"
 		else
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: NO SORT TABLE FOUND"
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT KEY IS _SORT_DATA[COL]:${_SORT_DATA[COL]}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: NO SORT TABLE FOUND"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT KEY IS _SORT_DATA[COL]:${_SORT_DATA[COL]}"
 		fi
 
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: PREPARING TO SORT ${#${(P)ARRAY_NAME}} ROWS in ARRAY:${ARRAY_NAME}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: PREPARING TO SORT ${#${(P)ARRAY_NAME}} ROWS in ARRAY:${ARRAY_NAME}"
 
 		for L in ${(P)ARRAY_NAME};do # Dereference array name
 			if [[ -n ${FIELD} ]];then
@@ -1294,10 +1294,10 @@ list_sort_flat () {
 
 		if [[ ${FLIP} == 'true' ]];then
 			[[ ${_SORT_DATA[ORDER]} == 'a' ]] && SORT_ORDER=d || SORT_ORDER=a # Reverse sort for numeric dates
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: Flipped SORT_ORDER for numeric date"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Flipped SORT_ORDER for numeric date"
 		fi
 
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SORT_ORDER:${SORT_ORDER}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SORT_ORDER:${SORT_ORDER}"
 
 		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: USING SORT KEYS"
 
@@ -1318,7 +1318,7 @@ list_sort_flat () {
 		fi
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ADDED ${#_LIST} ROWS to _LIST ARRAY"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ADDED ${#_LIST} ROWS to _LIST ARRAY"
 
 	if [[ -n ${ARGS} ]];then # Called directly - return list to caller
 		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: DIRECT CALL - ECHOING ${#_LIST} ROWS"
@@ -1339,13 +1339,13 @@ list_toggle_all () {
 
 	[[ ${LAST_ITEM} -ge ${_PAGE_DATA[MAX_ITEM]} ]] && LAST_ITEM=${_PAGE_DATA[MAX_ITEM]} # Partial page
 
-	if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
 		dbg "${0}: SELECTED:${#SELECTED}, FIRST_ITEM:${FIRST_ITEM}, LAST_ITEM:${LAST_ITEM}"
 		dbg "${0}: MAX_ITEM:${_PAGE_DATA[MAX_ITEM]}, MAX_PAGE:${_PAGE_DATA[MAX_PAGE]}"
 	fi
 
 	if [[ ${ACTION} == 'toggle' ]];then # Mark/unmark all
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ACTION:${ACTION}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ACTION:${ACTION}"
 		[[ ${_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]} -eq 1 ]] && _LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]=0 || _LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]=1 # Toggle state
 
 		if [[ ${_PAGE_DATA[MAX_PAGE]} -gt 1 && ${_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]} -eq 1 ]];then # Prompt only for setting range
@@ -1374,7 +1374,7 @@ list_toggle_all () {
 		_LIST_SELECTED[${S}]=${_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]}
 	done
 
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _HEADER_CALLBACK_FUNC:${_HEADER_CALLBACK_FUNC}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _HEADER_CALLBACK_FUNC:${_HEADER_CALLBACK_FUNC}"
 	[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} 0 "${0}|${_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]}"
 
 	list_display_page
@@ -1384,7 +1384,7 @@ list_toggle_selected () {
 	local COUNT=$(list_get_selected_count)
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-	[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: _LIST_NDX:${_LIST_NDX} _SELECTION_LIMIT:${_SELECTION_LIMIT}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _LIST_NDX:${_LIST_NDX} _SELECTION_LIMIT:${_SELECTION_LIMIT}"
 
 	if [[ -n ${_SELECT_CALLBACK_FUNC} ]];then # Execute any callbacks
 		${_SELECT_CALLBACK_FUNC} ${_LIST_NDX}
@@ -1392,7 +1392,7 @@ list_toggle_selected () {
 	fi
 
 	if [[ ${_SELECTION_LIMIT} -ne 0 && ${COUNT} -gt $((_SELECTION_LIMIT - 1 )) ]];then
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: SELECTION_LIMIT WAS TRIGGERED SELECTION_LIMIT:${SELECTION_LIMIT} COUNT:${COUNT}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SELECTION_LIMIT WAS TRIGGERED SELECTION_LIMIT:${SELECTION_LIMIT} COUNT:${COUNT}"
 		msg_box -p -PK "Selection is limited to ${_SELECTION_LIMIT}"
 		msg_box_clear
 		return # Ignore over limit
@@ -1406,13 +1406,13 @@ list_toggle_selected () {
 		list_set_selected ${_LIST_NDX} ${_SELECTED_ROW} 
 		list_item select ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|1" # Pass to header callback - all on
-		[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_SELECTED_ROW}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_SELECTED_ROW}"
 	else
 		if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]];then
 			list_set_selected ${_LIST_NDX} ${_AVAIL_ROW}
 			list_item deselect ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 			[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|0" # Pass to header callback - all off
-			[[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_AVAIL_ROW}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_AVAIL_ROW}"
 		fi
 	fi
 

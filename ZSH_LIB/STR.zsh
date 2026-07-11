@@ -199,6 +199,7 @@ str_pluralize () {
 		pound) RETURN_WORD="pounds";;
 		process) RETURN_WORD="processes";;
 		reminder) RETURN_WORD="reminders";;
+		result) RETURN_WORD="results";;
 		row) RETURN_WORD="rows";;
 		title) RETURN_WORD="titles";;
 		torrent) RETURN_WORD="torrents";;

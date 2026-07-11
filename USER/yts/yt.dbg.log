@@ -1,15 +1,49 @@
-2026-07-04_12:52: log_update: LOG lines BEFORE update:10 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-04_12:52: log_update: LOG lines AFTER update:10 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-04_12:52: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
-2026-07-04_12:52: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
-2026-07-04_12:52: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
-2026-07-04_12:52: query_youtube: Query matched 12 lines, _LOCAL_LIST has 8 lines
-2026-07-04_12:53: query_youtube: Listing for QKEY:alexchristoforou contains 8 rows
-2026-07-04_12:53: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
-2026-07-04_12:53: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:Inf% TYPE:standard 
-2026-07-04_12:53: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "blancolirio"
-2026-07-04_12:53: query_youtube: Query matched 8 lines, _LOCAL_LIST has 4 lines
-2026-07-04_12:53: query_youtube: Translated TITLE:Golden Full-Size Electric Motorcycle Prototype Test
-2026-07-04_12:53: query_youtube: Translated TITLE:USAF Oa-1k $18 Million Pilot Error Report
-2026-07-04_12:53: query_youtube: Translated TITLE:Another Crash Against Cables! N3877V June 24, 2026
-2026-07-04_12:53: query_youtube: Listing for QKEY:blancolirio contains 4 rows
+2026-07-11_11:36: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-11_11:36: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-11_11:37: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
+2026-07-11_11:37: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks TYPE:standard 
+2026-07-11_11:37: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "dialogueworks"
+2026-07-11_11:37: query_youtube: Query matched 22 lines, _LOCAL_LIST has 20 lines
+2026-07-11_11:37: query_youtube: Listing for QKEY:dialogueworks contains 20 rows
+2026-07-11_11:37: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ktbbZs
+2026-07-11_11:37: job_start: TITLE:Daniel Mcadams: The Middle East Has Changed Forever -- More Wars Won't
+2026-07-11_11:37: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=tAtzfFFgKcw" PID:2163561
+2026-07-11_11:37: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-07-11_11:37: yt URL:https://youtube.com/watch?v=tAtzfFFgKcw
+2026-07-11_11:37: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=tAtzfFFgKcw"
+2026-07-11_11:37: action_do: GENERATING HEADER
+2026-07-11_11:37: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=tAtzfFFgKcw PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Dialogue_Works - Daniel_McAdams_-_The_Middle_East_Has_Changed_Forever_More_Wars_Won_t_Reverse_It.mp4|6291942
+2026-07-11_11:37: action_do: COMPLETED
+2026-07-11_11:37: action_do: POST-PROCESSING
+2026-07-11_11:37: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Daniel_McAdams_-_The_Middle_East_Has_Changed_Forever_More_Wars_Won_t_Reverse_It.mp4
+2026-07-11_11:37: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Dialogue_Works - Daniel_McAdams_-_The_Middle_East_Has_Changed_Forever_More_Wars_Won_t_Reverse_It.mp4
+2026-07-11_11:37: set_final_fn: Overwriting file:Dialogue_Works - Daniel_McAdams_-_The_Middle_East_Has_Changed_Forever_More_Wars_Won_t_Reverse_It.mp4 with:Dialogue Works - Daniel Mcadams - The Middle East Has Changed Forever.mp4
+2026-07-11_11:37: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Dialogue Works - Daniel Mcadams - The Middle East Has Changed Forever.mp4
+2026-07-11_11:37: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.ktbbZs was cleared for:dialogueworks from:action_do
+2026-07-11_11:37: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
+2026-07-11_11:37: query_rumble: PARSER:, QUERY:https://rumble.com/c/glenndiesen?page=1
+2026-07-11_11:37: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
+2026-07-11_11:38: query_rumble: Creating listing for QKEY:thejimmydoreshow TYPE:channel
+2026-07-11_11:38: query_rumble: PARSER:, QUERY:https://rumble.com/c/thejimmydoreshow?page=1
+2026-07-11_11:38: query_rumble: Listing for QKEY:thejimmydoreshow contains 25 rows
+2026-07-11_11:38: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
+2026-07-11_11:38: query_rumble: PARSER:, QUERY:https://rumble.com/c/kimiversen?page=1
+2026-07-11_11:38: query_rumble: Listing for QKEY:kimiversen contains 25 rows
+2026-07-11_11:39: query_rumble: Creating listing for QKEY:rtnews TYPE:channel
+2026-07-11_11:39: query_rumble: PARSER:, QUERY:https://rumble.com/c/rtnews?page=1
+2026-07-11_11:39: query_rumble: Listing for QKEY:rtnews contains 25 rows
+2026-07-11_11:39: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.csUCpp
+2026-07-11_11:39: job_start: TITLE:CrossTalk # Absence of Strategy
+2026-07-11_11:39: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7cipma-crosstalk-absence-of-strategy.html" PID:2199384
+2026-07-11_11:39: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-07-11_11:39: yt URL:https://rumble.com/v7cipma-crosstalk-absence-of-strategy.html
+2026-07-11_11:39: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7cipma-crosstalk-absence-of-strategy.html"
+2026-07-11_11:39: action_do: GENERATING HEADER
+2026-07-11_11:40: action_do: COMPLETED
+2026-07-11_11:40: action_do: POST-PROCESSING
+2026-07-11_11:40: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7cipma-crosstalk-absence-of-strategy.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:RT - CrossTalk_Absence_of_Strategy.mp4|6298941
+2026-07-11_11:40: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/RT - CrossTalk_Absence_of_Strategy.mp4
+2026-07-11_11:40: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/RT - CrossTalk_Absence_of_Strategy.mp4
+2026-07-11_11:40: set_final_fn: Overwriting file:RT - CrossTalk_Absence_of_Strategy.mp4 with:RT - Crosstalk Absence Of Strategy.mp4
+2026-07-11_11:40: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/RT - Crosstalk Absence Of Strategy.mp4
+2026-07-11_11:40: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.csUCpp was cleared for:rtnews from:action_do

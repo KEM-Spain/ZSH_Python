@@ -22,7 +22,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 # Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/SELECT.zsh
+_DEPS+=(SELECT.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 typeset -a LIST
@@ -35,16 +35,16 @@ usbdisks "USB:display usb disk details"
 )
 
 _DEBUG=${1}
-clear
 cursor_off
 
 while true;do
+	clear
 
 	LIST=()
 	LIST+="AAAAAAAAA"
 	LIST+="BBBBBBBBB"
 	sel_set_list ${LIST}
-	sel_list -T"SMALL" -O${RED_FG} -c -x5 -y18 -H"<r>Small List<N>" -M"Ensure outer box doesn't exceed display"
+	sel_list -R -T"SMALL" -O${RED_FG} -c -x5 -y18 -H"<r>Small List<N>" -M"Ensure outer box doesn't exceed display"
 
 	LIST=()
 	LIST+="one"
@@ -58,7 +58,7 @@ while true;do
 	LIST+="nine"
 	LIST+="ten"
 	sel_set_list ${LIST}
-	sel_list -c -T"NUM" -x8 -y35 -H"<r>Unsorted Numbers<N>" -M"Some really long string of stuff that needs to be cleared"
+	sel_list -R -c -T"NUM" -x8 -y35 -H"<r>Unsorted Numbers<N>" -M"Some really long string of stuff that needs to be cleared"
 
 	LIST=()
 	LIST+="apple"
@@ -72,10 +72,10 @@ while true;do
 	LIST+="tangerine"
 	LIST+="pear"
 	sel_set_list ${(on)LIST}
-	sel_list -c -T"FRUIT" -O${CYAN_FG} -H"Fruit" -F"<w>Pick a Fruit or <h>(q)uit<N>"
+	sel_list -R -c -T"FRUIT" -O${CYAN_FG} -H"Fruit" -F"<w>Pick a Fruit or <h>(q)uit<N>"
 
 	sel_set_list ${(v)_UTILS_DESC}
-	sel_list -c -T"DUT" -O${CYAN_FG} -C -H"Disk Utilities" -F"<w>Show Disk Utilities usage or <h>(q)uit and a whole bunch of other stuff<N>"
+	sel_list -R -c -T"DUT" -O${CYAN_FG} -C -H"Disk Utilities" -F"<w>Show Disk Utilities usage or <h>(q)uit and a whole bunch of other stuff<N>"
 
 	LIST=()
 	LIST+="Item 1"
@@ -128,7 +128,7 @@ while true;do
 	LIST+="Item 49"
 	LIST+="Item 50"
 	sel_set_list ${(on)LIST}
-	sel_list -c -T"LONG" -O${CYAN_FG} -H"Long List" -F"<w>Pick an Item or <h>(q)uit<N>"
+	sel_list -R -c -T"LONG" -O${CYAN_FG} -H"Long List" -F"<w>Pick an Item or <h>(q)uit<N>"
 done
 
 cursor_on

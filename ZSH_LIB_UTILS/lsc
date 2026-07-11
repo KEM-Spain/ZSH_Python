@@ -331,7 +331,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 fi
 
 
-if [[ ${_DEBUG} -ge ${_MID_DETAIL_DBG} ]];then
+if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
 	dbg "${0}:${LINENO} _LOCAL_LIST"
 	(
 	echo "${GREEN_FG}DEBUG${RESET}:${WHITE_FG}_UNIT_FILES...${RESET}"

@@ -19,6 +19,13 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(MSG.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -a _LS_FORMAT
 typeset -a _LS_LIST
@@ -43,12 +50,6 @@ _LS_FORMAT+='-h'
 _LS_FORMAT+='-v'
 _LS_FORMAT+='-N'
 _LS_FORMAT+='-X'
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 get_ls_opts () {
@@ -448,14 +449,18 @@ fi
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ARGC:${#ARGS}, _GLOB:${_GLOB}, RAW_CMD:${RAW_CMD}, _LS_ARGS:${_LS_ARGS}, _LS_OPTS:${_LS_OPTS}, _HIDDEN_ONLY:${_HIDDEN_ONLY}"
 
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}eval ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} 2>/dev/null${RESET}"
-eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS}" 2>/dev/null
-if [[ ${0} =~ 'll' ]];then
-	CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | grep -P '(^\d{7}|^.{10}\s)' | wc -l") 
-else
-	CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | wc -l")
-fi
-echo "${CNT} $(str_pluralize item ${CNT})"
-[[ ${?} -ne 0 ]] && echo "No${MATCHED}$(not_found)found"
+
+{
+	eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS}"
+	if [[ ${0} =~ 'll' ]];then
+		CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | grep -P '(^\d{7}|^.{10}\s)' | wc -l") 
+	else
+		CNT=$(eval "ls ${_LS_FORMAT} ${_LS_OPTS} ${_LS_ARGS} | wc -l")
+	fi
+	echo "${CNT} $(str_pluralize item ${CNT})"
+	[[ ${?} -ne 0 ]] && echo "No${MATCHED}$(not_found)found"
+} 2>/dev/null
+
 [[ -n ${H_MARK} ]] && echo ${H_MARK}
 
 exit_leave

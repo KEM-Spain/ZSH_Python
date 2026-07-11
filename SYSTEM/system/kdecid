@@ -1,0 +1,2 @@
+#!/usr/bin/zsh
+grep -i 'Xiaomi 14T' < <(kdeconnect-cli -l 2>/dev/null) | tr -d '[:space:]' | cut -d: -f2 | sed 's/(.*//'

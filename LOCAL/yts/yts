@@ -47,6 +47,7 @@ typeset -A _INDICATOR_COORDS=()
 typeset -A _INFO_COORDS=()
 typeset -A _MENU_TYPES=(1 Custom 2 Rumble 3 YouTube)
 typeset -A _MSG_DELAY=(SHORT .5 MED 2 LONG 4)
+typeset -A _OB=()
 typeset -A _PARTIALS=()
 typeset -A _QUERY_OPTS=()
 typeset -A _REJECTS=()
@@ -184,8 +185,8 @@ action_do () {
 				QUICK_DL_CHECK[${M}]=true
 				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
-					MSG="Download is complete..."
-					msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+					MSG="<w>Small Download <g>is complete...<N>"
+					msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "${MSG}"
 					_DOWNLOADS[${M}]=true
 					logit ${_YT_DBG_LOG} "${0}: POST-PROCESSING"
 					post_process
@@ -243,7 +244,7 @@ action_do () {
 							_PRESERVE_LOG=true
 							break
 						else
-							msg_box -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} "<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
+							msg_box -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} "<w>Retrying...<r>Error<N>:${TRANS_ERR_CNT} <w>${TRANS_ERR_MSG}<N>"
 							job_retry ${URL} ${TITLE}
 						fi
 						;;
@@ -831,6 +832,8 @@ job_kill () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
+	_PRESERVE_LOG=false
+
 	PIDS=("${(f)$(pgrep -n "yt-dlp")}")
 	if [[ ${?} -eq 0 ]];then
 		for P in ${PIDS};do
@@ -975,6 +978,7 @@ log_clear () {
 		logit ${_YT_DBG_LOG} "${0}: Temp log file:${g_YTS_LOG} was cleared for:${_QUERY_OPTS[QKEY]} from:${FROM}"
 	else
 		logit ${_YT_DBG_LOG} "${0}: DEBUG TRIGGERED - log ${g_YTS_LOG} was retained for:${_QUERY_OPTS[QKEY]}"
+		msg_box -t4 "<w>Log was preserved<N>"
 	fi
 }
 
@@ -1364,18 +1368,19 @@ query_youtube () {
 	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
 	local -a LIST=()
 	local -a WORK_LIST=()
-	local AGE AUTHOR TITLE URL TIME AGETIME
 	local DATA=false
 	local DKEY=''
-	local QKEY=''
 	local HIT=false
 	local LINE=''
+	local MSG_OUT=false
 	local NDX=0
 	local PROXY_CMD=''
+	local QKEY=''
 	local RETRIES=3
 	local STR=''
 	local STRICT_ARG=''
 	local TRY=0
+	local AGE AUTHOR TITLE URL TIME AGETIME
 	local F L
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -1424,7 +1429,12 @@ query_youtube () {
 			AUTHOR=$(cut -d'|' -f2 <<<${L} | tr -d '[:space:]') && AUTHOR=$(str_to_ascii ${AUTHOR:l})
 			QKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[QKEY]:l})
 			DKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[DKEY]:l})
-			[[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]] && HIT=true || logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
+			if [[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]];then
+				[[ ${MSG_OUT} == 'false' ]] && { msg_box -c -t2 "<w>Filtering non-strict query by Author...<N>" && MSG_OUT=true }
+				HIT=true
+			else
+				logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
+			fi
 		else
 			HIT=true
 		fi
@@ -1436,6 +1446,10 @@ query_youtube () {
 		fi
 	done
 
+	if [[ ${#_QUERY_REJECTS} -ne 0 && -n ${AUTHOR} && -n ${QKEY} && -n ${DKEY} ]];then
+		msg_box -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
+	fi
+
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
@@ -1445,8 +1459,7 @@ query_youtube () {
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		# Search failed
 		if [[ ${#_QUERY_REJECTS} -ne 0 ]];then
-			msg_box -t2 "A non-matching author caused all titles to be rejected"
-			_LOCAL_LIST=(${_QUERY_REJECTS})
+			_LOCAL_LIST=(${_QUERY_REJECTS}) # Empty list - show rejects
 		else
 			[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STR="|<I>Strict filter is active<N>" || STR=''
 			msg_box -t2 "<r>Query returned no rows<N>${STR}"
@@ -1810,7 +1823,8 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			set_query_opts
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
 				MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
-				msg_box ${MSG}
+				_OB=($(sel_get_interior_coords))
+				msg_box -y${_OB[Y]} -w${_OB[W]} ${MSG} # Set msg relative position and width
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}
