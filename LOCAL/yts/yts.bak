@@ -361,7 +361,7 @@ clean_title () {
 	local MAX_HDR=${2:=${_MAX_DL_TITLE}}
 	local STR=''
 
-	STR=$(title_scrubber ${TITLE} ${_YT_DBG_LOG})
+	STR=$(title_scrubber ${TITLE})
 	STR=$(keyword_strip <<<${STR})
 	STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${STR}) # Use DKEY
 
@@ -997,7 +997,7 @@ log_find () {
 	local R=0
 	local DBG=false
 
-	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Page callback - scan list to find downloaded items
 	 
@@ -1368,18 +1368,19 @@ query_youtube () {
 	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
 	local -a LIST=()
 	local -a WORK_LIST=()
-	local AGE AUTHOR TITLE URL TIME AGETIME
 	local DATA=false
 	local DKEY=''
-	local QKEY=''
 	local HIT=false
 	local LINE=''
+	local MSG_OUT=false
 	local NDX=0
 	local PROXY_CMD=''
+	local QKEY=''
 	local RETRIES=3
 	local STR=''
 	local STRICT_ARG=''
 	local TRY=0
+	local AGE AUTHOR TITLE URL TIME AGETIME
 	local F L
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
@@ -1428,7 +1429,12 @@ query_youtube () {
 			AUTHOR=$(cut -d'|' -f2 <<<${L} | tr -d '[:space:]') && AUTHOR=$(str_to_ascii ${AUTHOR:l})
 			QKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[QKEY]:l})
 			DKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[DKEY]:l})
-			[[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]] && HIT=true || logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
+			if [[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]];then
+				[[ ${MSG_OUT} == 'false' ]] && { msg_box -c -t2 "<w>Filtering non-strict query by Author...<N>" && MSG_OUT=true }
+				HIT=true
+			else
+				logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
+			fi
 		else
 			HIT=true
 		fi
@@ -1440,6 +1446,10 @@ query_youtube () {
 		fi
 	done
 
+	if [[ ${#_QUERY_REJECTS} -ne 0 && -n ${AUTHOR} && -n ${QKEY} && -n ${DKEY} ]];then
+		msg_box -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
+	fi
+
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
@@ -1449,8 +1459,7 @@ query_youtube () {
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		# Search failed
 		if [[ ${#_QUERY_REJECTS} -ne 0 ]];then
-			msg_box -t4 "<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
-			_LOCAL_LIST=(${_QUERY_REJECTS})
+			_LOCAL_LIST=(${_QUERY_REJECTS}) # Empty list - show rejects
 		else
 			[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STR="|<I>Strict filter is active<N>" || STR=''
 			msg_box -t2 "<r>Query returned no rows<N>${STR}"

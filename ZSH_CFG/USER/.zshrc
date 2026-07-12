@@ -238,7 +238,8 @@ _is_top_term () {
 							CURRENT=$(cut -d' ' -f1 <<<${TTY})
 							TTYS+=${CURRENT}
 						else
-							TTYS+=${TTY}
+							CURRENT=$(cut -d' ' -f1 <<<${TTY})
+							TTYS+=${CURRENT}
 						fi
 						;;
 		esac

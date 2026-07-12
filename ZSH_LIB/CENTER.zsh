@@ -141,8 +141,6 @@ center () {
 	shift $((OPTIND -1))
 	#--End GetOpts--
 
-	[[ ${_DEBUG} -ge ${LOW_DBG} ]] && dbg_caller ${0} ${functrace[1]} "${WHITE_FG}${OPTIONS}${RESET} c:${WHITE_FG}${_COORDS}${RESET} h:${WHITE_FG}${_HEIGHT}${RESET} w:${WHITE_FG}${_WIDTH}${RESET} x:${WHITE_FG}${_X_OFF}${RESET} y:${WHITE_FG}${_Y_OFF}${RESET}"
-
 	if ! validate_is_number ${_WIDTH};then # Allow WIDTH to be passed as text
 		_WIDTH=${#_WIDTH}
 	fi

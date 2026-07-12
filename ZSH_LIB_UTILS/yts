@@ -50,6 +50,7 @@ typeset -A _MSG_DELAY=(SHORT .5 MED 2 LONG 4)
 typeset -A _OB=()
 typeset -A _PARTIALS=()
 typeset -A _QUERY_OPTS=()
+typeset -A _QUICK_DOWNLOAD=()
 typeset -A _REJECTS=()
 typeset -A _RUMBLE_QTYPES=(l live g general u user c channel)
 typeset -A _RUMBLE_ROWS=()
@@ -82,7 +83,6 @@ _MAX_FLEN=120
 _MAX_LS_TITLE=80
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
-_PRESERVE_LOG=false
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive" "deep focus podcast")
 _TRANS_ERR_LIMIT=6
@@ -103,6 +103,7 @@ g_LAST_STYPE=0
 g_MASK_NDX=1
 g_PID=?
 g_PREFER_LIVE=''
+g_PRESERVE_LOG=false
 g_PROXY_CMD=''
 g_WHEN=''
 g_YTS_LOG=''
@@ -110,7 +111,6 @@ g_SNDX=0
 
 # Functions
 action_do () {
-	local -A QUICK_DL_CHECK=()
 	local AUTHOR=''
 	local DEST=''
 	local DEST_1=''
@@ -147,7 +147,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		((DL_CNT++))
-		QUICK_DL_CHECK[${M}]=false
+		_QUICK_DOWNLOAD[${M}]=false
 		_CANCELLED[${DL_CNT}]=false
 		_DOWNLOADS[${DL_CNT}]=false
 		_FAILED[${DL_CNT}]=false
@@ -181,8 +181,8 @@ action_do () {
 				break
 			fi
 			
-			if [[ ${QUICK_DL_CHECK[${M}]} == 'false' ]];then
-				QUICK_DL_CHECK[${M}]=true
+			if [[ ${_QUICK_DOWNLOAD[${M}]} == 'false' ]];then
+				_QUICK_DOWNLOAD[${M}]=true
 				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="<w>Small Download <g>is complete...<N>"
@@ -241,7 +241,7 @@ action_do () {
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
 							_DOWNLOADS[${M}]=false
-							_PRESERVE_LOG=true
+							g_PRESERVE_LOG=true
 							break
 						else
 							msg_box -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} "<w>Retrying...<r>Error<N>:${TRANS_ERR_CNT} <w>${TRANS_ERR_MSG}<N>"
@@ -291,7 +291,7 @@ action_do () {
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 								_FAILED[${M}]=true
 								_DOWNLOADS[${M}]=false
-								_PRESERVE_LOG=true
+								g_PRESERVE_LOG=true
 								break
 							else
 								msg_box -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} "<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
@@ -361,7 +361,7 @@ clean_title () {
 	local MAX_HDR=${2:=${_MAX_DL_TITLE}}
 	local STR=''
 
-	STR=$(title_scrubber ${TITLE})
+	STR=$(title_scrubber ${TITLE} ${_YT_DBG_LOG})
 	STR=$(keyword_strip <<<${STR})
 	STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${STR}) # Use DKEY
 
@@ -559,7 +559,7 @@ fav_add () {
 		DK=$(cut -d'|' -f1 <<<${K})
 		MK=$(cut -d'|' -f3 <<<${K})
 		MENU_KEY=${MK[1]}
-		if [[ ${MENU_KEY} == ${MENU_SEL} ]];then
+		if [[ ${MENU_KEY:l} == ${MENU_SEL:l} ]];then
 			UPD_KEY=true
 			_QUERY_OPTS[DKEY]=$(cut -d'|' -f1 <<<${K}) # Use existing display key
 			KEY_MATCH=${K} # Key for selected menu exists
@@ -568,20 +568,20 @@ fav_add () {
 
 	[[ -n ${DK} ]] && _QUERY_OPTS[DKEY]=${DK} # Retain display key if match was QKEY
 
-	case ${MENU_SEL} in
-		C) if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then # Custom requires ECODE
+	case ${MENU_SEL:l} in
+		c) if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then # Custom requires ECODE
 				NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[ECODE]}${STRICT_VAL}"
 			elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 				NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[ECODE]}${_QUERY_OPTS[EOPT]}"
 			fi;;
-		R) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[EOPT]}";;
-		Y) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${STRICT_VAL}";;
+		r) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${_QUERY_OPTS[EOPT]}";;
+		y) NEW_KEY="${_QUERY_OPTS[DKEY]:gs/ /_/}|${_QUERY_OPTS[QKEY]}|${MENU_SEL}${STRICT_VAL}";;
 	esac
 
 	msg_box -c -t${_MSG_DELAY[MED]} "<w>Adding<N>: \"${_QUERY_OPTS[DKEY]}\"|<w>to<N> ${MENU_TYPES[${_MSG_KEY}]} <w>list<N>"
 
 	if [[ ${UPD_KEY} == 'true' ]];then
-		if [[ ${KEY_MATCH} == ${NEW_KEY} ]];then
+		if [[ ${KEY_MATCH:l} == ${NEW_KEY:l} ]];then
 			msg_box -c -t${_MSG_DELAY[LONG]} -s# "Key:<w>${KEY_MATCH}<N>#<r>Matching key already exists<N>#Nothing to do!"
 			return 2
 		fi
@@ -595,7 +595,7 @@ fav_add () {
 			msg_box "${0}: grep error - unable to locate line for key"
 		fi
 	else
-		echo ${NEW_KEY} >> ${_YTS_FAVORITES} # Append new key to file
+		echo ${NEW_KEY:l} >> ${_YTS_FAVORITES} # Append new key to file
 	fi
 
 	sort -o ${_YTS_FAVORITES}{,} # In-place sort
@@ -832,7 +832,7 @@ job_kill () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	_PRESERVE_LOG=false
+	g_PRESERVE_LOG=false
 
 	PIDS=("${(f)$(pgrep -n "yt-dlp")}")
 	if [[ ${?} -eq 0 ]];then
@@ -971,14 +971,16 @@ log_add () {
 log_clear () {
 	local FROM=${1}
 
+	[[ ! -e ${g_YTS_LOG} ]] && return
+
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
-	if [[ ${_DEBUG} -eq 0 && ${_PRESERVE_LOG} == 'false' && -e ${g_YTS_LOG} ]];then
+	if [[ ${g_PRESERVE_LOG} == 'false' ]];then
 		rm -f ${g_YTS_LOG}
 		logit ${_YT_DBG_LOG} "${0}: Temp log file:${g_YTS_LOG} was cleared for:${_QUERY_OPTS[QKEY]} from:${FROM}"
 	else
 		logit ${_YT_DBG_LOG} "${0}: DEBUG TRIGGERED - log ${g_YTS_LOG} was retained for:${_QUERY_OPTS[QKEY]}"
-		msg_box -t4 "<w>Log was preserved<N>"
+		msg_box -t3 "<w>Log was preserved<N>"
 	fi
 }
 
@@ -997,7 +999,7 @@ log_find () {
 	local R=0
 	local DBG=false
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	# Page callback - scan list to find downloaded items
 	 
@@ -1559,12 +1561,12 @@ set_query_opts () {
 
 	if [[ ${MENU_CODE} == 'c' ]];then
 		QRY_TYPE=custom # Engine is coded
-		ENG_CODE=${OPTS[2]}
-		ENG_OPT=${OPTS[3]}
+		ENG_CODE=${OPTS[2]:l}
+		ENG_OPT=${OPTS[3]:l}
 	else
 		QRY_TYPE=standard # Engine matches menu type
 		ENG_CODE=${MENU_CODE}
-		ENG_OPT=${OPTS[2]}
+		ENG_OPT=${OPTS[2]:l}
 	fi
 
 	case ${ENG_CODE:l} in
@@ -1712,7 +1714,7 @@ while getopts ${OPTSTR} OPTION;do
      T) ENG_OPT=${OPTARG:l};;
      V) VERSION_OPT=true;;
      a) AGE_OPT=${OPTARG};;
-     s) ENG_OPT='S';;
+     s) ENG_OPT='s';;
      w) WEB_OPT=${OPTARG};;
      :) print -u2 "${_SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
@@ -1752,6 +1754,7 @@ for X in ${=RCL};do
 done
 
 SEARCHTERM=$(str_trim ${_STERMS})
+SEARCHTERM=${(Q)SEARCHTERM:l}
 
 # Parse options per engine
 if [[ ${ENGINE} == 'youtube' ]];then
@@ -1836,10 +1839,10 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	done
 else # Args passed
 	g_CMDLINE_ARGS=true
-	_QUERY_OPTS[ENGINE]=${ENGINE}
-	_QUERY_OPTS[EOPT]=${ENG_OPT}
+	_QUERY_OPTS[ENGINE]=${ENGINE:l}
+	_QUERY_OPTS[EOPT]=${ENG_OPT:l}
 	_QUERY_OPTS[QKEY]=${SEARCHTERM}
-	_QUERY_OPTS[DKEY]="${(C)@:gs/_/ /}"
+	_QUERY_OPTS[DKEY]="${@:gs/_/ /}"
 	_QUERY_OPTS[TYPE]=standard
 	_QUERY_OPTS[ECODE]=${_ENG_CODES[${ENGINE}]}
 
