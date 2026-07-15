@@ -8,7 +8,7 @@ str_center_pad () {
 	local S_LEN
 	local TEXT_WIDTH=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	(( SPAN -= 2 )) # Minimum 1 space border surrounding text
 	TEXT_WIDTH=$(str_clean_len ${TEXT_IN})
@@ -30,7 +30,7 @@ str_clean_len () {
 	local TEXT_IN=${@}
 	local LEN
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	LEN=$(echo ${TEXT_IN} | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/ *$//g' | tr -d '\011\012\015') # Ansi/space/newlines/etc
 	echo ${#LEN}
@@ -39,7 +39,7 @@ str_clean_len () {
 str_clean_path () {
 	local DIR=${1}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo "${DIR}" | perl -pe 's#/+#/# G'
 }
@@ -50,7 +50,7 @@ str_contains () {
 	local STR=$(echo ${ARGS[2,-1]} | rev)
 	local RC=''
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	perl -ne "if ( /${TARGET}/ ) { exit(0) } else { exit(1) }" <<<${STR}
 	RC=${?}
@@ -66,6 +66,8 @@ str_delim () {
 
 	local OPTSTR=":hd"
 	local OPTION=''
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
@@ -91,7 +93,7 @@ str_expanded_length () {
 	local STR=${@}
 	local LEN
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	LEN=$(expand <<<${STR} | wc -m)
 	echo $(( --LEN ))
@@ -100,7 +102,7 @@ str_expanded_length () {
 str_from_hex () {
 	local HEX=${@}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -n ${HEX} ]] && printf $HEX
 }
@@ -108,6 +110,8 @@ str_from_hex () {
 str_index () {
 	local VAR=${1}
 	local VALUE=${2}
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${${(P)VAR}[(i)${VALUE}]} -le ${#${(P)VAR}} ]];then
 		echo ${${(P)VAR}[(i)${VALUE}]}
@@ -121,7 +125,7 @@ str_index () {
 str_pad_digit () {
 	local NDX=${1}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${NDX} -lt 10 ]] && echo "  ${NDX}" && return
 	[[ ${NDX} -lt 100 ]] && echo " ${NDX}" && return
@@ -132,7 +136,7 @@ str_pad_string () {
 	local WIDTH
 	local STR
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	WIDTH=${1};shift
 	STR=${@}
@@ -149,7 +153,7 @@ str_pluralize () {
 	local RETURN_BOTH=${3:=false} # Any 3rd arg triggers 
 	local RETURN_WORD
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} WORD:${WORD}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${CNT} -eq 1 ]];then
 		[[ ${RETURN_BOTH} == 'false' ]] && echo "${WORD}" || echo "${CNT} ${WORD}"
@@ -226,7 +230,7 @@ str_rep_char () {
 	local LINE
 	local X
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	LINE=''
 	for ((X=0;X < ${LENGTH};X++));do
@@ -238,11 +242,16 @@ str_rep_char () {
 
 str_no_ansi () {
 	local STR=${1}
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	echo ${STR} | perl -pe 's/\x1B\[+[\d;]*[mK]//g'
 }
 
 str_proper () {
 	local STR=${@}
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	STR=${(C)STR} # Proper case
 	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
@@ -252,6 +261,8 @@ str_proper () {
 
 str_to_ascii () {
 	local STR=${1}
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ -n ${STR} ]];then
 		echo ${STR} | iconv -f utf-8 -t ascii//translit
@@ -265,13 +276,12 @@ str_to_ascii () {
 str_strip_ansi () {
 	local LINE_IN
 	local LINE_OUT
-
 	local OPTION
 	local OPTSTR=":l"
 	local REPLY
 	local RETURN_LEN=false
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	OPTIND=0
 
@@ -296,7 +306,7 @@ str_strip_ansi () {
 str_to_hex () {
 	local TXT=${@}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo $TXT | od -An -tx1 | tr -d '[\n]' | sed 's/ /\\x/g' 
 }
@@ -305,22 +315,21 @@ str_trim () {
 	local TEXT_IN=${@}
 	local TEXT
 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_IN:\"${TEXT_IN}\""
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-		if [[ -z ${TEXT_IN} && ! -t 0 ]];then
-			read TEXT
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_IN:\"${TEXT}\""
-			TEXT=$(sed 's/\t/ /g' <<<${TEXT}) # Tabs distort output
-			TEXT=$(sed 's/^ *//' <<<${TEXT}) # Leading spaces
-			TEXT=$(sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' <<<${TEXT})
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_OUT:\"${TEXT}\""
-			echo ${TEXT}
-		else
-			TEXT_IN=$(sed 's/\t/ /g' <<<${TEXT_IN}) # Tabs distort output
-			TEXT_IN=$(sed 's/^ *//' <<<${TEXT_IN}) # Leading spaces
-			TEXT_IN=$(sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' <<<${TEXT_IN})
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_OUT:\"${TEXT_IN}\""
+	if [[ -z ${TEXT_IN} && ! -t 0 ]];then
+		read TEXT
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_IN:\"${TEXT}\""
+		TEXT=$(sed 's/\t/ /g' <<<${TEXT}) # Tabs distort output
+		TEXT=$(sed 's/^ *//' <<<${TEXT}) # Leading spaces
+		TEXT=$(sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' <<<${TEXT})
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_OUT:\"${TEXT}\""
+		echo ${TEXT}
+	else
+		TEXT_IN=$(sed 's/\t/ /g' <<<${TEXT_IN}) # Tabs distort output
+		TEXT_IN=$(sed 's/^ *//' <<<${TEXT_IN}) # Leading spaces
+		TEXT_IN=$(sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' <<<${TEXT_IN})
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_OUT:\"${TEXT_IN}\""
 		echo ${TEXT_IN}
 	fi
 }
@@ -329,7 +338,7 @@ str_truncate () {
 	local LENGTH=${1} && shift
 	local TEXT=${@}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} LENGTH:${LENGTH}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo ${TEXT[1,${LENGTH}]}
 }
@@ -338,7 +347,7 @@ str_unicode_line () {
 	local LENGTH=${1}
 	local HORIZ_BAR="\\u2500%.0s"
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} LENGTH:${LENGTH}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	do_rmso
 	printf "\\u2500%.0s" {1..$(( ${LENGTH} ))}
@@ -349,7 +358,7 @@ str_unpipe () {
 	local CUT_PARAM
 	local PIPE_DATA
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${#} -gt 1 ]] && FIELD=${1} && shift
 	PIPE_DATA=${@}
@@ -365,6 +374,8 @@ str_word_clip () {
 	local TEXT_OUT=''
 	local W
 
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	TEXT=$(tr '\n' ' ' <<<${TEXT} | str_trim) # Eliminate any newlines
 
 	for W in ${=TEXT};do
@@ -377,6 +388,8 @@ str_word_clip () {
 
 str_nolf () {
 	local STR
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	while read STR;do
 		tr '\012' ' ' <<<${STR}

@@ -143,7 +143,7 @@ action_do () {
 	local URL=''
 	local M
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for M in ${_MARKED};do
 		((DL_CNT++))
@@ -331,7 +331,7 @@ action_do () {
 action_warn () {
 	local M
 	
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	msg_box -x$(( _CONT_COORDS[X] )) -H1 -p -PG "<w><I>Please respond<N>|<Z>|${#_MARKED} $(str_pluralize ${_OBJECT} ${#_MARKED}) selected"
 
@@ -462,7 +462,7 @@ download_select () {
 	local STR
 	local L F
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 
 	SEARCHTYPE=Videos
@@ -533,7 +533,7 @@ fav_add () {
 	local STRICT_VAL=''
 	local K
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QKEY:${_QUERY_OPTS[QKEY]} DKEY:${_QUERY_OPTS[DKEY]} _QUERY_OPTS[ENGINE]:${_QUERY_OPTS[ENGINE]}"
 
 	clear
@@ -744,8 +744,7 @@ get_field () {
 	local STR=''
 	local TSTR=''
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGS:FIELD:${FIELD}, NDX:${NDX}"
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} _LIST[NDX]:${_LIST[${NDX}]}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${FIELD} in
 		age) STR=$(cut -d'|' -f${FIELD_MAP[age]} <<<${_LIST[${NDX}]});;
@@ -756,7 +755,7 @@ get_field () {
 		url) STR=$(cut -d'|' -f${FIELD_MAP[url]} <<<${_LIST[${NDX}]});;
 	esac
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
 
 	if [[ ${FIELD} == 'agetime' ]];then
 		[[ ${STR:l} =~ 'views' ]] && STR=$(sed -E 's/^(.*views )(.*ago)(.*)/(\2)/' <<<${STR})
@@ -804,7 +803,7 @@ item_decorate () {
 	local NDX=${1}
 	local STR
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
 
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."
@@ -820,7 +819,7 @@ item_decorate () {
 		STR=$(get_field agetime ${NDX})
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: STR:${STR}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: STR:${STR}"
 
 	echo -n ${STR}
 }
@@ -830,7 +829,7 @@ job_kill () {
 	local PID
 	local P
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	g_PRESERVE_LOG=false
 
@@ -851,7 +850,7 @@ job_kill () {
 }
 
 job_reset () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	job_kill
 	logit ${_YT_DBG_LOG} "${0}: Job was reset"
@@ -872,7 +871,7 @@ job_start () {
 	local CMD=''
 	local K 
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	g_YTS_LOG=$(mktemp ${_CFG_DIR}/yt.log.XXXXXX)
 	logit ${_YT_DBG_LOG} "${0}: DOWNLOAD LOG:${g_YTS_LOG}"
@@ -944,7 +943,7 @@ last_file_downloaded () {
 }
 
 list_reset () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	_LIST_SELECTED=()
 	_MARKED=()
@@ -973,7 +972,7 @@ log_clear () {
 
 	[[ ! -e ${g_YTS_LOG} ]] && return
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${g_PRESERVE_LOG} == 'false' ]];then
 		rm -f ${g_YTS_LOG}
@@ -997,16 +996,13 @@ log_find () {
 	local LOG_TITLE=''
 	local LOG_TM=''
 	local R=0
-	local DBG=false
 
-	[[ ${_DEBUG} -ge ${_LOW_DETAIL_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Page callback - scan list to find downloaded items
 	 
 	_DOWNLOADS=()
 	_PARTIALS=()
-
-	[[ ${DBG} == 'true' ]] && /bin/rm -f ${0}.dbg
 
 	for ((R=${TOP}; R <= ${BOT}; R++));do
 		LINE_NUM=''
@@ -1015,13 +1011,10 @@ log_find () {
 		LIST_AU=$(get_field author ${R}) # Author from list
 		LIST_TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R}) | tr -d '[()]' | sed 's/undefined//') # Video length from list
 
-		[[ ${DBG} == 'true' ]] && echo "\nLIST_NDX:${R}" >>${0}.dbg
-		[[ ${DBG} == 'true' ]] && echo "LIST_TITLE:${LIST_TITLE}" >>${0}.dbg
-		[[ ${DBG} == 'true' ]] && echo "LIST_AU:${LIST_AU}" >>${0}.dbg
-		[[ ${DBG} == 'true' ]] && echo "LIST_TM:${LIST_TM}" >>${0}.dbg
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "LIST_NDX:${R} LIST_TITLE:${LIST_TITLE} LIST_AU:${LIST_AU} LIST_TM:${LIST_TM}"
 
 		if [[ -n ${LIST_TITLE[1,50]} ]];then
-			[[ ${DBG} == 'true' ]] && echo "\nAttempting TITLE match on:${LIST_TITLE[1,50]}" >>${0}.dbg 
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Attempting TITLE match on:${LIST_TITLE[1,50]}"
 			LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE[1,50]} ${_YTS_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
 			if [[ ${?} -eq 0 ]];then
 				LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Fetch line number
@@ -1029,25 +1022,29 @@ log_find () {
 				LOG_AU=$(grep -i -o -m1 "${LIST_AU}$" <<<${LOG_LINE}) # Match author in log line
 				LOG_TM=$(grep -o ${LIST_TM} <<<${LOG_LINE}) # Match time in log line
 
-				[[ ${DBG} == 'true' ]] && echo "Matched:TITLE:${LOG_TITLE}" >>${0}.dbg
-				[[ ${DBG} == 'true' ]] && echo "Log line:${LOG_LINE}" >>${0}.dbg
-				[[ ${DBG} == 'true' ]] && echo "Author:${LIST_AU} Time:${LIST_TM}" >>${0}.dbg
+				if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+					dbg "Matched:TITLE:${LOG_TITLE}"
+					dbg "Log line:${LOG_LINE}"
+					dbg "Author:${LIST_AU} Time:${LIST_TM}"
+				fi
 
 				if [[ -n ${LOG_TM} && -n ${LOG_AU} ]];then
 					LOG_FN=$(cut -d '|' -f3 <<<${LOG_LINE}) # Fetch filename
 					_DOWNLOADS[${R}]=true
 
-					[[ ${DBG} == 'true' ]] && echo "Confirmed match: Marking NDX:${R} as downloaded for file:${LOG_FN}\n" >>${0}.dbg
-					[[ ${DBG} == 'true' ]] && echo "LOG_AU:${LOG_AU}" >>${0}.dbg
-					[[ ${DBG} == 'true' ]] && echo "LOG_TM:${LOG_TM}" >>${0}.dbg
+					if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+						dbg "Confirmed match: Marking NDX:${R} as downloaded for file:${LOG_FN}"
+						dbg "LOG_AU:${LOG_AU}"
+						dbg "LOG_TM:${LOG_TM}"
+					fi
 				else
-					[[ ${DBG} == 'true' ]] && echo "Failed to confirm download: LOG_TM:${LOG_TM} LOG_AU:${LOG_AU}" >>${0}.dbg
+					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Failed to confirm download: LOG_TM:${LOG_TM} LOG_AU:${LOG_AU}"
 				fi
 			else
-				[[ ${DBG} == 'true' ]] && echo "grep failed title match" >>${0}.dbg 
+				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "grep failed title match"
 			fi
 		else
-			[[ ${DBG} == 'true' ]] && echo "Skipped title search - blank title" >>${0}.dbg
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Skipped title search - blank title"
 			logit ${_YT_DBG_LOG} "${0}: Skipped title search - blank title"
 		fi
 	done
@@ -1061,6 +1058,8 @@ log_to_file () {
 	local LIST_AU=''
 	local LIST_TM=''
 	local R=0
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Page callback - pre-process list to populate download status
 	 
@@ -1091,6 +1090,8 @@ log_update () {
 	local LOG_LINE=''
 	local NEW_LOG=${_CFG_DIR}/log.new
 	local L
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	{
 		[[ -e ${_CFG_DIR}/log.new ]] && /bin/rm -f ${NEW_LOG}
@@ -1128,6 +1129,9 @@ log_update () {
 }
 
 open_website () {
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	case ${1} in
 		y) firefox "https://www.youtube.com/feed/subscriptions" >/dev/null 2>&1 &;;
 		r) firefox "https://www.rumble.com/subscriptions" >/dev/null 2>&1 &;;
@@ -1139,7 +1143,7 @@ parse_err_msg () {
 	local ERROR=${@}
 	local MSG=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${ERROR:l} in
 		*439*) MSG="YouTube - Too Many Requests";;
@@ -1175,7 +1179,7 @@ parse_rumble () {
 
 	# TODO: live broadcasts are seeping in; identify & block
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Run query and filter known problem chars
 	{
@@ -1188,11 +1192,11 @@ parse_rumble () {
 		return 1
 	fi
 
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 		dbg "CREATED: yts.dbg"
 		for L in ${LIST};do
 			echo ${L}
-		done > "$(date +%s)_yts.dbg"
+		done > "$(date +%s)_yts_rumble.dbg"
 	fi
 	
 	grep -q -m1 'locals_community' <<<${LIST}
@@ -1245,7 +1249,7 @@ parse_rumble_age () {
 	local TODAY=$(date +%s)
 	local STAMP=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	DAYS=$(( (TODAY - ${SECS}) / 86400 ))
 
@@ -1265,7 +1269,7 @@ parse_rumble_duration () {
 	local SECS=${1}
 	local STAMP=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	zmodload zsh/datetime
 	STAMP=$(strftime "%H:%M:%S" ${SECS})
@@ -1292,7 +1296,7 @@ post_process () {
 		((NDX++))
 		PIDS=("${(f)$(pgrep -n "yt-dlp")}")
 		if [[ ${?} -ne 0 ]];then
-			sleep 2 && break
+			sleep 1 && break
 		fi
 		msg_box -x14 "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish post-processing..."
 		sleep 1
@@ -1318,7 +1322,7 @@ query_rumble () {
 	local QRY=''
 	local QRY_TYPE=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	QRY_TYPE=${_RUMBLE_QTYPES[${_QUERY_OPTS[EOPT]:l}]}
 	[[ -z ${QRY_TYPE} ]] && msg_box -p -PK "${0}:Invalid query type:${_QUERY_OPTS[EOPT]}" && return 1
@@ -1328,8 +1332,6 @@ query_rumble () {
 
 	ping -w1 www.rumble.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} TYPE:${QRY_TYPE}"
 
@@ -1385,7 +1387,7 @@ query_youtube () {
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local F L
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	ping -w1 www.youtube.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
@@ -1455,8 +1457,6 @@ query_youtube () {
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST content:\n $(for L in ${_LOCAL_LIST};do echo ${L};done)"
-	[[ ${_DEBUG} -eq 0 && ${_SMCUP} == 'false' ]] && do_smcup
 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		# Search failed
@@ -1527,7 +1527,7 @@ set_final_fn () {
 set_item_color () {
 	local ITEM=${1}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${ITEM:l} in
 		downloaded*) echo ${BOLD}${GREEN_FG};;
@@ -1611,7 +1611,7 @@ total_rejects () {
 	local -F1 RJ_PCT=0
 	local K
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for K in ${(k)_REJECTS};do
 		[[ ${_REJECTS[${K}]} == 'true' ]] && ((TL_RJ++))
@@ -1661,7 +1661,7 @@ parse_opts () {
 	local LETTER_OPT
 	local O
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for O in {1..${#OPTS}};do
 		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}

@@ -7,11 +7,14 @@ typeset -a _POS_ARGS=()
 typeset -A _KWD_ARGS=()
 typeset -a _ACRONYMS=()
 
-ACRONYM_FN=~/.local/share/yts/yts.acronyms
-if [[ -e ${ACRONYM_FN} && -z ${_ACRONYMS} ]];then # Load acronyms
+# Constants
+_ACRONYM_FN=~/.local/share/yts/yts.acronyms
+_KDE_DEVICE='Xiaomi 14T'
+
+if [[ -e ${_ACRONYM_FN} && -z ${_ACRONYMS} ]];then # Load acronyms
 	while read LINE;do
 		_ACRONYMS+=${LINE}
-	done < ${ACRONYM_FN}
+	done < ${_ACRONYM_FN}
 fi
 
 # LIB Vars
@@ -26,7 +29,7 @@ arg_parse () {
 	local NDX
 	local KEY
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	NDX=0
 	for A in ${@};do
@@ -78,7 +81,7 @@ assoc_del_key () {
 	emulate -LR zsh
 	setopt extended_glob
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ -${(Pt)1}- != *-association-* ]]; then
 		return 120 # Fail early if $1 is not the name of an associative array
@@ -93,7 +96,7 @@ assoc_del_key () {
 boolean_color () {
 	local STATE=${1}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${STATE} in
 		0) echo ${GREEN_FG};;
@@ -114,7 +117,7 @@ boolean_color_word () {
 	local STATE=${1}
 	local ANSI_ECHO=false
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${#} -eq 2 ]] && ANSI_ECHO=true
 	
@@ -144,8 +147,10 @@ center_wdw () {
 	local MAX_IDS=3 # Testing shows as many as 3 id's generated per execution
 	local X
 
-	logit ${LOG} "${0}:${LINENO} DIMS:${DIMS}"
-	logit ${LOG} "${0}:${LINENO} RES_W:${RES_W} RES_H:${RES_H}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	logit ${LOG} "${0}: DIMS:${DIMS}"
+	logit ${LOG} "${0}: RES_W:${RES_W} RES_H:${RES_H}"
 
 	for (( X=0; X<10; X++ ));do
 		[[ ${#WIDS} -eq ${MAX_IDS} ]] && break
@@ -155,19 +160,19 @@ center_wdw () {
 
 	WID=${WIDS[${#WIDS}]} # Most recent id
 	[[ -z ${WID} ]] && echo "${0}:${RED_FG}Unable to locate window${RESET}:${WHITE_FG}${WIN_NAME}${RESET}" && return 1
-	logit ${LOG} "${0}:${LINENO} Got WID:${WID}"
+	logit ${LOG} "${0}: Got WID:${WID}"
 
-	logit ${LOG} "${0}:${LINENO} Calling: xdotool windowsize ${WID} ${WIN_PXH} ${WIN_PXW}"
+	logit ${LOG} "${0}: Calling: xdotool windowsize ${WID} ${WIN_PXH} ${WIN_PXW}"
 	xdotool windowsize ${WID} ${WIN_PXH} ${WIN_PXW}
 
-	logit ${LOG} "${0}:${LINENO} Calling: xdotool getwindowgeometry --shell ${WID}"
+	logit ${LOG} "${0}: Calling: xdotool getwindowgeometry --shell ${WID}"
 	WIN_W=$(xdotool getwindowgeometry --shell ${WID} | head -4 | tail -1 | sed 's/[^0-9]*//')
 	WIN_H=$(xdotool getwindowgeometry --shell ${WID} | head -5 | tail -1 | sed 's/[^0-9]*//')
 
 	PX=$(( RES_W / 2 - WIN_W / 2 ))
 	PY=$(( RES_H / 2 - WIN_H / 2 ))
 
-	logit ${LOG} "${0}:${LINENO} Calling: xdotool windowmove ${WID} $PX $PY"
+	logit ${LOG} "${0}: Calling: xdotool windowmove ${WID} $PX $PY"
 	xdotool windowmove ${WID} $PX $PY
 }
 
@@ -195,7 +200,7 @@ clock () {
 cmd_get_raw () {
 	local CMD_LINE
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	fc -R
 	CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
@@ -214,7 +219,7 @@ format_pct () {
 	local -F8 P8
 	local PCT
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Decrease decimal places based on intensity
 	P8=${ARG}
@@ -245,7 +250,7 @@ func_delete () {
 	local FUNC=${1}
 	local FN=${2}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	sed -i "/${FUNC}.*() {/,/^}/d" ${FN}
 }
@@ -253,7 +258,7 @@ func_delete () {
 func_list () {
 	local FN=${1}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	grep --color=never -P "^\S.*() {\s*$" < ${FN} | cut -d'(' -f1 | sed -e 's/^[[:space:]]*//'
 }
@@ -262,7 +267,7 @@ func_normalize () {
 	local FN=${1}
 	local NEXT_PASS=''
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	perl -pe 's/^(function\s+)(.*) (\{.*)/${2} () ${3}/g' < ${FN} > ${FN}_.pass_1
 
@@ -277,7 +282,7 @@ func_print () {
 	local FN=${1}
 	local FUNC=$(str_trim ${2})
 	
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	perl -ne "print if /^${FUNC}\s+\(\) {/ .. /^}$/" ${FN} | perl -pe 's/^}$/}\n/g'
 }
@@ -287,7 +292,7 @@ get_delim_field_cnt () {
 	local FCNT=0
 	local DELIM=$(parse_find_valid_delim ${DELIM_ROW})
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ -n ${DELIM} ]];then
 		FCNT=$(echo ${DELIM_ROW} | grep -o ${DELIM} | wc -l)
@@ -313,6 +318,11 @@ get_inode () {
 	[[ -n ${INODE} ]] && return 0 || return 1
 }
 
+get_kde_device () {
+	grep -i ${_KDE_DEVICE} < <(kdeconnect-cli -l 2>/dev/null) | tr -d '[:space:]' | cut -d: -f2 | sed 's/(.*//'
+	return ${?}
+}
+
 get_keys () {
 	local PROMPT=${@}
 	local -a NUM
@@ -325,7 +335,7 @@ get_keys () {
 	local RESP=?;
 	local XSET_RATE=''
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	(tcup $(( _MAX_ROWS - 2 )) 0;printf "${PROMPT}")>&2 # Position cursor and display prompt to STDERR
 
@@ -395,7 +405,7 @@ get_keys () {
 
 inline_vi_edit () {
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	cursor_on
 
@@ -428,16 +438,16 @@ is_bare_word () {
 	local TEXT="${@}"
 
 	if [[ ${TEXT} =~ '\*' || ${TEXT} =~ '\~' || ${TEXT} =~ '^/.*' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 		return 1
 	fi
 
 	if [[ ${_BAREWORD_IS_FILE} == 'false' ]];then # Bare words should be tested as possible file and dir names
 		if [[ -f ${TEXT:Q} || -d ${TEXT:Q} ]];then
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 			return 1
 		else
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
 			return 0
 		fi
 	fi
@@ -447,10 +457,10 @@ is_binary () {
 	if [[ -f ${1} ]];then
 		grep -q -P '[\x7f-\xff]' ${1}
 		if [[ ${?} -eq 0 ]];then
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${1} RC=0"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${1} RC=0"
 			return 0
 		else
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${1} RC=1"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${1} RC=1"
 			return 1
 		fi
 	else
@@ -464,10 +474,10 @@ is_dir () {
 
 	TEXT=$(eval "echo ${TEXT}" 2>/dev/null)
 	if [[ -d ${TEXT} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
 		return 1
 	fi
 }
@@ -476,15 +486,15 @@ is_empty_dir () {
 	local DIR=${1}
 	local RVAL=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -d ${DIR} ]] && RVAL=$(ls -A ${DIR} | wc -l)
 
 	if [[ ${RVAL} -eq 0 ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${DIR} RC=0"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${DIR} RC=0"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${DIR} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${DIR} RC=1"
 		return ${RVAL}
 	fi
 }
@@ -492,13 +502,13 @@ is_empty_dir () {
 is_file () {
 	local TEXT="${@}"
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ -f ${TEXT:Q} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 		return 1
 	fi
 }
@@ -507,10 +517,10 @@ is_glob () {
 	local TEXT="${@}"
 
 	if [[ ${TEXT:Q} =~ '\*' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=0"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${TEXT} RC=1"
 		return 1
 	fi
 }
@@ -519,13 +529,13 @@ is_singleton () {
 	local EXEC_NAME=${1}
 	local INSTANCES=$(pgrep -fc ${EXEC_NAME})
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${INSTANCES} -eq 0 ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: EXEC:${EXEC_NAME} INSTANCES:${INSTANCES} RC=0"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: EXEC:${EXEC_NAME} INSTANCES:${INSTANCES} RC=0"
 		return 0 
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: EXEC:${EXEC_NAME} INSTANCES:${INSTANCES} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: EXEC:${EXEC_NAME} INSTANCES:${INSTANCES} RC=1"
 		return 1
 	fi
 }
@@ -533,13 +543,13 @@ is_singleton () {
 is_symbol_dir () {
 	local ARG=${1}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${ARG} =~ '^[\.~]$' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${ARG} RC=0"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${ARG} RC=0"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${ARG} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${ARG} RC=1"
 		return 1
 	fi
 }
@@ -548,10 +558,10 @@ kbd_activate () {
 	local KEYBOARD_DEV=''
 	local RC=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${XDG_SESSION_TYPE:l} != 'x11' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: NOT X11 RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NOT X11 RC=1"
 		return 1
 	fi
 
@@ -561,7 +571,7 @@ kbd_activate () {
 	if [[ ${RC} -eq 0 ]];then
 		xinput reattach ${KEYBOARD_DEV} 3
 		RC=${?}
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: xinput ${KEYBOARD_DEV} RC=${RC}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: xinput ${KEYBOARD_DEV} RC=${RC}"
 	fi
 
 	return ${RC}
@@ -571,16 +581,16 @@ kbd_get_keyboard_id () {
 	local KEYBOARD_DEV=''
 	local RC=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${XDG_SESSION_TYPE:l} != 'x11' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: NOT X11 RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NOT X11 RC=1"
 		return 1
 	fi
 
 	KEYBOARD_DEV=$(xinput list | grep  "AT Translated" | cut -f2 | cut -d= -f2)
 	RC=${?}
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: xinput ${KEYBOARD_DEV} RC=${RC}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: xinput ${KEYBOARD_DEV} RC=${RC}"
 
 	echo ${KEYBOARD_DEV}
 
@@ -591,10 +601,10 @@ kbd_suspend () {
 	local KEYBOARD_DEV=''
 	local RC=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${XDG_SESSION_TYPE:l} != 'x11' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: NOT X11 RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NOT X11 RC=1"
 		return 1
 	fi
 
@@ -609,7 +619,7 @@ kbd_suspend () {
 }
 
 key_wait () {
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo -n "Press any key..." && read -sk1
 }
@@ -643,7 +653,7 @@ ls_color () {
 	local F2=''
 	local OBJ=''
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Load LS_COLORS into table
 	IFS='='
@@ -672,7 +682,7 @@ max () {
 	local MAX=0
 	local N
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for N in ${NUMLIST};do
 		[[ ${N} -gt ${MAX} ]] && MAX=${N}
@@ -686,7 +696,7 @@ min () {
 	local N
 	local MIN=${NUMLIST[1]}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for N in ${NUMLIST};do
 		[[ ${N} -lt ${MIN} ]] && MIN=${N}
@@ -699,7 +709,7 @@ num_byte_conv () {
 	local BYTES=${1}
 	local WANTED=${2}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${WANTED} in
 		KB) echo $(( ${BYTES} / 1024 ));;
@@ -714,7 +724,7 @@ num_human () {
 	local MEG_D=1048576
 	local KIL_D=1024
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	(
 	if [[ ${BYTES} -gt ${GIG_D} ]];then printf "%10.2fGB" $(( ${BYTES}.0 / ${GIG_D}.0 ))
@@ -739,7 +749,7 @@ parse_find_valid_delim () {
 	local DELIM=''
 	local D
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for D in ${_DELIMS};do
 		grep -q ${D} <<<${LINE}
@@ -747,11 +757,11 @@ parse_find_valid_delim () {
 	done
 
 	if [[ -n ${DELIM} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${DELIM} RC=0"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${DELIM} RC=0"
 		echo ${DELIM}
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${DELIM} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${DELIM} RC=1"
 		return 1
 	fi
 }
@@ -762,7 +772,7 @@ parse_get_last_field () {
 
 	read -r LINE
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARGV:${@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -n ${LINE} ]] && echo -n ${LINE} | rev | cut -d"${DELIM}" -f1 | rev
 }
@@ -782,10 +792,10 @@ respond () {
 	eval "read -q ${TIMEOUT} RESPONSE" && echo >&2
 
 	if [[ ${RESPONSE} == 'y' ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${RESPONSE} RC=0"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${RESPONSE} RC=0"
 		return 0
 	else
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${RESPONSE} RC=1"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${RESPONSE} RC=1"
 		return 1
 	fi
 }

@@ -5,7 +5,7 @@ validate_is_integer () {
 
 	[[ ${#} -eq 0 ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGV:${WHITE_FG}${@}${RESET}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	RET=$(echo "${VAL}" | sed 's/^[-+]*[0-9]*//g')
 
@@ -18,7 +18,7 @@ validate_is_list_item () {
 
 	[[ ${#} -lt 2 ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${ITEM_NDX} -gt 0 && ${ITEM_NDX} -le ${MAX_ITEM} ]] && return 0 || return 1
 }
@@ -30,7 +30,7 @@ validate_is_number () {
 
 	[[ ${#} -eq 0 ]] && return 1
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} ARG:${ARG}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${ARG} =~ '^[-]' || ${ARG} =~ '^[+]' ]] && ARG=${ARG[2,-1]}
 

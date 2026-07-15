@@ -191,7 +191,6 @@ _set_ssid () {
 }
 
 _set_term_header () {
-	# TODO: top term never updates term count
 	local -a ALL_TTYS=($(find /dev/pts ! -path /dev/pts  -printf "%f\n" | grep -v ptmx))
 	local THIS_TTY=${$(tty):t}
 	local MAX=$(terms -c)
@@ -334,19 +333,20 @@ if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
 
 		echo "Last backup was:${WHITE_FG}$(backup -s)${RESET}" # show days since last backup 
 
-		tput sc
+		#tput sc
 		echo "Cleaning history..." 
 		HIST=$(hist_no_dups -p)
-		tput el1
-		tput rc
-		wmctrl -R Terminal 
-		tput ed
+		#tput el1
+		#tput rc
+		#wmctrl -R Terminal 
+		#tput ed
 		echo ${HIST}
 
 		setopt >~/.cur_setopts
 		unsetopt >~/.cur_unsetopts
 
-		dut external -b # External drive status
+		EDS=$(dut external --prod -b) # External drive status
+		echo ${EDS}
 
 		gd -s # Google Drive status
 

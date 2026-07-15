@@ -6,6 +6,8 @@ arr_elem_index () {
 	local ARRAY_NAME=${1}
 	local VALUE=${2}
 
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	if [[ ${${(P)ARRAY_NAME}[(i)${VALUE}]} -le ${#${(P)ARRAY_NAME}} ]];then
 		echo ${${(P)ARRAY_NAME}[(i)${VALUE}]}
 		return 0
@@ -20,7 +22,7 @@ arr_get_nonzero_count () {
 	local CNT=0
 	local E
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for E in ${A};do
 		[[ ${E} -ne 0 ]] && ((CNT++))
@@ -36,7 +38,7 @@ arr_get_populated_count () {
 	local CNT=0
 	local E
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for E in ${A};do
 		[[ -n ${E} ]] && ((CNT++))
@@ -51,7 +53,7 @@ arr_is_populated () {
 	local -a ARR=(${@})
 	local RC
 	
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARR:${#ARR}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires a quoted argument${RESET} of type <ARRAY> ${#}" >&2
 
@@ -71,7 +73,7 @@ arr_long_elem () {
 	local STR
 	local L
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for L in ${LIST};do
 		STR=$(msg_nomarkup ${L})
@@ -80,7 +82,7 @@ arr_long_elem () {
 		[[ ${#STR} -ge ${LONGEST} ]] && LONGEST=${#STR} && LONGEST_STR=${STR}
 	done
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LIST:${#LIST} LONGEST ELEMENT:${LONGEST} STR:${STR}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LONGEST ELEMENT:${LONGEST}"
 
 	echo ${LONGEST_STR} # Trimmed/no markup
 }
@@ -91,7 +93,7 @@ arr_long_elem_len () {
 	local STR
 	local L
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for L in ${LIST};do
 		STR=$(msg_nomarkup ${L})
@@ -100,7 +102,7 @@ arr_long_elem_len () {
 		[[ ${#STR} -ge ${LONGEST} ]] && LONGEST=${#STR}
 	done
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: LONGEST ELEMENT LEN:${LONGEST}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LONGEST ELEMENT LEN:${#LONGEST}"
 
 	echo ${LONGEST} # Trimmed/no markup
 }
@@ -109,6 +111,8 @@ arr_fn_to_inode () {
 	local -a ARR=(${@})
 	local INODE=0
 	local L
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for L in ${ARR};do
 		if [[ -f ${L} ]];then
@@ -121,7 +125,7 @@ arr_in_array () {
 	local ARRAY_NAME=${1}
 	local ELEMENT=${2}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}, ARRAY_NAME:${ARRAY_NAME}, ELEMENT:${ELEMENT}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${${(P)ARRAY_NAME}[(i)${ELEMENT}]} -le ${#${(P)ARRAY_NAME}} ]] && return 0
 
@@ -131,6 +135,8 @@ arr_in_array () {
 arr_inode_to_fn () {
 	local -a ARR=(${@})
 	local L
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for L in ${ARR};do
 		FN=$(find -inum ${L})

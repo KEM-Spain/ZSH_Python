@@ -1,11 +1,10 @@
 # LIB Functions
 date_diff () {
-	local D1=$(date -d "$1" +%s)
-	local D2=$(date -d "$2" +%s)
+	local D1=$(date -d "$1" +%s) # Expects: date +'%Y-%m-%d'
+	local D2=$(date -d "$2" +%s) # Expects: date +'%Y-%m-%d'
 	local DIFF=$(( (D1 - D2) / 86400 ))
 
-	# Expects: date +'%Y-%m-%d'
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo ${DIFF} # Return the difference in days
 }
@@ -15,7 +14,7 @@ date_since_today () {
 	local D2=$(date -d "$2" +%s)
 	local DIFF=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${D1} -gt ${D2} ]] && DIFF=$(( (D1 - D2) / 86400 )) || DIFF=$(( (D2 - D1) / 86400 ))
 
@@ -29,7 +28,7 @@ date_text () {
 	local DATE_ARG=$1
 	local TODAY YESTERDAY TEXT
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	TODAY=$(date +'%m/%d/%y')
 	YESTERDAY=$(date --date="${TODAY} -1 day" +'%m/%d/%y')
@@ -40,7 +39,6 @@ date_text () {
 		TEXT='Yesterday' 
 	else
 		TEXT=${DATE_ARG}
-
 	fi
 
 	echo ${TEXT}
@@ -52,10 +50,10 @@ date_file_diff () {
 	local F1_EPOCH
 	local F2_EPOCH
 	
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	[[ ! -e ${F1} ]] && return 1 # File not found
-	[[ ! -e ${F2} ]] && return 1 # File not found
+	[[ ! -e ${F1} ]] && echo "${0}: File:${F1} not found" >&2 && return 1
+	[[ ! -e ${F2} ]] && echo "${0}: File:${F2} not found" >&2 && return 1
 
 	F1_EPOCH=$(stat -c"%Y" ${F1})
 	F2_EPOCH=$(stat -c"%Y" ${F2})
@@ -71,7 +69,7 @@ date_diff_mins_fmod () {
 	local MOD_TM
 	local TIME_DIFF
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ! -e ${FN} ]] && echo "${0}: File:${FN} not found" >&2 && return 1
 
@@ -87,6 +85,9 @@ date_diff_mins_fmod () {
 
 date_fage_days () {
 	local FN=${1}
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	echo $(( ($(date +%s) - $(date -r ${FN} +%s)) / 86400 )) days 
 }
 
@@ -96,6 +97,8 @@ date_mod_diff () {
 
 	local TM_1=$(stat -c"%Y" ${FN_1})
 	local TM_2=$(stat -c"%Y" ${FN_2})
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo $(( (TM_2 - TM_1) / 60.00  ))
 }

@@ -1,8 +1,7 @@
-2026-07-12_11:29: log_update: LOG lines BEFORE update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-12_11:29: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-12_11:29: _QUERY_OPTS: AGE:recent DKEY:russ on the road ECODE:Y ENGINE:youtube EOPT: QKEY:russ on the road TYPE:standard 
-2026-07-12_11:29: query_youtube: Creating listing for QKEY:russ on the road STRICT:null
-2026-07-12_11:29: query_youtube: _QUERY_OPTS: AGE:recent DKEY:russ on the road ECODE:Y ENGINE:youtube EOPT:null QKEY:russ on the road TYPE:standard 
-2026-07-12_11:29: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "russ on the road"
-2026-07-12_11:29: query_youtube: Query matched 2 lines, _LOCAL_LIST has 1 lines
-2026-07-12_11:29: query_youtube: Listing for QKEY:russ on the road contains 1 rows
+2026-07-14_23:27: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-14_23:27: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-14_23:27: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
+2026-07-14_23:27: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
+2026-07-14_23:27: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
+2026-07-14_23:27: query_youtube: Query matched 11 lines, _LOCAL_LIST has 6 lines
+2026-07-14_23:27: query_youtube: Listing for QKEY:alexchristoforou contains 6 rows

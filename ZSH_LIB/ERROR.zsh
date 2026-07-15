@@ -6,7 +6,7 @@ err_msg_exit () {
 	local LCOLOR=''
 	local IS_FILE=''
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ! -t 0 ]];then
 		read E_MSG

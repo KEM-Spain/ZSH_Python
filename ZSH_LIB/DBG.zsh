@@ -5,21 +5,45 @@ _DEPS+=(STR.zsh)
 typeset -a _DEBUG_LINES=()
 
 # LIB Functions
+dbg_arglist () {
+	local A
+	local NDX=0
+	local TEXT=''
+
+	[[ ${#} -eq 0 ]] && return
+
+	TEXT=${@}
+	if [[ ${#TEXT} -lt 100 ]];then
+		echo -n "[${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
+		for A in "${@}";do
+			((NDX++))
+			echo -n " ${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
+		done
+		echo ''
+	else
+		echo "[${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
+		for A in "${@}";do
+			((NDX++))
+			echo "${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
+		done
+	fi
+}
+
 dbg () {
-	local -a ARGS=(${@})
+	local -a ARGS=("${@}")
 	local LINE
 	local A
 
 	if [[ ${_DEBUG_INIT} == 'true' ]];then
-		echo "${WHITE_FG}DEBUG Level ${_DEBUG}${RESET}: ${BOLD}${MAGENTA_FG}${_DEBUG_LEVELS[${_DEBUG}]}${RESET}" >> ${_DEBUG_FILE}
+		echo "\n${WHITE_FG}DEBUG Level ${_DEBUG}${RESET}: ${BOLD}${MAGENTA_FG}${_DEBUG_LEVELS[${_DEBUG}]}${RESET}" >> ${_DEBUG_FILE}
 		_DEBUG_INIT=false
 	fi
 
 	if [[ ${#} -ne 0 ]];then
 		dbg_to_file ${ARGS} # With arguments
 	else
-		while read LINE;do
-			ARGS+="${LINE}\n"
+		for A in ${ARGS};do
+			echo ${A}
 		done
 		echo ${ARGS} | dbg_record # Piped to array
 	fi

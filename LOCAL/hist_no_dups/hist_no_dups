@@ -20,7 +20,6 @@ CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -61,25 +60,19 @@ vi
 )
 
 size_diff () {
-	local CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
-	local LAST_SIZE=$(stat -c"%s" ${_HIST_BAK})
-	local DIFF=0
+	local -F CUR_SIZE=$(wc -l ${_HIST_FILE} | cut -d' ' -f1)
+	local -F LAST_SIZE=$(wc -l ${_HIST_BAK} | cut -d' ' -f1)
+	local -F INCREASE=$(( CUR_SIZE - LAST_SIZE ))
 	local -F PCT=0
-	local -F AVG=0
-	local -F PART=0
-	local -F WHOLE=0
 
-	PART=${CUR_SIZE}
-	WHOLE=${LAST_SIZE}
-	PCT=$(( (PART / WHOLE) * 100 ))
-	DIFF=$(( PCT - 100 ))
+	PCT=$(( (INCREASE / LAST_SIZE) * 100 ))
 
-	if [[ ${PART} -le ${WHOLE} ]];then
-		printf "History size $(wc -l ${_HIST_FILE} | cut -d' ' -f1) lines" ${DIFF}
+	if [[ ${CUR_SIZE} -le ${LAST_SIZE} ]];then
+		printf "History size %d lines" $(wc -l ${_HIST_FILE} | cut -d' ' -f1)
 		return 0 # No rebuild
 	else
-		if [[ ${DIFF} -gt ${_THRESHOLD} ]];then
-			printf "Rebuld required - Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
+		if [[ ${PCT} -gt ${_THRESHOLD} ]];then
+			printf "Rebuld required - Growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
 			return 1
 		fi
 	fi
@@ -176,7 +169,7 @@ cmd_filter () {
 	done
 
 	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CFG_DIR}/accumulators
-	[[ ${PROD_OPT} == 'false' ]] && echo >&2 # Clear progress
+	[[ ${VERBOSE_OPT} == 'false' ]] && echo >&2 # Clear progress
 }
 
 hist_parse () {
@@ -355,7 +348,7 @@ if [[ ${FORCE_OPT} == 'false' && ${TESTING_OPT} == 'false' ]];then
 	fi
 fi
 
-[[ ${PROD_OPT} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
+[[ ${VERBOSE_OPT} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 cp ${_HIST_FILE} ${_HIST_BAK}
 
 echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
@@ -366,9 +359,9 @@ echo -n "${ITALIC}Collating ${HIST_LINES} lines of history...${RESET}" >&2
 
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
 echo "${ITALIC}done${RESET}" >&2
-[[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
+[[ ${VERBOSE_OPT} == 'false' ]] && echo "${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
-[[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
+[[ ${VERBOSE_OPT} == 'false' ]] && echo "${MAGENTA_FG}Rebuilding history file...${RESET}"
 echo ${CSR_OFF}
 _REBUILT_HIST=("${(f)$(build_hist _HIST_IN)}")
 echo ${CSR_ON}
@@ -394,7 +387,7 @@ else
 	mv -f ${_HIST_NEW} ${_HIST_FILE}
 fi
 
-if [[ ${PROD_OPT} == 'false' ]];then
+if [[ ${VERBOSE_OPT} == 'false' ]];then
 	CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
 	read ACC <${_CFG_DIR}/accumulators
 	echo "   SIZE:${WHITE_FG}${CUR_SIZE}${RESET}"
@@ -404,10 +397,10 @@ if [[ ${PROD_OPT} == 'false' ]];then
 	echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
 	echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
 	echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_REBUILT_HIST}${RESET}"
-	echo "${WHITE_ON_GREY}Done.${RESET}\n"
+	echo "${WHITE_ON_GREY}Done.${RESET}"
 else
 	tput el
-	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
+	printf "Clean History (${WHITE_FG}%d${RESET})" ${NDX}
 fi
 
 exit_leave

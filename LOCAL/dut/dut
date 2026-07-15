@@ -20,6 +20,13 @@ BLINK="\033[5m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(LIST.zsh SELECT.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _UTILS=(
 external 1
@@ -43,13 +50,6 @@ _WRAPPER=${0:t}
 # Globals
 g_USAGE=false
 g_UTIL=''
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SELECT.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 external () {
@@ -92,9 +92,11 @@ external () {
 	local	g_SHOW_LIST=false
 	local	g_STATUS=false
 	local g_BRIEF=false
+	local g_PROD=false
 	local g_MOUNT_ERROR=0
 	local g_VERBOSE=false
 	local g_FCNT=0
+	local g_RVAL=0
 
 	# Functions
 	action_do () {
@@ -397,8 +399,8 @@ ___EOF
 		echo -e "${WHITE_FG}-D${RESET} debug"
 		echo -e "${WHITE_FG}-b${RESET} brief status message"
 		echo -e "${WHITE_FG}-u${RESET} unmount all"
-		echo -e "${WHITE_FG}-m${RESET} mount all"
 		echo -e "${WHITE_FG}-l${RESET} select disk(s) from a list"
+		echo -e "${WHITE_FG}-m${RESET} mount all"
 		echo -e "${WHITE_FG}-s${RESET} display disk mount status"
 		echo -e "${WHITE_FG}-v${RESET} verbose activity"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
@@ -411,7 +413,7 @@ ___EOF
 	OPTSTR=":HDblsmvu"
 	OPTIND=0
 
-	while getopts ${OPTSTR} OPTION;do
+	while getopts ${OPTSTR} OPTION ${g_OPTS};do
 		case ${OPTION} in
 		  H) usage;;
 		  D) dbg_set_level;;
@@ -430,8 +432,6 @@ ___EOF
 	#--End GetOpts--
 	
 	# Execution
-	[[ -n ${1} ]] && PARTITION=${1} || PARTITION=''
-
 	if [[ ${#OPTIONS} -eq 0 ]];then
 		g_VERBOSE=true # Set defaults
 		g_SHOW_LIST=true # Set defaults
@@ -442,6 +442,26 @@ ___EOF
 		set_exit_value 1
 		exit_leave -9 "No external disks found"
 	fi
+
+	# TODO: Not sure why I'm checking both; g_BRIEF should be sufficient?
+	if [[ ${g_BRIEF} == 'true' ]];then # -b option
+		g_VERBOSE=false
+		for L in ${(on)_LOCAL_LIST};do
+			if is_mounted ${L};then
+				MSG_OUT+="External disk ${_LABELS[${L}]} is ${GREEN_FG}mounted${RESET}"
+				g_RVAL=0
+			else
+				MSG_OUT+="External disk ${_LABELS[${L}]} is ${RED_FG}NOT${RESET} mounted"
+				g_RVAL=1
+			fi
+		done
+		for L in ${MSG_OUT};do
+			echo ${L}
+		done
+		exit ${g_RVAL}
+	fi
+
+	[[ -n ${1} ]] && PARTITION=${1} || PARTITION=''
 
 	if [[ -n ${PARTITION} ]];then # Arg was passed
 		local NDX=0
@@ -471,20 +491,6 @@ ___EOF
 		done
 		loca DEV=$(tr -d '[:digit:]' <<<${_PARTITIONS[1]})
 		{ udisksctl power-off -b /dev/${DEV} } >/dev/null
-	elif [[ ${g_BRIEF} == 'true' ]];then # -b option
-		g_VERBOSE=false
-		for L in ${(on)_LOCAL_LIST};do
-			if is_mounted ${L};then
-				MSG_OUT+="External disk ${_LABELS[${L}]} is ${GREEN_FG}mounted${RESET}"
-				set_exit_value 0
-			else
-				MSG_OUT+="External disk ${_LABELS[${L}]} is ${RED_FG}NOT${RESET} mounted"
-				set_exit_value 1
-			fi
-		done
-		for L in ${MSG_OUT};do
-			echo ${L}
-		done
 	elif [[ ${g_SHOW_LIST} == 'true' ]];then # -l option
 		# Set headings
 		list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Partitions\tSelected:${WHITE_FG}%-d${RESET}" ${#_LIST} ${SELECTED_COUNT}'
@@ -992,7 +998,7 @@ UTIL=''
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
 		H) usage;;
-		D) dbg_set_level;;
+		D) dbr_set_level;;
 		:) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 		\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -1002,7 +1008,12 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+# This is detection of production mode called from another script (--prod will cancel smcup making it friendly to the caller)
+g_PROD=false
+g_OPTS="${@}"
+[[ ${@} =~ '--prod' ]] && g_PROD=true && g_OPTS=$(sed -e 's/\-\-prod//' <<<${g_OPTS} | str_trim)
+[[ ${g_PROD} == 'false' && ${_DEBUG} -eq 0 ]] && do_smcup
+
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
 [[ -n ${UTIL} && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "command:${WHITE_FG}${UTIL}${RESET} not found"
@@ -1010,7 +1021,8 @@ shift $(( OPTIND - 1 ))
 if [[ -n ${UTIL} ]];then
 	UTIL=${1}
 	_SCRIPT=${UTIL}
-	[[ ${_UTILS[${UTIL}]} -eq 1 ]] && shift && ${UTIL} ${@}
+	g_OPTS=$(sed "s/${1}//" <<<${g_OPTS:=${@}} | str_trim)
+	[[ ${_UTILS[${UTIL}]} -eq 1 ]] && shift && ${UTIL} "${g_OPTS}"
 else
 	sel_set_list ${(v)_UTILS_DESC}
 	sel_list -sa -O ${CYAN_FG} -C -F"<w>Show Disk Utilities usage or <h>(q)uit<N>" -H"Disk Utilities"

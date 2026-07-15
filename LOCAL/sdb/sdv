@@ -495,19 +495,22 @@ section_break () {
 	[[ ${SECTION} == 'GP' || ${SECTION} == 'INFFUT' ]] && return || echo "<SEP>"
 }
 
-get_kde_device () {
-	grep -i 'Xiaomi 14T' < <(kdeconnect-cli -l 2>/dev/null) | tr -d '[:space:]' | cut -d: -f2 | sed 's/(.*//'
-}
-
 send_payload () {
+	local DEV=''
+
 	if adb_is_connected;then
 		adb -s "${_PHONE_IP}:${_PHONE_PORT}" shell "am start -a android.intent.action.SEND -t 'text/plain' \
 			--es android.intent.extra.TEXT \"$(cat ${_PAYLOAD_FILE})\" com.google.android.keep"
 		_EXIT_MSG="Clipboard was sent to Keep Notes"
 	else
-		kdeconnect-cli --send-clipboard -d $(get_kde_device)
-		gpaste-client file ${_PAYLOAD_FILE}
-		_EXIT_MSG="Clipboard was sent"
+		DEV=$(get_kde_device)
+		if [[ ${?} -eq 0 ]];then
+			gpaste-client file ${_PAYLOAD_FILE}
+			kdeconnect-cli --send-clipboard -d ${DEV} >/dev/null 2>&1
+			[[ ${?} -eq 0 ]] && _EXIT_MSG="Clipboard was sent" _EXIT_MSG="Clipboard send failed"
+		else
+			_EXIT_MSG="Clipboard not sent - kdeconnect not connected"
+		fi
 	fi
 }
 

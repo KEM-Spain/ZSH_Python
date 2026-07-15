@@ -14,14 +14,14 @@ exit_leave () {
 	local OPT=''
 	local RET=''
 
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	if [[ -n ${1} ]];then
 		RET=$( echo "${1}" | sed 's/^[-+]*[0-9]*//g' )
 		[[ -z ${RET} ]] && set_exit_value ${1} && shift
 	fi
 
 	_EXIT_MSGS=(${@})
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
@@ -48,7 +48,7 @@ exit_pre_exit () {
 	local -a USER_PIDS=()
 	local C F P
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${_PRE_EXIT_RAN} == 'true' ]] && return
 	
@@ -93,7 +93,7 @@ exit_request () {
 	local FRAME_WIDTH=6
 	local TAG=EXR_BOX
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${#} -eq 0 ]];then
 		msg_box -T ${TAG} -jc -O ${RED_FG} -p ${MSG}
@@ -124,7 +124,7 @@ exit_sigexit () {
 		7 "Memory Error" 8 "FLoating Point Exception" 9 "Termination Called from kill"
 	)
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Traps arrive here
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: Exited via interrupt: ${SIG} (${SIGNAME}) ${SIGNAMES[${SIG}]}" # Announce the interrupt
@@ -134,13 +134,13 @@ exit_sigexit () {
 }
 
 get_exit_value () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo ${_EXIT_VALUE}
 }
 
 set_exit_callback () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	_EXIT_CALLBACKS+=${1}
 
@@ -148,34 +148,42 @@ set_exit_callback () {
 }
 
 set_exit_value () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	_EXIT_VALUE=${1}
 }
 
 get_user_pids () {
 	local PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
+	local -a PID_LIST=()
 	local F2
 	local P
 
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	for P in ${PS};do
 		F2=$(cut -d' ' -f2 <<<${P})
-		echo ${F2}
+		PID_LIST+=${F2}
 	done
+
+	echo ${PID_LIST}
 }
 
 get_active_pids () {
 	local PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
+	local -a PID_LIST=()
 	local FN
 	local P
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for P in ${PS};do
 		[[ ${P} =~ $$ ]] && continue
 		FN=$(cut -d' ' -f2 <<<${P})
-		[[ -n ${FN} ]] && echo ${FN}
+		[[ -n ${FN} ]] && PID_LIST+=${FN}
 	done
+
+	echo ${PID_LIST}
 }
 
 scrub_tmp () {
@@ -185,7 +193,7 @@ scrub_tmp () {
 	local FPID=''
 	local M F
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	FLIST=("${(f)$(
 	for M in ${MARKERS};do

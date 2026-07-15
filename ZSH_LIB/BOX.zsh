@@ -8,7 +8,7 @@ _BOX_TAG="/tmp/${_MY_PID}.box_tag"
 box_coords_del () {
 	local TAG=${1}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} TAG:${TAG}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	assoc_del_key _BOX_COORDS ${TAG}
 }
@@ -16,7 +16,7 @@ box_coords_del () {
 box_coords_dump () {
 	local K
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo "\n--- Begin BOX COORDS ---"
 	for K in ${(ok)_BOX_COORDS};do
@@ -28,7 +28,7 @@ box_coords_dump () {
 box_coords_get () {
 	local TAG=${1}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} TAG:${TAG}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -z ${_BOX_COORDS[${TAG}]} ]] && return 1
 
@@ -68,7 +68,7 @@ box_coords_relative () {
 
 	# OFFSETS are in the form [+-]INT or INT
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	BASE_COORDS=($(box_coords_get ${BASE_TAG}))
 	[[ -z ${BASE_COORDS} ]] && return 1
@@ -97,27 +97,27 @@ box_coords_repaint () {
 	local ROW_LIMIT=0
 	local SNDX=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -z ${_SCREEN} ]] && return # Screen cache is empty
 
 	if [[ -z ${TAG} && -e ${LAST_COORDS} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: No TAG, getting LAST_COORDS TAG"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: No TAG, getting LAST_COORDS TAG"
 		read TAG < ${LAST_COORDS}
 		/bin/rm -f ${LAST_COORDS}
 		if [[ -n ${TAG} ]];then
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Got LAST_COORDS TAG:${TAG}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Got LAST_COORDS TAG:${TAG}"
 			COORDS=($(box_coords_get ${TAG}))
 		fi
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TAG:${TAG} COORDS:${(kv)COORDS}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAG:${TAG} COORDS:${(kv)COORDS}"
 
 	LIST_ROW=$(( COORDS[X] - _LIST_HEADER_LINES + 1 ))
 	ROW_LIMIT=$(( LIST_ROW + COORDS[H] - 1 ))
 
 	for (( LNDX=LIST_ROW; LNDX <= ROW_LIMIT; LNDX++ ));do
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: _SCREEN[LNDX]: ${_SCREEN[${LNDX}]}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _SCREEN[LNDX]: ${_SCREEN[${LNDX}]}"
 		[[ -n ${_SCREEN[${LNDX}]} ]] && tput cup $(( COORDS[X] + SNDX )) 0 && echo -n ${_SCREEN[${LNDX}]}
 		((SNDX++))
 	done
@@ -128,7 +128,7 @@ box_coords_set () {
 	local TAG=${ARGS[1]}
 	local COORDS=${ARGS[2,-1]}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} TAG:${TAG}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	_BOX_COORDS[${TAG}]="OWNER ${(U)functrace[1]:s/:/_/} ${COORDS}"
 
@@ -142,7 +142,7 @@ box_coords_upd () {
 	local -A ORIG=($(box_coords_get ${TAG}))
 	local K V
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for K in ${(k)UPD};do
 		ORIG[${K}]=${UPD[${K}]}
