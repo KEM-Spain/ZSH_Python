@@ -339,7 +339,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${VERBOSE_OPT} == 'true' && ${FORCE_OPT} == 'true' ]] && echo -n "Forcing rebuild..." >&2
+[[ ${VERBOSE_OPT} == 'true' && ${FORCE_OPT} == 'true' ]] && echo -n "Forcing rebuild..." 
 
 if [[ ${SIZEDIFF} == 'true' ]];then
 	MSG=$(size_diff)
@@ -358,14 +358,14 @@ fi
 [[ ${PROD_OPT} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 cp ${_HIST_FILE} ${_HIST_BAK}
 
-echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
+echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" 
 upd_locate -u 2>/dev/null
 
 HIST_LINES=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
-echo -n "${ITALIC}Collating ${HIST_LINES} lines of history...${RESET}" >&2
+echo -n "${ITALIC}Collating ${HIST_LINES} lines of history...${RESET}" 
 
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
-echo "${ITALIC}done${RESET}" >&2
+echo "${ITALIC}done${RESET}" 
 [[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
 [[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
@@ -407,7 +407,7 @@ if [[ ${PROD_OPT} == 'false' ]];then
 	echo "${WHITE_ON_GREY}Done.${RESET}\n"
 else
 	tput el
-	printf "Clean History (${WHITE_FG}%d${RESET})\n" ${NDX}
+	printf "Cleaned History (${WHITE_FG}%d${RESET} lines)\n" ${NDX}
 fi
 
 exit_leave

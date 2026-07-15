@@ -11,7 +11,6 @@
 : 1770150841:0;update-alternatives --get-selections 
 : 1770232301:0;zsh -c .zshrc
 : 1770232588:0;set +xv
-: 1770233680:0;xdotool key --window 14680067 key "Escape" 
 : 1770234473:0;wmctrl -i -R 0x03a00003 -b add,maximized_vert,maximized_horz\
 : 1770336511:0;terminator
 : 1770380140:0;templates
@@ -372,7 +371,6 @@
 : 1782295564:0;nme gdbus.cmd.log
 : 1782297619:0;sd
 : 1782376223:0;./test_keep_notes_direct
-: 1782385306:0;lll
 : 1782385471:0;read -A FIELDS < <(ss -t -4 -p 
 : 1782392588:0;rec --help
 : 1782393804:0;rcp
@@ -410,7 +408,6 @@
 : 1782664021:0;anthemscore
 : 1782664029:0;type anthemscore
 : 1782666159:0;anthem
-: 1782720525:0;Tp
 : 1782771585:0;remind
 : 1782819569:0;Cat Bank.txt
 : 1782834227:0;./app_name
@@ -418,7 +415,6 @@
 : 1782890847:0;mp4_merge -d
 : 1782906026:0;TW
 : 1782918968:0;M
-: 1782935683:0;t
 : 1782983451:0;T
 : 1783019398:0;A -wyyts
 : 1783064943:0;sld
@@ -454,7 +450,6 @@
 : 1783626729:0;file /bin/glance
 : 1783627570:0;stty sane
 : 1783628312:0;bak
-: 1783628354:0;clear
 : 1783640160:0;E
 : 1783640243:0;G
 : 1783640933:0;\
@@ -476,9 +471,7 @@
 : 1783848998:0;repo
 : 1783849379:0;Tm
 : 1783849385:0;Ts
-: 1783849410:0;l
 : 1783862646:0;debug_test
-: 1783875376:0;b
 : 1783885335:0;todo
 : 1783895452:0;spell -a indefatigable
 : 1783895542:0;aspell 
@@ -489,170 +482,183 @@
 : 1783946295:0;df -h maps
 : 1783946451:0;llr
 : 1783947127:0;..
-: 1783948277:0;D
-: 1783957964:0;Tw
 : 1783970093:0;chkupd
 : 1783970606:0;ull
 : 1783972144:0;l.
 : 1783972229:0;ll.
-: 1783972262:0;ll
-: 1783974603:0;,
-: 1783976139:0;Tw
-: 1783976140:0;l
-: 1783976142:0;ll
-: 1783976144:0;lsd
-: 1783976147:0;ll
-: 1783976148:0;yts
-: 1783981461:0;yt 'https://www.youtube.com/shorts/2gZNlLfFb58'
-: 1783981540:0;yt 'https://www.youtube.com/watch?v=S3CqQlYAUTM&pp=ygUUcGlhbm8gdHJpbGwgdHV0b3JpYWw%3D'
-: 1783981556:0;yt 'https://www.youtube.com/watch?v=X-aXiwiB-VQ&pp=ygUUcGlhbm8gdHJpbGwgdHV0b3JpYWw%3D'
-: 1783981584:0;yt 'https://www.youtube.com/watch?v=CC6bgBA8en8&pp=ygUUcGlhbm8gdHJpbGwgdHV0b3JpYWw%3D'
-: 1783981592:0;ll
-: 1783981601:0;Tp
-: 1783981636:0;ll
-: 1783983165:0;Tw
-: 1783983168:0;ll
-: 1783983170:0;lsd
-: 1783983174:0;ll
-: 1783985824:0;yts
-: 1783985864:0;yts -wy
-: 1784016257:0;e2s 'things change'
-: 1784016405:0;e2s 'the more things change'
-: 1784016425:0;e2s 'the more things change the more they stay the same'
-: 1784016476:0;s2e permanecer
-: 1784016737:0;s2e permaneco
-: 1784016760:0;cl sdb
-: 1784016776:0;kdeconnect-cli -l
-: 1784016804:0;sdv permanecer
-: 1784016816:0;vi sdv
-: 1784016853:0;vi sdv
-: 1784016898:0;sdv permanecer
-: 1784016908:0;vi sdv
-: 1784017079:0;sdv permanecer
-: 1784017102:0;sdv -c permanecer
-: 1784017124:0;kdeconnect-cli -l
-: 1784017352:0;echo $?
-: 1784017359:0;vi sdv
-: 1784017419:0;sdv -c permanecer
-: 1784017445:0;vi sdv
-: 1784017644:0;ll
-: 1784017657:0;vi sdv
-: 1784017953:0;sdv -c permanecer
-: 1784017993:0;sdv -c permanecer
-: 1784018096:0;cl gsconnect-autopair
-: 1784018098:0;ll
-: 1784018108:0;g gsset
-: 1784018110:0;g gs
-: 1784018120:0;g setting
-: 1784018184:0;gsettings list-recursively org.gnome.Shell.Extensions.GSConnect\
-
-: 1784018232:0;kdeconnect-cli -l
 : 1784018786:0;clear
-: 1784018788:0;Tw
-: 1784018789:0;lsd
 : 1784018794:0;lll
-: 1784018795:0;ll
-: 1784018800:0;lsd
-: 1784018803:0;ll
-: 1784018806:0;yts
-: 1784019058:0;cl yts
-: 1784019066:0;vi yts
-: 1784019361:0;bak -r yts
-: 1784019365:0;,
-: 1784019367:0;yts
 : 1784019547:0;,
-: 1784019549:0;vi yts
-: 1784019718:0;vi yts
-: 1784022755:0;Tw
-: 1784022757:0;lsd
-: 1784022762:0;ll
-: 1784026795:0;ll
-: 1784026797:0;lsd
-: 1784026799:0;ll
-: 1784030986:0;lsd
-: 1784031199:0;ll
-: 1784032369:0;lsd
-: 1784032373:0;ll
-: 1784032385:0;yts
-: 1784032408:0;yts -wy
-: 1784032656:0;yts
-: 1784033112:0;yt 'https://www.youtube.com/watch?v=7RionoayO5A'
 : 1784033123:0;Tp
-: 1784033134:0;ll
-: 1784033158:0;Tw
-: 1784033159:0;ll
-: 1784033170:0;yts
-: 1784034591:0;ll
-: 1784034660:0;yts -wr
-: 1784034727:0;ll
-: 1784034730:0;yts
-: 1784042094:0;ll
 : 1784042101:0;D
-: 1784042106:0;ll
-: 1784042113:0;cat VW_32GB_CARD_PARTNO
-: 1784044459:0;Tw
-: 1784044460:0;ll
-: 1784047180:0;lsd
-: 1784047183:0;ll
-: 1784047195:0;yts
-: 1784048098:0;.ls yts
-: 1784048102:0;cat yts.url.log
-: 1784048453:0;Tw
-: 1784048454:0;ll
-: 1784048456:0;lsd
 : 1784048462:0;l
-: 1784048463:0;ll
-: 1784050055:0;lsd
-: 1784050060:0;ll
-: 1784050090:0;lsd
-: 1784050099:0;yts
-: 1784050123:0;yts -wr
-: 1784050248:0;yt -p'Syriana Analysis' 'https://www.youtube.com/watch?v=XHEJltUEhmI'\
-\
-
-: 1784050291:0;ll
-: 1784050420:0;remind -e
 : 1784056751:0;t
-: 1784058935:0;ll
-: 1784058956:0;cl sdb
-: 1784058961:0;vi sdv
-: 1784063920:0;lsd
 : 1784063927:0;Tw
-: 1784063931:0;lsd
-: 1784063945:0;yts
-: 1784064099:0;yts -wy
-: 1784064128:0;yts
-: 1784064146:0;yts -wy
-: 1784064164:0;yt 'https://www.youtube.com/watch?v=WUXjswthHII'
-: 1784064183:0;ll
-: 1784064223:0;fsub -y -t100 "Syriana Analysis - NATO's Shadow Bank - How The West Plans To Finance The Next Great War Mats Nilsson.mp4"
-: 1784064227:0;ll
-: 1784064234:0;fsub -y -t80 "Syriana Analysis - NATO's Shadow Bank - How The West Plans To Finance The Next Great War Mats Nilsson.mp4"
-: 1784064242:0;fsub -y -t80 "Syriana Analysis - NATO's Shadow Bank - How The West Plans To Finance The Next Great War Mats Nilsso.mp4"
-: 1784064244:0;ll
-: 1784064267:0;fsub -y -t80 "Pepe Escobar - Yemen Joins The War And The Entire Middle East Could Go Up In Flames.mp4"
-: 1784064268:0;ll
-: 1784064465:0;yts
-: 1784064852:0;. .zshrc
-: 1784064908:0;print -Pn '\e]0;Terminal 1 of 2\a'
-: 1784064933:0;vi .zshrc
-: 1784064999:0;. .zshrc
 : 1784065000:0;ll
-: 1784065006:0;print -Pn '\e]0;Terminal 1 of 2\a'
 : 1784065019:0;b
-: 1784065026:0;g xdotool
-: 1784065040:0;g xdotool
-: 1784065045:0;g xdotool
-: 1784065082:0;xdotool key Ctrl Alt W
-: 1784065104:0;man xdotool
-: 1784065143:0;xdotool key Ctrl+Alt+W
-: 1784065153:0;xdotool key Ctrl+Alt+W"XXX"
-: 1784065163:0;xdotool key Ctrl+Alt+W "XXX"
-: 1784065173:0;xdotool --help key 
 : 1784065196:0;xdotool --help 
-: 1784065206:0;man xdotool
-: 1784065251:0;xdotool key Ctrl+Alt+W type "XXX"
-: 1784065273:0;man xdotool
-: 1784065339:0;xdotool key Shift+Ctrl+W
-: 1784065367:0;xdotool Shift+ctrl+W
-: 1784065378:0;xdotool key Shift+Ctrl+W
+: 1784065582:0;chkupd
+: 1784065651:0;ll
+: 1784065683:0;vi .zshrc
+: 1784065898:0;vi .zshrc
+: 1784065950:0;vi .zshrc
+: 1784066007:24;vi .zshrc
+: 1784066053:11;vi .zshrc
+: 1784066084:13;vi .zshrc
+: 1784066117:0;vi .zshrc
+: 1784066173:0;vi .zshrc
+: 1784066243:40;vi .zshrc
+: 1784066310:0;vi .zshrc
+: 1784066350:0;vi .zshrc
+: 1784066448:0;dut external -b
+: 1784066451:0;dut external -b
+: 1784066779:0;dut external -b
+: 1784066879:0;dut external -b
+: 1784066883:0;dut external -b
+: 1784067050:0;dut external -b
+: 1784067104:0;dut external -b
+: 1784067164:0;dut external -b
+: 1784067166:0;dut external -p
+: 1784067193:0;dut external -b
+: 1784067197:0;dut external -p
+: 1784067226:0;dut external -b
+: 1784067229:0;dut external -p
+: 1784067346:0;dut external -b
+: 1784067349:0;dut external -p
+: 1784067642:0;dut external -b
+: 1784067645:0;dut external -p
+: 1784067689:0;dut external -p
+: 1784067694:0;dut external -b
+: 1784067698:0;dut external -p
+: 1784067714:0;dut external -p
+: 1784067732:0;dut external -p
+: 1784067771:0;dut external -p
+: 1784067841:0;dut external -p
+: 1784067862:0;dut external -p
+: 1784067882:0;dut external -p
+: 1784067894:0;dut external -b
+: 1784067970:0;dut external -b
+: 1784067977:0;dut external -pb
+: 1784068144:0;dut external -pb
+: 1784068155:0;dut external --prpd b
+: 1784068198:0;dut external --prod b
+: 1784068355:0;dut external --prod b
+: 1784068377:0;dut external --prod -b
+: 1784068404:0;dut external --prod -b
+: 1784068455:0;dut external --prod -b
+: 1784068547:0;dut external --prod -b
+: 1784068551:0;dut external --prod
+: 1784068615:0;dut external --prod -b
+: 1784068661:0;dut external --prod -b
+: 1784068719:0;@="SSS"
+: 1784068726:0;echo @
+: 1784068731:0;echo $@
+: 1784068765:0;dut external --prod -b
+: 1784068796:0;Tw
+: 1784068796:0;lsd
+: 1784068809:0;,
+: 1784068810:0;ll
+: 1784068966:0;dut external --prod -b
+: 1784069076:0;dut external --prod -b
+: 1784069119:0;dut external --prod -b
+: 1784069177:0;dut external --prod -b
+: 1784069204:0;dut external --prod -b
+: 1784069383:0;dut external --prod -b
+: 1784069424:0;dut external --prod -b
+: 1784069558:0;dut external --prod -b
+: 1784069588:0;dut external --prod -b
+: 1784069669:0;dut external --prod -b
+: 1784069721:0;dut external --prod -b
+: 1784069874:0;dut external --prod -b
+: 1784069931:0;dut external --prod -b
+: 1784069964:0;dut external --prod -b
+: 1784070165:0;dut external --prod -b
+: 1784070201:0;dut external --prod -b
+: 1784070208:0;dut external -b
+: 1784070291:0;dut external -b
+: 1784070381:0;dut external -b
+: 1784070428:0;dut external -b
+: 1784070543:0;dut external -b
+: 1784070614:0;dut external -b
+: 1784070687:0;dut external --prod -b
+: 1784070709:0;dut external --prod -b
+: 1784070726:0;tput rmcup
+: 1784070731:0;dut external --prod -b
+: 1784070908:0;dut external --prod -b
+: 1784070942:0;dut external --prod -b
+: 1784070952:0;vi .zshrc
+: 1784071040:0;dut external -b
+: 1784071121:0;dut external --prod -b
+: 1784071211:0;dut external --prod -b
+: 1784071224:0;dut external -b
+: 1784071332:0;dut external -b
+: 1784071443:0;dut external -b
+: 1784071569:0;dut external -b
+: 1784071575:0;dut external --prod
+: 1784071582:0;dut external --prod -b
+: 1784071629:0;dut external --prod -b
+: 1784071637:0;dut external -b
+: 1784071673:0;dut external -b
+: 1784071753:0;dut external -b
+: 1784071815:0;dut external -b
+: 1784071877:0;dut external -b
+: 1784071921:0;dut external -b
+: 1784071938:0;dut external -b
+: 1784071957:0;dut external -b
+: 1784071967:0;dut external -H
+: 1784071997:0;dut 
+: 1784072012:0;dut external -v
+: 1784072160:0;dut external -v
+: 1784072166:0;dut external -b
+: 1784072169:0;dut external -b
+: 1784072177:0;dut external -b 2>x
+: 1784072180:0;vi x
+: 1784072241:0;dut external -b 
+: 1784072268:0;dut external -b 
+: 1784072276:0;dut external 
+: 1784072283:0;dut 
+: 1784072295:0;dut space
+: 1784072419:0;cl dut
+: 1784072421:0;bak dut
+: 1784072424:0;ll
+: 1784072426:0;vi dut
+: 1784072770:0;./dut external -b
+: 1784072825:0;./dut external --prod -b
+: 1784072857:0;vi dut
+: 1784072879:0;./dut external --prod -b
+: 1784072894:0;./dut external -b
+: 1784072905:0;vi dut
+: 1784072922:0;./dut external -b
+: 1784072928:0;./dut external --prod -b
+: 1784072945:0;vi dut
+: 1784072998:0;./dut external --prod -b
+: 1784073003:0;./dut external -b
+: 1784073010:0;./dut external --prod -b
+: 1784073012:0;./dut external -b
+: 1784073019:0;vi dut
+: 1784073072:0;bak -r dut
+: 1784073100:0;dut external
+: 1784073265:0;rm x
+: 1784073268:0;backup
+: 1784073621:0;.ls backup
+: 1784073622:0;ll
+: 1784073649:0;ll
+: 1784073663:0;backup
+: 1784073668:0;,
+: 1784073673:0;backup
+: 1784073690:0;.ls backup
+: 1784073729:0;ll
+: 1784073731:0;ll
+: 1784073746:0;.ls backup
+: 1784073815:0;.ls backup
+: 1784073817:0;ll
+: 1784073822:0;vi rsync-filter.rules
+: 1784073834:0;	D
+: 1784073844:0;vi rsync-filter.rules
+: 1784073881:0;backup -F
+: 1784073919:0;.ls backup
+: 1784074000:0;repo
+: 1784111723:0;h
+: 1784111725:0;ll
+: 1784111728:0;rm x
+: 1784111738:0;wc -l .zsh_history

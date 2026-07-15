@@ -36,15 +36,16 @@ _CAL_LINES=9
 
 # Declarations
 typeset -a _MOTD=()
-typeset -U path cdpath fpath manpath # automatically remove duplicates from these arrays
+typeset -a _HIST=()
+typeset -U path cdpath fpath manpath # Automatically remove duplicates from these arrays
 typeset -A _NUM_WORDS=(1 one 2 two 3 three 4 four 5 five 6 six 7 seven 8 eight 9 nine 10 ten)
 
 # Imports 
 source ${_SYS_ALIASES}
 source ${_SYS_ZSHRC}
-source ${_USR_LOCAL_SRC}/fast-syntax-highlighting/F-Sy-H.plugin.zsh # fast-syntax-highlighting.plugin
-#source ${_USR_LOCAL_SRC}/zsh-autocomplete/zsh-autocomplete.plugin.zsh # auto completion
-source ${_USR_LOCAL_SRC}/zhooks/zhooks.plugin.zsh # add zhooks command to display active hooks
+source ${_USR_LOCAL_SRC}/fast-syntax-highlighting/F-Sy-H.plugin.zsh # Fast-syntax-highlighting.plugin
+#source ${_USR_LOCAL_SRC}/zsh-autocomplete/zsh-autocomplete.plugin.zsh # Auto completion
+source ${_USR_LOCAL_SRC}/zhooks/zhooks.plugin.zsh # Add zhooks command to display active hooks
 
 # Exports
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=97:ln=32:bn=32:se=36' # https://askubuntu.com/questions/1042234/modifying-the-color-of-grep
@@ -68,7 +69,7 @@ _NDX=0
 
 # Functions 
 _check_updates () {
-	sudo chmod 644 ${_MOTD_DIR}/10-help-text # disable
+	sudo chmod 644 ${_MOTD_DIR}/10-help-text # Disable
 
 	local -a MSGS_1
 	local -a MSGS_2
@@ -145,9 +146,9 @@ _reload_funcs () {
 
 	NOW=$(date +'%s')
 	for F in ${MODIFIED};do
-		FILE=$(date +'%s' -r ${F}) # last file mod secs
-		HOURS=$(((NOW - FILE)/3600)) # last file mod hours
-		if [[ ${HOURS} -le 24 ]];then # today?
+		FILE=$(date +'%s' -r ${F}) # Last file mod secs
+		HOURS=$(((NOW - FILE)/3600)) # Last file mod hours
+		if [[ ${HOURS} -le 24 ]];then # Today?
 			echo "Refreshing functions..."
 			unfunction ${F} &> /dev/null
 			autoload -Uz ${F}
@@ -173,7 +174,7 @@ _set_ssid () {
 			wless -n "${_WIFI_PREF}"
 		elif [[ ${KEY:l} == "c" ]];then
 			C_POS=$(_cursor_row)
-			((C_POS--)) # up 1 line to overwrite prompt
+			((C_POS--)) # Up 1 line to overwrite prompt
 			tput smcup
 			wless -cn
 			tput rmcup
@@ -317,7 +318,7 @@ if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
 
 		echo "${_REL} (${(C)_RLBL}):${WHITE_FG}${(C)XDG_SESSION_TYPE}${RESET}"
 
-		# show update status
+		# Show update status
 		_check_updates
 		for M in ${_MOTD};do
 			echo ${M}
@@ -331,16 +332,16 @@ if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
 		fi
 		_set_ssid
 
-		echo "Last backup was:${WHITE_FG}$(backup -s)${RESET}" # show days since last backup 
+		echo "Last backup was:${WHITE_FG}$(backup -s)${RESET}" # Show days since last backup 
 
-		#tput sc
-		echo "Cleaning history..." 
-		HIST=$(hist_no_dups -p)
-		#tput el1
-		#tput rc
-		#wmctrl -R Terminal 
-		#tput ed
-		echo ${HIST}
+		C_POS=$(_cursor_row) # Save current row
+		tput el1; tput sc # Clear line - save cursor
+		echo "Monitoring history..." 
+		hist_no_dups -p | tee -a /tmp/hist
+		tput rc; tput ed; tput cup ${C_POS} 0 # Restore cursor - return to saved row
+		tail -1 /tmp/hist # Display last line of output
+		tput cup $(( C_POS + 1 )) 0 # Advance row
+		tput el1 # Clear line
 
 		setopt >~/.cur_setopts
 		unsetopt >~/.cur_unsetopts
@@ -350,7 +351,7 @@ if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
 
 		gd -s # Google Drive status
 
-		[[ ${XDG_SESSION_TYPE:l} == 'x11' ]] && xset r rate 500 33 # set keyboard repeat delay
+		[[ ${XDG_SESSION_TYPE:l} == 'x11' ]] && xset r rate 500 33 # Set keyboard repeat delay
 
 		echo "Battery charging limit:${WHITE_FG}${_BATT_LIMIT}%${RESET}"
 		/usr/local/bin/system/tweaks/battery_charge_limit ${_BATT_LIMIT} >/dev/null 2>&1 # Set battery charge limit
@@ -359,38 +360,37 @@ if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
 		sudo iwconfig wlo1 power off # Turn off power mgt for wifi
 
 		[[ ${CAM_DEFAULT} == 'off' ]] && sut cam off # Kill cam - show status
-		C_POS=$(_cursor_row)
 
-		# background dbus monitor - maximize new windows (gnome doesn't track win coords)
+		C_POS=$(_cursor_row) # Save current row
+
+		# Background dbus monitor - maximize new windows (gnome doesn't track win coords)
 		INSTANCE=$(pgrep -c wait_app_start)
 		if [[ ${INSTANCE} -eq 0 ]];then
 			( nohup wait_app_start & ) >/dev/null 2>&1
 		fi
 
-		# cpu usage warning
+		# Cpu usage warning
 		INSTANCE=$(pgrep -c cpu_warn)
 		if [[ ${INSTANCE} -eq 0 ]];then
 			( nohup /usr/local/bin/system/cpu_warn & ) >/dev/null 2>&1
 		fi
 
-		remind # post any reminders
+		remind # Post any reminders
 
-		# show calendar
-		#if [[ ${$(tty):t} -eq 0 ]];then
-			TERM_LINES=$(tput lines)
-			CAL_TOP_ROW=$(( TERM_LINES - _CAL_LINES ))
-			tput cup ${CAL_TOP_ROW} 0
-			cal_clr
-		#fi
+		# Show calendar
+		TERM_LINES=$(tput lines)
+		CAL_TOP_ROW=$(( TERM_LINES - _CAL_LINES ))
+		tput cup ${CAL_TOP_ROW} 0
+		cal_clr
 
-		xdotool mousemove $((1920/2)) $((1080/2)) # center the mouse  pointer
+		xdotool mousemove $((1920/2)) $((1080/2)) # Center the cursor
 
 		CNT=$(pgrep -ic enpass)
 		if [[ ${CNT} -eq 0 ]];then
 			wmctrl -i -a $(_term_wid)
 			run_enpass
 		else
-			tput cup ${C_POS} 0 # Cursor position following last info 
+			tput cup ${C_POS} 0 # Return to saved row
 			echo "Enpass is running..."
 			tput cup $(tput lines) 0 # Cursor last line
 		fi
