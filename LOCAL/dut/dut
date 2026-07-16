@@ -443,7 +443,6 @@ ___EOF
 		exit_leave -9 "No external disks found"
 	fi
 
-	# TODO: Not sure why I'm checking both; g_BRIEF should be sufficient?
 	if [[ ${g_BRIEF} == 'true' ]];then # -b option
 		g_VERBOSE=false
 		for L in ${(on)_LOCAL_LIST};do
@@ -1011,7 +1010,7 @@ shift $(( OPTIND - 1 ))
 # This is detection of production mode called from another script (--prod will cancel smcup making it friendly to the caller)
 g_PROD=false
 g_OPTS="${@}"
-[[ ${@} =~ '--prod' ]] && g_PROD=true && g_OPTS=$(sed -e 's/\-\-prod//' <<<${g_OPTS} | str_trim)
+[[ ${@} =~ '--prod' ]] && g_PROD=true && g_OPTS=$(sed -e 's/--prod//' <<<${g_OPTS} | str_trim)
 [[ ${g_PROD} == 'false' && ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ ${#} -ne 0 ]] && UTIL=${1}

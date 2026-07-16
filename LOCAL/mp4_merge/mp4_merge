@@ -275,7 +275,6 @@ show_progress () {
 	local -i T=0
 	local LAST_T=0
 	local LINE
-	local T=''
 	local TAIL_ARG=''
 
 	[[ -n ${OPT} ]] && TAIL_ARG="-1000" || TAIL_ARG="-f"
@@ -328,12 +327,10 @@ show_progress () {
 			[[ ${T} -ne 0 && ${T} -gt ${LAST_T} ]] && bar_fwd # Advance the tick
 		fi
 
-		T=$(clock)
-
 		if [[ ${OPT} == 'noframes' ]];then
-			printf "\r ${BOLD}${CYAN_FG}Merge completion:${WHITE_FG}%.2f%%${RESET} %s" ${PCT} ${T}
+			printf "\r ${BOLD}${CYAN_FG}Merge completion:${WHITE_FG}%.2f%%${RESET}" ${PCT}
 		else
-			printf "\r ${BOLD}${CYAN_FG}Rendering frame${RESET}:${WHITE_FG}%s${RESET} of ${WHITE_FG}%d${RESET} - Completed:${WHITE_FG}%.2f%%${RESET} %s" ${CUR_FRAME} ${TL_FRAMES} ${PCT} ${T}
+			printf "\r ${BOLD}${CYAN_FG}Rendering frame${RESET}:${WHITE_FG}%s${RESET} of ${WHITE_FG}%d${RESET} - Completed:${WHITE_FG}%.2f%%${RESET}" ${CUR_FRAME} ${TL_FRAMES} ${PCT}
 		fi
 
 		LAST_T=${T}
@@ -405,7 +402,7 @@ usage () {
 OPTSTR=":HDdmo:p:"
 OPTIND=0
 
-OUT_FILE_OPT='output.mp4'
+OUT_FILE_OPT=''
 ALT_PATH_OPT=''
 DEL_ARCH_OPT=false
 
@@ -423,6 +420,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND -1 ))
 #--End GetOpts--
+
 # Execution
 clear 
 
@@ -446,8 +444,6 @@ fi
 if [[ -n ${ALT_PATH_OPT} ]];then # Parse options
 	[[ -d ${ALT_PATH_OPT} ]] && _DEFAULT_PATH=${ALT_PATH_OPT} || exit_leave $(err_msg_exit "Invalid alternate path:${ALT_PATH_OPT}")
 fi
-
-[[ ! ${OUT_FILE_OPT} == 'output.mp4' ]] && OUT_FILE_OPT=${_FLIST[1]:h}/${OUT_FILE_OPT:r:gs/ /_/}.mp4
 
 [[ ${DEL_ARCH_OPT} == 'true' ]] && archive_del ${DEL_ARCH_OPT}
 
@@ -482,6 +478,13 @@ fi
 [[ ${#_FLIST} -lt 2 ]] && exit_leave $(err_msg_exit "Need at least 2 files")
 
 echo "Arguments:${WHITE_FG}$(path_get_raw_cmdline)${RESET} matched ${#_FLIST} files"
+
+if [[ -z ${OUT_FILE_OPT} ]];then
+	OUT_FILE_OPT=$(cut -s -d'-' -f1 <<<${_FLIST[1]:t} | str_trim)
+	[[ -z ${OUT_FILE_OPT} ]] && OUT_FILE_OPT='output.mp4'
+fi
+
+OUT_FILE_OPT=${_FLIST[1]:h}/${OUT_FILE_OPT:r:gs/ /_/}.mp4
 
 NDX=0
 for F in ${_FLIST};do # Set inputs

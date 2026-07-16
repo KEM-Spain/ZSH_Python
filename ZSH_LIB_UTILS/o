@@ -454,6 +454,11 @@ case ${#} in
 		;;
 esac
 
+if [[ ${#_ARGLIST} -gt 50 ]];then
+	msg_box -p -PC -H1 "<r>Warning<N>|The number of files is extensive:<w>${#_ARGLIST}<N>"
+	[[ ${_MSG_KEY} != 'y' ]] && exit_leave $(err_msg_exit I "Operation Cancelled")
+fi
+
 [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGC:${#}, FIND_CMD:${FIND_CMD}, HDR_MSG:${HDR_MSG}, _ARGLIST:${_ARGLIST}"
 
 NDX=0

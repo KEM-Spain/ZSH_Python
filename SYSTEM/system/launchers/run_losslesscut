@@ -1,3 +1,3 @@
 #!/usr/bin/zsh
-/opt/losslesscut/run_app_image ${@} &
+run_app_image losslesscut --no-sandbox &
 

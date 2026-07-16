@@ -276,7 +276,6 @@
 : 1780748159:0;iconv -l
 : 1780749287:0;uchardet 1780748296_yts.dbg
 : 1780749388:0;recode UTF8..ISO-8859-15 < 1780748296_yts.dbg
-: 1780758645:0;echo '¤' 
 : 1780790949:0; 
 : 1780826410:0;q
 : 1780936580:0;local -g X
@@ -434,7 +433,6 @@
 : 1783336935:0;perl -wln -e "/\h*;/ and print;" smb.conf
 : 1783339396:0;j
 : 1783341436:0;smbpasswd -a kmiller
-: 1783341543:0;h
 : 1783342327:0;fut comments -h smb.conf
 : 1783429777:0;tc
 : 1783429843:0;rm kmiller/EXT_2
@@ -468,7 +466,6 @@
 : 1783802928:0;m
 : 1783802931:0;Lm
 : 1783848285:0;ll ~/.local/share/yts/*
-: 1783848998:0;repo
 : 1783849379:0;Tm
 : 1783849385:0;Ts
 : 1783862646:0;debug_test
@@ -482,183 +479,458 @@
 : 1783946295:0;df -h maps
 : 1783946451:0;llr
 : 1783947127:0;..
-: 1783970093:0;chkupd
 : 1783970606:0;ull
 : 1783972144:0;l.
 : 1783972229:0;ll.
 : 1784018786:0;clear
 : 1784018794:0;lll
-: 1784019547:0;,
 : 1784033123:0;Tp
 : 1784042101:0;D
 : 1784048462:0;l
 : 1784056751:0;t
-: 1784063927:0;Tw
-: 1784065000:0;ll
 : 1784065019:0;b
 : 1784065196:0;xdotool --help 
 : 1784065582:0;chkupd
-: 1784065651:0;ll
-: 1784065683:0;vi .zshrc
-: 1784065898:0;vi .zshrc
-: 1784065950:0;vi .zshrc
-: 1784066007:24;vi .zshrc
-: 1784066053:11;vi .zshrc
-: 1784066084:13;vi .zshrc
-: 1784066117:0;vi .zshrc
-: 1784066173:0;vi .zshrc
-: 1784066243:40;vi .zshrc
-: 1784066310:0;vi .zshrc
-: 1784066350:0;vi .zshrc
-: 1784066448:0;dut external -b
-: 1784066451:0;dut external -b
-: 1784066779:0;dut external -b
-: 1784066879:0;dut external -b
-: 1784066883:0;dut external -b
-: 1784067050:0;dut external -b
-: 1784067104:0;dut external -b
-: 1784067164:0;dut external -b
-: 1784067166:0;dut external -p
-: 1784067193:0;dut external -b
-: 1784067197:0;dut external -p
-: 1784067226:0;dut external -b
-: 1784067229:0;dut external -p
-: 1784067346:0;dut external -b
-: 1784067349:0;dut external -p
-: 1784067642:0;dut external -b
-: 1784067645:0;dut external -p
-: 1784067689:0;dut external -p
-: 1784067694:0;dut external -b
-: 1784067698:0;dut external -p
-: 1784067714:0;dut external -p
-: 1784067732:0;dut external -p
-: 1784067771:0;dut external -p
-: 1784067841:0;dut external -p
-: 1784067862:0;dut external -p
-: 1784067882:0;dut external -p
-: 1784067894:0;dut external -b
-: 1784067970:0;dut external -b
-: 1784067977:0;dut external -pb
-: 1784068144:0;dut external -pb
-: 1784068155:0;dut external --prpd b
-: 1784068198:0;dut external --prod b
-: 1784068355:0;dut external --prod b
-: 1784068377:0;dut external --prod -b
-: 1784068404:0;dut external --prod -b
-: 1784068455:0;dut external --prod -b
-: 1784068547:0;dut external --prod -b
-: 1784068551:0;dut external --prod
-: 1784068615:0;dut external --prod -b
-: 1784068661:0;dut external --prod -b
-: 1784068719:0;@="SSS"
 : 1784068726:0;echo @
-: 1784068731:0;echo $@
-: 1784068765:0;dut external --prod -b
 : 1784068796:0;Tw
-: 1784068796:0;lsd
-: 1784068809:0;,
-: 1784068810:0;ll
-: 1784068966:0;dut external --prod -b
-: 1784069076:0;dut external --prod -b
-: 1784069119:0;dut external --prod -b
-: 1784069177:0;dut external --prod -b
-: 1784069204:0;dut external --prod -b
-: 1784069383:0;dut external --prod -b
-: 1784069424:0;dut external --prod -b
-: 1784069558:0;dut external --prod -b
-: 1784069588:0;dut external --prod -b
-: 1784069669:0;dut external --prod -b
-: 1784069721:0;dut external --prod -b
-: 1784069874:0;dut external --prod -b
-: 1784069931:0;dut external --prod -b
-: 1784069964:0;dut external --prod -b
-: 1784070165:0;dut external --prod -b
-: 1784070201:0;dut external --prod -b
-: 1784070208:0;dut external -b
-: 1784070291:0;dut external -b
-: 1784070381:0;dut external -b
-: 1784070428:0;dut external -b
-: 1784070543:0;dut external -b
-: 1784070614:0;dut external -b
-: 1784070687:0;dut external --prod -b
-: 1784070709:0;dut external --prod -b
-: 1784070726:0;tput rmcup
-: 1784070731:0;dut external --prod -b
-: 1784070908:0;dut external --prod -b
-: 1784070942:0;dut external --prod -b
-: 1784070952:0;vi .zshrc
-: 1784071040:0;dut external -b
-: 1784071121:0;dut external --prod -b
-: 1784071211:0;dut external --prod -b
-: 1784071224:0;dut external -b
-: 1784071332:0;dut external -b
-: 1784071443:0;dut external -b
-: 1784071569:0;dut external -b
-: 1784071575:0;dut external --prod
-: 1784071582:0;dut external --prod -b
-: 1784071629:0;dut external --prod -b
-: 1784071637:0;dut external -b
-: 1784071673:0;dut external -b
-: 1784071753:0;dut external -b
-: 1784071815:0;dut external -b
-: 1784071877:0;dut external -b
-: 1784071921:0;dut external -b
-: 1784071938:0;dut external -b
-: 1784071957:0;dut external -b
-: 1784071967:0;dut external -H
-: 1784071997:0;dut 
-: 1784072012:0;dut external -v
-: 1784072160:0;dut external -v
-: 1784072166:0;dut external -b
-: 1784072169:0;dut external -b
-: 1784072177:0;dut external -b 2>x
-: 1784072180:0;vi x
-: 1784072241:0;dut external -b 
-: 1784072268:0;dut external -b 
-: 1784072276:0;dut external 
-: 1784072283:0;dut 
-: 1784072295:0;dut space
-: 1784072419:0;cl dut
-: 1784072421:0;bak dut
-: 1784072424:0;ll
-: 1784072426:0;vi dut
-: 1784072770:0;./dut external -b
-: 1784072825:0;./dut external --prod -b
-: 1784072857:0;vi dut
-: 1784072879:0;./dut external --prod -b
-: 1784072894:0;./dut external -b
-: 1784072905:0;vi dut
-: 1784072922:0;./dut external -b
-: 1784072928:0;./dut external --prod -b
-: 1784072945:0;vi dut
-: 1784072998:0;./dut external --prod -b
-: 1784073003:0;./dut external -b
-: 1784073010:0;./dut external --prod -b
-: 1784073012:0;./dut external -b
-: 1784073019:0;vi dut
-: 1784073072:0;bak -r dut
-: 1784073100:0;dut external
-: 1784073265:0;rm x
-: 1784073268:0;backup
-: 1784073621:0;.ls backup
-: 1784073622:0;ll
-: 1784073649:0;ll
-: 1784073663:0;backup
 : 1784073668:0;,
-: 1784073673:0;backup
-: 1784073690:0;.ls backup
-: 1784073729:0;ll
-: 1784073731:0;ll
-: 1784073746:0;.ls backup
-: 1784073815:0;.ls backup
-: 1784073817:0;ll
-: 1784073822:0;vi rsync-filter.rules
-: 1784073834:0;	D
-: 1784073844:0;vi rsync-filter.rules
-: 1784073881:0;backup -F
-: 1784073919:0;.ls backup
 : 1784074000:0;repo
 : 1784111723:0;h
 : 1784111725:0;ll
-: 1784111728:0;rm x
-: 1784111738:0;wc -l .zsh_history
+: 1784111798:0;backup
+: 1784111894:0;repo
+: 1784111924:0;.ls yts
+: 1784111925:0;ll
+: 1784111928:0;,
+: 1784111929:0;ll
+: 1784112422:0;D
+: 1784112441:0;vi VW-Link
+: 1784112466:0;ll
+: 1784112479:0;rm maps
+: 1784112482:0;ll
+: 1784112506:0;cat VW_32GB_CARD_PARTNO
+: 1784112519:0;Cat VW_32GB_CARD_PARTNO
+: 1784112926:0;ll
+: 1784112928:0;..
+: 1784112929:0;ll
+: 1784112945:0;ll
+: 1784112950:0;ll
+: 1784112970:0;Cat VW_Info
+: 1784112992:0;,
+: 1784112994:0;ll
+: 1784112997:0;..
+: 1784113000:0;ll
+: 1784113176:0;Cat VW_32GB_CARD_PARTNO
+: 1784113454:0;vi VW-Link
+: 1784113586:0;Cat VW-Link
+: 1784114947:0;.tc
+: 1784114958:0;ll
+: 1784114960:0;.tc
+: 1784114962:0;ll
+: 1784115127:0;tc
+: 1784115129:0;ll
+: 1784115138:0;g all
+: 1784115185:0;Cat mail_accounts
+: 1784115297:0;ll
+: 1784115300:0;D
+: 1784115304:0;ll
+: 1784115312:0;cat VW-Link
+: 1784115517:0;D
+: 1784115521:0;vi Mijas_Address
+: 1784115705:0;Cat Mijas_Address
+: 1784115790:0;vi Mijas_Address
+: 1784115848:0;Cat Mijas_Address
+: 1784116286:0;ll
+: 1784116294:0;Cat VW_32GB_CARD_PARTNO
+: 1784119548:0;Tw
+: 1784119549:0;ll
+: 1784125227:0;Tw
+: 1784125229:0;lsd
+: 1784125234:0;ll
+: 1784125245:0;yts
+: 1784126576:0;cl sdb
+: 1784126594:0;sdv -c cocinar
+: 1784134647:0;ll
+: 1784134655:0;lsd
+: 1784134660:0;ll
+: 1784134811:0;lsd
+: 1784134824:0;ll
+: 1784140935:0;yts
+: 1784141012:0;todo
+: 1784141026:0;cl dut
+: 1784141030:0;vi dut
+: 1784141082:0;bak -r
+: 1784141210:0;vi dut
+: 1784141248:0;bak -r
+: 1784141256:0;dut --prod -b
+: 1784141269:0;dut external --prod -b
+: 1784141282:0;dut external -b
+: 1784141319:0;g '\\-'
+: 1784141328:0;b
+: 1784141330:0;g '\\-'
+: 1784141345:0;g '\\\-'
+: 1784141373:0;g '[\]-'
+: 1784141387:0;g "[\]-"
+: 1784141397:0;g "-"
+: 1784141410:0;g "\-"
+: 1784141489:0;grep -- '\\-' *
+: 1784141512:0;tput rmcup
+: 1784141515:0;grep -- '\\-' *
+: 1784141566:0;Verb:Cocinar\
+Translation:To Cook\
+Conjugation:Regular\
+\
+Gerund    : cocinando\
+Participle: cocinado\
+\
+Indicative\
+Present\
+Yo        : cocino\
+Tú        : cocinas\
+El        : cocina\
+Nosotros  : cocinamos\
+Vosotros  : cocinÃ�is\
+Ellos     : cocinan\
+\
+Preterite\
+Yo        : cociné\
+Tú        : cocinaste\
+El        : cocinó\
+Nosotros  : cocinamos\
+Vosotros  : cocinasteis\
+Ellos     : cocinaron\
+\
+Imperfect\
+Yo        : cocinaba\
+Tú        : cocinabas\
+El        : cocinaba\
+Nosotros  : cocinÃ�bamos\
+Vosotros  : cocinabais\
+Ellos     : cocinaban\
+\
+Conditional\
+Yo        : cocinaría\
+Tú        : cocinarías\
+El        : cocinaría\
+Nosotros  : cocinaríamos\
+Vosotros  : cocinaríais\
+Ellos     : cocinarían\
+\
+Future\
+Yo        : cocinaré\
+Tú        : cocinarÃ�s\
+El        : cocinarÃ�\
+Nosotros  : cocinaremos\
+Vosotros  : cocinaréis\
+Ellos     : cocinarÃ�n\
+\
+\
+Subjunctive\
+Present
+: 1784141572:0;ll
+: 1784141579:0;,
+: 1784141581:0;ll
+: 1784148140:0;Tw
+: 1784148142:0;lsd
+: 1784148145:0;ll
+: 1784153012:0;lsd
+: 1784153553:0;tz tehran
+: 1784192265:0;ll
+: 1784192353:0;yts
+: 1784193442:0;ll
+: 1784194595:0;d
+: 1784194596:0;ll
+: 1784194605:0;D
+: 1784194616:0;md KeepNotes
+: 1784194640:0;ll
+: 1784194643:0;ext takeout-20260715T144918Z-1-001.zip
+: 1784194644:0;ll
+: 1784194648:0;ll
+: 1784194651:0;ll
+: 1784194653:0;ll
+: 1784194666:0;l *json
+: 1784194682:0;l Verb*
+: 1784201832:0;o
+: 1784201976:0;o
+: 1784202182:0;o
+: 1784202195:0;o
+: 1784202247:0;ull
+: 1784202256:0;lsfuncs
+: 1784202388:0;o
+: 1784202393:0;,
+: 1784202396:0;o
+: 1784202448:0;o
+: 1784202557:0;o
+: 1784202622:0;o
+: 1784202719:0;o
+: 1784202749:0;o
+: 1784202776:0;..
+: 1784202777:0;..
+: 1784202779:0;..
+: 1784202781:0;ll
+: 1784202787:0;rm takeout20260715T144918Z1001
+: 1784202791:0;ll
+: 1784202805:0;O
+: 1784202807:0;ll
+: 1784202815:0;md notesnook
+: 1784202826:0;sudo md notesnook
+: 1784202828:0;ll
+: 1784202840:0;sudo chown root:kmiller notesnook
+: 1784202841:0;ll
+: 1784202844:0;ll
+: 1784202859:0;sudo mv ~/Downloads/notesnook_linux_x86_64.AppImage .
+: 1784202860:0;ll
+: 1784202872:0;..
+: 1784202875:0;ll -d
+: 1784202896:0;chmod 775 notesnook
+: 1784202899:0;sudo chmod 775 notesnook
+: 1784202900:0;l
+: 1784202902:0;ll
+: 1784202912:0;sudo chmod 775 *
+: 1784202913:0;ll
+: 1784202923:0;ll
+: 1784202943:0;..
+: 1784202948:0;ll
+: 1784202956:0;..
+: 1784202958:0;ll
+: 1784202964:0;ll
+: 1784202985:0;cl
+: 1784202994:0;md run_app_image
+: 1784202999:0;cl run_app_image
+: 1784203000:0;ll
+: 1784203019:0;ll
+: 1784203021:0;vi run_app_image
+: 1784203171:0;run_app_image
+: 1784203177:0;vi run_app_image
+: 1784203352:0;run_app_image audicity
+: 1784203362:0;run_app_image audacity
+: 1784203380:0;vi run_app_image
+: 1784203390:0;run_app_image audacity
+: 1784203402:0;vi run_app_image
+: 1784203460:0;run_app_image audacity
+: 1784203466:0;vi run_app_image
+: 1784203557:0;run_app_image audacity
+: 1784203565:0;vi run_app_image
+: 1784203589:0;run_app_image audacity
+: 1784203593:0;vi run_app_image
+: 1784203601:0;run_app_image audacity
+: 1784203605:0;vi run_app_image
+: 1784203669:0;run_app_image audacity
+: 1784203686:0;vi run_app_image
+: 1784203695:0;run_app_image audacity
+: 1784203700:0;vi run_app_image
+: 1784203706:0;run_app_image audacity
+: 1784203716:0;vi run_app_image
+: 1784203780:0;run_app_image audacity
+: 1784203792:0;vi run_app_image
+: 1784203912:0;run_app_image audacity
+: 1784203920:0;vi run_app_image
+: 1784203933:0;run_app_image audacity
+: 1784204086:0;vi run_app_image
+: 1784204109:0;run_app_image audacity
+: 1784204123:0;vi run_app_image
+: 1784204178:0;run_app_image audacity
+: 1784204191:0;vi run_app_image
+: 1784204290:0;run_app_image audacity
+: 1784204301:0;vi run_app_image
+: 1784204332:0;run_app_image audacity
+: 1784204345:0;vi run_app_image
+: 1784204354:0;run_app_image audacity
+: 1784204370:0;vi run_app_image
+: 1784204421:0;run_app_image audacity
+: 1784204461:0;vi run_app_image
+: 1784204479:0;run_app_image audacity
+: 1784204484:0;vi run_app_image
+: 1784204500:0;run_app_image audacity
+: 1784204519:0;vi run_app_image
+: 1784204711:0;run_app_image audacity
+: 1784204741:0;cat /tmp/run_app_image.log
+: 1784204768:0;vi run_app_image
+: 1784204784:0;run_app_image audacity
+: 1784204803:0;run_app_image viber
+: 1784204823:0;run_app_image anthemscore
+: 1784204838:0;cat /tmp/run_app_image.log
+: 1784204853:0;cat /tmp/run_app_image.log
+: 1784204869:0;vi run_app_image
+: 1784204936:0;run_app_image anthemscore
+: 1784204944:0;cat /tmp/run_app_image.log
+: 1784204959:0;bak -r
+: 1784204973:0;ll
+: 1784205002:0;find . -name 'run_app*'
+: 1784205019:0;ll
+: 1784205040:0;rm run_app_image
+: 1784205042:0;..
+: 1784205046:0;find . -name 'run_app*'
+: 1784205059:0;rm run_app_image
+: 1784205061:0;..
+: 1784205064:0;find . -name 'run_app*'
+: 1784205072:0;rm run_app_image
+: 1784205073:0;..
+: 1784205077:0;find . -name 'run_app*'
+: 1784205082:0;rm run_app_image
+: 1784205083:0;..
+: 1784205090:0;rm run_app_image
+: 1784205271:0;s
+: 1784205280:0;ll
+: 1784205287:0;g run_app
+: 1784205334:0;ll
+: 1784205341:0;vi run_musescore
+: 1784205376:0;vi run_musescore
+: 1784205404:0;g run_app
+: 1784205409:0;vi run_jubler
+: 1784205428:0;g run_app
+: 1784205431:0;g run_app
+: 1784205437:0;vi run_losslesscut
+: 1784205475:0;d
+: 1784205477:0;ll
+: 1784205523:0;ll
+: 1784205534:0;me MuseScore-Studio-4.7.4.260706075-x86_64.AppImage
+: 1784205594:0;..
+: 1784205595:0;ll
+: 1784205601:0;,
+: 1784205606:0;s
+: 1784205619:0;vi run_losslesscut
+: 1784205634:0;run_losslesscut
+: 1784205652:0;cat /tmp/run_app_image.log
+: 1784205754:0;cl run_app_image
+: 1784205756:0;vi run_app_image
+: 1784205841:0;bak -r
+: 1784205844:0;ll
+: 1784205852:0;s
+: 1784205861:0;run_losslesscut
+: 1784205873:0;echo $?
+: 1784206017:0;run_losslesscut
+: 1784206037:0;cat /tmp/run_app_image.log
+: 1784206054:0;/opt/losslesscut/LosslessCut-linux-x86_64.AppImage
+: 1784206059:0;sudo /opt/losslesscut/LosslessCut-linux-x86_64.AppImage
+: 1784206091:0;/opt/losslesscut/LosslessCut-linux-x86_64.AppImage --no-sandbox
+: 1784206112:0;vi run_losslesscut
+: 1784206191:0;run_losslesscut
+: 1784206304:0;run_losslesscut
+: 1784206319:0;run_losslesscut
+: 1784206369:0;run_losslesscut
+: 1784206378:0;cat /tmp/run_app_image.log
+: 1784206449:0;run_losslesscut
+: 1784206492:0;/opt/losslesscut/LosslessCut-linux-x86_64.AppImage --nosandbox
+: 1784206506:0;ll
+: 1784206518:0;/opt/losslesscut/LosslessCut-linux-x86_64.AppImage --nosandbox
+: 1784206530:0;sudo /opt/losslesscut/LosslessCut-linux-x86_64.AppImage --nosandbox
+: 1784206541:0;vi run_losslesscut
+: 1784206550:0;run_losslesscut
+: 1784206564:0;cl run_app_image
+: 1784206567:0;bak 
+: 1784206569:0;ll
+: 1784206574:0;vi run_app_image
+: 1784206800:0;bak -r
+: 1784206808:0;,
+: 1784206812:0;run_losslesscut
+: 1784206821:0;cat /tmp/run_app_image.log
+: 1784206846:0;run_losslesscut
+: 1784206914:0;ll
+: 1784206920:0;me LosslessCut-linux-x86_64.AppImage
+: 1784206921:0;ll
+: 1784207072:0;ll
+: 1784207083:0;ll
+: 1784207088:0;Tw
+: 1784207089:0;ll
+: 1784213848:0;,
+: 1784213850:0;,
+: 1784213859:0;cl
+: 1784216005:0;yts
+: 1784216435:0;Tw
+: 1784216440:0;lsd
+: 1784216449:0;ll
+: 1784216755:0;yts -wy
+: 1784216811:0;yts
+: 1784220957:0;lsd
+: 1784220965:0;ll
+: 1784229542:0;yts
+: 1784229632:0;ll
+: 1784229637:0;toso
+: 1784229639:0;todo
+: 1784229659:0;cat /tmp/run_app_image.log
+: 1784230061:0;cl run_app_image
+: 1784230063:0;bak
+: 1784230065:0;ll
+: 1784230093:0;Tw
+: 1784230094:0;ll
+: 1784230098:0;mya
+: 1784230212:0;foxit
+: 1784230271:0;foxit
+: 1784230300:0;anthem
+: 1784230370:0;lossless
+: 1784230414:0;Tw
+: 1784230417:0;ll
+: 1784234438:0;lsd
+: 1784234445:0;ll
+: 1784234454:0;yts
+: 1784234700:0;yts
+: 1784234833:0;mp4_merge -o'JD' jimmy
+: 1784234856:0;ll
+: 1784234930:0;echo 'Alex Christoforou - Keir Says Goodbye Travels To Kiev As Ursula Gets.mp4' | cut -d'-' -f1
+: 1784234943:0;cl mp4_merge
+: 1784234946:0;bak
+: 1784234950:0;vi mp4_merge
+: 1784235336:0;mp4_merge jimmy
+: 1784235371:0;mp4_merge ~/.local/share/mp4_merge
+: 1784235380:0;mp4_merge -H
+: 1784235394:0;mp4_merge -p ~/.local/share/mp4_merge jimmy
+: 1784235414:0;vi mp4_merge
+: 1784235458:0;mp4_merge -p ~/.local/share/mp4_merge jimmy
+: 1784235502:0;vi mp4_merge
+: 1784235612:0;mp4_merge -p ~/.local/share/mp4_merge jimmy
+: 1784235633:0;vi mp4_merge
+: 1784235647:0;mp4_merge -p ~/.local/share/mp4_merge jimmy
+: 1784235661:0;vi mp4_merge
+: 1784235733:0;mp4_merge -p ~/.local/share/mp4_merge jimmy
+: 1784235767:0;mp4_merge -o'JD' -p ~/.local/share/mp4_merge jimmy
+: 1784235781:0;bak -r
+: 1784235784:0;ll
+: 1784235788:0;Tw
+: 1784235789:0;ll
+: 1784235806:0;ll
+: 1784236826:0;D
+: 1784236845:0;vi Tracking
+: 1784236865:0;ll
+: 1784236880:0;cat Tracking
+: 1784236943:0;lsd
+: 1784236947:0;ll
+: 1784240778:0;yts 'marta havryshko'
+: 1784240855:0;ll
+: 1784240862:0;rm Jimmy\ Dore.mp4
+: 1784240864:0;ll
+: 1784240877:0;cl
+: 1784240896:0;s
+: 1784240916:0;b
+: 1784240940:0;s
+: 1784240969:0;kdecid
+: 1784240998:0;kde_id
+: 1784241016:0;cat kde_id
+: 1784241060:0;vi lib_func_sorted_tst
+: 1784241074:0;lib_func_sorted_tst
+: 1784241107:0;vi loc_share
+: 1784241145:0;vi cfg_dir
+: 1784241186:0;cfg_dir kdeconnect
+: 1784241204:0;vi cfg_dir
+: 1784241306:0;vi cfg_dir
+: 1784241316:0;z
+: 1784241324:0;ll
+: 1784241360:0;file loc_share
+: 1784241395:0;ln -s /usr/local/bin/system/cfg_dir .
+: 1784241398:0;sudo ln -s /usr/local/bin/system/cfg_dir .
+: 1784241399:0;ll
+: 1784241462:0;.c kdeconnect
+: 1784241484:0;cl
+: 1784241499:0;.zc
+: 1784241523:0;vi _tvi
+: 1784241545:0;vi _loc_share
+: 1784241651:0;.ls apps
+: 1784241671:0;.ls icc
+: 1784241678:0;.zc
+: 1784241694:0;vi _cfg_dir
+: 1784241728:0;.c
+: 1784241737:0;.c 
+: 1784241740:0;b
+: 1784241750:0;.zc
+: 1784241755:0;vi _cfg_dir
+: 1784241777:0;rb -l

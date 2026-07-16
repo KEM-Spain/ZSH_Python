@@ -1,20 +1,30 @@
-2026-07-15_11:12: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-15_11:12: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-15_11:12: query_rumble: Creating listing for QKEY:kimiversen TYPE:channel
-2026-07-15_11:12: query_rumble: PARSER:, QUERY:https://rumble.com/c/kimiversen?page=1
-2026-07-15_11:12: query_rumble: Listing for QKEY:kimiversen contains 25 rows
-2026-07-15_11:12: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.T57w5S
-2026-07-15_11:12: job_start: TITLE:NO SHOW 07-14-26. THE KIM IVERSEN SHOW WILL RETURN TOMORROW
-2026-07-15_11:12: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7cqfa0-no-show-07-14-26.-the-kim-iversen-show-will-return-tomorrow.html" PID:1513269
-2026-07-15_11:12: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-15_11:12: yt URL:https://rumble.com/v7cqfa0-no-show-07-14-26.-the-kim-iversen-show-will-return-tomorrow.html
-2026-07-15_11:12: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7cqfa0-no-show-07-14-26.-the-kim-iversen-show-will-return-tomorrow.html"
-2026-07-15_11:12: action_do: GENERATING HEADER
-2026-07-15_11:12: action_do: COMPLETED
-2026-07-15_11:12: action_do: POST-PROCESSING
-2026-07-15_11:12: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7cqfa0-no-show-07-14-26.-the-kim-iversen-show-will-return-tomorrow.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Kim_Iversen - NO_SHOW_07-14-26._THE_KIM_IVERSEN_SHOW_WILL_RETURN_TOMORROW.mp4|6323152
-2026-07-15_11:12: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - NO_SHOW_07-14-26._THE_KIM_IVERSEN_SHOW_WILL_RETURN_TOMORROW.mp4
-2026-07-15_11:12: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Kim_Iversen - NO_SHOW_07-14-26._THE_KIM_IVERSEN_SHOW_WILL_RETURN_TOMORROW.mp4
-2026-07-15_11:12: set_final_fn: Overwriting file:Kim_Iversen - NO_SHOW_07-14-26._THE_KIM_IVERSEN_SHOW_WILL_RETURN_TOMORROW.mp4 with:Kim Iversen - No 07-14-26. The Kim Iversen Show Will Return Tomorrow.mp4
-2026-07-15_11:12: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Kim Iversen - No 07-14-26. The Kim Iversen Show Will Return Tomorrow.mp4
-2026-07-15_11:12: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.T57w5S was cleared for:kimiversen from:action_do
+2026-07-17_00:26: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-17_00:26: log_update: Skipping expired inode:6323242
+2026-07-17_00:26: log_update: Skipping expired inode:6323228
+2026-07-17_00:26: log_update: Skipping expired inode:6323235
+2026-07-17_00:26: log_update: Skipping expired inode:6370265
+2026-07-17_00:26: log_update: Skipping expired inode:6370624
+2026-07-17_00:26: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-17_00:26: _QUERY_OPTS: AGE:recent DKEY:marta havryshko ECODE:Y ENGINE:youtube EOPT: QKEY:marta havryshko TYPE:standard 
+2026-07-17_00:26: query_youtube: Creating listing for QKEY:marta havryshko STRICT:null
+2026-07-17_00:26: query_youtube: _QUERY_OPTS: AGE:recent DKEY:marta havryshko ECODE:Y ENGINE:youtube EOPT:null QKEY:marta havryshko TYPE:standard 
+2026-07-17_00:26: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "marta havryshko"
+2026-07-17_00:26: query_youtube: Rejected:katiehalper
+2026-07-17_00:26: query_youtube: Rejected:katiehalper
+2026-07-17_00:26: query_youtube: Rejected:thepeacemonger
+2026-07-17_00:26: query_youtube: Listing for QKEY:marta havryshko contains 3 rows
+2026-07-17_00:26: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.fFjbYA
+2026-07-17_00:26: job_start: TITLE:Trita Parsi On Iran, Marta Havryshko On Ukraine, Kai Newkirk On Running
+2026-07-17_00:26: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=ZYTfCvRfYvk" PID:1383156
+2026-07-17_00:26: yt PPCMD:/usr/bin/zsh/usr/local/bin/ytsmarta havryshko
+2026-07-17_00:26: yt URL:https://youtube.com/watch?v=ZYTfCvRfYvk
+2026-07-17_00:26: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=ZYTfCvRfYvk"
+2026-07-17_00:26: action_do: GENERATING HEADER
+2026-07-17_00:27: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=ZYTfCvRfYvk PPCMD:/usr/bin/zsh/usr/local/bin/ytsmarta havryshko, TARGET:Katie_Halper - Trita_Parsi_on_Iran_Marta_Havryshko_on_Ukraine_Kai_Newkirk_on_Running_Against_Israel_.mp4|6299024
+2026-07-17_00:27: action_do: COMPLETED
+2026-07-17_00:27: action_do: POST-PROCESSING
+2026-07-17_00:27: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Katie_Halper - Trita_Parsi_on_Iran_Marta_Havryshko_on_Ukraine_Kai_Newkirk_on_Running_Against_Israel_.mp4
+2026-07-17_00:27: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Katie_Halper - Trita_Parsi_on_Iran_Marta_Havryshko_on_Ukraine_Kai_Newkirk_on_Running_Against_Israel_.mp4
+2026-07-17_00:27: set_final_fn: Overwriting file:Katie_Halper - Trita_Parsi_on_Iran_Marta_Havryshko_on_Ukraine_Kai_Newkirk_on_Running_Against_Israel_.mp4 with:Katie Halper - Trita Parsi On Iran marta havryshko On Ukraine Kai.mp4
+2026-07-17_00:27: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Katie Halper - Trita Parsi On Iran marta havryshko On Ukraine Kai.mp4
+2026-07-17_00:27: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.fFjbYA was cleared for:marta havryshko from:action_do

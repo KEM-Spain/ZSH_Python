@@ -22,7 +22,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
   
 typeset -a LOCAL_FILES
 
-LOCAL_SHARE=~/.local/share
+CONFIG_DIR=~/.config
 
 if [[ ${1} == '-H' ]];then
 	tabs 5
@@ -31,12 +31,12 @@ if [[ ${1} == '-H' ]];then
 	return
 fi
 
-[[ -z ${1} ]] && cd ${LOCAL_SHARE}
+[[ -z ${1} ]] && cd ${CONFIG_DIR}
 
-if [[ -d ${LOCAL_SHARE}/${1} ]];then
-	cd ${LOCAL_SHARE}/${1}
+if [[ -d ${CONFIG_DIR}/${1} ]];then
+	cd ${CONFIG_DIR}/${1}
 else
-	echo "Invalid sub directory of ${LOCAL_SHARE}:${WHITE_FG}${1}${RESET}"
+	echo "Non existant sub directory of ${CONFIG_DIR}:${WHITE_FG}${1}${RESET}"
 	return
 fi
 

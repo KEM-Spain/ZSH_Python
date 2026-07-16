@@ -1,0 +1,28 @@
+#!/usr/bin/zsh
+# Declarations
+typeset -a _IMAGES=()
+# Constants
+_APP_DIR=/opt
+_LOG_DIR=/tmp
+
+# Execution
+[[ ${#} -ne 0 ]] && APP_ARG=${1} # Args check
+[[ ${#} -gt 1 ]] && APP_OPTS=${@[2,-1]} # Opts check
+
+[[ -z ${APP_ARG} ]] && { echo "Missing arg:<APPLICATION>" && exit 1 } # Missing arg
+
+if [[ -d ${_APP_DIR}/${APP_ARG} ]];then
+	_IMAGES=("${(f)$(find ${_APP_DIR}/${APP_ARG} -type f -executable -name '*AppImage' | sort -rn)}")
+
+	[[ -z ${_IMAGES} ]] && { echo "No AppImage found for ${APP_ARG}" && exit 1 }
+
+	if [[ -e ${_IMAGES[1]} ]];then
+		echo "Executing ${_IMAGES[1]}" > ${_LOG_DIR}/${0:t}.log
+		${_IMAGES[1]} ${APP_OPTS} >> ${_LOG_DIR}/${0:t}.log 2>&1 &
+		[[ ${?} -ne 0 ]] && { echo "Launching ${_IMAGES[1]} had errors (${?})" && exit 1 }
+	fi
+else
+	echo "No application found matching: ${APP_ARG} in ${_APP_DIR}"
+	exit 1
+fi
+
