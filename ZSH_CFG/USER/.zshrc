@@ -336,7 +336,7 @@ if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
 		hist_no_dups -p | tee -a ${_HIST_MSG}
 
 		tput rc; tput ed; tput cup ${C_POS} 0 # Restore cursor - return to saved row
-		tail -1 ${_HIST_MSG} # Display last line of output
+		[[ -n ${_HIST_MSG} ]] && tail -1 ${_HIST_MSG} || echo -n "History checked" # Display last line of output
 
 		tput cup $(( C_POS + 1 )) 0 # Advance row
 		tput el1 # Clear line
