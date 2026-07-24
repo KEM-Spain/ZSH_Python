@@ -6,14 +6,14 @@ if !has("gui_running")
 	let g:rainbow_ctermfgs = ['lightblue', 'lightgreen', 'yellow', 'red', 'magenta']
 
 	function! DisplayList(list)
-		 redraw
-		 if a:list == 'msgp'
-			 source ~/.vim/msgp.list
-		 elseif a:list == 'msga'
-			 source ~/.vim/msga.list
-		 else
-			  echo "No list found for: " . a:list
-		 endif
+		redraw
+		if a:list == 'msgp'
+			source ~/.vim/msgp.list
+		elseif a:list == 'msga'
+			source ~/.vim/msga.list
+		else
+			echo "No list found for: " . a:list
+		endif
 	endfunction
 
 	"Begin (Keyword Detection) related
@@ -33,9 +33,9 @@ if !has("gui_running")
 
 	"Sort by text width
 	function! SortLines() range
-		 execute a:firstline . "," . a:lastline . 's/^\(.*\)$/\=strdisplaywidth( submatch(0) ) . " " . submatch(0)/'
-		 execute a:firstline . "," . a:lastline . 'sort n'
-		 execute a:firstline . "," . a:lastline . 's/^\d\+\s//'
+		execute a:firstline . "," . a:lastline . 's/^\(.*\)$/\=strdisplaywidth( submatch(0) ) . " " . submatch(0)/'
+		execute a:firstline . "," . a:lastline . 'sort n'
+		execute a:firstline . "," . a:lastline . 's/^\d\+\s//'
 	endfunction
 
 	filetype plugin on "detect filetype
@@ -62,9 +62,9 @@ if !has("gui_running")
 	nnoremap <F5> :echom 'Current file:' expand('%:p')<CR>
 
 	nm <silent> <F4> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name")
-    \ . '> trans<' . synIDattr(synID(line("."),col("."),0),"name")
-    \ . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name")
-    \ . ">"<CR>
+				\ . '> trans<' . synIDattr(synID(line("."),col("."),0),"name")
+				\ . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name")
+				\ . ">"<CR>
 
 	"display help lists for MSG.zsh
 	command! -nargs=1 ShowList call DisplayList(<q-args>)
@@ -116,8 +116,32 @@ if !has("gui_running")
 
 	"wrap long lines
 	nnoremap <c-w> <esc>gggqG:echom "Wrapped long lines"<CR>
-	
-	set autoindent "automatic code indent
+
+	" Tab Settings
+	" Global Indentation Defaults ---
+	set tabstop=2
+	set shiftwidth=2
+	set softtabstop=2
+	set expandtab
+	set autoindent
+	set nosmartindent
+
+	filetype plugin indent on
+
+	" Override Language Defaults to Force 2 Spaces ---
+	" This ensures filetype scripts (which default to 4 spaces) don't overwrite your settings
+	augroup ForceTwoSpaceIndent
+		autocmd!
+		autocmd FileType * setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
+	augroup END
+
+	" Auto-Reformat on Save ---
+	"augroup AutoIndentOnSave
+	"	autocmd!
+	"	autocmd BufWritePre * normal! gg=G``
+	"augroup END
+
+	" Other Settings
 	set backspace=2 "backspace del all
 	set cindent "C indenting function
 	set encoding=utf-8
@@ -129,19 +153,14 @@ if !has("gui_running")
 	set lcs=tab:>.,eol:$ "show non printing chars
 	set modeline "process embedded modelines
 	set nocompatible "We're running Vim, not Vi!
-	set noexpandtab "use real tabs
 	set nowrap "do not wrap lines
 	set nu "show numbers
-	set shiftwidth=3 "When auto-indenting, indent by this much.
+	set shiftwidth=4 "When auto-indenting, indent by this much.
 	set showcmd "show typed commands
 	set showmode
-	set showtabline=2 "when tab-page labels are shown
-	set smarttab "tries to guess correct tabbing strategy
-	set softtabstop=3 "soft tabs
 	set statusline=%<%f\ (%{&encoding})\ %h%m%r%=%-14.(%l,%c%V%)\ %P
 	set syntax=on
 	set t_Co=256 "color numbers
-	set tabstop=3 "Force tabs to be displayed/expanded to 3 spaces (instead of default 8).
 	set tags=~/.vim/mytags/framework
 	set textwidth=120 "text width
 	set undodir=~/.vim/undo

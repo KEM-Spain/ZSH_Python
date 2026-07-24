@@ -421,8 +421,8 @@ done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
-#--Execution
-[[ ${_DEBUG} -ne 0 ]] && do_smcup
+# Execution
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ! -d ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
 [[ -e ${_APP_LOG} ]] && /bin/rm -f ${_APP_LOG} # Initialize logging
 
@@ -446,13 +446,18 @@ case ${#} in
 		FIND_CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
 		_ARGLIST=("${(f)$(eval ${FIND_CMD})}")
 		;;
-	1) _ARGLIST+=${1}
+	1) _ARGLIST+=(${1})
 		HDR_MSG='Processing single file'
 		;;
 	*) HDR_MSG='Processing multiple args'
 		_ARGLIST=(${@})
 		;;
 esac
+
+if [[ ${#_ARGLIST} -gt 50 ]];then
+	#msg_box -p -PC -H1 "<r>Warning<N>|The number of files is extensive:<w>${#_ARGLIST}<N>"
+	#[[ ${_MSG_KEY} != 'y' ]] && exit_leave $(err_msg_exit I "Operation Cancelled") || msg_box "Working..."
+fi
 
 [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGC:${#}, FIND_CMD:${FIND_CMD}, HDR_MSG:${HDR_MSG}, _ARGLIST:${_ARGLIST}"
 
@@ -529,6 +534,7 @@ list_set_action_msgs open file
 list_set_reuse_stale true
 list_set_client_warn true
 list_set_searchable true
+list_set_position_hold true
 
 while true;do
 	# Get selection

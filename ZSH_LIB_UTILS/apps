@@ -610,7 +610,6 @@ list_user_prompt_style msg_box
 list_set_no_top_offset # Place the first detail line immediately after heading
 list_set_barlines true
 list_set_searchable true
-list_set_restore_pos true
 
 while true;do
 	# Get selection
@@ -621,7 +620,6 @@ while true;do
 	_MARKED=($(list_get_selected))
 
 	if [[ $(list_get_selected_count) -ne 0 ]];then
-		list_set_page_hold
 		for M in ${_MARKED};do
 			action_warn ${M}
 			[[ ${?} -eq 0 ]] && action_do ${M} ${_MSG_KEY}

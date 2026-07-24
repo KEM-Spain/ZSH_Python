@@ -34,7 +34,8 @@ err_msg_exit () {
 		if [[ -f ${IS_FILE} || ${IS_FILE} =~ ".\.." ]];then
 			E_MSG="$(cut -d: -f1 <<<${E_MSG}):${WHITE_FG}${IS_FILE}${RESET}"
 		else
-			[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe 's/(.*:)(.*?\s+)(.*)/\1\e[37m\2\e[m\3/g' <<<${E_MSG})
+			#[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe 's/(.*:)(.*?\s+)(.*)/\1\e[37m\2\e[m\3/g' <<<${E_MSG})
+			[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe 's/(.*:)(.*)$/\1\e[37m\2\e[m/g' <<<${E_MSG})
 		fi
 		printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "$(echo ${E_MSG})"
 	fi

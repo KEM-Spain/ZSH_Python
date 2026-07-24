@@ -1,5 +1,4 @@
 #!/usr/bin/env zsh
- 
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -113,7 +112,6 @@ list_set_select_action "edit"
 list_set_action_msgs edit config
 list_set_reuse_stale true
 list_set_searchable true
-list_set_restore_pos true
 
 while true;do
 	list_select ${_LOCAL_LIST}

@@ -34,18 +34,33 @@ typeset -A _BOX_COORDS=()
 typeset -A _REL_COORDS=()
 typeset -aU _DEPS=()
 typeset -a _SCREEN=() # Holds displayed list content
+typeset -A _ROW_CODES=(0 AVAILABLE 1 SELECTED 2 STALE  3 USED)
+typeset -A _MOUNT_CODES=(
+0 "0 - success"
+1 "1 - incorrect invocation or permissions"
+2 "2 - system error (out of memory, cannot fork, no more loop devices)"
+4 "4 - internal mount bug"
+8 "8 - user interrupt"
+16 "16 - problems writing or locking /etc/mtab"
+20 "partition is not free - an active process is using the partition"
+25 "cannot unmount - partition is not mounted"
+30 "partition is not free - an active process is using the partition"
+35 "cannot mount - partition is already mounted"
+32 "32 - failure"
+64 "64 - partial mount succeeded"
+)
 
 # Default Modules
 _DEPS=(ANSI.zsh DBG.zsh ERROR.zsh EXIT.zsh UTILS.zsh)
 
 # Debug level constants
 _LOW_DBG=1
-_HIGH_DBG=2
+_MID_DBG=2
 _HIGH_DBG=3
 
 typeset -A _DEBUG_LEVELS=(
 ${_LOW_DBG} LOW
-${_HIGH_DBG} MID
+${_MID_DBG} MID
 ${_HIGH_DBG} HIGH
 )
 

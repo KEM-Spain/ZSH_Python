@@ -20,6 +20,7 @@ typeset -A ENGINES
 ENGINES[EZTV]="https://www.eztv.ag"
 ENGINES[LIME]="http://limetorrents.cc"
 ENGINES[PBAY]="http://thepiratebay.rocks"
+RUTRACKER="torrentsru5dbmqszbdinnz7cjiubxsjngq52qij6ih3fmp3gn7hwqqd.onion" # Via TOR
 
 for K in ${(k)ENGINES};do
 	printf "Torrent:%s Address:%s\n" ${K} ${ENGINES[${K}]}

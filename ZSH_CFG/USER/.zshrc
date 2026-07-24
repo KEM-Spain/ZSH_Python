@@ -7,9 +7,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -17,9 +15,6 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
-
-# Set as login shell
-set -o login
 
 # Constants
 _REL=$(lsb_release -d | cut -d: -f2- | sed 's/^[ \t]*//')
@@ -33,6 +28,11 @@ _SYS_ZSHRC=/etc/zsh/zshrc
 _WIFI_PREF="WiFi_OliveNet-Casa 7_5G"
 _BATT_LIMIT=96
 _CAL_LINES=9
+_HIST_MSG=$(mktemp /tmp/hist.msg.XXXXXX)
+
+# Vars
+_TERMCNT=$(terms -c)
+_NDX=0
 
 # Declarations
 typeset -a _MOTD=()
@@ -60,12 +60,6 @@ export GIT_AUTHOR_EMAIL="miller.kurt.e@gmail.com"
 export LC_ALL=C.utf8
 export DISPLAY=:0
 export CPU_WARN_LIMIT=800
-
-# Vars
-_TERMCNT=$(terms -c)
-_NDX=0
-
-[[ -o login ]] && LOGIN=login || LOGIN=''
 
 # Functions 
 _check_updates () {
@@ -207,12 +201,8 @@ _set_term_header () {
 	print -Pn "\e]0;Terminal ${THIS_TERM} of ${MAX}\a"
 }
 
-_term_count () {
-	terms -c
-}
-
 _term_wid () {
-	local WID=$(wmctrl -l | grep -i terminal | tr -s '[:space:]' | cut -d' ' -f1)
+	local WID=$(wmctrl -l | grep -i -E 'terminal|zsh' | tr -s '[:space:]' | cut -d' ' -f1)
 	[[ -z ${WID} ]] && echo "Unable to obtain WID" >&2 || echo ${WID}
 }
 
@@ -263,19 +253,6 @@ _wifi_on () {
 	return 0
 }
 
-stty -ixon
-umask 002 # Standard
-alias sudo='sudo ' # Sudo tweak
-
-# Completions
-fpath=(/home/kmiller/.zsh/completions ${fpath})
-autoload -Uz compinit
-if [ "$(date +%j)" != "$(stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null)" ]; then
-  compinit
-else
-  compinit -C
-fi
-
 precmd () {
 	local HIT=false
 	local LPWD=''
@@ -300,19 +277,36 @@ precmd () {
 	_set_term_header
 }
 
+# Execution
+[[ -o login ]] && LOGIN=login || LOGIN=''
+
+set -o login # Set as login shell
+stty -ixon
+umask 002 # Standard
+alias sudo='sudo ' # Sudo tweak
+
+# Save options
+setopt >~/.cur_setopts
+unsetopt >~/.cur_unsetopts
+
+# Completions
+fpath=(/home/kmiller/.zsh/completions ${fpath})
+autoload -Uz compinit
+if [ "$(date +%j)" != "$(stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null)" ]; then
+  compinit
+else
+  compinit -C
+fi
+
 # Hooks
 add-zsh-hook precmd _reload_funcs # Reload modified functions
 add-zsh-hook precmd _reload_aliases # Reload modified aliases
 add-zsh-hook precmd _cursor_on
 
-# Execution
 if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
-	INTERACTIVE=''
-
 	if [[ -o interactive ]]; then
 		wmctrl -i -r $(_term_wid) -b add,maximized_vert,maximized_horz
 
-		INTERACTIVE=interactive
 		tput cup 0 0
 		tput ed
 
@@ -324,29 +318,30 @@ if _is_top_term && [[ -z ${SSH_CLIENT} ]];then
 			echo ${M}
 		done
 
-		upd_locate -I >/dev/null 2>&1 &|
+		upd_locate -u # >/dev/null 2>&1 # &|
 
 		# Show/set wifi
 		if ! _wifi_on;then
 			echo "Wireless was activated"
 		fi
+
 		_set_ssid
 
 		echo "Last backup was:${WHITE_FG}$(backup -s)${RESET}" # Show days since last backup 
 
 		C_POS=$(_cursor_row) # Save current row
 		tput el1; tput sc # Clear line - save cursor
+
 		echo "Monitoring history..." 
-		hist_no_dups -p | tee -a /tmp/hist
+		hist_no_dups -p | tee -a ${_HIST_MSG}
+
 		tput rc; tput ed; tput cup ${C_POS} 0 # Restore cursor - return to saved row
-		tail -1 /tmp/hist # Display last line of output
+		tail -1 ${_HIST_MSG} # Display last line of output
+
 		tput cup $(( C_POS + 1 )) 0 # Advance row
 		tput el1 # Clear line
 
-		setopt >~/.cur_setopts
-		unsetopt >~/.cur_unsetopts
-
-		EDS=$(dut external --prod -b) # External drive status
+		EDS=$(dut external -s) # External drive status
 		echo ${EDS}
 
 		gd -s # Google Drive status
@@ -399,6 +394,6 @@ else
 	wmctrl -i -R $(win_id | cut -d'|' -f1) -b add,maximized_vert,maximized_horz
 fi
 
-if [[ $(_term_count) -eq 1 ]];then
+if [[ $(terms -c) -eq 1 ]];then
 	wmctrl -i -a $(_term_wid)
 fi

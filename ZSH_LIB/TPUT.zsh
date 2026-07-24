@@ -52,9 +52,11 @@ cursor_save () {
 do_rmcup () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	[[ ${_SMCUP} == 'false' ]] && return
-	tput -T ${_TERM} rmcup
-	_SMCUP=false
+	if [[ ${_SMCUP} == 'true' ]];then
+		tput -T ${_TERM} rmcup
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Executed rmcup"
+		_SMCUP=false
+	fi
 }
 
 do_rmso () {
@@ -71,9 +73,11 @@ do_smso () {
 do_smcup () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	[[ ${_SMCUP} == 'true' ]] && return
-	tput -T ${_TERM} smcup
-	_SMCUP=true
+	if [[ ${_SMCUP} == 'false' ]];then
+		tput -T ${_TERM} smcup 
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Executed smcup"
+		_SMCUP=true
+	fi
 }
 
 tcup () {

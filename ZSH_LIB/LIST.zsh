@@ -2,8 +2,9 @@
 _DEPS+=(ARRAY.zsh CENTER.zsh MSG.zsh PATH.zsh STR.zsh TPUT.zsh VALIDATE.zsh)
 
 # LIB Declarations
-typeset -A _KEY_CALLBACKS=()
 typeset -A _CBK_RET=()
+typeset -A _CURSOR_POS=() # Holds last cursor position
+typeset -A _KEY_CALLBACKS=()
 typeset -A _LIST_SELECTED=()
 typeset -A _LIST_SELECTED_PAGE=() # Selected rows by page
 typeset -A _PAGES=()
@@ -48,8 +49,7 @@ _NO_TOP_OFFSET=false
 _OFF_SCREEN_ROWS=false
 _PAGE_CALLBACK_FUNC=''
 _PROMPT_KEYS=''
-_LIST_RESTORE_POS=false
-_LIST_POS_RESET=false
+_LIST_POS_HOLD=false
 _SEARCH_MARKER="${BOLD}${RED_FG}\u25CF${RESET}"
 _USED_MARKER="${BOLD}${MAGENTA_FG}\u25CA${RESET}"
 _LIST_IS_SELECTABLE=true
@@ -57,7 +57,6 @@ _SELECTION_LIMIT=0
 _SELECT_ACTION='do action'
 _SELECT_ALL=false
 _SELECT_CALLBACK_FUNC=''
-_LIST_TAG_FILE="/tmp/${_MY_PID}.${_SCRIPT}_list.state"
 _TARGET_CURSOR=1
 _TARGET_KEY=''
 _TARGET_NDX=1
@@ -88,11 +87,6 @@ list_display_page () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	if [[ ${_PAGE_DATA[RESTORE]} == 'true' ]];then
-		_PAGE_DATA[PAGE]=$(list_find_page ${_PAGE_DATA[POS_NDX]})
-		PG_LIMITS=($(list_get_page_limits))
-	fi
-
 	[[ ${HILITE} == 'nohilite' ]] && HILITE=false || HILITE=true 
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}GENERATING HEADER FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
@@ -112,7 +106,7 @@ list_display_page () {
 	for (( R=1; R <= _MAX_DISPLAY_ROWS; R++ ));do
 		((_LIST_NDX++))
 		X_POS=$(( R + _PAGE_DATA[TOP_OFFSET] - 1 ))
-		if [[ ${X_POS} -le ${PG_LIMITS[MAX_CURSOR]} ]];then
+		if [[ ${X_POS} -le ${PG_LIMITS[MAX_CSR]} ]];then
 			tcup ${X_POS} 0;tput el
 			list_item init ${_LIST_LINE_ITEM} ${X_POS} 0
 		else
@@ -120,10 +114,9 @@ list_display_page () {
 		fi
 	done
 
-	if [[ ${_PAGE_DATA[RESTORE]} == 'true' ]];then
-		_LIST_NDX=${_PAGE_DATA[POS_NDX]} # Initialize page position
-		_CURSOR_NDX=${_PAGE_DATA[POS_CUR]}
-		_PAGE_DATA[RESTORE]=false
+	if [[ ${_LIST_POS_HOLD} == 'true' && -n ${_CURSOR_POS} ]];then
+		_LIST_NDX=${(k)_CURSOR_POS}
+		_CURSOR_NDX=${(v)_CURSOR_POS}
 	else
 		_LIST_NDX=${PG_LIMITS[TOP]} # Initialize page top
 		_CURSOR_NDX=${_PAGE_DATA[TOP_OFFSET]}
@@ -236,12 +229,12 @@ list_get_page_limits () {
 	local RANGE=${_PAGES[${_PAGE_DATA[PAGE]}]}
 	local TOP=$(cut -d: -f1 <<<${RANGE})
 	local BOT=$(cut -d: -f2 <<<${RANGE})
-	local MAX_CURSOR=$(( _PAGE_DATA[TOP_OFFSET] + _MAX_DISPLAY_ROWS - ( _MAX_DISPLAY_ROWS - (BOT - TOP) ) ))
-	local MIN_CURSOR=$(( _PAGE_DATA[TOP_OFFSET] ))
+	local MAX_CSR=$(( _PAGE_DATA[TOP_OFFSET] + _MAX_DISPLAY_ROWS - ( _MAX_DISPLAY_ROWS - (BOT - TOP) ) ))
+	local MIN_CSR=$(( _PAGE_DATA[TOP_OFFSET] ))
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	echo "TOP ${TOP} BOT ${BOT} MAX_CURSOR ${MAX_CURSOR} MIN_CURSOR ${MIN_CURSOR}"
+	echo "TOP ${TOP} BOT ${BOT} MAX_CSR ${MAX_CSR} MIN_CSR ${MIN_CSR}"
 }
 
 list_get_selected () {
@@ -327,12 +320,15 @@ list_navigator () {
 	local PG=0
 	local C
 
+	_CURSOR_POS=()
+
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${KEY} == 'u' ]];then      # Up row
 		list_item norm ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 		_LIST_NDX=$(list_next_index $(( _LIST_NDX -= 1 )))
 		_CURSOR_NDX=$(list_next_cursor $(( _CURSOR_NDX -= 1 )))
+		_CURSOR_POS[${_LIST_NDX}]=${_CURSOR_NDX}
 		list_item high ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 
 	elif [[ ${KEY} == 'd' ]];then    # Down row
@@ -345,13 +341,13 @@ list_navigator () {
 		list_item norm ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 		PG_LIMITS=($(list_get_page_limits))
 		_LIST_NDX=${PG_LIMITS[TOP]}
-		list_item high ${_LIST_LINE_ITEM} ${PG_LIMITS[MIN_CURSOR]} 0
+		list_item high ${_LIST_LINE_ITEM} ${PG_LIMITS[MIN_CSR]} 0
 
 	elif [[ ${KEY} == 'b' ]];then    # Bottom of page
 		list_item norm ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 		PG_LIMITS=($(list_get_page_limits))
 		_LIST_NDX=${PG_LIMITS[BOT]}
-		list_item high ${_LIST_LINE_ITEM} ${PG_LIMITS[MAX_CURSOR]} 0
+		list_item high ${_LIST_LINE_ITEM} ${PG_LIMITS[MAX_CSR]} 0
 
 	elif [[ ${KEY} == 'n' ]];then    # Next page
 		_PAGE_DATA[PAGE]=$(list_next_page $((_PAGE_DATA[PAGE] += 1)))
@@ -397,6 +393,7 @@ list_navigator () {
 			list_item high ${_LIST_LINE_ITEM} ${_TARGET_CURSOR} 0
 		fi
 	fi
+	_CURSOR_POS[${_LIST_NDX}]=${_CURSOR_NDX}
 }
 
 list_next_cursor () {
@@ -405,8 +402,8 @@ list_next_cursor () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	[[ ${CURSOR} -gt ${PG_LIMITS[MAX_CURSOR]} ]] && CURSOR=${PG_LIMITS[MIN_CURSOR]}
-	[[ ${CURSOR} -lt ${PG_LIMITS[MIN_CURSOR]} ]] && CURSOR=${PG_LIMITS[MAX_CURSOR]}
+	[[ ${CURSOR} -gt ${PG_LIMITS[MAX_CSR]} ]] && CURSOR=${PG_LIMITS[MIN_CSR]}
+	[[ ${CURSOR} -lt ${PG_LIMITS[MIN_CSR]} ]] && CURSOR=${PG_LIMITS[MAX_CSR]}
 
 	echo ${CURSOR}
 }
@@ -709,13 +706,13 @@ list_select () {
 
 	# Navigation Init
 	_PAGE_DATA=(
-		PAGE_STATE init 
+		STATE init 
 		PAGE 1 
 		MAX_PAGE ${#_PAGES} 
 		MAX_ITEM ${#_LIST} 
 		TOP_OFFSET ${TOP_OFFSET}
 		LAST_PAGE 0
-		RESTORE false
+		HOLD false
 	)
 	# End of Navigation Init
 
@@ -795,8 +792,6 @@ list_select () {
 						break
 					fi;;
 				0) SELECTED_COUNT=$(list_get_selected_count); # Enter key
-					[[ ${_LIST_RESTORE_POS} == 'true' ]] && 
-					_PAGE_DATA[PAGE_STATE]='hold';
 					if [[ ${SELECTED_COUNT} -eq 0 ]];then
 						break 2
 					else
@@ -929,12 +924,6 @@ list_set_page_callback () {
 	_PAGE_CALLBACK_FUNC=${1}
 }
 
-list_set_page_hold () {
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	_PAGE_DATA[PAGE_STATE]='hold'
-}
-
 list_set_pages () {
 	local -A PAGES
 	local BOT
@@ -964,30 +953,16 @@ list_set_pages () {
 	echo "${(kv)PAGES}"
 }
 
-list_set_position () {
-	local POS=${@}
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	echo "${_LIST_NDX}|${_CURSOR_NDX}" > ${_LIST_TAG_FILE}
-}
-
 list_set_prompt () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -n ${@} ]] && _LIST_PROMPT=${@}
 }
 
-list_set_restore_pos () {
+list_set_position_hold () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	_LIST_RESTORE_POS=${1}
-}
-
-list_set_pos_reset () {
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	_LIST_POS_RESET=true
+	_LIST_POS_HOLD=${1}
 }
 
 list_set_prompt_msg () {
@@ -1396,11 +1371,7 @@ list_toggle_selected () {
 		return # Ignore over limit
 	fi
 
-	if [[ ${_REUSE_STALE} == 'true' ]];then
-		_LIST_SELECTED[${_LIST_NDX}]=${_AVAIL_ROW}
-	fi
-
-	if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_AVAIL_ROW} ]];then
+	if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_AVAIL_ROW} || ${_REUSE_STALE} == 'true' ]];then
 		list_set_selected ${_LIST_NDX} ${_SELECTED_ROW} 
 		list_item select ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
 		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|1" # Pass to header callback - all on

@@ -1,30 +1,35 @@
-2026-07-17_00:26: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-17_00:26: log_update: Skipping expired inode:6323242
-2026-07-17_00:26: log_update: Skipping expired inode:6323228
-2026-07-17_00:26: log_update: Skipping expired inode:6323235
-2026-07-17_00:26: log_update: Skipping expired inode:6370265
-2026-07-17_00:26: log_update: Skipping expired inode:6370624
-2026-07-17_00:26: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-17_00:26: _QUERY_OPTS: AGE:recent DKEY:marta havryshko ECODE:Y ENGINE:youtube EOPT: QKEY:marta havryshko TYPE:standard 
-2026-07-17_00:26: query_youtube: Creating listing for QKEY:marta havryshko STRICT:null
-2026-07-17_00:26: query_youtube: _QUERY_OPTS: AGE:recent DKEY:marta havryshko ECODE:Y ENGINE:youtube EOPT:null QKEY:marta havryshko TYPE:standard 
-2026-07-17_00:26: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "marta havryshko"
-2026-07-17_00:26: query_youtube: Rejected:katiehalper
-2026-07-17_00:26: query_youtube: Rejected:katiehalper
-2026-07-17_00:26: query_youtube: Rejected:thepeacemonger
-2026-07-17_00:26: query_youtube: Listing for QKEY:marta havryshko contains 3 rows
-2026-07-17_00:26: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.fFjbYA
-2026-07-17_00:26: job_start: TITLE:Trita Parsi On Iran, Marta Havryshko On Ukraine, Kai Newkirk On Running
-2026-07-17_00:26: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=ZYTfCvRfYvk" PID:1383156
-2026-07-17_00:26: yt PPCMD:/usr/bin/zsh/usr/local/bin/ytsmarta havryshko
-2026-07-17_00:26: yt URL:https://youtube.com/watch?v=ZYTfCvRfYvk
-2026-07-17_00:26: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=ZYTfCvRfYvk"
-2026-07-17_00:26: action_do: GENERATING HEADER
-2026-07-17_00:27: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=ZYTfCvRfYvk PPCMD:/usr/bin/zsh/usr/local/bin/ytsmarta havryshko, TARGET:Katie_Halper - Trita_Parsi_on_Iran_Marta_Havryshko_on_Ukraine_Kai_Newkirk_on_Running_Against_Israel_.mp4|6299024
-2026-07-17_00:27: action_do: COMPLETED
-2026-07-17_00:27: action_do: POST-PROCESSING
-2026-07-17_00:27: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Katie_Halper - Trita_Parsi_on_Iran_Marta_Havryshko_on_Ukraine_Kai_Newkirk_on_Running_Against_Israel_.mp4
-2026-07-17_00:27: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Katie_Halper - Trita_Parsi_on_Iran_Marta_Havryshko_on_Ukraine_Kai_Newkirk_on_Running_Against_Israel_.mp4
-2026-07-17_00:27: set_final_fn: Overwriting file:Katie_Halper - Trita_Parsi_on_Iran_Marta_Havryshko_on_Ukraine_Kai_Newkirk_on_Running_Against_Israel_.mp4 with:Katie Halper - Trita Parsi On Iran marta havryshko On Ukraine Kai.mp4
-2026-07-17_00:27: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Katie Halper - Trita Parsi On Iran marta havryshko On Ukraine Kai.mp4
-2026-07-17_00:27: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.fFjbYA was cleared for:marta havryshko from:action_do
+2026-07-25_00:12: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-25_00:12: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-25_00:13: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
+2026-07-25_00:13: query_rumble: PARSER:, QUERY:https://rumble.com/c/tuckercarlson?page=1
+2026-07-25_00:13: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
+2026-07-25_00:13: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.8JSntE
+2026-07-25_00:13: job_start: TITLE:Shawn Ryan: Trump's Betrayal, Iran, Government Spying, Encounters With
+2026-07-25_00:13: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7d79k6-shawn-ryan-trumps-betrayal-iran-government-spying-encounters-with-demons-an.html" PID:183615
+2026-07-25_00:13: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-07-25_00:13: yt URL:https://rumble.com/v7d79k6-shawn-ryan-trumps-betrayal-iran-government-spying-encounters-with-demons-an.html
+2026-07-25_00:13: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7d79k6-shawn-ryan-trumps-betrayal-iran-government-spying-encounters-with-demons-an.html"
+2026-07-25_00:13: action_do: GENERATING HEADER
+2026-07-25_00:18: action_do: COMPLETED
+2026-07-25_00:18: action_do: POST-PROCESSING
+2026-07-25_00:18: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7d79k6-shawn-ryan-trumps-betrayal-iran-government-spying-encounters-with-demons-an.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Tucker_Carlson - Shawn_Ryan_-_Trump_s_Betrayal_Iran_Government_Spying_Encounters_With_Demons_and_Fin.mp4|6323223
+2026-07-25_00:18: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Shawn_Ryan_-_Trump_s_Betrayal_Iran_Government_Spying_Encounters_With_Demons_and_Fin.mp4
+2026-07-25_00:18: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Shawn_Ryan_-_Trump_s_Betrayal_Iran_Government_Spying_Encounters_With_Demons_and_Fin.mp4
+2026-07-25_00:18: set_final_fn: Overwriting file:Tucker_Carlson - Shawn_Ryan_-_Trump_s_Betrayal_Iran_Government_Spying_Encounters_With_Demons_and_Fin.mp4 with:Tucker Carlson - Shawn Ryan - Trump's Betrayal Iran Government Spying.mp4
+2026-07-25_00:18: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Shawn Ryan - Trump's Betrayal Iran Government Spying.mp4
+2026-07-25_00:18: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.8JSntE was cleared for:tuckercarlson from:action_do
+2026-07-25_00:18: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.OSaCfR
+2026-07-25_00:18: job_start: TITLE:Iran War Sparks Global Energy Crisis, Why the US Is Lying About It & What You
+2026-07-25_00:18: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7d4jts-iran-war-sparks-global-energy-crisis-why-the-us-is-lying-about-it-and-what-.html" PID:225324
+2026-07-25_00:18: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-07-25_00:18: yt URL:https://rumble.com/v7d4jts-iran-war-sparks-global-energy-crisis-why-the-us-is-lying-about-it-and-what-.html
+2026-07-25_00:18: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7d4jts-iran-war-sparks-global-energy-crisis-why-the-us-is-lying-about-it-and-what-.html"
+2026-07-25_00:18: action_do: GENERATING HEADER
+2026-07-25_00:20: action_do: COMPLETED
+2026-07-25_00:20: action_do: POST-PROCESSING
+2026-07-25_00:20: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7d4jts-iran-war-sparks-global-energy-crisis-why-the-us-is-lying-about-it-and-what-.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Tucker_Carlson - Iran_War_Sparks_Global_Energy_Crisis_Why_the_US_Is_Lying_About_It_What_You_Can_Expe.mp4|6407643
+2026-07-25_00:20: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Iran_War_Sparks_Global_Energy_Crisis_Why_the_US_Is_Lying_About_It_What_You_Can_Expe.mp4
+2026-07-25_00:20: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Iran_War_Sparks_Global_Energy_Crisis_Why_the_US_Is_Lying_About_It_What_You_Can_Expe.mp4
+2026-07-25_00:20: set_final_fn: Overwriting file:Tucker_Carlson - Iran_War_Sparks_Global_Energy_Crisis_Why_the_US_Is_Lying_About_It_What_You_Can_Expe.mp4 with:Tucker Carlson - Iran War Sparks Global Energy Crisis Why The US IS.mp4
+2026-07-25_00:20: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Iran War Sparks Global Energy Crisis Why The US IS.mp4
+2026-07-25_00:20: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.OSaCfR was cleared for:tuckercarlson from:action_do

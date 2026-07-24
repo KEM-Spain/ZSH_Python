@@ -520,6 +520,11 @@ if is_mixed_video;then
 	for M in ${(k)_MAXIMUMS};do
 		echo "KEY:${M}, VALUE:${_MAXIMUMS[${M}]}"
 	done > ${_MAX_VALUES_LOG}
+	
+	QUESTION="${WHITE_ON_GREY}Joining dissimilar files${RESET} - (${RED_FG}time consuming operation${RESET}) Proceed"
+	echo -n "\n${QUESTION}:(y/n)?"
+	read -q RESPONSE && echo
+	[[ ${RESPONSE} != "y" ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 
 	echo "Normalizing and merging dissimilar videos..."
 	#SCALE="${_MAXIMUMS[WIDTH]}:${_MAXIMUMS[HEIGHT]}"

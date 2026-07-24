@@ -65,7 +65,8 @@ typeset -a _STRIP_WORDS=()
 typeset -aU _LOCAL_LIST=()
 
 # Display Constants
-_CONT_COORDS=(X 10 Y $(center -H -w86) H 10 W 86) # Continuous box coords
+_CONT_WIDTH=86
+_CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
 _INDICATOR_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alert display coords
 _INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Info display coords
 
@@ -662,7 +663,7 @@ fav_get () {
 			c) LIST=(${C_LIST})
 				MENU_LBL='custom'
 				HDR_TAG=${CUSTOM_MSG}
-				O_COLOR=${RED_FG}
+				O_COLOR=${GREEN_FG}
 				;;
 			r) LIST=(${R_LIST})
 				MENU_LBL='rumble'
@@ -684,7 +685,6 @@ fav_get () {
 
 		sel_set_app_keys d r y c
 		sel_set_list ${LIST}
-		list_set_pos_reset # Fresh list - position at top
 
 		msg_line_weight heavy
 		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
@@ -1296,7 +1296,7 @@ post_process () {
 		((NDX++))
 		PIDS=("${(f)$(pgrep -n "yt-dlp")}")
 		if [[ ${?} -ne 0 ]];then
-			sleep 2 && break
+			sleep 1 && break
 		fi
 		msg_box -x14 "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish post-processing..."
 		sleep 1

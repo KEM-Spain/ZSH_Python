@@ -40,7 +40,7 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-This script does...
+Query syslog
 EOF
 
 parse_opts () {

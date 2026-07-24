@@ -125,7 +125,7 @@ URL=$(grep -o -E 'http.*' <<<${(qqq)@})
 URL=${URL[1,-2]} # Eliminate trailing quote
 
 logit ${_YT_DBG_LOG} "${0:t} URL:${URL}"
-logit ${_YT_URL_LOG} "${0:t} CMD:${_YT_DLP} ${(qqq)@}"
+logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP} ${(qqq)@}"
 
 eval "${_YT_DLP} ${(qqq)@}"
 

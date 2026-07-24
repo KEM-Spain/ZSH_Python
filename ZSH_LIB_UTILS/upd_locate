@@ -70,6 +70,7 @@ last_locate () {
 }
 
 locate_info () {
+	#do_rmcup
 	echo "locate was last updated ${WHITE_FG}${g_LAST_RUN}${RESET}"
 }
 
@@ -144,13 +145,12 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ! -d ${_TAG_DIR} ]] && mkdir ${_TAG_DIR}
 g_LAST_RUN=$(last_locate ${_MARKER})
 
 # Info option
 if [[ ${INFO} == 'true' ]];then
-	do_rmcup
 	locate_info
 	exit_leave
 fi
@@ -165,27 +165,25 @@ if [[ ${UTILITY} == 'false' ]];then
 	fi
 fi
 
-clear
-
 # Update locate
 UPDATE=false
 if [[ (! ${g_LAST_RUN:l} =~ 'today') || ${FORCE} == 'true' ]];then
 	UPDATE=true
 	if [[ ${UTILITY} == 'true' ]];then
-		tcup 0 0
+		#tcup 0 0
 		echo "Updating locate database..."
 		echo "locate database update started: $(date)" >> ${_LOGFILE}
 		echo "Options: ${LOCATE_OPTS}" >> ${_LOGFILE}
 
-		sudo updatedb ${LOCATE_OPTS} 2>/dev/null >> ${_LOGFILE}
+		{ sudo updatedb ${LOCATE_OPTS} >> ${_LOGFILE} } >/dev/null 2>&1
 		RC=${?}
 		[[ ${RC} -ne 0 ]] && echo "updatedb had an error:${RC}" >&2 | tee -a ${_LOGFILE}
 
 		echo "locate database update ended... $(date)" >> ${_LOGFILE}
 		touch ${_MARKER}
-		do_rmcup
 		locate_info
 	else
+		clear
 		echo "locate database update started: $(date)" | tee -a ${_LOGFILE}
 		echo "Options: ${LOCATE_OPTS}" | tee -a ${_LOGFILE}
 
@@ -202,7 +200,6 @@ if [[ (! ${g_LAST_RUN:l} =~ 'today') || ${FORCE} == 'true' ]];then
 fi
 
 if [[ ${UPDATE} == 'false' && ${UTILITY} == 'true' ]];then # Not updated but info is broadcast
-	do_rmcup
 	locate_info
 fi
 

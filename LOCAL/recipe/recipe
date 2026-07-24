@@ -34,17 +34,18 @@ _DEPS+=(LIST.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
 
 # Declarations
+typeset -a _RAW_LIST=() 
 typeset -a _LOCAL_LIST=() 
 
 # Constants
-_APP_DIR=${PWD}
+_APP_DIR=~/Documents/Recipes
  
 # Functions
 action_do () {
 	local M
 
 	for M in ${_MARKED};do
-		msg_box "Processing ${_LIST[${M}]}"
+		o ${_LIST[${M}]}
 	done
 
 	for M in ${_MARKED};do
@@ -67,9 +68,14 @@ action_warn () {
 	fi
 }
 
+do_clear () {
+	do_rmcup
+	clear
+}
+
 item_decorate () {
 	local NDX=${1}
-	echo ${_LIST[${NDX}]}
+	echo "${_LIST[${NDX}]:t} (${CYAN_FG}${${_LIST[${NDX}]:h}:t}${RESET})"
 }
 
 #--Begin GetOpts--
@@ -78,7 +84,7 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-This script does...
+Search for recipies
 EOF
 
 parse_opts () {
@@ -118,7 +124,7 @@ usage () {
 
 	tabs 5
 	(
-	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
+	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [<SEARCHTERM>]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
@@ -144,11 +150,23 @@ shift $((OPTIND -1))
 
 #Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${#} -ne 0 ]] && SEARCHTERM=${1} || SEARCHTERM=''
+
+set_exit_callback do_clear
+
 PATHLBL=$(path_get_label 40) 
 
-LOCAL_LIST=("${(f)$(eval "find ${_APP_DIR} -maxdepth 1 -type f ! -path ." 2>/dev/null )}")
-if ! arr_is_populated "${LOCAL_LIST}";then
-	exit_leave $(err_msg_exit E "LOCAL_LIST was not populated")
+_RAW_LIST=("${(f)$(eval "find ${_APP_DIR} -type f ! -path ." 2>/dev/null )}")
+if [[ -n ${SEARCHTERM} ]];then
+	for L in ${_RAW_LIST};do
+		[[ ${L:r:gs/_/ /:l} =~ ${SEARCHTERM:l} ]] && _LOCAL_LIST+=${L}
+	done
+else
+	_LOCAL_LIST=(${_RAW_LIST})
+fi
+
+if ! arr_is_populated "${_LOCAL_LIST}";then
+	exit_leave $(err_msg_exit E "No matches found for:${SEARCHTERM}")
 fi
 
 # Set headings
@@ -161,10 +179,12 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}) ${SHADE}${BAR}%s${RESET}\n" ${_LIST_NDX} 
 '
 
 list_set_prompt "Hit <${GREEN_FG}SPACE${RESET}> to select ${g_OBJECT}(s) then <${GREEN_FG}ENTER${RESET}> to ${g_ACTION} ${g_OBJECT}(s) (${ITALIC}or exit if none selected${RESET})"
+list_set_searchable true
+list_set_position_hold true
 
 while true;do
 	# Get selection
-	list_select ${LOCAL_LIST}
+	list_select ${(o)_LOCAL_LIST}
 	[[ ${?} -eq 0 ]] && break
 
 	# Get selections

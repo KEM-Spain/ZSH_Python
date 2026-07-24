@@ -663,7 +663,7 @@ fav_get () {
 			c) LIST=(${C_LIST})
 				MENU_LBL='custom'
 				HDR_TAG=${CUSTOM_MSG}
-				O_COLOR=${RED_FG}
+				O_COLOR=${GREEN_FG}
 				;;
 			r) LIST=(${R_LIST})
 				MENU_LBL='rumble'
@@ -685,7 +685,6 @@ fav_get () {
 
 		sel_set_app_keys d r y c
 		sel_set_list ${LIST}
-		list_set_pos_reset # Fresh list - position at top
 
 		msg_line_weight heavy
 		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
@@ -1452,7 +1451,7 @@ query_youtube () {
 	done
 
 	if [[ ${#_QUERY_REJECTS} -ne 0 && -n ${AUTHOR} && -n ${QKEY} && -n ${DKEY} ]];then
-		msg_box -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
+		msg_box -Z -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
 	fi
 
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
@@ -1828,7 +1827,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
 				MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
 				_OB=($(sel_get_interior_coords))
-				msg_box -y${_OB[Y]} -w${_OB[W]} ${MSG} # Set msg relative position and width
+				msg_box -Z -y${_OB[Y]} -w${_OB[W]} ${MSG} # Set msg relative position and width
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}

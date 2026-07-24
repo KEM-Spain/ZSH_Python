@@ -20,7 +20,6 @@ BLINK="\033[5m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -56,7 +55,7 @@ external () {
 	# Constants
 	local MOUNT_ROOT=/media/${USER}
 
-	#App Vars
+	# Vars
 	local -a MSG_OUT
 	local	PARTITION=''
 	local L
@@ -98,6 +97,8 @@ external () {
 	local g_FCNT=0
 	local g_RVAL=0
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	# Functions
 	action_do () {
 		local ACTION
@@ -106,7 +107,7 @@ external () {
 		local STATE
 		local NDX=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		msg_box -x10 "${BLINK}${RED_FG}Working...${RESET}"
 
@@ -149,13 +150,14 @@ external () {
 		local NDX=${1}
 		local RC=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		is_mounted ${NDX}
 		RC=${?}
 		[[ ${RC} -eq 0 && ${g_VERBOSE} == 'true' ]] && g_MOUNT_ERROR=35 && set_exit_value 35 && return 35 # Already mounted
 
 		[[ ${g_VERBOSE} == 'true' ]] && msg_box -x14 -t2 "Mounting..."
+
 		if [[ ${RC} -ne 0 ]];then # Not mounted
 			grep -q ${MOUNT_ROOT}/${_LABELS[${NDX}]} <<<$(fut comments /etc/fstab)
 			if [[ ${?} -eq 0 ]];then
@@ -182,7 +184,7 @@ external () {
 		local NDX=${1}
 		local RC=0
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		is_mounted ${NDX}
 		RC=${?}
@@ -201,7 +203,6 @@ external () {
 			RC=${?}
 		fi
 
-
 		if [[ ${RC} -ne 0 ]];then
 			[[ ${g_VERBOSE} == 'true' ]] && msg_box -x14 -p -PK "Mount Error:${RC}"
 			g_MOUNT_ERROR=${RC}
@@ -216,7 +217,7 @@ external () {
 	do_query () {
 		local P
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		local TITLE="Current status for external drives"
 		echo "\n${TITLE}"
@@ -235,7 +236,7 @@ external () {
 		local -a LIST
 		local L
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		LIST=("${(f)$(lsof 2>/dev/null | grep --color=never ${_MOUNT_POINTS[${NDX}]})}")
 
@@ -250,7 +251,7 @@ external () {
 	is_mounted () {
 		local NDX=${1}
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		[[ ${_MOUNT_POINTS[${NDX}]} == "unmounted" ]] && return 1 || return 0
 	}
@@ -262,7 +263,7 @@ external () {
 		local TYPE
 		local D
 
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: CALLER: ${functrace[1]} ${LINENO} ARGC:${#@} ARGV:${@}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		RAW_DISK_STATUS=("${(f)$(sudo lsblk -P -o NAME,FSTYPE,MOUNTPOINT,LABEL | grep 'sd.[0-9]' | sed -e 's/=/|/g' -e 's/ /|/g' -e 's/\"//g')}")
 
@@ -274,7 +275,6 @@ external () {
 			MP=$(cut -d'|' -f6 <<<${RAW_DISK_STATUS[${D}]})
 			LBL=$(cut -d'|' -f8 <<<${RAW_DISK_STATUS[${D}]})
 
-			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PART:${PART} TYPE:${TYPE} MP:${MP} LBL:${LBL}"
 			[[ -e ${MOUNT_ROOT}/${LBL} ]] && _MOUNT_DIRS[${D}]="${MOUNT_ROOT}/${LBL}"
 
 			_PARTITIONS[${D}]=${PART:=null}
@@ -288,6 +288,8 @@ external () {
 
 	show_status () {
 		local L
+
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		clear
 		
@@ -309,6 +311,8 @@ external () {
 	do_prompt () {
 		local STATE=${1}
 
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 		case ${STATE} in
 			unmounted) msg_box -x14 -p -P"Mount all devices (y/n)?" "All devices are unmounted";;
 			mounted) msg_box -x14 -p -P"Unmount all devices (y/n)?" "All devices are mounted";;
@@ -321,6 +325,8 @@ external () {
 		local NDX=${1}
 		local MSG=${2}
 		local MSG_TEXT=''
+
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		if ! is_mounted ${NDX};then
 			if [[ -n ${_MOUNT_DIRS[${NDX}]} && -e ${_MOUNT_DIRS[${NDX}]} ]];then
@@ -540,21 +546,27 @@ ___EOF
 }
 
 space () {
-	local DESCENDING
-	local -aU PARTITIONS
-	local DIRCNT
-
 	# Declarations
-	local -a PART_DATA
-	local -a PART_DETAIL
+	local -A HIDDEN=()
+	local -A NORMAL=()
+	local -a PART_DATA=()
+	local -a PART_DETAIL=()
+	local -aU PARTITIONS=()
 
-	# Globals
-	local g_SYSTEM_TOTAL=0
+	# Vars
+	local SYSTEM_TOTAL=0
+	local DESCENDING=false
+	local DIRCNT=0
+
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Functions
 	convert_GMK () {
 		local ARG=${1}
 		local NUM=${ARG[1,-2]}
+
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 		case ${ARG[-1]} in
 			G) echo ${NUM};;
@@ -666,14 +678,11 @@ ___EOF
 			AV=$(echo $P | cut -d\| -f4)
 			PU=$(echo $P | cut -d\| -f5)
 			MN=$(echo $P | cut -d\| -f6)
-			[[ ${FS} == ${MP} ]] && MN="${MN} $(echo "${BOLD}${GREEN_FG}<-- <-- <--${RESET}")" && g_SYSTEM_TOTAL=${SZ}
+			[[ ${FS} == ${MP} ]] && MN="${MN} $(echo "${BOLD}${GREEN_FG}<-- <-- <--${RESET}")" && SYSTEM_TOTAL=${SZ}
 			printf "%16s %6s %6s %6s %8s %-20s\n" ${FS} ${SZ} ${US} ${AV} ${PU} ${MN}
 		done
 
 		echo "\n${WHITE_FG}  Current Directory${RESET}:${CYAN_FG}$(pwd)${RESET}"
-
-		local -A NORMAL
-		local -A HIDDEN
 
 		HDR=Ascending
 		LONGEST=0
@@ -738,10 +747,10 @@ ___EOF
 
 		# Percentage of total
 		D=$(convert_GMK ${HU})
-		S=$(convert_GMK ${g_SYSTEM_TOTAL})
+		S=$(convert_GMK ${SYSTEM_TOTAL})
 		PCT=$(format_pct $(( D*1.0 / S*1.0 * 100 )))
 
-		echo "\nDirectory:${WHITE_FG}${PWD:t}${RESET} is ${CYAN_FG}${PCT}%${RESET} of total disk space ${RESET}(${WHITE_FG}${g_SYSTEM_TOTAL}${RESET})"
+		echo "\nDirectory:${WHITE_FG}${PWD:t}${RESET} is ${CYAN_FG}${PCT}%${RESET} of total disk space ${RESET}(${WHITE_FG}${SYSTEM_TOTAL}${RESET})"
 	} | mypager wait
 
 	exit_leave
@@ -756,6 +765,8 @@ unplug () {
 	local RESPONSE
 	local -A STRLEN
 	local L M
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	read -r -d '' DESC<<___EOF
 Unmount and power off connected external drive
@@ -821,6 +832,8 @@ usbdisks () {
 	local U
 	local USBS
 	local USBNAME
+	
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	read -r -d '' DESC<<___EOF
 Show usb disk details
@@ -872,6 +885,8 @@ fstab_info () {
 	local UUID
 	local WAS_PARSED
 	local U
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Execution
 	read -r -d '' DESC<<___EOF
@@ -997,7 +1012,7 @@ UTIL=''
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
 		H) usage;;
-		D) dbr_set_level;;
+		D) dbg_set_level;;
 		:) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 		\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 	esac
@@ -1010,8 +1025,8 @@ shift $(( OPTIND - 1 ))
 # This is detection of production mode called from another script (--prod will cancel smcup making it friendly to the caller)
 g_PROD=false
 g_OPTS="${@}"
-[[ ${@} =~ '--prod' ]] && g_PROD=true && g_OPTS=$(sed -e 's/\-\-prod//' <<<${g_OPTS} | str_trim)
-[[ ${g_PROD} == 'false' && ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${@} =~ '--prod' ]] && g_PROD=true && g_OPTS=$(sed -e 's/--prod//' <<<${g_OPTS} | str_trim)
+#[[ ${g_PROD} == 'false' && ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ ${#} -ne 0 ]] && UTIL=${1}
 

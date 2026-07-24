@@ -78,7 +78,9 @@ done
 
 MSG=''
 if [[ ${COUNT_ONLY} == 'true' ]];then
-	for L in ${_LIST};do echo ${L};done | grep -c -v ssh
+	CNT=$(for L in ${_LIST};do echo ${L};done | grep -c -v ssh)
+	[[ ${CNT} -lt 1 ]] && CNT=1
+	echo -n ${CNT}
 else
 	echo "${#_LIST} terminal ${TAG}"
 	for T in ${(no)_LIST};do

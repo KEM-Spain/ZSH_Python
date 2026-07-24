@@ -1,0 +1,12 @@
+#compdef hist_no_dups
+
+_arguments \
+'-H[help]' \
+'-D[debug]' \
+'-F[force rebuild]' \
+'-d[deep - unique commands w/o arguments]' \
+'-f[frequent - commands w/o arguments]' \
+'-p[production - unique command w/arguments]' \
+'-s[show size diff]' \
+'-t[testing mode]' \
+'-v[verbose output]' \

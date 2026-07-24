@@ -1,13 +1,12 @@
 #!/usr/bin/zsh
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 _DEPS+=(UTILS.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
-#Vars
+# Vars
 _ENP_MARKER=/tmp/enpass.init
 _ENP_PW=''
 _ENP_CONFIG="/home/kmiller/.enp"
@@ -16,7 +15,7 @@ _WDW_ID=''
 _WDW_TITLE=''
 _TERM_ID=$(win_max -i terminal | cut -d'|' -f2) # Get decimal ID for xdotool
 
-#Get PW
+# Get PW
 read _ENP_PW < ${_ENP_CONFIG}
 _DELAY=1
 _SCRIPT=${0:t}
@@ -28,14 +27,14 @@ start_enpass () {
 	local PID
 
 	send-notification ${_DELAY} "Looking for running Enpass instance..."
-	PID=($(pgrep -xf ${_ENPASS})) #get PID for Enpass
+	PID=($(pgrep -xf ${_ENPASS})) # Get PID for Enpass
 
 	if [[ -n ${PID} ]];then
 		logit ${_LOG} "Enpass already running...killing instance"
 		sudo killall -I enpass
 	fi
 
-	#Start Enpass...
+	# Start Enpass...
 	logit ${_LOG} "Starting Enpass..."
 	if [[ ${ARG} == 'foreground' ]];then
 		echo "Control-C to exit..." >&2
@@ -49,7 +48,7 @@ start_enpass () {
 
 	PID=?
 	while [[ ! -e /proc/${PID} ]];do
-		PID=($(pgrep -xf ${_ENPASS})) #get PID for Enpass
+		PID=($(pgrep -xf ${_ENPASS})) # Get PID for Enpass
 		break
 		sleep .2
 	done
@@ -64,8 +63,10 @@ pass_login_to_enpass () {
 		_WDW_TITLE=$(cut -d'|' -f3 <<<${_WIN_INFO})
 		logit ${_LOG} "Detected Enpass Crash Window"
 		logit ${_LOG} "Sending Escape Key"
-		xdotool windowfocus ${_WDW_ID}
-		xdotool key --window ${_WDW_ID} Escape
+		if [[ -n ${_WDW_ID} ]];then
+			xdotool windowfocus ${_WDW_ID}
+			xdotool key --window ${_WDW_ID} Escape
+		fi
 	fi
 
 	logit ${_LOG} "Passing credentials to Enpass..."
@@ -77,13 +78,15 @@ pass_login_to_enpass () {
 		/usr/local/bin/system/kbd-toggle off
 		/usr/local/bin/system/kbd-flush
 		sleep .2
-		xdotool windowfocus ${_WDW_ID}
-		xdotool type --window ${_WDW_ID} ${_ENP_PW}
-		sleep .2
-		xdotool key --window ${_WDW_ID} Return
+		if [[ -n ${_WDW_ID} ]];then
+			xdotool windowfocus ${_WDW_ID}
+			xdotool type --window ${_WDW_ID} ${_ENP_PW}
+			sleep .2
+			xdotool key --window ${_WDW_ID} Return
+		fi
 		/usr/local/bin/system/kbd-toggle on
 		/usr/local/bin/system/kbd-flush
-		xdotool windowfocus ${_TERM_ID}
+		[[ -n ${_TERM_ID} ]] && xdotool windowfocus ${_TERM_ID}
 	fi
 }
 
@@ -92,11 +95,11 @@ close_enpass_window () {
 	[[ -n ${_WDW_ID} ]] && xdotool windowclose ${_WDW_ID}
 }
 
-#Execution
+# Execution
 /bin/rm -f ${_ENP_MARKER}
 /bin/rm -f ${_LOG}
 
-xdotool windowfocus ${_TERM_ID}
+[[ -n ${_TERM_ID} ]] && xdotool windowfocus ${_TERM_ID}
 
 if [[ ${1} == "-H" ]];then
 	echo "Usage: ${0:t} [foreground]" && exit

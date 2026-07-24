@@ -5,7 +5,6 @@ _DEPS+=(MSG.zsh TPUT.zsh VALIDATE.zsh UTILS.zsh)
 _RCT=0
 _MOD="[${0:t}]"
 
-# TODO: modify return values to an associative format: X ${X} Y ${Y} H ${HEIGHT} W ${WIDTH}
 # LIB Functions
 get_relative_center () {
 	local REL_COORDS=${1} # Coords of region to place object

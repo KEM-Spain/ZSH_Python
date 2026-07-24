@@ -28,7 +28,6 @@ E_CYAN_FG=$(echo "\033[36m")
 E_WHITE_FG=$(echo "\033[37m")
 E_STRIKE=$(echo "\033[9m")
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -446,7 +445,7 @@ case ${#} in
 		FIND_CMD="find ${FPATH} -maxdepth 1 -type f ! -path ${FPATH}"
 		_ARGLIST=("${(f)$(eval ${FIND_CMD})}")
 		;;
-	1) _ARGLIST+=${1}
+	1) _ARGLIST+=(${1})
 		HDR_MSG='Processing single file'
 		;;
 	*) HDR_MSG='Processing multiple args'
@@ -455,8 +454,8 @@ case ${#} in
 esac
 
 if [[ ${#_ARGLIST} -gt 50 ]];then
-	msg_box -p -PC -H1 "<r>Warning<N>|The number of files is extensive:<w>${#_ARGLIST}<N>"
-	[[ ${_MSG_KEY} != 'y' ]] && exit_leave $(err_msg_exit I "Operation Cancelled")
+	#msg_box -p -PC -H1 "<r>Warning<N>|The number of files is extensive:<w>${#_ARGLIST}<N>"
+	#[[ ${_MSG_KEY} != 'y' ]] && exit_leave $(err_msg_exit I "Operation Cancelled") || msg_box "Working..."
 fi
 
 [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGC:${#}, FIND_CMD:${FIND_CMD}, HDR_MSG:${HDR_MSG}, _ARGLIST:${_ARGLIST}"
@@ -500,18 +499,13 @@ for F in ${(o)_RAWLIST};do # Marshal apps
 	_FILE_WIN[${F}]=${APP_WIN}
 done
 
-[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_FILE_APP:${_FILE_APP}, _FILE_NDX:${_FILE_NDX}, _FILE_WIN:${_FILE_WIN}"
-
-logit ${_APP_LOG} "Validated ${#_LOCAL_LIST} candidates"
-
 if [[ -z ${_LOCAL_LIST} ]];then
-	do_rmcup
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "No application found to handle file"
-	for F in ${(on)_RAWLIST};do
-		echo "${RED_FG}No application${RESET} to handle file:${WHITE_FG}${F:t}${RESET} of type: [$(file -b ${F})]"
-	done
-	exit_leave
+	exit_leave $(err_msg_exit "Unable to match an application to any file")
+else
+	logit ${_APP_LOG} "Validated ${#_LOCAL_LIST} candidates"
 fi
+
+[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "_FILE_APP:${_FILE_APP}, _FILE_NDX:${_FILE_NDX}, _FILE_WIN:${_FILE_WIN}"
 
 if [[ ${#_LOCAL_LIST} -eq 1 ]];then # Process a single file arg directly
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Single file launch: ${_LOCAL_LIST}"
@@ -534,6 +528,7 @@ list_set_action_msgs open file
 list_set_reuse_stale true
 list_set_client_warn true
 list_set_searchable true
+list_set_position_hold true
 
 while true;do
 	# Get selection

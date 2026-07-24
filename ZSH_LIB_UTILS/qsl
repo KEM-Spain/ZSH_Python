@@ -40,7 +40,7 @@ local OPTION
 local DESC
 
 read -r -d '' DESC<<EOF
-This script does...
+Query syslog
 EOF
 
 parse_opts () {
@@ -117,15 +117,16 @@ shift $(( OPTIND -1 ))
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1} || SEARCHTERM=''
 
 if [[ -n ${SEARCHTERM} ]];then
-	grep --color=always -P "${SEARCHTERM}" ${_SYSLOG} | mypager
+	grep --color=always -P "${SEARCHTERM}" ${_SYSLOG} | mypager 
 else
 	if [[ -n ${FOREVER} ]];then
 		TLINES=''
 		echo "${WHITE_ON_GREY}Tailing ${_SYSLOG}...<CTRL>-C to exit${RESET}"
+		tail ${FOREVER} ${_SYSLOG}
 	else
 		TLINES="-${TLINES}"
+		tail ${TLINES} ${_SYSLOG} | mypager wait
 	fi
-	tail ${FOREVER} ${TLINES} ${_SYSLOG}
 fi
 
 exit_leave

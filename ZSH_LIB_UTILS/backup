@@ -249,15 +249,15 @@ fi
 
 g_LAST_RUN=$(last_backup ${_MARKER})
 
-if [[ -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
-	msg_box -t2 "Clearing orphaned mountpoints:<w>${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}<N>"
-	external u
-	if [[ ! -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
-		msg_box -t2 -c "Orphaned mounts removed"
-	else
-		exit_leave "Unable to remove orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}${RESET}"
-	fi
-fi
+#if [[ -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
+#	msg_box -t2 "Clearing orphaned mountpoints:<w>${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}<N>"
+#	external u
+#	if [[ ! -e ${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]} ]];then
+#		msg_box -t2 -c "Orphaned mounts removed"
+#	else
+#		exit_leave "Unable to remove orphaned mountpoints:${WHITE_FG}${_MOUNTPOINT}/${_DISK_MAP[${_DEST_ID}]}${RESET}"
+#	fi
+#fi
 
 # Info option
 [[ ${INFO} == 'true' ]] && msg_box -p -PK "Last backup was <w>${g_LAST_RUN}<N>" && exit_leave
