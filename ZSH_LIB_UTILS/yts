@@ -43,7 +43,7 @@ typeset -A _FAILED=()
 typeset -A _FAV_LIST=()
 typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
-typeset -A _INDICATOR_COORDS=()
+typeset -A _IND_COORDS=()
 typeset -A _INFO_COORDS=()
 typeset -A _MENU_TYPES=(1 Custom 2 Rumble 3 YouTube)
 typeset -A _MSG_DELAY=(SHORT .5 MED 2 LONG 4)
@@ -66,9 +66,12 @@ typeset -aU _LOCAL_LIST=()
 
 # Display Constants
 _CONT_WIDTH=86
+_IND_W=25 # Offsets X=2, Y=30
+_INFO_W=$((_CONT_WIDTH - 6 ))
+
 _CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
-_INDICATOR_COORDS=(X $(( _CONT_COORDS[X] + 5 )) Y $(( _CONT_COORDS[Y] + _CONT_COORDS[W] - 25 ))) # Alert display coords
-_INFO_COORDS=(X $((_CONT_COORDS[X] + 4 )) Y $((_CONT_COORDS[Y] + 3 )) W $((_CONT_COORDS[W] - 6 ))) # Info display coords
+_IND_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4 -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_IND_W} -y30) H 4 W ${_IND_W}) # Indicator display coords
+_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 4 W ${_INFO_W}) # Info display coords
 
 # Constants
 _CFG_DIR=~/.local/share/yts
@@ -177,7 +180,7 @@ action_do () {
 				job_reset
 				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED"
 				MSG="Cancelling download..."
-				msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+				msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
 				_CANCELLED[${M}]=true
 				break
 			fi
@@ -187,7 +190,7 @@ action_do () {
 				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="<w>Small Download <g>is complete...<N>"
-					msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "${MSG}"
+					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "${MSG}"
 					_DOWNLOADS[${M}]=true
 					logit ${_YT_DBG_LOG} "${0}: POST-PROCESSING"
 					post_process
@@ -206,14 +209,14 @@ action_do () {
 					*sleeping*|*hlsnative*|*^\[info\]*)
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						logit ${_YT_DBG_LOG} "${0}: PRE-PROCESSING"
-						msg_box -z -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<w>${MSG}<N>"
+						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
 						continue
 						;;
 					*'already been'*|*100%*)
 						logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 						MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${LOG_LINE})
 						MSG=${MSG[1,60]}
-						msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]}  -y$(center -H -w${MSG}) "<w>${MSG}<N>|<B>Has already been downloaded<N>"
+						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>|<B>Has already been downloaded<N>"
 						_DOWNLOADS[${M}]=true
 						break
 						;;
@@ -221,14 +224,14 @@ action_do () {
 						logit ${_YT_DBG_LOG} "${0}: FUTURE"
 						[[ ! ${LOG_LINE:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 						MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-						msg_box -z -t${_MSG_DELAY[LONG]} -x${_INFO_COORDS[X]} -y$(center -H -w${TITLE}) "<w>${MSG}<N>"
+						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
 						_FUTURE[${M}]=true
 						_DOWNLOADS[${M}]=false
 						break
 						;;
 					*yt_live_broadcast*)
 						MSG="Live broadcast - unable to download"
-						msg_box -c -z -x${_INFO_COORDS[X]} -y$(center -H -w${MSG}) "<r>${MSG}<N>"
+						msg_box -c -z -A"${(kv)_INFO_COORDS}" "<r>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
 						_FAILED[${M}]=true
 						_DOWNLOADS[${M}]=false
@@ -245,7 +248,7 @@ action_do () {
 							g_PRESERVE_LOG=true
 							break
 						else
-							msg_box -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} "<w>Retrying...<r>Error<N>:${TRANS_ERR_CNT} <w>${TRANS_ERR_MSG}<N>"
+							msg_box -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>Retrying...<r>Error<N>:${TRANS_ERR_CNT} <w>${TRANS_ERR_MSG}<N>"
 							job_retry ${URL} ${TITLE}
 						fi
 						;;
@@ -295,7 +298,7 @@ action_do () {
 								g_PRESERVE_LOG=true
 								break
 							else
-								msg_box -t${_MSG_DELAY[MED]} -x${_INFO_COORDS[X]} "<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
+								msg_box -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
 								job_retry ${URL} ${TITLE}
 							fi
 						fi
@@ -395,8 +398,8 @@ download_indicator () {
 	local -A OBJS_2=(1 ${R_OBJ} 2 ${M_OBJ} 3 ${L_OBJ})
 	local BORDER_COLOR=''
 	local DELAY=.3
-	local IND_X=$(( _INDICATOR_COORDS[X] + 1 ))
-	local IND_Y=$(( _INDICATOR_COORDS[Y] + 7 ))
+	local IND_X=$(( _IND_COORDS[X] + 1 ))
+	local IND_Y=$(( _IND_COORDS[Y] + 7 ))
 	local L_SIDE="\\u2770"
 	local R_SIDE="\\u2771"
 	local MASK=""
@@ -1289,7 +1292,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -x$(( _CONT_COORDS[X] + 4 )) -y$(center -H -w${MSG}) ${MSG}
+	msg_box -A"${(kv)_INFO_COORDS}" ${MSG}
 
 	NDX=0
 	while true;do
@@ -1298,7 +1301,7 @@ post_process () {
 		if [[ ${?} -ne 0 ]];then
 			sleep 1 && break
 		fi
-		msg_box -x14 "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish post-processing..."
+		msg_box -A"${(kv)_INFO_COORDS}" "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish post-processing..."
 		sleep 1
 	done
 
@@ -1434,7 +1437,7 @@ query_youtube () {
 			QKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[QKEY]:l})
 			DKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[DKEY]:l})
 			if [[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]];then
-				[[ ${MSG_OUT} == 'false' ]] && { msg_box -c -t2 "<w>Filtering non-strict query by Author...<N>" && MSG_OUT=true }
+				[[ ${MSG_OUT} == 'false' ]] && { msg_box -x4 -t2 "<w>Filtering non-strict query by Author...<N>" && MSG_OUT=true }
 				HIT=true
 			else
 				logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
@@ -1451,7 +1454,7 @@ query_youtube () {
 	done
 
 	if [[ ${#_QUERY_REJECTS} -ne 0 && -n ${AUTHOR} && -n ${QKEY} && -n ${DKEY} ]];then
-		msg_box -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
+		msg_box -x4 -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
 	fi
 
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
@@ -1827,7 +1830,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
 				MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
 				_OB=($(sel_get_interior_coords))
-				msg_box -Z -y${_OB[Y]} -w${_OB[W]} ${MSG} # Set msg relative position and width
+				msg_box -y${_OB[Y]} -w${_OB[W]} ${MSG} # Set msg relative position and width
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}

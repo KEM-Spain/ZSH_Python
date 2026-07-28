@@ -50,7 +50,7 @@ get_relative_center () {
 }
 
 get_relative_x () {
-	local -A RGN_COORDS=(${(z)1}) # Coords of region to place object
+	local -A RGN_COORDS=(${=1}) # Coords of region to place object
 	local HEIGHT=${2} # Height of object
 	local X_OFF=${3:=0}
 	local RX=${RGN_COORDS[X]}
@@ -72,7 +72,7 @@ get_relative_x () {
 	REM=$(( OBJ_CTR % 2 ))
 	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
 
-	X=$(( RGN_CTR - OBJ_CTR ))
+	X=$(( RGN_CTR - OBJ_CTR - 1 ))
 
 	[[ ${X_OFF} -ne 0 ]] && X=$(( X + X_OFF ))
 
@@ -80,7 +80,7 @@ get_relative_x () {
 }
 
 get_relative_y () {
-	local -A RGN_COORDS=(${(z)1}) # Coords of region to place object
+	local -A RGN_COORDS=(${=1}) # Coords of region to place object
 	local WIDTH=${2} # Width of object
 	local Y_OFF=${3:=0}
 	local RX=${RGN_COORDS[X]}
@@ -102,7 +102,7 @@ get_relative_y () {
 	REM=$(( OBJ_CTR % 2 ))
 	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
 
-	Y=$(( RGN_CTR - OBJ_CTR ))
+	Y=$(( RGN_CTR - OBJ_CTR - 1 ))
 
 	[[ ${Y_OFF} -ne 0 ]] && Y=$(( Y + Y_OFF ))
 

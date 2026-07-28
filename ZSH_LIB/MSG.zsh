@@ -72,6 +72,7 @@ msg_box () {
 	local H K M T X 
 
 	# OPTIONS
+	local -A COORD_ARGS=()
 	local -a MSG=()
 	local CLEAR_MSG=false
 	local CONTINUOUS=false
@@ -81,7 +82,7 @@ msg_box () {
 	local FRAME_COLOR=''
 	local HDR_LINES=0
 	local HDR_FTR_LINES=0
-	local HEIGHT_ARG=0
+	local MSG_H_COORD_ARG=0
 	local LEN=0
 	local MSG_X_COORD_ARG=-1
 	local MSG_Y_COORD_ARG=-1
@@ -95,24 +96,25 @@ msg_box () {
 	local TAG_ARG=''
 	local TEXT_STYLE=c # Default is center - Accepted Values:[(l)eft,(c)enter]
 	local TIMEOUT=0
-	local WIDTH_ARG=0
+	local MSG_W_COORD_ARG=0
 
-	local OPTSTR=":H:P:O:CIRT:cf:h:j:pqrs:t:uw:x:y:Zz"
+	local OPTSTR=":A:H:P:O:CIRT:cf:h:j:pqrs:t:uw:x:y:Zz"
 	OPTIND=0
 
 	while getopts ${OPTSTR} OPTION;do
 		case ${OPTION} in
-			H) HDR_LINES=${OPTARG};; # Number of msg lines that comprise header
+			A) COORD_ARGS=(${(z)OPTARG});; # Create array of coordinates
 			C) CONTINUOUS=true;; # Message is added to the existing continuous msg
+			H) HDR_LINES=${OPTARG};; # Number of msg lines that comprise header
+			I) _CONT_DATA[BOX]=false;; # Trigger initialization of continuous message
 			O) FRAME_COLOR=${OPTARG};; # Set color for message frame
 			P) PROMPT_ARG=${OPTARG};; # Text for message prompt
-			I) _CONT_DATA[BOX]=false;; # Trigger initialization of continuous message
-			R) RELATIVE=true;; # Use this tag to retreive an alternative placement coord
+			R) RELATIVE=true;; # Use this tag to retrieve an alternative placement coord
 			T) TAG_ARG=${OPTARG};; # TAG name to use when saving message coordinates
 			Z) _REPAINT=true;; # Repaint screen from buffer
 			c) CLEAR_MSG=true;; # Clear the previous message before displaying the current message
 			f) FOLD_WIDTH=${OPTARG};; # Fold the message text using this line width
-			h) HEIGHT_ARG=${OPTARG};; # Specify a message box height other than the default
+			h) MSG_H_COORD_ARG=${OPTARG};; # Specify a message box height other than the default
 			j) TEXT_STYLE=${OPTARG};; # Specify desired text justification (center, left)
 			p) PROMPT_USER=true;; # Request user input following message display
 			q) QUIET=true;; # Suppress any messages
@@ -120,7 +122,7 @@ msg_box () {
 			s) DELIM_ARG="${OPTARG}";; # Use this delimiter to parse message sections
 			t) TIMEOUT="${OPTARG}";; # Display message for this time limit
 			u) SAFE=false;; # Ensure no coordinates violate available screen dimensions
-			w) WIDTH_ARG=${OPTARG};; # Specify a message box width other than the default
+			w) MSG_W_COORD_ARG=${OPTARG};; # Specify a message box width other than the default
 			x) MSG_X_COORD_ARG=${OPTARG};; # Specify a message display row other than the default
 			y) MSG_Y_COORD_ARG=${OPTARG};; # Specify a message display col other than the default
 			z) _REPAINT=false;; # No repaints
@@ -147,7 +149,7 @@ msg_box () {
 	[[ -z ${MSG} ]] && return # If no MSG
 
 	# Long messages display feedback while parsing
-	MSG_LEN=${#${=@}}
+	MSG_LEN=${#${(z)@}}
 	[[ ${#MSG_LEN} -gt 250 && ${QUIET} == 'false' ]] && _PROC_MSG=true
 	
 	# Append prompt to msgs
@@ -216,13 +218,20 @@ msg_box () {
 	fi
 
 	# --- BEGIN COORDS SETUP ---
+	if [[ -n ${COORD_ARGS} ]];then
+		[[ -n ${COORD_ARGS[W]} ]] && MSG_W_COORD_ARG=${COORD_ARGS[W]}
+		[[ -n ${COORD_ARGS[H]} ]] && MSG_H_COORD_ARG=${COORD_ARGS[H]}
+		[[ -n ${COORD_ARGS[X]} ]] && MSG_X_COORD_ARG=${COORD_ARGS[X]}
+		[[ -n ${COORD_ARGS[Y]} ]] && MSG_Y_COORD_ARG=${COORD_ARGS[Y]}
+	fi
+
 	HDR_FTR_LINES=$(( ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) # Allowance for vertical header and footer space
 
-	if [[ ${HEIGHT_ARG} -ne 0 ]];then
-		if [[ ${MSG_ROWS} -gt ${HEIGHT_ARG} ]];then
+	if [[ ${MSG_H_COORD_ARG:=0} -ne 0 ]];then
+		if [[ ${MSG_ROWS} -gt ${MSG_H_COORD_ARG} ]];then
 			MSG_PAGING=true
-			PG_LINES=$(( HEIGHT_ARG - HDR_FTR_LINES ))
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}MESSAGE PAGING TRIGGERED${RESET} PG_LINES:${PG_LINES} HEIGHT_ARG:${HEIGHT_ARG}"
+			PG_LINES=$(( MSG_H_COORD_ARG - HDR_FTR_LINES ))
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}MESSAGE PAGING TRIGGERED${RESET} PG_LINES:${PG_LINES} MSG_H_COORD_ARG:${MSG_H_COORD_ARG}"
 		fi
 	elif [[ ${MSG_ROWS} -gt ${USABLE_ROWS} ]];then
 		MSG_PAGING=true
@@ -303,8 +312,8 @@ msg_box () {
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}USING RELATIVE COORDS${RESET}: MSG_X_COORD:${_REL_COORDS[X]} MSG_Y_COORD:${_REL_COORDS[Y]} BOX_WIDTH:${_REL_COORDS[W]} BOX_HEIGHT:${_REL_COORDS[H]}"
 		fi
 	else
-		[[ ${WIDTH_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${WIDTH_ARG}
-		[[ ${HEIGHT_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${HEIGHT_ARG}
+		[[ ${MSG_W_COORD_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${MSG_W_COORD_ARG}
+		[[ ${MSG_H_COORD_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${MSG_H_COORD_ARG}
 		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$(center -V -h${BOX_HEIGHT}) || MSG_X_COORD=${MSG_X_COORD_ARG}
 		[[ ${MSG_Y_COORD_ARG} -eq -1 ]] && MSG_Y_COORD=$(center -H -w${BOX_WIDTH}) || MSG_Y_COORD=${MSG_Y_COORD_ARG}
 	fi
@@ -1025,8 +1034,6 @@ msg_unicode_box () {
 		VERT_BAR="\\u2503%.0s"
 	fi
 
-	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TOP LEFT CORNER - BOX_X_COORD:${BOX_X_COORD} BOX_Y_COORD:${BOX_Y_COORD}"
-
 	# Reset standout (if set)
 	tput rmso
 
@@ -1067,14 +1074,10 @@ msg_unicode_box () {
 	done
 
 	# Bottom right corner
-	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX_HEIGHT:${BOX_HEIGHT}"
 	tcup ${X} ${Y}
 	printf ${BOT_RIGHT}
 
 	echo -n ${RESET}
-
-	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOTTOM RIGHT - BOX_X_COORD:${X} BOX_Y_COORD:${Y}"
-	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: BOX DIMENSIONS:$(( X - BOX_X_COORD + 1 )) x $(( Y - BOX_Y_COORD + 1 ))"
 }
 
 msg_warn () {

@@ -378,7 +378,7 @@ str_word_clip () {
 
 	TEXT=$(tr '\n' ' ' <<<${TEXT} | str_trim) # Eliminate any newlines
 
-	for W in ${=TEXT};do
+	for W in ${(z)TEXT};do
 		(( LEN += ${#W} + 1 ))
 		[[ ${LEN} -lt $((LIMIT - 1)) ]] && TEXT_OUT+="${W} "
 	done

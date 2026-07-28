@@ -1134,7 +1134,7 @@ list_sort_assoc () {
 	if [[ -n ${ARGS} ]];then
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
 
-		ARG_TABLE=(${=ARGS})
+		ARG_TABLE=(${(z)ARGS})
 		for A in ${(k)ARG_TABLE};do
 			_SORT_DATA[${A}]=${ARG_TABLE[${A}]}
 		done
@@ -1144,7 +1144,7 @@ list_sort_assoc () {
 	if [[ -n ${_SORT_DATA[TABLE]} ]];then
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
 
-		[[ ! ${_SORT_DATA[TABLE]} =~ 'null' ]] && TABLE=(${=_SORT_DATA[TABLE]}) || TABLE=()
+		[[ ! ${_SORT_DATA[TABLE]} =~ 'null' ]] && TABLE=(${(z)_SORT_DATA[TABLE]}) || TABLE=()
 	fi
 
 	TCNT=${#TABLE}
@@ -1200,7 +1200,7 @@ list_sort_flat () {
 	# Handle direct call
 	if [[ -n ${ARGS} ]];then
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
-		ARG_TABLE=(${=ARGS})
+		ARG_TABLE=(${(z)ARGS})
 		for A in ${(k)ARG_TABLE};do
 			_SORT_DATA[${A}]=${ARG_TABLE[${A}]}
 		done
@@ -1227,7 +1227,7 @@ list_sort_flat () {
 		# Handle sort table
 		if [[ -n ${_SORT_DATA[TABLE]} && ! ${_SORT_DATA[TABLE]} =~ 'none' ]];then
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
-			TABLE=(${=_SORT_DATA[TABLE]})
+			TABLE=(${(z)_SORT_DATA[TABLE]})
 			FIELD=${TABLE[${_SORT_DATA[COL]}]} # Mapped keys
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAPPED SORT KEY IS:${FIELD}"
 		else
@@ -1319,7 +1319,12 @@ list_toggle_all () {
 
 	if [[ ${ACTION} == 'toggle' ]];then # Mark/unmark all
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ACTION:${ACTION}"
-		[[ ${_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]} -eq 1 ]] && _LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]=0 || _LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]=1 # Toggle state
+
+		if [[ ${_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]} -eq 1 ]];then
+			_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]=0
+		else
+			_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]=1 # Toggle state
+		fi
 
 		if [[ ${_PAGE_DATA[MAX_PAGE]} -gt 1 && ${_LIST_SELECTED_PAGE[${_PAGE_DATA[PAGE]}]} -eq 1 ]];then # Prompt only for setting range
 			msg_box -p -P"(A)ll or (P)age" "Enter Select Range"
@@ -1355,6 +1360,7 @@ list_toggle_all () {
 
 list_toggle_selected () {
 	local COUNT=$(list_get_selected_count)
+	local ROW_STATUS=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST_NDX:${_LIST_NDX} _SELECTION_LIMIT:${_SELECTION_LIMIT}"
@@ -1364,26 +1370,32 @@ list_toggle_selected () {
 		[[ ${?} -ne 0 ]] && return
 	fi
 
-	if [[ ${_SELECTION_LIMIT} -ne 0 && ${COUNT} -gt $((_SELECTION_LIMIT - 1 )) ]];then
+	if [[ ${_SELECTION_LIMIT} -ne 0 && ${COUNT} -gt $((_SELECTION_LIMIT - 1 )) ]];then # Limit selections
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SELECTION_LIMIT WAS TRIGGERED SELECTION_LIMIT:${SELECTION_LIMIT} COUNT:${COUNT}"
 		msg_box -p -PK "Selection is limited to ${_SELECTION_LIMIT}"
 		msg_box_clear
 		return # Ignore over limit
 	fi
 
-	if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_AVAIL_ROW} || ${_REUSE_STALE} == 'true' ]];then
-		list_set_selected ${_LIST_NDX} ${_SELECTED_ROW} 
-		list_item select ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
+	ROW_STATUS=${_LIST_SELECTED[${_LIST_NDX}]}
+
+	#msg_box -t.5 "Enter -> ROW STATUS:${_ROW_CODES[${ROW_STATUS}]}" # Debugging
+
+	if [[ ${ROW_STATUS} -eq ${_AVAIL_ROW} || ( ${ROW_STATUS} -eq ${_STALE_ROW} && ${_REUSE_STALE} == 'true' ) ]];then
+		list_set_selected ${_LIST_NDX} ${_SELECTED_ROW} # Mark as selected
+		list_item select ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0 # Highlight row
 		[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|1" # Pass to header callback - all on
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_SELECTED_ROW}"
 	else
-		if [[ ${_LIST_SELECTED[${_LIST_NDX}]} -eq ${_SELECTED_ROW} ]];then
-			list_set_selected ${_LIST_NDX} ${_AVAIL_ROW}
-			list_item deselect ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0
+		if [[ ${ROW_STATUS} -eq ${_SELECTED_ROW} ]];then
+			list_set_selected ${_LIST_NDX} ${_AVAIL_ROW} # Mark as unselected
+			list_item deselect ${_LIST_LINE_ITEM} ${_CURSOR_NDX} 0 # Un-highlight row
 			[[ -n ${_HEADER_CALLBACK_FUNC} ]] && ${_HEADER_CALLBACK_FUNC} ${_LIST_NDX} "${0}|0" # Pass to header callback - all off
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ROW:${_LIST_NDX} was set to ${_AVAIL_ROW}"
 		fi
 	fi
+
+	#msg_box -t.5 "Exit -> ROW STATUS:${_ROW_CODES[${ROW_STATUS}]}" # Debugging
 
 	list_do_header ${_PAGE_DATA[PAGE]} ${_PAGE_DATA[MAX_PAGE]}
 }

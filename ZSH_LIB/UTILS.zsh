@@ -893,7 +893,7 @@ title_scrubber () {
 	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim 2>/dev/null) # Hyphens and braces
 	STR=$(echo "${STR}" | perl -pe 's/\.*$//g' 2>/dev/null) # Dots
 
-	for W in ${=STR};do
+	for W in ${(z)STR};do
 		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then

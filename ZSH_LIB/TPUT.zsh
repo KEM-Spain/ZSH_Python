@@ -83,11 +83,18 @@ do_smcup () {
 tcup () {
 	local X=${1:=0}
 	local Y=${2:=0}
+	local CAUGHT_BAD_X=false
+	local CAUGHT_BAD_Y=false
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	[[ ${X} -lt 0 ]] && X=1 && dbg "${functrace[1]} called ${0}: ARGC:${#@} ${RED_FG}CAUGHT BAD X COORD${RESET} Set to 1"
-	[[ ${Y} -lt 0 ]] && Y=1 && dbg "${functrace[1]} called ${0}: ARGC:${#@} ${RED_FG}CAUGHT BAD Y COORD${RESET} Set to 1"
+	[[ ${X} -lt 0 ]] && X=1 && CAUGHT_BAD_X=true
+	[[ ${Y} -lt 0 ]] && Y=1 && CAUGHT_BAD_Y=true
+
+	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+		[[ ${CAUGHT_BAD_X} == 'true' ]] && dbg "${functrace[1]} called ${0}: ARGC:${#@} ${RED_FG}CAUGHT BAD X COORD${RESET} Set to 1"
+		[[ ${CAUGHT_BAD_Y} == 'true' ]] && dbg "${functrace[1]} called ${0}: ARGC:${#@} ${RED_FG}CAUGHT BAD Y COORD${RESET} Set to 1"
+	fi
 
 	tput -T ${_TERM} cup ${X} ${Y}
 }

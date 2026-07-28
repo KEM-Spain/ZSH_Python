@@ -28,19 +28,19 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations (dut)
 typeset -A _UTILS=(
-  external 1
-  fstab_info 1
-  space 1
-  unplug 1
-  usbdisks 1
+external 1
+fstab_info 1
+space 1
+unplug 1
+usbdisks 1
 )
 
 typeset -A _UTILS_DESC=(
-  external "EXTERNAL:verify or mount external drive"
-  fstab_info "FSTAB:display fstab details"
-  space "SPACE:show current disk usage"
-  unplug "DETACH:safely detach device"
-  usbdisks "USB:display usb disk details"
+external "EXTERNAL:verify or mount external drive"
+fstab_info "FSTAB:display fstab details"
+space "SPACE:show current disk usage"
+unplug "DETACH:safely detach device"
+usbdisks "USB:display usb disk details"
 )
 
 # Constants (dut)
@@ -210,7 +210,7 @@ external () {
       local KEY=${_PART[${_LIST_NDX}]};
       local MNT_CLR='';
       [[ ${_MP[${KEY}]:l} == 'unmounted' ]] && MNT_CLR="${RED_FG}" || MNT_CLR="${GREEN_FG}";
-      printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}%12s %12s ${MNT_CLR}%30s${RESET} %15s${RESET}\n" ${_LIST_NDX} "${_PART[${_LIST_NDX}]}" "${_TYPE[${KEY}]}" "${_MP[${KEY}]}" "${_LBL[${KEY}]}"
+      printf "${BOLD}${WHITE_FG}%4s${RESET}${SHADE} %12s %12s  ${MNT_CLR}%30s${RESET}${SHADE} %15s${RESET}\n" ${_LIST_NDX} "${_PART[${_LIST_NDX}]}" "${_TYPE[${KEY}]}" "${_MP[${KEY}]}" "${_LBL[${KEY}]}"
       
       '
 
@@ -247,11 +247,11 @@ external () {
   RED_FG="\033[31m"
   WHITE_FG="\033[37m"
 
-  read -r -d '' DESC<<_____EOF
-  Utility to mount/unmount external disks
-  \tDefault is to display list of external disks
-  \tto manage interactively
-_____EOF
+  read -r -d '' DESC<<__EOF
+Utility to mount/unmount external disks
+\tDefault is to display list of external disks
+\tto manage interactively
+__EOF
 
   parse_opts () {
     local OPTS=${@}
@@ -388,9 +388,9 @@ space () {
   RED_FG="\033[31m"
   WHITE_FG="\033[37m"
 
-  read -r -d '' DESC<<___EOF
+  read -r -d '' DESC<<__EOF
 Display disk space consumed by the current directory
-___EOF
+__EOF
 
   parse_opts () {
     local OPTS=${@}
@@ -577,9 +577,9 @@ unplug () {
 
   [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-  read -r -d '' DESC<<___EOF
+  read -r -d '' DESC<<__EOF
 Unmount and power off connected external drive
-___EOF
+__EOF
 
   if [[ ${1} == '-H' ]];then
     tabs 5
@@ -644,9 +644,9 @@ usbdisks () {
 
   [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-  read -r -d '' DESC<<___EOF
+  read -r -d '' DESC<<__EOF
 Show usb disk details
-___EOF
+__EOF
 
   if [[ ${1} == '-H' ]];then
     [[ ${_SMCUP} == 'true' ]] && do_rmcup
@@ -697,9 +697,9 @@ fstab_info () {
   [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
   # Execution
-  read -r -d '' DESC<<___EOF
+  read -r -d '' DESC<<__EOF
 Display fstab info
-___EOF
+__EOF
 
 
   if [[ ${1} == '-H' ]];then

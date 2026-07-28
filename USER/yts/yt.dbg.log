@@ -1,35 +1,8 @@
-2026-07-25_00:12: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-25_00:12: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-25_00:13: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
-2026-07-25_00:13: query_rumble: PARSER:, QUERY:https://rumble.com/c/tuckercarlson?page=1
-2026-07-25_00:13: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
-2026-07-25_00:13: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.8JSntE
-2026-07-25_00:13: job_start: TITLE:Shawn Ryan: Trump's Betrayal, Iran, Government Spying, Encounters With
-2026-07-25_00:13: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7d79k6-shawn-ryan-trumps-betrayal-iran-government-spying-encounters-with-demons-an.html" PID:183615
-2026-07-25_00:13: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-25_00:13: yt URL:https://rumble.com/v7d79k6-shawn-ryan-trumps-betrayal-iran-government-spying-encounters-with-demons-an.html
-2026-07-25_00:13: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7d79k6-shawn-ryan-trumps-betrayal-iran-government-spying-encounters-with-demons-an.html"
-2026-07-25_00:13: action_do: GENERATING HEADER
-2026-07-25_00:18: action_do: COMPLETED
-2026-07-25_00:18: action_do: POST-PROCESSING
-2026-07-25_00:18: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7d79k6-shawn-ryan-trumps-betrayal-iran-government-spying-encounters-with-demons-an.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Tucker_Carlson - Shawn_Ryan_-_Trump_s_Betrayal_Iran_Government_Spying_Encounters_With_Demons_and_Fin.mp4|6323223
-2026-07-25_00:18: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Shawn_Ryan_-_Trump_s_Betrayal_Iran_Government_Spying_Encounters_With_Demons_and_Fin.mp4
-2026-07-25_00:18: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Shawn_Ryan_-_Trump_s_Betrayal_Iran_Government_Spying_Encounters_With_Demons_and_Fin.mp4
-2026-07-25_00:18: set_final_fn: Overwriting file:Tucker_Carlson - Shawn_Ryan_-_Trump_s_Betrayal_Iran_Government_Spying_Encounters_With_Demons_and_Fin.mp4 with:Tucker Carlson - Shawn Ryan - Trump's Betrayal Iran Government Spying.mp4
-2026-07-25_00:18: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Shawn Ryan - Trump's Betrayal Iran Government Spying.mp4
-2026-07-25_00:18: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.8JSntE was cleared for:tuckercarlson from:action_do
-2026-07-25_00:18: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.OSaCfR
-2026-07-25_00:18: job_start: TITLE:Iran War Sparks Global Energy Crisis, Why the US Is Lying About It & What You
-2026-07-25_00:18: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7d4jts-iran-war-sparks-global-energy-crisis-why-the-us-is-lying-about-it-and-what-.html" PID:225324
-2026-07-25_00:18: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-25_00:18: yt URL:https://rumble.com/v7d4jts-iran-war-sparks-global-energy-crisis-why-the-us-is-lying-about-it-and-what-.html
-2026-07-25_00:18: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7d4jts-iran-war-sparks-global-energy-crisis-why-the-us-is-lying-about-it-and-what-.html"
-2026-07-25_00:18: action_do: GENERATING HEADER
-2026-07-25_00:20: action_do: COMPLETED
-2026-07-25_00:20: action_do: POST-PROCESSING
-2026-07-25_00:20: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7d4jts-iran-war-sparks-global-energy-crisis-why-the-us-is-lying-about-it-and-what-.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Tucker_Carlson - Iran_War_Sparks_Global_Energy_Crisis_Why_the_US_Is_Lying_About_It_What_You_Can_Expe.mp4|6407643
-2026-07-25_00:20: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Iran_War_Sparks_Global_Energy_Crisis_Why_the_US_Is_Lying_About_It_What_You_Can_Expe.mp4
-2026-07-25_00:20: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Iran_War_Sparks_Global_Energy_Crisis_Why_the_US_Is_Lying_About_It_What_You_Can_Expe.mp4
-2026-07-25_00:20: set_final_fn: Overwriting file:Tucker_Carlson - Iran_War_Sparks_Global_Energy_Crisis_Why_the_US_Is_Lying_About_It_What_You_Can_Expe.mp4 with:Tucker Carlson - Iran War Sparks Global Energy Crisis Why The US IS.mp4
-2026-07-25_00:20: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Iran War Sparks Global Energy Crisis Why The US IS.mp4
-2026-07-25_00:20: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.OSaCfR was cleared for:tuckercarlson from:action_do
+2026-07-29_00:31: log_update: LOG lines BEFORE update:11 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-29_00:31: log_update: LOG lines AFTER update:11 /home/kmiller/.local/share/yts/yts.downloads
+2026-07-29_00:31: query_youtube: Creating listing for QKEY:timdillon STRICT:null
+2026-07-29_00:31: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Tim Dillon ENGINE:youtube EOPT:null FKEY:tim dillon QKEY:timdillon TYPE:standard 
+2026-07-29_00:31: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "timdillon"
+2026-07-29_00:31: query_youtube: Rejected:podcastlaughz
+2026-07-29_00:31: query_youtube: Query matched 3 lines, _LOCAL_LIST has 1 lines
+2026-07-29_00:31: query_youtube: Listing for QKEY:timdillon contains 1 rows
