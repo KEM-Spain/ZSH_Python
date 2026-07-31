@@ -13,7 +13,7 @@ typeset -A _SORT_DATA=()
 typeset -a _LIST=() # Holds the values to be managed by the menu
 typeset -a _LIST_ACTION_MSGS=() # Holds text for contextual prompts
 typeset -a _LIST_HEADER=() # Holds header lines
-typeset -a _MARKED=()
+typeset -a _MARKED=() # Holds indexes of marked items
 typeset -a _TARGETS=() # Target indexes
 
 # LIB Vars
@@ -218,8 +218,8 @@ list_find_page () {
 	
 	for P in ${(onk)_PAGES};do
 		RANGE=${_PAGES[${P}]}
-		TOP=$(cut -d: -f1 <<<${RANGE})
-		BOT=$(cut -d: -f2 <<<${RANGE})
+		TOP=${${(s/:/)RANGE}[1]}
+		BOT=${${(s/:/)RANGE}[2]}
 		[[ ${NDX} -ge ${TOP} && ${NDX} -le ${BOT} ]] && echo ${P} && return 0 # Index is on this page
 	done
 	return 1 # NDX not found on any page
@@ -227,8 +227,8 @@ list_find_page () {
 
 list_get_page_limits () {
 	local RANGE=${_PAGES[${_PAGE_DATA[PAGE]}]}
-	local TOP=$(cut -d: -f1 <<<${RANGE})
-	local BOT=$(cut -d: -f2 <<<${RANGE})
+	local TOP=${${(s/:/)RANGE}[1]}
+	local BOT=${${(s/:/)RANGE}[2]}
 	local MAX_CSR=$(( _PAGE_DATA[TOP_OFFSET] + _MAX_DISPLAY_ROWS - ( _MAX_DISPLAY_ROWS - (BOT - TOP) ) ))
 	local MIN_CSR=$(( _PAGE_DATA[TOP_OFFSET] ))
 
@@ -375,7 +375,7 @@ list_navigator () {
 			return # Ignore not searchable
 		fi
 
-		MODE=$(cut -d'_' -f2 <<<${KEY})
+		MODE=${${(s/_/)KEY}[2]}
 		list_search ${MODE} ${_PAGE_DATA[PAGE]}
 		RC=${?}
 		if [[ ${RC} -ne 0 ]];then
@@ -942,7 +942,7 @@ list_set_pages () {
 	done
 
 	# Last page
-	BOT=$(cut -d: -f2 <<<${PAGES[${PG}]})
+	BOT=${${(s/:/)PAGES[${PG}]}[2]}
 	TOP=$(( BOT + 1 ))
 	BOT=$(( L - 1 ))
 	(( PG++))
@@ -1121,12 +1121,17 @@ list_sort () {
 list_sort_assoc () {
 	local ARGS=${@}
 	local -A ARG_TABLE=()
-	local -a SORT_TABLE=()
 	local -A TABLE=()
+	local -a LINE_ELEMENTS=()
+	local -a SORT_TABLE=()
+	local -a TEMP_LIST=()
 	local DELIM=${_SORT_DATA[DELIM]}
-	local TCNT=0
+	local ITEM=''
 	local REV=''
-	local R 
+	local ROW_NDX=0
+	local SORT_VALUE=''
+	local TCNT=0
+	local R T
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
@@ -1161,144 +1166,161 @@ list_sort_assoc () {
 
 	[[ ${_SORT_DATA[ORDER]} == "a" ]] && REV='' || REV=-r
 
-	_LIST=("${(f)$(
-		for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ ));do
-			echo -n "${${(P)SORT_TABLE}[${R}]}"
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT_TABLE[${R}]:${${(P)SORT_TABLE}[${R}]}"
+	for (( R=1; R<=${#${(P)SORT_TABLE}}; R++ )); do # Build list in-memory
+		SORT_VALUE="${${(P)SORT_TABLE}[${R}]}"
+		ROW_NDX="${(k)${(P)TABLE[1]}[${R}]}"
 
-			for (( T=1; T<=TCNT; T++ ));do
-				echo -n "${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
-				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: (k)TABLE[${T}][${R}]:${DELIM}${(k)${(P)TABLE[${T}]}[${R}]}"
-			done
-			echo
-		done | sort ${REV} -n -t"${DELIM}" -k1 | cut -d"${DELIM}" -f2
-	)}")
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT_TABLE[${R}]:${SORT_VALUE}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: (k)TABLE[1][${R}]:${DELIM}${ROW_NDX}"
+
+		TEMP_LIST+=("${SORT_VALUE}${DELIM}${ROW_NDX}")
+	done
+
+	if [[ -n "${REV}" ]]; then # Native Zsh numeric sort by SORT_VALUE + in-memory strip to leave ROW_NDX
+		_LIST=( ${${(nO)TEMP_LIST}#*${DELIM}} )
+	else
+		_LIST=( ${${(no)TEMP_LIST}#*${DELIM}} )
+	fi
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORTED ${#_LIST} ROWS"
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST DATA SAMPLE:${_LIST[1,2]}"
 }
 
 list_sort_flat () {
-	local ARGS=(${@})
-	local -A ARG_TABLE=()
-	local -A TABLE=()
-	local -A _CAL_SORT=(year G7 month F6 week E5 day D4 hour C3 minute B2 second A1)
-	local -a SORT_ARRAY=()
-	local ARRAY_NAME=''
-	local FLDCNT=0
-	local FLIP=false
-	local DELIM=''
-	local FIELD=''
-	local SORT_KEY=''
-	local SORT_ORDER=''
-	local NDX=0
-	local SEL=0
-	local A L R
+    local ARGS=(${@})
+    local -A ARG_TABLE=()
+    local -A TABLE=()
+    local -A _CAL_SORT=(year G7 month F6 week E5 day D4 hour C3 minute B2 second A1)
+    local -a SORT_ARRAY=()
+    local ARRAY_NAME=''
+    local DELIM=''
+    local FIELD=''
+    local FLIP=false
+    local MODIFIED_L
+    local PREFIX
+    local SORT_KEY=''
+    local SORT_ORDER=''
+    local TARGET_COL=0
+    local A L
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+    [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	# Handle direct call
-	if [[ -n ${ARGS} ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
-		ARG_TABLE=(${(z)ARGS})
-		for A in ${(k)ARG_TABLE};do
-			_SORT_DATA[${A}]=${ARG_TABLE[${A}]}
-		done
-	fi
+    # Handle direct call
+    if [[ -n ${ARGS} ]]; then
+        [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: DIRECT CALL - PARSING ARGUMENTS"
+        ARG_TABLE=(${(z)ARGS})
+        for A in ${(k)ARG_TABLE}; do
+            _SORT_DATA[${A}]=${ARG_TABLE[${A}]}
+        done
+    fi
 
-	# Simplify vars
-	ARRAY_NAME=${_SORT_DATA[ARRAY]:=_LIST}
-	DELIM=${_SORT_DATA[DELIM]}
-	SORT_ORDER=${_SORT_DATA[ORDER]}
-		
-	if [[ ${_SORT_DATA[NOKEY]} == 'true' ]];then # Not using keys
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORTING WITHOUT KEYS"
+    # Simplify configuration assignments
+    ARRAY_NAME=${_SORT_DATA[ARRAY]:=_LIST}
+    DELIM=${_SORT_DATA[DELIM]}
+    SORT_ORDER=${_SORT_DATA[ORDER]}
 
-		SORT_ARRAY=(${(P)ARRAY_NAME})
+    if [[ ${_SORT_DATA[NOKEY]} == 'true' ]]; then
+        [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORTING WITHOUT KEYS"
+        SORT_ARRAY=(${(P)ARRAY_NAME})
 
-		if [[ ${SORT_ORDER} == "a" ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT ASCENDING"
-			_LIST=(${(on)SORT_ARRAY})
-		else
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT DESCENDING"
-			_LIST=(${(On)SORT_ARRAY})
-		fi
-	else
-		# Handle sort table
-		if [[ -n ${_SORT_DATA[TABLE]} && ! ${_SORT_DATA[TABLE]} =~ 'none' ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
-			TABLE=(${(z)_SORT_DATA[TABLE]})
-			FIELD=${TABLE[${_SORT_DATA[COL]}]} # Mapped keys
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAPPED SORT KEY IS:${FIELD}"
-		else
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NO SORT TABLE FOUND"
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT KEY IS _SORT_DATA[COL]:${_SORT_DATA[COL]}"
-		fi
+        if [[ ${SORT_ORDER} == "a" ]]; then
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT ASCENDING"
+            _LIST=(${(on)SORT_ARRAY})
+        else
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT DESCENDING"
+            _LIST=(${(On)SORT_ARRAY})
+        fi
+    else
+        # Determine column target once outside the loop
+        if [[ -n ${_SORT_DATA[TABLE]} && ! ${_SORT_DATA[TABLE]} =~ 'none' ]]; then
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT TABLE FOUND - LOADING TABLE DATA"
+            TABLE=(${(z)_SORT_DATA[TABLE]})
+            FIELD=${TABLE[${_SORT_DATA[COL]}]}
+            TARGET_COL=${FIELD}
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAPPED SORT KEY IS:${FIELD}"
+        else
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NO SORT TABLE FOUND"
+            TARGET_COL=${_SORT_DATA[COL]}
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT KEY IS _SORT_DATA[COL]:${_SORT_DATA[COL]}"
+        fi
 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PREPARING TO SORT ${#${(P)ARRAY_NAME}} ROWS in ARRAY:${ARRAY_NAME}"
+        [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PREPARING TO SORT ${#${(P)ARRAY_NAME}} ROWS in ARRAY:${ARRAY_NAME}"
 
-		for L in ${(P)ARRAY_NAME};do # Dereference array name
-			if [[ -n ${FIELD} ]];then
-				SORT_KEY=$(cut -d "${_SORT_DATA[DELIM]}" -f${FIELD} <<<${L}) # Keys based on line content
-			else
-				SORT_KEY=$(cut -d "${_SORT_DATA[DELIM]}" -f ${_SORT_DATA[COL]} <<<${L}) # Keys based on line content
-			fi
+        for L in ${(P)ARRAY_NAME}; do
+            SORT_KEY=${${(ps:$DELIM:)L}[${TARGET_COL}]}
+            PREFIX=""
+            MODIFIED_L="${L}"
 
-			[[ ${SORT_KEY} =~ "year" ]] && SORT_ARRAY+="${_CAL_SORT[year]}${SORT_KEY}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ "month" ]] && SORT_ARRAY+="${_CAL_SORT[month]}${SORT_KEY}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ "week" ]] && SORT_ARRAY+="${_CAL_SORT[week]}${SORT_KEY}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ "day" ]] && SORT_ARRAY+="${_CAL_SORT[day]}${SORT_KEY}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ "hour" ]] && SORT_ARRAY+="${_CAL_SORT[hour]}${SORT_KEY}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ "min" ]] && SORT_ARRAY+="${_CAL_SORT[minute]}${SORT_KEY}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ "sec" ]] && SORT_ARRAY+="${_CAL_SORT[second]}${SORT_KEY}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ '^[A-Za-z]' ]] && SORT_ARRAY+="${SORT_KEY[1]}${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ '^[(]?\d{4}-\d{2}-\d{2}' ]] && SORT_ARRAY+="${SORT_KEY[1,10]}${DELIM}${L}" && FLIP=true && continue
-			[[ ${SORT_KEY} =~ '\d{4}$' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/(.*)(\d{4})$/\2\1\2/g')" && continue
-			[[ ${SORT_KEY} =~ '\d[.]\d\D' ]] && SORT_ARRAY+="ZZZZ${DELIM}$(echo ${L} | perl -pe 's/([.]\d)(.*)((G|M).*)$/${1}0 ${3}/g')" && continue
-			[[ ${SORT_KEY} =~ 'Mi?B' ]] && SORT_ARRAY+="A888${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ 'Gi?B' ]] && SORT_ARRAY+="B999${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ ':' ]] && SORT_ARRAY+="B999${DELIM}${L}" && continue
-			[[ ${SORT_KEY} =~ '-' ]] && SORT_ARRAY+="A888${DELIM}${L}" && continue
+            # Key matching logic using native Zsh expansions (Zero external binaries)
+            if [[ ${SORT_KEY} =~ "year" ]]; then
+                PREFIX="${_CAL_SORT[year]}${SORT_KEY}"
+            elif [[ ${SORT_KEY} =~ "month" ]]; then
+                PREFIX="${_CAL_SORT[month]}${SORT_KEY}"
+            elif [[ ${SORT_KEY} =~ "week" ]]; then
+                PREFIX="${_CAL_SORT[week]}${SORT_KEY}"
+            elif [[ ${SORT_KEY} =~ "day" ]]; then
+                PREFIX="${_CAL_SORT[day]}${SORT_KEY}"
+            elif [[ ${SORT_KEY} =~ "hour" ]]; then
+                PREFIX="${_CAL_SORT[hour]}${SORT_KEY}"
+            elif [[ ${SORT_KEY} =~ "min" ]]; then
+                PREFIX="${_CAL_SORT[minute]}${SORT_KEY}"
+            elif [[ ${SORT_KEY} =~ "sec" ]]; then
+                PREFIX="${_CAL_SORT[second]}${SORT_KEY}"
+            elif [[ ${SORT_KEY} =~ '^[A-Za-z]' ]]; then
+                PREFIX="${SORT_KEY[1]}"
+            elif [[ ${SORT_KEY} =~ '^[(]?\d{4}-\d{2}-\d{2}' ]]; then
+                PREFIX="${SORT_KEY[1,10]}"
+                FLIP=true
+            elif [[ ${SORT_KEY} =~ '\d{4}$' ]]; then
+                PREFIX="ZZZZ"
+                # Pure Zsh regex replacement (replaces perl -pe 's/(.*)(\d{4})$/\2\1\2/g')
+                [[ ${L} =~ '(.*)([0-9]{4})$' ]] && MODIFIED_L="${match[2]}${match[1]}${match[2]}"
+            elif [[ ${SORT_KEY} =~ '\d[.]\d\D' ]]; then
+                PREFIX="ZZZZ"
+                # Pure Zsh regex replacement (replaces perl -pe 's/([.]\d)(.*)((G|M).*)$/${1}0 ${3}/g')
+                [[ ${L} =~ '([.][0-9])(.*)((G|M).*)$' ]] && MODIFIED_L="${match[1]}0 ${match[3]}"
+            elif [[ ${SORT_KEY} =~ 'Mi?B' ]]; then
+                PREFIX="A888"
+            elif [[ ${SORT_KEY} =~ 'Gi?B' ]]; then
+                PREFIX="B999"
+            elif [[ ${SORT_KEY} =~ ':' ]]; then
+                PREFIX="B999"
+            elif [[ ${SORT_KEY} =~ '-' ]]; then
+                PREFIX="A888"
+            else
+                PREFIX="${SORT_KEY}"
+            fi
 
-			SORT_ARRAY+="${SORT_KEY}${DELIM}${L}"
-		done
+            # Properly append as an array element
+            SORT_ARRAY+=("${PREFIX}${DELIM}${MODIFIED_L}")
+        done
 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORTED ${#SORT_ARRAY} ROWS"
+        [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORTED ${#SORT_ARRAY} ROWS"
 
-		if [[ ${FLIP} == 'true' ]];then
-			[[ ${_SORT_DATA[ORDER]} == 'a' ]] && SORT_ORDER=d || SORT_ORDER=a # Reverse sort for numeric dates
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Flipped SORT_ORDER for numeric date"
-		fi
+        if [[ ${FLIP} == 'true' ]]; then
+            [[ ${_SORT_DATA[ORDER]} == 'a' ]] && SORT_ORDER=d || SORT_ORDER=a
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Flipped SORT_ORDER for numeric date"
+        fi
 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT_ORDER:${SORT_ORDER}"
+        [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT_ORDER:${SORT_ORDER}"
+        [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: USING SORT KEYS"
 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: USING SORT KEYS"
+        # 3. Assigns result directly to global _LIST (no local shadow)
+        if [[ ${SORT_ORDER} == "a" ]]; then
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT ASCENDING"
+            _LIST=( ${${(no)SORT_ARRAY}#*${DELIM}} )
+        else
+            [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT DESCENDING"
+            _LIST=( ${${(nO)SORT_ARRAY}#*${DELIM}} )
+        fi
+    fi
 
-		if [[ ${SORT_ORDER} == "a" ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT ASCENDING"
-			_LIST=("${(f)$(
-				for L in ${(on)SORT_ARRAY};do # Ascending
-					cut -d"${_SORT_DATA[DELIM]}" -f2- <<<${L}
-				done
-			)}")
-		else
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SORT DESCENDING"
-			_LIST=("${(f)$(
-				for L in ${(On)SORT_ARRAY};do # Descending
-					cut -d"${_SORT_DATA[DELIM]}" -f2- <<<${L}
-				done
-			)}")
-		fi
-	fi
+    [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ADDED ${#_LIST} ROWS to _LIST ARRAY"
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ADDED ${#_LIST} ROWS to _LIST ARRAY"
-
-	if [[ -n ${ARGS} ]];then # Called directly - return list to caller
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: DIRECT CALL - ECHOING ${#_LIST} ROWS"
-		for L in ${_LIST};do
-			echo ${L}
-		done
-	fi
+    if [[ -n ${ARGS} ]]; then
+        [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: DIRECT CALL - ECHOING ${#_LIST} ROWS"
+        print -l -- "${_LIST[@]}"
+    fi
 }
 
 list_toggle_all () {

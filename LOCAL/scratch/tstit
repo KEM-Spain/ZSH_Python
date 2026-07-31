@@ -1,0 +1,6 @@
+#!/usr/bin/zsh
+ 
+
+set -xv
+INODE=${${(s/ /)$(eval ls -i ${1})}[1]}
+set +xv;read

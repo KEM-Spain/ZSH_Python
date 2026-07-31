@@ -35,8 +35,8 @@ validate_is_number () {
 	[[ ${ARG} =~ '^[-]' || ${ARG} =~ '^[+]' ]] && ARG=${ARG[2,-1]}
 
 	if [[ ${ARG} =~ '[.]' ]];then
-		LEFT=$(cut -d'.' -f1 <<<${ARG})
-		RIGHT=$(cut -d'.' -f2 <<<${ARG})
+		LEFT=${${(s/./)ARG}[1]}
+		RIGHT=${${(s/./)ARG}[2]}
 		if [[ ${LEFT} == ${LEFT%%[!0-9]*} && ${RIGHT} == ${RIGHT%%[!0-9]*} ]];then
 			return 0
 		else

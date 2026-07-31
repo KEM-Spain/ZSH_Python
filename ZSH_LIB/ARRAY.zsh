@@ -108,7 +108,7 @@ arr_long_elem_len () {
 }
 
 arr_fn_to_inode () {
-	local -a ARR=(${@})
+	local -a ARR=(${(z)@})
 	local INODE=0
 	local L
 
@@ -116,7 +116,7 @@ arr_fn_to_inode () {
 
 	for L in ${ARR};do
 		if [[ -f ${L} ]];then
-			echo $(ls -i ${L} | cut -d' ' -f1)
+			echo ${${(z)$(ls -i ${L})}[1]}
 		fi
 	done
 }

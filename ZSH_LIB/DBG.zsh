@@ -69,8 +69,8 @@ dbg_msg () {
 }
 
 dbg_parse () {
-	local FN=$(cut -d: -f1 <<<${@})
-	local LN=$(cut -d: -f2 <<<${@})
+	local FN=${${(s/:/)@}[1]}
+	local LN=${${(s/:/)@}[2]}
 
 	(
 	sed -n ${LN}p ${FN} | tr -d '[(){}]' | tr -s '[:space:]' | str_trim
@@ -113,8 +113,8 @@ dbg_trace () {
 
 	for L in ${(on)funcfiletrace};do
 		[[ ${L} =~ "dbg" ]] && continue # Omit calls to any dbg func
-		CALLER=$(realpath $(cut -d: -f1 <<<${L}))
-		CALLER_LINE=$(cut -d: -f2 <<<${L})
+		CALLER=$(realpath ${${(s/:/)L}[1]})
+		CALLER_LINE=${${(s/:/)L}[2]}
 		CALLER_SOURCE=$(dbg_parse ${L})
 		[[ ${CALLER_SOURCE} =~ "dbg" ]] && continue # Omit calls to all dbg_* funcs
 		[[ ${DD} == 'true' ]] && echo "Debugging DEBUG: L:${L} CALLER:${CALLER}"

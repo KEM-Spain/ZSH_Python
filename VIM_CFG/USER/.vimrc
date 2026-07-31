@@ -44,6 +44,7 @@ if !has("gui_running")
 	retab "Change all the existing tab characters to match the current tab settings
 
 	"Abbreviations
+	iabbrev ZS ${${(s/:/)VAR}[1]}<ESC>
 	iabbrev ZA LIST=("${(f)$(command)}")<ESC>
 	iabbrev ZF for ((X=0;X<LIMIT;X++));do<CR>done<ESC>
 	iabbrev ZT [[ ${VAR} IS COND ]] && DO_THIS \|\| DO_THAT <ESC>
@@ -126,6 +127,12 @@ if !has("gui_running")
 	set autoindent
 	set nosmartindent
 
+	" Line wrapping
+	set textwidth=130 "text width
+	set wrap " Enable visual line wrapping
+	set linebreak " Wrap lines at word boundaries (spaces, punctuation) rather than mid-word
+	set breakindent " Optional: Keep indents on visually wrapped lines
+
 	filetype plugin indent on
 
 	" Override Language Defaults to Force 2 Spaces ---
@@ -153,7 +160,6 @@ if !has("gui_running")
 	set lcs=tab:>.,eol:$ "show non printing chars
 	set modeline "process embedded modelines
 	set nocompatible "We're running Vim, not Vi!
-	set nowrap "do not wrap lines
 	set nu "show numbers
 	set shiftwidth=4 "When auto-indenting, indent by this much.
 	set showcmd "show typed commands
@@ -162,7 +168,6 @@ if !has("gui_running")
 	set syntax=on
 	set t_Co=256 "color numbers
 	set tags=~/.vim/mytags/framework
-	set textwidth=120 "text width
 	set undodir=~/.vim/undo
 	set undofile 
 	set viminfo='500,f1,<500,:100,/100 

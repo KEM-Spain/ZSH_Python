@@ -1,6 +1,9 @@
 # LIB Dependencies
 _DEPS+=(MSG.zsh STR.zsh TPUT.zsh)
 
+# Load modules
+zmodload zsh/system 2>/dev/null
+
 # LIB Declarations
 typeset -a _DELIMS=('#' '|' ':' ',' '	') # Recognized field delimiters
 typeset -a _POS_ARGS=()
@@ -140,8 +143,8 @@ center_wdw () {
 	local WIN_PXH=${2}
 	local WIN_PXW=${3}
 	local DIMS=$(xdpyinfo | grep dimension | perl -pe 's/^(.*:\s+)(.*)( pix.*$)/$2/g')
-	local RES_W=$(cut -d'x' -f1 <<<${DIMS})
-	local RES_H=$(cut -d'x' -f2 <<<${DIMS})
+	local RES_W=${${(s/x/)DIMS}[1]}
+	local RES_H=${${(s/x/)DIMS}[2]}
 	local NDX WID WIN_W WIN_H PX PY
 	local -a WIDS=()
 	local MAX_IDS=3 # Testing shows as many as 3 id's generated per execution
@@ -313,7 +316,7 @@ get_inode_fn () {
 }
 
 get_inode () {
-	local INODE=$(ls -Ai ${1} | cut -d' ' -f1)
+	local INODE=${${(s/ /)$(ls -Ai ${1})}[1]}
 	[[ -n ${INODE} ]] && echo ${INODE} || echo "inode for:${1} not found"
 	[[ -n ${INODE} ]] && return 0 || return 1
 }
@@ -333,27 +336,12 @@ get_keys () {
 	local KEY=''
 	local MY_PPID=${PPID}
 	local RESP=?;
-	local XSET_RATE=''
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	(tcup $(( _MAX_ROWS - 2 )) 0;printf "${PROMPT}")>&2 # Position cursor and display prompt to STDERR
-
-	trap reset_rate INT
+	[[ -n ${PROMPT} ]] && (tcup $(( _MAX_ROWS - 2 )) 0;printf "${PROMPT}")>&2 # Position cursor and display prompt to STDERR
 
 	while true;do
-		if [[ ${IDLE_TIME} -le 1000 ]];then
-			if [[ ${XSET_RATE} != ${_XSET_MENU_RATE} ]];then
-				eval "xset ${_XSET_MENU_RATE}" # Keyboard Active
-				XSET_RATE="${_XSET_MENU_RATE}"
-			fi
-		else
-			if [[ ${XSET_RATE} != ${_XSET_DEFAULT_RATE} ]];then
-				eval "xset ${_XSET_DEFAULT_RATE}" # Keyboard Inactive
-				XSET_RATE="${_XSET_DEFAULT_RATE}"
-			fi
-		fi
-
 		KEY=''; K1=''; K2=''; K3=''
 
 		while read -t1 -sk1 KEY;do
@@ -364,19 +352,19 @@ get_keys () {
 			KEY+=${K1}${K2}${K3}
 
 			case "${KEY}" in 
-				$'\x0A') RESP=0;; # Return
-				$'\e[A') RESP=1;; # Up
-				$'\e[B') RESP=2;; # Down
-				$'\e[D') RESP=3;; # Left
-				$'\e[C') RESP=4;; # Right
+				$'\x0A') RESP=0;;  # Return
+				$'\e[A') RESP=1;;  # Up
+				$'\e[B') RESP=2;;  # Down
+				$'\e[D') RESP=3;;  # Left
+				$'\e[C') RESP=4;;  # Right
 				$'\e[5~') RESP=5;; # PgUp
 				$'\e[6~') RESP=6;; # PgDn
-				$'\e[H') RESP=7;; # Home
-				$'\e[F') RESP=8;; # End
+				$'\e[H') RESP=7;;  # Home
+				$'\e[F') RESP=8;;  # End
 				$'\x7F') if [[ ${#NUM} -gt 0 ]];then # BackSpace
-								NUM[${#NUM}]=()
-								echo -n " ">&2
-							fi;;
+                   NUM[${#NUM}]=()
+                   echo -n " ">&2
+                 fi;;
 				*) RESP=$(printf '%d' "'${KEY}");; # Ascii letter value
 			esac
 
@@ -390,17 +378,10 @@ get_keys () {
 				else
 					echo "K${(j::)NUM}"
 				fi
-				if [[ -n ${KEY} ]];then
-					eval "xset ${_XSET_DEFAULT_RATE}" # Restore default rate
-					break 2
-				else
-					continue
-				fi
+				[[ -n ${KEY} ]] && break 2 || continue
 			fi
 		done
-		IDLE_TIME=$(xprintidle)
 	done
-	trap - INT # key processed; cancel trap
 }
 
 inline_vi_edit () {
@@ -588,8 +569,9 @@ kbd_get_keyboard_id () {
 		return 1
 	fi
 
-	KEYBOARD_DEV=$(xinput list | grep  "AT Translated" | cut -f2 | cut -d= -f2)
+	[[ $(xinput list) =~ 'AT Translated.*id=([0-9]+)' ]] && KEYBOARD_DEV=${match[1]}
 	RC=${?}
+
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: xinput ${KEYBOARD_DEV} RC=${RC}"
 
 	echo ${KEYBOARD_DEV}
@@ -669,8 +651,8 @@ ls_color () {
 
 	CODE=${C_TAB[${EXT}]}
 	if [[ -n ${CODE} ]];then
-		F1=$(cut -d';' -f1 <<<${CODE})
-		F2=$(cut -d';' -f2 <<<${CODE})
+		F1=${${(s/;/)CODE}[1]}
+		F2=${${(s/;/)CODE}[2]}
 		echo "\033[${F1};${F2}m"
 	else
 		echo "${RESET}"

@@ -26,8 +26,27 @@ RED_ON_WHITE="\033[0m\033[0;1;31;107m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 YELLOW_ON_GREY="\033[0m\033[0;1;33;100m"
 
-STR="X 16 Y 55 H 10 W 50"
-echo "${#${(z)STR}}"
-for X in ${(z)STR};do
-	echo ${X}
-done
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=()
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+source ${PWD}/${1}
+
+#_DEBUG=1
+ 
+if validate_is_number WWW;then
+	echo "NUM"
+else
+	echo "NOT NUM"
+fi
+
+if validate_is_number 1006;then
+	echo "NUM"
+else
+	echo "NOT NUM"
+fi
+
+exit_leave

@@ -110,7 +110,7 @@ path_get_inode () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	INODE=$(eval "ls -i ${FN:Q} 2>/dev/null | cut -d' ' -f1 2>/dev/null")
+	INODE=${${(s/ /)$(eval ls -i ${FN})}[1]}
 
 	if [[ -n ${INODE} ]];then 
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning true with:$(str_nolf <<<${INODE})"

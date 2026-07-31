@@ -20,6 +20,7 @@ CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -28,7 +29,8 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A _CMDS=()
-typeset -a _FREQ_OPT_CMDS=()
+typeset -F _THRESHOLD=10
+typeset -a _FREQ_CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _HIST_NEW=()
@@ -41,9 +43,8 @@ _HIST_BAK=${_CFG_DIR}/.zsh_history.bak
 _HIST_CACHE=${_CFG_DIR}/hist_cache
 _HIST_FILE=${HOME}/.zsh_history
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
-typeset -F _THRESHOLD=4
 
-_FREQ_OPT_CMDS=(
+_FREQ_CMDS=(
 bak
 doit
 find
@@ -60,20 +61,29 @@ vi
 )
 
 size_diff () {
-	local -F CUR_SIZE=$(wc -l ${_HIST_FILE} | cut -d' ' -f1)
-	local -F LAST_SIZE=$(wc -l ${_HIST_BAK} | cut -d' ' -f1)
-	local -F INCREASE=$(( CUR_SIZE - LAST_SIZE ))
+	local CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
+	local LAST_SIZE=$(stat -c"%s" ${_HIST_BAK})
+	local DIFF=0
 	local -F PCT=0
+	local -F AVG=0
+	local -F PART=0
+	local -F WHOLE=0
 
-	PCT=$(( (INCREASE / LAST_SIZE) * 100 ))
+	PART=${CUR_SIZE}
+	WHOLE=${LAST_SIZE}
+	PCT=$(( (PART / WHOLE) * 100 ))
+	DIFF=$(( PCT - 100 ))
 
-	if [[ ${CUR_SIZE} -le ${LAST_SIZE} ]];then
-		printf "History size %d lines" $(wc -l ${_HIST_FILE} | cut -d' ' -f1)
+	if [[ ${PART} -le ${WHOLE} ]];then
+		printf "History size %d lines" ${${=$(wc -l < ${_HIST_FILE})}[1]}
 		return 0 # No rebuild
 	else
-		if [[ ${PCT} -gt ${_THRESHOLD} ]];then
-			printf "Rebuld required - Growth:${WHITE_FG}%.2f%%${RESET}" ${PCT}
+		if [[ ${DIFF} -gt ${_THRESHOLD} ]];then
+			printf "Rebuild required - Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
 			return 1
+		else
+			printf "No Rebuild required - Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
+			return 0
 		fi
 	fi
 }
@@ -95,7 +105,7 @@ cmd_filter () {
 	local CACHE=0
 	local K RC
 
-	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo -n "Entered ${0}..." >&2
 
 	[[ ! -e ${_CFG_DIR} ]] && md ${_CFG_DIR}
 	[[ ! -e ${_HIST_CACHE} ]] && touch ${_HIST_CACHE}
@@ -103,13 +113,13 @@ cmd_filter () {
 	for K in ${(k)${(P)ARRAY_NAME}};do
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
-		CMD_IN=$(cut -d';' -f2 <<<${K})
-		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN:t}) # Strip any path
+		CMD_IN=${${(s/;/)K}[2]}
+		CMD_TGT=${${(s/ /)CMD_IN:t}[1]}
 		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
 		[[ -z ${CMD_TGT} ]] && continue
 		[[ ${SEEN[${CMD_TGT}]} -eq 1 ]] && continue # no repeated validations
 
-		[[ ${VERBOSE_OPT} == 'true' ]] && echo "Processing command:${CMD_TGT}" >&2
+		[[ ${VERBOSE_OPT} == 'true' ]] && echo -n "Processing command:${CMD_TGT}" >&2
 
 		VALID=false
 		if [[ -n ${CMD_TGT} && ${CMD_TGT} != ' ' && -n ${_HIST_CACHE} ]];then
@@ -119,36 +129,36 @@ cmd_filter () {
 				VALID='true'
 				((CACHE++))
 				printf '%s\n' "${K}"
-				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found cached:%s\n' "${CMD_TGT}" >&2
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found cached:%s' "${CMD_TGT}" >&2
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling which..." >&2
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo -n "Calling which..." >&2
 			which -s ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((WCH++))
 				printf '%s\n' "${K}"
 				printf '%s\n' "${CMD_TGT}">>${_HIST_CACHE}
-				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found by which:%s\n' "${CMD_TGT}" >&2
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found by which:%s' "${CMD_TGT}" >&2
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling mya..." >&2
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo -n "Calling mya..." >&2
 			mya -q -- ${CMD_TGT} >/dev/null 2>&1
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((MYA++))
 				printf '%s\n' "${K}"
 				printf '%s\n' "${CMD_TGT}">>${_HIST_CACHE}
-				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found by mya:%s\n' "${CMD_TGT}" >&2
+				[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Found by mya:%s' "${CMD_TGT}" >&2
 			fi
 		fi
 
 		if [[ ${VALID} == 'false' ]];then
-			[[ ${VERBOSE_OPT} == 'true' ]] && echo "Calling locate..." >&2
+			[[ ${VERBOSE_OPT} == 'true' ]] && echo -n "Calling locate..." >&2
 			CMD_MSK="[${CMD_TGT[1]}]${CMD_TGT[2,-1]}" # Weird locate trick to match exact name / not substring
 			CMD_OUT=$(locate -b -e ${CMD_MSK})
 			if [[ ${?} -eq 0 ]];then
@@ -163,13 +173,13 @@ cmd_filter () {
 
 		if [[ ${VALID} == 'false' ]];then
 			((RJT++))
-			[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Rejected:%s\n' "${CMD_TGT}" >&2
+			[[ ${VERBOSE_OPT} == 'true' ]] && printf 'Rejected:%s' "${CMD_TGT}" >&2
 		fi
 		SEEN[${CMD_TGT}]=1
 	done
 
 	echo "${CACHE}|${WCH}|${LOC}|${MYA}|${RJT}" > ${_CFG_DIR}/accumulators
-	[[ ${VERBOSE_OPT} == 'false' ]] && echo >&2 # Clear progress
+	[[ ${PROD_OPT} == 'false' ]] && echo >&2 # Clear progress
 }
 
 hist_parse () {
@@ -182,7 +192,7 @@ hist_parse () {
 	local TS
 	local TS_NDX
 
-	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo -n "Entered ${0}..." >&2
 
 	for L in ${(on)${(P)ARRAY_NAME}};do
 		[[ -z ${L} ]] && continue # Blank hist line
@@ -199,7 +209,7 @@ hist_parse () {
 		elif [[ ${FREQ_OPT} == 'true' ]];then
 			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
 			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
-			if $(arr_in_array "_FREQ_OPT_CMDS" ${CMD_ONLY:gs/ //});then
+			if $(arr_in_array "_FREQ_CMDS" ${CMD_ONLY:gs/ //});then
 				CMD=${CMD_ONLY}
 			fi
 		else
@@ -221,7 +231,7 @@ build_hist () {
 	local -a _VALID_CMDS
 	local K
 
-	[[ ${VERBOSE_OPT} == 'true' ]] && echo "Entered ${0}..." >&2
+	[[ ${VERBOSE_OPT} == 'true' ]] && echo -n "Entered ${0}..." >&2
 
 	#echo "ARRAY_NAME:${ARRAY_NAME} ${#${(P)ARRAY_NAME}}" >&2
 
@@ -332,7 +342,7 @@ shift $((OPTIND -1))
 #--End GetOpts--
 
 # Execution
-[[ ${VERBOSE_OPT} == 'true' && ${FORCE_OPT} == 'true' ]] && echo "Forcing rebuild..." >&2
+[[ ${VERBOSE_OPT} == 'true' && ${FORCE_OPT} == 'true' ]] && echo -n "Forcing rebuild..." 
 
 if [[ ${SIZEDIFF} == 'true' ]];then
 	MSG=$(size_diff)
@@ -348,20 +358,20 @@ if [[ ${FORCE_OPT} == 'false' && ${TESTING_OPT} == 'false' ]];then
 	fi
 fi
 
-[[ ${VERBOSE_OPT} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
+[[ ${PROD_OPT} == 'false' ]] && echo "${WHITE_ON_GREY}Backing up current history...${RESET}"
 cp ${_HIST_FILE} ${_HIST_BAK}
 
-echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" >&2
+echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" 
 upd_locate -u 2>/dev/null
 
 HIST_LINES=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
-echo -n "${ITALIC}Collating ${HIST_LINES} lines of history...${RESET}" >&2
+echo -n "${ITALIC}Collating ${HIST_LINES} lines of history...${RESET}" 
 
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
-echo "${ITALIC}done${RESET}" >&2
-[[ ${VERBOSE_OPT} == 'false' ]] && echo "${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
+echo "${ITALIC}done${RESET}" 
+[[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Current History Lines:${WHITE_FG}${#_HIST_IN}${RESET}"
 
-[[ ${VERBOSE_OPT} == 'false' ]] && echo "${MAGENTA_FG}Rebuilding history file...${RESET}"
+[[ ${PROD_OPT} == 'false' ]] && echo "\n${MAGENTA_FG}Rebuilding history file...${RESET}"
 echo ${CSR_OFF}
 _REBUILT_HIST=("${(f)$(build_hist _HIST_IN)}")
 echo ${CSR_ON}
@@ -387,7 +397,7 @@ else
 	mv -f ${_HIST_NEW} ${_HIST_FILE}
 fi
 
-if [[ ${VERBOSE_OPT} == 'false' ]];then
+if [[ ${PROD_OPT} == 'false' ]];then
 	CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
 	read ACC <${_CFG_DIR}/accumulators
 	echo "   SIZE:${WHITE_FG}${CUR_SIZE}${RESET}"
@@ -397,10 +407,10 @@ if [[ ${VERBOSE_OPT} == 'false' ]];then
 	echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
 	echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
 	echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_REBUILT_HIST}${RESET}"
-	echo "${WHITE_ON_GREY}Done.${RESET}"
+	echo "${WHITE_ON_GREY}Done.${RESET}\n"
 else
 	tput el
-	printf "Clean History (${WHITE_FG}%d${RESET})" ${NDX}
+	printf "Cleaned History (${WHITE_FG}%d${RESET} lines)\n" ${NDX}
 fi
 
 exit_leave

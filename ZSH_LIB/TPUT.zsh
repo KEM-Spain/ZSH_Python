@@ -37,7 +37,8 @@ cursor_row () {
 	echo -ne "\033[6n" > /dev/tty # Voodoo to grab row
 	read -t1 -s -d'R' ROW < /dev/tty # Parse usable bit
 
-	ROW=$(cut -d';' -f1 <<<${ROW} | tr -dc '0-9') # Split and strip non digits (escape seq etc.)
+	ROW=${${(s/;/)ROW}[1]}
+	ROW=$(tr -dc '0-9' <<<${ROW}) # Split and strip non digits (escape seq etc.)
 	((ROW--))
 
 	echo ${ROW}

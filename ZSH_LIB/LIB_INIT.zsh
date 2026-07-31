@@ -11,7 +11,7 @@ mbegin=''
 mend=''
 
 # Constants
-[[ -z ${_SCRIPT} ]] && _SCRIPT=${$(cut -d: -f1 <<<${funcfiletrace}):t}
+[[ -z ${_SCRIPT} ]] && _SCRIPT=${${${(s/:/)funcfiletrace}[1]}:t}
 _MY_PID="$$"
 _SCRIPT_TAG="[${WHITE_FG}${_SCRIPT}${RESET}]:"
 _DEBUG_FILE=/tmp/${_MY_PID}.${_SCRIPT}_debug.out

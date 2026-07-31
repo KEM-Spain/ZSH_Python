@@ -156,14 +156,12 @@ set_exit_value () {
 get_user_pids () {
 	local PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
 	local -a PID_LIST=()
-	local F2
 	local P
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for P in ${PS};do
-		F2=$(cut -d' ' -f2 <<<${P})
-		PID_LIST+=${F2}
+		PID_LIST+=${${(s/ /)P}[2]}
 	done
 
 	echo ${PID_LIST}
@@ -172,38 +170,34 @@ get_user_pids () {
 get_active_pids () {
 	local PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
 	local -a PID_LIST=()
-	local FN
 	local P
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for P in ${PS};do
 		[[ ${P} =~ $$ ]] && continue
-		FN=$(cut -d' ' -f2 <<<${P})
-		[[ -n ${FN} ]] && PID_LIST+=${FN}
+		PID_LIST+=${${(s/ /)P}[2]}
 	done
 
 	echo ${PID_LIST}
 }
 
 scrub_tmp () {
-	local -a MARKERS=(debug state tag)
+	local -a TEMP_FILES=(debug state tag)
 	local -a FLIST=()
 	local -a _EXIT_ACTIVE_PIDS=("${(f)$(get_active_pids)}")
-	local FPID=''
 	local M F
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	FLIST=("${(f)$(
-	for M in ${MARKERS};do
-		ls /tmp/*${M}*
-	done 2>/dev/null
+		for M in ${TEMP_FILES};do
+			ls /tmp/*${M}*
+		done 2>/dev/null
 	)}")
 
 	for F in ${FLIST};do
-		FPID=$(cut -d\. -f1 <<<${F:t})
-		if arr_in_array "_EXIT_ACTIVE_PIDS" ${FPID};then
+		if arr_in_array "_EXIT_ACTIVE_PIDS" ${${(s/./)F:t}[1]};then
 			continue
 		else
 			/bin/rm -f ${F}

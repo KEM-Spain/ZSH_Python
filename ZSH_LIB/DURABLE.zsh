@@ -12,8 +12,8 @@ durable_array () {
 
 	if [[ -e /tmp/${NAME} ]];then
 		while read LINE;do
-			KEY=$(cut -d: -f1 <<<${LINE})
-			VAL=$(cut -d: -f2 <<<${LINE})
+			KEY=${${(s/:/)LINE}[1]}
+			VAL=${${(s/:/)LINE}[2]}
 			_DURABLE[${KEY}]=${VAL}
 		done < /tmp/${NAME}
 	else
@@ -29,7 +29,8 @@ durable_get () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ -e /tmp/${NAME} ]];then
-		VAL=$(grep --color=never "${KEY}:" < /tmp/${NAME} | cut -d: -f2)
+		VAL=$(grep --color=never "${KEY}:" < /tmp/${NAME})
+		VAL=${${(s/:/)VAL}[2]}
 		rm -f /tmp/${NAME}
 	else
 		return 1

@@ -29,7 +29,8 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A _CMDS=()
-typeset -a _FREQ_OPT_CMDS=()
+typeset -F _THRESHOLD=10
+typeset -a _FREQ_CMDS=()
 typeset -a _HIST_BUILD=()
 typeset -a _HIST_IN=()
 typeset -a _HIST_NEW=()
@@ -42,9 +43,8 @@ _HIST_BAK=${_CFG_DIR}/.zsh_history.bak
 _HIST_CACHE=${_CFG_DIR}/hist_cache
 _HIST_FILE=${HOME}/.zsh_history
 _LOCATE_OPTS+=("--prunepaths=/media/${USER}") # No external drives
-typeset -F _THRESHOLD=4
 
-_FREQ_OPT_CMDS=(
+_FREQ_CMDS=(
 bak
 doit
 find
@@ -75,12 +75,15 @@ size_diff () {
 	DIFF=$(( PCT - 100 ))
 
 	if [[ ${PART} -le ${WHOLE} ]];then
-		printf "History size $(wc -l ${_HIST_FILE} | cut -d' ' -f1) lines" ${DIFF}
+		printf "History size %d lines" ${${(w)$(wc -l < ${_HIST_FILE})}[1]}
 		return 0 # No rebuild
 	else
 		if [[ ${DIFF} -gt ${_THRESHOLD} ]];then
-			printf "Rebuld required - Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
+			printf "Rebuild required - Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
 			return 1
+		else
+			printf "No Rebuild required - Growth:${WHITE_FG}%.2f%%${RESET}" ${DIFF}
+			return 0
 		fi
 	fi
 }
@@ -110,8 +113,8 @@ cmd_filter () {
 	for K in ${(k)${(P)ARRAY_NAME}};do
 		((NDX++))
 		printf "\rFiltering garbage ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${ROWS} $(( NDX * 100. / ${ROWS} )) >&2
-		CMD_IN=$(cut -d';' -f2 <<<${K})
-		CMD_TGT=$(cut -d' ' -f1 <<<${CMD_IN:t}) # Strip any path
+		CMD_IN=${${(s/;/)K}[2]}
+		CMD_TGT=${${(s/ /)CMD_IN:t}[1]}
 		[[ -z ${CMD_TGT} ]] && CMD_TGT=${CMD_IN} # Strip any args
 		[[ -z ${CMD_TGT} ]] && continue
 		[[ ${SEEN[${CMD_TGT}]} -eq 1 ]] && continue # no repeated validations
@@ -193,31 +196,30 @@ hist_parse () {
 
 	for L in ${(on)${(P)ARRAY_NAME}};do
 		[[ -z ${L} ]] && continue # Blank hist line
-		#[[ ${L} =~ ';\[\[' ]] && continue # test commands
 
 		LINE=$(tr -d '\n' <<<${L})
-		TS=$(cut -d';' -f1 <<<${LINE})
-		TS_NDX=$(cut -d':' -f2 <<<${TS} | str_trim)
+		TS=${${(s/;/)LINE}[1]}
+		TS_NDX=${${(s/:/)TS}[2]}
 
 		if [[ ${DEEP_OPT} == 'true' ]];then
-			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
-			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
+			CMD=${${(s/;/)LINE}[2]} # With args
+			CMD_ONLY=${${(s/ /)CMD}[1]} # Omit args
 			CMD=${CMD_ONLY}
 		elif [[ ${FREQ_OPT} == 'true' ]];then
-			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
-			CMD_ONLY=$(cut -d' ' -f1 <<<${CMD}) # Omit args
-			if $(arr_in_array "_FREQ_OPT_CMDS" ${CMD_ONLY:gs/ //});then
+			CMD=${${(s/;/)LINE}[2]} # With args
+			CMD_ONLY=${${(s/ /)CMD}[1]} # Omit args
+			if $(arr_in_array "_FREQ_CMDS" ${CMD_ONLY:gs/ //});then
 				CMD=${CMD_ONLY}
 			fi
 		else
-			CMD=$(cut -d';' -f2- <<<${LINE}) # With args
+			CMD=${${(s/;/)LINE}[2]} # With args
 		fi
 
 		RECENT[${CMD}]="${TS_NDX}|${L}" # Rows are processed in order of timestamp; successive commands receive latest time key as they are hit
 	done
 
 	for K in ${(onk)RECENT};do
-		LINE=$(cut -d'|' -f2 <<<${RECENT[${K}]})
+		LINE=${${(s/|/)RECENT[${K}]}[2]}
 		printf "%s\n" ${LINE}
 	done
 }
@@ -361,7 +363,7 @@ cp ${_HIST_FILE} ${_HIST_BAK}
 echo -n "${MSG} ${ITALIC}Updating locate...${RESET}" 
 upd_locate -u 2>/dev/null
 
-HIST_LINES=$(cut -d' ' -f1 <<<$(wc -l ${_HIST_FILE}))
+HIST_LINES=${${(w)$(wc -l < ${_HIST_FILE})}[1]}
 echo -n "${ITALIC}Collating ${HIST_LINES} lines of history...${RESET}" 
 
 _HIST_IN=("${(f)$(sort -t';' -k2 <${_HIST_FILE} | sort -t':' -k1)}")
@@ -398,11 +400,11 @@ if [[ ${PROD_OPT} == 'false' ]];then
 	CUR_SIZE=$(stat -c"%s" ${_HIST_FILE})
 	read ACC <${_CFG_DIR}/accumulators
 	echo "   SIZE:${WHITE_FG}${CUR_SIZE}${RESET}"
-	echo " CACHED:${WHITE_FG}$(cut -d'|' -f1 <<<${ACC})${RESET}"
-	echo "  WHICH:${WHITE_FG}$(cut -d'|' -f2 <<<${ACC})${RESET}"
-	echo " LOCATE:${WHITE_FG}$(cut -d'|' -f3 <<<${ACC})${RESET}"
-	echo "    MYA:${WHITE_FG}$(cut -d'|' -f4 <<<${ACC})${RESET}"
-	echo "REJECTS:${WHITE_FG}$(cut -d'|' -f5 <<<${ACC})${RESET}"
+	echo " CACHED:${WHITE_FG}${${(s/|/)ACC}[1]}${RESET}"
+	echo "  WHICH:${WHITE_FG}${${(s/|/)ACC}[2]}${RESET}"
+	echo " LOCATE:${WHITE_FG}${${(s/|/)ACC}[3]}${RESET}"
+	echo "    MYA:${WHITE_FG}${${(s/|/)ACC}[4]}${RESET}"
+	echo "REJECTS:${WHITE_FG}${${(s/|/)ACC}[5]}${RESET}"
 	echo "${MAGENTA_FG}Retained Commands:${WHITE_FG}${#_REBUILT_HIST}${RESET}"
 	echo "${WHITE_ON_GREY}Done.${RESET}\n"
 else

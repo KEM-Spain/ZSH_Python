@@ -30,11 +30,10 @@ err_msg_exit () {
 	esac
 
 	if [[ -n ${E_MSG} ]];then
-		IS_FILE=$(rev <<<$(cut -d: -f1 <<<$(rev <<<${E_MSG})))
+		IS_FILE=$(rev <<<${${(s/:/)$(rev <<<${E_MSG})}[1]})
 		if [[ -f ${IS_FILE} || ${IS_FILE} =~ ".\.." ]];then
-			E_MSG="$(cut -d: -f1 <<<${E_MSG}):${WHITE_FG}${IS_FILE}${RESET}"
+			E_MSG="${${(s/:/)E_MSG}[1]}:${WHITE_FG}${IS_FILE}${RESET}"
 		else
-			#[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe 's/(.*:)(.*?\s+)(.*)/\1\e[37m\2\e[m\3/g' <<<${E_MSG})
 			[[ ${E_MSG} =~ ":" ]] && E_MSG=$(perl -pe 's/(.*:)(.*)$/\1\e[37m\2\e[m/g' <<<${E_MSG})
 		fi
 		printf "[${WHITE_FG}%s${RESET}]:[${LCOLOR}${LABEL}${RESET}] %s" ${_SCRIPT} "$(echo ${E_MSG})"

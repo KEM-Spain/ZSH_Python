@@ -1,5 +1,6 @@
 			  echo "=== MSG BOX ARGS === \
 						  \nH) HDR_LINES=\${OPTARG} # Number of msg lines that comprise header \
+						  \nA) COORD_ARG=\${OPTARG} # Coordinates for message in array form \
 						  \nC) CONTINUOUS=true # Message is added to the existing continuous msg \
 						  \nO) FRAME_COLOR=\${OPTARG} # Set color for message frame \
 						  \nP) PROMPT_ARG=\${OPTARG} # Text for message prompt \

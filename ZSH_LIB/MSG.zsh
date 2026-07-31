@@ -312,6 +312,7 @@ msg_box () {
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}USING RELATIVE COORDS${RESET}: MSG_X_COORD:${_REL_COORDS[X]} MSG_Y_COORD:${_REL_COORDS[Y]} BOX_WIDTH:${_REL_COORDS[W]} BOX_HEIGHT:${_REL_COORDS[H]}"
 		fi
 	else
+		# Set default coords or apply passed coords
 		[[ ${MSG_W_COORD_ARG} -eq 0 ]] && BOX_WIDTH=$(( MSG_COLS + 4 )) || BOX_WIDTH=${MSG_W_COORD_ARG}
 		[[ ${MSG_H_COORD_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${MSG_H_COORD_ARG}
 		[[ ${MSG_X_COORD_ARG} -eq -1 ]] && MSG_X_COORD=$(center -V -h${BOX_HEIGHT}) || MSG_X_COORD=${MSG_X_COORD_ARG}
@@ -566,9 +567,9 @@ msg_box_align () {
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: List item numbers"
 	elif [[ ${MSG} =~ '<D>' ]];then # Handle embed: <D> Data Field List item
 		MSG=$(sed -e 's/^.*<D>//' <<<${MSG})
-		LBL=$(cut -d':' -f1 <<<${MSG})
+		LBL=${${(s/:/)MSG}[1]}
 		LBL=${LBL:gs/#/ /} # Swap alignment placeholders w/spaces
-		VAL=$(cut -d':' -f2 <<<${MSG})
+		VAL=${${(s/:/)MSG}[2]}
 		MSG="<c>${LBL}<N>:<w>${VAL}<N>" # Colorize
 		TEXT=$(msg_nomarkup ${MSG})
 		PAD_L=' '
@@ -790,7 +791,7 @@ msg_list_data () {
 		MARK=${L[(i)[:]]}
 		[[ ${MARK} -lt ${MAX} ]] && PAD=$(( MAX - MARK )) || PAD=0 # Align fields at separator
 		PAD=$(( PAD + ${#L} ))
-		VAL=$(cut -d':' -f2 <<<${L})
+		VAL=${${(s/:/)L}[2]}
 		LINE="<D> ${(l(${PAD})(#))L}:${VAL}"
 		[[ ${NDX} -lt ${#MSG} ]] && echo -n ${LINE}${DELIM} || echo -n ${LINE}
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ITEM:${LINE}"
@@ -1087,7 +1088,7 @@ msg_warn () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	grep -q '|' <<<${MSG}
-	[[ ${?} -eq 0 ]] && LABEL=$(cut -d '|' -f1 <<<${MSG}) && MSG=$(cut -d '|' -f2 <<<${MSG})
+	[[ ${?} -eq 0 ]] && LABEL${${(s/|/)MSG}[1]} && MSG${${(s/|/)MSG}[2]}
 
 	if [[ -n ${MSG} ]];then
 		[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:(.*)/\e[m:\e[3;37m$1\e[m/g' <<<${MSG})
