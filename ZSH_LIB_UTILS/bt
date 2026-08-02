@@ -25,7 +25,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 typeset -A DEV_STATE_COLOR
 typeset -A _DEV_MAC_NAME
 typeset -A _DEV_MAC_TYPE
-typeset -A _SINK_NDX_NAME
+typeset -gA _SINK_NDX_NAME
 typeset -a _BT_OUTPUT
 typeset -a _SELECTED_DEVICE
 typeset -a _ACTIONS
@@ -59,6 +59,13 @@ clean_line () {
    while read LINE;do
       echo ${LINE} | perl -pe 's/\x1b\[[0-9;]*[mG]//g; s/\[.*\]#?//g; s/\x0d\x1b\x20\x0d\x1b\x5b\x4b//g; s/^ //g'
    done
+}
+
+clear_and_exit () {
+	local MSG=${@}
+
+	clear
+	exit_leave $(err_msg_exit "${MSG}")
 }
 
 connection_msgs () {
@@ -103,8 +110,8 @@ set_device_info () {
 	done
 
 	for L in ${DEVICES};do
-		MAC=$(echo ${L} | cut -d' ' -f2)
-		NAME=$(echo ${L} | cut -d' ' -f3- | str_trim)
+		MAC=${${(s/ /)L}[2]}
+		NAME=${${(s/ /)L}[3,-1]}
 		_DEV_MAC_NAME[${MAC}]=${NAME}
 	done
 }
@@ -117,7 +124,6 @@ set_sink_info () {
 	local STATE 
 
 	unset _SINK_NDX_NAME
-	typeset -gA _SINK_NDX_NAME
 
 	while read LINE;do
 		case ${LINE} in
@@ -146,7 +152,7 @@ get_connection_status () {
 	grep -qi 'connected' <<<${_BT_OUTPUT}
 	if [[ ${?} -eq 0 ]];then
 		for L in ${_BT_OUTPUT};do
-			STATUS=$(echo ${L} | grep -i 'connected:' | cut -d: -f2 | tr -d '[:space:]')
+			[[ ${L} =~ 'connected:' ]] && STATUS=${${(s/:/)L}[2]}
 			[[ -n ${STATUS} ]] && break
 		done
 
@@ -171,7 +177,7 @@ get_connection_type () {
 	send_command "info ${MAC}" exit
 
 	for L in ${_BT_OUTPUT};do
-		TYPE=$(echo ${L} | grep 'Icon:' | cut -d: -f2 | tr -d '[:space:]')
+		[[ ${L} =~ 'Icon:' ]] && TYPE=${${(s/:/)L}[2]}
 		[[ -n ${TYPE} ]] && break
 	done
 	echo ${TYPE}
@@ -205,21 +211,24 @@ select_device () {
 		tput ed
 
 		sel_set_list ${DEVICES}
-		sel_list -x10 -y11 -H"Devices" -F"<c>Select BT Device or (<w>q<c>)uit<N>" -O ${CYAN_FG}
-		[[ ${?} -ne 0 ]] && exit_leave "[${_SCRIPT}]:${RED_FG}Operation Cancelled${RESET}"
+		sel_list -R -x10 -y40 -H"Devices" -F"<c>Select BT Device or (<w>q<c>)uit<N>" -O ${CYAN_FG}
+		[[ ${?} -ne 0 ]] && clear_and_exit "[${_SCRIPT}]:${RED_FG}Operation Cancelled${RESET}"
 		DEV=${_SEL_VAL}
 
 		MAC=${(k)_DEV_MAC_NAME[(r)${DEV}]} # Reverse lookup
 		_SELECTED_DEVICE=${MAC}
 
 		sel_set_list ${_ACTIONS}
-		sel_list -x15 -y60 -H"Actions" -F"<c>Select Action for ${DEV} or (<w>q<c>)uit<N>" -O ${CYAN_FG}
-		[[ ${?} -ne 0 ]] && exit_leave "[${_SCRIPT}]:${RED_FG}Operation Cancelled${RESET}"
+		sel_list -R -x15 -y75 -H"Actions" -F"<c>Select Action for <w>${DEV}<N> or (<w>q<c>)uit<N>" -O ${CYAN_FG}
+		if [[ ${?} -ne 0 ]];then
+			tcup ${_MAX_ROW} 0
+			clear_and_exit "[${_SCRIPT}]:${RED_FG}Operation Cancelled${RESET}"
+		fi
 		ACTION=${_SEL_VAL}
 
 		if [[ ${ACTION} == 'toggle' ]];then
 			STATUS=$(get_connection_status ${MAC})
-			[[ ${STATUS} != 'connected' ]] && exit_leave "${RED_FG}Device is not connected${RESET}:${DEV}"
+			[[ ${STATUS} != 'connected' ]] && clear_and_exit "${RED_FG}Device is not connected${RESET}:${DEV}"
 			if [[ -n ${ACTION} ]];then
 				STATE=$(get_connection_status ${MAC})
 				[[ ${STATE} == 'connected' ]] && TOGGLE_STATE=disconnect || TOGGLE_STATE=connect
@@ -233,13 +242,13 @@ select_device () {
 			fi
 		elif [[ ${ACTION} == 'connect' ]];then
 			STATUS=$(get_connection_status ${MAC})
-			[[ ${STATUS} == 'connected' ]] && exit_leave "${RED_FG}Device is already connected${RESET}:${DEV}"
+			[[ ${STATUS} == 'connected' ]] && clear_and_exit "${RED_FG}Device is already connected${RESET}:${DEV}"
 			STATE=connect
 			set_device_connection ${STATE} ${MAC}
 			RC=${?}
 		elif [[ ${ACTION} == 'disconnect' ]];then
 			STATUS=$(get_connection_status ${MAC})
-			[[ ${STATUS} != 'connected' ]] && exit_leave "${RED_FG}Device is not connected${RESET}:${DEV}"
+			[[ ${STATUS} != 'connected' ]] && clear_and_exit "${RED_FG}Device is not connected${RESET}:${DEV}"
 			STATE=disconnect
 			set_device_connection ${STATE} ${MAC}
 			RC=${?}
@@ -283,7 +292,7 @@ select_sink () {
 		NDX=0
 		for L in ${(k)_SINK_NDX_NAME};do
 			((NDX++))
-			SINK_NDX[${NDX}]=$(echo ${L} | cut -d':' -f1)
+			SINK_NDX[${NDX}]=${${(s/:/)L}[1]}
 			[[ ${L:l} =~ ':active' ]] && CURRENT_STATUS=active || CURRENT_STATUS=inactive
 			printf "%d) %-50s ${SINK_STATE_COLOR[${CURRENT_STATUS}]}%s${RESET}\n" ${NDX} ${_SINK_NDX_NAME[${L}]} ${CURRENT_STATUS}
 		done
@@ -431,7 +440,7 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${SET_SINK} == 'true' ]];then
 	select_sink

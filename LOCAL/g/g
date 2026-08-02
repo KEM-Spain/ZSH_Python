@@ -15,7 +15,6 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -126,26 +125,26 @@ GR_OPT_WORD=''
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
 	case ${OPTION} in
-     H) usage;;
-	  D) dbg_set_level;;
-     A) GR_OPT_COLOR='--color=never';;
-	  B) GR_OPT_BAK=true;;
-     F) GR_OPT_LITERAL=-F;;
-     I) GR_OPT_CASE='--no-ignore-case';;
-     L) GR_OPT_LIST='-l';FILELIST=true;ONE_LINE=true;;
-     O) FILE_OUT=${OPTARG};;
-     P) PATH_ARG=${OPTARG};;
-     h) GR_OPT_FN='--no-filename';;
-     l) GR_OPT_LIST=-l;FILELIST=true;;
-     m) GR_OPT_MAX_MATCH="-m${OPTARG}";;
-     n) GR_OPT_LINE='-n';;
-     o) GR_OPT_ONLY='-o';;
-     r) GR_OPT_RECURSE='-r';;
-     t) FTYPE=${OPTARG};;
-     v) GR_OPT_INVERT='-v';;
-     w) GR_OPT_WORD='-w';;
-     :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
-    \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
+		H) usage;;
+		D) dbg_set_level;;
+		A) GR_OPT_COLOR='--color=never';;
+		B) GR_OPT_BAK=true;;
+		F) GR_OPT_LITERAL=-F;;
+		I) GR_OPT_CASE='--no-ignore-case';;
+		L) GR_OPT_LIST='-l';FILELIST=true;ONE_LINE=true;;
+		O) FILE_OUT=${OPTARG};;
+		P) PATH_ARG=${OPTARG};;
+		h) GR_OPT_FN='--no-filename';;
+		l) GR_OPT_LIST=-l;FILELIST=true;;
+		m) GR_OPT_MAX_MATCH="-m${OPTARG}";;
+		n) GR_OPT_LINE='-n';;
+		o) GR_OPT_ONLY='-o';;
+		r) GR_OPT_RECURSE='-r';;
+		t) FTYPE=${OPTARG};;
+		v) GR_OPT_INVERT='-v';;
+		w) GR_OPT_WORD='-w';;
+		:) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
+		\?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
 done
 shift $(( OPTIND - 1 ))
@@ -251,23 +250,35 @@ echo "\n" >&2
 
 if ! arr_is_populated "${LIST}";then
 	echo "${WHITE_FG}Grep command${RESET}:${CMD_MSG}" | tr -s '[:space:]'
-	exit_leave $(err_msg_exit W "No files (${FTYPE_MSG}) found containing:${SEARCHTERM}")
+	do_rmcup
+	[[ -n ${FTYPE} ]] && FTYPE_MSG=" (of type:${WHITE_FG}${FTYPE}${RESET}) " || FTYPE_MSG=' '
+	exit_leave $(err_msg_exit W "No files${FTYPE_MSG}found containing:${SEARCHTERM}")
 fi
 
 if [[ ${FILELIST} == 'true' ]];then
 	UNIQ=("${(f)$(
-	for L in ${LIST};do
-		FN=$(cut -d'|' -f1 <<<${L})
-		echo ${FN}
-	done | sort -u
+		for L in ${(uo)LIST};do # Unique/sorted
+			FN=$(cut -d'|' -f1 <<<${L})
+			echo ${FN}
+		done
 	)}")
-	MSG="File(s) containing searchterm:${SEARCHTERM}"
-	echo ${MSG}
-	echo "${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}"
-	for L in ${UNIQ};do
-		[[ -h ${L} ]] && continue
-		[[ ${ONE_LINE} == 'true' ]] && echo -n "${L} " || echo ${L}
-	done | mypager wait
+	if [[ -t 1 ]];then # STDOUT
+		{
+		MSG="File(s) containing searchterm:${WHITE_FG}${SEARCHTERM}${RESET}"
+		echo ${MSG}
+		LEN=$(str_no_ansi ${MSG})
+		echo "${MAGENTA_FG}$(str_unicode_line ${#LEN})${RESET}"
+		for L in ${UNIQ};do
+			[[ -h ${L} ]] && continue # no links
+			[[ ${ONE_LINE} == 'true' ]] && echo -n "${L} " || echo ${L}
+		done 
+		} | mypager wait
+	else
+		for L in ${UNIQ};do
+			[[ -h ${L} ]] && continue # no links
+			[[ ${ONE_LINE} == 'true' ]] && echo -n "${L} " || echo ${L}
+		done 
+	fi
 else
 	{
 	tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'

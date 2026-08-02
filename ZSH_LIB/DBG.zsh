@@ -13,6 +13,7 @@ dbg_arglist () {
 	[[ ${#} -eq 0 ]] && return
 
 	TEXT=${@}
+	echo "${functrace[2]}"
 	if [[ ${#TEXT} -lt 100 ]];then
 		echo -n "[${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
 		for A in "${@}";do

@@ -62,19 +62,19 @@ action_do () {
 get_book () {
 	local LINE=${@}
 
-	cut -d'|' -f1 <<<${LINE}
+	echo ${${(s/|/)LINE}[1]}
 }
 
 get_title () {
 	local LINE=${(C)@}
 
-	cut -d'|' -f2 <<<${LINE}
+	echo ${${(s/|/)LINE}[2]}
 }
 
 get_pg () {
 	local LINE=${@}
 
-	cut -d'|' -f3 <<<${LINE}
+	echo ${${(s/|/)LINE}[3]}
 }
 
 #--Begin GetOpts--
@@ -168,8 +168,8 @@ if ! arr_is_populated "${_RAWLIST}";then
 fi
 
 for L in ${_RAWLIST};do
-	BOOK=$(cut -d'|' -f1 <<<${L})
-	TITLE=$(cut -d'|' -f2 <<<${L})
+	BOOK=${${(s/|/)L}[1]}
+	TITLE=${${(s/|/)L}[2]}
 	PG=$(parse_get_last_field ' ' <<<${TITLE})
 	[[ -z ${PG} ]] && continue
 	TITLE=$(sed -e "s/${PG}//g" <<<${TITLE})

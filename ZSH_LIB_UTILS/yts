@@ -365,11 +365,15 @@ clean_title () {
 	local MAX_HDR=${2:=${_MAX_DL_TITLE}}
 	local STR=''
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	STR=$(title_scrubber ${TITLE} ${_YT_DBG_LOG})
 	STR=$(keyword_strip <<<${STR})
 	STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${STR}) # Use DKEY
 
 	[[ -n ${STR} ]] && TITLE=$(str_word_clip ${STR} ${MAX_HDR}) # Limit length at word boundary
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "RETURNING TITLE:${TITLE}"
 
 	echo ${TITLE}
 }
@@ -467,7 +471,6 @@ download_select () {
 	local L F
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 
 	SEARCHTYPE=Videos
 
@@ -538,7 +541,6 @@ fav_add () {
 	local K
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QKEY:${_QUERY_OPTS[QKEY]} DKEY:${_QUERY_OPTS[DKEY]} _QUERY_OPTS[ENGINE]:${_QUERY_OPTS[ENGINE]}"
 
 	clear
 
@@ -615,6 +617,8 @@ fav_delete () {
 	local KEY_MATCH=''
 	local K
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	FAV_KEYS=("${(f)$(grep -Ei ${DKEY} ${_YTS_FAVORITES})}") # Locate via display key
 
 	for K in ${FAV_KEYS};do
@@ -789,6 +793,8 @@ get_speed () {
 	local SPEED=${@}
 	local TYPE=''
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	SPEED=$(sed -E 's/^.*at\s+//' <<<${SPEED:l} | cut -d' ' -f1 | sed 's/[/]s//')
 	[[ ${SPEED} =~ 'mib' ]] && TYPE=M || TYPE=K
 	SPEED=$(sed 's/.ib//' <<<${SPEED})
@@ -806,8 +812,8 @@ item_decorate () {
 	local NDX=${1}
 	local STR
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
-
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."
 	elif [[ ${_CANCELLED[${NDX}]} == 'true' ]];then
@@ -863,6 +869,8 @@ job_retry () {
 	local URL=${1}
 	local TITLE=${2}
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	job_reset
 	sleep .1
 	job_start ${URL} ${TITLE}
@@ -917,6 +925,8 @@ last_code_update () {
 	local LAST_UPD=0
 	local LAST_TIME=0
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	[[ -z ${MARKER_ARG} ]] && exit_leave $(err_msg_exit "Missing argument:<MARKER>")
 
 	if [[ -e ${MARKER_ARG} ]];then
@@ -946,8 +956,6 @@ last_file_downloaded () {
 }
 
 list_reset () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
 	_LIST_SELECTED=()
 	_MARKED=()
 	_SELECTION_LIST=()
@@ -963,7 +971,7 @@ log_add () {
 	local AU=$(get_field author ${NDX}) # Author
 	local TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<${AT}) # Video length
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN} INODE:${IN}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${FN:e} == 'part' || ${FN:e} == 'temp' ]] && return # No partials in log
 
@@ -973,9 +981,9 @@ log_add () {
 log_clear () {
 	local FROM=${1}
 
-	[[ ! -e ${g_YTS_LOG} ]] && return
-
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	[[ ! -e ${g_YTS_LOG} ]] && return
 
 	if [[ ${g_PRESERVE_LOG} == 'false' ]];then
 		rm -f ${g_YTS_LOG}
@@ -1292,7 +1300,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -A"${(kv)_INFO_COORDS}" ${MSG}
+	msg_box -A"${(kv)_INFO_COORDS}" "<g>${MSG}<N>"
 
 	NDX=0
 	while true;do
@@ -1505,7 +1513,7 @@ set_final_fn () {
 
 	logit ${_YT_DBG_LOG} "${0}: FN  IN:${FN}"
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	NEW_FN=${FN:t:r:gs/_/ /} # Tail, no extension, swap underscore
 	NEW_FN=$(clean_title ${NEW_FN}) # Strip problematic chars
@@ -1591,6 +1599,8 @@ set_rumble_row () {
 	local TITLE=''
 	local URL=''
 	local L
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for L in ${ROW};do
 		(( NDX++ ))
@@ -1821,7 +1831,7 @@ if ! fav_load;then
 fi
 
 # Run Query
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	while true;do

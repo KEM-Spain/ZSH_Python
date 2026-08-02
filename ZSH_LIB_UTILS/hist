@@ -25,6 +25,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
 _HIST_FILE=~/.zsh_history
+_HIST_NEW="/tmp/${_HIST_FILE:t}.new"
 _LAST_ACTION=/tmp/hist_action
 _OBJ_TYPE="command"
 
@@ -47,7 +48,6 @@ action_do () {
 	local NDX=0
 	local LINE_NO=''
 	local LINE_TEXT=''
-	local HIST_NEW="/tmp/${_HIST_FILE:t}.new"
 	local SED_CMD=''
 	local B_LINES=0
 	local A_LINES=0
@@ -58,23 +58,23 @@ action_do () {
 		list_set_selected ${M} ${_STALE_ROW}
 	done
 
-	cp ${_HIST_FILE} ${HIST_NEW}
+	cp ${_HIST_FILE} ${_HIST_NEW}
 
 	for L in ${_HIST_LIST};do
-		LINE_NO=$(cut -d: -f1 <<<${L})
+		LINE_NO=${${(s/:/)L}[1]}
 		if [[ -z ${_SEARCHTERM} ]];then
 			[[ ${_MARKED[(i)${LINE_NO}]} -le ${#_MARKED} ]] || continue
 		fi
 		SED_CMD+="${LINE_NO}d;"
 	done
 
-	sed -i -e ${SED_CMD} ${HIST_NEW}
+	sed -i -e ${SED_CMD} ${_HIST_NEW}
 
-	B_LINES=$(wc -l ${_HIST_FILE} | cut -d' ' -f1)
-	A_LINES=$(wc -l ${HIST_NEW} | cut -d' ' -f1)
+	B_LINES=${${(s/ /)$(wc -l ${_HIST_FILE})}[1]}
+	A_LINES=${${(s/ /)$(wc -l ${_HIST_NEW})}[1]}
 	msg_box -p -P"Save modified history (y/n)?" "History file lines reduced from ${B_LINES} to ${A_LINES}"
 	if [[ ${_MSG_KEY} == 'y' ]];then
-		cp ${HIST_NEW} ${_HIST_FILE}
+		cp ${_HIST_NEW} ${_HIST_FILE}
 	else
 		for M in ${_MARKED};do
 			list_set_selected ${M} ${_AVALABLE_ROW}
@@ -113,10 +113,10 @@ item_decorate () {
 	local TM=''
 	local DATE=''
 	local LINE_NO=''
-
-	LINE_NO=$(cut -d: -f1 <<< ${_LIST[${NDX}]})
-	TM=$(cut -d: -f3 <<< ${_LIST[${NDX}]})
-	CMD=$(cut -d: -f4- <<< ${_LIST[${NDX}]} | cut -d';' -f2-)
+	LINE_NO=${${(s/:/)${_LIST[${NDX}]}}[1]}
+	TM="${${(@s/:/)${_LIST[${NDX}]}}[3]}" # Split syntax to handle empty fields
+	CMD="${${(@s/:/)${_LIST[${NDX}]}}[4,-1]}" # Split syntax to handle empty fields
+	CMD=${${(s/;/)CMD}[2,-1]}
 	DATE=$(date -d @${TM} +%Y-%m-%d)
 
 	case ${_LIST_SELECTED[${NDX}]} in
@@ -246,8 +246,8 @@ list_set_header_break_color ${RED_FG}
 # Set line item
 list_set_line_item ' 
 local D C;
-D=$(item_decorate ${_LIST_NDX} | cut -d'#' -f1)
-C=$(item_decorate ${_LIST_NDX} | cut -d'#' -f2-)
+D="${${(@s/#/)$(item_decorate ${_LIST_NDX})}[1]}"
+C="${${(@s/#/)$(item_decorate ${_LIST_NDX})}[2,-1]}"
 printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${CYAN_FG}%s${RESET} %s\n" ${_LIST_NDX} ${D} "${C}"
 '
 

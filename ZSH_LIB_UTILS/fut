@@ -19,6 +19,7 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+# TODO: -H help is not correct - test and repair
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -36,6 +37,7 @@ lscolors 1
 modified 1
 inode_del 1
 inode_get 1
+inode_fn 1
 findexe 1
 surface 1
 )
@@ -49,6 +51,7 @@ lscolors "COLORS:DIR_COLOR assignments"
 modified "MODIFIED:Show files created/modified today"
 inode_del "INODES:Delete file by inode"
 inode_get "INODES:Get inode of file"
+inode_fn "INODES:Get filename of inode"
 findexe "EXE:Find executable file"
 surface "EXTRACT:Extract files from sub directory"
 )
@@ -153,11 +156,12 @@ ______EOF
 
 	if [[ ${PRODUCTION} == 'false' ]];then	
 		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}whereis${RESET}: ${FN}" >&2
-		WIS=("${(f)$(whereis -b -f ${FN} | cut -d: -f2-)}")
+		WIS=(${(z)"${(f)$(whereis -b -f ${FN})}"})
 		if [[ -z ${WIS} ]];then
 			[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}No whereis hits${RESET}" >&2
 		else
-			for L in ${=WIS};do
+			for L in ${WIS};do
+				[[ ${L} =~ "${FN}:" ]] && continue # Skip whereis header
 				FLIST+=${L}
 				[[ ${VERBOSE} == 'true' ]] && echo "${GREEN_FG}Found:${L}${RESET}" >&2
 			done
@@ -1050,8 +1054,8 @@ ______EOF
 		LAST_LINK_LEVEL=?
 		LAST_LINK_PATH=?
 		for L in ${(on)BY_LEVEL};do # Sort by level,path
-			LINK_LEVEL=$(echo ${L} | cut -d '|' -f1)
-			LINK_PATH=$(echo ${L} | cut -d '|' -f2)
+			LINK_LEVEL=${${(s/|/)L}[1]}
+			LINK_PATH=${${(s/|/)L}[2]}
 
 			TARGET_TYPE="${E_RED_FG}[UNKN]${E_RESET}" # Default type
 			[[ -d ${LINK_PATH} ]] && TARGET_TYPE=" <DIR>"
@@ -1130,9 +1134,7 @@ lscolors () {
 		local CODE=${1}
 
 		CODE=$(str_trim ${CODE})
-
 		[[ ${CODE} == '99' ]] && return
-
 		echo "\033[${CODE}m"
 	}
 
@@ -1168,15 +1170,10 @@ lscolors () {
 
 		while read LINE;do
 			[[ ${LINE} =~ "^#" ]] && continue
-			if [[ ${LINE} =~ "^\.[A-Za-z0-9]" ]];then
-				EXT=$(cut -d ' ' -f1 <<<${LINE})
-				CODE_STRING=$(cut -d ' ' -f2- <<<${LINE} | sed -e 's/#.*$//g' -e 's/\t//g')
-				EXT_COLOR[${EXT}]=${CODE_STRING}
-			else
-				EXT=$(cut -d ' ' -f1 <<<${LINE})
-				CODE_STRING=$(cut -d ' ' -f2- <<<${LINE} | sed -e 's/#.*$//g' -e 's/\t//g')
-				EXT_COLOR[${EXT}]=${CODE_STRING}
-			fi
+			EXT=${${(s/ /)LINE}[1]}
+			CODE_STRING=${${(s/ /)LINE}[2,-1]}
+			CODE_STRING=$(sed -e 's/#.*$//g' -e 's/\t//g' <<<${CODE_STRING} | str_trim)
+			[[ -n ${EXT} ]] && EXT_COLOR[${EXT}]=${CODE_STRING}
 		done < ${_DIR_COLORS}
 	}
 
@@ -1413,7 +1410,8 @@ ___EOF
 	[[ -z ${1} ]] && usage "Missing argument:<FN>"
 	[[ $(is_file ${1}) -eq 0 ]] && FN=${1} || usage "file is invalid:${1}"
 
-	INODE=$(cut -d':' -f1 <<<$(inode_get ${FN}))
+	INODE=${${(s/:/)$(inode_get ${FN})}[1]}
+
 	find . -inum ${INODE} -exec rm -i {} \;
 }
 
@@ -1435,6 +1433,26 @@ ___EOF
 	[[ -z ${1} ]] && usage "Missing argument:<FN>"
 	[[ $(is_file ${1}) -eq 0 ]] && FN=${1} || usage "file is invalid:${1}"
 	stat -c "%i:%n" ${FN}
+}
+
+inode_fn () {
+	local INODE=${1}
+	local DEV=$(df -P . | awk 'NR==2 {print $1}')
+
+	read -r -d '' DESC<<___EOF
+Get filename for inode
+___EOF
+
+	if [[ ${1} == '-H' ]];then
+		[[ ${_SMCUP} == 'true' ]] && do_rmcup
+		tabs 5
+		echo "${WHITE_FG}\nUsage${RESET}:${_WRAPPER} ${0} [-H]\n"
+		echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
+		exit_leave
+	fi
+
+	[[ -z ${INODE} ]] && usage "Missing argument:<INODE>"
+	sudo debugfs -R "ncheck ${INODE}" ${DEV} 2>/dev/null
 }
 
 #--Begin GetOpts--

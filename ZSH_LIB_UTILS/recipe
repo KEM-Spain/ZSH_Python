@@ -59,7 +59,7 @@ action_warn () {
 	local M 
 	local FN
 	
-	msg_box -p -PC "You have selected ${CNT} files for processing"
+	msg_box -p -PC "You have selected ${CNT} $(str_pluralize file ${CNT}) for processing"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do

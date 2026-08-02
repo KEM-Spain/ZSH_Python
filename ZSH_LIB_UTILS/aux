@@ -181,10 +181,9 @@ for R in ${RAWLIST};do
 	if [[ -n ${R} ]];then
 		SQUEEZED=$(squeeze ${R})
 
-		_OWNERS[${NDX}]=$(cut -d' ' -f1 <<<${SQUEEZED})
-		_PIDS[${NDX}]=$(cut -d' ' -f2 <<<${SQUEEZED})
-		_CMDS[${NDX}]=$(cut -d' ' -f3- <<<${SQUEEZED})
-
+		_OWNERS=${${(s/ /)SQUEEZED}[1]}
+		_PIDS=${${(s/ /)SQUEEZED}[2]}
+		_CMDS=${${(s/ /)SQUEEZED}[3]}
 		_LOCAL_LIST+=${R}
 
 		[[ ${#_CMDS[${NDX}]} -ge $((_MAX_COLS - 40)) ]] && _CMDS[${NDX}]=${${_CMDS[${NDX}][1,$((_MAX_COLS - 60))]}} # Truncate lines too long

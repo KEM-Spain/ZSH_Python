@@ -81,7 +81,7 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-B${RESET} allow scanning of .bak files (default: skip)"
-	echo -e "${WHITE_FG}-A${RESET} disallow ansi color"
+	echo -e "${WHITE_FG}-A${RESET} no ansi color"
 	echo -e "${WHITE_FG}-I${RESET} case sensitive"
 	echo -e "${WHITE_FG}-L${RESET} list files on one line"
 	echo -e "${WHITE_FG}-O $(opt_type O)${RESET} redirect output to $(opt_type O)"
@@ -308,7 +308,7 @@ else
 		fi
 		echo -n ${RESET}
 	done
-	} | mypager
+	} | mypager wait
 fi
 
 exit_leave

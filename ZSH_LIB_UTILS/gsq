@@ -100,20 +100,19 @@ item_decorate () {
 
 get_url () {
 	local NDX=${1}
-
-	cut -d' '  -f1 <<<${_LIST[${NDX}]}
+	echo ${${(s/ /)${_LIST[${NDX}]}}[1]}
 }
 
 get_key () {
 	local NDX=${1}
 
-	cut -d' '  -f2 <<<${_LIST[${NDX}]}
+	echo ${${(s/ /)${_LIST[${NDX}]}}[2]}
 }
 
 get_val () {
 	local NDX=${1}
 
-	cut -d' '  -f3- <<<${_LIST[${NDX}]}
+	echo ${${(s/ /)${_LIST[${NDX}]}}[3,-1]}
 }
 
 edit_box () {

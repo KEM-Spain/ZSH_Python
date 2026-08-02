@@ -230,8 +230,9 @@ fi
 # Build list
 ALIASES=("${(@f)$(cat ${_ALIAS_FN} | grep ^alias | sort)}")
 for A in ${ALIASES};do
-	ALIAS=$(echo ${A} | cut -d= -f1 | sed -e 's/^alias//g' -e 's/.*-g//g')
-	DEF=$(echo ${A} | cut -d= -f2-)
+	ALIAS=${${(s/=/)A}[1]}
+	ALIAS=${ALIAS//alias/}
+	DEF=${${(s/=/)A}[2,-1]}
 	ALIAS_LIST[${ALIAS}]=${DEF}
 	[[ ${_DEBUG} -gt 1 ]] && dbg "${0}:${LINENO} ALIASES:${#ALIASES} -> ALIAS:${ALIAS} DEF:${DEF}"
 done

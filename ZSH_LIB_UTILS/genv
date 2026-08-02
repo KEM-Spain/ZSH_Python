@@ -96,8 +96,8 @@ shift $(( OPTIND - 1 ))
 typeset -A ENV_LIST=()
 VAL_LIMIT=80
 while read LINE;do
-	VAR=$(cut -d= -f1 <<<${LINE})
-	VAL=$(cut -d= -f2- <<<${LINE})
+	VAR=${${(s/=/)LINE}[1]}
+	VAL=${${(s/=/)LINE}[2]}
 	[[ ${#VAR} -gt ${VAR_LEN} ]] && VAR_LEN=${#VAR}
 	[[ ${#VAL} -gt ${VAL_LEN} ]] && VAL_LEN=${#VAL}
 	ENV_LIST[${VAR}]=${VAL[1,${VAL_LIMIT}]}

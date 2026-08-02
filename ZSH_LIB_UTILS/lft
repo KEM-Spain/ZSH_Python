@@ -52,9 +52,9 @@ get_stat () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG}  ]] && dbg "${0}:${LINENO} NDX:${NDX} TYPE:${TYPE}"
 
 	case ${TYPE} in
-		b) STAT=$(echo "${_LIST[${NDX}]}" | cut -d'|' -f2);;
-		a) STAT=$(echo "${_LIST[${NDX}]}" | cut -d'|' -f3);;
-		m) STAT=$(echo "${_LIST[${NDX}]}" | cut -d'|' -f4);;
+		b) STAT="${${(@s/|/)${_LIST[${NDX}]}}[2]}";;
+		a) STAT="${${(@s/|/)${_LIST[${NDX}]}}[3]}";;
+		m) STAT="${${(@s/|/)${_LIST[${NDX}]}}[4]}";;
 	esac
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG}  ]] && dbg "${0}:${LINENO} Returning: STAT:${STAT}"
@@ -62,16 +62,6 @@ get_stat () {
 	echo ${STAT}
 }
 
-#item_decorate () {
-#	local NDX=${1}
-#	local FN=$(cut -d'|' -f1 <<<"${_LIST[${NDX}]:t}")
-#	local FN_TAG=''
-#
-#	[[ -d ${FN} ]] && FN_TAG=' (d)' || FN_TAG=''
-#
-#	echo -n "${FN}${FN_TAG}"
-#}
- 
 item_decorate () {
 	local NDX=${1}
 	local FN=$(cut -d'|' -f1 <<<"${_LIST[${NDX}]:t}")

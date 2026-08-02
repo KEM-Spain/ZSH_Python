@@ -4339,11 +4339,28 @@ The Pattern: WRAPPER SPLITTER WRAPPER
 
 Note: Replace (s::) with whatever character you need, e.g., \${\${(s:,:)row}[2]} for comma-separated values.
 
+!! ${E_BOLD}${E_RED_FG} IMPORTANT NOTES ON SPLIT ${E_RESET} !!
+${E_WHITE_FG}Consecutive delimiters are tricky!${E_RESET}
+
+If you have a string: ${E_WHITE_FG}"A::B:C::D"${E_RESET} then \${\${(s/:/)VAR}[1]} 
+will evaluate element 2 as 'B' ignoring consecutive delimiters 
+
+To force an evaluation that treats consecutive delimiters in a predicatable way
+you must modify the statement to include:
+
+1) ${E_WHITE_FG}@ sign before the split flag${E_RESET}
+2) ${E_WHITE_FG}quotes around the entire statement${E_RESET} 
+
+such as:  ${E_WHITE_FG}"${E_RESET}\${\${(${E_WHITE_FG}@${E_RESET}s/:/)VAR}[1]}${E_WHITE_FG}"${E_RESET}
+
+Only then will consecutive delimiters will be treated as you would expect
+yielding '' for element 2, and 'B' for element 3.
 
 2. PARAMETER FLAG (A) FOR ARRAY SPLITTING (BEST FOR BATCH PROCESSING)
 --------------------------------------------------------------------
 If you need to work with multiple fields or process a whole line into variables, split the string into a native 
 Zsh array using (ps:delim:) or (s:delim:).
+
 
   line="2026-07-29,production,us-east-1,running"
 

@@ -70,7 +70,7 @@ _IND_W=25 # Offsets X=2, Y=30
 _INFO_W=$((_CONT_WIDTH - 6 ))
 
 _CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
-_IND_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4 -x2) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_IND_W} -y30) H 4 W ${_IND_W}) # Indicator display coords
+_IND_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4 -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_IND_W} -y30) H 4 W ${_IND_W}) # Indicator display coords
 _INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 4 W ${_INFO_W}) # Info display coords
 
 # Constants
@@ -259,9 +259,11 @@ action_do () {
 							DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Strip path
 							DEST_1=$(cut -d'|' -f1 <<<${DEST})
 							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<f><w>/")
+							set -xv
 							HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
 							HDR1_TXT=$(trim_title ${HDR1_TXT})
 							HDR1_TXT="<w>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
+							set +xv;read
 							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 							HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
@@ -365,11 +367,15 @@ clean_title () {
 	local MAX_HDR=${2:=${_MAX_DL_TITLE}}
 	local STR=''
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	STR=$(title_scrubber ${TITLE} ${_YT_DBG_LOG})
 	STR=$(keyword_strip <<<${STR})
 	STR=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${STR}) # Use DKEY
 
 	[[ -n ${STR} ]] && TITLE=$(str_word_clip ${STR} ${MAX_HDR}) # Limit length at word boundary
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "RETURNING TITLE:${TITLE}"
 
 	echo ${TITLE}
 }
@@ -467,7 +473,6 @@ download_select () {
 	local L F
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 
 	SEARCHTYPE=Videos
 
@@ -538,7 +543,6 @@ fav_add () {
 	local K
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} QKEY:${_QUERY_OPTS[QKEY]} DKEY:${_QUERY_OPTS[DKEY]} _QUERY_OPTS[ENGINE]:${_QUERY_OPTS[ENGINE]}"
 
 	clear
 
@@ -615,6 +619,8 @@ fav_delete () {
 	local KEY_MATCH=''
 	local K
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	FAV_KEYS=("${(f)$(grep -Ei ${DKEY} ${_YTS_FAVORITES})}") # Locate via display key
 
 	for K in ${FAV_KEYS};do
@@ -789,6 +795,8 @@ get_speed () {
 	local SPEED=${@}
 	local TYPE=''
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	SPEED=$(sed -E 's/^.*at\s+//' <<<${SPEED:l} | cut -d' ' -f1 | sed 's/[/]s//')
 	[[ ${SPEED} =~ 'mib' ]] && TYPE=M || TYPE=K
 	SPEED=$(sed 's/.ib//' <<<${SPEED})
@@ -806,8 +814,8 @@ item_decorate () {
 	local NDX=${1}
 	local STR
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: NDX:${NDX}"
-
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."
 	elif [[ ${_CANCELLED[${NDX}]} == 'true' ]];then
@@ -863,6 +871,8 @@ job_retry () {
 	local URL=${1}
 	local TITLE=${2}
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	job_reset
 	sleep .1
 	job_start ${URL} ${TITLE}
@@ -917,6 +927,8 @@ last_code_update () {
 	local LAST_UPD=0
 	local LAST_TIME=0
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
 	[[ -z ${MARKER_ARG} ]] && exit_leave $(err_msg_exit "Missing argument:<MARKER>")
 
 	if [[ -e ${MARKER_ARG} ]];then
@@ -946,8 +958,6 @@ last_file_downloaded () {
 }
 
 list_reset () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
 	_LIST_SELECTED=()
 	_MARKED=()
 	_SELECTION_LIST=()
@@ -963,7 +973,7 @@ log_add () {
 	local AU=$(get_field author ${NDX}) # Author
 	local TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<${AT}) # Video length
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN} INODE:${IN}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${FN:e} == 'part' || ${FN:e} == 'temp' ]] && return # No partials in log
 
@@ -973,9 +983,9 @@ log_add () {
 log_clear () {
 	local FROM=${1}
 
-	[[ ! -e ${g_YTS_LOG} ]] && return
-
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	[[ ! -e ${g_YTS_LOG} ]] && return
 
 	if [[ ${g_PRESERVE_LOG} == 'false' ]];then
 		rm -f ${g_YTS_LOG}
@@ -1292,7 +1302,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -A"${(kv)_INFO_COORDS}" ${MSG}
+	msg_box -A"${(kv)_INFO_COORDS}" "<g>${MSG}<N>"
 
 	NDX=0
 	while true;do
@@ -1505,7 +1515,7 @@ set_final_fn () {
 
 	logit ${_YT_DBG_LOG} "${0}: FN  IN:${FN}"
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN:t}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	NEW_FN=${FN:t:r:gs/_/ /} # Tail, no extension, swap underscore
 	NEW_FN=$(clean_title ${NEW_FN}) # Strip problematic chars
@@ -1591,6 +1601,8 @@ set_rumble_row () {
 	local TITLE=''
 	local URL=''
 	local L
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for L in ${ROW};do
 		(( NDX++ ))
@@ -1821,7 +1833,7 @@ if ! fav_load;then
 fi
 
 # Run Query
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	while true;do

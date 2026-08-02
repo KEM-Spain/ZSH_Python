@@ -44,7 +44,7 @@ if !has("gui_running")
 	retab "Change all the existing tab characters to match the current tab settings
 
 	"Abbreviations
-	iabbrev ZS ${${(s/:/)VAR}[1]}<ESC>
+	iabbrev ZS "${${(@s/:/)VAR}[1]}"<ESC>
 	iabbrev ZA LIST=("${(f)$(command)}")<ESC>
 	iabbrev ZF for ((X=0;X<LIMIT;X++));do<CR>done<ESC>
 	iabbrev ZT [[ ${VAR} IS COND ]] && DO_THIS \|\| DO_THAT <ESC>

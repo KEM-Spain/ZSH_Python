@@ -16,7 +16,6 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -28,6 +27,9 @@ typeset -a _FILE_LIST=()
 typeset -A _EDITS=()
 typeset -A _EDIT_COORDS=()
 typeset -A _FLD_ORDER=(FILE 1 ARTIST 2 TITLE 3 ALBUM 4)
+
+# Constants
+_MUSIC_DIR="/media/kmiller/EXT_2/Music"
 
 # Vars
 _GOT_DATA=false
@@ -95,7 +97,6 @@ tags_display () {
 	local DATA
 	local FN_2_TITLE=''
 	local LBL
-	local MUSIC_DIR="/media/kmiller/KEM_Misc/Music/KEM-B9"
 	local NDX
 	local NEW_VAL
 	local VAL
@@ -126,7 +127,7 @@ tags_display () {
 			LABELS=("${(f)$(msg_list_data ${FIELDS})}")
 
 			tcup 10 50
-			echo -n "${WHITE_FG}Displaying tags for${RESET}:${CYAN_FG}${${PWD}##${MUSIC_DIR}}${RESET}"
+			echo -n "${WHITE_FG}Displaying tags for${RESET}:${CYAN_FG}${${PWD}##${_MUSIC_DIR}}${RESET}"
 			tcup 12 50
 			echo -n "Enter '${WHITE_FG}e${RESET}' to edit, '${WHITE_FG}q${RESET}' to quit, <${WHITE_FG}ENTER${RESET}> for next track"
 
@@ -139,8 +140,9 @@ tags_display () {
 				NDX=0
 				for F in ${FIELDS};do
 					((NDX++))
-					LBL=$(cut -d'|' -f${NDX} <<<${LABELS} | cut -d':' -f1 | sed 's/<D> //') # Derive label from MSG
-					VAL=$(cut -d':' -f2 <<<${F})
+					LBL=${${(s/|/)LABELS}[${NDX}]}
+					LBL=${${(s/:/)LBL}[1]:s/<D> //}
+					VAL=${${(s/:/)F}[2]}
 					_EDIT_COORDS=($(box_coords_get MSG_BOX))
 					X=$(( _EDIT_COORDS[X] + NDX )) && Y=$(( _EDIT_COORDS[Y] + 3 ))
 					NEW_VAL=$(edit_field "${LBL:gs/#/ /}" "${VAL} " ${X} ${Y}) # Quirky; adding a space after val seems to help coords stick
@@ -173,13 +175,13 @@ tags_flac () {
 		ALBUM=None
 	else
 		if grep -q 'ARTIST' <<<${TEST};then
-			ARTIST=$(metaflac --show-tag=ARTIST ${FILE} | cut -d'=' -f2-)
+			ARTIST=${${(s/=/)$(metaflac --show-tag=ARTIST ${FILE})}[2,-1]}
 		fi
 		if grep -q 'TITLE' <<<${TEST};then
-			TITLE=$(metaflac --show-tag=TITLE ${FILE} | cut -d'=' -f2-)
+			TITLE=${${(s/=/)$(metaflac --show-tag=TITLE ${FILE})}[2,-1]}
 		fi
 		if grep -q 'ALBUM' <<<${TEST};then
-			ALBUM=$(metaflac --show-tag=ALBUM ${FILE} | cut -d'=' -f2-)
+			ALBUM=${${(s/=/)$(metaflac --show-tag=ALBUM ${FILE})}[2,-1]}
 		fi
 	fi
 
@@ -225,8 +227,8 @@ tags_update () {
 	IN_MP3=false
 	IN_WAV=false
 	for F in ${FIELDS};do
-		LBL=$(cut -d':' -f1 <<<${F:gs/#//})
-		VAL=$(cut -d':' -f2 <<<${F})
+		LBL${${(s/:/)VAR}[1]:gs/#//}
+		VAL${${(s/:/)VAR}[2]}
 		if [[ ${LBL} == 'FILE' ]];then
 			case ${VAL:e} in
 				flac) IN_FLAC=true; FN=${VAL};;
@@ -372,16 +374,14 @@ DEP=$(dep_exists mp3info id3v2 metaflac)
 
 if [[ -z ${FN} ]];then
 	# Find audio files
-	_FILE_LIST=("${(f)$(find . -maxdepth 1 -name '*flac' -type f)}")
-	_FILE_LIST+=("${(f)$(find . -maxdepth 1 -name '*mp3' -type f)}")
-	_FILE_LIST+=("${(f)$(find . -maxdepth 1 -name '*wav' -type f)}")
+	_FILE_LIST=("${(f)$(find . -maxdepth 1 \( -name '*flac' -o -name '*mp3' -o -name '*wav' \) -type f)}")
 else
 	[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit "File not found:${FN}")
 	_FILE_LIST=(${FN})
 fi
 
 if ! arr_is_populated "${_FILE_LIST}";then
-	exit_leave $(err_msg_exit "No audio files found")
+	exit_leave $(err_msg_exit W "No audio files found")
 fi
 
 [[ -n ${ARTIST} ]] && set_tags a ${ARTIST}

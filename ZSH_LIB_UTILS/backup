@@ -94,13 +94,13 @@ last_backup () {
 	[[ -z ${MARKER_ARG} ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}Missing arument${RESET}: MARKER"
 
 	if [[ -e ${MARKER_ARG} ]];then
-		LB_LAST_RUN=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
+		LB_LAST_RUN=${${(s/ /)$(stat -c "%y" ${MARKER_ARG})}[1]}
 	else
 		touch ${_MARKER}
 		exit_leave $(err_msg_exit W "${_SCRIPT}: Last backup date is unknown")
 	fi
 
-	[[ -e ${MARKER_ARG} ]] && LB_LAST_TIME=$(stat -c"%x" ${MARKER_ARG} | cut -d. -f1 | cut -d' ' -f2 | cut -d: -f1,2) 
+	[[ -e ${MARKER_ARG} ]] && LB_LAST_TIME=$(date -r "${MARKER_ARG}" +'%H:%M')
 
 	echo "$(datediff ${_TODAY} ${LB_LAST_RUN}) at ${LB_LAST_TIME}"
 }

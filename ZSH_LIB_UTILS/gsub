@@ -216,9 +216,9 @@ shift $(( OPTIND - 1 ))
 [[ ${g_FROM_TEXT} == ${g_TO_TEXT} ]] && exit_leave $(err_msg_exit E "$(opt_type f) and $(opt_type t) are identical")
 
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH=${${(s/|/)RAWPATH}[1]}
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB=${${(s/|/)RAWPATH}[2]}
 PATHLBL=$(path_get_label 40)
 
 _RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 -type f" 2>/dev/null )}")

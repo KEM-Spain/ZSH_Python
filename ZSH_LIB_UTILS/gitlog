@@ -19,7 +19,6 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -115,7 +114,7 @@ get_field () {
 	local FLD=${1}
 	local NDX=${2}
 
-	echo $(cut -d'|' -f${FLD} <<<${_LIST[${NDX}]})
+	echo ${${(s/|/)${_LIST[${NDX}]}}[${FLD}]}
 }
 
 #--Begin GetOpts--
@@ -240,8 +239,8 @@ if [[ -n ${_FN_ARG} ]];then
 fi
 
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FPATH=${${(s/|/)RAWPATH}[1]}
+FGLOB=${${(s/|/)RAWPATH}[2]}
 
 [[ ${?} -ne 0 ]] && exit_leave "${_SCRIPT_TAG} ${RED_FG}no matches found${RESET} ${WHITE_FG}${@}${RESET}"
 PATHLBL=$(path_get_label 40)
@@ -266,13 +265,13 @@ SIZE=0
 
 pushd ${_GIT_REPO_DIR} # -- PUSHD ---
 for L in ${(u)RAW_LIST};do
-	REF=$(cut -d' ' -f1 <<<${L})
+	REF=${${(s/ /)L}[1]}
 	SIZE=$(git show ${REF} ${_FN_ARG} | wc -l)
 	[[ ${SIZE} -eq 0 ]] && continue
-	DTM=$(cut -d'(' -f2 <<<${L})
-	DTM=$(cut -d',' -f1 <<<${DTM})
-	DT=$(cut -d'-' -f1-3 <<<${DTM})
-	TM=$(cut -d'-' -f4 <<<${DTM})
+	DTM=${${(s/(/)L}[2]}
+	DTM=${${(s/,/)DTM}[1]}
+	DT=${${(s/-/)DTM}[1,3]}
+	TM=${${(s/-/)DTM}[4]}
 	_LOCAL_LIST+="${REF}|${DT}|${TM}|${SIZE}"
 done
 popd # -- POPD ---

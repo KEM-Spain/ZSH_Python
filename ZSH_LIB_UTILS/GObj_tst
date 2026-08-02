@@ -83,8 +83,8 @@ find_keyword () {
 			DETAIL=("${(f)$(grep ${GREP_OPTS} ${KW} ${F})}")
 			[[ ${?} -eq 0 ]] && HIT=true
 			for D in ${DETAIL};do
-				LN=$(cut -d: -f1 <<<${D})
-				TEXT=$(cut -d: -f2 <<<${D})
+				LN=${${(s/:/)D}[1]}
+				TEXT=${${(s/:/)D}[2]}
 				printf "${MAGENTA_FG}%20s ${CYAN_FG}%4s ${WHITE_FG}%.90s${RESET}\n" ${F:t} ${LN} "$(str_trim ${TEXT} | tr -d '\n' | sed "s/${KW}/${E_RED_FG}${KW}${E_RESET}/g")"
 			done
 		done | mypager

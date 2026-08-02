@@ -244,8 +244,8 @@ if [[ ${GET_SIZE} == 'true' ]];then
 	for S in ${_SZ_LIST};do # Extract sizes for all icons
 		((NDX++))
 		tput cup 4 0; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} cache ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_SZ_LIST} $(( NDX * 100. / ${#_SZ_LIST} )) 
-		FN=$(cut -d'|' -f1 <<<${S})
-		SZ=$(cut -d'|' -f2 <<<${S})
+		FN="${${(@s/|/)VAR}[1]}"
+		SZ="${${(@s/|/)VAR}[2]}"
 		_ICON_SIZE[${FN}]=${SZ}
 		_SIZES+=${SZ}
 	done

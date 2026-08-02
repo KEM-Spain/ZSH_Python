@@ -368,22 +368,20 @@ str_unpipe () {
 }
 
 str_word_clip () {
-	local TEXT=${1}
-	local LIMIT=${2}
-	local LEN=0
-	local TEXT_OUT=''
+  local -a STR_IN=(${(z)1})
+  local LIMIT=${2}
+  local LEN=0
+  local STR_OUT=''
 	local W
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	TEXT=$(tr '\n' ' ' <<<${TEXT} | str_trim) # Eliminate any newlines
+  for W in ${STR_IN};do
+    (( LEN += ${#W}))
+    [[ ${LEN} -lt ${LIMIT} ]] && STR_OUT+="${W} "
+  done
 
-	for W in ${(z)TEXT};do
-		(( LEN += ${#W} + 1 ))
-		[[ ${LEN} -lt $((LIMIT - 1)) ]] && TEXT_OUT+="${W} "
-	done
-
-	echo $(str_trim ${TEXT_OUT})
+  echo ${STR_OUT}
 }
 
 str_nolf () {

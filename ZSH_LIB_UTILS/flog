@@ -185,7 +185,7 @@ done
 _SORTED_LIST=($(for K in ${(k)_RAWLIST};do echo "${_RAWLIST[$K]}|${K}";done | sort -rn)) # Sort desc numerically
 
 for K in ${_SORTED_LIST};do
-	VAL=$(echo ${K} | cut -d'|' -f2)
+	VAL=${${(s/|/)K}[2]}
 	_LOCAL_LIST+=$VAL
 done
 

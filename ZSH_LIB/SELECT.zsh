@@ -135,8 +135,8 @@ sel_cursor_hilite () {
 
 	do_smso
 	if [[ ${_HAS_CAT} == 'true' ]];then
-		F1=${${(s/${_CAT_DELIM}/)TEXT}[1]}
-		F2=${${(s/${_CAT_DELIM}/)TEXT}[2]}
+		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
+		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		printf "${WHITE_FG}%-*s${RESET} ${_HILITE}%-*s${RESET}\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
 	else
@@ -158,8 +158,8 @@ sel_cursor_norm () {
 	tcup ${X} ${Y}
 	do_rmso
 	if [[ ${_HAS_CAT} == 'true' ]];then
-		F1=${${(s/${_CAT_DELIM}/)TEXT}[1]}
-		F2=${${(s/${_CAT_DELIM}/)TEXT}[2]}
+		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
+		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		printf "${WHITE_FG}%-*s${RESET} %-*s\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
 	else
@@ -324,8 +324,8 @@ sel_list () {
 		if [[ ${_HAS_CAT} == 'true' ]];then
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CATEGORIES DETECTED"
 			for L in ${_LIST};do
-				F1=${${(s/${_CAT_DELIM}/)TEXT}[1]}
-				F2=${${(s/${_CAT_DELIM}/)TEXT}[2]}
+				F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${L})
+				F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${L})
 				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 				[[ ${#F1} -gt ${_CAT_COLS[1]} ]] && _CAT_COLS[1]=${#F1}
 				[[ ${#F2} -gt ${_CAT_COLS[2]} ]] && _CAT_COLS[2]=${#F2}

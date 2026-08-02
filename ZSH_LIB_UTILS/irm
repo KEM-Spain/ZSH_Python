@@ -15,7 +15,6 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -154,9 +153,9 @@ shift $(( OPTIND - 1 ))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH="${${(@s/:/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/:/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 INODE=''
@@ -164,10 +163,12 @@ if [[ ${#} -ne 0 ]];then
 	clear
 	INODE=${1}
 	if validate_is_integer ${INODE};then
-		_INODES=("${(f)$(sudo ls -i | cut -d' ' -f1)}")
+		_INODES=("${(f)$(stat * -c'%i')}") # Get inodes for the files
+		_INODES+=("${(f)$(stat . -c'%i')}") # Get inode for the dir
 		if [[ ${_INODES[(i)${INODE}]} -le ${#_INODES} ]];then
 			I_NAME=$(sudo find . -inum ${INODE})
 			[[ -d ${I_NAME} ]] && I_TYPE="<DIRECTORY>" || I_TYPE="<FILE>"
+			fut inode_fn ${INODE}
 			respond "Inode located. Remove ${WHITE_FG}${I_TYPE}${RESET}:${INODE}"
 			if [[ ${?} -eq 0 ]];then
 				sudo find ${FPATH} -maxdepth 1 -inum ${INODE} -exec rm -rf {} \;

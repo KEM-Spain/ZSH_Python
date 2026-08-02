@@ -1,73 +1,34 @@
-2026-07-31_00:06: log_update: LOG lines BEFORE update:11 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-31_00:06: log_update: LOG lines AFTER update:11 /home/kmiller/.local/share/yts/yts.downloads
-2026-07-31_00:06: query_rumble: Creating listing for QKEY:glenndiesen TYPE:channel
-2026-07-31_00:06: query_rumble: PARSER:, QUERY:https://rumble.com/c/glenndiesen?page=1
-2026-07-31_00:07: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
-2026-07-31_00:07: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.5wJZeH
-2026-07-31_00:07: job_start: TITLE:John Mearsheimer: Ukraine Is Landlocked & Donbas Enters Endgame
-2026-07-31_00:07: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7dhvko-john-mearsheimer-ukraine-is-landlocked-and-donbas-enters-endgame.html" PID:390128
-2026-07-31_00:07: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-31_00:07: yt URL:https://rumble.com/v7dhvko-john-mearsheimer-ukraine-is-landlocked-and-donbas-enters-endgame.html
-2026-07-31_00:07: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7dhvko-john-mearsheimer-ukraine-is-landlocked-and-donbas-enters-endgame.html"
-2026-07-31_00:07: action_do: GENERATING HEADER
-2026-07-31_00:07: action_do: TRANSMISSION ERROR 1 of 6
-2026-07-31_00:07: job_kill: Killed 390469
-2026-07-31_00:07: job_reset: Job was reset
-2026-07-31_00:07: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7dhvko-john-mearsheimer-ukraine-is-landlocked-and-donbas-enters-endgame.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Glenn_Diesen_Greater_Eurasia - John_Mearsheimer_-_Ukraine_Is_Landlocked_Donbas_Enters_Endgame.temp.mp4|6409218
-2026-07-31_00:07: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.jd7B64
-2026-07-31_00:07: job_start: TITLE:John Mearsheimer: Ukraine Is Landlocked & Donbas Enters Endgame
-2026-07-31_00:07: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7dhvko-john-mearsheimer-ukraine-is-landlocked-and-donbas-enters-endgame.html" PID:395990
-2026-07-31_00:07: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-31_00:07: yt URL:https://rumble.com/v7dhvko-john-mearsheimer-ukraine-is-landlocked-and-donbas-enters-endgame.html
-2026-07-31_00:07: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7dhvko-john-mearsheimer-ukraine-is-landlocked-and-donbas-enters-endgame.html"
-2026-07-31_00:07: action_do: COMPLETED
-2026-07-31_00:07: action_do: POST-PROCESSING
-2026-07-31_00:07: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7dhvko-john-mearsheimer-ukraine-is-landlocked-and-donbas-enters-endgame.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Glenn_Diesen_Greater_Eurasia - John_Mearsheimer_-_Ukraine_Is_Landlocked_Donbas_Enters_Endgame.mp4|6409218
-2026-07-31_00:07: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - John_Mearsheimer_-_Ukraine_Is_Landlocked_Donbas_Enters_Endgame.mp4
-2026-07-31_00:07: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - John_Mearsheimer_-_Ukraine_Is_Landlocked_Donbas_Enters_Endgame.mp4
-2026-07-31_00:07: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - John_Mearsheimer_-_Ukraine_Is_Landlocked_Donbas_Enters_Endgame.mp4 with:Glenn Diesen - John Mearsheimer - Ukraine IS Landlocked.mp4
-2026-07-31_00:07: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Glenn Diesen - John Mearsheimer - Ukraine IS Landlocked.mp4
-2026-07-31_00:07: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.jd7B64 was cleared for:glenndiesen from:action_do
-2026-07-31_00:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.4i1Zc8
-2026-07-31_00:08: job_start: TITLE:Steve Jermy: Ukraine, Europe's Suicide & Global Energy Crisis
-2026-07-31_00:08: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7df4iw-steve-jermy-ukraine-europes-suicide-and-global-energy-crisis.html" PID:399440
-2026-07-31_00:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-31_00:08: yt URL:https://rumble.com/v7df4iw-steve-jermy-ukraine-europes-suicide-and-global-energy-crisis.html
-2026-07-31_00:08: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7df4iw-steve-jermy-ukraine-europes-suicide-and-global-energy-crisis.html"
-2026-07-31_00:08: action_do: GENERATING HEADER
-2026-07-31_00:08: action_do: TRANSMISSION ERROR 1 of 6
-2026-07-31_00:08: job_kill: Killed 399788
-2026-07-31_00:08: job_reset: Job was reset
-2026-07-31_00:08: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7df4iw-steve-jermy-ukraine-europes-suicide-and-global-energy-crisis.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Glenn_Diesen_Greater_Eurasia - Steve_Jermy_-_Ukraine_Europe_s_Suicide_Global_Energy_Crisis.temp.mp4|6409220
-2026-07-31_00:08: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ItH5n3
-2026-07-31_00:08: job_start: TITLE:Steve Jermy: Ukraine, Europe's Suicide & Global Energy Crisis
-2026-07-31_00:08: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7df4iw-steve-jermy-ukraine-europes-suicide-and-global-energy-crisis.html" PID:405913
-2026-07-31_00:08: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-31_00:08: yt URL:https://rumble.com/v7df4iw-steve-jermy-ukraine-europes-suicide-and-global-energy-crisis.html
-2026-07-31_00:08: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7df4iw-steve-jermy-ukraine-europes-suicide-and-global-energy-crisis.html"
-2026-07-31_00:08: action_do: COMPLETED
-2026-07-31_00:08: action_do: POST-PROCESSING
-2026-07-31_00:08: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7df4iw-steve-jermy-ukraine-europes-suicide-and-global-energy-crisis.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Glenn_Diesen_Greater_Eurasia - Steve_Jermy_-_Ukraine_Europe_s_Suicide_Global_Energy_Crisis.mp4|6409220
-2026-07-31_00:08: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Steve_Jermy_-_Ukraine_Europe_s_Suicide_Global_Energy_Crisis.mp4
-2026-07-31_00:08: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Glenn_Diesen_Greater_Eurasia - Steve_Jermy_-_Ukraine_Europe_s_Suicide_Global_Energy_Crisis.mp4
-2026-07-31_00:08: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - Steve_Jermy_-_Ukraine_Europe_s_Suicide_Global_Energy_Crisis.mp4 with:Glenn Diesen - Steve Jermy - Ukraine.mp4
-2026-07-31_00:08: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Glenn Diesen - Steve Jermy - Ukraine.mp4
-2026-07-31_00:08: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.ItH5n3 was cleared for:glenndiesen from:action_do
-2026-07-31_00:09: query_rumble: Creating listing for QKEY:tuckercarlson TYPE:channel
-2026-07-31_00:09: query_rumble: PARSER:, QUERY:https://rumble.com/c/tuckercarlson?page=1
-2026-07-31_00:09: query_rumble: Listing for QKEY:tuckercarlson contains 25 rows
-2026-07-31_00:09: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.zv8kJy
-2026-07-31_00:09: job_start: TITLE:Tucker Reacts: Vain Teenage Girl Tony
-2026-07-31_00:09: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7dglr8-tucker-reacts-vain-teenage-girl-tony-faucis-diary-exposes-him-as-narcissist.html" PID:416066
-2026-07-31_00:09: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-07-31_00:09: yt URL:https://rumble.com/v7dglr8-tucker-reacts-vain-teenage-girl-tony-faucis-diary-exposes-him-as-narcissist.html
-2026-07-31_00:09: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7dglr8-tucker-reacts-vain-teenage-girl-tony-faucis-diary-exposes-him-as-narcissist.html"
-2026-07-31_00:09: action_do: GENERATING HEADER
-2026-07-31_00:11: action_do: COMPLETED
-2026-07-31_00:11: action_do: POST-PROCESSING
-2026-07-31_00:11: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://rumble.com/v7dglr8-tucker-reacts-vain-teenage-girl-tony-faucis-diary-exposes-him-as-narcissist.html PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Tucker_Carlson - Tucker_Reacts_-_Vain_Teenage_Girl_Tony_Fauci_s_Diary_Exposes_Him_as_Narcissistic_De.mp4|6409221
-2026-07-31_00:11: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Tucker_Reacts_-_Vain_Teenage_Girl_Tony_Fauci_s_Diary_Exposes_Him_as_Narcissistic_De.mp4
-2026-07-31_00:11: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/Tucker_Carlson - Tucker_Reacts_-_Vain_Teenage_Girl_Tony_Fauci_s_Diary_Exposes_Him_as_Narcissistic_De.mp4
-2026-07-31_00:11: set_final_fn: Overwriting file:Tucker_Carlson - Tucker_Reacts_-_Vain_Teenage_Girl_Tony_Fauci_s_Diary_Exposes_Him_as_Narcissistic_De.mp4 with:Tucker Carlson - Tucker Reacts - Vain Teenage Girl Tony.mp4
-2026-07-31_00:11: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tucker Carlson - Tucker Reacts - Vain Teenage Girl Tony.mp4
-2026-07-31_00:11: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.zv8kJy was cleared for:tuckercarlson from:action_do
+2026-08-02_22:21: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-08-02_22:21: log_update: Skipping expired inode:6409247
+2026-08-02_22:21: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-08-02_22:21: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
+2026-08-02_22:21: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
+2026-08-02_22:21: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
+2026-08-02_22:21: query_youtube: Query matched 8 lines, _LOCAL_LIST has 5 lines
+2026-08-02_22:21: query_youtube: Listing for QKEY:alexchristoforou contains 5 rows
+2026-08-02_22:21: query_youtube: Creating listing for QKEY:dialogueworks STRICT:s
+2026-08-02_22:21: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Dialogue Works ENGINE:youtube EOPT:s FKEY:dialogue works QKEY:dialogueworks SMSG:Inf% TYPE:standard 
+2026-08-02_22:21: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "dialogueworks"
+2026-08-02_22:21: query_youtube: Query matched 20 lines, _LOCAL_LIST has 18 lines
+2026-08-02_22:21: query_youtube: Listing for QKEY:dialogueworks contains 18 rows
+2026-08-02_22:21: query_youtube: Creating listing for QKEY:timdillon STRICT:null
+2026-08-02_22:21: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Tim Dillon ENGINE:youtube EOPT:null FKEY:tim dillon QKEY:timdillon SMSG:0.0% TYPE:standard 
+2026-08-02_22:21: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "timdillon"
+2026-08-02_22:21: query_youtube: Rejected:inaamkhan
+2026-08-02_22:21: query_youtube: Query matched 3 lines, _LOCAL_LIST has 1 lines
+2026-08-02_22:21: query_youtube: Listing for QKEY:timdillon contains 1 rows
+2026-08-02_22:22: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.NEL3iP
+2026-08-02_22:22: job_start: TITLE:Influencer Poison, 
+2026-08-02_22:22: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=7nx_rfiEUvU" PID:2742675
+2026-08-02_22:22: yt PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/yts/yts
+2026-08-02_22:22: yt URL:https://youtube.com/watch?v=7nx_rfiEUvU
+2026-08-02_22:22: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=7nx_rfiEUvU"
+2026-08-02_22:22: action_do: GENERATING HEADER
+2026-08-02_22:22: action_do: COMPLETED
+2026-08-02_22:22: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=7nx_rfiEUvU PPCMD:/usr/bin/zsh/home/kmiller/Code/LOCAL/yts/yts, TARGET:The_Tim_Dillon_Show - Influencer_Poison_Trump_s_Lifeguard_The_Migrant_Summer_The_Tim_Dillon_Show_506.mp4|6323232
+2026-08-02_22:22: action_do: POST-PROCESSING
+2026-08-02_22:22: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/web/The_Tim_Dillon_Show - Influencer_Poison_Trump_s_Lifeguard_The_Migrant_Summer_The_Tim_Dillon_Show_506.mp4
+2026-08-02_22:22: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/web/The_Tim_Dillon_Show - Influencer_Poison_Trump_s_Lifeguard_The_Migrant_Summer_The_Tim_Dillon_Show_506.mp4
+2026-08-02_22:22: set_final_fn: Overwriting file:The_Tim_Dillon_Show - Influencer_Poison_Trump_s_Lifeguard_The_Migrant_Summer_The_Tim_Dillon_Show_506.mp4 with:Tim Dillon - Influencer Poison.mp4
+2026-08-02_22:22: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/web/Tim Dillon - Influencer Poison.mp4
+2026-08-02_22:22: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.NEL3iP was cleared for:timdillon from:action_do
