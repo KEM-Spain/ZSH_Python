@@ -370,15 +370,16 @@ str_unpipe () {
 str_word_clip () {
   local -a STR_IN=(${(z)1})
   local LIMIT=${2}
-  local LEN=0
   local STR_OUT=''
+	local STR_BUFFER=''
 	local W
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
   for W in ${STR_IN};do
-    (( LEN += ${#W}))
-    [[ ${LEN} -lt ${LIMIT} ]] && STR_OUT+="${W} "
+    STR_BUFFER+="${W} "
+    [[ ${#STR_BUFFER} -le ${LIMIT} ]] && STR_OUT=${STR_BUFFER} || break
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LIMIT:${LIMIT} LEN:${#STR_OUT} STR_OUT:${STR_OUT}"
   done
 
   echo ${STR_OUT}

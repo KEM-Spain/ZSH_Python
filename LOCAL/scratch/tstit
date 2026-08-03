@@ -1,7 +1,0 @@
-#!/usr/bin/zsh
-typeset -a LIST=()
-
-LIST=(${(z)"${(f)$(whereis -b -f ${1})}"})
-for L in ${LIST};do
-	printf "%s\n" ${L}
-done

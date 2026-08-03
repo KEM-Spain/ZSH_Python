@@ -71,7 +71,7 @@ sel_box_ctr_txt () {
 }
 
 sel_clear_region () {
-	local -A R_COORDS
+	local -A RGN_COORDS
 	local X_ARG=0
 	local Y_ARG=0
 	local W_ARG=0
@@ -81,46 +81,44 @@ sel_clear_region () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	R_COORDS=($(box_coords_get REGION))
+	RGN_COORDS=($(box_coords_get REGION))
 
-	if [[ -z ${R_COORDS} ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: R_COORDS is null - returning"
+	if [[ -z ${RGN_COORDS} ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RGN_COORDS is null - returning"
 		return -1
 	else
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: R_COORDS: ${(kv)R_COORDS}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RGN_COORDS: ${(kv)RGN_COORDS}"
 	fi
 
-	X_ARG=${R_COORDS[X]}
-	Y_ARG=${R_COORDS[Y]}
-	W_ARG=${R_COORDS[W]}
-	H_ARG=${R_COORDS[H]}
+	X_ARG=${RGN_COORDS[X]}
+	Y_ARG=${RGN_COORDS[Y]}
+	W_ARG=${RGN_COORDS[W]}
+	H_ARG=${RGN_COORDS[H]}
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: REGION COORDS: X_ARG:${X_ARG} Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
 
-	if	[[ ${R_COORDS[OB_W]} -ne 0 ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: HAS OUTER BOX"
-#		[[ ${X_ARG} -gt 1 ]] && (( X_ARG-=1 ))
-#		[[ ${Y_ARG} -gt 4 ]] && Y_ARG=$(( R_COORDS[OB_Y] - 4 ))
-#		[[ ${W_ARG} -lt $(( ${_MAX_ROWS} - 8 )) ]] && W_ARG=$(( R_COORDS[OB_W] + 8 ))
-#		[[ ${H_ARG} -lt $(( ${_MAX_COLS} - 2 )) ]] && (( H_ARG+=2 ))
-	else
-#		[[ ${X_ARG} -gt 1 ]] && (( X_ARG-=1 ))
-#		[[ ${Y_ARG} -gt 2 ]] && (( Y_ARG-=2 ))
-#		[[ ${W_ARG} -lt $(( ${_MAX_ROWS} - 4 )) ]] && (( W_ARG+=4 ))
-#		[[ ${H_ARG} -lt $(( ${_MAX_COLS} - 2 )) ]] && (( H_ARG+=2 ))
-	fi
-	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: REGION TWEAKS X_ARG:${X_ARG} Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
+	(( W_ARG-=13 ))
+	(( Y_ARG-=4 )) # Start clearing 1 col before box
 
-	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-		local STR=$(str_rep_char "#" ${W_ARG}) # Set REGION marker for debug
+	if	[[ ${RGN_COORDS[OB_W]} -ne 0 ]];then
+		(( H_ARG+=3 )) # Start clearing 1 row above box
+	fi
+
+	local STR=$(str_rep_char " " ${W_ARG}) # Set REGION marker for debug
+
+	msg_unicode_box $(( X_ARG - 1 )) $(( Y_ARG - 1 )) $(( W_ARG + 2 )) $(( H_ARG + 3 ))
+
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		for (( R=0; R <= H_ARG; R++ ));do
-			dbg "${0}: R:${R} X_ARG:${X_ARG} X_ARG+R:$(( X_ARG + R )) H_ARG:${H_ARG}"
+			dbg "CLEARING: ROW:$(( X_ARG + R )) COL:${H_ARG} WIDTH:${W_ARG}"
 			tcup $(( X_ARG + R )) ${Y_ARG} && tput ech ${W_ARG} # Clear line
 			tcup $(( X_ARG + R )) ${Y_ARG} && echo -n ${WHITE_ON_GREY}${STR}${RESET} # Mark region
 		done
+	else
+		for (( R=0; R <= H_ARG; R++ ));do
+			tcup $(( X_ARG + R )) ${Y_ARG} && echo -n ${STR} # Mark region
+		done
 	fi
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Cleared ${H_ARG} rows starting from row:${X_ARG}, col:${Y_ARG} for:${W_ARG} columns"
 }
 
 sel_cursor_hilite () {
@@ -220,7 +218,7 @@ sel_list () {
 	local NM_H=''
 	local NM_F=''
 	local NM_M=''
-	local NM_P=''
+	local NO_MRKUP=''
 	local PGH_X=0
 	local PGH_Y=0
 	local PH=0
@@ -264,23 +262,23 @@ sel_list () {
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
-	   C) _HAS_CAT=true;;
-		F) HAS_FTR=true;FRAME_FTR=${OPTARG};;
-		H) HAS_HDR=true;FRAME_HDR=${OPTARG};;
-	   I) IB_COLOR=${OPTARG};;
-		M) HAS_MAP=true;LIST_MAP=${OPTARG};;
-	   O) HAS_OUTER=true;OB_COLOR=${OPTARG};;
-	   R) _REFRESH=true;;
-		S) _SAVE_MENU_POS=true;;
-	   T) _TAG=${OPTARG};;
-	   W) OB_PAD=${OPTARG};;
-	   c) CLEAR_REGION=true;;
-	   d) _CAT_DELIM=${OPTARG};;
-	   s) _CAT_SORT=${OPTARG};;
-	   x) X_COORD_ARG=${OPTARG};;
-	   y) Y_COORD_ARG=${OPTARG};;
-	   :) exit_leave "${RED_FG}${0}${RESET}: option: -${OPTARG} requires an argument";;
-	  \?) exit_leave "${RED_FG}${0}${RESET}: unknown option -${OPTARG}";;
+			C) _HAS_CAT=true;;
+			F) HAS_FTR=true;FRAME_FTR=${OPTARG};;
+			H) HAS_HDR=true;FRAME_HDR=${OPTARG};;
+			I) IB_COLOR=${OPTARG};;
+			M) HAS_MAP=true;LIST_MAP=${OPTARG};;
+			O) HAS_OUTER=true;OB_COLOR=${OPTARG};;
+			R) _REFRESH=true;;
+			S) _SAVE_MENU_POS=true;;
+			T) _TAG=${OPTARG};;
+			W) OB_PAD=${OPTARG};;
+			c) CLEAR_REGION=true;;
+			d) _CAT_DELIM=${OPTARG};;
+			s) _CAT_SORT=${OPTARG};;
+			x) X_COORD_ARG=${OPTARG};;
+			y) Y_COORD_ARG=${OPTARG};;
+			:) exit_leave "${RED_FG}${0}${RESET}: option: -${OPTARG} requires an argument";;
+			\?) exit_leave "${RED_FG}${0}${RESET}: unknown option -${OPTARG}";;
 		esac
 	done
 	shift $(( OPTIND - 1 ))
@@ -348,12 +346,12 @@ sel_list () {
 		NM_H=$(msg_nomarkup ${FRAME_HDR})
 		NM_F=$(msg_nomarkup ${FRAME_FTR})
 		NM_M=$(msg_nomarkup ${LIST_MAP})
-		NM_P=$(msg_nomarkup ${LIST_HDR})
+		NO_MRKUP=$(msg_nomarkup ${LIST_HDR})
 
 		[[ ${_PAGE_TOPS[MAX]} -gt 1 ]] && PAGING=true
 
 		MH=${#NM_M} # Set default MAP width
-		[[ ${PAGING} == 'true' ]] && PH=${#NM_P} # Set default PAGING width
+		[[ ${PAGING} == 'true' ]] && PH=${#NO_MRKUP} # Set default PAGING width
 		if [[ ${HAS_OUTER} == 'true' ]];then
 			((MH+=6)) # Add padding for MAP
 			[[ ${PAGING} == 'true' ]] && ((PH+=4)) # Add padding for PAGING
@@ -398,7 +396,7 @@ sel_list () {
 			FTR_X=$(( BOX_BOT + 2 ))
 			FTR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_F})
 			PGH_X=$(( BOX_X - 1 ))
-			PGH_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_P})
+			PGH_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NO_MRKUP})
 		else
 			HDR_X=$(( BOX_X - 1 ))
 			HDR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_H})
@@ -407,7 +405,7 @@ sel_list () {
 			[[ -n ${LIST_MAP} || -n ${LIST_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${BOX_BOT} # Move footer down if blocked
 			FTR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_F})
 			PGH_X=${BOX_BOT}
-			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_P})
+			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NO_MRKUP})
 		fi
 
 		# Store DECOR coords
@@ -492,7 +490,7 @@ sel_scroll () {
 	local NAV=''
 	local NDX=0
 	local NORM_NDX=0
-	local NM_P=''
+	local NO_MRKUP=''
 	local PGH_Y=0
 	local PAGE_CHANGE=false
 	local SCROLL=''
@@ -562,9 +560,9 @@ sel_scroll () {
 			tcup ${_SEL_LIST_META[PGH_X]} ${_SEL_LIST_META[PGH_Y]};echo -n $(msg_markup "Page <w>${PAGE}<N> of <w>${_PAGE_TOPS[MAX]}<N> <m>${_DMD}<N> (<w>N<N>)ext (<w>P<N>)rev")
 		else
 			LIST_HDR="Showing <w>${#_LIST}<N> ${(C)$(str_pluralize item ${#_LIST})}"
-			NM_P=$(msg_nomarkup ${LIST_HDR})
-			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_P})
-			tcup ${_SEL_LIST_META[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${LIST_HDR})
+			NO_MRKUP=$(msg_nomarkup ${LIST_HDR})
+			PGH_Y=$(sel_box_ctr_txt ${_SEL_LIST_META[BOX_Y]} ${_SEL_LIST_META[BOX_W]} ${NO_MRKUP})
+			tcup ${_SEL_LIST_META[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${LIST_HDR}) 
 		fi
 
 		sel_disp_page # Display list items

@@ -67,7 +67,7 @@ action_do () {
 		sel_set_list ${(o)ACTION_TABLE}
 		sel_list -c -x11 -y52 -H"Available Actions" -M"<w>Select action for: <c>$(echo ${_UNIT_FILES[${M}]} | rev | cut -d'.' -f2- | rev) ${MSG}<N>or <w>Esc<N> to <r>Cancel<N>"
 		if [[ ${_SEL_KEY} -eq 27 ]];then # Esc key?
-			clear_region
+			sel_clear_region
 			list_set_selected ${M} ${_AVAIL_ROW}
 			continue
 		fi
