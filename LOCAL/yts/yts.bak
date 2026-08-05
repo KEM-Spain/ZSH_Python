@@ -784,6 +784,7 @@ get_field () {
 
 	if [[ -n ${_FIELD_LEN[${FIELD}]} ]];then
 		STR=${STR[1,${_FIELD_LEN[${FIELD}]}]}
+		STR=$(printf '%s' "$STR" | iconv -f UTF-8 -t ISO-8859-1 2>/dev/null)
 	fi
 
 	echo -n ${STR}
@@ -1462,7 +1463,7 @@ query_youtube () {
 	done
 
 	if [[ ${#_QUERY_REJECTS} -ne 0 && -n ${AUTHOR} && -n ${QKEY} && -n ${DKEY} ]];then
-		msg_box -x4 -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
+		msg_box -x3 -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${QKEY}/<m>${DKEY}<N>"
 	fi
 
 	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''

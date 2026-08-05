@@ -4312,7 +4312,7 @@ By using the (s:delim:) flag, you can split a variable on the fly into an anonym
 
 Let's establish two distinct terms:
 Wrapper: The character that wraps/encloses the argument (tells Zsh where the pattern starts and ends).
-Splitter: The actual text in your variable that you want to split on.
+Splitter: The actual text in your variable that you want to split on. This is always the literal character - no interpolations
 The Pattern: WRAPPER SPLITTER WRAPPER
 
   row="john:doe:engineer:30"
@@ -4430,5 +4430,63 @@ SUMMARY RECOMMENDATION
 * For shell command lexing (preserving quotes): Use \${(z)var}.
 * For bulk processing gigabytes of text outside shell scripts: Use awk -F',' '{print \$3}' file.txt
   (which outperforms 'cut' on high volumes due to better buffering).
+
+${E_CYAN_FG}A Complex One-liner with explanations${E_RESET}
+
+${E_WHITE_FG}_SORT_KEYS=( \${\${(o)\${(f)"\$(for K in \${(k)_DESC}; do echo "\${_DESC[\${K}]}:\${K}"; done)"}}#*:} )${E_RESET}
+
+The one-liner uses an inline process/command substitution combined with Zsh's string-splitting 
+parameter flags to avoid declaring an intermediate array variable or, most importantly, calling
+any external (slow) commands to get the job done i.e. cut, tr, sort, etc.
+
+_DESC is an assoc array with key being the order at load time (unsorted) and the value being a 
+description of systemd units.  This one-liner sorts the keys alphabetically by description. Those
+keys can then be used to optionally reorder _DESC alphabetically at any time.
+
+Here is the breakdown working from the innermost expression outward:
+
+${E_WHITE_FG}Step 1${E_RESET}: The Loop \$(for k ... done)
+\$(for K in \${(k)_DESC}; do echo "\${_DESC[\${K}]}|\${K}"; done)
+
+${E_RED_FG}Care must be taken${E_RESET} to ensure that the delimiter chosen does not appear in the text.
+The pipe symbol is a fairly safe bet though not guaranteed.  ${E_WHITE_FG}Check first!${E_RESET}
+
+This runs a standard for loop inside a subshell to iterate through every key K. For each entry, 
+it prints a single line formatted as Description:Key (e.g., "CUPS Scheduler|3").
+
+Double-quoting "\${_DESC[\${K}]}|\${K}" ensures spaces within the description are preserved.
+
+${E_WHITE_FG}Step 2${E_RESET}: Split by Newline \${(f)...}
+
+\${(f)"\$(...)"}
+    • " ... ": Double-quoting the command substitution keeps the entire multi-line output 
+    intact as a single block of text rather than splitting it on spaces.
+
+    • (f): Stands for "fold on lines" (or linefeed-split). It takes that multi-line string 
+    output and converts each line into a distinct array element.
+
+At this stage, you have an in-memory Zsh array of strings where spaces are safely preserved: 
+("CUPS Scheduler|3" "Accounts Service|10" "System and Service Manager|8")
+
+${E_WHITE_FG}Step 3${E_RESET}: Sort Alphabetically \${(o)...}
+
+\${(o)...}
+
+The (o) array flag sorts the elements in ascending alphabetical order based on the string 
+contents. Because the description comes first, Zsh sorts by the description text: 
+("Accounts Service|10" "CUPS Scheduler|3" "System and Service Manager|8")
+
+${E_WHITE_FG}Step 4${E_RESET}: Strip Description and Colon \${...#*|}
+
+\${ ... #*|}
+
+The outermost \${ ... #*|} is Zsh's pattern-removal modifier. It strips everything from the 
+start of each string up to and including the first colon (#*|).
+    • "Accounts Service|10" → 10
+    • "CUPS Scheduler|3" → 3
+
+The outer parentheses _SORT_KEYS=( ... ) capture those remaining isolated keys directly into 
+your _SORT_KEYS array.
+
 tip_zsh_EOF_3
 ) | mypager

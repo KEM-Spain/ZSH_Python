@@ -779,6 +779,7 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'title' ]];then
+		STR=$(utf_to_iso ${STR})
 		STR=$(str_word_clip ${STR} ${_FIELD_LEN[${FIELD}]})
 	fi
 

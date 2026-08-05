@@ -215,10 +215,10 @@ sel_list () {
 	local MAP_X=0
 	local MAP_Y=0
 	local MH=0
-	local NM_H=''
-	local NM_F=''
-	local NM_M=''
-	local NO_MRKUP=''
+	local NOMRKUP_FH=''
+	local NOMRKUP_FF=''
+	local NOMRKUP_LM=''
+	local NOMRKUP_LH=''
 	local PGH_X=0
 	local PGH_Y=0
 	local PH=0
@@ -343,23 +343,23 @@ sel_list () {
 		LIST_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
 
 		# Decorations w/o markup
-		NM_H=$(msg_nomarkup ${FRAME_HDR})
-		NM_F=$(msg_nomarkup ${FRAME_FTR})
-		NM_M=$(msg_nomarkup ${LIST_MAP})
-		NO_MRKUP=$(msg_nomarkup ${LIST_HDR})
+		NOMRKUP_FF=$(msg_nomarkup ${FRAME_FTR})
+		NOMRKUP_FH=$(msg_nomarkup ${FRAME_HDR})
+		NOMRKUP_LH=$(msg_nomarkup ${LIST_HDR})
+		NOMRKUP_LM=$(msg_nomarkup ${LIST_MAP})
 
 		[[ ${_PAGE_TOPS[MAX]} -gt 1 ]] && PAGING=true
 
-		MH=${#NM_M} # Set default MAP width
-		[[ ${PAGING} == 'true' ]] && PH=${#NO_MRKUP} # Set default PAGING width
+		MH=${#NOMRKUP_LM} # Set default MAP width
+		[[ ${PAGING} == 'true' ]] && PH=${#NOMRKUP_LH} # Set default PAGING width
 		if [[ ${HAS_OUTER} == 'true' ]];then
 			((MH+=6)) # Add padding for MAP
 			[[ ${PAGING} == 'true' ]] && ((PH+=4)) # Add padding for PAGING
 		fi
 
 		# Widest decoration - inner box, header, footer, map, paging, or exit msg
-		MAX=$(max ${BOX_W} ${#NM_H} ${#NM_F} ${MH} ${PH} ${_EXIT_BOX}) # Add padding for MAP
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} FRAME_HDR:${#NM_H} FRAME_FTR:${#NM_F} LIST_MAP:${MH} LIST_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
+		MAX=$(max ${BOX_W} ${#NOMRKUP_FH} ${#NOMRKUP_FF} ${MH} ${PH} ${_EXIT_BOX}) # Add padding for MAP
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} FRAME_HDR:${#NOMRKUP_FH} FRAME_FTR:${#NOMRKUP_FF} LIST_MAP:${MH} LIST_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
 
 		# Handle outer box coords
 		if [[ ${HAS_OUTER} == 'true' ]];then
@@ -390,22 +390,22 @@ sel_list () {
 		# Set coords for list decorations
 		if [[ ${HAS_OUTER} == 'true' ]];then
 			HDR_X=$(( BOX_X - 3 ))
-			HDR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_H})
+			HDR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NOMRKUP_FH})
 			MAP_X=${BOX_BOT}
-			MAP_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_M})
+			MAP_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NOMRKUP_LM})
 			FTR_X=$(( BOX_BOT + 2 ))
-			FTR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NM_F})
+			FTR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NOMRKUP_FF})
 			PGH_X=$(( BOX_X - 1 ))
-			PGH_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NO_MRKUP})
+			PGH_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NOMRKUP_LH})
 		else
 			HDR_X=$(( BOX_X - 1 ))
-			HDR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_H})
+			HDR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NOMRKUP_FH})
 			[[ -n ${LIST_HDR} ]] && MAP_X=$(( BOX_BOT + 1 )) || MAP_X=${BOX_BOT} # Move map down if blocked
-			MAP_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_M})
+			MAP_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NOMRKUP_LM})
 			[[ -n ${LIST_MAP} || -n ${LIST_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${BOX_BOT} # Move footer down if blocked
-			FTR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NM_F})
+			FTR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NOMRKUP_FF})
 			PGH_X=${BOX_BOT}
-			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NO_MRKUP})
+			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NOMRKUP_LH})
 		fi
 
 		# Store DECOR coords
@@ -490,7 +490,7 @@ sel_scroll () {
 	local NAV=''
 	local NDX=0
 	local NORM_NDX=0
-	local NO_MRKUP=''
+	local NOMRKUP_LH=''
 	local PGH_Y=0
 	local PAGE_CHANGE=false
 	local SCROLL=''
@@ -560,8 +560,8 @@ sel_scroll () {
 			tcup ${_SEL_LIST_META[PGH_X]} ${_SEL_LIST_META[PGH_Y]};echo -n $(msg_markup "Page <w>${PAGE}<N> of <w>${_PAGE_TOPS[MAX]}<N> <m>${_DMD}<N> (<w>N<N>)ext (<w>P<N>)rev")
 		else
 			LIST_HDR="Showing <w>${#_LIST}<N> ${(C)$(str_pluralize item ${#_LIST})}"
-			NO_MRKUP=$(msg_nomarkup ${LIST_HDR})
-			PGH_Y=$(sel_box_ctr_txt ${_SEL_LIST_META[BOX_Y]} ${_SEL_LIST_META[BOX_W]} ${NO_MRKUP})
+			NOMRKUP_LH=$(msg_nomarkup ${LIST_HDR})
+			PGH_Y=$(sel_box_ctr_txt ${_SEL_LIST_META[BOX_Y]} ${_SEL_LIST_META[BOX_W]} ${NOMRKUP_LH})
 			tcup ${_SEL_LIST_META[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${LIST_HDR}) 
 		fi
 

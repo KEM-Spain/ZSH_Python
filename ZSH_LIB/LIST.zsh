@@ -10,6 +10,7 @@ typeset -A _LIST_SELECTED_PAGE=() # Selected rows by page
 typeset -A _PAGES=()
 typeset -A _PAGE_DATA=()
 typeset -A _SORT_DATA=()
+typeset -A _SORT_NDX=()
 typeset -a _LIST=() # Holds the values to be managed by the menu
 typeset -a _LIST_ACTION_MSGS=() # Holds text for contextual prompts
 typeset -a _LIST_HEADER=() # Holds header lines
@@ -31,6 +32,8 @@ _KEY_CALLBACK_QUIT_FUNC=''
 _LAST_PAGE=?
 _LIST_DELIM='|'
 _LIST_HEADER_BREAK=false
+_LIST_HEADER_INDENT_BREAK=false
+_LIST_BREAK_INDENT=0
 _LIST_HEADER_BREAK_COLOR=${WHITE_FG}
 _LIST_HEADER_BREAK_LEN=0
 _LIST_IS_SEARCHABLE=false
@@ -57,6 +60,7 @@ _SELECTION_LIMIT=0
 _SELECT_ACTION='do action'
 _SELECT_ALL=false
 _SELECT_CALLBACK_FUNC=''
+_SORT_TYPE=none
 _TARGET_CURSOR=1
 _TARGET_KEY=''
 _TARGET_NDX=1
@@ -64,9 +68,11 @@ _TARGET_PAGE=1
 
 # LIB Functions
 list_add_header_break () {
+	local INDENT=${1}
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	_LIST_HEADER_BREAK=true
+	[[ -n ${INDENT} ]] && { _LIST_HEADER_INDENT_BREAK=true && _LIST_BREAK_INDENT=${INDENT} }
 }
 
 list_clear_selected () {
@@ -199,7 +205,10 @@ list_do_header () {
 		done
 
 		if [[ ${_LIST_HEADER_BREAK} == 'true' ]];then
-			tput el && echo -n ${_LIST_HEADER_BREAK_COLOR} && str_unicode_line ${LONGEST_HDR} && echo -n ${RESET}
+			if [[ ${_LIST_HEADER_INDENT_BREAK} == 'true' ]];then
+				local HDR_INDENT=$(str_rep_char ' ' ${_LIST_BREAK_INDENT})
+			fi
+			tput el && echo -n "${HDR_INDENT}${_LIST_HEADER_BREAK_COLOR}" && str_unicode_line ${LONGEST_HDR} && echo -n ${RESET}
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Header break length:${LONGEST_HDR}"
 		fi
 }
@@ -681,7 +690,7 @@ list_select () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST SAMPLE ROW: ${_LIST[1]}"
 
 	# Calculate header lines
-	[[ -z ${_LIST_HEADER} ]] && _LIST_HEADER+='printf "List of %-d items\tPage %-d of %-d \tSelected:%-d" ${MAX_ITEM} ${PAGE} ${MAX_PAGE} ${SELECTED_COUNT}' # Default header
+	[[ -z ${_LIST_HEADER} ]] && _LIST_HEADER+='printf "List of %-d items\tPage %-d of %-d \tSelected:%-d" ${#_LIST} ${PAGE} ${MAX_PAGE} ${SELECTED_COUNT}' # Default header
 	TOP_OFFSET=${#_LIST_HEADER}
 	[[ ${_LIST_HEADER_BREAK} == 'true' ]] && ((TOP_OFFSET++))
 	_LIST_HEADER_LINES=${TOP_OFFSET}
@@ -743,9 +752,6 @@ list_select () {
 	tput clear
 
 	list_display_page
-
-	#_LIST_NDX=1
-	#_CURSOR_NDX=$(( _LIST_NDX + _PAGE_DATA[TOP_OFFSET] - 1 ))
 
 	# Main navigation loop
 	while true;do
@@ -1022,6 +1028,13 @@ list_set_selection_limit () {
 	_SELECTION_LIMIT=${1}
 }
 
+list_set_sort_index () {
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	_SORT_TYPE=index
+	_SORT_DATA[TABLE]=${1}
+}
+
 list_set_sortable () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
@@ -1044,6 +1057,8 @@ list_sort () {
 	local A C
 	
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	[[ ${_SORT_TYPE} == 'index' ]] && list_sort_index ${TRIGGER} && return
 
 	[[ ${TRIGGER} == 'key' ]] && PROMPT=true && _SORT_DATA[ORDER]=${ORD_TOGGLE[${_SORT_DATA[ORDER]}]}
 
@@ -1116,6 +1131,35 @@ list_sort () {
 		setopt warncreateglobal # Monitor locals
 	done
 
+}
+
+list_sort_index () {
+	local TRIGGER=${1}
+	local -a NDX_SORT=()
+	local NDX=0
+	local K L
+
+	if [[ ${TRIGGER} == 'key' ]];then
+		msg_box -p "Enter column to sort|Range: <w>1<N> through <w>${#_SORT_TABLE}<N>|(Default is <w>${(k)_SORT_TABLE[(r)${_SORT_DATA[TABLE]}]}<N>)"
+		COL=${_MSG_KEY}
+
+		[[ ${COL} -eq 27 ]] && return # User hit Esc key
+		[[ ${COL} -eq 0 ]] && COL=${(k)_SORT_TABLE[(r)${_SORT_DATA[TABLE]}]}
+
+		if [[ ${COL} -lt 1 || ${COL} -gt ${#_SORT_TABLE} ]];then
+			msg_box -c -p -PK "Invalid sort column:${COL}"
+			return 1
+		fi
+
+		_SORT_DATA[TABLE]=${_SORT_TABLE[${COL}]}
+	fi
+
+	NDX_SORT=( ${${(o)${(f)"$(for K in ${(k)${(P)_SORT_DATA[TABLE]}}; do echo "${${(P)_SORT_DATA[TABLE]}[${K}]}|${K}"; done)"}}#*|} )
+
+	for L in ${NDX_SORT};do
+		((NDX++))
+		_SORT_NDX[${NDX}]=${L}
+	done
 }
 
 list_sort_assoc () {
