@@ -378,6 +378,7 @@ str_word_clip () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:STR_IN:${STR_IN}"
 
+	((LIMIT-=2))
   for W in ${STR_IN};do
     STR_BUFFER+="${W} "
     [[ ${#STR_BUFFER} -lt ${LIMIT} ]] && STR_OUT=${STR_BUFFER} || break

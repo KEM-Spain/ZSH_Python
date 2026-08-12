@@ -107,6 +107,7 @@ Comment[zh_HK]=連線到網際網路
 Comment[zh_TW]=連線到網際網路
 Exec=/usr/bin/brave-browser-stable %U
 StartupNotify=true
+StartupWMClass=brave-browser
 Terminal=false
 Icon=brave-browser
 Type=Application

@@ -39,8 +39,8 @@ term_pids () {
 	PIDS=("${(f)$(ps -exo sess,tty | grep pts | sort -u)}")
 	printf "%-6s %-6s\n" "TERM" "PID"
 	for L in ${PIDS};do
-		PID=$(sed 's/^ *//' <<<${L} | cut -d' ' -f1)
-		TERM=$(sed 's/^ *//' <<<${L} | cut -d' ' -f2)
+		PID=${(s/ /)${(z)L}[1]}
+		TERM=${(s/ /)${(z)L}[2]}
 		[[ ${PID} == "${TERM_PID}" ]] && MARK='*' || MARK=''
 		printf "%-6s %-6s ${WHITE_FG}%s${RESET}\n" ${TERM} ${PID} ${MARK}
 	done
@@ -61,7 +61,7 @@ done
 [[ ${#_LIST} -gt 1 ]] && TAG=sessions || TAG=session
 
 COUNT_ONLY=false
-TERM_PID=$(ps | grep --color=never terminator | head -1 | tr -s ' ' | cut -d' ' -f2)
+TERM_PID=${(s/ /)${(z)$(ps -aux | grep --color=never terminator | head -1)}[2]}
 THIS_TTY=$(tty)
 
 OPT=${1:=null}

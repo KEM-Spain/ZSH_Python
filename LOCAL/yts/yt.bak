@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
- 
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -16,7 +15,7 @@ typeset -a LIST=()
 _YT_CFG=~/.local/share/yts
 _YT_DBG_LOG=${_YT_CFG}/yt.dbg.log
 _YT_URL_LOG=${_YT_CFG}/yt.url.log
-_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 _YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG}"
 
 # Functions

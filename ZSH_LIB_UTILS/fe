@@ -35,7 +35,7 @@ CUR_USER=$(whoami)
 _DEPTH=1
 
 # Imports
-zmodload -F zsh/stat b:zstat
+zmodload zsh/stat
 
 # Functions
 action_do () {

@@ -48,8 +48,8 @@ get_id_title () {
 		logit ${_LOG} "${0}: Terminal has WID:${WID}"
 	else
 		for W in ${_WIN_LIST};do
-			WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
-			TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+			WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
+			TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
 			if [[ ${TITLE:l} =~ ${TITLE_ARG:l} ]];then
 				logit ${_LOG} "${0}: TITLE:${TITLE} has WID:${WID}"
 				break
@@ -70,9 +70,9 @@ get_id_pid () {
 	local W
 
 	for W in ${_WIN_LIST};do
-		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
-		PID=$(cut -d'|' -f${_FLD_LIST[PID]} <<<${W})
-		TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+		WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
+		PID="${${(@s/|/)W}[${_FLD_LIST[PID]}]}"
+		TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
 		if [[ ${PID_ARG} =~ ${PID} ]];then
 			logit ${_LOG} "${0}: PID:${PID} has WID:${WID}, TITLE:${TITLE}"
 			break
@@ -89,8 +89,8 @@ get_id_wid () {
 	local W
 
 	for W in ${_WIN_LIST};do
-		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
-		TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+		WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
+		TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
 		if [[ ${WID_ARG} =~ ${WID} ]];then
 			logit ${_LOG} "${0}: WID:${WID} has TITLE:${TITLE}"
 			break
@@ -117,7 +117,7 @@ get_win_id () {
 }
 
 get_last_term () {
-	wmctrl -l >/dev/null 2>&1 | grep -i terminal | sort -r | head -1 | tr -s '[:space:]' | cut -d' ' -f1
+	wmctrl -l 2>/dev/null | awk 'tolower($0) ~ /terminal/ {last=$1} END {print last}'
 }
 
 is_maximized () {
@@ -127,8 +127,8 @@ is_maximized () {
 	local W
 
 	for W in ${_WIN_LIST};do
-		WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
-		MAX=$(cut -d'|' -f${_FLD_LIST[MAX]} <<<${W})
+		WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
+		MAX="${${(@s/|/)W}[${_FLD_LIST[MAX]}]}"
 		if [[ ${WID_ARG} =~ ${WID} ]];then
 			logit ${_LOG} "${0}: WID:${WID} maximized:${MAX}"
 			break
@@ -161,11 +161,11 @@ set_cur_win () {
 		_CUR_WIN=("${(f)$(wmctrl -lp >/dev/null 2>&1 | tr -s '[:space:]')}")
 
 		for L in ${_CUR_WIN};do
-			F1=$(cut -d' ' -f${_FLD_LIST[WID]} <<<${L})
-			F2=$(cut -d' ' -f${_FLD_LIST[DID]} <<<${L})
-			F3=$(cut -d' ' -f${_FLD_LIST[PID]} <<<${L})
-			F4=$(cut -d' ' -f${_FLD_LIST[CLIENT]} <<<${L})
-			F5=$(cut -d' ' -f${_FLD_LIST[TITLE]}- <<<${L})
+			F1="${${(@s/ /)L}[${_FLD_LIST[WID]}]}"
+			F2="${${(@s/ /)L}[${_FLD_LIST[DID]}]}"
+			F3="${${(@s/ /)L}[${_FLD_LIST[PID]}]}"
+			F4="${${(@s/ /)L}[${_FLD_LIST[CLIENT]}]}"
+			F5="${${(@s/ /)L}[${_FLD_LIST[TITLE]}]}"
 
 			[[ ${F2} == '-1' ]] && continue # Eliminate invisible
 			[[ ${F5:l} =~ "terminal" ]] && ((TERM_CNT++)) # Count terminal hits

@@ -7,9 +7,7 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -17,13 +15,11 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
-
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 RED_ON_WHITE="\033[0m\033[0;1;31;107m"
 WHITE_ON_RED="\033[0m\033[1;37;41m"
 AMBER="\033[38;5;208m"
 GREY="\033[38;5;250m"
-
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -68,14 +64,13 @@ action_do () {
 	local TM=''
 	local K M
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
-
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: CONTEXT:${g_CONTEXT}"
 
 	for M in ${_MARKED};do
-		IN=$(cut -d'|' -f1 <<<${_LIST[${M}]})
+		IN="${${(@s/|/)${_LIST[${M}]}}[1]}"
+		ARTIST="${${(@s#/#)${${(@s/|/)${_LIST[${M}]}}[2]}}[1]}"
 		FN=$(get_inode_fn ${g_LOCAL_PATH} ${IN})
-		ARTIST=$(cut -d'|' -f2 <<<${_LIST[${M}]} | cut -d'/' -f1) # Top level dir
 		if [[ ${g_CONTEXT} == 'LOCAL' ]];then # Queue copy to STICK
 			if [[ -e ${g_STICK_PATH}/${FN:t} ]];then
 				msg_box -c -p -PO "${g_STICK_PATH}/${FN:t} exists"
@@ -94,7 +89,6 @@ action_do () {
 	[[ -z ${PAYLOAD} ]] && return
 
 	if [[ ${g_CONTEXT} == 'LOCAL' ]];then # Copy from LOCAL to STICK
-
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: COPYING - rsync OUT PATH:${g_STICK_PATH}/${ARTIST}"
 		[[ ${_DEBUG} -eq 0 ]] && /bin/rm -f ${_RSYNC_LOG} # Clear log
 
@@ -117,10 +111,10 @@ action_do () {
 				LINE=$(tr '' '\n' <<<${LINE} | tail -1 | sed '/^[[:space:]]*$/d' | tr -s '[:space:]' | sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//')
 				[[ ${LINE} =~ "^\s*$" ]] && continue # No blank lines
 				if grep -P -q '\d+%' <<<${LINE};then
-					SZ=$(cut -d' ' -f1 <<<${LINE})
-					PCT=$(cut -d' ' -f2 <<<${LINE})
-					RATE=$(cut -d' ' -f3 <<<${LINE})
-					TM=$(cut -d' ' -f4 <<<${LINE})
+					SZ="${${(@s/ /)LINE}[1]}"
+					PCT="${${(@s/ /)LINE}[2]}"
+					RATE="${${(@s/ /)LINE}[3]}"
+					TM="${${(@s/ /)LINE}[4]}"
 					msg_box -jl -C "<c>${SZ}<N> <g>${PCT}<N> <w>${RATE}<N> <w>${TM}<N>" # Show details
 				else
 					msg_box -jl -C "<w>${LINE[1,75]}<N>" # Show other
@@ -154,7 +148,7 @@ action_warn () {
 	local TYPE=''
 	local M
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ! -w ${g_STICK_PATH} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: STICK IS READONLY"
@@ -198,16 +192,17 @@ check_owner () {
 	local USER_UID=$(id -u)
 	local USER_GID=$(id -g)
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	DEV_NODE=$(mount | grep ${g_STICK_PATH} | tr -s '[:space:]' | cut -d' ' -f1)
+	DEV_NODE="${${(@s/ /)$(mount | grep ${g_STICK_PATH})}[1]}"
+
 	[[ -z ${DEV_NODE} ]] && exit_leave $(err_msg_exit "Unable to determine device node")
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: DEV_NODE:${DEV_NODE}"
 
 	PERMS=$(stat -c'%U|%G' ${g_STICK_PATH})
-	OWNER=$(cut -d'|' -f1 <<<${PERMS})
-	GROUP=$(cut -d'|' -f2 <<<${PERMS})
+	OWNER="${${(@s/|/)PERMS}[1]}"
+	GROUP="${${(@s/|/)PERMS}[2]}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: PERMS:${PERMS}, OWNER:${OWNER}, GROUP:${GROUP}"
 
@@ -231,13 +226,13 @@ check_owner () {
 item_decorate () {
 	local NDX=${1}
 	local _MAX=$((_MAX_COLS - 10))
-	local ITEM=$(cut -d'|' -f2 <<<${_LIST[${NDX}]})
+	local ITEM="${${(@s/|/)${_LIST[${NDX}]}}[2]}"
 	local PWD_MARKER=''
 	local TYPE=''
 	local DC=''
 	local FC=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${ITEM} =~ ${PWD} ]] && PWD_MARKER='./' || PWD_MARKER=''
 
@@ -254,7 +249,7 @@ item_decorate () {
 }
 
 list_detail () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: CONTEXT:${g_CONTEXT}, LOCAL_TYPE:${g_LOCAL_TYPE}, STICK_TYPE:${g_STICK_TYPE}"
 
@@ -272,8 +267,7 @@ list_detail () {
 list_switch () {
 	local CONTEXT=${1}
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
-
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ -n ${CONTEXT} ]];then
 		g_CONTEXT=${CONTEXT}
@@ -304,7 +298,7 @@ list_show () {
 	local LC=''
 	local RC=0
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: ARRAY_NAME:${ARRAY_NAME}"
 
@@ -374,7 +368,7 @@ load_local () {
 	local TITLE=''
 	local D L
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: LOCAL_TYPE:${g_LOCAL_TYPE}"
 
 	_LOCAL_LIST=()
@@ -408,10 +402,10 @@ load_local () {
 			SUB=''
 			for D in {2..${DL}};do
 				if [[ ${D} -eq 2 ]];then
-					MASTER=$(cut -d'/' -f${D} <<<${HD})
+					MASTER="${${(@s#/#)HD}[${D}]}"
 					[[ -n ${MASTER} ]] && MASTER+="/"
 				elif [[ ${D} -eq ${DL} ]];then
-					SUB=$(cut -d'/' -f${DL} <<<${HD})
+					SUB="${${(@s#/#)HD}[${DL}]}"
 					[[ -n ${SUB} ]] && SUB+="/"
 				fi
 			done
@@ -437,7 +431,7 @@ load_stick () {
 	local MAX_DEPTH=''
 	local F
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: STICK_TYPE:${g_STICK_TYPE}"
 
 	if [[ ${TYPE} == 'f' ]];then
@@ -455,6 +449,10 @@ load_stick () {
 		msg_box -x3 -t1 "STICK is empty"
 		return 1
 	fi
+}
+
+scrub_test () {
+	[[ -d ${g_STICK_PATH} ]] && /bin/rm -rf ${g_STICK_PATH}
 }
 
 #--Begin GetOpts--
@@ -521,7 +519,7 @@ OPTIND=0
 
 INFO_OPT=false
 ALT_PATH_OPT=''
-NO_STICK=false
+NO_STICK=false # For testing
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -558,9 +556,9 @@ fi
 if [[ ${NO_STICK} == 'false' ]];then
 	STICK_INFO=$(usb_stick_path)
 	if [[ ${?} -eq 0 ]];then
-		_STICK_DATA[NAME]=$(cut -d'|' -f1 <<<${STICK_INFO})
-		_STICK_DATA[DEVICE]=$(cut -d'|' -f2 <<<${STICK_INFO})
-		_STICK_DATA[PATH]=$(cut -d'|' -f3 <<<${STICK_INFO})
+		_STICK_DATA[NAME]="${${(@s/|/)STICK_INFO}[1]}"
+		_STICK_DATA[DEVICE]="${${(@s/|/)STICK_INFO}[2]}"
+		_STICK_DATA[PATH]="${${(@s/|/)STICK_INFO}[3]}"
 		g_STICK_PATH=${_STICK_DATA[PATH]}
 		if [[ ${INFO_OPT} == 'true' ]];then
 			msg_box -p -PK -H1 "<w>USB Stick Information<N>|<c>${_STICK_DATA[NAME]}<N>|<w>Device<N>:${_STICK_DATA[DEVICE]}|<w>Mount<N>:${_STICK_DATA[PATH]}"
@@ -573,7 +571,9 @@ if [[ ${NO_STICK} == 'false' ]];then
 	check_owner
 	load_stick d
 else
-	g_STICK_PATH=/tmp
+	g_STICK_PATH=./stick_test
+	[[ ! -d ${g_STICK_PATH} ]] && mkdir -p ${g_STICK_PATH}
+	set_exit_callback scrub_test
 	msg_box -p -PK -H1 "<r>Running without a USB Stick<N>|<c>${_STICK_DATA[NAME]}<N>|<w>All copies will be sent to<N>:${g_STICK_PATH}"
 fi
 

@@ -26,22 +26,27 @@ RED_ON_WHITE="\033[0m\033[0;1;31;107m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 YELLOW_ON_GREY="\033[0m\033[0;1;33;100m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
 _DEPS+=()
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
+cut_lines () {
+	local FN=${@}
+	local MSG="Lines containing 'cut -' in ${FN}"
+
+	echo ${MSG}
+	echo ${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
+	grep -- 'cut -' ${FN}
+}
+
 get () {
 	local FN=${1}
 	local MSG=''
 	if [[ -e /usr/local/bin/${FN} ]];then
 		cp /usr/local/bin/${FN} .
-		MSG="Lines containing 'cut -' in ${FN}"
-		echo ${MSG}
-		echo ${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
-		grep -- 'cut -' ${FN}
+		cut_lines ${FN}
 	else
 		echo "File not found:/usr/local/bin/${FN}"
 	fi
@@ -50,7 +55,7 @@ get () {
 put () {
 	local FN=${1}
 	mv ${FN} /usr/local/bin
-	sed -i "s/${FN}/#${FN}/" cut_list
+	sed -i "s/^${FN}/#${FN}/" cut_list
 	grep -A1 "${FN}" cut_list
 }
 
@@ -58,3 +63,4 @@ clear
 [[ ! ${@} =~ '-' ]] && echo "xf -g -p" && exit
 [[ ${1} == '-g' ]] && get ${2}
 [[ ${1} == '-p' ]] && put ${2}
+[[ ${1} == '-c' ]] && cut_lines ${2}

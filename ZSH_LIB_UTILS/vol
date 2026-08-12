@@ -28,8 +28,8 @@ function get_level {
 	
 	for L in ${LIST};do
 		[[ ! ${L:l} =~ "front.*playback" ]] && continue
-		LEVEL=$(echo ${L} | cut -d\[ -f2 | sed 's/%].*//g')
-		STATE=$(echo ${L} | cut -d\[ -f3 | sed 's/]//g')
+		LEVEL="${(z)${(@s/[/)L}[2]:s/%]//}"
+		STATE="${${(@s/[/)L}[3]:s/]//}"
 	done
 	echo "${LEVEL}:${STATE}"
 }

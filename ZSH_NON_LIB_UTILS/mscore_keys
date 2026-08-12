@@ -21,8 +21,8 @@ load_keys () {
 	local DEF
 
 	while read LINE;do
-		DEF=$(echo ${LINE} | cut -d'|' -f1)
-		KEY=$(echo ${LINE} | cut -d'|' -f2)
+		DEF="${${(@s/|/)LINE}[1]}"
+		KEY="${${(@s/|/)LINE}[2]}"
 		KEY_DEF[${KEY}]=${DEF}
 	done < ${KEYS_FILE}
 }

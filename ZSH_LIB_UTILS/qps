@@ -110,7 +110,7 @@ fi
 if [[ ${USER_OPT} == 'true' ]];then
 	PS=("${(f)$(ps --headers -aux | grep --color=never -i ${USER} | grep -v ${0:t} | grep -v grep | tr -s '[:space:]')}")
 	for P in ${(O)PS};do
-		F2=$(cut -d' ' -f2 <<<${P})
+		F2="${${(@s/ /)P}[2]}"
 		echo ${F2}
 	done
 else
@@ -127,20 +127,20 @@ else
 	printf "${WHITE_FG}%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s${RESET}\n" "User" "PID" "CPU" "MEM" "TTY" "Start" "Duration" "Command"
 	printf "${MAGENTA_FG}%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s${RESET}\n" $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 10) $(str_unicode_line 70) 
 	for P in ${(O)PS};do
-		F1=$(cut -d' ' -f1 <<<${P})
-		F2=$(cut -d' ' -f2 <<<${P})
-		F3=$(cut -d' ' -f3 <<<${P})
-		F4=$(cut -d' ' -f4 <<<${P})
-		F5=$(cut -d' ' -f5 <<<${P})
-		F6=$(cut -d' ' -f6 <<<${P})
-		F7=$(cut -d' ' -f7 <<<${P})
-		F8=$(cut -d' ' -f8 <<<${P})
-		F9=$(cut -d' ' -f9 <<<${P})
-		F10=$(cut -d' ' -f10 <<<${P})
-		F11=$(cut -d' ' -f11- <<<${P})
+		F1="${${(@s/ /)P}[1]}"
+		F2="${${(@s/ /)P}[2]}"
+		F3="${${(@s/ /)P}[3]}"
+		F4="${${(@s/ /)P}[4]}"
+		F5="${${(@s/ /)P}[5]}"
+		F6="${${(@s/ /)P}[6]}"
+		F7="${${(@s/ /)P}[7]}"
+		F8="${${(@s/ /)P}[8]}"
+		F9="${${(@s/ /)P}[9]}"
+		F10="${${(@s/ /)P}[10]}"
+		F11="${${(@s/ /)P}[11]}"
 		printf "%-10s %-10s %-10s %-10s %-10s %-10s %-10s %-70s\n" ${F1} ${F2} ${F3} ${F4} ${F7} ${F9} ${F10} ${F11[1,70]}
 	done
-	) | sort -n -t' ' -k6 | mypager wait
+	) | mypager wait
 fi
 
 exit_leave

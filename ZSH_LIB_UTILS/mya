@@ -131,8 +131,8 @@ fi
 
 while read LINE;do
 	[[ ! ${LINE} =~ '=' ]] && continue
-	ALIAS=$(cut -d'=' -f1 <<<${LINE} | sed 's/alias//' | str_trim)
-	CMD=$(cut -d'=' -f2 <<<${LINE} | sed -e "s/'//g" -e 's/"//g')
+	ALIAS=$(str_trim "${${(@s/=/)LINE}[1]}" | sed 's/alias//')
+	CMD=$(str_trim "${${(@s/=/)LINE}[2]}" | sed -e "s/'//g" -e 's/"//g')
 	ALIASES[${ALIAS}]=${CMD}
 done < ${ALIAS_FN}
 

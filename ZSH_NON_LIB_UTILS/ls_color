@@ -35,8 +35,8 @@ IFS=''
 {
 printf "${WHITE_FG}%10s %s${RESET}\n" "Ext/Type" "Color"
 for K in ${(ok)C_TAB};do
-	F1=$(cut -d';' -f1 <<<${C_TAB[$K]})
-	F2=$(cut -d';' -f2 <<<${C_TAB[$K]})
+	F1="${${(@s/;/)${C_TAB[$K]}}[1]}"
+	F2="${${(@s/;/)${C_TAB[$K]}}[2]}"
 	printf "%10s \033[%s;%smTEST${RESET} \n" ${K} ${F1} ${F2}
 done
 } | mypager

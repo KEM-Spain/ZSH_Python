@@ -1,5 +1,13 @@
-2026-08-05_13:22: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-08-05_13:22: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
-2026-08-05_13:22: query_rumble: Creating listing for QKEY:goingunderground TYPE:channel
-2026-08-05_13:22: query_rumble: PARSER:, QUERY:https://rumble.com/c/goingunderground?page=1
-2026-08-05_13:22: query_rumble: Listing for QKEY:goingunderground contains 25 rows
+2026-08-12_10:18: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-08-12_10:18: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-08-12_10:18: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
+2026-08-12_10:18: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
+2026-08-12_10:18: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
+2026-08-12_10:18: query_youtube: Query matched 7 lines, _LOCAL_LIST has 5 lines
+2026-08-12_10:18: query_youtube: Listing for QKEY:alexchristoforou contains 5 rows
+2026-08-12_10:19: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
+2026-08-12_10:19: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:0.0% TYPE:standard 
+2026-08-12_10:19: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "blancolirio"
+2026-08-12_10:19: query_youtube: Query matched 4 lines, _LOCAL_LIST has 1 lines
+2026-08-12_10:19: query_youtube: Translated TITLE:Fatal Accident Due to Meteorological Conditions of N8422P Pa24-250 on August 4, 2026
+2026-08-12_10:19: query_youtube: Listing for QKEY:blancolirio contains 1 rows

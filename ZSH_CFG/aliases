@@ -97,7 +97,7 @@ alias nme="chmod 664" # Regular
 alias gme='chmod 775' # Excutable group
 
 # Enable default color support of grep
-alias grep='grep --color=always'
+alias grep='grep --color=always -I -dskip'
 alias fgrep='fgrep --color=always'
 alias egrep='egrep --color=always'
 
@@ -124,11 +124,11 @@ alias T='cd ~/Downloads/Torrents'
 alias Tc='cd ~/Downloads/Torrents/Completed'
 alias Ti='cd ~/Downloads/Torrents/Incomplete'
 alias Tl='cd ~/Downloads/Torrents/Library'
-alias Ta='cd ~/Downloads/Torrents/Library/music'
-alias Tm='cd ~/Downloads/Torrents/Library/movies'
-alias Tp='cd ~/Downloads/Torrents/Library/piano'
-alias Ts='cd ~/Downloads/Torrents/Library/series'
-alias Tw='cd ~/Downloads/Torrents/Library/web'
+alias Ta='cd ~/Downloads/Torrents/Music'
+alias Tm='cd ~/Downloads/Torrents/Library/Movies'
+alias Tp='cd ~/Downloads/Torrents/Library/Piano'
+alias Ts='cd ~/Downloads/Torrents/Library/Series'
+alias Tw='cd ~/Downloads/Torrents/Library/Web'
 alias V='cd ~/Videos'
 alias b='cd /usr/local/bin'
 alias c='cd ~/Code'

@@ -15,7 +15,6 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -35,7 +34,7 @@ typeset -aU _ARTISTS
 _AUDIO_FILES='\(\.mp3\|\.m4a\|\.flac\|\.ogg\|\.wav\)$'
 _MUSIC_DIRS+="${PWD}"
 _MUSIC_DIRS+="${HOME}/Documents/Music"
-_MUSIC_DIRS+="/media/${USER}/KEM_Misc/Music/KEM-B9"
+_MUSIC_DIRS+="/media/kmiller/EXT_2/Music"
 _PLAYLIST_FILE=${HOME}/.tmp/playlist.m3u
 _DEFAULT_PLAYER=/usr/bin/clementine
 
@@ -164,6 +163,16 @@ player_start () {
 	sleep 1 && win_focus_title terminal
 }
 
+scan_music_dirs () {
+	local D
+
+	for D in ${_MUSIC_DIRS};do
+		[[ -d ${D} ]] && continue
+		msg_box -p -PK -H1 "<r>Warning<N>|Music directory ${D} <U><B><I>not found<N>"
+	done
+}
+
+
 #--Begin GetOpts--
 RESET="\033[m"
 RED_FG="\033[31m"
@@ -253,12 +262,12 @@ shift $(( OPTIND - 1 ))
 [[ ! -d ~/.tmp ]] && mkdir ~/.tmp
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-RAWPATH=$(path_get_raw)
-[[ ${?} -ne 0 ]] && exit_leave $(err_msg_exit W "path_get_raw had errors:${@}")
+scan_music_dirs
 
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+RAWPATH=$(path_get_raw)
+FPATH="${${(@s/|/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 # Arg check

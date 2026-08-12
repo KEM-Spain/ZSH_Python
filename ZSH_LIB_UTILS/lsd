@@ -185,9 +185,9 @@ shift $(( OPTIND - 1 ))
 [[ ${DIRS} == "true" ]] && OBJTYPE="directory" || OBJTYPE="file"
 
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH="${${(@s/|/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 [[ ${DIRS} == 'true' ]] && TYPE=d || TYPE=f,l

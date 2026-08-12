@@ -1,4 +1,3 @@
-: 1767869075:0;mypager -H
 : 1768057495:0;strip --help
 : 1768906687:0;/bin/cat cmdline
 : 1768908854:0;genl -d ctrl 
@@ -181,7 +180,6 @@
 : 1783438580:0;adb
 : 1783438805:0;ping 192.168.18.105
 : 1783528823:0;killall gjs kdeconnect
-: 1783541849:0;P
 : 1783626729:0;file /bin/glance
 : 1783627570:0;stty sane
 : 1783718893:0;find /dev/pts
@@ -223,462 +221,3014 @@
 : 1785056855:0;ll Bill\ Evans/*
 : 1785097844:0;k
 : 1785243587:0;:e CENTER.zsh
-: 1785260981:0;cl LIBS/scratch
 : 1785316744:0;hist_no_dups 
-: 1785318449:0;ule
-: 1785318738:0;tip zsh
 : 1785325535:0;O
 : 1785325580:0;qbittorrent --help
 : 1785326113:0;aux qb
 : 1785330447:0;remind -e
 : 1785331424:0;\
-: 1785332446:0;.ls qBittorrent
 : 1785332652:0;python rutracker.p
 : 1785335389:0;python3 -m pip install curl-cffi --break-system-packages
-: 1785337544:0;b
 : 1785338214:0;T
 : 1785338226:0;M
 : 1785338235:0;LL
-: 1785349537:0;,
 : 1785351852:0;yts -wy
-: 1785356030:0;cl hist_no_dups
 : 1785356040:0;bak -P hist_no_dups
 : 1785356463:0;cl hist_no_dups
-: 1785356469:0;vi hist_no_dups
-: 1785357082:0;hist_no_dups -t
-: 1785357095:0;vi hist_no_dups
-: 1785357265:0;vi hist_no_dups
-: 1785357399:0;vi hist_no_dups.bak
-: 1785357450:0;hist_no_dups -t
-: 1785357480:0;vi hist_no_dups.bak
-: 1785357484:0;vi hist_no_dups
-: 1785357506:0;hist_no_dups -t
-: 1785357545:0;vi ~/.zsh_history
-: 1785357587:0;X=": 1767869075:0;mypager -H"
-: 1785357590:0;echo $X
-: 1785357607:0;vi hist_no_dups
 : 1785357672:0;tip zsh
-: 1785357732:0;echo ${${(s/;/ )X[1]}\
-
-: 1785357760:0;echo ${${(s/;/ )X}[1]}\
-
-: 1785357840:0;echo ${(s/;/ )X}\
-
-: 1785357847:0;echo ${(s/;/ /)X}\
-
 : 1785357856:0;echo ${(s/:/ /)X}\
-
-: 1785357866:0;echo ${X}\
-
-: 1785357883:0;echo ${(s/;/ )X}\
-
-: 1785357915:0;vi x
-: 1785357950:0;vi x
-: 1785357971:0;vi x
-: 1785357984:0;Cat x
-: 1785358067:0;echo ${(s/;/)X}\
-
-: 1785358084:0;echo ${${(s/;/)X}[1]}\
-
-: 1785358117:0;vi hist_no_dups
-: 1785358304:0;hist_no_dups -t
 : 1785358329:0;.ls hist_no_dups
-: 1785358330:0;ll
-: 1785358331:0;lsd
-: 1785358340:0;ll
-: 1785358343:0;,
-: 1785358344:0;ll
-: 1785358346:0;rm x
-: 1785358347:0;ll
-: 1785358355:0;vi hist_no_dups
-: 1785358474:0;hist_no_dups -t
-: 1785358483:0;vi hist_no_dups
 : 1785358563:0;ule
-: 1785358569:0;vi zsh.tip
-: 1785358615:0;Tw
-: 1785358616:0;ll
-: 1785358762:0;hist_no_dups -t
-: 1785358821:0;wc -l ~/.zsh_history
-: 1785358845:0;vi hist_no_dups
-: 1785358902:0;echo ${${=$(wc -l < ~/.zsh_history)}[1]} 
-: 1785358911:0;echo ${${(z)$(wc -l < ~/.zsh_history)}[1]} 
-: 1785359202:0;echo ${${(w)$(wc -l < ~/.zsh_history)}[1]} 
-: 1785359700:0;vi hist_no_dups
-: 1785359731:0;hist_no_dups -t
-: 1785359739:0;vi hist_no_dups
-: 1785360113:0;hist_no_dups -t
-: 1785360127:0;vi hist_no_dups
-: 1785360155:0;ci cut_alt
-: 1785360157:0;vi cut_alt
-: 1785360169:0;rm cut_alt
-: 1785360170:0;ll
-: 1785360174:0;bak -r
-: 1785360201:0;chkupd
-: 1785361012:0;yts
-: 1785361066:0;ll
-: 1785361068:0;Tw
-: 1785361069:0;ll
-: 1785361169:0;ll
-: 1785361174:0;Cat x
-: 1785361825:0;yts
-: 1785361965:0;yts
-: 1785361991:0;yts
-: 1785362162:0;yts
-: 1785362296:0;yts
-: 1785362367:0;yts
-: 1785362459:0;yts
-: 1785362519:0;yts
-: 1785362652:0;yts
-: 1785362878:0;yts
-: 1785366054:0;cl LIBS
-: 1785366069:0;bak UTILS.zsh
-: 1785366071:0;ll
-: 1785366079:0;vi UTILS.zsh
-: 1785366252:0;bak -r UTILS.zsh
-: 1785366256:0;yts
-: 1785366300:0;grep 'cut -' SELECT.zsh
-: 1785366313:0;g 'cut -d'
-: 1785366431:0;Tw
-: 1785366432:0;ll
-: 1785366496:0;cl LIBS/scratch
-: 1785366498:0;ll
-: 1785366502:0;rm CENTER.zsh
-: 1785366514:0;vi tst_bal
-: 1785366522:0;rm tst_bal
-: 1785366524:0;ll
-: 1785366530:0;..
-: 1785366540:0;g -l 'cut -d'
-: 1785366564:0;,
-: 1785366576:0;vi cut_list
-: 1785366582:0;ll
-: 1785366587:0;cat cut_list
-: 1785366601:0;vi ARRAY.zsh
-: 1785366858:0;vi -e tst_array
-: 1785366927:0;tst_array
-: 1785366942:0;vi tst_array
-: 1785367000:0;tst_array
-: 1785367052:0;vi ARRAY.zsh
-: 1785367075:0;tst_array
-: 1785367086:0;vi ARRAY.zsh
-: 1785367102:0;tst_array
-: 1785367120:0;vi ARRAY.zsh
-: 1785367149:0;tst_array
-: 1785367171:0;vi ARRAY.zsh
-: 1785367179:0;tst_array
-: 1785367198:0;vi ARRAY.zsh
-: 1785367221:0;cat list
-: 1785367225:0;ll
-: 1785367233:0;cat cut_list
-: 1785367241:0;vi cut_list
-: 1785367246:0;cat cut_list
-: 1785367276:0;vi tst_mod
-: 1785367353:0;tst_mod DBG.zsh
-: 1785367397:0;vi DBG.zsh
-: 1785367592:0;tst_mod DBG.zsh
-: 1785367596:0;vi DBG.zsh
-: 1785367635:0;tst_mod DBG.zsh
-: 1785367644:0;vi DBG.zsh
-: 1785367666:0;tst_mod DBG.zsh
-: 1785367688:0;vi DBG.zsh
-: 1785367731:0;tst_mod DBG.zsh
-: 1785367769:0;vi tst_mod
-: 1785367799:0;tst_mod DBG.zsh
-: 1785367803:0;vi tst_mod
-: 1785367810:0;tst_mod DBG.zsh
-: 1785367860:0;vi DBG.zsh
-: 1785367915:0;tst_mod DBG.zsh
-: 1785367966:0;vi DBG.zsh
-: 1785367996:0;tst_mod DBG.zsh
-: 1785368015:0;vi DBG.zsh
-: 1785368037:0;tst_mod DBG.zsh
-: 1785368050:0;vi DBG.zsh
-: 1785368057:0;tst_mod DBG.zsh
-: 1785368073:0;vi DBG.zsh
-: 1785368199:0;tst_mod DBG.zsh
-: 1785368209:0;vi DBG.zsh
-: 1785368273:0;tst_mod DBG.zsh
-: 1785368292:0;vi DBG.zsh
 : 1785368336:0;tst_mod DBG.zsh
-: 1785368359:0;vi DBG.zsh
-: 1785368391:0;vi cut_list
-: 1785368405:0;vi tst_mod
-: 1785368843:0;tst_mod DURABLE.zsh
 : 1785368874:0;cat /tmp/NAME
-: 1785368893:0;vi tst_mod
-: 1785368909:0;tst_mod DURABLE.zsh
-: 1785368930:0;vi DURABLE.zsh
-: 1785368947:0;tst_mod DURABLE.zsh
-: 1785368982:0;vi DURABLE.zsh
-: 1785369039:0;tst_mod DURABLE.zsh
-: 1785369053:0;vi DURABLE.zsh
-: 1785369086:0;tst_mod DURABLE.zsh
-: 1785369092:0;vi DURABLE.zsh
-: 1785369100:0;tst_mod DURABLE.zsh
-: 1785369129:0;vi DURABLE.zsh
-: 1785369171:0;tst_mod DURABLE.zsh
-: 1785369186:0;vi DURABLE.zsh
-: 1785369235:0;tst_mod DURABLE.zsh
-: 1785369245:0;vi DURABLE.zsh
-: 1785369281:0;tst_mod DURABLE.zsh
-: 1785369301:0;vi DURABLE.zsh
-: 1785369314:0;tst_mod DURABLE.zsh
-: 1785369357:0;vi DURABLE.zsh
-: 1785369409:0;tst_mod DURABLE.zsh
-: 1785369421:0;vi DURABLE.zsh
-: 1785369496:0;tst_mod DURABLE.zsh
-: 1785369502:0;vi tst_mod
-: 1785369518:0;tst_mod DURABLE.zsh
-: 1785369527:0;vi tst_mod
-: 1785369554:0;vi cut_list
-: 1785369565:0;ll
-: 1785369573:0;vi ERROR.zsh
-: 1785369632:0;vi ERROR.zsh
-: 1785369820:0;tst_mod ERROR.zsh
-: 1785369868:0;Tw
-: 1785369869:0;lsd
-: 1785369908:0;cl LIBS
-: 1785369916:0;vi UTILS.zsh.bak
 : 1785369951:0;gitlog UTILS.zsh
-: 1785369992:0;vi UTILS.zsh
-: 1785370054:0;bak -r UTILS.zsh
-: 1785370057:0;Tw
-: 1785370059:0;lsd
-: 1785370072:0;ll
-: 1785370074:0;rm x
-: 1785370075:0;ll
-: 1785398509:0;cl LIBS/scratch
-: 1785398513:0;cat cut_list
-: 1785398516:0;ll
-: 1785398520:0;tst_mod
-: 1785398526:0;vi tst_mod
-: 1785398766:0;tst_mod
-: 1785398782:0;vi tst_mod
-: 1785398889:0;vi tst_mod
-: 1785398960:0;tst_mod ERROR.zsh
-: 1785398966:0;vi tst_mod
-: 1785399047:0;tst_mod ERROR.zsh
-: 1785399074:0;vi ERROR.zsh
-: 1785399086:0;vi cut_list
-: 1785399105:0;vi EXIT.zsh
-: 1785399517:0;vi EXIT.zsh
-: 1785399627:0;tst_mod EXIT.zsh
-: 1785399645:0;vi EXIT.zsh
-: 1785399772:0;tst_mod EXIT.zsh
-: 1785399786:0;kk
-: 1785399788:0;vi EXIT.zsh
-: 1785399931:0;kk
-: 1785399935:0;tst_mod EXIT.zsh
-: 1785399977:0;vi EXIT.zsh
-: 1785400051:0;tst_mod EXIT.zsh
-: 1785400067:0;vi EXIT.zsh
-: 1785400091:0;tst_mod EXIT.zsh
-: 1785400109:0;vi EXIT.zsh
-: 1785400141:0;tst_mod EXIT.zsh
-: 1785400176:0;vi EXIT.zsh
-: 1785400307:0;tst_mod EXIT.zsh
-: 1785400348:0;vi EXIT.zsh
-: 1785400424:0;> /tmp/test.state
-: 1785400430:0;> /tmp/test.debug
-: 1785400440:0;tst_mod EXIT.zsh
-: 1785400461:0;vi EXIT.zsh
-: 1785400525:0;ll
-: 1785400529:0;vi cut_list
-: 1785400545:0;vi LIB_INIT.zsh
-: 1785400654:0;tst_mod LIB_INIT.zsh
-: 1785400683:0;vi LIB_INIT.zsh
-: 1785400707:0;tst_mod LIB_INIT.zsh
-: 1785400713:0;vi LIB_INIT.zsh
-: 1785400808:0;vi cut_list
-: 1785400830:0;vi LIST.zsh
-: 1785400848:0;grep 'cut -' LIST.zsh
-: 1785400959:0;vi LIST.zsh
-: 1785401392:0;vi tst_mod
-: 1785401459:0;tst_mod LIST.zsh
-: 1785401467:0;vi tst_mod
-: 1785401494:0;tst_mod LIST.zsh
-: 1785401530:0;vi LIST.zsh
-: 1785402553:0;ll
-: 1785402558:0;b
-: 1785402564:0;g sort_table
-: 1785402628:0;,
-: 1785402648:0;vi myperms
-: 1785402670:0;./myperms
-: 1785402854:0;vi LIST.zsh
-: 1785402953:0;./myperms
-: 1785403027:0;vi LIST.zsh
-: 1785403057:0;./myperms
-: 1785403069:0;vi LIST.zsh
-: 1785403386:0;./myperms
-: 1785403392:0;vi LIST.zsh
-: 1785403774:0;./myperms
-: 1785403801:0;vi LIST.zsh
-: 1785403844:0;./myperms
-: 1785403850:0;vi LIST.zsh
-: 1785404059:0;Cat x
-: 1785404118:0;clear
-: 1785404123:0;vi LIST.zsh
-: 1785404182:0;g sort_table
-: 1785404193:0;g -n sort_table
-: 1785404231:0;vi LIST.zsh
-: 1785404243:0;./myperms
-: 1785404247:0;vi LIST.zsh
-: 1785404377:0;./myperms
-: 1785404418:0;vi LIST.zsh
-: 1785404511:0;./myperms
-: 1785404549:0;vi LIST.zsh
-: 1785404570:0;./myperms
-: 1785404933:0;vi LIST.zsh
-: 1785404972:0;vi LIST.zsh
-: 1785405024:0;./myperms
-: 1785405031:0;vi LIST.zsh
-: 1785405048:0;./myperms
-: 1785405068:0;vi LIST.zsh
-: 1785405116:0;./myperms
-: 1785405265:0;vi LIST.zsh
-: 1785405335:0;./myperms
-: 1785405340:0;vi LIST.zsh
-: 1785405360:0;./myperms
-: 1785405394:0;vi LIST.zsh
-: 1785405474:0;./myperms
-: 1785405486:0;vi LIST.zsh
-: 1785405507:0;./myperms
-: 1785405535:0;vi LIST.zsh
-: 1785405601:0;./myperms
-: 1785405607:0;vi LIST.zsh
-: 1785405623:0;./myperms
-: 1785405637:0;vi LIST.zsh
-: 1785405656:0;./myperms
-: 1785405660:0;vi x
-: 1785405982:0;rm x
-: 1785405985:0;vi LIST.zsh
-: 1785406052:0;./myperms
-: 1785406079:0;vi LIST.zsh
-: 1785406250:0;./myperms
-: 1785406328:0;vi LIST.zsh
-: 1785406480:0;./myperms
-: 1785406503:0;vi x
-: 1785406877:0;vi LIST.zsh
-: 1785407418:0;rm x
-: 1785407422:0;./myperms
-: 1785407433:0;vi x
-: 1785407482:0;rm x
-: 1785407484:0;./myperms
-: 1785407493:0;vi x
-: 1785407567:0;rm x
-: 1785407573:0;vi LIST.zsh
-: 1785407669:0;ll
-: 1785407674:0;./myperms
-: 1785407684:0;vi x
-: 1785407735:0;rm x
-: 1785407739:0;vi LIST.zsh
-: 1785408137:0;Cat x
-: 1785408401:0;vi LIST.zsh
 : 1785408893:0;b
-: 1785408905:0;g list_sort_flat
-: 1785408916:0;lst
-: 1785408924:0;,
-: 1785408937:0;ll
-: 1785408941:0;rm x
-: 1785408943:0;vi lst
-: 1785408979:0;lst
-: 1785408997:0;lst
 : 1785409002:0;lst 2>x
-: 1785409008:0;cat x
-: 1785409014:0;vi x
-: 1785409028:0;rm x
-: 1785409030:0;lst
-: 1785409048:0;ll
-: 1785409051:0;vi LIST.zsh
-: 1785409250:0;vi cut_list
-: 1785409256:0;ll
-: 1785409265:0;rm lst myperms
-: 1785409266:0;ll
-: 1785409270:0;vi cut_list
-: 1785409279:0;ll
-: 1785422224:0;vi MSG.zsh
-: 1785423036:0;vi tst_mod
-: 1785423083:0;tst_mod MSG.zsh
-: 1785423110:0;vi MSG.zsh
-: 1785423188:0;tst_mod MSG.zsh
-: 1785423300:0;vi MSG.zsh
-: 1785423326:0;tst_mod MSG.zsh
-: 1785423343:0;vi MSG.zsh
-: 1785423360:0;tst_mod MSG.zsh
-: 1785423384:0;vi MSG.zsh
-: 1785423412:0;tst_mod MSG.zsh
-: 1785423415:0;vi MSG.zsh
-: 1785423451:0;tst_mod MSG.zsh
-: 1785423455:0;vi MSG.zsh
-: 1785423499:0;tst_mod MSG.zsh
-: 1785423502:0;vi MSG.zsh
-: 1785423605:0;tst_mod MSG.zsh
-: 1785423609:0;vi MSG.zsh
-: 1785423644:0;tst_mod MSG.zsh
-: 1785423670:0;vi MSG.zsh
-: 1785423718:0;tst_mod MSG.zsh
-: 1785423725:0;clear
-: 1785423727:0;tst_mod MSG.zsh
-: 1785423777:0;vi MSG.zsh
-: 1785423808:0;tst_mod MSG.zsh
-: 1785423812:0;clear
-: 1785423814:0;tst_mod MSG.zsh
-: 1785423820:0;vi MSG.zsh
-: 1785423842:0;tst_mod MSG.zsh
-: 1785423846:0;vi MSG.zsh
-: 1785423892:0;tst_mod MSG.zsh
-: 1785423918:0;vi MSG.zsh
-: 1785423933:0;tst_mod MSG.zsh
-: 1785423945:0;vi MSG.zsh
-: 1785423977:0;clear
-: 1785423979:0;vi MSG.zsh
-: 1785423983:0;clear
-: 1785423986:0;tst_mod MSG.zsh
 : 1785424000:0;P
-: 1785424002:0;ll
-: 1785424005:0;ll
-: 1785424006:0;lsd
-: 1785424020:0;o
 : 1785424092:0;,
 : 1785424099:0;cl LIBS/scratch
-: 1785424100:0;ll
-: 1785424103:0;vi MSG.zsh
-: 1785424141:0;tst_mod MSG.zsh
-: 1785424210:0;vi MSG.zsh
-: 1785424473:0;tst_mod MSG.zsh
-: 1785424495:0;vi MSG.zsh
-: 1785424525:0;tst_mod MSG.zsh
-: 1785424537:0;vi MSG.zsh
-: 1785424583:0;tst_mod MSG.zsh
-: 1785424591:0;vi MSG.zsh
-: 1785424605:0;tst_mod MSG.zsh
-: 1785424624:0;clear
-: 1785424625:0;tst_mod MSG.zsh
-: 1785424699:0;vi MSG.zsh
-: 1785424725:0;tst_mod MSG.zsh
-: 1785424730:0;vi MSG.zsh
-: 1785424758:0;tst_mod MSG.zsh
-: 1785424762:0;clear
-: 1785424764:0;tst_mod MSG.zsh
-: 1785424993:0;vi MSG.zsh
-: 1785425182:0;tst_mod MSG.zsh
-: 1785425356:0;vi MSG.zsh
-: 1785425398:0;vi MSG.zsh
-: 1785425414:0;tst_mod MSG.zsh
-: 1785425428:0;vi MSG.zsh
-: 1785425449:0;tst_mod MSG.zsh
-: 1785425574:0;vi MSG.zsh
-: 1785425595:0;tst_mod MSG.zsh
-: 1785425671:0;vi MSG.zsh
-: 1785425708:0;tst_mod MSG.zsh
-: 1785425875:0;vi MSG.zsh
-: 1785425912:0;tst_mod MSG.zsh
-: 1785426425:0;vi MSG.zsh
-: 1785426474:0;tst_mod MSG.zsh
-: 1785426479:0;vi MSG.zsh
-: 1785426488:0;tst_mod MSG.zsh
-: 1785426499:0;ll
-: 1785426501:0;vi cut_list
-: 1785426512:0;ll
-: 1785426570:0;Tw
-: 1785426571:0;ll
-: 1785426713:0;rb -r
+: 1785426834:0;chkupd
+: 1785426863:0;t
+: 1785426873:0;Tw
+: 1785426874:0;ll
+: 1785426908:0;lsd
+: 1785426918:0;ll
+: 1785431840:0;lsd
+: 1785431851:0;ll
+: 1785438119:0;yts
+: 1785438146:0;yts
+: 1785438227:0;cl LIBS/scratch
+: 1785438229:0;ll
+: 1785438240:0;vi PATH.zsh
+: 1785438481:0;me tstit
+: 1785438486:0;tstit PATH.zsh
+: 1785438520:0;Tw
+: 1785438521:0;lsd
+: 1785438529:0;ll
+: 1785439574:0;sd
+: 1785439576:0;yts
+: 1785439637:0;cl scratch
+: 1785439639:0;ll
+: 1785439654:0;gitlog UTILS.zsh
+: 1785439669:0;ll
+: 1785439674:0;vi 70f70dda\#UTILS.zsh.log.out
+: 1785439769:0;ll
+: 1785439787:0;rm 70f70dda\#UTILS.zsh.log.out
+: 1785439789:0;ll
+: 1785439793:0;,
+: 1785439795:0;,
+: 1785439799:0;,
+: 1785439800:0;,
+: 1785439811:0;clear
+: 1785439909:0;gitlog UTILS.zsh
+: 1785440237:0;cl scratch
+: 1785440239:0;ll
+: 1785440249:0;yts
+: 1785440304:0;ll
+: 1785440454:0;vi get_keys.new
+: 1785440761:0;vi -e tst_keys
+: 1785440814:0;vi -e tst_keys
+: 1785440879:0;tst_keys
+: 1785440917:0;cl s
+: 1785440920:0;cl scratch
+: 1785440922:0;l
+: 1785440935:0;vi tst_keys
+: 1785441136:0;tst_keys
+: 1785441155:0;aux tst
+: 1785441172:0;tst_keys
+: 1785441175:0;aux tst
+: 1785441191:0;vi tst_keys
+: 1785441412:0;vi tst_keys
+: 1785441434:0;tst_keys
+: 1785441450:0;aux tst
+: 1785441484:0;vi tst_keys
+: 1785441577:0;tst_keys
+: 1785441596:0;aux tst
+: 1785441635:0;vi tst_keys
+: 1785441945:0;tst_keys
+: 1785441988:0;aux tst
+: 1785442013:0;cl scratch
+: 1785442016:0;ll
+: 1785442019:0;vi tst_keys
+: 1785442221:0;tst_keys
+: 1785442244:0;tst_keys
+: 1785442250:0;vi tst_keys
+: 1785442347:0;tst_keys
+: 1785442386:0;vi tst_keys
+: 1785442404:0;tst_keys
+: 1785442415:0;vi tst_keys
+: 1785442634:0;tst_keys
+: 1785442644:0;vi tst_keys
+: 1785442709:0;tst_keys
+: 1785442860:0;vi tst_keys
+: 1785443148:0;tst_keys
+: 1785443165:0;vi tst_keys
+: 1785443179:0;vi tst_keys
+: 1785443194:0;tst_keys
+: 1785443208:0;tst_keys "PROMPT"
+: 1785443229:0;vi tst_keys
+: 1785443244:0;tst_keys "PROMPT "
+: 1785443267:0;vi tst_keys
+: 1785443328:0;gitlog UTILS.zsh
+: 1785443343:0;ll
+: 1785443347:0;vi 70f70dda\#UTILS.zsh.log.out
+: 1785443376:0;rm 70f70dda\#UTILS.zsh.log.out
+: 1785443378:0;ll
+: 1785443394:0;vi tst_keys
+: 1785443630:0;tst_keys "PROMPT "
+: 1785443644:0;vi tst_keys
+: 1785443673:0;tst_keys "PROMPT "
+: 1785443681:0;clear
+: 1785443683:0;tst_keys "PROMPT "
+: 1785443805:0;yts
+: 1785443823:0;yts
+: 1785444312:0;yts
+: 1785444358:0;clear
+: 1785444360:0;Tw
+: 1785444361:0;ll
+: 1785444363:0;lsd
+: 1785444370:0;ll
+: 1785447537:0;lsd
+: 1785447542:0;ll
+: 1785447592:0;yts
+: 1785447652:0;ll
+: 1785447823:0;yts
+: 1785449204:0;yts
+: 1785449505:0;ll
+: 1785449521:0;mp4_merge Kim
+: 1785449543:0;ll
+: 1785454164:0;lsd
+: 1785454167:0;ll
+: 1785454210:0;lsd
+: 1785454214:0;ll
+: 1785455903:0;lsd
+: 1785455919:0;ll
+: 1785456034:0;cl LIBS/scratch
+: 1785456035:0;ll
+: 1785456038:0;vi PATH.zsh
+: 1785456066:0;vi tst_mod
+: 1785456134:0;tst_mod PATH.zsh
+: 1785456155:0;vi cut_list
+: 1785456181:0;vi cut_list
+: 1785456189:0;..
+: 1785456192:0;cl LIBS
+: 1785456204:0;bak -P UTILS.zsh
+: 1785456223:0;bak UTILS.zsh
+: 1785456226:0;vi UTILS.zsh
+: 1785456244:0;,
+: 1785456249:0;ll
+: 1785456253:0;vi SELECT.zsh
+: 1785456272:0;grep 'cut -' SELECT.zsh
+: 1785456388:0;vi SELECT.zsh
+: 1785456491:0;vi SELECT.zsh
+: 1785456585:0;tst_mod SELECT.zsh
+: 1785456614:0;vi tst_mod
+: 1785456624:0;tst_mod SELECT.zsh
+: 1785456637:0;vi SELECT.zsh
+: 1785456660:0;tst_mod SELECT.zsh 2>x
+: 1785456661:0;vi x
+: 1785456667:0;rm x
+: 1785456672:0;vi SELECT.zsh
+: 1785456692:0;tst_mod SELECT.zsh
+: 1785456697:0;vi SELECT.zsh
+: 1785456745:0;tst_mod SELECT.zsh
+: 1785456748:0;tst_mod SELECT.zsh
+: 1785456756:0;vi SELECT.zsh
+: 1785456832:0;tst_mod SELECT.zsh
+: 1785456850:0;vi cut_list
+: 1785456864:0;vi TPUT.zsh
+: 1785457061:0;tst_mod TPUT.zsh
+: 1785457083:0;vi TPUT.zsh
+: 1785457114:0;ll
+: 1785457116:0;vi cut_list
+: 1785457133:0;vi UTILS.zsh
+: 1785457146:0;grep 'cut -' UTILS.zsh
+: 1785457253:0;vi UTILS.zsh
+: 1785457508:0;tst_mod UTILS.zsh
+: 1785457515:0;vi UTILS.zsh
+: 1785457855:0;tst_mod UTILS.zsh
+: 1785457865:0;vi cut_list
+: 1785457872:0;ll
+: 1785457881:0;vi VALIDATE.zsh
+: 1785458088:0;vi VALIDATE.zsh
+: 1785458097:0;vi tst_mod
+: 1785458137:0;tst_mod VALIDATE.zsh
+: 1785458145:0;tst_mod VALIDATE.zsh
+: 1785458148:0;echo $?
+: 1785458156:0;vi VALIDATE.zsh
+: 1785458169:0;tst_mod VALIDATE.zsh
+: 1785458194:0;vi tst
+: 1785458199:0;vi tst_mod
+: 1785458223:0;tst_mod VALIDATE.zsh
+: 1785458229:0;vi VALIDATE.zsh
+: 1785458239:0;tst_mod VALIDATE.zsh
+: 1785458242:0;vi tst_mod
+: 1785458261:0;tst_mod VALIDATE.zsh
+: 1785458271:0;ll
+: 1785458275:0;vi cut_list
+: 1785458284:0;..
+: 1785458285:0;ll
+: 1785458287:0;cl LIBS
+: 1785458297:0;rel_libs
+: 1785458324:0;vi EXIT.zsh
+: 1785458340:0;bak -r EXIT.zsh
+: 1785458344:0;bak -r EXIT.zsh
+: 1785458375:0;bak -P EXIT.zsh
+: 1785458386:0;l
+: 1785458388:0;ll
+: 1785458395:0;bak -B EXIT.zsh
+: 1785458434:0;bak -B EXIT.zsh
+: 1785458472:0;vi EXIT.zsh
+: 1785458515:0;bak -r EXIT.zsh
+: 1785458536:0;g scrub_tmp
+: 1785458659:0;bak -r EXIT.zsh
+: 1785458668:0;bak -r EXIT.zsh
+: 1785458688:0;bak -r EXIT.zsh
+: 1785458696:0;vi EXIT.zsh
+: 1785458757:0;bak -r EXIT.zsh
+: 1785458762:0;bak -r EXIT.zsh
+: 1785458767:0;bak -P EXIT.zsh
+: 1785458774:0;backup
+: 1785458965:0;repo
+: 1785458996:0;.ls hist_no_dups
+: 1785459001:0;lsd
+: 1785459009:0;ll
+: 1785459014:0;.ls yts
+: 1785459015:0;ll
+: 1785459017:0;lsd
+: 1785459025:0;ll
+: 1785459031:0;Tw
+: 1785459034:0;repo
+: 1785459074:0;ll
+: 1785459076:0;lsd
+: 1785459081:0;ll
+: 1785459082:0;lsd
+: 1785459086:0;ll
+: 1785488049:0;b
+: 1785488072:0;g -l 'cut -'
+: 1785488178:0;g -l 'cut -' > cut_list
+: 1785488187:0;cl LIBS/scratch
+: 1785488203:0;ll
+: 1785488205:0;vi cut_list
+: 1785488451:0;g -l 'cut -'
+: 1785488703:0;g -l 'cut -'
+: 1785488724:0;g -ttxt -l 'cut -'
+: 1785488756:0;g -ttxt -l 'cut -'
+: 1785488809:0;g -ttxt -l 'cut -'
+: 1785488824:0;g -l 'cut -'
+: 1785488883:0;b
+: 1785488889:0;g -l 'cut -'
+: 1785488909:0;g -l 'cut -' > cut_list
+: 1785488913:0;vi cut_list
+: 1785489330:0;g -l 'cut -'
+: 1785489340:0;g -l 'cut -' > cut_list
+: 1785489343:0;vi cut_list
+: 1785489585:0;g -l 'cut -' > cut_list
+: 1785489590:0;vi cut_list
+: 1785489603:0;g -l 'cut -'
+: 1785489638:0;g -l 'cut -'
+: 1785489720:0;g -l 'cut -'
+: 1785489841:0;g -l 'cut -'
+: 1785489851:0;g -l 'cut -' > cut_list
+: 1785489871:0;rm cut_list
+: 1785489892:0;g -l 'cut -' > cut_list
+: 1785489899:0;g -l 'cut -'
+: 1785489973:0;g -l 'cut -'
+: 1785489986:0;g -l 'cut -' > cut_list
+: 1785489990:0;vi cut_list
+: 1785490270:0;g -l 'cut -'
+: 1785490329:0;g -l 'cut -'
+: 1785490440:0;g -l 'cut -'
+: 1785490472:0;g -l 'cut -'
+: 1785490506:0;g -l 'cut -'
+: 1785490603:0;g -l 'cut -' > cut_list
+: 1785490607:0;vi cut_list
+: 1785490630:0;vi cut_list
+: 1785490772:0;g -l 'cut -'
+: 1785490787:0;g -l 'cut -' > cut_list
+: 1785490793:0;vi cut_list
+: 1785491029:0;cl LIBS
+: 1785491039:0;g do_smcup
+: 1785491043:0;vi TPUT.zsh
+: 1785491068:0;,
+: 1785491104:0;g -l 'cut -' > cut_list
+: 1785491110:0;vi cut_list
+: 1785491120:0;g -l 'cut -'
+: 1785491275:0;cl LIBS
+: 1785491284:0;bak TPUT.zsh
+: 1785491307:0;cl g
+: 1785491309:0;bak g
+: 1785491385:0;Lw
+: 1785491389:0;Tw
+: 1785491390:0;ll
+: 1785491519:0;ll
+: 1785491558:0;cl LIBS/scratch
+: 1785491561:0;ll
+: 1785491580:0;rm tstit
+: 1785491582:0;ll
+: 1785492503:0;cat cut_list
+: 1785492526:0;vi apps
+: 1785492545:0;grep 'cut -' apps
+: 1785493986:0;vi apps
+: 1785494240:0;me tstit
+: 1785494241:0;ll
+: 1785494245:0;tstit
+: 1785494280:0;ule
+: 1785494306:0;,
+: 1785494318:0;vi tstit
+: 1785494362:0;tstit
+: 1785494366:0;vi tstit
+: 1785494433:0;tstit
+: 1785494437:0;vi tstit
+: 1785494460:0;tstit
+: 1785494469:0;vi tstit
+: 1785494690:0;tstit
+: 1785494695:0;tstit 2>x
+: 1785494698:0;vi x
+: 1785494829:0;tstit >x
+: 1785494831:0;vi x
+: 1785494856:0;vi tstit
+: 1785494998:0;apps
+: 1785495022:0;vi tstit
+: 1785495026:0;rm tstit
+: 1785495029:0;vi apps
+: 1785495037:0;./apps
+: 1785495054:0;vi apps
+: 1785495130:0;apps perl
+: 1785495162:0;./apps perl
+: 1785495182:0;echo $PATH
+: 1785495210:0;ll
+: 1785495213:0;rm x
+: 1785495218:0;vi apps
+: 1785495595:0;./apps perl
+: 1785495633:0;grep 'cut -' apps
+: 1785495641:0;vi apps
+: 1785495721:0;./apps perl
+: 1785495756:0;grep 'cut -' apps
+: 1785495776:0;vi cut_list
+: 1785495784:0;ll
+: 1785504756:0;head cut_list
+: 1785504770:0;vi audio_tags
+: 1785506020:0;vi audio_tags
+: 1785506103:0;M
+: 1785506120:0;dut external -m
+: 1785506127:0;M
+: 1785506134:0;pwd
+: 1785506214:0;audio_tags
+: 1785506224:0;vi audio_tags
+: 1785506284:0;audio_tags
+: 1785506293:0;vi audio_tags
+: 1785506311:0;audio_tags
+: 1785506314:0;vi audio_tags
+: 1785506433:0;audio_tags
+: 1785506435:0;vi audio_tags
+: 1785506446:0;audio_tags
+: 1785506472:0;vi audio_tags
+: 1785506503:0;audio_tags
+: 1785506599:0;vi audio_tags
+: 1785506848:0;M
+: 1785506852:0;ll
+: 1785506868:0;,
+: 1785506871:0;ll
+: 1785506879:0;rm tst_mod
+: 1785506881:0;ll
+: 1785507199:0;spell destabilize
+: 1785507603:0;ll
+: 1785507627:0;Tw
+: 1785507628:0;ll
+: 1785507631:0;lsd
+: 1785507637:0;ll
+: 1785507670:0;ll
+: 1785513088:0;yts
+: 1785513295:0;cl yts
+: 1785513299:0;iv yts
+: 1785513303:0;vi yts
+: 1785513331:0;bak -r
+: 1785513339:0;Tw
+: 1785513340:0;ll
+: 1785520756:0;cl scratch
+: 1785520762:0;cl LIBS/scratch
+: 1785520763:0;ll
+: 1785520769:0;vi audio_tags
+: 1785521174:0;audio_tags
+: 1785521183:0;vi audio_tags
+: 1785521218:0;audio_tags
+: 1785521281:0;audio_tags
+: 1785521340:0;audio_tags
+: 1785521370:0;audio_tags
+: 1785521393:0;vi audio_tags
+: 1785521417:0;audio_tags
+: 1785521467:0;vi audio_tags
+: 1785521971:0;ll
+: 1785522010:0;ll
+: 1785522015:0;audio_tags
+: 1785522034:0;vi audio_tags
+: 1785522069:0;audio_tags
+: 1785522077:0;vi audio_tags
+: 1785522120:0;audio_tags
+: 1785527077:0;vi audio_tags
+: 1785527143:0;audio_tags
+: 1785527164:0;vi audio_tags
+: 1785527200:0;audio_tags
+: 1785527263:0;vi audio_tags
+: 1785527282:0;audio_tags
+: 1785527428:0;vi audio_tags
+: 1785527535:0;audio_tags
+: 1785527558:0;vi cut_list
+: 1785527579:0;vi aux
+: 1785527778:0;vi aux
+: 1785527898:0;aux
+: 1785527905:0;vi aux
+: 1785527947:0;clear
+: 1785527951:0;vi cut_list
+: 1785527968:0;vi backup
+: 1785528077:0;backup
+: 1785528088:0;./backup
+: 1785528200:0;vi backup
+: 1785528221:0;./backup
+: 1785528234:0;vi backup
+: 1785528420:0;./backup
+: 1785528457:0;vi backup
+: 1785528490:0;vi cut_list 
+: 1785528499:0;k/cp
+: 1785528513:0;head cut_list
+: 1785528552:0;vi bt
+: 1785528658:0;bt
+: 1785528685:0;vi bt
+: 1785528794:0;vi bt
+: 1785528816:0;bt
+: 1785528824:0;./bt
+: 1785528919:0;vi bt
+: 1785529015:0;./bt
+: 1785529025:0;./bt -H
+: 1785529029:0;./bt -s
+: 1785529037:0;vi bt
+: 1785529062:0;./bt 
+: 1785529070:0;vi bt
+: 1785529199:0;lsd
+: 1785529205:0;ll
+: 1785531767:0;yts
+: 1785534585:0;yts
+: 1785534862:0;ll
+: 1785535050:0;vi bt
+: 1785535260:0;./bt
+: 1785535287:0;vi bt
+: 1785535350:0;./bt
+: 1785535361:0;vi bt
+: 1785535377:0;./bt
+: 1785535388:0;vi x
+: 1785535392:0;vi bt
+: 1785535450:0;./bt
+: 1785535488:0;./bt
+: 1785535498:0;vi bt
+: 1785535544:0;./bt
+: 1785535584:0;vi bt
+: 1785535610:0;vi bt
+: 1785535633:0;./bt
+: 1785535689:0;vi bt
+: 1785536260:0;./.bt
+: 1785536262:0;./bt
+: 1785536291:0;vi bt
+: 1785536331:0;vi bt
+: 1785536617:0;./bt
+: 1785536655:0;./bt
+: 1785536664:0;vi bt
+: 1785536743:0;./bt
+: 1785536756:0;vi bt
+: 1785536765:0;./bt
+: 1785536797:0;vi bt
+: 1785536815:0;./bt
+: 1785536824:0;vi bt
+: 1785536831:0;./bt
+: 1785536838:0;vi bt
+: 1785536845:0;./bt
+: 1785536855:0;./bt
+: 1785536876:0;vi bt
+: 1785536884:0;./bt
+: 1785536892:0;vi bt
+: 1785536900:0;./bt
+: 1785536910:0;vi bt
+: 1785536921:0;./bt
+: 1785536938:0;vi bt
+: 1785536947:0;./bt
+: 1785536957:0;vi bt
+: 1785536965:0;./bt
+: 1785537022:0;vi bt
+: 1785537036:0;./bt
+: 1785537042:0;vi bt
+: 1785537062:0;./bt
+: 1785537065:0;vi bt
+: 1785537072:0;./bt
+: 1785537080:0;vi bt
+: 1785537089:0;./bt
+: 1785537093:0;vi bt
+: 1785537101:0;./bt
+: 1785537118:0;vi bt
+: 1785537137:0;./bt
+: 1785537162:0;vi bt
+: 1785537274:0;./bt
+: 1785537306:0;vi bt
+: 1785537320:0;./bt
+: 1785537361:0;vi bt
+: 1785537372:0;./bt
+: 1785537384:0;./bt
+: 1785537401:0;vi bt
+: 1785537439:0;./bt
+: 1785537482:0;vi bt
+: 1785537498:0;./bt
+: 1785537506:0;vi bt
+: 1785537516:0;./bt
+: 1785537519:0;vi bt
+: 1785537554:0;./bt
+: 1785537622:0;vi bt
+: 1785537642:0;./bt
+: 1785537682:0;vi bt
+: 1785537722:0;./bt
+: 1785537730:0;vi bt
+: 1785537738:0;./bt
+: 1785537745:0;vi bt
+: 1785537752:0;./bt
+: 1785537761:0;vi bt
+: 1785537822:0;./bt
+: 1785537827:0;vi bt
+: 1785537916:0;./bt
+: 1785537949:0;vi bt
+: 1785537984:0;./bt
+: 1785537991:0;./bt
+: 1785538000:0;./bt
+: 1785538029:0;vi cut_list
+: 1785538049:0;vi dut
+: 1785538065:0;grep 'cut -' dut
+: 1785540108:0;recipe cauli
+: 1785540183:0;recipe cauli
+: 1785546854:0;lsd
+: 1785546860:0;ll
+: 1785579646:0;lsd
+: 1785579650:0;ll
+: 1785579654:0;lsd
+: 1785579659:0;ll
+: 1785579782:0;vi dut
+: 1785580266:0;vi -e tstit
+: 1785580349:0;tstit
+: 1785580374:0;vi -e tstit
+: 1785580451:0;tstit
+: 1785580517:0;vi tstit
+: 1785580663:0;tstit
+: 1785580666:0;vi tstit
+: 1785580728:0;tstit
+: 1785580730:0;vi tstit
+: 1785581015:0;vi tstit
+: 1785581028:0;tstit
+: 1785581036:0;vi tstit
+: 1785581409:0;tstit
+: 1785581435:0;vi tstit
+: 1785581441:0;vi tstit
+: 1785581466:0;tstit
+: 1785581470:0;vi tstit
+: 1785581509:0;tstit
+: 1785581531:0;vi tstit
+: 1785581612:0;/usr/local/bin/dut space
+: 1785581661:0;vi tstit
+: 1785581731:0;tstit
+: 1785581808:0;vi tstit
+: 1785581968:0;./dut space
+: 1785581999:0;vi tstit
+: 1785582155:0;tstit
+: 1785582158:0;vi tstit
+: 1785582169:0;tstit
+: 1785582182:0;vi tstit
+: 1785582301:0;tstit
+: 1785582302:0;vi tstit
+: 1785582345:0;tstit
+: 1785582391:0;vi tstit
+: 1785582495:0;tstit
+: 1785582497:0;vi tstit
+: 1785582556:0;tstit
+: 1785582559:0;vi tstit
+: 1785582752:0;tstit
+: 1785582753:0;vi tstit
+: 1785582837:0;tstit
+: 1785582839:0;vi tstit
+: 1785582955:0;tstit
+: 1785582957:0;vi tstit
+: 1785583051:0;tstit
+: 1785583053:0;vi tstit
+: 1785583219:0;vi tstit
+: 1785583337:0;tstit
+: 1785583536:0;ll
+: 1785583543:0;lsd
+: 1785583547:0;ll
+: 1785583557:0;tstit
+: 1785583561:0;vi tstit
+: 1785583767:0;vi tstit
+: 1785583990:0;./dut space
+: 1785584000:0;vi tstit
+: 1785584060:0;./dut space
+: 1785584064:0;vi tstit
+: 1785584125:0;./dut space
+: 1785584162:0;./dut space
+: 1785584199:0;vi dut
+: 1785584293:0;./dut space
+: 1785584302:0;vi dut
+: 1785584411:0;./dut space
+: 1785584424:0;vi dut
+: 1785584479:0;tstit
+: 1785584485:0;vi tstit
+: 1785584557:0;tstit
+: 1785584560:0;vi tstit
+: 1785584646:0;./dut space
+: 1785584654:0;vi tstit
+: 1785584755:0;./dut space
+: 1785584774:0;vi dut
+: 1785586402:0;grep 'cut -' dut
+: 1785586412:0;vi dut
+: 1785586578:0;tstit
+: 1785586582:0;vi dut
+: 1785586642:0;tstit
+: 1785586655:0;vi dut
+: 1785586982:0;tstit
+: 1785586991:0;vi dut
+: 1785587030:0;tstit
+: 1785587034:0;vi dut
+: 1785587140:0;tstit
+: 1785587149:0;vi tstit
+: 1785587490:0;tstit
+: 1785587504:0;vi tstit
+: 1785587518:0;tstit
+: 1785587530:0;vi tstit
+: 1785587714:0;tstit
+: 1785587717:0;vi tstit
+: 1785587755:0;tstit
+: 1785587786:0;vi tstit
+: 1785587920:0;dut fstab_info
+: 1785587955:0;vi dut
+: 1785587997:0;dut fstab_info
+: 1785588006:0;dut fstab_info
+: 1785588215:0;dut fstab_info
+: 1785588224:0;vi dut
+: 1785588432:0;tstit
+: 1785588451:0;vi tstit
+: 1785588469:0;tstit
+: 1785588473:0;vi tstit
+: 1785588479:0;tstit
+: 1785588509:0;vi tstit
+: 1785588953:0;vi tstit
+: 1785588964:0;tstit
+: 1785588981:0;vi tstit
+: 1785588998:0;tstit
+: 1785589148:0;vi tstit
+: 1785589189:0;tstit
+: 1785589198:0;vi tstit
+: 1785589230:0;tstit
+: 1785589324:0;vi tstit
+: 1785589341:0;tstit
+: 1785589347:0;vi tstit
+: 1785589358:0;tstit
+: 1785589410:0;vi tstit
+: 1785589431:0;tstit
+: 1785589435:0;vi tstit
+: 1785589518:0;tstit
+: 1785589556:0;vi tstit
+: 1785589585:0;vi tstit
+: 1785589601:0;tstit
+: 1785589724:0;vi tstit
+: 1785589740:0;tstit
+: 1785589748:0;vi tstit
+: 1785589761:0;tstit
+: 1785589787:0;vi tstit
+: 1785589914:0;vi tstit
+: 1785589931:0;tstit
+: 1785589968:0;vi tstit
+: 1785589978:0;tstit
+: 1785590012:0;for dev in /dev/sda1 /dev/sda2; do\
+  node=${dev#/dev/}\
+  echo "--- Testing $dev ---"\
+  echo "Sysfs dir: /sys/class/block/$node"\
+  echo "Is partition? $(test -f /sys/class/block/$node/partition && echo YES || echo NO)"\
+  echo "Readlink device: $(readlink -f /sys/class/block/$node/device 2>/dev/null)"\
+  echo "Readlink parent device: $(readlink -f /sys/class/block/$node/../device 2>/dev/null)"\
+done
+: 1785590063:0;vi tstit
+: 1785590077:0;tstit
+: 1785590103:0;vi dut
+: 1785590209:0;tstit
+: 1785590213:0;vi dut
+: 1785590282:0;tstit
+: 1785590286:0;vi dut
+: 1785590344:0;tstit
+: 1785590349:0;vi dut
+: 1785590602:0;tstit
+: 1785590610:0;vi dut
+: 1785590634:0;tstit
+: 1785590695:0;vi tstit
+: 1785590713:0;tstit
+: 1785590774:0;vi tstit
+: 1785590963:0;dut unplug
+: 1785590970:0;dut unplug
+: 1785590974:0;vi tstit
+: 1785591021:0;vi dut
+: 1785591103:0;dut unplug
+: 1785591109:0;vi dut
+: 1785591129:0;dut unplug
+: 1785591134:0;vi dut
+: 1785591221:0;dut unplug
+: 1785591228:0;vi dut
+: 1785591252:0;dut unplug
+: 1785591261:0;vi dut
+: 1785591334:0;dut unplug
+: 1785591338:0;dut unplug
+: 1785591362:0;vi dut
+: 1785591452:0;dut unplug
+: 1785591458:0;vi dut
+: 1785591498:0;dut unplug
+: 1785591508:0;vi dut
+: 1785591521:0;dut unplug
+: 1785591528:0;vi dut
+: 1785591552:0;dut unplug
+: 1785591558:0;vi dut
+: 1785591574:0;dut unplug
+: 1785591594:0;vi dut
+: 1785591814:0;dut fstab_info
+: 1785591848:0;vi dut
+: 1785592263:0;dut fstab_info
+: 1785592295:0;vi dut
+: 1785592402:0;dut fstab_info
+: 1785592407:0;vi dut
+: 1785592449:0;dut fstab_info
+: 1785592458:0;vi dut
+: 1785592550:0;dut usbdisks
+: 1785592560:0;vi dut
+: 1785592678:0;dut usbdisks
+: 1785592783:0;vi dut
+: 1785592823:0;dut usbdisks
+: 1785592833:0;vi dut
+: 1785592852:0;dut usbdisks
+: 1785592944:0;vi dut
+: 1785592976:0;lsusb
+: 1785593003:0;vi dut
+: 1785593079:0;dut usbdisks
+: 1785593091:0;lsusb
+: 1785593189:0;man lsusb
+: 1785593216:0;lsusb -v
+: 1785593228:0;man lsusb
+: 1785593253:0;vi dut
+: 1785593375:0;dut usbdisks
+: 1785593378:0;vi dut
+: 1785593428:0;vi dut
+: 1785593448:0;dut usbdisks
+: 1785593471:0;vi dut
+: 1785593516:0;dut usbdisks
+: 1785593518:0;vi dut
+: 1785593545:0;dut usbdisks
+: 1785593559:0;lsusb
+: 1785593572:0;man lsusb
+: 1785593600:0;lsusb -D sda
+: 1785593606:0;lsusb -D /dev/sda
+: 1785593612:0;lsusb -D /dev/sda1
+: 1785593620:0;man lsusb
+: 1785593663:0;llr /dev/bus/usb
+: 1785593680:0;vi dut
+: 1785593780:0;llr /dev/bus/usb
+: 1785593787:0;vi tstit
+: 1785593811:0;tstit
+: 1785593813:0;vi tstit
+: 1785593829:0;lsd
+: 1785593835:0;ll
+: 1785593871:0;tstit
+: 1785593881:0;vi tstit
+: 1785593889:0;tstit
+: 1785593901:0;vi tstit
+: 1785593937:0;llr /dev/bus/usb
+: 1785593956:0;ll
+: 1785593961:0;ll
+: 1785594000:0;cl scratch
+: 1785594007:0;cl LIBS/scratch
+: 1785594009:0;ll
+: 1785594012:0;vi tstit
+: 1785594087:0;ll
+: 1785594104:0;echo ${001:A}
+: 1785594135:0;ll 001
+: 1785594146:0;ll 001
+: 1785594153:0;..
+: 1785594163:0;vi tstit
+: 1785594575:0;dut usbdisks
+: 1785594587:0;vi tstit
+: 1785594597:0;vi dut
+: 1785594615:0;dut usbdisks
+: 1785594640:0;vi dut
+: 1785594717:0;dut usbdisks
+: 1785594724:0;vi dut
+: 1785594797:0;dut usbdisks
+: 1785594809:0;vi dut
+: 1785594919:0;dut usbdisks
+: 1785594929:0;vi dut
+: 1785595007:0;./dut space
+: 1785595021:0;vi dut
+: 1785595084:0;./dut space
+: 1785595100:0;vi dut
+: 1785595122:0;./dut space
+: 1785595131:0;vi dut
+: 1785595192:0;./dut space
+: 1785595200:0;./dut external
+: 1785595205:0;./dut
+: 1785595231:0;vi dut
+: 1785595290:0;b
+: 1785595293:0;dut
+: 1785595297:0;sut
+: 1785595303:0;,
+: 1785595304:0;ll
+: 1785595327:0;ll
+: 1785595337:0;ll
+: 1785595363:0;vi dut
+: 1785595383:0;./dut
+: 1785595408:0;gitlog SELECT.zsh
+: 1785595428:0;ll
+: 1785595437:0;diff 8e14c595\#SELECT.zsh.log.out SELECT.zsh
+: 1785595493:0;lsd
+: 1785595502:0;gitlog SELECT.zsh
+: 1785595515:0;ll
+: 1785595522:0;diff 648d44b6\#SELECT.zsh.log.out SELECT.zsh
+: 1785595528:0;gitlog SELECT.zsh
+: 1785595540:0;ll
+: 1785595576:0;lsd
+: 1785595584:0;gitlog SELECT.zsh
+: 1785595597:0;l
+: 1785595598:0;ll
+: 1785595604:0;diff 6d87474e\#SELECT.zsh.log.out SELECT.zsh
+: 1785595640:0;./dut
+: 1785596108:0;vi tstit
+: 1785596446:0;tstit
+: 1785596505:0;vi tstit
+: 1785596533:0;tstit
+: 1785596547:0;vi tstit
+: 1785596626:0;tstit
+: 1785596629:0;vi tstit
+: 1785596934:0;tstit
+: 1785596938:0;vi tstit
+: 1785596981:0;tstit
+: 1785597019:0;Cat tstit
+: 1785597030:0;vi x
+: 1785597036:0;tstit
+: 1785597050:0;vi x
+: 1785597071:0;Cat x
+: 1785597229:0;vi tstit
+: 1785597249:0;tstit
+: 1785597253:0;vi tstit
+: 1785597298:0;tstit
+: 1785597302:0;vi tstit
+: 1785597329:0;tstit
+: 1785597332:0;vi tstit
+: 1785597392:0;tstit
+: 1785597395:0;vi tstit
+: 1785597420:0;tstit
+: 1785597421:0;vi tstit
+: 1785597535:0;local -a FIELDS=("${(@ps{${_CAT_DELIM}})TEXT}")\
+
+: 1785597538:0;vi tstit
+: 1785597556:0;tstit
+: 1785597605:0;vi tstit
+: 1785597637:0;tstit
+: 1785597642:0;vi tstit
+: 1785597881:0;vi SELECT.zsh
+: 1785597899:0;./dut
+: 1785597905:0;diff 6d87474e\#SELECT.zsh.log.out SELECT.zsh
+: 1785597910:0;ll
+: 1785597912:0;rm x
+: 1785597921:0;diff SELECT.zsh SELECT.zsh.new
+: 1785597943:0;cl LIBS
+: 1785597951:0;bak -r SELECT.zsh
+: 1785597955:0;dit
+: 1785597956:0;dut
+: 1785597964:0;ll
+: 1785597966:0;lsd
+: 1785597974:0;vi cut_list
+: 1785597979:0;ll
+: 1785597994:0;grep 'cut -' fakebook
+: 1785599828:0;Tw
+: 1785599830:0;ll
+: 1785599831:0;lsd
+: 1785599834:0;ll
+: 1785600795:0;lsd
+: 1785600801:0;ll
+: 1785602082:0;vi fakebook
+: 1785602215:0;fakebook
+: 1785602221:0;fakebook love
+: 1785602251:0;vi cut_list
+: 1785602274:0;grep 'cut -' flog
+: 1785602278:0;vi flog
+: 1785602306:0;flog
+: 1785602324:0;vi cut_list
+: 1785602347:0;grep 'cut -' fsub
+: 1785602354:0;vi fsub
+: 1785602499:0;./fsub
+: 1785602508:0;./fsub a b
+: 1785602510:0;ll
+: 1785602523:0;./fsub u z
+: 1785602569:0;vi fsub
+: 1785602597:0;./fsub u z
+: 1785602618:0;vi fsub
+: 1785602637:0;./fsub u z
+: 1785602654:0;vi fsub
+: 1785602674:0;./fsub u z
+: 1785602882:0;vi fsub
+: 1785603098:0;vi fsub
+: 1785603234:0;./fsub u z
+: 1785603263:0;vi fsub
+: 1785603339:0;./fsub u z
+: 1785603362:0;vi cut_list
+: 1785603395:0;grep 'cut -' fut
+: 1785608517:0;vi fut
+: 1785608657:0;ll
+: 1785608663:0;me tstit
+: 1785608665:0;tstit
+: 1785608669:0;vi tstit
+: 1785608686:0;tstit
+: 1785608688:0;vi tstit
+: 1785608727:0;tstit
+: 1785608729:0;vi tstit
+: 1785608754:0;tstit
+: 1785608795:0;whereis -b -f /home/kmiller/Code/LOCAL/LIBS/scratch/tstit\
+
+: 1785608815:0;whereis -b -f tstit\
+
+: 1785608843:0;vi tstit
+: 1785608861:0;tstit
+: 1785608990:0;vi tstit
+: 1785609020:0;tstit
+: 1785609033:0;vi tstit
+: 1785609060:0;tstit
+: 1785609114:0;vi tstit
+: 1785609149:0;tstit
+: 1785609153:0;vi tstit
+: 1785609176:0;tstit
+: 1785609178:0;vi tstit
+: 1785609247:0;tstit
+: 1785609252:0;vi tstit
+: 1785609284:0;tstit
+: 1785609291:0;vi tstit
+: 1785609330:0;tstit
+: 1785609356:0;vi tstit
+: 1785609368:0;tstit
+: 1785609386:0;vi fut
+: 1785609443:0;tstit fsub
+: 1785609466:0;vi tstit
+: 1785609475:0;tstit fsub
+: 1785609478:0;vi tstit
+: 1785609485:0;tstit fsub
+: 1785609494:0;vi tstit
+: 1785609594:0;tstit fsub
+: 1785609600:0;vi tstit
+: 1785609652:0;tstit fsub
+: 1785609658:0;vi tstit
+: 1785609677:0;tstit fsub
+: 1785609678:0;vi tstit
+: 1785609941:0;vi fut
+: 1785609983:0;vi tstit
+: 1785610045:0;tstit fsub
+: 1785610047:0;vi tstit
+: 1785610056:0;tstit fsub
+: 1785610077:0;vi tstit
+: 1785610087:0;tstit fsub
+: 1785610089:0;vi tstit
+: 1785610095:0;tstit fsub
+: 1785610098:0;vi tstit
+: 1785610208:0;tstit fsub
+: 1785610212:0;vi tstit
+: 1785610220:0;tstit fsub
+: 1785610222:0;vi tstit
+: 1785610252:0;tstit fsub
+: 1785610256:0;vi tstit
+: 1785610316:0;tstit fsub
+: 1785610319:0;vi tstit
+: 1785610335:0;tstit fsub
+: 1785610338:0;vi tstit
+: 1785610361:0;tstit fsub
+: 1785610363:0;vi tstit
+: 1785610372:0;tstit fsub
+: 1785610374:0;vi tstit
+: 1785610384:0;tstit fsub
+: 1785610389:0;vi tstit
+: 1785610520:0;tstit fsub
+: 1785610522:0;vi tstit
+: 1785610535:0;tstit fsub
+: 1785610540:0;vi tstit
+: 1785610556:0;tstit fsub
+: 1785610558:0;vi tstit
+: 1785610569:0;tstit fsub
+: 1785610585:0;vi tstit
+: 1785610624:0;tstit fsub
+: 1785610626:0;vi tstit
+: 1785610639:0;tstit fsub
+: 1785610641:0;vi tstit
+: 1785610653:0;tstit fsub
+: 1785611260:0;vi fut
+: 1785611433:0;./fut findexe fsub
+: 1785611466:0;vi fut
+: 1785611710:0;./fut lscolors
+: 1785611752:0;vi fut
+: 1785611815:0;./fut lscolors
+: 1785611842:0;vi fut
+: 1785611949:0;./fut lscolors
+: 1785611971:0;vi fut
+: 1785612003:0;./fut lscolors
+: 1785612021:0;vi fut
+: 1785612053:0;vi fut
+: 1785612081:0;./fut lscolors
+: 1785612156:0;./fut lscolors 2>&1 | grep 'N_CODE'
+: 1785612207:0;vi fut
+: 1785612536:0;./fut lscolors 2>&1 | grep 'N_CODE'
+: 1785612544:0;./fut lscolors
+: 1785612662:0;vi fut
+: 1785612740:0;./fut lscolors
+: 1785612822:0;vi fut
+: 1785612841:0;./fut lscolors
+: 1785612888:0;vi fut
+: 1785612898:0;./fut lscolors
+: 1785612911:0;ll
+: 1785612914:0;./fut lscolors
+: 1785612932:0;vi fut
+: 1785613023:0;>xxx
+: 1785613032:0;fut inode_get xxx
+: 1785613054:0;fut inode_del 6323256
+: 1785613090:0;fut inode_del 6323256
+: 1785613098:0;./fut inode_del 6323256
+: 1785613146:0;vi fut
+: 1785613193:0;./fut inode_del ./xxx
+: 1785613235:0;vi fut
+: 1785613251:0;./fut inode_del ./xxx
+: 1785613270:0;vi fut
+: 1785613296:0;./fut inode_del ./xxx
+: 1785613300:0;ll
+: 1785613304:0;vi fut
+: 1785613321:0;vi cut_list
+: 1785613336:0;g
+: 1785613351:0;k/grep
+: 1785613354:0;k/grep
+: 1785613362:0;grep 'cut -' g
+: 1785616041:0;lsd
+: 1785616045:0;ll
+: 1785616266:0;yts
+: 1785618844:0;V
+: 1785618846:0;ll
+: 1785620092:0;Tm
+: 1785620093:0;ll
+: 1785620130:0;,
+: 1785620133:0;Tw
+: 1785620134:0;lsd
+: 1785620153:0;ll
+: 1785625868:0;Tm
+: 1785625872:0;lsd
+: 1785625876:0;ll
+: 1785625878:0;lsd
+: 1785625881:0;ll
+: 1785658053:0;Tw
+: 1785658054:0;ll
+: 1785658058:0;lsd
+: 1785658063:0;ll
+: 1785658117:0;yts
+: 1785658389:0;ll
+: 1785658406:0;vi g
+: 1785658861:0;d cut
+: 1785658877:0;g cut
+: 1785658883:0;d
+: 1785658886:0;,
+: 1785658888:0;g
+: 1785658891:0;g pwd
+: 1785658905:0;g then
+: 1785658935:0;g -n then
+: 1785658949:0;vi g
+: 1785659028:0;g -n then
+: 1785659128:0;./g -n then
+: 1785659139:0;vi g
+: 1785659290:0;/usr/local/bin/g -n then
+: 1785659316:0;vi g
+: 1785659345:0;./g -n then
+: 1785659406:0;vi g
+: 1785659432:0;./g -n then
+: 1785659442:0;vi g
+: 1785659465:0;./g -n then
+: 1785659480:0;vi g
+: 1785659563:0;./g -n then
+: 1785659590:0;vi g
+: 1785659684:0;./g -n then
+: 1785659708:0;vi g
+: 1785659737:0;vi /usr/local/bin/g
+: 1785659752:0;vi g
+: 1785659855:0;./g -n then
+: 1785659879:0;/usr/local/bin/g -n then
+: 1785659912:0;grep '-f2-' /usr/local/bin/g
+: 1785659918:0;grep -- '-f2-' /usr/local/bin/g
+: 1785659957:0;grep -- '[2,-1]' g
+: 1785659982:0;grep -- '[2,-1]' g
+: 1785660032:0;/usr/local/bin/g -n then
+: 1785660044:0;/usr/local/bin/g then
+: 1785660066:0;vi g
+: 1785660165:0;/usr/local/bin/g -n then
+: 1785660194:0;vi cut_list
+: 1785660273:0;vi -e xf
+: 1785660640:0;xf gal
+: 1785660649:0;ll
+: 1785660657:0;rm gal
+: 1785660665:0;vi xf
+: 1785660777:0;xf gal
+: 1785660780:0;ll
+: 1785660787:0;vi xf
+: 1785660815:0;vi xf
+: 1785660889:0;xf gal
+: 1785660893:0;vi xf
+: 1785660923:0;xf gal
+: 1785660940:0;vi xf
+: 1785660961:0;xf gal
+: 1785660963:0;vi xf
+: 1785661024:0;xf gal
+: 1785661055:0;xf -g gal
+: 1785661057:0;ll
+: 1785661062:0;vi xf
+: 1785661080:0;xf -g gal
+: 1785661087:0;vi xf
+: 1785661098:0;xf -g gal
+: 1785661099:0;ll
+: 1785661109:0;rm gal
+: 1785661113:0;vi xf
+: 1785661142:0;xf -g gal
+: 1785661162:0;vi xf
+: 1785661220:0;xf -g gal
+: 1785661253:0;vi gal
+: 1785661431:0;gal
+: 1785661446:0;vi gal
+: 1785661513:0;X="AAAAABBBBB"
+: 1785661533:0;echo ${X}/B/C
+: 1785661546:0;echo ${X}/B/C/
+: 1785661572:0;man zshall
+: 1785661772:0;echo ${X/B/C/}
+: 1785661789:0;echo ${X/B/C}
+: 1785661797:0;echo ${X//B/C}
+: 1785661824:0;vi gal
+: 1785661984:0;gal
+: 1785662069:0;vi gal
+: 1785662173:0;gal
+: 1785662186:0;vi gal
+: 1785662193:0;gal
+: 1785662202:0;vi gal
+: 1785662228:0;gal
+: 1785662241:0;vi gal
+: 1785662297:0;gal
+: 1785662360:0;vi gal
+: 1785662442:0;gal
+: 1785662501:0;vi gal
+: 1785662527:0;gal
+: 1785662532:0;vi gal
+: 1785662551:0;gal
+: 1785662561:0;vi gal
+: 1785662576:0;gal
+: 1785662578:0;vi gal
+: 1785662595:0;gal
+: 1785662618:0;vi gal
+: 1785662657:0;gal
+: 1785662665:0;gal anth
+: 1785662691:0;xf -p gal
+: 1785662726:0;vi xf
+: 1785662803:0;xf -p gal
+: 1785662825:0;vi cut_list
+: 1785662836:0;man sed
+: 1785662848:0;vi xf
+: 1785662860:0;xf -p gal
+: 1785662883:0;b
+: 1785662884:0;gal
+: 1785662890:0;vi gal
+: 1785662904:0;,
+: 1785662915:0;xf -g genv
+: 1785663546:0;vi genv
+: 1785663601:0;genv -H
+: 1785663612:0;genv
+: 1785663633:0;echo ${_}
+: 1785663661:0;xf -p genv
+: 1785663673:0;xf -g gitlog
+: 1785663715:0;vi xf
+: 1785663844:0;xf -g gitlog
+: 1785663853:0;vi xf
+: 1785663896:0;xf -g gitlog
+: 1785663901:0;vi xf
+: 1785663924:0;xf -g gitlog
+: 1785663944:0;vi xf
+: 1785663952:0;xf -g gitlog
+: 1785663994:0;vi gitlog
+: 1785664117:0;gitlog gitlog
+: 1785664158:0;vi gitlog
+: 1785664205:0;gitlog gitlog
+: 1785664223:0;vi gitlog
+: 1785664517:0;gitlog gitlog
+: 1785664532:0;vi gitlog
+: 1785664545:0;gitlog gitlog
+: 1785664563:0;vi gitlog
+: 1785664623:0;xf -p gitlog
+: 1785664689:0;xf -g Gobj_tst
+: 1785664732:0;xf -g GObj_tst
+: 1785664751:0;vi GObj_tst
+: 1785664792:0;GObj_tst
+: 1785664814:0;xf -p GObj_tst
+: 1785664828:0;xf -g gsq
+: 1785664836:0;vi gsq
+: 1785664890:0;gsq terminal
+: 1785664897:0;vi gsq
+: 1785664951:0;gsq terminal
+: 1785664957:0;vi gsq
+: 1785664965:0;xf -p gsq
+: 1785664975:0;xf -g gsub
+: 1785666682:0;vi gsub
+: 1785666761:0;gsub
+: 1785666764:0;ll
+: 1785666777:0;gsub -H
+: 1785666785:0;gsub -H A A
+: 1785666793:0;gsub A A
+: 1785666799:0;gsub A B
+: 1785666815:0;xf -p gsub
+: 1785666825:0;xf -g hist
+: 1785668127:0;vi hist
+: 1785668463:0;hist
+: 1785668467:0;vi hist
+: 1785668493:0;vi hist
+: 1785668549:0;hist
+: 1785668560:0;vi hist
+: 1785668597:0;hist
+: 1785668620:0;vi hist
+: 1785668729:0;hist
+: 1785669543:0;vi hist
+: 1785669588:0;hist
+: 1785669611:0;vi hist
+: 1785669711:0;hist
+: 1785669752:0;vi hist
+: 1785669761:0;hist
+: 1785669809:0;vi hist
+: 1785669846:0;vi hist
+: 1785669849:0;hist
+: 1785669874:0;X="1:: 1767869075:0;mypager -H"
+: 1785669883:0;ZS
+: 1785669934:0;echo ${${(s/:/)${X}}[1]}
+: 1785669938:0;echo ${${(s/:/)${X}}[2]}
+: 1785669998:0;X="1::1767869075:0;mypager -H"
+: 1785670001:0;echo ${${(s/:/)${X}}[2]}
+: 1785670075:0;vi x
+: 1785670118:0;vi x
+: 1785670296:0;echo ${${(@s/:/)${X}}[2]}
+: 1785670308:0;echo ${${(@s/:/)${X}}[1]}
+: 1785670322:0;echo ${${(@s/:/)${X}}[2]}
+: 1785670325:0;echo ${${(@s/:/)${X}}[3]}
+: 1785670407:0;echo "${${(@s/:/)${X}}[3]}"
+: 1785670410:0;echo "${${(@s/:/)${X}}[2]}"
+: 1785667094:18;yts
+: 1785670608:0;spell consecutive
+: 1785671151:0;tip zsh
+: 1785671260:0;tip zsh
+: 1785671319:0;tip zsh
+: 1785671430:0;tip zsh
+: 1785671469:0;tip zsh
+: 1785671590:0;tip zsh
+: 1785671673:0;tip zsh
+: 1785671755:0;tip zsh
+: 1785671793:0;tip zsh
+: 1785671837:0;tip zsh
+: 1785671935:0;tip zsh
+: 1785671985:0;tip zsh
+: 1785672096:0;ll
+: 1785672098:0;rm x
+: 1785672101:0;vi hist
+: 1785672135:0;hist
+: 1785672153:0;vi hist
+: 1785672183:0;hist
+: 1785672199:0;vi hist
+: 1785672306:0;hist
+: 1785672317:0;vi hist
+: 1785672394:0;hist
+: 1785672417:0;vi hist
+: 1785672545:0;hist
+: 1785672567:0;xf -p hist
+: 1785672580:0;xf -g icons
+: 1785672815:0;vi icons
+: 1785672860:0;vi icons
+: 1785672929:0;icons
+: 1785672949:0;icons stop
+: 1785672964:0;icons error
+: 1785672992:0;icons success
+: 1785673025:0;xf -p icons
+: 1785673043:0;xf -g irm
+: 1785673065:0;vi irm
+: 1785673247:0;irm
+: 1785673272:0;vi irm
+: 1785673319:0;irm testit
+: 1785673349:0;irm tstit
+: 1785673380:0;irm 6409237
+: 1785673396:0;vi irm
+: 1785673418:0;irm tstit
+: 1785673428:0;irm 6409237
+: 1785673437:0;vi irm
+: 1785673481:0;irm 6409237
+: 1785673489:0;vi irm
+: 1785673513:0;./irm 6409237
+: 1785673530:0;vi irm
+: 1785673542:0;./irm 6409237
+: 1785673564:0;man stat
+: 1785673800:0;vi irm
+: 1785673865:0;stat
+: 1785673869:0;stat *
+: 1785673882:0;stat * -c'%i'
+: 1785673898:0;stat . -c'%i'
+: 1785673908:0;stat ./* -c'%i'
+: 1785673988:0;./irm 6409237
+: 1785674036:0;vi irm
+: 1785674086:0;./irm 6409237
+: 1785674090:0;vi irm
+: 1785674138:0;./irm 6409237
+: 1785674142:0;vi irm
+: 1785674151:0;./irm 6409237
+: 1785674424:0;df -P . | awk 'NR==2 {print $1}'
+: 1785674510:0;fut
+: 1785674626:0;fut inode_fn
+: 1785674689:0;fut inode_fn
+: 1785674788:0;stat ./* -c'%i'
+: 1785674804:0;fut inode_fn 6818087
+: 1785674854:0;fut inode_fn 6818087
+: 1785674873:0;fut inode_fn 6818087
+: 1785674925:0;fut inode_fn 6818087
+: 1785674943:0;fut inode_fn 6818087 2>/dev/null
+: 1785674963:0;fut inode_fn 6818087
+: 1785674982:0;vi irm
+: 1785675056:0;irm 6818087
+: 1785675064:0;vi irm
+: 1785675154:0;irm 6818087
+: 1785675161:0;./irm 6818087
+: 1785675203:0;vi irm
+: 1785675214:0;xf -p irm
+: 1785675224:0;xf -g lft
+: 1785680907:0;recipie cauli
+: 1785680918:0;recipe cauli
+: 1785682852:0;ll
+: 1785682863:0;vi lft
+: 1785683022:0;lft
+: 1785683058:0;vi lft
+: 1785683408:0;lft
+: 1785683430:0;k/xr
+: 1785683439:0;xf -p lft
+: 1785683454:0;xf -g listing
+: 1785683462:0;vi listing
+: 1785683529:0;xf -p listing
+: 1785683537:0;xf -g lsc
+: 1785683720:0;lsd
+: 1785683729:0;ll
+: 1785683731:0;yts
+: 1785683936:0;ll
+: 1785683944:0;yts -wy
+: 1785683973:0;yts 
+: 1785684341:0;ll
+: 1785684345:0;vut info
+: 1785684377:0;lsd
+: 1785684380:0;ll
+: 1785684384:0;yts
+: 1785684454:0;ll
+: 1785684465:0;cl yts
+: 1785684466:0;ll
+: 1785684471:0;log_check
+: 1785684487:0;Tw
+: 1785684488:0;ll
+: 1785684564:0;xf -g fsub
+: 1785684573:0;gitlog fsub
+: 1785684658:0;l
+: 1785684667:0;xf -g lsc
+: 1785687581:0;lsd
+: 1785687669:0;ll
+: 1785697449:0;lsd
+: 1785697453:0;ll
+: 1785697455:0;yts
+: 1785697553:0;ll
+: 1785697679:0;ll
+: 1785697697:0;cl yts
+: 1785697704:0;vi yts
+: 1785698161:0;yts -DDDD 
+: 1785698169:0;Tw
+: 1785698170:0;ll
+: 1785698405:0;b
+: 1785698414:0;g func
+: 1785698544:0;yts -DDDD 
+: 1785698784:0;cl yts
+: 1785698787:0;vi yts
+: 1785698912:0;yts -DDDD 
+: 1785699189:0;g str_word_clip
+: 1785699197:0;g -n str_word_clip
+: 1785699221:0;cl yts
+: 1785699224:0;vi yts
+: 1785699249:0;:1
+: 1785699325:0;yts -DDDD 
+: 1785699436:0;vi yts
+: 1785699484:0;yts -DDDD 
+: 1785699556:0;vi yts
+: 1785699613:0;./yts
+: 1785699656:0;vi yts
+: 1785699667:0;./yts
+: 1785700008:0;./yts
+: 1785700038:0;Tw
+: 1785700039:0;lsd
+: 1785700045:0;,
+: 1785700048:0;./yts
+: 1785700290:0;./yts
+: 1785700320:0;ll
+: 1785700325:0;Tw
+: 1785700326:0;ll
+: 1785700814:0;./yts
+: 1785700844:0;ll
+: 1785700849:0;lsd
+: 1785700853:0;ll
+: 1785700865:0;l.
+: 1785700869:0;rm .mp4
+: 1785700871:0;ll
+: 1785700906:0;,
+: 1785700911:0;bak -r
+: 1785700913:0;ll
+: 1785700943:0;vi -e str_word_clip
+: 1785701041:0;ll
+: 1785701069:0;word_clip "a sentence"
+: 1785701077:0;word_clip "a sentence that is longer"
+: 1785701084:0;vi word_clip
+: 1785701151:0;word_clip "a sentence that is longer" 25
+: 1785701154:0;vi word_clip
+: 1785701162:0;word_clip "a sentence that is longer" 25
+: 1785701180:0;vi word_clip
+: 1785701243:0;word_clip "a sentence that is longer" 25
+: 1785701257:0;vi word_clip
+: 1785701289:0;word_clip "a sentence that is longer" 25
+: 1785701291:0;vi word_clip
+: 1785701318:0;word_clip "a sentence that is longer" 25
+: 1785701370:0;vi word_clip
+: 1785701402:0;word_clip "a sentence that is longer" 25
+: 1785701411:0;vi word_clip
+: 1785701458:0;word_clip "a sentence that is longer" 25
+: 1785701477:0;vi word_clip
+: 1785701665:0;word_clip "a sentence that is longer" 25
+: 1785701729:0;vi word_clip
+: 1785701740:0;word_clip "a sentence that is longer" 25
+: 1785701750:0;word_clip "a sentence 'that' is longer" 25
+: 1785701776:0;word_clip "a sentence 'that is' longer" 25
+: 1785701798:0;word_clip "a sentence 'that is' longer than 25" 25
+: 1785701813:0;vi word_clip
+: 1785701886:0;word_clip "a sentence 'that is' longer than 25" 25
+: 1785701895:0;vi word_clip
+: 1785701906:0;word_clip "a sentence 'that is' longer than 25" 25
+: 1785701912:0;word_clip "a sentence 'that is' longer than 25" 30
+: 1785701915:0;word_clip "a sentence 'that is' longer than 25" 35
+: 1785701937:0;vi word_clip
+: 1785702069:0;cl yts
+: 1785702072:0;yts
+: 1785702145:0;vi yts
+: 1785702152:0;bak -r
+: 1785702155:0;ll
+: 1785702165:0;ll
+: 1785702167:0;Tw
+: 1785702168:0;ll
+: 1785702202:0;backup
+: 1785702282:0;repo
+: 1785702304:0;cl yts
+: 1785702306:0;ll
+: 1785702309:0;rm word_clip
+: 1785702310:0;ll
+: 1785703257:0;yts -wy
+: 1785703298:0;yt 'https://www.youtube.com/watch?v=iKHW-Gbxf9A'
+: 1785703350:0;yt 'https://www.youtube.com/watch?v=ypk9_vAO4RY'
+: 1785703739:0;cl LIBS/scratch
+: 1785703740:0;ll
+: 1785703746:0;vi lsc
+: 1785704015:0;lsc
+: 1785704033:0;vi lsc
+: 1785704064:0;./lsc
+: 1785704081:0;vi lsc
+: 1785704176:0;vi lsc
+: 1785704180:0;./lsc
+: 1785704202:0;vi lsc
+: 1785704216:0;./lsc
+: 1785704246:0;vi lsc
+: 1785704431:0;./lsc
+: 1785704433:0;vi lsc
+: 1785704580:0;./lsc
+: 1785704582:0;vi lsc
+: 1785704621:0;./lsc
+: 1785704658:0;vi lsc
+: 1785704680:0;./lsc
+: 1785704698:0;vi lsc
+: 1785704789:0;vi lsc
+: 1785704809:0;./lsc
+: 1785704854:0;vi lsc
+: 1785705040:0;./lsc
+: 1785705067:0;./lsc 2>x
+: 1785705083:0;vi x
+: 1785705206:0;vi lsc
+: 1785705249:0;./lsc 
+: 1785705280:0;vi lsc
+: 1785705547:0;lsd
+: 1785705552:0;lsc
+: 1785705575:0;lsc
+: 1785705661:0;vi lsc
+: 1785706074:0;vi lsc
+: 1785706126:0;g clear_region
+: 1785706156:0;lsfuncs SELECT.zsh
+: 1785706162:0;ull
+: 1785706167:0;g clear_region
+: 1785706183:0;,
+: 1785706186:0;vi lsc
+: 1785706216:0;,
+: 1785706226:0;g clear
+: 1785706277:0;vi SELECT.zsh
+: 1785706321:0;,
+: 1785706324:0;vi lsc
+: 1785706343:0;lsc
+: 1785706371:0;vi lsc
+: 1785706479:0;cl LIBS
+: 1785706488:0;bak DBG.zsh
+: 1785706495:0;bak SELECT.zsh
+: 1785706499:0;cl LIBS
+: 1785706507:0;bak STR.zsh
+: 1785706510:0;ll
+: 1785706527:0;cl LIBS/scratch
+: 1785706530:0;l
+: 1785706533:0;ll
+: 1785706543:0;rm fsub
+: 1785706544:0;ll
+: 1785706549:0;rm x tstit
+: 1785706549:0;ll
+: 1785706555:0;todo
+: 1785708491:0;yt 'https://www.youtube.com/watch?v=6oSDCgrKhDQ'
+: 1785709786:0;Tw
+: 1785709787:0;lsd
+: 1785709808:0;ll
+: 1785713760:0;lsd
+: 1785713764:0;ll
+: 1785713766:0;lsd
+: 1785713770:0;ll
+: 1785746439:0;cl LIBS/scratch
+: 1785746440:0;ll
+: 1785746456:0;vi lsc
+: 1785746720:0;lsc
+: 1785746771:0;lsc
+: 1785746868:0;lsc
+: 1785747113:0;lsc
+: 1785747697:0;lsc
+: 1785747771:0;lsc
+: 1785748075:0;lsc
+: 1785748166:0;lsc
+: 1785748227:0;lsc
+: 1785748288:0;lsc
+: 1785748442:0;lsc
+: 1785748493:0;lsc
+: 1785748539:0;lsc
+: 1785748577:0;lsc
+: 1785748637:0;lsc
+: 1785748665:0;lsc
+: 1785748746:0;lsc
+: 1785748843:0;lsc
+: 1785749041:0;lsc
+: 1785749980:0;lsc
+: 1785750054:0;lsc
+: 1785750099:0;lsc
+: 1785750359:0;lsc
+: 1785750393:0;lsc
+: 1785750500:0;lsc
+: 1785750616:0;lsc
+: 1785750702:0;lsc
+: 1785750906:0;clear
+: 1785750911:0;lsfuncs MSG.zsh
+: 1785750919:0;lsfuncs MSG.zsh
+: 1785750923:0;lsfuncs MSG.zsh
+: 1785751003:0;lsc
+: 1785751114:0;ll
+: 1785751116:0;vi lsc
+: 1785751154:0;vi lsc
+: 1785751215:0;lsc
+: 1785751250:0;vi lsc
+: 1785751362:0;lsc
+: 1785751451:0;vi lsc
+: 1785751493:0;lsc
+: 1785751553:0;lsc
+: 1785751649:0;lsc
+: 1785751705:0;lsc
+: 1785751819:0;g box
+: 1785751828:0;ull
+: 1785751831:0;g box
+: 1785751885:0;,
+: 1785751889:0;lsc
+: 1785751930:0;vi lsc
+: 1785751958:0;lsc
+: 1785751985:0;./lsc
+: 1785751991:0;vi lsc
+: 1785752021:0;./lsc
+: 1785752044:0;./lsc
+: 1785752080:0;./lsc
+: 1785752107:0;vi lsc
+: 1785752137:0;./lsc
+: 1785752558:0;./lsc
+: 1785752620:0;./lsc
+: 1785752680:0;./lsc
+: 1785752780:0;./lsc
+: 1785752808:0;./lsc
+: 1785752986:0;./lsc
+: 1785753287:0;./lsc
+: 1785753344:0;./lsc
+: 1785755173:0;vi lsc
+: 1785755203:0;./lsc
+: 1785755349:0;gitlog SELECT.zsh
+: 1785755511:0;.lsc
+: 1785755513:0;./lsc
+: 1785755541:0;vi lsc
+: 1785755553:0;./lsc
+: 1785755623:0;./lsc
+: 1785755663:0;./lsc
+: 1785755741:0;cl LIBS
+: 1785755751:0;bak SELECT.zsh
+: 1785755754:0;,
+: 1785755756:0;ll
+: 1785758902:0;lsd
+: 1785758907:0;ll
+: 1785758909:0;yts
+: 1785759812:0;ll
+: 1785759816:0;yts
+: 1785759961:0;cl yts
+: 1785759971:0;vi yts
+: 1785759984:0;yts
+: 1785760164:0;yts
+: 1785760267:0;yts -DDDD
+: 1785760490:0;yts -DDDD
+: 1785760607:0;yts -DDDD
+: 1785760703:0;yts -DDDD
+: 1785760809:0;yts -DDDD
+: 1785761033:0;yts -DDDD
+: 1785761122:0;yts -DDDD
+: 1785761229:0;vi yts
+: 1785761267:0;bak -r
+: 1785761271:0;cl LIBS
+: 1785761277:0;bak STR.zsh
+: 1785761279:0;ll
+: 1785761283:0;backup
+: 1785761354:0;repo
+: 1785761381:0;cl yts
+: 1785761382:0;ll
+: 1785761938:0;Tw
+: 1785761940:0;lsd
+: 1785761955:0;ll
+: 1785761960:0;lsd
+: 1785761964:0;ll
+: 1785772872:0;lsd
+: 1785772891:0;ll
+: 1785772938:0;vi lsc
+: 1785773144:0;./lsc
+: 1785773184:0;vi lsc
+: 1785773200:0;./lsc
+: 1785773244:0;vi lsc
+: 1785773336:0;./lsc
+: 1785773351:0;vi lsc
+: 1785773413:0;./lsc
+: 1785773431:0;vi lsc
+: 1785773448:0;./lsc
+: 1785773462:0;cat x
+: 1785773470:0;vi lsc
+: 1785773558:0;cat x
+: 1785773564:0;rm x
+: 1785773567:0;./lsc
+: 1785773614:0;vi lsc
+: 1785774100:0;g NOMRKUP
+: 1785774106:0;ull
+: 1785774109:0;g NOMRKUP
+: 1785774143:0;,
+: 1785774312:0;ull
+: 1785774317:0;g list_map
+: 1785774795:0;g _sel_list_meta
+: 1785774802:0;g _sel_list_meta
+: 1785774974:0;g -n _sel_list_meta
+: 1785775074:0;,
+: 1785775081:0;./lsc
+: 1785775269:0;vi lsc
+: 1785775514:0;vi lsc
+: 1785775532:0;./lsc
+: 1785775623:0;vi lsc
+: 1785775736:0;systemctl list-units all
+: 1785775742:0;vi lsc
+: 1785775758:0;systemctl list-units --all
+: 1785775771:0;vi lsc
+: 1785775870:0;sudo systemctl list-units -all | tr -s '[:space:]' | tail -n +2 | head -n -2
+: 1785775890:0;vi lsc
+: 1785775988:0;./lsc
+: 1785776094:0;vi lsc
+: 1785776158:0;./lsc
+: 1785776197:0;vi lsc
+: 1785776424:0;./lsc
+: 1785776440:0;ll
+: 1785776443:0;vi run_states
+: 1785776486:0;ll
+: 1785776491:0;lsd
+: 1785776497:0;ll
+: 1785776500:0;vi lsc
+: 1785776572:0;./lsc
+: 1785776815:0;vi lsc
+: 1785777058:0;./lsc
+: 1785777426:0;vi lsc
+: 1785777544:0;./lsc
+: 1785783088:0;vi lsc
+: 1785784849:0;./lsc
+: 1785784994:0;vi lsc
+: 1785785144:0;./lsc
+: 1785785216:0;yts
+: 1785785395:0;ll
+: 1785785960:0;./lsc
+: 1785785965:0;vi lsc
+: 1785786090:0;./lsc
+: 1785786100:0;vi lsc
+: 1785786137:0;./lsc
+: 1785786187:0;vi lsc
+: 1785786655:0;./lsc
+: 1785786664:0;vi lsc
+: 1785786696:0;./lsc
+: 1785786707:0;vi lsc
+: 1785786751:0;./lsc
+: 1785786770:0;vi lsc
+: 1785786873:0;./lsc
+: 1785786894:0;vi lsc
+: 1785786904:0;./lsc
+: 1785786953:0;vi lsc
+: 1785786974:0;./lsc
+: 1785786983:0;vi lsc
+: 1785787007:0;./lsc
+: 1785787026:0;vi lsc
+: 1785787123:0;./lsc
+: 1785787133:0;vi lsc
+: 1785787221:0;./lsc
+: 1785787227:0;vi lsc
+: 1785787311:0;./lsc
+: 1785787317:0;vi lsc
+: 1785787344:0;./lsc
+: 1785787349:0;vi lsc
+: 1785787454:0;./lsc
+: 1785787461:0;vi lsc
+: 1785787492:0;./lsc
+: 1785787611:0;sudo systemctl list-units -all | tr -s '[:space:]' | tail -n +2 | head -n -2
+: 1785787648:0;sudo systemctl list-units -all | grep dead
+: 1785787663:0;sudo systemctl list-units -all | grep dead >x
+: 1785787664:0;vi x
+: 1785787715:0;rm x
+: 1785787730:0;man systemctl
+: 1785787928:0;sudo systemctl list-unit-files
+: 1785787997:0;sudo systemctl list-unit-files | grep wait
+: 1785788026:0;sudo systemctl list-units --all | grep wait
+: 1785788060:0;s
+: 1785788135:0;ll
+: 1785788150:0;sudo systemctl list-units --all | grep vid
+: 1785788161:0;sudo systemctl list-unit-files --all | grep vid
+: 1785788208:0;sudo systemctl list-unit-files --all
+: 1785788239:0;cl scratch
+: 1785788243:0;vi lsc
+: 1785788247:0;ll
+: 1785788251:0;cl LIBS/scratch
+: 1785788253:0;vi lsc
+: 1785788316:0;cl LIBS/scratch
+: 1785788321:0;,
+: 1785788333:0;./lsc
+: 1785788364:0;vi lsc
+: 1785788385:0;./lsc
+: 1785788394:0;vi lsc
+: 1785788411:0;vi lsc
+: 1785788422:0;./lsc
+: 1785788447:0;vi lsc
+: 1785788535:0;./lsc
+: 1785796688:0;lsd
+: 1785796702:0;yts
+: 1785796767:0;vi lsc
+: 1785797246:0;./lsc
+: 1785797250:0;vi lsc
+: 1785797261:0;./lsc
+: 1785797287:0;sudo systemctl list-unit-files --all
+: 1785797313:0;sudo systemctl list-units
+: 1785797363:0;sudo systemctl list-units >x
+: 1785797365:0;vi x
+: 1785797401:0;vi -e tstit
+: 1785797570:0;tstit
+: 1785797577:0;vi -e tstit
+: 1785797588:0;tstit
+: 1785797591:0;vi -e tstit
+: 1785797601:0;tstit
+: 1785797606:0;vi -e tstit
+: 1785797627:0;tstit
+: 1785797634:0;vi -e tstit
+: 1785797714:0;tstit
+: 1785797718:0;vi -e tstit
+: 1785797730:0;tstit
+: 1785797736:0;vi -e tstit
+: 1785797807:0;tstit
+: 1785797817:0;vi -e tstit
+: 1785797848:0;tstit
+: 1785797899:0;vi tstit
+: 1785797931:0;tstit
+: 1785797952:0;vi tstit
+: 1785798259:0;tstit
+: 1785798324:0;vi tstit
+: 1785798337:0;tstit
+: 1785798601:0;vi lsc
+: 1785798896:0;tstit
+: 1785798910:0;vi tstit
+: 1785799198:0;vi tstit
+: 1785799326:0;tstit
+: 1785799329:0;vi tstit
+: 1785799341:0;tstit
+: 1785799383:0;vi tstit
+: 1785799470:0;sudo systemctl list-units 
+: 1785799733:0;tstit
+: 1785799750:0;vi tstit
+: 1785799803:0;tstit
+: 1785799811:0;vi tstit
+: 1785799817:0;tstit
+: 1785799819:0;tstit
+: 1785799822:0;tstit
+: 1785799825:0;vi tstit
+: 1785799867:0;tstit
+: 1785799872:0;vi tstit
+: 1785799941:0;tstit
+: 1785799946:0;vi tstit
+: 1785799966:0;tstit
+: 1785799978:0;vi tstit
+: 1785800004:0;tstit
+: 1785800008:0;vi tstit
+: 1785800025:0;tstit
+: 1785800032:0;vi tstit
+: 1785800041:0;tstit
+: 1785800046:0;vi tstit
+: 1785800074:0;tstit
+: 1785800089:0;vi tstit
+: 1785800095:0;tstit
+: 1785800103:0;vi tstit
+: 1785800216:0;clear
+: 1785800218:0;ll
+: 1785800220:0;lsd
+: 1785800223:0;ll
+: 1785800418:0;vi lsc
+: 1785800510:0;lsc
+: 1785800526:0;vi lsc
+: 1785800670:0;vi lsc.orig
+: 1785800907:0;lsc
+: 1785800936:0;vi lsc.orig
+: 1785800966:0;lsc
+: 1785800999:0;ll
+: 1785801002:0;vi x
+: 1785801006:0;rm x
+: 1785801006:0;ll
+: 1785801014:0;vi tstit
+: 1785801021:0;rm tstit
+: 1785801023:0;ll
+: 1785801100:0;vi lsc
+: 1785801202:0;lsc
+: 1785801277:0;vi lsc
+: 1785801332:0;lsc
+: 1785801351:0;vi lsc
+: 1785801414:0;lsc
+: 1785801442:0;vi lsc
+: 1785801479:0;lsc
+: 1785801509:0;vi lsc
+: 1785801517:0;lsc
+: 1785801547:0;vi lsc
+: 1785801556:0;lsc
+: 1785801562:0;vi lsc
+: 1785801607:0;lsc
+: 1785801713:0;vi lsc
+: 1785801780:0;lsc
+: 1785801782:0;vi x
+: 1785801790:0;vi lsc
+: 1785801799:0;rm x
+: 1785801803:0;lsc
+: 1785801805:0;vi x
+: 1785801855:0;sudo systemctl list-units 
+: 1785802186:0;vi lsc
+: 1785802232:0;vi lsc
+: 1785802257:0;lsc
+: 1785802295:0;vi lsc
+: 1785802314:0;lsc
+: 1785802355:0;vi lsc
+: 1785802404:0;lsc
+: 1785802424:0;vi lsc
+: 1785802452:0;lsc
+: 1785802480:0;vi lsc
+: 1785802550:0;lsc
+: 1785802675:0;vi lsc
+: 1785802727:0;lsc
+: 1785802747:0;vi lsc
+: 1785802815:0;lsc
+: 1785802848:0;vi lsc
+: 1785802858:0;lsc
+: 1785802916:0;vi lsc
+: 1785802954:0;lsc
+: 1785803046:0;lsc
+: 1785803097:0;vi lsc
+: 1785803119:0;lsc
+: 1785803136:0;vi lsc
+: 1785803145:0;lsc
+: 1785803191:0;ll
+: 1785803195:0;rm x
+: 1785803196:0;l
+: 1785803198:0;lsc
+: 1785803254:0;vi lsc
+: 1785803263:0;lsc
+: 1785803274:0;vi lsc
+: 1785803287:0;lsc
+: 1785803753:0;clear
+: 1785831393:0;vi lsc
+: 1785831960:0;lsc
+: 1785831968:0;vi lsc
+: 1785831999:0;lsc
+: 1785832012:0;vi lsc
+: 1785832245:0;./lsc
+: 1785832281:0;vi lsc
+: 1785832362:0;./lsc
+: 1785832432:0;vi lsc
+: 1785832451:0;./lsc
+: 1785832510:0;vi lsc
+: 1785832529:0;./lsc
+: 1785832717:0;s
+: 1785832722:0;ll
+: 1785832732:0;vi vid_watch.service
+: 1785832759:0;,
+: 1785832765:0;./lsc
+: 1785832773:0;cl LIBS/scratch
+: 1785832779:0;./lsc
+: 1785832849:0;vi lsc
+: 1785832868:0;vi lsc.orig
+: 1785832926:0;.lsc
+: 1785832931:0;./lsc
+: 1785832936:0;./lsc -H
+: 1785833010:0;ll
+: 1785833013:0;vi lsc
+: 1785833384:0;./lsc 
+: 1785833401:0;vi lsc
+: 1785833465:0;./lsc 
+: 1785833499:0;vi lsc
+: 1785833584:0;./lsc 
+: 1785833639:0;vi lsc
+: 1785833809:0;./lsc 
+: 1785833815:0;vi lsc
+: 1785833829:0;./lsc 
+: 1785833833:0;vi lsc
+: 1785833863:0;./lsc 
+: 1785833890:0;vi lsc
+: 1785833903:0;./lsc 
+: 1785833967:0;vi lsc
+: 1785833984:0;./lsc 
+: 1785833993:0;vi lsc
+: 1785834007:0;./lsc 
+: 1785834063:0;ll
+: 1785834069:0;vi lsc
+: 1785834139:0;ll
+: 1785834142:0;./lsc 
+: 1785834174:0;ll
+: 1785834182:0;vi lsc.orig
+: 1785834201:0;./lsc 
+: 1785834249:0;vi lsc.orig
+: 1785834275:0;./lsc 
+: 1785834494:0;vi ./lsc 
+: 1785834538:0;./lsc 
+: 1785834569:0;vi ./lsc 
+: 1785834588:0;./lsc 
+: 1785834651:0;./lsc 
+: 1785834670:0;vi ./lsc 
+: 1785834679:0;vi ./lsc 
+: 1785834684:0;./lsc 
+: 1785834703:0;vi ./lsc 
+: 1785834736:0;b
+: 1785834765:0;gsub 'list_set_restore_pos' 'list_set_position_hold'
+: 1785834793:0;l.
+: 1785834820:0;ll
+: 1785834827:0;l
+: 1785834831:0;l
+: 1785834837:0;ll
+: 1785834840:0;l
+: 1785834848:0;l.
+: 1785834872:0;b
+: 1785834879:0;rm cut_list
+: 1785834881:0;ll
+: 1785834901:0;cl LIBS/scratch
+: 1785834902:0;ll
+: 1785834917:0;lsc
+: 1785835097:0;lsc
+: 1785835509:0;lsc
+: 1785835560:0;lsc
+: 1785835567:0;vi lsc
+: 1785835582:0;lsc
+: 1785835675:0;vi lsc
+: 1785835732:0;lsc
+: 1785835762:0;vi lsc
+: 1785835804:0;lsc
+: 1785835840:0;lsc
+: 1785835860:0;vi lsc
+: 1785836538:0;lsc
+: 1785836559:0;lsd
+: 1785836588:0;lsc
+: 1785836692:0;lsc
+: 1785836801:0;lsc
+: 1785836837:0;vi lsc
+: 1785836908:0;lsc
+: 1785837056:0;vi lsc
+: 1785837121:0;lsc
+: 1785837161:0;vi lsc
+: 1785837359:0;lsc
+: 1785837365:0;vi lsc
+: 1785837389:0;lsc
+: 1785837400:0;vi lsc
+: 1785837493:0;lsc
+: 1785837512:0;vi lsc
+: 1785837662:0;lsc
+: 1785837680:0;vi lsc
+: 1785837713:0;lsc
+: 1785837717:0;vi lsc
+: 1785837728:0;lsc
+: 1785837733:0;vi lsc
+: 1785837809:0;lsc
+: 1785837822:0;vi lsc
+: 1785837841:0;lsc
+: 1785837859:0;vi lsc
+: 1785838155:0;lsc
+: 1785838168:0;vi lsc
+: 1785838185:0;lsc
+: 1785838214:0;vi lsc
+: 1785839908:0;lsc
+: 1785839913:0;vi lsc
+: 1785840075:0;vi lsc
+: 1785840098:0;lsc
+: 1785840126:0;vi lsc
+: 1785840282:0;lsc
+: 1785840310:0;vi lsc
+: 1785840371:0;lsc
+: 1785840393:0;vi lsc
+: 1785840456:0;lsc
+: 1785840473:0;vi lsc
+: 1785840576:0;lsc
+: 1785840622:0;vi lsc
+: 1785840754:0;lsc
+: 1785840815:0;vi lsc
+: 1785840866:0;lsc
+: 1785840869:0;vi lsc
+: 1785840875:0;lsc
+: 1785840898:0;vi lsc
+: 1785840943:0;lsc
+: 1785840953:0;vi lsc
+: 1785840985:0;lsc
+: 1785840992:0;vi lsc
+: 1785841020:0;lsc
+: 1785841032:0;vi lsc
+: 1785841183:0;lsc
+: 1785841212:0;vi lsc
+: 1785841296:0;lsc
+: 1785841342:0;vi lsc
+: 1785841363:0;lsc
+: 1785841418:0;vi lsc
+: 1785841438:0;lsc
+: 1785841467:0;vi lsc
+: 1785841652:0;lsc
+: 1785841685:0;vi lsc
+: 1785841873:0;lsc
+: 1785841971:0;vi lsc
+: 1785841985:0;lsc
+: 1785842005:0;vi lsc
+: 1785842043:0;lsc
+: 1785842177:0;vi lsc
+: 1785842196:0;lsc
+: 1785842246:0;vi lsc
+: 1785842319:0;lsc
+: 1785842328:0;vi lsc
+: 1785843130:0;ll
+: 1785843137:0;vi one-liner.txt
+: 1785843258:0;vi lsc
+: 1785843301:0;lsc
+: 1785843318:0;vi lsc
+: 1785843387:0;lsc
+: 1785843416:0;vi lsc
+: 1785843623:0;lsc
+: 1785843630:0;vi lsc
+: 1785843641:0;lsc
+: 1785843698:0;vi lsc
+: 1785843738:0;lsc
+: 1785843752:0;vi lsc
+: 1785843782:0;lsc
+: 1785843836:0;vi lsc
+: 1785843882:0;lsc
+: 1785843930:0;vi lsc
+: 1785843947:0;lsc
+: 1785843977:0;vi lsc
+: 1785844127:0;lsc
+: 1785844134:0;vi lsc
+: 1785844164:0;lsc
+: 1785844181:0;vi lsc
+: 1785844207:0;lsc
+: 1785844218:0;vi lsc
+: 1785844229:0;lsc
+: 1785844239:0;vi lsc
+: 1785844324:0;./lsc
+: 1785844385:0;vi lsc
+: 1785845190:0;lsc
+: 1785845204:0;vi lsc
+: 1785845360:0;clear
+: 1785845361:0;ll
+: 1785847143:0;vi lsc
+: 1785847339:0;lsc
+: 1785847359:0;vi lsc
+: 1785847372:0;lsc
+: 1785847378:0;vi lsc
+: 1785847488:0;lsc
+: 1785847529:0;vi lsc
+: 1785847552:0;lsc
+: 1785847556:0;vi lsc
+: 1785847579:0;lsc
+: 1785847639:0;l
+: 1785847645:0;vi lsc
+: 1785847740:0;ll
+: 1785847765:0;vi /usr/local/etc/tips/zsh.tip
+: 1785848579:0;tip zsh
+: 1785848612:0;vi /usr/local/etc/tips/zsh.tip
+: 1785848659:0;tip zsh
+: 1785848668:0;vi /usr/local/etc/tips/zsh.tip
+: 1785848679:0;tip zsh
+: 1785848719:0;vi /usr/local/etc/tips/zsh.tip
+: 1785848737:0;tip zsh
+: 1785848754:0;vi /usr/local/etc/tips/zsh.tip
+: 1785848773:0;tip zsh
+: 1785848830:0;vi /usr/local/etc/tips/zsh.tip
+: 1785848886:0;tip zsh
+: 1785848923:0;vi /usr/local/etc/tips/zsh.tip
+: 1785849149:0;tip zsh
+: 1785849177:0;vi /usr/local/etc/tips/zsh.tip
+: 1785849195:0;tip zsh
+: 1785849238:0;vi /usr/local/etc/tips/zsh.tip
+: 1785849338:0;tip zsh
+: 1785849412:0;vi /usr/local/etc/tips/zsh.tip
+: 1785849500:0;tip zsh
+: 1785849537:0;vi /usr/local/etc/tips/zsh.tip
+: 1785849559:0;tip zsh
+: 1785856408:0;s2e between
+: 1785856417:0;e2s between
+: 1785856448:0;s2e azuelos
+: 1785856458:0;e2s tile
+: 1785856476:0;s2e azulelos
+: 1785856486:0;s2e azulejos
+: 1785856501:0;s2e -s azulejos
+: 1785856518:0;s2e --help
+: 1785856549:0;s2e -p azulejos
+: 1785856581:0;e2s grout
+: 1785856672:0;lsc
+: 1785856688:0;ull
+: 1785856690:0;g sort
+: 1785856743:0;,
+: 1785856764:0;vi lsc
+: 1785857167:0;lsd
+: 1785857173:0;ll
+: 1785857175:0;yts
+: 1785857317:0;yts -wy
+: 1785857379:0;yts
+: 1785857459:0;yt 'https://www.youtube.com/watch?v=s8aD3y_uJ2Y'
+: 1785857517:0;yt 'https://www.youtube.com/watch?v=tHlLvn4J-i0'
+: 1785857562:0;yt
+: 1785857566:0;yts
+: 1785858331:0;clear
+: 1785866858:0;yts
+: 1785866896:0;ll
+: 1785866936:0;fsub -yp"Judging Freedom" "Aaron Mate - IS There A Rift Between The US And Israel.mp4"
+: 1785866937:0;ll
+: 1785867086:0;lsd
+: 1785867090:0;ll
+: 1785867114:0;vi lsc
+: 1785868314:0;lsc
+: 1785868342:0;vi lsc
+: 1785868402:0;lsc
+: 1785868426:0;vi lsc
+: 1785869102:0;lsc
+: 1785869115:0;vi lsc
+: 1785869146:0;lsc
+: 1785869167:0;vi lsc
+: 1785869184:0;lsc
+: 1785869209:0;vi lsc
+: 1785869227:0;lsc
+: 1785870101:0;lsc
+: 1785870232:0;lsc
+: 1785871210:0;vi lsc
+: 1785871234:0;b
+: 1785871237:0;g sort
+: 1785871329:0;vi lsc
+: 1785871376:0;,
+: 1785871378:0;vi lsc
+: 1785871586:0;vi lsc
+: 1785871590:0;./lsc
+: 1785871605:0;vi lsc
+: 1785871674:0;./lsc
+: 1785871725:0;vi lsc
+: 1785872015:0;./lsc
+: 1785872058:0;vi lsc
+: 1785872141:0;./lsc
+: 1785872172:0;vi lsc
+: 1785872230:0;vi lsc
+: 1785872288:0;./lsc
+: 1785872301:0;vi lsc
+: 1785872345:0;./lsc
+: 1785872362:0;vi lsc
+: 1785872405:0;./lsc
+: 1785872410:0;vi lsc
+: 1785872427:0;./lsc
+: 1785872436:0;tip zsh
+: 1785872553:0;man zshall
+: 1785872624:0;vi lsc
+: 1785872688:0;./lsc
+: 1785872691:0;vi lsc
+: 1785872719:0;./lsc
+: 1785872721:0;vi lsc
+: 1785872796:0;./lsc
+: 1785872833:0;vi lsc
+: 1785872874:0;./lsc
+: 1785872889:0;vi lsc
+: 1785872986:0;./lsc
+: 1785872995:0;vi lsc
+: 1785873060:0;./lsc
+: 1785873144:0;vi lsc
+: 1785873340:0;./lsc
+: 1785873348:0;vi lsc
+: 1785873389:0;./lsc
+: 1785873528:0;vi lsc
+: 1785873580:0;./lsc
+: 1785873609:0;vi lsc
+: 1785873619:0;lsfuncs LIST.zsh
+: 1785873630:0;vi lsc
+: 1785873644:0;./lsc
+: 1785873668:0;vi lsc
+: 1785873675:0;./lsc
+: 1785873705:0;xf -p lsc
+: 1785873711:0;ll
+: 1785873717:0;rm one-liner.txt
+: 1785873718:0;ll
+: 1785873724:0;head cut_list
+: 1785873730:0;head -20 cut_list
+: 1785873735:0;head -30 cut_list
+: 1785873763:0;xf -g ls_color
+: 1785873767:0;ll
+: 1785873779:0;lsd
+: 1785875848:0;lsd
+: 1785875853:0;ll
+: 1785879551:0;lsd
+: 1785879554:0;ll
+: 1785879583:0;yts
+: 1785879820:0;yts -wy
+: 1785880004:0;yt 'https://www.youtube.com/watch?v=RzkZpg3HB50'
+: 1785880054:0;ll
+: 1785880086:0;fsub -yp"John Kiriakou" "WHO IS Really Behind The Migrant Crisis In Ceuta Ep. 7.mp4"
+: 1785880087:0;ll
+: 1785880113:0;yts
+: 1785880208:0;yts
+: 1785880256:0;yts
+: 1785880286:0;yts
+: 1785880743:0;yts
+: 1785880849:0;yts
+: 1785880913:0;yts
+: 1785880931:0;vi x
+: 1785880949:0;b
+: 1785880956:0;,
+: 1785880959:0;cl yts
+: 1785880975:0;cl LIBS
+: 1785880982:0;bak LIST.zsh
+: 1785880988:0;cl LIBS
+: 1785880996:0;bak SELECT.zsh
+: 1785881006:0;cl LIBS
+: 1785881012:0;bak STR.zsh
+: 1785881020:0;cl LIBS
+: 1785881025:0;bak UTILS.zsh
+: 1785881028:0;ll
+: 1785881033:0;cl LIBS
+: 1785881047:0;ull
+: 1785881062:0;,
+: 1785881065:0;vi UTILS.zsh
+: 1785881129:0;cl yts
+: 1785881135:0;yts
+: 1785881186:0;yts
+: 1785881200:0;ll
+: 1785881276:0;yts
+: 1785881317:0;echo "Gabor MatÃ�©" | hexdump -C
+: 1785881400:0;clear
+: 1785881406:0;ll
+: 1785881410:0;echo "Gabor MatÃ�©" | hexdump -C
+: 1785881583:0;yts
+: 1785881653:0;yts
+: 1785881695:0;cl yt
+: 1785881699:0;cl yts
+: 1785881703:0;vi -e tstit
+: 1785881730:0;yts
+: 1785881767:0;vi tstit
+: 1785881806:0;tstit
+: 1785881835:0;ll
+: 1785881840:0;Tw
+: 1785881841:0;ll
+: 1785881844:0;yts
+: 1785881912:0;ll
+: 1785882477:0;cl yts
+: 1785882481:0;yts -DDDD
+: 1785882744:0;yts -DDDD
+: 1785882837:0;yts -DDDD
+: 1785882977:0;cl LIBS
+: 1785882981:0;bak STR.zsh
+: 1785882984:0;cl LIBS
+: 1785883013:0;vl yts
+: 1785883016:0;cl yts
+: 1785883020:0;ll
+: 1785883022:0;vi tstit
+: 1785883035:0;tstit
+: 1785883043:0;yts
+: 1785883057:0;tw
+: 1785883058:0;Tw
+: 1785883060:0;ll
+: 1785883064:0;lsd
+: 1785883070:0;ll
+: 1785883096:0;cl yts
+: 1785883099:0;vi yts
+: 1785883179:0;yts
+: 1785883229:0;yts
+: 1785883275:0;yts
+: 1785883336:0;yts
+: 1785883367:0;vi yts
+: 1785883389:0;yts
+: 1785883430:0;vi yts
+: 1785883445:0;yts
+: 1785883468:0;vi yts
+: 1785883556:0;yts
+: 1785883593:0;cl yts
+: 1785883596:0;bak -r
+: 1785883599:0;Tw
+: 1785883600:0;ll
+: 1785910934:0;lsc
+: 1785911660:0;lsc
+: 1785911665:0;clear
+: 1785911667:0;lsc
+: 1785918859:0;cl yt
+: 1785918860:0;ll
+: 1785918867:0;cl yts
+: 1785918869:0;ll
+: 1785918882:0;cl yts
+: 1785918883:0;ll
+: 1785918886:0;vi tstit
+: 1785918972:0;tstit
+: 1785919082:0;spell recommend
+: 1785919110:0;spell clohrine
+: 1785919118:0;spell clhorine
+: 1785919122:0;spell clorine
+: 1785919128:0;spell chlorine
+: 1785922682:0;clear
+: 1785922685:0;cl yts
+: 1785922691:0;vi tstit
+: 1785922710:0;Tw
+: 1785922711:0;lsd
+: 1785922721:0;ll
+: 1785922894:0;,
+: 1785922895:0;viyts
+: 1785922899:0;vi yts
+: 1785922969:0;yts
+: 1785922991:0;vi yts
+: 1785923042:0;yts
+: 1785923240:0;yts
+: 1785923274:0;vi x
+: 1785923285:0;vi yts
+: 1785923307:0;yts
+: 1785923322:0;vi x
+: 1785923389:0;me x
+: 1785923391:0;vi x
+: 1785923397:0;x
+: 1785923421:0;vi x
+: 1785923547:0;x
+: 1785923568:0;vi x
+: 1785923595:0;yts 
+: 1785923613:0;vi yts
+: 1785923628:0;yts 
+: 1785923688:0;./yts 
+: 1785923717:0;cl yts
+: 1785923720:0;vi x
+: 1785923796:0;x
+: 1785923808:0;vi x
+: 1785923832:0;vi x
+: 1785923885:0;vi yts
+: 1785923920:0;yts
+: 1785924020:0;x
+: 1785924031:0;vi yts
+: 1785924045:0;x
+: 1785924057:0;vi yts
+: 1785924060:0;vi x
+: 1785924108:0;x
+: 1785924134:0;vi x
+: 1785924163:0;x
+: 1785924172:0;vi x
+: 1785924187:0;vi x
+: 1785924211:0;x
+: 1785924218:0;vi x
+: 1785924228:0;x
+: 1785924244:0;vi x
+: 1785924301:0;x
+: 1785924358:0;vi x
+: 1785924387:0;x
+: 1785924398:0;vi x
+: 1785924412:0;x
+: 1785924419:0;vi x
+: 1785924451:0;x
+: 1785924468:0;vi q
+: 1785924791:0;vi x
+: 1785924859:0;x
+: 1785924864:0;vi x
+: 1785924911:0;x
+: 1785924917:0;vi x
+: 1785924926:0;x
+: 1785925003:0;vi x
+: 1785925088:0;x
+: 1785925189:0;vi x
+: 1785925217:0;x
+: 1785925249:0;vi x
+: 1785925261:0;x
+: 1785925297:0;vi x
+: 1785925331:0;x
+: 1785925381:0;Cat x
+: 1785925437:0;vi x
+: 1785925456:0;x
+: 1785925512:0;vi x
+: 1785925524:0;x
+: 1785925587:0;vi x
+: 1785925602:0;x
+: 1785925653:0;vi x
+: 1785925681:0;vi x
+: 1785925688:0;x
+: 1785925784:0;vi x
+: 1785925800:0;x
+: 1785925851:0;vi x
+: 1785925973:0;x
+: 1785926002:0;vi x
+: 1785926255:0;x
+: 1785926279:0;vi x
+: 1785926312:0;x
+: 1785926396:0;locale
+: 1785926420:0;echo $TERM
+: 1785926685:0;vi x
+: 1785926702:0;x
+: 1785926705:0;vi x
+: 1785926710:0;x
+: 1785926769:0;vi x
+: 1785926803:0;x
+: 1785926856:0;vi x
+: 1785926871:0;x
+: 1785926961:0;vi x
+: 1785926977:0;x
+: 1785927045:0;vi x
+: 1785927059:0;x
+: 1785927120:0;vi x
+: 1785927322:0;vi x
+: 1785928123:0;yts
+: 1785928140:0;vi yts
+: 1785928149:0;yts
+: 1785928217:0;ll
+: 1785928220:0;x
+: 1785928225:0;vi x
+: 1785928259:0;vi x
+: 1785928267:0;x
+: 1785928281:0;vi x
+: 1785928345:0;yts
+: 1785928363:0;x
+: 1785928379:0;vi x
+: 1785928454:0;yts 
+: 1785928564:0;x
+: 1785928691:0;yts
+: 1785928862:0;yts
+: 1785928918:0;ll
+: 1785928920:0;lsd
+: 1785928934:0;ll
+: 1785928935:0;yts
+: 1785928949:0;ll
+: 1785928955:0;bak -r
+: 1785928960:0;cl LIBS
+: 1785928965:0;bak UTILS.zsh
+: 1785928968:0;backup
+: 1785929057:0;repo
+: 1785929081:0;ll
+: 1785929084:0;lsc
+: 1785929742:0;yts -wy
+: 1785929763:0;Tw
+: 1785929764:0;lsd
+: 1785929784:0;ll
+: 1785936352:0;clear
+: 1785936355:0;cl LIBS/scratch
+: 1785936357:0;ll
+: 1785936363:0;vi ls_color
+: 1785936503:0;ls_color
+: 1785936524:0;xf -p ls_color
+: 1785936544:0;xf -g lsd
+: 1785936550:0;vi lsd
+: 1785936611:0;lsd
+: 1785936621:0;xf -p lsd
+: 1785936634:0;xf -g lsfuncs
+: 1785947410:0;Tw
+: 1785947411:0;lsd
+: 1785947420:0;l
+: 1785947422:0;ll
+: 1785955447:0;ll
+: 1785955459:0;cl LIBS/scratch
+: 1785955460:0;ll
+: 1785955463:0;vi lsfuncs
+: 1785955685:0;lsfuncs ./lsfuncs
+: 1785955694:0;lsfuncs ./lsfuncs
+: 1785955730:0;vi lsfuncs
+: 1785955779:0;lsfuncs ./lsfuncs
+: 1785955787:0;vi lsfuncs
+: 1785955876:0;lsfuncs ./lsfuncs
+: 1785955878:0;vi lsfuncs
+: 1785955911:0;lsfuncs ./lsfuncs
+: 1785955936:0;xf -p lsfuncs
+: 1785955945:0;xf -g lst
+: 1785955950:0;vi lst
+: 1785956039:0;lst
+: 1785956082:0;vi lst
+: 1785956203:0;lst
+: 1785956231:0;xf -p lst
+: 1785956236:0;mem
+: 1785956270:0;xf -g mem
+: 1785956276:0;vi mem
+: 1785956339:0;./mem
+: 1785956346:0;./mem
+: 1785956358:0;xf -p mem
+: 1785956363:0;mon
+: 1785956388:0;xf -g mon
+: 1785956391:0;vi mon
+: 1785956482:0;mon
+: 1785956499:0;xf -p mon
+: 1785956515:0;xf -g mp4_merge
+: 1785958728:0;lsd
+: 1785958731:0;ll
+: 1785958735:0;yts
+: 1785958887:0;Tw
+: 1785958889:0;ll
+: 1785958907:0;cl yts
+: 1785958914:0;ll
+: 1785958917:0;./log_check
+: 1785958934:0;Tw
+: 1785958935:0;ll
+: 1785959013:0;,
+: 1785959020:0;cl LIBS/scratch
+: 1785959021:0;ll
+: 1785959023:0;vi mp4_merge
+: 1785959611:0;mp4_merge
+: 1785959640:0;vi mp4_merge
+: 1785960036:0;mp4_merge
+: 1785960066:0;mp4_merge kim
+: 1785960080:0;ll
+: 1785960086:0;Tw
+: 1785960087:0;ll
+: 1785960128:0;,
+: 1785960130:0;ll
+: 1785960138:0;xf -p mp4_merge
+: 1785960162:0;xf -g mscore_keys
+: 1785964289:0;yts
+: 1785965343:0;ll
+: 1785966295:0;yt 'https://www.youtube.com/watch?v=Lj_4DW7fXms&pp=ygUKYXBlcmEgcGgyMA%3D%3D'
+: 1785966302:0;D
+: 1785966327:0;ll
+: 1785966372:0;ll
+: 1785967103:0;cl LIBS/scratch
+: 1785967109:0;ll
+: 1785967158:0;ll
+: 1785967166:0;vi mscore_keys
+: 1785967212:0;./mscore_keys
+: 1785967239:0;l
+: 1785967246:0;xf -p mscore_keys
+: 1785967256:0;xf -g mya
+: 1785967259:0;vi mya
+: 1785967393:0;mya
+: 1785967415:0;xf -p mya
+: 1785967425:0;xf -g myperms
+: 1785967519:0;vi myperms
+: 1785967684:0;ule
+: 1785967694:0;vi zsh.tip
+: 1785968181:0;myperms
+: 1785968233:0;vi myperms
+: 1785968271:0;xf -p myperms
+: 1785968452:0;D
+: 1785968457:0;ll
+: 1785968463:0;o
+: 1785971130:0;tip zsh
+: 1785971201:0;cl LIBS/scratch
+: 1785971202:0;ll
+: 1785971209:0;rm lsc.orig
+: 1785971221:0;xf -g myperms
+: 1785971223:0;ll
+: 1785971227:0;vi myperms
+: 1785971360:0;vi myperms
+: 1785971367:0;vi myperms
+: 1785971380:0;myperms
+: 1785971399:0;xf -p myperms
+: 1785972966:0;xf -g nut
+: 1785972975:0;vi xf
+: 1785973110:0;xf -c nut
+: 1785973119:0;vi xf
+: 1785973151:0;ll
+: 1785973153:0;xf -c nut
+: 1785973162:0;vi xf
+: 1785973174:0;xf -c nut
+: 1785975536:0;Tw
+: 1785975537:0;lsd
+: 1785975550:0;ll
+: 1785978397:0;yts
+: 1785978430:0;yts -wy
+: 1785978467:0;yt 'https://www.youtube.com/watch?v=u5h2OCcKYkc'
+: 1785978524:0;ll
+: 1785978549:0;fsub -p'Tucker Carlson' "It's Time To Save America.mp4"
+: 1785978551:0;ll
+: 1785978671:0;lsd
+: 1785978675:0;ll
+: 1786002505:0;vi nut
+: 1786003842:0;nut
+: 1786003850:0;vi nut
+: 1786003868:0;nut conn
+: 1786003876:0;nut conn -H
+: 1786003900:0;./nut conn
+: 1786003905:0;vi nut
+: 1786003985:0;./nut conn
+: 1786003988:0;vi nut
+: 1786004013:0;ifconfig
+: 1786004037:0;ip -br link show state UP
+: 1786004052:0;ip -br link show state
+: 1786004056:0;ip -br 
+: 1786004068:0;ip -br link show state UP
+: 1786004127:0;ip -br link show state up
+: 1786004178:0;ip -br link show up
+: 1786004254:0;local LIST=(${${(f)"$(ip -br link show up)"}%% *})\
+LIST=(${LIST:#lo})
+: 1786004282:0;local LIST=(${${(f)"$(ip -br link show up)"}%% *})\
+echo ${LIST:#lo}
+: 1786004312:0;vi nut
+: 1786004427:0;./nut conn
+: 1786004543:0;zsh tip
+: 1786004549:0;tip zsh
+: 1786004624:0;vi nut
+: 1786004717:0;nut info
+: 1786004724:0;vi nut
+: 1786004769:0;nut info
+: 1786004787:0;vi nut
+: 1786004825:0;nut info
+: 1786004850:0;vi nut
+: 1786005417:0;tip zsh
+: 1786005932:0;tip zsh
+: 1786006024:0;nut info
+: 1786006048:0;vi nut
+: 1786006161:0;man zshall
+: 1786006573:0;vi nut
+: 1786006614:0;nmcli device show wl01
+: 1786006618:0;nmcli device show wlo1
+: 1786006640:0;vi nut
+: 1786006748:0;nmcli device show wlo1 | awk '/^IP$/ {print $2}'
+: 1786006760:0;nmcli device show wlo1 | awk '/^IP/ {print $2}'
+: 1786006768:0;nmcli device show wlo1 | awk '/^IP4/ {print $2}'
+: 1786006777:0;nmcli device show wlo1 | awk '/^IP4.DNS/ {print $2}'
+: 1786007016:0;cat /etc/resolv.conf
+: 1786007079:0;awk '/^nameserver/ {print $2}' /etc/resolv.conf
+: 1786007266:0;echo ${${$(ip route get 1.1.1.1)#*src }%% *} 
+: 1786007308:0;hostname -I
+: 1786007321:0;vi nut
+: 1786007513:0;nut info
+: 1786007568:0;nut -H
+: 1786007577:0;nut ip_int
+: 1786007580:0;nut ip_ext
+: 1786009896:0;Tw
+: 1786009897:0;lsd
+: 1786009906:0;ll
+: 1786009908:0;,
+: 1786009910:0;ll
+: 1786009917:0;xf -c nut
+: 1786012876:0;clear
+: 1786012879:0;ll
+: 1786012987:0;d
+: 1786012988:0;ll
+: 1786012992:0;lsd
+: 1786013010:0;ll
+: 1786013018:0;l.
+: 1786013026:0;rm .mscbackup
+: 1786013028:0;ll
+: 1786013066:0;me SetupEScribe2_SP77_INT.run
+: 1786013067:0;ll
+: 1786013070:0;./SetupEScribe2_SP77_INT.run
+: 1786013094:0;ll
+: 1786013119:0;install mono-complete
+: 1786013181:0;install ca-certificates-mono
+: 1786013186:0;ll
+: 1786013189:0;./SetupEScribe2_SP77_INT.run
+: 1786013363:0;\
+
+: 1786013367:0;.ls
+: 1786013369:0;..
+: 1786022418:0;cl LIBS/scratch
+: 1786022419:0;ll
+: 1786022423:0;Tw
+: 1786022424:0;ll
+: 1786022428:0;lsd
+: 1786022437:0;ll
+: 1786022445:0;vi nut
+: 1786022901:0;./nut lan
+: 1786022923:0;vi nut
+: 1786023109:0;./nut geo
+: 1786023176:0;vi nut
+: 1786023256:0;./nut geo
+: 1786023408:0;vi nut
+: 1786023472:0;./nut geo
+: 1786023519:0;./nut geo
+: 1786023532:0;vi nut
+: 1786029668:0;nut ip_ext
+: 1786029843:0;ll
+: 1786029845:0;yts
+: 1786029907:0;yts -wy
+: 1786029948:0;yts
+: 1786029970:0;yt 'https://www.youtube.com/watch?v=P9CwzXLtgNg'
+: 1786029981:0;yt 'https://www.youtube.com/watch?v=P9CwzXLtgNg'
+: 1786030048:0;yts
+: 1786035255:0;clear
+: 1786035303:0;nut
+: 1786035316:0;ll
+: 1786035322:0;xf -p nut
+: 1786035331:0;xf -g o
+: 1786035519:0;yts
+: 1786035558:0;yts 'ian proud'
+: 1786036504:0;Tw
+: 1786036505:0;ll
+: 1786036507:0;lsd
+: 1786036521:0;l
+: 1786036524:0;ll
+: 1786045135:0;yts
+: 1786045246:0;.ls yts
+: 1786045249:0;ll
+: 1786045256:0;ll -t
+: 1786045270:0;vi yt.log.5kMssR
+: 1786045295:0;yts -wy
+: 1786045364:0;lsd yt.lg*
+: 1786045367:0;lsd yt.log*
+: 1786045372:0;ll
+: 1786045468:0;Tw
+: 1786045469:0;ll
+: 1786045472:0;lsd
+: 1786045486:0;ll
+: 1786048452:0;Tm
+: 1786048454:0;ll
+: 1786048460:0;Tw
+: 1786048463:0;yts
+: 1786048632:0;clear
+: 1786048642:0;cl yts
+: 1786048644:0;vi yts
+: 1786048656:0;bak -r
+: 1786048663:0;clear
+: 1786048666:0;Tw
+: 1786048667:0;ll
+: 1786051682:0;yts
+: 1786051971:0;lwe
+: 1786051973:0;lsd
+: 1786051983:0;ll
+: 1786054152:0;yts
+: 1786054225:0;cl yts
+: 1786054229:0;vi yts
+: 1786054260:0;bak -r
+: 1786054263:0;yts
+: 1786054337:0;vi yts
+: 1786054498:0;bak -r
+: 1786054502:0;yts
+: 1786054671:0;ll
+: 1786055714:0;cl LIBS/scratch
+: 1786055715:0;ll
+: 1786055718:0;v o
+: 1786055726:0;v
+: 1786055727:0;,
+: 1786055736:0;vi o
+: 1786055907:0;o
+: 1786055934:0;o 2>x
+: 1786055944:0;vi x
+: 1786055969:0;rm x
+: 1786055970:0;ll
+: 1786055983:0;o -DDDD 
+: 1786056190:0;vi o
+: 1786056270:0;o -DDD
+: 1786056308:0;vi o
+: 1786056348:0;o -DDD
+: 1786056393:0;vi o
+: 1786056459:0;o -DDD
+: 1786056471:0;vi o
+: 1786056490:0;o -DDD
+: 1786056514:0;ll
+: 1786056516:0;,
+: 1786056518:0;,
+: 1786056522:0;man zshall
+: 1786056705:0;vi o
+: 1786056729:0;o -DDD
+: 1786056752:0;vi o
+: 1786056837:0;o -DDD
+: 1786056860:0;vi "a file with spaces"
+: 1786056866:0;o
+: 1786056892:0;vi o
+: 1786056906:0;o
+: 1786056921:0;ll
+: 1786056944:0;o 2>&1
+: 1786056961:0;o 2>&1 | tee x
+: 1786056969:0;vi x
+: 1786057049:0;rm x
+: 1786057051:0;ll
+: 1786057055:0;vi o
+: 1786057250:0;o
+: 1786057259:0;o -DDD
+: 1786057304:0;vi o
+: 1786057349:0;b
+: 1786057354:0;g dbg_arg
+: 1786057362:0;,
+: 1786057365:0;vi o
+: 1786057461:0;o -DDD
+: 1786057505:0;vi o
+: 1786057540:0;o 
+: 1786057550:0;o -DDD
+: 1786057574:0;vi o
+: 1786057617:0;o -DDD
+: 1786057642:0;vi o
+: 1786057703:0;o -DDD
+: 1786057720:0;vi o
+: 1786057745:0;o
+: 1786057802:0;xf -p o
+: 1786057813:0;ll
+: 1786057822:0;rm a\ file\ with\ spaces
+: 1786057823:0;ll
+: 1786057839:0;cat cut_list
+: 1786057856:0;xf -g playit
+: 1786057862:0;vi playit
+: 1786057901:0;playit
+: 1786057913:0;vi playit
+: 1786057953:0;playit
+: 1786058001:0;M
+: 1786058016:0;vi playit
+: 1786058214:0;playit
+: 1786058217:0;playit
+: 1786058226:0;vi playit
+: 1786058249:0;playit
+: 1786058253:0;vi playit
+: 1786058260:0;./playit
+: 1786058301:0;vi playit
+: 1786058309:0;./playit
+: 1786058332:0;vi playit
+: 1786058371:0;./playit
+: 1786058389:0;vi playit
+: 1786058402:0;./playit
+: 1786058439:0;vi playit
+: 1786058450:0;./playit
+: 1786058473:0;xf -c playit
+: 1786058478:0;xf -p playit
+: 1786058493:0;xf -g qps
+: 1786058501:0;vi qps
+: 1786058639:0;qps
+: 1786058646:0;qps plex
+: 1786058674:0;vi qps
+: 1786058708:0;qps plex
+: 1786058715:0;./qps plex
+: 1786058726:0;echo $PATH
+: 1786058747:0;vi qps
+: 1786058752:0;./qps plex
+: 1786058765:0;vi qps
+: 1786058770:0;./qps plex
+: 1786058780:0;vi qps
+: 1786058830:0;./qps plex
+: 1786058890:0;vi qps
+: 1786058933:0;xf -p qps
+: 1786058945:0;xf -g repo
+: 1786058949:0;vi repo
+: 1786059009:0;repo
+: 1786059025:0;xf -p repo
+: 1786059031:0;ll
+: 1786059039:0;vi cut_list
+: 1786059057:0;xf -g spell
+: 1786059067:0;vi spell
+: 1786059248:0;spell dichotomy
+: 1786059254:0;spell dichotoy
+: 1786059258:0;spell dichotomy
+: 1786059265:0;vi spell
+: 1786059282:0;xf -p spell
+: 1786059290:0;xf -g stick
+: 1786059344:0;ll
+: 1786059346:0;lsd
+: 1786059358:0;ll
+: 1786059421:0;vi stick
+: 1786059730:0;stick
+: 1786059735:0;vi stick
+: 1786059797:0;stick
+: 1786059802:0;vi stick
+: 1786059947:0;stick
+: 1786059955:0;vi stick
+: 1786059992:0;stick
+: 1786060001:0;stick
+: 1786060053:0;ll
+: 1786060055:0;vi stick
+: 1786060125:0;ll
+: 1786060158:0;xf -c stick
+: 1786063384:0;lsd
+: 1786063388:0;ll
+: 1786089520:0;tz
+: 1786089596:0;lsd
+: 1786089690:0;vi stick
+: 1786090373:0;me tstit
+: 1786090375:0;tstit
+: 1786090402:0;vi tstit
+: 1786090421:0;tstit
+: 1786090427:0;vi tstit
+: 1786090508:0;tstit
+: 1786090512:0;vi tstit
+: 1786090612:0;tstit
+: 1786090615:0;vi tstit
+: 1786090642:0;tstit
+: 1786090652:0;vi tstit
+: 1786090675:0;tstit
+: 1786090778:0;vi stick
+: 1786090825:0;tstit
+: 1786090856:0;vi stick
+: 1786090965:0;tstit
+: 1786090972:0;vi stick
+: 1786090988:0;tstit
+: 1786091018:0;vi stick
+: 1786091277:0;stick -D
+: 1786091351:0;vi stick
+: 1786091428:0;stick -D -n
+: 1786091465:0;vi stick
+: 1786091562:0;stick -D -n
+: 1786091579:0;vi stick
+: 1786091617:0;stick -D -n
+: 1786091676:0;vi stick
+: 1786091906:0;stick -D -n
+: 1786091917:0;ll
+: 1786091926:0;stick -D -n
+: 1786091989:0;vi stick
+: 1786092014:0;stick -D -n
+: 1786092034:0;vi stick
+: 1786092055:0;stick -D -n
+: 1786092070:0;vi stick
+: 1786092120:0;stick -D -n
+: 1786092153:0;ll
+: 1786092231:0;vi stick
+: 1786092298:0;stick -D -n
+: 1786092424:0;ll
+: 1786092428:0;vi stick
+: 1786092579:0;stick -D -n
+: 1786092639:0;cl LIBS/scratch
+: 1786092640:0;ll
+: 1786092645:0;llr
+: 1786092658:0;ll
+: 1786092665:0;vi x
+: 1786092670:0;rm x
+: 1786092671:0;ll
+: 1786092686:0;Tw
+: 1786092687:0;ll
+: 1786092694:0;vi stick
+: 1786092810:0;tstit
+: 1786092823:0;vi tstit
+: 1786092877:0;stick -D -n
+: 1786092918:0;dut -m
+: 1786092925:0;dut external -m
+: 1786092931:0;stick -D -n
+: 1786092965:0;stick -D 
+: 1786092974:0;stick -D -n
+: 1786092999:0;vi stick
+: 1786093054:0;stick -D -n
+: 1786093108:0;mount
+: 1786093122:0;vi stick
+: 1786093166:0;stick -D -n
+: 1786093214:0;vi stick
+: 1786093384:0;stick -D -n
+: 1786093420:0;vi stick
+: 1786093811:0;stick -D -n
+: 1786093852:0;vi stick
+: 1786093961:0;stick -D -n
+: 1786093993:0;vi stick
+: 1786094273:0;stick -D -n
+: 1786094370:0;ll
+: 1786094376:0;ll
+: 1786094400:0;md -p ./dl1/dl2/dl3
+: 1786094402:0;llr
+: 1786094404:0;,
+: 1786094410:0;stick -D -n
+: 1786094497:0;fut generate 3
+: 1786094500:0;..
+: 1786094501:0;..
+: 1786094505:0;..
+: 1786094511:0;stick -D -n
+: 1786094571:0;vi stick
+: 1786094591:0;stick -D -n
+: 1786094607:0;ll
+: 1786094621:0;rm archive/dl1
+: 1786094627:0;ll
+: 1786094638:0;ll
+: 1786094641:0;..
+: 1786094642:0;ll
+: 1786094671:0;dut external -u
+: 1786094674:0;ll
+: 1786094681:0;rm EXT_2
+: 1786094683:0;ll
+: 1786094685:0;ll
+: 1786094692:0;vi stick
+: 1786094773:0;dut external -u
+: 1786094785:0;stick -D -n
+: 1786094799:0;ll
+: 1786094814:0;xf -p stick
+: 1786094831:0;xf -g sut
+: 1786098421:0;ci cut_list
+: 1786098424:0;vi cut_list
+: 1786109376:0;cl yts
+: 1786109381:0;cl LIBS/scratch
+: 1786109387:0;chkupd

@@ -83,9 +83,9 @@ load_ssid_signals () {
 	local BEST=0
 
 	for S in ${RAWLIST};do
-		ACTIVE=$(cut -d: -f1 <<<${S})
-		SSID=$(cut -d: -f2 <<<${S})
-		SIGNAL=$(cut -d: -f3 <<<${S})
+		ACTIVE="${${(@s/:/)S}[1]}"
+		SSID="${${(@s/:/)S}[2]}"
+		SIGNAL="${${(@s/:/)S}[3]}"
 		_SSID_SIGNAL[${SSID}]=${SIGNAL}
 		[[ ${ACTIVE} == '*' ]] && g_ACTIVE_SSID=${SSID}
 		[[ ${SIGNAL} -gt ${BEST} ]] && BEST=${SIGNAL} && g_BEST_SIGNAL=${SSID}
@@ -93,7 +93,7 @@ load_ssid_signals () {
 }
 
 set_current_ssid () {
-	g_ACTIVE_SSID=$(nmcli | grep -i 'connected to' | tr -s '[:space:]' | cut -d' ' -f4-)
+	g_ACTIVE_SSID="${${(@s/ /)$(nmcli | grep -i 'connected to')}[4,-1]}"
 }
 
 ssid_best () {

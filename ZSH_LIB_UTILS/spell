@@ -123,7 +123,7 @@ if [[ ${RC} -eq 0 ]];then
 	echo "\"${WORD}\" is ${GREEN_FG}correct${RESET}"
 else
 	echo "\"${WORD}\" is ${RED_FG}mispelled${RESET}\n"
-	echo -n "${WHITE_FG}Suggestions${RESET}:";echo ${OUT} | grep '&' | cut -d':' -f2- | fold -80 -s | tr '[A-Z]' '[A-Za-z]'
+	echo -n "${WHITE_FG}Suggestions${RESET}:";echo "${OUT}" | awk -F':' '/&/ {sub(/^[^:]*:/, ""); print tolower($0)}' | fold -80 -s
 fi
 
 [[ ${DICT} == 'true' ]] && dict ${WORD}

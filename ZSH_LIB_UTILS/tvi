@@ -88,8 +88,8 @@ read_cache () {
 	[[ ! -e ${_CACHE} ]] && return
 
 	while read LINE;do
-		g_TARGET_FILE=$(cut -d'|' -f1 <<<${LINE})
-		TPATH=$(cut -d'|' -f2 <<<${LINE})
+		g_TARGET_FILE="${${(@s/|/)LINE}[1]}"
+		TPATH="${${(@s/|/)LINE}[2]}"
 		CACHED_TARGETS[${g_TARGET_FILE}]=${TPATH}
 	done < ${_CACHE}
 }
@@ -128,14 +128,14 @@ validate_fn () {
 
 try_whereis () {
 	local ARG=${1}
+	local -a LIST=()
 	local L
 
 	echo "Searching with whereis..."
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Invoking whereis..."
-
-	LIST=($(whereis ${ARG} | cut -d: -f2 | sed 's/^[ \t]*//g'))
-	LIST+=($(whereis -B ${_ADD_PATH} -f ${ARG} | cut -d: -f2 | sed 's/^[ \t]*//g'))
+	LIST=( ${=${$(whereis -b ${ARG})#*:}} )
+	LIST+=( ${=${$(whereis -b -B ${_ADD_PATH} -f ${ARG})#*:}} )
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${0} found ${#LIST} possible candidates"
 
@@ -153,6 +153,7 @@ try_whereis () {
 }
 
 try_locate () {
+	local -a LIST=()
 	local ARG=${1}
 	local L
 
@@ -183,8 +184,8 @@ try_locate () {
 
 try_alias () {
 	local ARG=${1}
+	local ALIAS=''
 	local RC=1
-	local ALIAS
 	local REAL_FN=''
 
 	echo "Searching aliases..."
@@ -197,9 +198,9 @@ try_alias () {
 	if [[ ${RC} -eq 0 ]];then # Check for links and editable
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${WHITE_FG}${1}${RESET} is an alias for:${WHITE_FG}${ALIAS}${RESET}"
 
-		REAL_FN=$(echo ${ALIAS} | cut -d' ' -f1) # Parse gal output
+		REAL_FN="${${(@s/ /)ALIAS}[1]}" # Parse gal output
 		if [[ ${REAL_FN} =~ "sudo" ]];then # Check for sudo
-			REAL_FN=$(echo ${ALIAS} | cut -d' ' -f2) # Skip sudo
+			REAL_FN="${${(@s/ /)ALIAS}[2]}" # Skip sudo
 		fi
 
 		if [[ -h ${REAL_FN} ]];then # Is link?
@@ -229,7 +230,8 @@ try_alias () {
 
 set_target () {
 	local ARG=$@
-	local -a FILE FILES=()
+	local -a FILE=()
+	local -a FILES=()
 	local -a LIST=()
 	local FN=''
 	local MATCHES=0
@@ -275,21 +277,21 @@ set_target () {
 
 		# Prioritize multiple candidates
 		if [[ ${#PRIORITIZE} -eq 1 ]];then
-			g_TARGET_FILE=$(echo ${PRIORITIZE[1]} | cut -d'|' -f2) # Only 1 match; take it
+			g_TARGET_FILE="${${(@s/|/)PRIORITIZE[1]}[2]}"
 		else
 			echo "${WHITE_FG}${ARG}${RESET} matched multiple files..." # Prompt for selection if multiple hits
 			while true;do
 				NDX=0
 				for P in ${PRIORITIZE};do
 					((NDX++))
-					FN=$(echo ${P} | cut -d'|' -f2)
+					FN="${${(@s/|/)P}[2]}"
 					echo "${NDX}) ${FN}"
 				done
 				echo -n "Choose a file [${WHITE_FG}1..${#PRIORITIZE}${RESET}] or ${WHITE_FG}<ENTER>${RESET} to skip:"
 				read PFN
 				[[ -z ${PFN} ]] && exit_leave "${RED_FG}Operation cancelled${RESET}"
 				if [[ ${PFN} -ge 1 && ${PFN} -le ${#PRIORITIZE} ]];then
-					g_TARGET_FILE=$(echo ${PRIORITIZE[${PFN}]} | cut -d'|' -f2)
+					g_TARGET_FILE="${${(@s/|/)${PRIORITIZE[${PFN}]}}[2]}"
 					break
 				else
 					continue

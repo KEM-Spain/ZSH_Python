@@ -71,12 +71,12 @@ _INFO_W=$((_CONT_WIDTH - 6 ))
 
 _CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
 _IND_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4 -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_IND_W} -y30) H 4 W ${_IND_W}) # Indicator display coords
-_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 4 W ${_INFO_W}) # Info display coords
+_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 5 W ${_INFO_W}) # Info display coords
 
 # Constants
 _CFG_DIR=~/.local/share/yts
 _ACTION=download
-_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
@@ -180,7 +180,7 @@ action_do () {
 				job_reset
 				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED"
 				MSG="Cancelling download..."
-				msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
+				msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 				_CANCELLED[${M}]=true
 				break
 			fi
@@ -190,7 +190,7 @@ action_do () {
 				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="<w>Small Download <g>is complete...<N>"
-					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "${MSG}"
+					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|${MSG}"
 					_DOWNLOADS[${M}]=true
 					logit ${_YT_DBG_LOG} "${0}: POST-PROCESSING"
 					post_process
@@ -209,14 +209,14 @@ action_do () {
 					*sleeping*|*hlsnative*|*^\[info\]*)
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						logit ${_YT_DBG_LOG} "${0}: PRE-PROCESSING"
-						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
+						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 						continue
 						;;
 					*'already been'*|*100%*)
 						logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 						MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${LOG_LINE})
 						MSG=${MSG[1,60]}
-						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>|<B>Has already been downloaded<N>"
+						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>|<B>Has already been downloaded<N>"
 						_DOWNLOADS[${M}]=true
 						break
 						;;
@@ -224,14 +224,14 @@ action_do () {
 						logit ${_YT_DBG_LOG} "${0}: FUTURE"
 						[[ ! ${LOG_LINE:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 						MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
+						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 						_FUTURE[${M}]=true
 						_DOWNLOADS[${M}]=false
 						break
 						;;
 					*yt_live_broadcast*)
 						MSG="Live broadcast - unable to download"
-						msg_box -c -z -A"${(kv)_INFO_COORDS}" "<r>${MSG}<N>"
+						msg_box -c -z -A"${(kv)_INFO_COORDS}" "|<Z>|<r>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
 						_FAILED[${M}]=true
 						_DOWNLOADS[${M}]=false
@@ -298,7 +298,7 @@ action_do () {
 								g_PRESERVE_LOG=true
 								break
 							else
-								msg_box -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
+								msg_box -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
 								job_retry ${URL} ${TITLE}
 							fi
 						fi
@@ -779,12 +779,12 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'title' ]];then
+		STR=$(utf_to_iso ${STR})
 		STR=$(str_word_clip ${STR} ${_FIELD_LEN[${FIELD}]})
 	fi
 
 	if [[ -n ${_FIELD_LEN[${FIELD}]} ]];then
 		STR=${STR[1,${_FIELD_LEN[${FIELD}]}]}
-		STR=$(printf '%s' "$STR" | iconv -f UTF-8 -t ISO-8859-1 2>/dev/null)
 	fi
 
 	echo -n ${STR}
@@ -1163,7 +1163,7 @@ parse_err_msg () {
 		*) MSG=${ERROR[1,50]};;
 	esac
 	
-	echo ${MSG}
+	echo "|<Z>|${MSG}"
 }
 
 parse_rumble () {
@@ -1301,7 +1301,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -A"${(kv)_INFO_COORDS}" "<g>${MSG}<N>"
+	msg_box -A"${(kv)_INFO_COORDS}" "|<Z>|<g>${MSG}<N>"
 
 	NDX=0
 	while true;do
@@ -1310,7 +1310,7 @@ post_process () {
 		if [[ ${?} -ne 0 ]];then
 			sleep 1 && break
 		fi
-		msg_box -A"${(kv)_INFO_COORDS}" "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish post-processing..."
+		msg_box -A"${(kv)_INFO_COORDS}" "|<Z>|(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish post-processing..."
 		sleep 1
 	done
 
@@ -1832,7 +1832,7 @@ if ! fav_load;then
 fi
 
 # Run Query
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	while true;do

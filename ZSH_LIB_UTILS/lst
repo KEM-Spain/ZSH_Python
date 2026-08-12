@@ -121,9 +121,8 @@ get_fn () {
 	local NDX=${1}
 	local FN
 	local TYPE
-
-	FN=$(cut -d'|' -f1 <<<${_LIST[${NDX}]:t})
-	TYPE=$(cut -d'|' -f2 <<<${_LIST[${NDX}]})
+	FN="${${(@s/|/)${_LIST[${NDX}]:t}}[1]}"
+	TYPE="${${(@s/|/)${_LIST[${NDX}]}}[2]}"
 	if [[ ${TYPE} == 'link' ]];then
 		echo "$(realpath ${FN})"
 	else
@@ -136,8 +135,8 @@ get_type () {
 	local FN
 	local TYPE
 
-	FN=$(cut -d'|' -f1 <<<${_LIST[${NDX}]:t})
-	TYPE=$(cut -d'|' -f2 <<<${_LIST[${NDX}]})
+	FN="${${(@s/|/)${_LIST[${NDX}]:t}}[1]}"
+	TYPE="${${(@s/|/)${_LIST[${NDX}]}}[2]}"
 	if [[ ${TYPE} == 'link' ]];then
 		echo "$(type_color $(file_type $(realpath ${FN}))) $(type_color ${TYPE})"
 	else
@@ -295,10 +294,11 @@ shift $(( OPTIND - 1 ))
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1} || SEARCHTERM=''
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
+
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH="${${(@s/|/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 [[ ${_DEBUG} -gt 0 ]] && echo "find ${FPATH} -maxdepth 1 ${FGLOB} ! -path ${FPATH}" | dbg
@@ -347,7 +347,7 @@ if [[ ${_SUMMARY_ONLY} == 'true' ]];then
 	LONGEST=0
 	for L in ${_LOCAL_LIST};do
 		((NDX++))
-		TYPE=$(cut -d'|' -f2 <<<${L})
+		TYPE="${${(@s/|/)L}[2]}"
 		[[ ${#TYPE} -gt ${LONGEST} ]] && LONGEST=${#TYPE}
 		if [[ -z ${_SUMMARY[${TYPE}]} ]];then
 			_SUMMARY[${TYPE}]=1

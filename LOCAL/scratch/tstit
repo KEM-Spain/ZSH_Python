@@ -1,0 +1,17 @@
+#!/usr/bin/zsh
+ 
+setopt EXTENDED_GLOB 
+
+STAMP="00:59:24"
+echo "${STAMP}"
+
+STAMP="${${(@s/:/)STAMP}[1]}"
+echo "${STAMP}"
+
+STAMP="00:59:24"
+STAMP="${${(@s/:/)STAMP}[2]}"
+echo "${STAMP}"
+
+STAMP="00:59:24"
+STAMP="${${(@s/:/)STAMP}[2,-1]}"
+echo "${STAMP}"

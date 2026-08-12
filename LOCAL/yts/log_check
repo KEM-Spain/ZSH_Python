@@ -32,7 +32,7 @@ typeset -a LOG_LIST=()
 typeset -a LOG_NOT_DIR=()
 typeset -a LOG_ROWS=()
 
-_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 _YTS_DIR=~/.local/share/yts
 _LOG=yts.downloads
 _DOWNLOAD_LOG=${_YTS_DIR}/${_LOG}

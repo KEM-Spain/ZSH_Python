@@ -34,8 +34,8 @@ get_mon_status () {
 	local STATUS
 
 	for L in ${(o)LIST};do
-		MON=$(cut -d' ' -f1 <<<${L})
-		STATUS=$(cut -d' ' -f2 <<<${L})
+		MON="${${(@s/ /)L}[1]}"
+		STATUS="${${(@s/ /)L}[2]}"
 		MON_STATUS[${MON}]=${STATUS}
 	done
 }
@@ -52,7 +52,7 @@ get_mon_state () {
 
 	for L in ${LIST};do
 		[[ ${L:l} =~ "${MON:l}" ]] && continue
-		STATE=$(echo ${L} | cut -d: -f2-)
+		STATE="${${(@s/:/)L}[2,-1]}"
 		break
 	done
 

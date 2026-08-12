@@ -84,7 +84,7 @@ ___EOF
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 
-	LIST=("${(f)$(ifconfig | grep -i running | grep -vi lo: | cut -d: -f1)}")
+	LIST=(${${${(M)${(f)"$(ifconfig)"}:#*:*RUNNING*}%%:*}:#lo})
 	[[ -z ${LIST} ]] && echo "${RED_FG}No network connection${RESET}" && set_exit_value 1
 
 	for L in ${LIST};do
@@ -196,19 +196,18 @@ ___EOF
 	# Execution
 	 
 	# Get interface
-	ACTIVE_IFACES=($(ifconfig -v | grep 'RUNNING.*MULTICAST' | cut -d: -f1))
+	ACTIVE_IFACES=(${${${(M)${(f)"$(ifconfig)"}:#*:*RUNNING*}%%:*}:#lo})
 	[[ -z ${ACTIVE_IFACES} ]] && exit_leave "${RED_FG}Unable to detect an active interface${RESET}.\nVerify wifi or cable connection" 
 
 	# Get DNS
 	VPN_DNS=false
 	for I in ${ACTIVE_IFACES};do 
 		if [[ ${I} =~ "tun" ]];then
-			LIST=()
-			LIST=($(cat /etc/resolv.conf | grep "^nameserver" | cut -d' ' -f2))
+			LIST=("${(f)$(awk '/^nameserver/ {print $2}' /etc/resolv.conf)}")
 			VPN_DNS=true
 			break
 		else
-			LIST+=($(nmcli device show ${I} | grep IP4.DNS | tr -s '[:space:]' | cut -d: -f2))
+			LIST=("${(f)$(nmcli device show ${I} | awk '/^IP4.DNS/ {print $2}')}")
 		fi
 	done
 
@@ -329,7 +328,7 @@ ___EOF
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 
-	IP=$(ifconfig | grep 192 | grep -w inet | grep -v 127 | sed 's/\(^ *\)\(.*\)/\2/g' | cut -d\  -f2 | head -1)
+	IP=$(hostname -I)
 	[[ -z ${IP} ]] && exit_leave "${0}: failed" || echo ${IP}
 }
 
@@ -359,8 +358,9 @@ ___EOF
 	# Execution
 	[[ ${1} == '-H' ]] && usage
 
-	IP=$(wget --timeout=1 -qO- http://ipecho.net/plain)
-	[[ ${?} -eq 4 || -z ${IP} ]] && exit_leave "${0}: failed" || echo ${IP}
+	IP=$(dig +short myip.opendns.com @resolver1.opendns.com)
+	#IP=$(wget --timeout=1 -qO- http://ipecho.net/plain)
+	[[ ${?} -ne 0 || -z ${IP} ]] && exit_leave "${0}: failed" || echo ${IP}
 }
 
 lan () {
@@ -484,12 +484,11 @@ ___EOF
 	printf "${WHITE_FG}%-18s %-18s %-20s${RESET}\n" $(str_unicode_line 18) $(str_unicode_line 18) $(str_unicode_line 20)
 
 	for A in ${(on)ARP};do
-		local IP=$(cut -c1-15 <<<${A})
-		local HW=$(cut -c16-33 <<<${A})
-		local MAC=$(cut -c34-53 <<<${A} | str_trim)
-		local FLGMSK=$(cut -c54-75 <<<${A})
-		local IFACE=$(cut -c76-85 <<<${A})
-		# Printf "IP:%-20s HW:%-20s MAC:%-20s FLGMSK:%-20s IFACE:%-20s\n" ${IP} ${HW} ${MAC} ${FLGMSK} ${IFACE}
+		local IP=${A[1,15]}
+		local HW=${A[16,33]}
+		local MAC=$(str_trim ${A[34,52]})
+		local FLGMSK=${A[54,75]}
+		local IFACE=${A[76,85]}
 		local DESC=${MAC_IDS[${MAC}]}
 		[[ -z ${DESC}  ]] && continue
 		((DEV_CNT++))

@@ -14,6 +14,7 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+# TODO: Select box needs work on sizes and alignment
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -45,9 +46,9 @@ action_do () {
 	local -A PERM_DECODE=(no-access n execute x write w write-execute wx read r read-execute re read-write rw read-write-execute rwx)
 	local -A SPECIAL_DECODE=('no special permissions' none 'only user can delete or rename (sticky)' sticky 'run as group' setgid 'run as group (sticky)' stkgid 'run as user' setuid 'run as user (sticky)' stkuid 'run as user and group' setugd 'run as user and group (sticky)' stkugi)
 	local -a COMBO_PERMS=(rwxr-xr-x rwxrwxr-x rwxrwxrwx rw-rw-rw- rw-r--r-- rw-------)
-	local -a USER_LIST=($(cut -d: -f1 </etc/passwd))
-	local -a GROUP_LIST=($(cut -d: -f1 </etc/group))
-	local -a USER_GROUP_LIST
+	local -a USER_LIST=(${(f)"$(</etc/passwd)"%%:*})
+	local -a GROUP_LIST=(${(f)"$(</etc/group)"%%:*})
+	local -a USER_GROUP_LIST=()
 	local G M U
 	local NDX
 	local PTYPE
@@ -284,10 +285,10 @@ parse_stat () {
 	[[ ${RC} -ne 0 ]] && msg_box -p -PK "stat returned an error (${RC})"
 
 	for L in ${STAT};do
-		_FILES[${NDX}]=$(cut -d'|' -f1 <<<${L:t})
-		_OWNERS[${NDX}]=$(cut -d'|' -f2 <<<${L})
-		_GROUPS[${NDX}]=$(cut -d'|' -f3 <<<${L})
-		PERM=$(cut -d'|' -f4 <<<${L})
+		_FILES[${NDX}]="${${(@s/|/)L:t}[1]}"
+		_OWNERS[${NDX}]="${${(@s/|/)L}[2]}"
+		_GROUPS[${NDX}]="${${(@s/|/)L}[3]}"
+		PERM="${${(@s/|/)L}[4]}"
 		[[ ${#PERM} -eq 3 ]] && PERM="0${PERM}"
 		_PERMS[${NDX}]=${PERM}
 	done
@@ -365,9 +366,9 @@ shift $(( OPTIND - 1 ))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH="${${(@s/|/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 _RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} ! -path ${FPATH}" 2>/dev/null )}")

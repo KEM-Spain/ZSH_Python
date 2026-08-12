@@ -26,7 +26,7 @@ typeset -A _RAWLIST
 typeset -a _ALL_LOGS=(${SYS_LOGS} ${LOCAL_LOGS})
 
 # Imports
-zmodload -F zsh/stat b:zstat
+zmodload zsh/stat
 
 # Functions
 action_do () {

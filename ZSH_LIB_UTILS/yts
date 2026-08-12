@@ -34,6 +34,9 @@ source ${_LIB_DIR}/LIB_INIT.zsh
 _DEPS+=(VALIDATE.zsh PATH.zsh DATE.zsh UTILS.zsh LIST.zsh SELECT.zsh CENTER.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
+zmodload zsh/stat
+zmodload zsh/datetime
+
 # Declarations
 typeset -A _CANCELLED=()
 typeset -A _CONT_COORDS=()
@@ -71,12 +74,12 @@ _INFO_W=$((_CONT_WIDTH - 6 ))
 
 _CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
 _IND_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4 -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_IND_W} -y30) H 4 W ${_IND_W}) # Indicator display coords
-_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 4 W ${_INFO_W}) # Info display coords
+_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 5 W ${_INFO_W}) # Info display coords
 
 # Constants
 _CFG_DIR=~/.local/share/yts
 _ACTION=download
-_DOWNLOAD_DIR=~/Downloads/Torrents/Library/web
+_DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
@@ -180,7 +183,7 @@ action_do () {
 				job_reset
 				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED"
 				MSG="Cancelling download..."
-				msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
+				msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 				_CANCELLED[${M}]=true
 				break
 			fi
@@ -190,7 +193,7 @@ action_do () {
 				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="<w>Small Download <g>is complete...<N>"
-					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "${MSG}"
+					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|${MSG}"
 					_DOWNLOADS[${M}]=true
 					logit ${_YT_DBG_LOG} "${0}: POST-PROCESSING"
 					post_process
@@ -209,14 +212,14 @@ action_do () {
 					*sleeping*|*hlsnative*|*^\[info\]*)
 						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
 						logit ${_YT_DBG_LOG} "${0}: PRE-PROCESSING"
-						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
+						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 						continue
 						;;
 					*'already been'*|*100%*)
 						logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 						MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${LOG_LINE})
 						MSG=${MSG[1,60]}
-						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>|<B>Has already been downloaded<N>"
+						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>|<B>Has already been downloaded<N>"
 						_DOWNLOADS[${M}]=true
 						break
 						;;
@@ -224,14 +227,14 @@ action_do () {
 						logit ${_YT_DBG_LOG} "${0}: FUTURE"
 						[[ ! ${LOG_LINE:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${LOG_LINE})
 						MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "<w>${MSG}<N>"
+						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 						_FUTURE[${M}]=true
 						_DOWNLOADS[${M}]=false
 						break
 						;;
 					*yt_live_broadcast*)
 						MSG="Live broadcast - unable to download"
-						msg_box -c -z -A"${(kv)_INFO_COORDS}" "<r>${MSG}<N>"
+						msg_box -c -z -A"${(kv)_INFO_COORDS}" "|<Z>|<r>${MSG}<N>"
 						logit ${_YT_DBG_LOG} "${0}: LIVE BROADCAST"
 						_FAILED[${M}]=true
 						_DOWNLOADS[${M}]=false
@@ -256,17 +259,21 @@ action_do () {
 						DEST_LINE=$(grep -Ei 'destination' ${g_YTS_LOG}) # Capture destination - whole file grep
 						if [[ ${?} -eq 0 ]];then
 							logit ${_YT_DBG_LOG} "${0}: GENERATING HEADER"
-							DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Strip path
-							DEST_1=$(cut -d'|' -f1 <<<${DEST})
-							DEST_1=$(cut -d']' -f2- <<<${DEST_1} | sed -e "s/^[[:space:]]/<w>/" -e "s/:/<N>:<f><w>/")
-							HDR1_TXT=$(cut -d'|' -f2 <<<${DEST:r} | sed 's/_/ /g') # Clear space fillers and file extension
+							DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Delimit file and path
+							DEST_1="${${(@s/|/)DEST}[1]}" # Isolate path
+							DEST_1="${(z)${(@s/]/)DEST_1}[2,-1]}" # Remove leading log tag
+							EG_ON;DEST_1=${DEST_1/(#b)(Destination)/<w>${match[1]}<N>:<w>};EG_OFF # Add color codes
+
+							HDR1_TXT="${${(@s/|/)${DEST:r}}[2]//_/ }" # Clear file name
 							HDR1_TXT=$(trim_title ${HDR1_TXT})
 							HDR1_TXT="<w>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
 							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 							HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
 							HRZ_CTR=$(center -H -w${HDR_LEN}) # Horiz center
+
 							[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
+
 							msg_box -C -O${CYAN_FG} -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 							msg_box -C -jl ${HDR2_TXT}
 							msg_box -C -jl "<c>$(str_unicode_line $(( _CONT_COORDS[W] - 2 )))<N>" # Divider line
@@ -298,7 +305,7 @@ action_do () {
 								g_PRESERVE_LOG=true
 								break
 							else
-								msg_box -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
+								msg_box -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying...<N> ${TRANS_ERR_CNT}:${TRANS_ERR_MSG}"
 								job_retry ${URL} ${TITLE}
 							fi
 						fi
@@ -330,6 +337,14 @@ action_do () {
 	_MARKED=()
 	trap - INT # Downloads are finished; cancel trap
 	return 0
+}
+
+EG_ON () {
+	setopt EXTENDED_GLOB
+}
+
+EG_OFF () {
+	unsetopt EXTENDED_GLOB
 }
 
 action_warn () {
@@ -392,8 +407,8 @@ dashed_line () {
 }
 
 download_indicator () {
-	local SPEED=$(cut -d'|' -f1 <<<${1} | cut -d. -f1)
-	local STYPE=$(cut -d'|' -f2 <<<${1})
+	local SPEED="${${(@s/./)${1}}[1]}"
+	local STYPE="${${(@s/|/)${1}}[2]}"
 	local L_OBJ="\\u23FA"
 	local M_OBJ="\\u25CF"
 	local R_OBJ="\\u2B24"
@@ -562,12 +577,12 @@ fav_add () {
 	EXISTING_KEYS=("${(f)$(grep -Ei "${_QUERY_OPTS[QKEY]}|${_QUERY_OPTS[DKEY]:gs/ /_/}" ${_YTS_FAVORITES})}")
 
 	for K in ${EXISTING_KEYS};do
-		DK=$(cut -d'|' -f1 <<<${K})
-		MK=$(cut -d'|' -f3 <<<${K})
+		DK="${${(@s/|/)K}[1]}"
+		MK="${${(@s/|/)K}[3]}"
 		MENU_KEY=${MK[1]}
 		if [[ ${MENU_KEY:l} == ${MENU_SEL:l} ]];then
 			UPD_KEY=true
-			_QUERY_OPTS[DKEY]=$(cut -d'|' -f1 <<<${K}) # Use existing display key
+			_QUERY_OPTS[DKEY]="${${(@s/|/)K}[1]}"
 			KEY_MATCH=${K} # Key for selected menu exists
 		fi
 	done
@@ -593,7 +608,7 @@ fav_add () {
 		fi
 		msg_box -c -p -PK -H1 -s# "<r>Duplicate Menu Key<N>#${KEY_MATCH}#<r>already exists<N>#<Z>#Replace with:#${NEW_KEY}#(Y/N)"
 		[[ ${_MSG_KEY} != 'y' ]] && return 1
-		LNUM=$(cut -d: -f1 <<<$(grep -ni ${KEY_MATCH} ${_YTS_FAVORITES})) # Get line number of existing key
+		LNUM="${${(@s/:/)$(grep -ni ${KEY_MATCH} ${_YTS_FAVORITES})}[1]}" # Get line number of existing key
 		if [[ -n ${LNUM} ]];then
 			sed -i "${LNUM}d" ${_YTS_FAVORITES} # Delete line number
 			sed -i "${LNUM}i ${NEW_KEY}" ${_YTS_FAVORITES} # Insert replacement
@@ -622,7 +637,7 @@ fav_delete () {
 	FAV_KEYS=("${(f)$(grep -Ei ${DKEY} ${_YTS_FAVORITES})}") # Locate via display key
 
 	for K in ${FAV_KEYS};do
-		F3=$(cut -d'|' -f3 <<<${K}) # 3rd field
+		F3="${${(@s/|/)K}[3]}"
 		MK=${F3[1]} # First char
 		[[ ${MK:l} == ${MKEY:l} ]] && KEY_MATCH=${K} # Ensure corresponding menu matches
 	done
@@ -655,8 +670,9 @@ fav_get () {
 	local TAG=''
 	local L
 
+
 	for L in ${(k)_FAV_LIST};do # [DKEY]="QKEY:OPTS"
-		OPTS=$(cut -d: -f2 <<<${_FAV_LIST[${L}]})
+		OPTS="${${(@s/:/)${_FAV_LIST[${L}]}}[2]}"
 		MENU_TYPE=${OPTS[1]:l} # Embedded in OPTS
 		case ${MENU_TYPE} in
 			c) C_LIST+="${(C)L:gs/_/ /}";;
@@ -722,9 +738,9 @@ fav_load () {
 	[[ ! -f ${_YTS_FAVORITES} ]] && return 1
 
 	while read LINE;do
-		DISPLAY_LABEL=$(cut -d'|' -f1 <<<${LINE})
-		Q_KEY=$(cut -d'|' -f2 <<<${LINE})
-		Q_OPTS=$(cut -d'|' -f3 <<<${LINE})
+		DISPLAY_LABEL="${${(@s/|/)LINE}[1]}"
+		Q_KEY="${${(@s/|/)LINE}[2]}"
+		Q_OPTS="${${(@s/|/)LINE}[3]}"
 		_FAV_LIST[${DISPLAY_LABEL}]="${Q_KEY}:${Q_OPTS}"
 	done < ${_YTS_FAVORITES}
 
@@ -753,13 +769,14 @@ get_field () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
+	# TODO: agetime is malformed - investigate
 	case ${FIELD} in
-		age) STR=$(cut -d'|' -f${FIELD_MAP[age]} <<<${_LIST[${NDX}]});;
-		agetime) STR=$(cut -d'|' -f${FIELD_MAP[agetime]} <<<${_LIST[${NDX}]});;
-		author) STR=$(cut -d'|' -f${FIELD_MAP[author]} <<<${_LIST[${NDX}]});;
-		time) STR=$(cut -d'|' -f${FIELD_MAP[time]} <<<${_LIST[${NDX}]});;
-		title) STR=$(cut -d'|' -f${FIELD_MAP[title]} <<<${_LIST[${NDX}]});;
-		url) STR=$(cut -d'|' -f${FIELD_MAP[url]} <<<${_LIST[${NDX}]});;
+		age) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[age]}]}";;
+		agetime) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[agetime]}]}";;
+		author) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[author]}]}";;
+		time) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[time]}]}";;
+		title) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[title]}]}";;
+		url) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[url]}]}";;
 	esac
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
@@ -931,8 +948,10 @@ last_code_update () {
 	[[ -z ${MARKER_ARG} ]] && exit_leave $(err_msg_exit "Missing argument:<MARKER>")
 
 	if [[ -e ${MARKER_ARG} ]];then
-		LAST_UPD=$(stat -c "%y" ${MARKER_ARG} | cut -d' ' -f1)
-		[[ -e ${MARKER_ARG} ]] && LAST_TIME=$(stat -c"%x" ${MARKER_ARG} | cut -d. -f1 | cut -d' ' -f2 | cut -d: -f1,2) 
+		LAST_UPD="${(z)${(@s/ /)$(/usr/bin/stat -c "%y" ${MARKER_ARG})}[1]}"
+
+		[[ -e ${MARKER_ARG} ]] && LAST_TIME=$(zstat -F "%H:%M" +mtime -- "${MARKER_ARG}")
+
 		echo "$(date_since_today ${_TODAY} ${LAST_UPD}) at ${LAST_TIME}"
 	fi
 }
@@ -942,9 +961,9 @@ last_file_downloaded () {
 	local FN=''
 	local IN=''
 
-	ST=$(stat -c"%W|%i|%n" ${_DOWNLOAD_DIR}/* | sort -t'|' -k1 -r | head -1) # Sort by birth date; grab most recent
-	FN=$(cut -d'|' -f3 <<<${ST}) # Filename
-	IN=$(cut -d'|' -f2 <<<${ST}) # Inode
+	ST=$(/usr/bin/stat -c"%W|%i|%n" ${_DOWNLOAD_DIR}/* | sort -t'|' -k1 -r | head -1) # Sort by birth date; grab most recent
+	FN="${${(@s/|/)ST}[3]}"
+	IN="${${(@s/|/)ST}[2]}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: FN:${FN} INODE:${IN}"
 
@@ -965,8 +984,8 @@ list_reset () {
 log_add () {
 	local NDX=${1}
 	local LF=$(last_file_downloaded) # Filename|Inode
-	local FN=$(cut -d'|' -f1 <<<${LF}) # Filename
-	local IN=$(cut -d'|' -f2 <<<${LF}) # Inode
+	local FN="${${(@s/|/)LF}[1]}"
+	local IN="${${(@s/|/)LF}[2]}"
 	local TL=$(get_field title ${NDX}) # Title
 	local AT=$(get_field agetime ${NDX}) # Age
 	local AU=$(get_field author ${NDX}) # Author
@@ -1029,7 +1048,7 @@ log_find () {
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Attempting TITLE match on:${LIST_TITLE[1,50]}"
 			LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE[1,50]} ${_YTS_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
 			if [[ ${?} -eq 0 ]];then
-				LINE_NUM=$(cut -d: -f1 <<<${LOG_TITLE}) # Fetch line number
+				LINE_NUM="${${(@s/:/)LOG_TITLE}[1]}" # Fetch line number
 				LOG_LINE=$(sed -n "${LINE_NUM}p" ${_YTS_DOWNLOAD_LOG}) # Fetch log line
 				LOG_AU=$(grep -i -o -m1 "${LIST_AU}$" <<<${LOG_LINE}) # Match author in log line
 				LOG_TM=$(grep -o ${LIST_TM} <<<${LOG_LINE}) # Match time in log line
@@ -1041,7 +1060,7 @@ log_find () {
 				fi
 
 				if [[ -n ${LOG_TM} && -n ${LOG_AU} ]];then
-					LOG_FN=$(cut -d '|' -f3 <<<${LOG_LINE}) # Fetch filename
+					LOG_FN="${${(@s/|/)LOG_LINE}[3]}"
 					_DOWNLOADS[${R}]=true
 
 					if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
@@ -1083,7 +1102,7 @@ log_to_file () {
 		LIST_TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R}) | tr -d '[()]' | sed 's/undefined//') # Video length from list
 		LINE=$(grep -i ${LIST_AU} ${_YTS_DOWNLOAD_LOG} 2>/dev/null | grep ${LIST_TM} 2>/dev/null) # Match on author/time
 		if [[ -n ${LINE} ]];then 
-			FN=$(cut -d '|' -f3 <<<${LINE})
+			FN="${${(@s/|/)LINE}[3]}"
 			if [[ -e ${_DOWNLOAD_DIR}/${FN} ]];then
 				break
 			fi
@@ -1111,7 +1130,7 @@ log_update () {
 
 		HAS_NEW_LOG=false
 		while read -u3 LINE;do
-			INODE=$(cut -d'|' -f1 <<<${LINE})
+			INODE="${${(@s/|/)LINE}[1]}"
 			if [[ ${SEEN[${INODE}]} -eq 1 ]];then
 				logit ${_YT_DBG_LOG} "${0}: ERROR Got duplicate inode:${INODE} - skipping duplicates"
 				continue
@@ -1163,7 +1182,7 @@ parse_err_msg () {
 		*) MSG=${ERROR[1,50]};;
 	esac
 	
-	echo ${MSG}
+	echo "|<Z>|${MSG}"
 }
 
 parse_rumble () {
@@ -1216,14 +1235,14 @@ parse_rumble () {
 
 	for L in ${LIST};do
 		LINE=${L:Q}
-		TAG=$(cut -d: -f1 <<<${LINE})
-		TEXT=$(cut -d: -f2- <<<${LINE})
+		TAG="${LINE%%:*}" # Discard everything past the first colon
+		TEXT="${LINE#*:}" # Discard everything before and including the first colon
 		case ${LINE} in
 			*relative_url:*) continue;;
 			*url:*) [[ ${TEXT} =~ "\.html" ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
 			*title:*) (( TCNT++));T3=$(( TCNT % TNDX ));[[ ${T3} -eq 0 ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
 			*duration:*) QDATA+=$(parse_rumble_duration ${TEXT});;
-			*upload_date:*) D=$(cut -d'T' -f1 <<<${TEXT});U=$(date -d "${D}" +%s);QDATA+=$(parse_rumble_age ${U});;
+			*upload_date:*) D="${${(@s/T/)TEXT}[1]}";U=$(date -d "${D}" +%s);QDATA+=$(parse_rumble_age ${U});;
 		esac
 	done
 
@@ -1283,9 +1302,8 @@ parse_rumble_duration () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	zmodload zsh/datetime
 	STAMP=$(strftime "%H:%M:%S" ${SECS})
-	[[ ${STAMP} =~ "^00:" ]] && STAMP=$(cut -d: -f2- <<<${STAMP})
+	[[ ${STAMP} =~ "^00:" ]] && STAMP="${STAMP#*:}" # Discard everything before and including the first colon
 
 	echo ${STAMP}
 }
@@ -1301,7 +1319,7 @@ post_process () {
 	local NDX=0
 	local F K
 
-	msg_box -A"${(kv)_INFO_COORDS}" "<g>${MSG}<N>"
+	msg_box -A"${(kv)_INFO_COORDS}" "|<Z>|<g>${MSG}<N>"
 
 	NDX=0
 	while true;do
@@ -1310,7 +1328,7 @@ post_process () {
 		if [[ ${?} -ne 0 ]];then
 			sleep 1 && break
 		fi
-		msg_box -A"${(kv)_INFO_COORDS}" "(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish post-processing..."
+		msg_box -A"${(kv)_INFO_COORDS}" "|<Z>|(<w>${NDX}<N>) Waiting for <c>yt-dlp<N> to finish post-processing..."
 		sleep 1
 	done
 
@@ -1323,7 +1341,7 @@ post_process () {
 	done
 
 	LF=$(last_file_downloaded) # Filename and Inode
-	FN=$(cut -d'|' -f1 <<<${LF}) # Filename
+	FN="${${(@s/|/)LF}[1]}"
 	logit ${_YT_DBG_LOG} "${0}: Last file downloaded:${FN}"
 
 	set_final_fn ${FN}
@@ -1381,7 +1399,7 @@ query_rumble () {
 
 query_youtube () {
 	local -A FILTER_MSGS=()
-	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5 "agetime" "1,5")
+	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5)
 	local -a LIST=()
 	local -a WORK_LIST=()
 	local DATA=false
@@ -1442,9 +1460,10 @@ query_youtube () {
 		# Author verification
 		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]];then # Apply filtering to non strict results unless query is custom
 			HIT=false
-			AUTHOR=$(cut -d'|' -f2 <<<${L} | tr -d '[:space:]') && AUTHOR=$(str_to_ascii ${AUTHOR:l})
-			QKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[QKEY]:l})
-			DKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[DKEY]:l})
+			AUTHOR="${${(@s/|/)L}[2]}"
+			AUTHOR=$(str_to_ascii ${AUTHOR:l})
+			QKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[QKEY]:l}) # strip spaces for comparison
+			DKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[DKEY]:l}) # strip spaces for comparison
 			if [[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]];then
 				[[ ${MSG_OUT} == 'false' ]] && { msg_box -x4 -t2 "<w>Filtering non-strict query by Author...<N>" && MSG_OUT=true }
 				HIT=true
@@ -1485,19 +1504,20 @@ query_youtube () {
 	fi
 
 	for F in ${_LOCAL_LIST};do
-		AGE=$(cut -d'|' -f${YOUTUBE_MAP[age]} <<<${F})
-		AUTHOR=$(cut -d'|' -f${YOUTUBE_MAP[author]} <<<${F})
-		AUTHOR=$(keyword_strip <<<${AUTHOR})
-		TITLE=$(cut -d'|' -f${YOUTUBE_MAP[title]} <<<${F}); TITLE=$(title_scrubber ${TITLE})
+		TITLE="${${(@s/|/)F}[${YOUTUBE_MAP[title]}]}"; TITLE=$(title_scrubber ${TITLE})
+		URL="${${(@s/|/)F}[${YOUTUBE_MAP[url]}]}"
+		AGE="${${(@s/|/)F}[${YOUTUBE_MAP[age]}]}"
+		TIME="${${(@s/|/)F}[${YOUTUBE_MAP[time]}]}"
+		AGETIME="(${AGE} ${TIME})"
+		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR})
+
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
 			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
 				logit ${_YT_DBG_LOG} "${0}: Translated TITLE:${TITLE}"
 			fi
 		fi
-		URL=$(cut -d'|' -f${YOUTUBE_MAP[url]} <<<${F})
-		TIME=$(cut -d'|' -f${YOUTUBE_MAP[time]} <<<${F})
-		AGETIME=$(cut -d'|' -f${YOUTUBE_MAP[agetime]} <<<${F});	AGETIME="(${AGETIME:s/|/ /})"
+
 		WORK_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done
 
@@ -1567,8 +1587,8 @@ set_query_opts () {
 	FVAL=${_FAV_LIST[${FKEY}]} # _FAV_LIST lookup
 
 	DKEY=${_QUERY_OPTS[FKEY]}
-	QKEY=$(cut -d: -f1 <<<${FVAL})
-	OPTS=$(cut -d: -f2 <<<${FVAL})
+	QKEY="${${(@s/:/)FVAL}[1]}"
+	OPTS="${${(@s/:/)FVAL}[2]}"
 	MENU_CODE=${OPTS[1]:l}
 
 	if [[ ${MENU_CODE} == 'c' ]];then
@@ -1641,13 +1661,13 @@ total_rejects () {
 
 trim_title () {
 	local STR=${@}
-	local AUTHOR=$(cut -d'-' -f1 <<<${STR})
-	local TITLE=$(cut -d'-' -f2- <<<${STR})
+	local AUTHOR="${${(@s/-/)STR}[1]}"
+	local TITLE="${${(@s/-/)STR}[2,-1]}"
 
 	if [[ ${#AUTHOR} -le 27 ]];then
 		echo ${STR}
 	else
-		AUTHOR=$(cut -d' ' -f1,2 <<<${AUTHOR})
+		AUTHOR="${${(@s/ /)AUTHOR}[1,2]}"
 		echo "${AUTHOR} -${TITLE}"
 	fi
 }
@@ -1756,8 +1776,9 @@ if [[ ${?} -ne 0 ]];then
 fi
 
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FPATH="${${(@s/|/)RAWPATH}[1]}"
+FPATH=${FPATH:q}
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 # Remove options 
@@ -1832,7 +1853,7 @@ if ! fav_load;then
 fi
 
 # Run Query
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	while true;do

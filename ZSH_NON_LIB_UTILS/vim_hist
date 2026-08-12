@@ -32,7 +32,7 @@ NDX=0
 for L in ${RAW_LIST};do
 	((NDX++))
 	tput cup 0 0; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#RAW_LIST} $(( NDX * 100. / ${#RAW_LIST} ))
-	FDATE=$(cut -d' ' -f1 <<<$(stat -t -c'%w' ${L}))
+	FDATE="${${(@s/ /)$(stat -t -c'%w' ${L})}[1]}"
 	FNAME=$(sed -e 's#%#/#g' -e 's#^//#/#' <<<${${L}##${VIM_HIST}})
 	if [[ ! -e ${FNAME} ]];then
 		/bin/rm -f ${L}
@@ -45,8 +45,8 @@ done
 TODAY=$(date +"%Y-%m-%d")
 
 for L in ${(On)LIST};do
-	FDATE=$(cut -d'|' -f1 <<<${L})
-	FNAME=$(cut -d'|' -f2- <<<${L})
+	FDATE="${${(@s/|/)L}[1]}"
+	FNAME="${${(@s/|/)L}[2,-1]}"
 	[[ ${FDATE} == ${TODAY} ]] && COLOR=${CYAN_FG} || COLOR=${WHITE_FG}
 	printf "${COLOR}%s${RESET} %s\n" ${FDATE} ${FNAME}
 done | mypager

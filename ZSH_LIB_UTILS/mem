@@ -42,11 +42,11 @@ printf "${MAGENTA_FG}%s${RESET}\n"  $(str_unicode_line 120)
 	for L in ${LIST};do
 		LINE=$(tr -s '[:space:]' <<<${L})
 		[[ ${LINE} =~ "USER" ]] && continue
-		USER=$(cut -d' ' -f1 <<<${LINE})
-		PID=$(cut -d' ' -f2 <<<${LINE})
-		MEM=$(cut -d' ' -f3 <<<${LINE})
-		CPU=$(cut -d' ' -f4 <<<${LINE})
-		CMD=$(cut -d' ' -f5 <<<${LINE})
+		USER="${${(@s/ /)LINE}[1]}"
+		PID="${${(@s/ /)LINE}[2]}"
+		MEM="${${(@s/ /)LINE}[3]}"
+		CPU="${${(@s/ /)LINE}[4]}"
+		CMD="${${(@s/ /)LINE}[5]}"
 		[[ ${MEM} == '0.0' && ${CPU} == '0.0' ]] && continue
 		printf "%10s %8s ${CYAN_FG}%4s ${RED_FG}%4s ${RESET}${FAINT}${WHITE_FG}%s${RESET}${WHITE_FG}%-s${RESET}\n" ${USER} ${PID} ${MEM} ${CPU} "${CMD:h}/" ${CMD:t}
 	done 

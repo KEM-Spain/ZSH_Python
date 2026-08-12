@@ -4220,6 +4220,37 @@ Modifier  Action                                  Example               Result
 :q        Quote shell metacharacters              \${str:q} ("a b")      'a b'
 :Q        Unquote quoted string                   \${str:Q} ("'a b'")    a b
 
+${E_CYAN_FG}Modern Native Zsh Syntax (Recommended)${E_RESET}
+${E_WHITE_FG}For pattern-based character set replacements, the native Zsh parameter expansion${E_RESET}
+${E_WHITE_FG}syntax \${var//pattern/replace} is preferred over :gs.${E_RESET}
+${E_WHITE_FG}It natively supports character sets and glob patterns without requiring setopt HIST_SUBST_PATTERN.${E_RESET}
+
+${E_RED_FG}BUT${E_RESET} the syntax is ${E_RED_FG}NOT${E_RESET} regex.  It is ${E_WHITE_FG}zsh globbing syntax${E_RESET}.
+
+    Single replacement: \${var/pattern/replacement}
+    Global replacement (equivalent to :gs): \${var//pattern/replacement}
+
+${E_WHITE_FG}This chart shows the differences between zsh globbing and regex${E_RESET}
+
+    Concept             Regex Syntax        Zsh Glob Syntax
+   --------------------------------------------------------------
+   Start of String     ^                   #
+   End of String       \$                   %
+   Single Char         .                   ?
+   Any String          .*                  *
+   1+ Repeated Char    a+                  a#  (requires EXTENDED_GLOB)
+   0+ Repeated Char    a*                  (a#|) or a(#c0,)
+   Counted Repeat      a{3,5}              a(#c3,5)
+   Group/Capture       (abc)               (abc)
+   Negate String       ^(abc)              ^abc
+
+${E_WHITE_FG}When EXTENDED_GLOB is set${E_RESET}...
+   Flag,Purpose,Populates Variable
+   (#b),Enables backreferences for capture groups (...),"\$match array (\${match[1]}, \${match[2]})"
+   (#m),Enables match recording for the full pattern,"\$MATCH (string), \$MBEGIN, \$MEND (indices)"
+   (#i),Case-insensitive matching,"N/A (e.g., \${STR/(#i)abc/XYZ})"
+   (#I),Case-sensItive matching,Restores case sensitivity inside a pattern
+   (#a),Approximate / fuzzy matching,"Matches typos (e.g., (#a1)test allows 1 error)"
 
 --------------------------------------------------------------------------------
 3. PARAMETER EXPANSION FLAGS (\${(flag)var})
@@ -4430,6 +4461,60 @@ SUMMARY RECOMMENDATION
 * For shell command lexing (preserving quotes): Use \${(z)var}.
 * For bulk processing gigabytes of text outside shell scripts: Use awk -F',' '{print \$3}' file.txt
   (which outperforms 'cut' on high volumes due to better buffering).
+
+${E_CYAN_FG}File/Command or file to Array${E_RESET}
+
+Array Operator: ':#' and M array flag: (M)
+Exclude: \${array:#pattern} :# Discard elements that match pattern
+Include: \${(M)array:#pattern} :# Keep elements that match pattern
+
+String Operator: '#' string trimming
+
+X=ABCDEFG
+echo \${X}
+ABCDEFG
+echo \${\${X}#AB}
+CDEFG
+
+local FILES=( \${=\${\$(whereis -b bash)#*:}} )
+local LIST=( \${\${(Mf)"\$(</etc/resolv.conf)":#nameserver*}#nameserver[[:space:]]#} )
+How the Combined (Mf) Expression Works
+
+\${(Mf)"\$(</etc/resolv.conf)":#nameserver*}
+
+"\$(</etc/resolv.conf)": Reads the entire file as a single raw string.
+
+f (field split): Takes that raw string and splits it by newlines into an array of lines before evaluating the filtering pattern.
+
+M (match): Paired with :#nameserver*, it retains only the lines that match the pattern, dropping all others.
+
+By combining (M) and (f) into (Mf), 
+you tell Zsh: "Split this scalar string into lines, and return only the lines that match nameserver*."
+ 
+LESS obscure...
+LIST=(\$(awk '/^nameserver/ {print \$2}' /etc/resolv.conf))
+     
+${E_CYAN_FG}Associating camera name and device loop${E_RESET}
+
+for DEV in /dev/video<->(N); do
+   if [[ \$(v4l2-ctl -d \${DEV} --list-formats 2>/dev/null) == *"'YUYV'"* ]]; then
+     DEVICES[\\$(</sys/class/video4linux/\\${DEV:t}/name)]=\${DEV}
+   fi
+done
+
+Zsh-Specific Features Used:
+
+/dev/video<->: Zsh's numeric range matching operator. It matches /dev/video0, 
+/dev/video1, /dev/video12, etc., without matching non-numeric extensions.
+
+(N): Zsh nullglob qualifier. If no /dev/video* devices exist, the loop safely 
+evaluates to nothing instead of throwing a no matches found error.
+
+\${dev:t}: Zsh history/filename modifier for "tail" (basename). Extracts video0 
+from /dev/video0 without needing basename or string substitution.
+
+\$(</sys/...): Zsh native file-reading expansion. It reads the contents of the /sys 
+file directly into memory without spawning a cat or read subshell.
 
 ${E_CYAN_FG}A Complex One-liner with explanations${E_RESET}
 

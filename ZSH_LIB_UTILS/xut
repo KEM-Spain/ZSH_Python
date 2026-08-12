@@ -163,10 +163,10 @@ ___EOF
 		local W
 
 		for W in ${WDW_LIST};do
-			WIN=$(echo ${W} | cut -d' ' -f1)
+			WIN="${${(@s/ /)W}[1]}"
 			xprop -id ${WIN} | grep -qi focused
-			[[ ${?} -eq 0 ]] && WID=$(cut -d' ' -f1 <<<${W} )
-			echo ${WID}
+			[[ ${?} -eq 0 ]] && WID="${${(@s/ /)W}[1]}"
+			echo ${WID} && break
 		done
 	else
 		win_id ${APP}
@@ -180,9 +180,12 @@ local OPTION
 read -r -d '' DESC<<EOF
 Execute system utilities
 \t------------------------
-$(for K in ${(ok)_UTILS_DESC};do
-printf "\t${WHITE_FG}%-6s${RESET} %s\n" ${K} "$(cut -d: -f2 <<<${_UTILS_DESC[${K}]})"
-done)
+$(
+for K in ${(ok)_UTILS_DESC};do
+	printf "\t${WHITE_FG}%-6s${RESET} %s\n" ${K} "$(cut -d: -f2 <<<${_UTILS_DESC[${K}]})"
+	printf "\t${WHITE_FG}%-6s${RESET} %s\n" ${K} "${${(@s/:/)${_UTILS_DESC[${K}]}}[2]}"
+done
+)
 EOF
 
 parse_opts () {

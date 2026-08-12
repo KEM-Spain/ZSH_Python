@@ -312,8 +312,8 @@ fi
 UTILS=("${(f)$(file $(find ${_SRC_USR_LOCAL_BIN} -maxdepth 1 -type f))}")
 
 for L in ${UTILS};do
-	FN=$(cut -d: -f1 <<<${L})
-	SIG=$(cut -d: -f2- <<<${L})
+	FN="${${(@s/:/)L}[1]}"
+	SIG="${${(@s/:/)L}[2,-1]}"
 	[[ ${SIG} =~ 'zsh' ]] && _ZSH_UTILS+=${FN} || _NON_ZSH_UTILS+=${FN}
 done
 

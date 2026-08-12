@@ -37,7 +37,7 @@ action_do () {
 		((NDX++))
 		for F in ${_FUNC_MATCH};do
 			grep -q ${F} ${_LIST[${M}]}
-			[[ ${?} -eq 0 ]] && FUNCTIONS+=$(cut -d '(' -f1 <<<${F})
+			[[ ${?} -eq 0 ]] && FUNCTIONS+="${${(@s/(/)F}[1]}"
 		done
 		if [[ ${NO_PROMPTS} == 'true' ]];then
 			for F in ${FUNCTIONS};do
@@ -45,7 +45,7 @@ action_do () {
 			done | less -S -P "Viewing functions within\:$(sed 's/\./\\./' <<<${_LIST[${M}]})" # Less hides dots in prompt - must escape
 		else
 			#[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling msg_box with: ${#FUNCTIONS} lines"
-			msg_box -H2 -P"Show function code (y/n)?" -c -p "File:<w>${_LIST[${M}]}<N>|Functions:<w>${#FUNCTIONS}<N>|$(msg_list_bullet ${(o)FUNCTIONS})"
+			msg_box -H2 -P"Show function code (y/n)?" -c -p "File:<w>${_LIST[${M}]}<N>|Found <w>${#FUNCTIONS}<N> $(str_pluralize function ${#FUNCTIONS})|$(msg_list_bullet ${(o)FUNCTIONS})"
 			if [[ ${_MSG_KEY} == 'y' ]];then
 				for F in ${FUNCTIONS};do
 					func_print ${_LIST[${M}]} ${F}
@@ -158,9 +158,9 @@ shift $(( OPTIND - 1 ))
 
 # Execution
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH="${${(@s/|/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 [[ ${#} -ge 1 ]] && ARG_1=${1} || ARG_1=''
@@ -294,7 +294,7 @@ if [[ ${PRINT_FUNCS} == 'true' ]];then
 		for M in ${_FUNC_MATCH};do
 			grep -q ${M} ${L}
 			if [[ ${?} -eq 0 ]];then
-				FUNC=$(cut -d '(' -f1 <<<${M})
+				FUNC="${${(@s/(/)M}[1]}"
 				func_print ${L} ${FUNC}
 			fi
 		done
