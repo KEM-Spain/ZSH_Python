@@ -18,10 +18,9 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SELECT.zsh
+_DEPS+=(LIST.zsh SELECT.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
@@ -275,15 +274,17 @@ cam () {
 		local K L
 
 		echo "Cam Selection"
-		_LOCAL_LIST=("${(f)$(v4l2-ctl --list-devices)}")
-		for L in ${_LOCAL_LIST};do
-			[[ -z ${L} ]] && continue
-			[[ ${L[1,1]:u} == 'U' ]] && DEV=$(sed 's/\t//g' <<<${L} | cut -d' ' -f1-2) && HIT=true && continue
-			[[ ${HIT} == 'true' ]] && DEVICES[${DEV}]=$(sed 's/\t//g' <<<${L}) && HIT=false && continue
+
+		for DEV in /dev/video<->(N); do
+			if [[ $(v4l2-ctl -d ${DEV} --list-formats 2>/dev/null) == *"'YUYV'"* ]]; then
+				DEVICES[$(</sys/class/video4linux/${DEV:t}/name)]=${DEV}
+			fi
 		done
+
 		echo "-------------------"
 		echo "${WHITE_FG}${#DEVICES}${GREEN_FG} $(str_pluralize device ${#DEVICES}) available${RESET}"
 		echo "-------------------"
+		
 		while true;do
 			NDX=0
 			DEV=''
@@ -302,8 +303,8 @@ cam () {
 				echo "\n${RED_FG}Invalid key${RESET}: ${WHITE_FG}Only choose 1-${#DEVICES} or q to quit..."
 			fi
 		done
-		echo
-		[[ -n ${DEV} ]] && echo "Selected:${DEVICES[${DEV}]}" && guvcview -d ${DEVICES[${DEV}]} 2>/dev/null
+
+		[[ -n ${DEV} ]] && echo "\nSelected:${DEVICES[${DEV}]}" && guvcview -d ${DEVICES[${DEV}]} >/dev/null 2>&1
 	}
 
 	# Execution
@@ -432,16 +433,17 @@ ___EOF
 
 info () {
 	# Constants
-	local	DESC=$(lsb_release -d | cut -d:  -f2-)
-	local	NAME=$(lsb_release -c | cut -d:  -f2-)
+	local	DESC="${${(@s/:/)$(lsb_release -d)}[2,-1]}"
+	local	NAME="${${(@s/:/)$(lsb_release -c)}[2,-1]}"
 	local	OS=$(uname)
 	local	ARCH=$(uname -m)
-	local	CPU=$(cat /proc/cpuinfo | grep 'model name' | head -1 | cut -d: -f2 | sed 's/^ *//g')
+
+	local CPU=${(s/:/)${=${(M)${(f)"$(</proc/cpuinfo)"}:#*model name*}}[1,9]}
 	local	KERNEL=$(uname -r) 
 	local	GNOME_SHELL=$(gnome-shell --version)
-	local	GTK2=$(dpkg -l | grep "libgtk2.*bin\b" | tr -s '[:space:]' | cut -d' ' -f2,3)
-	local	GTK3=$(dpkg -l | grep "libgtk-3.*bin\b" | tr -s '[:space:]' | cut -d' ' -f2,3)
-	local	GTK4=$(dpkg -l | grep "libgtk-4.*bin\b" | tr -s '[:space:]' | cut -d' ' -f2,3)
+	local GTK2=${${(@s/ /)${(M)${(f)"$(dpkg -l)"}:#*libgtk2*bin*}}[2,3]} 
+	local GTK3=${${(@s/ /)${(M)${(f)"$(dpkg -l)"}:#*libgtk-3*bin*}}[2,3]} 
+	local GTK4=${${(@s/ /)${(M)${(f)"$(dpkg -l)"}:#*libgtk-4*bin*}}[2,3]} 
 	local	QT=($(qmake --version))
 
 	# Declarations
@@ -566,7 +568,7 @@ info () {
 		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
-		echo -e "${WHITE_FG}-v${RESET} verbosity level - repeats increase detail"
+		echo -e "${WHITE_FG}-v${RESET} verbose detail level - repeats increase detail"
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 
@@ -590,7 +592,7 @@ info () {
 
 	# Execution
 	local PROD_NAME=$(sudo dmidecode -s system-product-name | sed 's/_.*//g')
-	local BIOS_VERSION=$(sudo dmidecode -t bios | grep -i version | cut -d: -f2 | sed 's/^ //')
+	local BIOS_VERSION="${(s/ /)${=${${(@s/:/)"${(M)${(f)"$(sudo dmidecode -t bios)"}:#*Version*}"}[3]}}[1]}"
 	local BIOS_RELEASE=$(sudo dmidecode -s bios-release-date)
 	local SERIAL_NO=$(sudo dmidecode -s system-serial-number)
 	local D I S T
@@ -628,7 +630,7 @@ info () {
 		printf "${CYAN_FG}Fetching memory and video...${RESET}\n"
 		printf "${BOLD}${BLACK_FG}$(str_unicode_line 30)${RESET}\n"
 
-		MEMORY=$(grep -i MemTotal /proc/meminfo | cut -d: -f2 | tr -d '[:space:]' | sed 's/kb//i')
+		MEMORY=${${(s/ /)${(f)"$(</proc/meminfo)"}}[2]}
 		MEMORY=$(( 9.5367431640625E-7 * MEMORY ))
 		VIDEO=$(get_video)
 
@@ -642,7 +644,7 @@ info () {
 		printf "${CYAN_FG}Disk Details${RESET}\n"
 		printf "${BOLD}${BLACK_FG}$(str_unicode_line 24)${RESET}\n"
 
-		DISKS=($(sudo fdisk -l | grep sd | grep bytes | cut -d' ' -f2 | cut -d: -f1))
+		DISKS=(${(s/:/)${=${(M)${(f)"$(sudo fdisk -l)"}:#*sd[a-z]:*}}[2]})
 		printf "${WHITE_FG}%25s${RESET}:${GREEN_FG}%d${RESET}\n" "Disk Count" ${#DISKS}
 
 		for D in ${DISKS};do
@@ -651,8 +653,8 @@ info () {
 			DINFO=("${(@f)$(sudo smartctl -i ${D} | grep ':')}")
 
 			for I in ${DINFO};do
-				HDDESC=$(cut -d: -f1 <<<${I})
-				HDINFO=$(cut -d: -f2 <<<${I})
+				HDDESC="${${(@s/:/)I}[1]}"
+				HDINFO="${${(@s/:/)I}[2]}"
 				HDINFO=$(sed 's/^[\t ]*//g' <<<${HDINFO})
 				printf "${WHITE_FG}%25s${RESET}:${GREEN_FG}%s${RESET}\n" "${HDDESC}" "${HDINFO}"
 			done
@@ -700,11 +702,10 @@ info () {
 }
 
 last_install () {
-	local DESC
-	local HISTORY_LOG=/var/log/apt/history.log
-	local LAST_UPD_LINE
-	local RECENT=false
-	local HEADER
+	local APT_LOG=/var/log/apt/history.log
+	local DESC=''
+	local HEADER=''
+	local LINE=''
 
 	#--Begin GetOpts--
 	local -a OPTIONS
@@ -755,21 +756,19 @@ ___EOF
 		echo -e "${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
-		echo -e "${WHITE_FG}-r${RESET} show recent install activity"
 		echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 		) >&2
 
 		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
-	OPTSTR=":HDr"
+	OPTSTR=":HD"
 	OPTIND=0
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 			H) usage;;
 			D) dbg_set_level;;
-			r) RECENT=true;;
 			:) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 			\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 		esac
@@ -779,15 +778,15 @@ ___EOF
 	#--End GetOpts--
 
 	# Execution
-	# If log rotation is recent and log is empty then use last log
-	[[ ! -s ${HISTORY_LOG} ]] && zcat ${HISTORY_LOG}.1.gz > /tmp/history.log && HISTORY_LOG=/tmp/history.log 
+	HEADER="Last update activity"
 
-	[[ ${RECENT} == 'true' ]] && LAST_UPD_LINE=1 || LAST_UPD_LINE=$(grep --color=never -n 'Start-Date' ${HISTORY_LOG} | grep $(date +"%Y-%m-%d") | head -1 | cut -d: -f1)
-	[[ ${RECENT} == 'true' ]] && HEADER="Recent update activity" || HEADER="Last update activity"
+	[[ ! -s ${APT_LOG} ]] && zcat ${APT_LOG}.1.gz > /tmp/history.log && APT_LOG=/tmp/history.log 
+
+	LINE=${${(@s/:/)$(grep -ni 'start' /var/log/apt/history.log | tail -1)}[1]}
 
 	(
 	echo "${WHITE_FG}${HEADER}${RESET}\n"
-	tail +${LAST_UPD_LINE} ${HISTORY_LOG} |\
+	tail +${LINE} ${APT_LOG} |\
 	grep -B1 -C2 'Install:\|Reinstall:\|Upgrade:\|Remove:\|Purge:' | grep -iv 'commandline\|requested' | \
 	sed \
 	-e '/^$/d' \
@@ -1030,7 +1029,7 @@ ___EOF
 }
 
 lsdaemons () {
-	local DEAMONS=("${(f)$(ps -eo 'tty,comm,%mem,time,args' | grep '^?' | tr -s '[ \t]' | cut -d' ' -f2- | sort -u)}")
+	local -a DAEMONS=( ${(fou)"$(ps -eo 'tty,comm,%mem,time,args' | grep '^?' | sed 's/^?[[:space:]]*//')"} )
 	local LAST_LEADING
 	local OUT
 	local F1 F2 F3 F4
@@ -1049,6 +1048,7 @@ ___EOF
 		exit_leave
 	fi
 
+	(
 	echo "${GREEN_FG}Current Daemon Processes${RESET}"
 	printf "${CYAN_FG}%-30s %4s %8s %-.100s${RESET}\n" "Name" "Mem" "Time" "Args (truncated)"
 	echo "${MAGENTA_FG}$(str_unicode_line 31) $(str_unicode_line 3) $(str_unicode_line 8) $(str_unicode_line 100)${RESET}"
@@ -1056,16 +1056,33 @@ ___EOF
 	LAST_LEADING=?
 	OUT=false
 
-	for D in ${(n)DEAMONS};do
-		F1=$(echo ${D} | cut -d' ' -f1 | tr -cd '[:alnum:]')
-		F2=$(echo ${D} | cut -d' ' -f2)
-		F3=$(echo ${D} | cut -d' ' -f3)
-		F4=$(echo ${D} | cut -d' ' -f4-)
-		[[ ${LAST_LEADING} != ${F1[1,1]:l} ]] && LAST_LEADING=${F1[1,1]} && OUT=true
-		[[ ${LAST_LEADING} == '?' ]] && continue 
-		[[ ${OUT} == "true" ]] && echo "${WHITE_FG}${LAST_LEADING}${RESET}" && OUT=false
-		printf '%-30s %4s %8s %-.100s\n' ${F1} ${F2} ${F3} ${F4}
+	for D in ${DAEMONS}; do
+			# 1. Split line into array ONCE using shell word splitting (handles multiple space gaps)
+			f=( ${(z)D} )
+
+			# 2. Strip non-alphanumeric chars NATIVELY (zero external 'tr' subprocesses)
+			F1="${f[1]//[^[:alnum:]]/}"
+			F2="$f[2]"
+			F3="$f[3]"
+			F4="${(j: :)f[4,-1]}"  # Join remaining elements with spaces
+
+			# 3. Check leading character (case-insensitive check)
+			CHAR="${F1[1]}"
+			if [[ "${LAST_LEADING:l}" != "${CHAR:l}" ]]; then
+					LAST_LEADING="$CHAR"
+					OUT=true
+			fi
+
+			[[ "$LAST_LEADING" == '?' ]] && continue
+
+			if [[ "$OUT" == "true" ]]; then
+					echo "${WHITE_FG}${LAST_LEADING:u}${RESET}"
+					OUT=false
+			fi
+
+			printf '%-30s %4s %8s %-.100s\n' "$F1" "$F2" "$F3" "$F4"
 	done
+	) | mypager
 }
 
 lssc () {
@@ -1437,7 +1454,7 @@ ___EOF
 
 		 echo "\n${MSG}"
 		 echo ${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
-		 S=$(sudo dpkg --get-selections ${1} | tr -s '[:space:]' | cut -f2)
+		 S=${${(@s/ /)$(sudo dpkg --get-selections ${1})}[-1]}
 		 [[ ${S} == install ]] && echo "${1} ${S} (updates will be applied)"
 		 [[ ${S} == hold ]] && echo "${1} ${S} (updates will NOT be applied)"
 		 echo ${MAGENTA_FG}$(str_unicode_line ${#MSG})${RESET}
@@ -1460,7 +1477,7 @@ ___EOF
 	[[ ${#} -ne 0 ]] && APP=${1} || usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:<PACKAGE>"
 	[[ ${ACTION} == none ]] && usage "No action specified"
 
-	PACKAGES=($(dpkg --get-selections | cut -f1))
+	PACKAGES=(${${(f)"$(dpkg --get-selections)"}%%[[:space:]]*})
 
 	for P in ${PACKAGES};do
 		 [[ ${P} == ${APP} ]] && FOUND=true
@@ -1492,17 +1509,19 @@ ppamgr () {
 	local -a SOURCES=(/etc/apt/sources.list /etc/apt/sources.list.d) 
 
 	# Declarations
+	local -a PPAS=()
 	local	ADD_PPA=false
 	local	ADD_PPA_KEY=false
 	local	DEBUG=false
 	local	FIND_PKG=false
 	local	FIND_PPA=false
-	local	_LOCAL_LIST_PPA=false
 	local	OPTIND=0
-	local	PPA_ARG
+	local	PPA_ARG=''
 	local	REMOVE_PPA=false
-	local -a PPAS=()
+	local	LOCAL_LIST_PPA=false
+	local INSTALLED=''
 	local OPT_PASSED=false
+	local PKG_ARG=''
 
 	# Functions
 	add_ppa () {
@@ -1543,11 +1562,11 @@ ppamgr () {
 
 	find_pkg () {
 		local PKG_ARG=$1
+		local PKG=''
+		local PPA=''
+		local RC=''
+		local UNINSTALLED=''
 		local P
-		local PKG
-		local PPA
-		local RC
-		local UNINSTALLED
 
 		# Optional arg 
 		if [[ -n ${PKG_ARG} ]];then
@@ -1560,12 +1579,14 @@ ppamgr () {
 		INSTALLED=($(dpkg-query --showformat='${Package}:${Status}\n' -W "*${PKG}*" | grep 'ok installed' | sed -e 's/:.*//g'))
 		RC=$?
 
-		if [[ ${RC} -eq 0 ]] && for P in ${INSTALLED};do
-		  echo "${GREEN_FG}Installed Package${RESET}:${P}"
-		  PPA=$(echo $(apt-cache policy ${p} | grep ' http') | cut -d\  -f2)
-		  [[ -z ${PPA} ]] && PPA=Unknown
-		  echo "${MAGENTA_FG}  Source${RESET}: ${WHITE_FG}${PPA}${RESET}"
-		done
+		if [[ ${RC} -eq 0 ]];then
+			for P in ${INSTALLED};do
+				echo "${GREEN_FG}Installed Package${RESET}:${P}"
+				PPA="${(s:\:)${(z)$(apt-cache policy ${P} | grep ' http')}[2]}"
+				[[ -z ${PPA} ]] && PPA=Unknown
+				echo "${MAGENTA_FG}  Source${RESET}: ${WHITE_FG}${PPA}${RESET}"
+			done
+		fi
 
 		UNINSTALLED=($(dpkg-query --showformat='${Package}:${Status}\n' -W "*${PKG}*" | grep -v 'ok installed' | sed -e 's/:.*//g'))
 
@@ -1616,12 +1637,12 @@ ppamgr () {
 
 	list_ppa () {
 		local PPA_ARG=$1
-		local -A PPAS
+		local -A PPAS=()
+		local -a LOCAL_LIST=()
 		local ALL=false
 		local FILE_CONTENT
 		local HDR_LBL
 		local LINE
-		local _LOCAL_LIST
 		local L S
 
 		if [[ -n ${PPA_ARG} ]];then
@@ -1635,8 +1656,8 @@ ppamgr () {
 		# Build list of active ppas
 		for S in ${SOURCES};do
 			if [[ -d ${S} ]];then
-				_LOCAL_LIST=("${(f)$(find ${S})}") 
-				for L in ${_LOCAL_LIST};do
+				LOCAL_LIST=("${(f)$(find ${S})}") 
+				for L in ${LOCAL_LIST};do
 					if [[ ${L:e} == "list" ]];then
 						FILE_CONTENT=("${(f)$(cat ${L})}")
 						for LINE in ${FILE_CONTENT};do
@@ -1769,12 +1790,12 @@ ppamgr () {
 		  a) ADD_PPA=true;PPA_ARG=${OPTARG};;
 		  r) REMOVE_PPA=true;PPA_ARG=${OPTARG};;
 		  f) FIND_PPA=true;PPA_ARG=${OPTARG};;
-		  l) _LOCAL_LIST_PPA=true;PPA_ARG=${OPTARG};;
+		  l) LOCAL_LIST_PPA=true;PPA_ARG=${OPTARG};;
 		  p) FIND_PKG=true;PKG_ARG=${OPTARG};;
 		  k) ADD_PPA_KEY=true;PPA_KEY=${OPTARG};;
 		  u) update-repo;exit;;
 		  :) if [[ ${OPTARG} == "l" ]];then
-				_LOCAL_LIST_PPA=true # Optional option
+				LOCAL_LIST_PPA=true # Optional option
 				continue
 			elif [[ ${OPTARG} == "f" ]];then
 				FIND_PKG=true # Optional option
@@ -1803,7 +1824,7 @@ ppamgr () {
 	[[ ${ADD_PPA} == "true" ]] && add_ppa ${PPA_ARG} && exit_leave
 	[[ ${REMOVE_PPA} == "true" ]] && remove_ppa ${PPA_ARG} && exit_leave
 	[[ ${FIND_PPA} == "true" ]] && find_ppa ${PPA_ARG} && exit_leave
-	[[ ${_LOCAL_LIST_PPA} == "true" ]] && list_ppa ${PPA_ARG} && exit_leave
+	[[ ${LOCAL_LIST_PPA} == "true" ]] && list_ppa ${PPA_ARG} && exit_leave
 	[[ ${FIND_PKG} == "true" ]] && find_pkg ${PKG_ARG} && exit_leave
 	[[ ${ADD_PPA_KEY} == "true" ]] && add_ppa_key ${PPA_KEY} && exit_leave
 }
@@ -2016,7 +2037,7 @@ ___EOF
 	# Execution
 	local DATEARG=${1:=${DEFAULT}}
 	local PRE_LOCAL_LIST=$(zgrep -h ${DATEARG} $LOGS | sed -e 's/status //g' -e '/startup/d')
-	local _LOCAL_LIST=("${(f)$(echo ${PRE_LOCAL_LIST} | zgrep -hP "\sinstalled|remove|purge" | cut -d' ' -f1,3- | sort -u)}") 
+	local _LOCAL_LIST=("${(f)$(echo ${PRE_LOCAL_LIST} | zgrep -hP "\sinstalled|remove|purge" | cut -d' ' -f1,3-)}") 
 	local MSG
 
 	[[ -z ${_LOCAL_LIST} ]] && echo "No update activity for ${WHITE_FG}${DATEARG}${RESET}" && exit
@@ -2029,17 +2050,17 @@ ___EOF
 	local LEADING
 	local TRAILING
 
-	for L in ${_LOCAL_LIST};do
-		LDATE=$(echo $L | cut -d' ' -f1)
-		LLINE=$(echo $L | cut -d' ' -f2-)
+	for L in ${(u)_LOCAL_LIST};do
+		LDATE="${${(@s/ /)L}[1]}"
+		LLINE="${${(@s/ /)L}[2,-1]}"
 		if [[ ${LASTDATE} != ${LDATE} ]];then
 			echo ${WHITE_FG}$(str_unicode_line 22)${RESET}
 			echo ${MSG}:${WHITE_FG}${LDATE}${RESET}
 			echo ${WHITE_FG}$(str_unicode_line 22)${RESET}
 			LASTDATE=${LDATE}
 		fi
-		LEADING=$(echo ${LLINE} | cut -d' ' -f1)
-		TRAILING=$(echo ${LLINE} | cut -d' ' -f2-)
+		LEADING="${${(@s/ /)LLINE}[1]}"
+		TRAILING="${${(@s/ /)LLINE}[2,-1]}"
 		case ${LEADING} in
 			*installed*) echo "${GREEN_FG}${LEADING} ${WHITE_FG}${TRAILING}${RESET}";;
 			*remove*) echo "${RED_FG}   ${LEADING} ${WHITE_FG}${TRAILING}${RESET}";;
@@ -2153,15 +2174,17 @@ ___EOF
 		else
 			APP=$(gio mime ${M} | head -1)
 			if [[ ${APP:l} =~ 'default application for' ]];then
-				APP=$(cut -d: -f2 <<<${APP} | str_trim)
+				APP="${${(@s/:/)APP}[2]}"
 				LIST_OUT+="GIO:${M} ${APP}"
 			fi
 		fi
 	done
 
-	for L in ${LIST_OUT};do
+	[[ -z ${LIST_OUT} ]] && echo "\nNothing found for:${WHITE_FG}${SEARCHTERM}${RESET}" || echo
+
+	for L in ${(o)LIST_OUT};do
 		printf "%s\n" ${L}
-	done | pg
+	done | mypager
 }
 
 host_mac () {
@@ -2186,7 +2209,7 @@ ___EOF
 			IN_WIRELESS=true
 		fi
 		if [[ ${IN_WIRELESS} == 'true' && ${L} =~ 'ether' ]];then
-			echo $L | tr -s '[:space:]' | cut -d' ' -f3
+			echo "${(@s/ /)${(z)L}[2]}"
 		fi
 	done
 }

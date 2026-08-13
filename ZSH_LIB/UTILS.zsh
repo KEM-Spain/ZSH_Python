@@ -26,6 +26,14 @@ _FUNC_TRAP=false
 _BAREWORD_IS_FILE=false
 
 # LIB Functions
+EG_ON () {
+	setopt EXTENDED_GLOB
+}
+
+EG_OFF () {
+	unsetopt EXTENDED_GLOB
+}
+
 arg_parse () {
 	local KWD=false
 	local A

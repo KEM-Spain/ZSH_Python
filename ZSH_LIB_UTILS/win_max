@@ -1,6 +1,5 @@
 #!/usr/bin/zsh
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -8,7 +7,7 @@ _DEPS+=()
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A _APP_TAGS=(brave-browser brave google-chrome chrome com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
+typeset -A _TITLE_MAP=(brave-browser brave google-chrome chrome com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna)
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5 MAX 6)
 typeset -a _CUR_WIN=()
 typeset -aU _WIN_LIST=()
@@ -27,10 +26,11 @@ get_app_tag () {
 	local APP_TAG=''
 
 	# Handle any alternate tags
-	if [[ -n ${_APP_TAGS[${APP}]} ]];then
-		APP_TAG=${_APP_TAGS[${APP}]}
-		logit ${_LOG} "${0}: APP:${APP} using APP_TAG:${APP_TAG}"
+	if [[ -n ${_TITLE_MAP[${APP}]} ]];then
+		APP_TAG=${_TITLE_MAP[${APP}]}
+		logit ${_LOG} "${0}: APP:${APP} mapped to APP_TAG:${APP_TAG}"
 	else
+		logit ${_LOG} "${0}: APP:${APP} is unmapped"
 		APP_TAG=${APP}
 	fi
 
@@ -43,6 +43,8 @@ get_id_title () {
 	local WID=''
 	local W
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	if [[ ${TITLE_ARG} == 'terminal' ]];then # Special handling of terminal to get most recent
 		WID=$(get_last_term)
 		logit ${_LOG} "${0}: Terminal has WID:${WID}"
@@ -50,14 +52,18 @@ get_id_title () {
 		for W in ${_WIN_LIST};do
 			WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
 			TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
+			#WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+			#TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Seeking ARG:${TITLE_ARG} in list of (${#_WIN_LIST}): WID:${WID}, TITLE:${TITLE}"
 			if [[ ${TITLE:l} =~ ${TITLE_ARG:l} ]];then
-				logit ${_LOG} "${0}: TITLE:${TITLE} has WID:${WID}"
+				logit ${_LOG} "${0}: Returning WID:${WID} (found title:${TITLE_ARG:l})"
 				break
 			else
 				WID=''
 			fi
 		done
 	fi
+	[[ -z ${WID} ]] && logit ${_LOG} "${0}: ${TITLE_ARG:l} not found)"
 
 	echo ${WID}
 }
@@ -69,12 +75,18 @@ get_id_pid () {
 	local WID=''
 	local W
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	for W in ${_WIN_LIST};do
 		WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
 		PID="${${(@s/|/)W}[${_FLD_LIST[PID]}]}"
 		TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
+		#WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+		#PID=$(cut -d'|' -f${_FLD_LIST[PID]} <<<${W})
+		#TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Seeking ARG:${PID_ARG} in list of (${#_WIN_LIST}): PID:${PID}, WID:${WID}, TITLE:${TITLE}"
 		if [[ ${PID_ARG} =~ ${PID} ]];then
-			logit ${_LOG} "${0}: PID:${PID} has WID:${WID}, TITLE:${TITLE}"
+			logit ${_LOG} "${0}: Found PID:${PID} with WID:${WID}, TITLE:${TITLE}"
 			break
 		fi
 	done
@@ -88,11 +100,16 @@ get_id_wid () {
 	local WID=''
 	local W
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	for W in ${_WIN_LIST};do
 		WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
 		TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
+		#WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+		#TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Seeking ARG:${WID_ARG} in list of (${#_WIN_LIST}): WID:${WID}, TITLE:${TITLE}"
 		if [[ ${WID_ARG} =~ ${WID} ]];then
-			logit ${_LOG} "${0}: WID:${WID} has TITLE:${TITLE}"
+			logit ${_LOG} "${0}: Found WID:${WID} with TITLE:${TITLE}"
 			break
 		fi
 	done
@@ -104,6 +121,8 @@ get_win_id () {
 	local ARG=${1}
 	local TYPE=${2}
 	local WID=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	logit ${_LOG} "${0}: Obtaining WID for ARG:${ARG}"
 
@@ -117,7 +136,7 @@ get_win_id () {
 }
 
 get_last_term () {
-	wmctrl -l 2>/dev/null | awk 'tolower($0) ~ /terminal/ {last=$1} END {print last}'
+	wmctrl -l >/dev/null 2>&1 | grep -i terminal | sort -r | head -1 | tr -s '[:space:]' | cut -d' ' -f1
 }
 
 is_maximized () {
@@ -126,9 +145,14 @@ is_maximized () {
 	local WID=''
 	local W
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	for W in ${_WIN_LIST};do
 		WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
 		MAX="${${(@s/|/)W}[${_FLD_LIST[MAX]}]}"
+		#WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
+		#MAX=$(cut -d'|' -f${_FLD_LIST[MAX]} <<<${W})
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Seeking ARG:${WID_ARG} in list of (${#_WIN_LIST}): WID:${WID}, MAX:${MAX}"
 		if [[ ${WID_ARG} =~ ${WID} ]];then
 			logit ${_LOG} "${0}: WID:${WID} maximized:${MAX}"
 			break
@@ -147,6 +171,8 @@ set_cur_win () {
 	local TRIES=0
 	local L
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	logit ${_LOG} "${0}: Expecting window:${EXPECT}"
 
 	[[ ${_QUICK} == 'true' ]] && RETRIES=2
@@ -160,12 +186,8 @@ set_cur_win () {
 
 		_CUR_WIN=("${(f)$(wmctrl -lp >/dev/null 2>&1 | tr -s '[:space:]')}")
 
-		for L in ${_CUR_WIN};do
-			F1="${${(@s/ /)L}[${_FLD_LIST[WID]}]}"
-			F2="${${(@s/ /)L}[${_FLD_LIST[DID]}]}"
-			F3="${${(@s/ /)L}[${_FLD_LIST[PID]}]}"
-			F4="${${(@s/ /)L}[${_FLD_LIST[CLIENT]}]}"
-			F5="${${(@s/ /)L}[${_FLD_LIST[TITLE]}]}"
+		for L in "${_CUR_WIN[@]}";do
+			read -r F1 F2 F3 F4 F5 <<< "${L}"
 
 			[[ ${F2} == '-1' ]] && continue # Eliminate invisible
 			[[ ${F5:l} =~ "terminal" ]] && ((TERM_CNT++)) # Count terminal hits
@@ -184,7 +206,7 @@ set_cur_win () {
 		sleep .5
 	done
 
-	logit ${_LOG} "${0}: Created _WIN_LIST:${#_WIN_LIST} window(s)"
+	logit ${_LOG} "${0}: Created _WIN_LIST of ${#_WIN_LIST}"
 }
 
 #--Begin GetOpts--
@@ -308,7 +330,6 @@ set_cur_win ${EXPECT} # Create list of open windows
 
 # Get WID
 WIN_ID=$(get_win_id ${WIN_ARG} ${ARG_TYPE})
-
 if [[ -n ${WIN_ID} ]];then
 	logit ${_LOG} "Got WID:${WIN_ID} (${WIN_ARG})"
 	if [[ ${GET_ID} == 'true' ]];then
@@ -330,4 +351,3 @@ else
 	logit ${_LOG} "Unable to get WIN_ID for ${WIN_ARG}"
 	return 1
 fi
-set +xv;read

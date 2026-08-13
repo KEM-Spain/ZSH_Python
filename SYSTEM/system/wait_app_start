@@ -266,6 +266,7 @@ scan_apps () {
 
 # Execution
 cfg_create
+[[ -e ${_LOG} ]] && /bin/rm -f ${_LOG} # Clear log
 
 _APPS_TO_SCAN=("${(f)$(apps_to_scan)}")
 _APPS_TO_SCAN+=(${_APPS_NON_DOCK})

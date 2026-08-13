@@ -2,39 +2,43 @@
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
-source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(UTILS.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
-#Vars
-_ENP_MARKER=/tmp/enpass.init
+# Constants
+_SCRIPT=${0:t}
+_CFG_DIR=~/.local/share/${_SCRIPT}
+
+# Vars
+_ENP_MARKER=${_CFG_DIR}/enpass.init
 _ENP_PW=''
-_ENP_CONFIG="/home/kmiller/.enp"
+_ENP_CONFIG="${_CFG_DIR}/.enpass.conf"
 _WIN_INFO=''
 _WDW_ID=''
 _WDW_TITLE=''
 _TERM_ID=$(win_max -i terminal | cut -d'|' -f2) # Get decimal ID for xdotool
 
-#Get PW
+# Get PW
 read _ENP_PW < ${_ENP_CONFIG}
 _DELAY=1
 _SCRIPT=${0:t}
-_LOG=/tmp/${_SCRIPT}.log
+_LOG=${_CFG_DIR}/${_SCRIPT}.log
 _ENPASS=/opt/enpass/Enpass 
 
 start_enpass () {
 	local ARG=${1}
-	local PID
+	local PID=''
 
 	send-notification ${_DELAY} "Looking for running Enpass instance..."
-	PID=($(pgrep -xf ${_ENPASS})) #get PID for Enpass
+	PID=($(pgrep -xf ${_ENPASS})) # Get PID for Enpass
 
 	if [[ -n ${PID} ]];then
 		logit ${_LOG} "Enpass already running...killing instance"
 		sudo killall -I enpass
 	fi
 
-	#Start Enpass...
+	# Start Enpass...
 	logit ${_LOG} "Starting Enpass..."
 	if [[ ${ARG} == 'foreground' ]];then
 		echo "Control-C to exit..." >&2
@@ -48,7 +52,7 @@ start_enpass () {
 
 	PID=?
 	while [[ ! -e /proc/${PID} ]];do
-		PID=($(pgrep -xf ${_ENPASS})) #get PID for Enpass
+		PID=($(pgrep -xf ${_ENPASS})) # Get PID for Enpass
 		break
 		sleep .2
 	done
@@ -57,32 +61,39 @@ start_enpass () {
 }
 
 pass_login_to_enpass () {
+	sleep .5
 	_WIN_INFO=$(win_max -i -q crash) 
+
 	if [[ -n ${_WIN_INFO} ]];then
 		_WDW_ID=$(cut -d'|' -f2 <<<${_WIN_INFO})
 		_WDW_TITLE=$(cut -d'|' -f3 <<<${_WIN_INFO})
 		logit ${_LOG} "Detected Enpass Crash Window"
 		logit ${_LOG} "Sending Escape Key"
-		xdotool windowfocus ${_WDW_ID}
-		xdotool key --window ${_WDW_ID} Escape
+		if [[ -n ${_WDW_ID} ]];then
+			xdotool windowfocus ${_WDW_ID}
+			xdotool key --window ${_WDW_ID} Escape
+		fi
 	fi
 
 	logit ${_LOG} "Passing credentials to Enpass..."
 	send-notification ${_DELAY} "Sending credentials to Enpass..."
 
 	_WIN_INFO=$(win_max -i enpass) 
+
 	if [[ -n ${_WIN_INFO} ]];then
 		_WDW_ID=$(cut -d'|' -f2 <<<${_WIN_INFO})
 		/usr/local/bin/system/kbd-toggle off
 		/usr/local/bin/system/kbd-flush
 		sleep .2
-		xdotool windowfocus ${_WDW_ID}
-		xdotool type --window ${_WDW_ID} ${_ENP_PW}
-		sleep .2
-		xdotool key --window ${_WDW_ID} Return
+		if [[ -n ${_WDW_ID} ]];then
+			xdotool windowfocus ${_WDW_ID}
+			xdotool type --window ${_WDW_ID} ${_ENP_PW}
+			sleep .2
+			xdotool key --window ${_WDW_ID} Return
+		fi
 		/usr/local/bin/system/kbd-toggle on
 		/usr/local/bin/system/kbd-flush
-		xdotool windowfocus ${_TERM_ID}
+		[[ -n ${_TERM_ID} ]] && xdotool windowfocus ${_TERM_ID}
 	fi
 }
 
@@ -91,11 +102,13 @@ close_enpass_window () {
 	[[ -n ${_WDW_ID} ]] && xdotool windowclose ${_WDW_ID}
 }
 
-#Execution
-/bin/rm -f ${_ENP_MARKER}
-/bin/rm -f ${_LOG}
+# Execution
+[[ ! -e ${_CFG_DIR} ]] && mkdir -p ${_CFG_DIR}
+[[ ! -e ${_ENP_CONFIG} ]] && exit_leave $(err_exit_msg "Missing:${_ENP_CONFIG}")
+[[ -e ${_ENP_MARKER} ]] && /bin/rm -f ${_ENP_MARKER}
+[[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 
-xdotool windowfocus ${_TERM_ID}
+[[ -n ${_TERM_ID} ]] && xdotool windowfocus ${_TERM_ID}
 
 if [[ ${1} == "-H" ]];then
 	echo "Usage: ${0:t} [foreground]" && exit
