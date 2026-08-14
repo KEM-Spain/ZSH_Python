@@ -1,0 +1,315 @@
+#!/usr/bin/zsh
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=()
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
+unsetopt warncreateglobal
+
+ external () {
+  # Declarations and Vars
+  local -A _PART _UUID _TYPE _MP _LBL FST_MP
+  local -a _LOCAL_LIST
+  local _FSTAB=/etc/fstab
+  local _MOUNT_ROOT=/media/${USER}
+  local DEV_ARG=''
+
+  # Functions
+  action_do () {
+    local M
+
+    for M in ${_MARKED};do
+      if get_status ${_PART[${M}]};then
+        manage_dev unmount ${_PART[${M}]}
+      else
+        manage_dev mount ${_PART[${M}]}
+      fi
+    done
+
+    for M in ${_MARKED};do
+      list_set_selected ${M} ${_STALE_ROW}
+    done
+  }
+
+  collect_disk_info () {
+    local -a DISK_INFO=()
+    local DEV UUID TYPE MP LBL
+    local LINE
+    local NDX=0
+    local L U
+
+    while read LINE;do # Get MOUNTPOINTS for fstab entries
+      [[ ${LINE:l} =~ '^#' ]] && continue
+      [[ ! ${LINE:l} =~ 'uuid' ]] && continue
+      L=$(tr -s '[:space:]' <<<${LINE})
+      DEV=${${(s/ /)L}[1]}
+      [[ ${DEV:l} =~ 'uuid=' ]] && UUID=${${(s/=/)DEV}[2]} || UUID=${DEV:t}
+      MP=${${(s/ /)L}[2]}
+      FST_MP[${UUID}]="${MP}"
+    done < ${_FSTAB}
+
+    # Parse lsblk directly into key-value maps
+    lsblk -P -n -o NAME,UUID,FSTYPE,MOUNTPOINT,LABEL | awk '
+      /NAME="sd[a-z]+[0-9]+"/ {
+      match($0, /NAME="([^"]*)"/, n)
+      match($0, /UUID="([^"]*)"/, u)
+      match($0, /FSTYPE="([^"]*)"/, f)
+      match($0, /MOUNTPOINT="([^"]*)"/, m)
+      match($0, /LABEL="([^"]*)"/, l)
+
+      print n[1] "|" u[1] "|" f[1] "|" (m[1] ? m[1] : "Unmounted") "|" l[1] }' | \
+      while IFS='|' read -r DEV UUID TYPE MP LBL;do
+      ((NDX++))
+      _PART[${NDX}]="${DEV}"
+      _UUID[${DEV}]="${UUID}"
+      _TYPE[${DEV}]="${TYPE}"
+      _MP[${DEV}]="${MP}"
+      _LBL[${DEV}]="${LBL}"
+    done
+  }
+
+  manage_dev () {
+    local ACTION=${1}
+    local DEV=${2}
+    local MSTAT=''
+    local UUID=''
+
+    case ${ACTION} in
+      mount) 
+        if get_status ${DEV};then
+          [[ ${EXT_VERBOSE_OPT} == 'true' ]] && msg_box -t2 "Device:${DEV} is already mounted"
+          return
+        fi;;
+      unmount) 
+        if ! get_status ${DEV};then
+          [[ ${EXT_VERBOSE_OPT} == 'true' ]] && msg_box -t2 "Device:${DEV} is already unmounted"
+          return
+        fi;;
+    esac
+
+    UUID=${_UUID[${DEV}]}
+
+    if [[ ${ACTION} == 'mount' ]];then
+      [[ ${EXT_VERBOSE_OPT} == 'true' ]] && msg_box -t2 "Mounting drive:${DEV}"
+      if [[ -n ${FST_MP[${UUID}]} ]];then
+        MSTAT=$(sudo mount ${FST_MP[${UUID}]})
+        [[ ${?} -ne 0 ]] && msg_box -p -PK ${MSTAT}
+      else
+        [[ ! -e ${_MOUNT_ROOT}/${_LBL[${DEV}]} ]] && sudo mkdir ${_MOUNT_ROOT}/${DEV}
+        MSTAT=$(sudo mount -t ${_TYPE[${DEV}]} /dev/${_PART[${DEV}]} ${_MOUNT_ROOT}/${_LBL[${DEV}]})
+        [[ ${?} -ne 0 ]] && msg_box -p -PK ${MSTAT}
+      fi
+    else
+      [[ ${EXT_VERBOSE_OPT} == 'true' ]] && msg_box -t2 "Unmounting drive:${DEV}"
+      if [[ -n ${FST_MP[${UUID}]} ]];then
+        MSTAT=$(sudo umount ${FST_MP[${UUID}]})
+        [[ ${?} -ne 0 ]] && msg_box -p -PK ${MSTAT}
+      else
+        MSTAT=$(sudo udisksctl unmount -b /dev/${_PART[${DEV}]})
+        [[ ${?} -ne 0 ]] && msg_box -p -PK ${MSTAT}
+      fi
+    fi
+  }
+
+  manage_mounts () {
+    local ACTION=${1}
+    local DEV=${2:=null}
+    local D
+
+    if [[ ${DEV} == 'null' ]];then
+      if [[ ${ACTION} == 'mount' ]];then
+        [[ ${EXT_VERBOSE_OPT} == 'true' ]] && msg_box -t2 "Mounting all external drives"
+        for D in ${_PART};do
+          manage_dev mount ${D}
+        done
+      else
+        [[ ${EXT_VERBOSE_OPT} == 'true' ]] && msg_box -t2 "Unmounting all external drives"
+        for D in ${_PART};do
+          manage_dev unmount ${D}
+        done
+      fi
+    else
+      if [[ ${ACTION} == 'mount' ]];then
+        manage_dev mount ${DEV}
+      else
+        manage_dev unmount ${DEV}
+      fi
+    fi
+  }
+
+  get_status () {
+    local DEV=${1:=null}
+    local D
+
+    if [[ ${DEV} == 'null' ]];then
+      for D in ${(k)_PART};do
+        [[ ${_SMCUP} == 'true' ]] && do_rmcup
+        [[ ${_MP[${_PART[${D}]}]:l} == 'unmounted' ]] && echo "${_PART[${D}]} is unmounted" || echo "${_PART[${D}]} is mounted"
+      done
+    elif [[ -z ${_MP[${DEV}]} ]];then
+      return 1
+    else
+      [[ ${_MP[${DEV}]:l} != 'unmounted' ]] && return 0 || return 1
+    fi
+  }
+
+  display_disks () {
+    # Set headings
+    list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} Partitions\tSelected:${WHITE_FG}%-d${RESET}" ${#_LIST} ${SELECTED_COUNT}'
+    list_set_header 'printf " "'
+    list_set_header 'printf "%*s %12s %12s %30s %15s" 5 "" "Partition" "Type" "Mount Point" "Label"'
+    list_set_header 'printf "%*s ${WHITE_FG}%12s${RESET} ${WHITE_FG}%12s${RESET} ${WHITE_FG}%30s${RESET} ${WHITE_FG}%15s${RESET}" 5 "" $(str_unicode_line 12) $(str_unicode_line 12) $(str_unicode_line 30)  $(str_unicode_line 15)'
+
+    # Set line item
+    list_set_line_item '
+      local KEY=${_PART[${_LIST_NDX}]};
+      local MNT_CLR='';
+      [[ ${_MP[${KEY}]:l} == 'unmounted' ]] && MNT_CLR="${RED_FG}" || MNT_CLR="${GREEN_FG}";
+      printf "${BOLD}${WHITE_FG}%4s${RESET}${SHADE} %12s %12s  ${MNT_CLR}%30s${RESET}${SHADE} %15s${RESET}\n" ${_LIST_NDX} "${_PART[${_LIST_NDX}]}" "${_TYPE[${KEY}]}" "${_MP[${KEY}]}" "${_LBL[${KEY}]}"
+      
+      '
+
+    list_set_prompt_msg '
+      printf "${RESET}Press ${WHITE_FG}Home End PgUp PgDn${RESET}, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}"
+      '
+    list_set_select_action "mount/unmount"
+    list_set_barlines true
+    list_set_reuse_stale true
+    list_set_searchable false
+
+    while true;do
+      # Get selection
+      list_select ${(v)_PART}
+      [[ ${?} -eq 0 ]] && break
+
+      # Get selections
+      _MARKED=($(list_get_selected))
+
+      if [[ $(list_get_selected_count) -ne 0 ]];then
+        action_do
+      fi
+
+      collect_disk_info
+    done
+
+    exit_leave
+  }
+
+  # Execution
+
+  #--Begin GetOpts--
+  RESET="\033[m"
+  RED_FG="\033[31m"
+  WHITE_FG="\033[37m"
+
+  read -r -d '' DESC<<__EOF
+Utility to mount/unmount external disks
+\tDefault is to display list of external disks
+\tto manage interactively
+__EOF
+
+  parse_opts () {
+    local OPTS=${@}
+    local -a OPTSTR
+    local LETTER_OPT
+    local O
+
+    for O in {1..${#OPTS}};do
+      [[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+      [[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
+      [[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
+      OPTSTR+="-${OPTS[${O}]}"
+    done
+    echo ${OPTSTR}
+  }
+
+  opt_exists () {
+    local OPT=${1}
+    [[ $(( ${OPTIONS}[(Ie)${OPT}] )) -ne 0 ]] && return 0 || return 1
+  }
+
+  opt_type () {
+    local OPT=${1}
+    case ${OPT} in
+      d) echo "<DIR>" ;;
+      f) echo "<FILE>" ;;
+      t) echo "<FILE_TYPE>" ;;
+      p) echo "<PARTITION>" ;;
+    esac
+  }
+
+  usage () {
+    local OPTS=$(parse_opts ${OPTSTR})
+    local -a PENDING_MSGS=(${@})
+
+    [[ ${_SMCUP} == 'true' ]] && do_rmcup
+
+    (
+      tabs 5
+      echo -e "${WHITE_FG}Usage${RESET}:${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type p)]\n"
+      echo -e "${WHITE_FG}-H${RESET} help"
+      echo -e "${WHITE_FG}-D${RESET} debug"
+      echo -e "${WHITE_FG}-m${RESET} mount all"
+      echo -e "${WHITE_FG}-u${RESET} unmount all"
+      echo -e "${WHITE_FG}-s${RESET} return mount status [ 0:mounted, 1:unmounted ]"
+      echo -e "${WHITE_FG}-v${RESET} verbose output"
+      echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
+    ) >&2
+
+    exit_leave $(err_msg_exit ${PENDING_MSGS})
+  }
+
+  typeset -a OPTIONS
+  OPTSTR=":HDmusv"
+  OPTIND=0
+
+  local EXT_MOUNT_OPT=false
+  local EXT_UNMOUNT_OPT=false
+  local EXT_STATUS_OPT=false
+  local EXT_VERBOSE_OPT=false
+  local RC=0
+
+  while getopts ${OPTSTR} OPTION ${g_OPTS};do
+    case ${OPTION} in
+      H) usage ;;
+      D) dbg_set_level ;;
+      m) EXT_MOUNT_OPT=true ;;
+      u) EXT_UNMOUNT_OPT=true ;;
+      s) EXT_STATUS_OPT=true ;;
+      v) EXT_VERBOSE_OPT=true ;;
+      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage ;;
+      \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage ;;
+    esac
+    [[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
+  done
+  shift $(( OPTIND - 1 ))
+  #--End GetOpts--
+
+  [[ -n ${g_ARGS} ]] && DEV_ARG=${g_ARGS} || DEV_ARG=''
+
+  [[ -n ${DEV_ARG} && -z ${OPTIONS} ]] && exit_leave $(err_msg_exit "Device:${DEV_ARG} requires an option")
+
+  [[ ${EXT_MOUNT_OPT} == 'true' && ${EXT_UNMOUNT_OPT} == 'true' ]] && exit_leave $(err_msg_exit E "Conflicting options:(-m -u)")
+
+  collect_disk_info
+
+  [[ -z ${_PART} ]] && exit_leave "No external drives detected"
+
+  if [[ -z ${OPTIONS} ]];then
+    display_disks
+  elif [[ ${EXT_MOUNT_OPT} == 'true' ]];then
+    manage_mounts mount ${DEV_ARG}
+  elif [[ ${EXT_UNMOUNT_OPT} == 'true' ]];then
+    manage_mounts unmount ${DEV_ARG}
+  elif [[ ${EXT_STATUS_OPT} == 'true' ]];then
+    get_status ${DEV_ARG}
+    RC=${?}
+    [[ -n ${DEV_ARG} ]] && set_exit_value ${RC}
+  fi
+
+  exit_leave
+}
+
+external ${@}

@@ -87,9 +87,9 @@ external () {
       [[ ${LINE:l} =~ '^#' ]] && continue
       [[ ! ${LINE:l} =~ 'uuid' ]] && continue
       L=$(tr -s '[:space:]' <<<${LINE})
-      DEV=$(cut -d' ' -f1 <<<${L})
-      [[ ${DEV:l} =~ 'uuid=' ]] && UUID=$(cut -s -d'=' -f2 <<<${DEV}) || UUID=${DEV:t}
-      MP=$(cut -d' ' -f2 <<<${L})
+      DEV=${${(s/ /)L}[1]}
+      [[ ${DEV:l} =~ 'uuid=' ]] && UUID=${${(s/=/)DEV}[2]} || UUID=${DEV:t}
+      MP=${${(s/ /)L}[2]}
       FST_MP[${UUID}]="${MP}"
     done < ${_FSTAB}
 
@@ -359,7 +359,6 @@ space () {
   # Declarations and Vars
   local -A HIDDEN=()
   local -A NORMAL=()
-  local -a PART_DATA=()
   local -a PART_DETAIL=()
   local -aU PARTITIONS=()
   local DESCENDING=false
@@ -459,33 +458,28 @@ __EOF
   #--End GetOpts--
 
   # Execution
-  PARTITIONS=("${(f)$(mount -t ext3,ext4,vfat,ntfs,fuseblk | sed 's/ on.*//' | cut -d'/' -f3)}")
 
+  PARTITIONS=(${${(f)"$(findmnt -n -l -t ext3,ext4,vfat,ntfs,fuseblk -o SOURCE)"}:t})
   DIRCNT=$(find . ! -path . -type d 2>/dev/null | wc -l)
 
   tput cup 0 0
   {
     for P in ${PARTITIONS};do
-      [[ ${P} == "b" ]] && continue
-      PART_DATA+=$P
-    done
-
-    for P in ${PART_DATA};do
-      PART_DETAIL+=("${(f)$( sudo df -h /dev/${P} 2>/dev/null | awk 'NR==2{print $0}' | tr -s '[:space:]' | sed 's/ /\|/g')}")
+      PART_DETAIL+=("${(f)$(sudo df -h /dev/${P} 2>/dev/null | awk 'NR==2{print $0}' | tr -s '[:space:]' | sed 's/ /\|/g')}")
     done
 
     echo "${WHITE_FG}Disk Space\n${RESET}"
     printf "${WHITE_FG}%16s %6s${RESET} ${RED_FG}%6s${RESET} ${GREEN_FG}%6s ${WHITE_FG}%8s %-20s${RESET}\n" "File System" "Size" "Used" "Avail" "Pct Used" "Mounted On"
 
-    MP=$(findmnt -nT ${PWD} | tr -s '[:space:]' | cut -d' ' -f2)
+    MP=${${(s/ /)$(findmnt -nT ${PWD})}[2]}
 
     for P in ${PART_DETAIL};do
-      FS=$(echo $P | cut -d\| -f1)
-      SZ=$(echo $P | cut -d\| -f2)
-      US=$(echo $P | cut -d\| -f3)
-      AV=$(echo $P | cut -d\| -f4)
-      PU=$(echo $P | cut -d\| -f5)
-      MN=$(echo $P | cut -d\| -f6)
+      FS=${${(s/|/)P}[1]}
+      SZ=${${(s/|/)P}[2]}
+      US=${${(s/|/)P}[3]}
+      AV=${${(s/|/)P}[4]}
+      PU=${${(s/|/)P}[5]}
+      MN=${${(s/|/)P}[6]}
       [[ ${FS} == ${MP} ]] && MN="${MN} $(echo "${BOLD}${GREEN_FG}<-- <-- <--${RESET}")" && SYSTEM_TOTAL=${SZ}
       printf "%16s %6s %6s %6s %8s %-20s\n" ${FS} ${SZ} ${US} ${AV} ${PU} ${MN}
     done
@@ -501,8 +495,8 @@ __EOF
       LIST=("${(f)$(sudo du --max-depth 1 2>/dev/null)}")
 
       for L in ${LIST};do
-        SZ=$(echo ${L} | tr -s '[:space:]' | cut  -f1)
-        FN=$(echo ${L} | tr -s '[:space:]' | cut  -f2)
+        SZ=${${(s/ /)L}[1]}
+        FN=${${(s/ /)L}[2]}
         [[ ${FN:t} =~ "^\." ]] && HIDDEN[${FN:t}]=${SZ} || NORMAL[${FN:t}]=${SZ}
         [[ ${#FN:t} -gt ${LONGEST} ]] && LONGEST=${#FN:t}
       done
@@ -533,11 +527,11 @@ __EOF
     fi
 
     DU=$(sudo du -s 2>/dev/null | sed -e 's/\t/ /' -e 's/\./Total/g')
-    TSZ=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f1) # Total PWD size in bytes
+    TSZ=${${(s/ /)DU}[1]}
 
     DU=$(sudo du -sh 2>/dev/null | sed -e 's/\t/ /' -e 's/\./Total/g')
-    SZ=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f1) # Total PWD size in human readable
-    FN=$(echo ${DU} | tr -s '[:space:]' | cut  -d' ' -f2)
+    SZ=${${(s/ /)DU}[1]}
+    FN=${${(s/ /)DU}[2]}
     HU=$(numfmt --to=iec $(( ${TSZ} * 1024 ))) # For percentage
 
     if [[ ${DIRCNT} -ne 0 ]];then
@@ -547,7 +541,7 @@ __EOF
     else
       printf "  "
       printf "\\u2500%.0s" {1..${#DU}}
-      printf "\n  ${WHITE_FG}%s${RESET} %s\n" $(cut -d' ' -f1 <<<${DU}) $(cut -d' ' -f2 <<<${DU})
+      printf "\n  ${WHITE_FG}%s${RESET} %s\n" ${${(s/ /)DU}[1]} ${${(s/ /)DU}[2]}
       printf "  "
       printf "\\u2500%.0s" {1..${#DU}}
       printf "\n"
@@ -569,10 +563,9 @@ unplug () {
   local -A MOUNTS=()
   local -A STRLEN=()
   local -a LIST=()
+  local RESPONSE=''
   local MD MP
   local NDX=0
-  local PART_REGEX="sd[A-Za-z][0-9]"
-  local RESPONSE
   local L M
 
   [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -588,14 +581,15 @@ __EOF
     exit_leave
   fi
 
-  LIST=("${(f)$(mount | grep ${PART_REGEX} 2>/dev/null | cut -d' '  -f1-3 | sed 's/ on /|/')}") # All sdX
+  LIST=("${(f)$(mount | awk '$1 ~ /sd[A-Za-z][0-9]/ {print $1"|"$3}')}") # A single awk matching regex pattern
 
-  for L in ${LIST};do
-    MD=$(cut -d'|' -f1 <<<${L}) # Device
-    MP=$(cut -d'|' -f2 <<<${L}) # Mountpoint
+  for L in "${LIST[@]}"; do
+    MD="${L%%|*}"
+    MP="${L#*|}"
+
     [[ ${#MD} -gt ${STRLEN[DEV]} ]] && STRLEN[DEV]=${#MD}
     [[ ${#MP} -gt ${STRLEN[DIR]} ]] && STRLEN[DIR]=${#MP}
-    MOUNTS[${MD}]=${MP}
+    MOUNTS[${MD}]="${MP}"
   done
 
   if [[ -n ${MOUNTS} ]];then
@@ -604,7 +598,8 @@ __EOF
     done
 
     echo "\nSelect device(s) to unplug..."
-    printf "\n    ${CYAN_FG}%-*s %-*s${RESET}\n" ${STRLEN[DEV]} "Device" ${STRLEN[DIR]} "Path"
+    printf "    ${CYAN_FG}%-*s %-*s${RESET}\n" ${STRLEN[DEV]} "Device" ${STRLEN[DIR]} "Path"
+    printf "    ${CYAN_FG}%s %s${RESET}\n" $(str_unicode_line ${STRLEN[DEV]}) $(str_unicode_line ${STRLEN[DIR]})
     for M in ${(k)MOUNTS};do
       ((NDX++))
       printf "${WHITE_FG}%2d${RESET}) ${WHITE_FG}%-*s ${MAGENTA_FG}%-*s${RESET}\n" ${NDX} ${STRLEN[DEV]} ${M} ${STRLEN[DIR]} ${MOUNTS[${M}]}
@@ -633,13 +628,12 @@ __EOF
 
 usbdisks () {
   # Declarations and Vars
-  local DEV
-  local DEVID
-  local MOUNTMSG
-  local MOUNTPOINT
+  local DEV=''
+  local DEVID=''
+  local MOUNTMSG=''
+  local MOUNTPOINT=''
   local NDX=0
-  local USBNAME
-  local USBS
+  local USBS=''
   local U F
 
   [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -662,20 +656,14 @@ __EOF
   done
 
   if [[ ${NDX} -gt 0 ]];then
-    USBS=($(ls /dev/disk/by-id/usb*))
+    USBS=($(ls /dev/disk/by-id/usb* | grep "part"))
+    echo "${MAGENTA_FG}USB Disks${RESET}"
+    echo $(str_unicode_line 9)
     for U in ${USBS};do
       DEV=$(readlink -f ${U})
-      if [[ ${U} =~ 'part' ]];then
-        MOUNTPOINT=$(mount | grep ${DEV} | tr -s '[:space:]' | cut -d' ' -f3)
-        [[ -z ${MOUNTPOINT} ]] && MOUNTMSG="and is ${RED_FG}unmounted${RESET}" || MOUNTMSG="and is ${WHITE_FG}mounted${RESET} at"
-        DEVID=''
-      else
-        MOUNTMSG=''
-        USBNAME=$(echo ${U} | cut -d- -f3 | sed 's/_.*//g')
-        DEVID="$(lsusb | grep ${USBNAME})\n"
-      fi
-      echo "USB:${WHITE_FG}${USBNAME}${RESET} is Device:${WHITE_FG}${DEV}${RESET} ${MOUNTMSG} ${WHITE_FG}${MOUNTPOINT}${RESET}"
-      echo ${DEVID}
+      MOUNTPOINT=${${(s/ /)$(mount | grep ${DEV})}[3]}
+      [[ -z ${MOUNTPOINT} ]] && MOUNTMSG="and is ${RED_FG}unmounted${RESET}" || MOUNTMSG="is ${WHITE_FG}mounted${RESET} at"
+      echo "USB Device:${WHITE_FG}${DEV}${RESET} ${MOUNTMSG} ${WHITE_FG}${MOUNTPOINT}${RESET}"
     done
   else
     echo "${RED_FG}No${RESET} ${WHITE_FG}USB${RESET} disk devices found"
@@ -684,23 +672,34 @@ __EOF
 
 fstab_info () {
   # Declarations and Vars
-  local -A UUID2DEV
-  local -a DEVS=($(ls -la /dev/disk/by-uuid | cut -d \  -f12 | sed s^../..^/dev^))
-  local -a UUIDS=($(ls -la /dev/disk/by-uuid | cut -d \  -f10))
-  local -i NDX
-  local RC
-  local STATUS
-  local UUID
-  local WAS_PARSED
-  local M U
+  local -A UUID2DEV=()
+  local -a DEVS=()
+  local -a DUMPS=()
+  local -a FSTAB=()
+  local -a MOUNTS=()
+  local -a OPTIONS=()
+  local -a PASSES=()
+  local -a POINTS=()
+  local -a TYPES=()
+  local -a UUIDS=()
+  local -i NDX=0
+  local RC=0
+  local STATUS=0
+  local UUID=''
+  local L M U
+
+  for L in /dev/disk/by-uuid/*(:N); do
+    UUIDS+=("${L:t}") # Extracts just the filename (the UUID)
+    DEVS+=("${L:A}")  # Automatically resolves the L to /dev/sdX
+  done
 
   [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
   # Execution
+
   read -r -d '' DESC<<__EOF
 Display fstab info
 __EOF
-
 
   if [[ ${1} == '-H' ]];then
     [[ ${_SMCUP} == 'true' ]] && do_rmcup
@@ -716,23 +715,17 @@ __EOF
     UUID2DEV[${U}]=${DEVS[$NDX]}
   done
 
-  grep -v '#' < /etc/fstab | sed -e 's/	/ /g' | tr -s '[:space:]' | grep -vi swap > /tmp/fst
+  FSTAB=("${(f)$(grep -vE '#|swap' < /etc/fstab)}")
+  for L in ${FSTAB};do
+    MOUNTS+=${${(s/ /)L}[1]}
+    POINTS+=${${(s/ /)L}[2]}
+    TYPES+=${${(s/ /)L}[3]}
+    OPTIONS+=${${(s/ /)L}[4]}
+    DUMPS+=${${(s/ /)L}[5]}
+    PASSES+=${${(s/ /)L}[6]}
+  done
 
-  local MOUNTS=($(cut -d' ' -f1 < /tmp/fst))
-  local POINTS=($(cut -d' ' -f2 < /tmp/fst))
-  local TYPES=($(cut -d' ' -f3 < /tmp/fst))
-  local OPTIONS=($(cut -d' ' -f4 < /tmp/fst))
-  local DUMPS=($(cut -d' ' -f5 < /tmp/fst))
-  local PASSES=($(cut -d' ' -f6 < /tmp/fst))
-
-  WAS_PARSED=true # Ensure all fields parsed
-  [[ ${#MOUNTS} != ${#POINTS} ]] && WAS_PARSED=false
-  [[ ${#MOUNTS} != ${#TYPES} ]] && WAS_PARSED=false
-  [[ ${#MOUNTS} != ${#OPTIONS} ]] && WAS_PARSED=false
-  [[ ${#MOUNTS} != ${#DUMPS} ]] && WAS_PARSED=false
-  [[ ${#MOUNTS} != ${#PASSES} ]] && WAS_PARSED=false
-  [[ ${WAS_PARSED} == false ]] && echo 'Parse failed on /etc/fstab' && kill -SIGINT $$
-
+  {
   NDX=0
   echo -e "\n${WHITE_FG}File System Info from /etc/fstab${RESET}"
   for M in ${MOUNTS};do
@@ -750,11 +743,8 @@ __EOF
     echo "       ${WHITE_FG}DUMPS${RESET}: ${DUMPS[$NDX]}"
     echo "      ${WHITE_FG}PASSES${RESET}: ${PASSES[$NDX]}"
     echo ""
-    echo "     ${WHITE_FG}OPTIONS${RESET}: ${OPTIONS[$NDX]}"
-    echo "       ${WHITE_FG}DUMPS${RESET}: ${DUMPS[$NDX]}"
-    echo "      ${WHITE_FG}PASSES${RESET}: ${PASSES[$NDX]}"
-    echo ""
   done
+  } | mypager wait
 }
 
 # -----------
@@ -836,21 +826,20 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-# This is detection of production mode 
-# if called from another script 
-# (--prod will cancel smcup making it friendly to the caller)
- 
 
+# This is detection of production mode called from another script (--prod will cancel smcup making it friendly to the caller)
 g_PROD=false
-[[ ${@} =~ '--prod' ]] && g_PROD=true && g_OPTS=$(sed -e 's/--prod//' <<<${@} | str_trim)
-#[[ ${g_PROD} == 'false' && ${_DEBUG} -eq 0 ]] && do_smcup
+g_OPTS="${@}"
+[[ ${@} =~ '--prod' ]] && g_PROD=true && g_OPTS=$(sed -e 's/--prod//' <<<${g_OPTS} | str_trim)
+[[ ${g_PROD} == 'false' && ${_DEBUG} -eq 0 ]] && do_smcup
 
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
 [[ -n ${UTIL} && ${_UTILS[${UTIL}]} -ne 1 ]] && usage "command:${WHITE_FG}${UTIL}${RESET} not found"
 
 if [[ -n ${UTIL} ]];then
-  UTIL=${1} && _SCRIPT=${1}
+  UTIL=${1}
+  _SCRIPT=${UTIL}
   g_OPTS=(${(M)@:#-[a-zA-Z0-9]*}); g_ARGS=(${@:#-[a-zA-Z0-9]*})
   g_ARGS=$(sed "s/${_SCRIPT}//" <<<${g_ARGS} | str_trim)
   if [[ ${_UTILS[${UTIL}]} -eq 1 ]];then
