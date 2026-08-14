@@ -1,64 +1,32 @@
-2026-08-12_23:56: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-08-12_23:56: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-08-12_23:56: query_youtube: Creating listing for QKEY:judgingfreedom STRICT:s
-2026-08-12_23:56: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Judging Freedom ENGINE:youtube EOPT:s FKEY:judging freedom QKEY:judgingfreedom TYPE:standard 
-2026-08-12_23:56: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "judgingfreedom"
-2026-08-12_23:56: query_youtube: Query matched 17 lines, _LOCAL_LIST has 15 lines
-2026-08-12_23:56: query_youtube: Listing for QKEY:judgingfreedom contains 15 rows
-2026-08-12_23:57: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.BKPmsI
-2026-08-12_23:57: job_start: TITLE:Gilbert Doctorow : What IS Russia's Strategy Toward The Us? 
-2026-08-12_23:57: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=TGTPHHLP1ZA" PID:368278
-2026-08-12_23:57: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-08-12_23:57: yt URL:https://youtube.com/watch?v=TGTPHHLP1ZA
-2026-08-12_23:57: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "youtube:lang-en" "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=TGTPHHLP1ZA"
-2026-08-12_23:57: action_do: GENERATING HEADER
-2026-08-12_23:57: action_do: COMPLETED
-2026-08-12_23:57: action_do: POST-PROCESSING
-2026-08-12_23:57: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=TGTPHHLP1ZA PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - Gilbert_Doctorow_-_What_is_Russia_s_Strategy_Toward_the_US.mp4|6336723
-2026-08-12_23:57: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - Gilbert_Doctorow_-_What_is_Russia_s_Strategy_Toward_the_US.mp4
-2026-08-12_23:57: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - Gilbert_Doctorow_-_What_is_Russia_s_Strategy_Toward_the_US.mp4
-2026-08-12_23:57: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Gilbert_Doctorow_-_What_is_Russia_s_Strategy_Toward_the_US.mp4 with:Judging Freedom - Gilbert Doctorow - What IS Russia's Strategy Toward.mp4
-2026-08-12_23:57: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/Web/Judging Freedom - Gilbert Doctorow - What IS Russia's Strategy Toward.mp4
-2026-08-12_23:57: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.BKPmsI was cleared for:judgingfreedom from:action_do
-2026-08-12_23:57: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.jnv8dF
-2026-08-12_23:57: job_start: TITLE:Col. Lawrence Wilkerson : IS The US A Republic Or An Empire? 
-2026-08-12_23:57: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=GegcA2vMPeE" PID:370427
-2026-08-12_23:57: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-08-12_23:57: yt URL:https://youtube.com/watch?v=GegcA2vMPeE
-2026-08-12_23:57: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "youtube:lang-en" "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=GegcA2vMPeE"
-2026-08-12_23:57: action_do: GENERATING HEADER
-2026-08-12_23:57: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=GegcA2vMPeE PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judge_Napolitano_-_Judging_Freedom - COL._Lawrence_Wilkerson_-_Is_the_US_a_Republic_or_an_Empire.mp4|6340323
-2026-08-12_23:57: action_do: COMPLETED
-2026-08-12_23:57: action_do: POST-PROCESSING
-2026-08-12_23:57: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - COL._Lawrence_Wilkerson_-_Is_the_US_a_Republic_or_an_Empire.mp4
-2026-08-12_23:57: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - COL._Lawrence_Wilkerson_-_Is_the_US_a_Republic_or_an_Empire.mp4
-2026-08-12_23:57: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - COL._Lawrence_Wilkerson_-_Is_the_US_a_Republic_or_an_Empire.mp4 with:Judging Freedom - Col. Lawrence Wilkerson - IS The US A Republic Or An.mp4
-2026-08-12_23:57: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/Web/Judging Freedom - Col. Lawrence Wilkerson - IS The US A Republic Or An.mp4
-2026-08-12_23:57: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.jnv8dF was cleared for:judgingfreedom from:action_do
-2026-08-12_23:57: query_youtube: Creating listing for QKEY:phillip giraldi STRICT:null
-2026-08-12_23:57: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Phillip Giraldi ENGINE:youtube EOPT:null FKEY:phillip giraldi QKEY:phillip giraldi SMSG:0.0% TYPE:custom 
-2026-08-12_23:57: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "phillip giraldi"
-2026-08-12_23:57: query_youtube: Query matched 2 lines, _LOCAL_LIST has 1 lines
-2026-08-12_23:57: query_youtube: Listing for QKEY:phillip giraldi contains 1 rows
-2026-08-12_23:57: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.SDNcve
-2026-08-12_23:57: job_start: TITLE:Phil Giraldi : Are Nuclear Weapons On The Table? 
-2026-08-12_23:57: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=WBIM-lth2gA" PID:376640
-2026-08-12_23:57: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
-2026-08-12_23:57: yt URL:https://youtube.com/watch?v=WBIM-lth2gA
-2026-08-12_23:57: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "youtube:lang-en" "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=WBIM-lth2gA"
-2026-08-12_23:57: job_kill: Killed 376980
-2026-08-12_23:57: job_reset: Job was reset
-2026-08-12_23:57: action_do: JOB CANCELLED
-2026-08-12_23:57: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=WBIM-lth2gA PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Judging Freedom - Col. Lawrence Wilkerson - IS The US A Republic Or An.mp4|6340323
-2026-08-12_23:57: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.SDNcve was cleared for:phillip giraldi from:action_do
-2026-08-12_23:58: yt PPCMD:/usr/bin/zsh
-2026-08-12_23:58: yt URL:https://www.youtube.com/watch?v=F-QDhdwgLP4
-2026-08-12_23:58: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "youtube:lang-en" "https://www.youtube.com/watch?v=F-QDhdwgLP4"
-2026-08-12_23:58: yt Cleaning file name:The_True_Nature_of_Public-Private-Partnerships_w_Whitney_Webb-[F-QDhdwgLP4].mp4
-2026-08-12_23:58: yt Executed from command line:https://www.youtube.com/watch?v=F-QDhdwgLP4 PPCMD:/usr/bin/zsh, TARGET:The True Nature Of Public-Private-Partnerships W Whitney Webb.mp4
-2026-08-12_23:59: yt PPCMD:/usr/bin/zsh
-2026-08-12_23:59: yt URL:https://www.youtube.com/watch?v=2-FHPcEgOrk&pp=0gcJCc0LAYcqIYzv
-2026-08-12_23:59: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "youtube:lang-en" "https://www.youtube.com/watch?v=2-FHPcEgOrk&pp=0gcJCc0LAYcqIYzv"
-2026-08-12_23:59: yt Cleaning file name:Phil_Giraldi_-_The_Pentagon_s_Trillions_Can_t_Buy_Defense-[2-FHPcEgOrk].mp4
-2026-08-12_23:59: Prepending:Judging Freedom to Phil Giraldi - The Pentagon's Trillions Can't Buy Defense.mp4
-2026-08-12_23:59: yt Executed from command line:https://www.youtube.com/watch?v=2-FHPcEgOrk&pp=0gcJCc0LAYcqIYzv PPCMD:/usr/bin/zsh, TARGET:Phil Giraldi - The Pentagon's Trillions Can't Buy Defense.mp4
+2026-08-14_02:23: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-08-14_02:23: log_update: Skipping expired inode:6318349
+2026-08-14_02:23: log_update: LOG lines AFTER update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-08-14_02:23: query_youtube: Creating listing for QKEY:thechrishedgesyoutubechannel STRICT:s
+2026-08-14_02:23: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Chris Hedges Report ENGINE:youtube EOPT:s FKEY:chris hedges report QKEY:thechrishedgesyoutubechannel TYPE:standard 
+2026-08-14_02:23: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "thechrishedgesyoutubechannel"
+2026-08-14_02:24: query_youtube: Query matched 5 lines, _LOCAL_LIST has 3 lines
+2026-08-14_02:24: query_youtube: Listing for QKEY:thechrishedgesyoutubechannel contains 3 rows
+2026-08-14_02:24: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.e22ibr
+2026-08-14_02:24: job_start: TITLE:How The Epstein Network IS Privatizing Govt & Building The Surveillance 
+2026-08-14_02:24: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=2qbs91ivQmg" PID:14199
+2026-08-14_02:24: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-08-14_02:24: yt URL:https://youtube.com/watch?v=2qbs91ivQmg
+2026-08-14_02:24: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "youtube:lang-en" "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=2qbs91ivQmg"
+2026-08-14_02:24: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=2qbs91ivQmg PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:Due Dissidence - Hong Loses As Progressives Don't Endorse AOC Disavows.mp4|6322628
+2026-08-14_02:24: action_do: PRE TRANSMISSION ERROR 1 of 6
+2026-08-14_02:24: job_reset: Job was reset
+2026-08-14_02:24: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.krMEQ9
+2026-08-14_02:24: job_start: TITLE:How The Epstein Network IS Privatizing Govt & Building The Surveillance 
+2026-08-14_02:24: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=2qbs91ivQmg" PID:14925
+2026-08-14_02:24: yt PPCMD:/usr/bin/zsh/usr/local/bin/yts
+2026-08-14_02:24: yt URL:https://youtube.com/watch?v=2qbs91ivQmg
+2026-08-14_02:24: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "youtube:lang-en" "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=2qbs91ivQmg"
+2026-08-14_02:24: action_do: GENERATING HEADER
+2026-08-14_02:24: action_do: COMPLETED
+2026-08-14_02:24: action_do: POST-PROCESSING
+2026-08-14_02:24: yt Executed from script:-o %(channel)s - %(title).200s.%(ext)s https://youtube.com/watch?v=2qbs91ivQmg PPCMD:/usr/bin/zsh/usr/local/bin/yts, TARGET:The_Chris_Hedges_YouTube_Channel - How_the_Epstein_Network_is_Privatizing_Govt_Building_the_Surveill.mp4|6300166
+2026-08-14_02:24: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/The_Chris_Hedges_YouTube_Channel - How_the_Epstein_Network_is_Privatizing_Govt_Building_the_Surveill.mp4
+2026-08-14_02:24: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/The_Chris_Hedges_YouTube_Channel - How_the_Epstein_Network_is_Privatizing_Govt_Building_the_Surveill.mp4
+2026-08-14_02:24: set_final_fn: Overwriting file:The_Chris_Hedges_YouTube_Channel - How_the_Epstein_Network_is_Privatizing_Govt_Building_the_Surveill.mp4 with:Chris Hedges - How The Epstein Network IS Privatizing Govt Building.mp4
+2026-08-14_02:24: set_final_fn: FN OUT:/home/kmiller/Downloads/Torrents/Library/Web/Chris Hedges - How The Epstein Network IS Privatizing Govt Building.mp4
+2026-08-14_02:24: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.krMEQ9 was cleared for:thechrishedgesyoutubechannel from:action_do

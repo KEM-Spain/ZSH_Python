@@ -339,14 +339,6 @@ action_do () {
 	return 0
 }
 
-EG_ON () {
-	setopt EXTENDED_GLOB
-}
-
-EG_OFF () {
-	unsetopt EXTENDED_GLOB
-}
-
 action_warn () {
 	local M
 	

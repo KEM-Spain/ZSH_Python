@@ -17,6 +17,12 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(LIST.zsh SELECT.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _UTILS
 typeset -A _UTILS_DESC
@@ -41,13 +47,6 @@ volume "AUDIO:Increase volume by 3db"
 )
 
 _WRAPPER=${0:t}
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SELECT.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
 info () {
@@ -101,22 +100,17 @@ info () {
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} L: ${L}"
 			[[ ${L} =~ 'attached pic' ]] && continue
 			[[ ${L:l} =~ 'subtitle:' ]] && SUB=internal
-			[[ ${L:l} =~ 'duration:' ]] && DUR=$(perl -p -e 's/(\s+)([^,]+)(.*)/$2/i' <<<${L})
-			[[ ${L:l} =~ "video:" ]] && RES=$(perl -p -e 's/^(.*)(?<=[ ,])(\d+x\d+)(?=[ ,])(.*)$/$2/g' <<<${L})
-			[[ ${L:l} =~ "video:" ]] && VID=$(perl -pe 's/^(.*)(vid.*?)(?=[,(])(.*)/$2/i' <<<${L})
-			[[ ${L:l} =~ "audio:" ]] && AUD=$(perl -pe 's/^(.*)(aud.*?)(?=[,(])(.*)/$2/i' <<<${L})
+			[[ ${L:l} =~ 'duration:' ]] && DUR="${(s/ /)${(z)${(@s/ /)L}}[2]/,/}"
+			[[ ${L:l} =~ 'video:[[:space:]]*([^[:space:],]+).*[[:space:]]([0-9]{3,}x[0-9]{3,})' ]] && VID=${match[1]} && RES=${match[2]}
+			[[ ${L:l} =~ 'audio:[[:space:]]*([^[:space:]]+)' ]] && AUD=$match[1]
 		done
 
+		SDUR="${${(@s/:/)DUR}[2]}"
+
 		[[ -e ${FN}.srt ]] && SUB=external
-		[[ ${AUD:l} != 'audio:none' ]] && AUD=${AUD:u}
+		[[ ${AUD:l} != 'none' ]] && AUD=${AUD}
 
-		SDUR=$(cut -d: -f2- <<<${DUR} | trim | tr -d '[:.]')
-		DUR=$(cut -d: -f2- <<<${DUR} | trim)
-		RES=$(cut -d: -f2- <<<${RES} | trim)
-		VID=$(cut -d: -f2- <<<${VID} | trim)
-		AUD=$(cut -d: -f2- <<<${AUD} | trim)
-
-		_VLIST[${SDUR}:${@:t}]="${DUR}|${(U)VID}|${RES}|${(U)AUD}|${(C)SUB}"
+		_VLIST[${SDUR//:/}:${@:t}]="${DUR}|${(U)VID}|${RES}|${(U)AUD}|${(C)SUB}"
 	}
 
 	#--Begin GetOpts--
@@ -209,21 +203,21 @@ ___EOF
 	[[ ${HIT} == 'false' ]] && exit_leave $(err_msg_exit "No video files found in:${PWD} ${MSG}")
 
 	tcup 0 0
-	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Video" "Resolution" "Audio" "Subtitle"
+	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Codec" "Resolution" "Audio" "Subtitle"
 	printf "${MAGENTA_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} $(str_unicode_line ${LONGEST}) $(str_unicode_line 11) $(str_unicode_line 5) $(str_unicode_line 10) $(str_unicode_line 5) $(str_unicode_line 8)
 	NDX=0
 	for K in ${(k)_VLIST};do
 		((NDX++))
-		TIT=$(cut -d':' -f2 <<<${K})
-		DUR=$(cut -d'|' -f1 <<<${_VLIST[${K}]})
-		VID=$(cut -d'|' -f2 <<<${_VLIST[${K}]})
-		RES=$(cut -d'|' -f3 <<<${_VLIST[${K}]})
-		AUD=$(cut -d'|' -f4 <<<${_VLIST[${K}]})
-		SUB=$(cut -d'|' -f5 <<<${_VLIST[${K}]})
+		TIT="${${(@s/:/)K}[2]}"
+		DUR="${${(@s/|/)${_VLIST[${K}]}}[1]}"
+		COD="${${(@s/|/)${_VLIST[${K}]}}[2]}"
+		RES="${${(@s/|/)${_VLIST[${K}]}}[3]}"
+		AUD="${${(@s/|/)${_VLIST[${K}]}}[4]}"
+		SUB="${${(@s/|/)${_VLIST[${K}]}}[5]}"
 		BARLINE=$(( NDX % 2 )) # Barlining 
 		[[ ${BARLINE} -ne 0 ]] && BAR=${BLACK_BG} || BAR="" # Barlining
-		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${VID} ${RES} ${AUD} ${SUB}
-	done | sort -k3 | mypager wait
+		printf "${BAR}${WHITE_FG}%*s ${CYAN_FG}${BOLD}${ITALIC}%11s${RESET}${BAR}${CYAN_FG} %5s %10s %5s %8s${RESET}\n" ${LONGEST} ${TIT} ${DUR} ${COD} ${RES} ${AUD} ${SUB}
+	done | mypager wait
 }
 
 length () {
@@ -270,7 +264,6 @@ ___EOF
 	fi
 	[[ ${#} -eq 0 ]] && FN_ARG=${PWD} || FN_ARG=(${@})
 	
-	set -xv
 	if [[ ${FN_ARG} == ${PWD} ]];then
 		FILELIST=("${(f)$(find ${PWD} -maxdepth 2 -type f ! -path ${PWD})}")
 	else
@@ -286,16 +279,14 @@ ___EOF
 		PRELIST+=${F}
 		HIT=true
 	done
-	set +xv;read
 
 	[[ ${HIT} == 'false' ]] && exit_leave "No video files found"
 
 	[[ ${#LIST} -ne 0 ]] && echo "\n${CYAN_FG}Video duration info...${RESET}"
 
 	for F in ${PRELIST};do
-		DUR=$(ffmpeg -i "${F}"  2>&1 | grep Duration | cut -d':' -f2- | cut -d',' -f1)
-		DNUM=$(sed 's/://g' <<<${DUR})
-		LIST+="${DNUM}|${DUR}|${F:t}"
+		DUR=${$(ffmpeg -i "${F}" 2>&1 | awk '/Duration/ {print $2}'):s/,//}
+		LIST+="${DUR}|${F:t}"
 	done
 
 	if [[ ${NO_HDR} == 'false' ]];then
@@ -304,9 +295,9 @@ ___EOF
 	fi
 
 	for F in ${(On)LIST};do
-		TITLE=$(cut -d'|' -f3 <<<${F})
-		DUR=$(cut -d'|' -f2 <<<${F})
-		printf "${WHITE_FG}%*s${RESET}:%.9s\n" ${LONGEST} ${TITLE} ${DUR}
+		DUR="${${(@s/|/)F}[1]}"
+		TITLE="${${(@s/|/)F}[2]}"
+		printf "${WHITE_FG}%*s${RESET}:%s\n" ${LONGEST} ${TITLE} ${DUR}
 	done
 }
 
