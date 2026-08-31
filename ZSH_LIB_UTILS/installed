@@ -1,14 +1,31 @@
 #!/usr/bin/zsh
-RESET="\033[m"
-RED_FG="\033[31m"
-GREEN_FG="\033[32m"
-YELLOW_FG="\033[33m"
-BLUE_FG="\033[34m"
-MAGENTA_FG="\033[35m"
-CYAN_FG="\033[36m"
-WHITE_FG="\033[37m"
-BOLD="\033[1m"
 
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLINK="\033[5m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+CYAN_ON_GREY="\033[0m\033[0;1;36;100m"
+GREEN_ON_GREY="\033[0m\033[0;1;32;100m"
+MAGENTA_ON_GREY="\033[0m\033[0;1;35;100m"
+RED_ON_GREY="\033[0m\033[0;1;31;100m"
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+YELLOW_ON_GREY="\033[0m\033[0;1;33;100m"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -188,8 +205,9 @@ for I in ${_INSTALLED};do
 	[[ -n ${SEARCHTERM} ]] && [[ ! ${I} =~ "^${SEARCHTERM}" ]] && continue
 	((NDX++))
 	_PKG_KEYS+=$(sed 's/:/-/g' <<< ${I})
-	[[ -n ${_PKG_KEYS[1]} && ${#_PKG_KEYS} -gt 50 ]] && tput cup 0 0 && printf "\rCreating Keys:${WHITE_FG}%s${RESET}          " ${NDX}
+	[[ -n ${_PKG_KEYS[1]} && ${#_PKG_KEYS} -gt 50 ]] && tput cup 0 0 && printf "\r${CSR_OFF}Creating Keys:${WHITE_FG}%s${RESET}          " ${NDX}
 done
+echo ${CSR_ON}
 
 if [[ ${NDX} -eq 0 ]];then
 	do_rmcup
@@ -218,9 +236,10 @@ LONGEST_PKG=0
 LONGEST_DESC=0
 tput cup 1 0
 NDX=0
+
 for K in ${_PKG_KEYS};do
 	((NDX++))
-	printf "\rGetting info:${CYAN_FG}%-50s${RESET} Remaining packages:${WHITE_FG}%-5s${RESET} Pct:${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${K} ${PNDX} $(( NDX * 100. / ${#_PKG_KEYS} )) 
+	printf "\rGetting info:${CYAN_FG}%-50s${RESET} Remaining packages:${CSR_OFF}${WHITE_FG}%-5s${RESET} Pct:${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${K} ${PNDX} $(( NDX * 100. / ${#_PKG_KEYS} )) 
 	((PNDX--))
 	_LOCAL_LIST+=${K}
 	[[ ${#K} -gt ${LONGEST_PKG} ]] && LONGEST_PKG=${#K}
@@ -228,6 +247,7 @@ for K in ${_PKG_KEYS};do
 	[[ -z ${DESC[${K}]} ]] && DESC[${K}]="No description available"
 	[[ ${#DESC[${K}]} -gt ${LONGEST_DESC} ]] && LONGEST_DESC=${#DESC[${K}]}
 done
+echo ${CSR_ON}
 
 # Set headings
 SEARCHTERM=${SEARCHTERM:=None}

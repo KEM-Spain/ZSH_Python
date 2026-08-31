@@ -327,7 +327,7 @@ else
 fi
 
 if ! arr_is_populated "${_LOCAL_LIST}";then
-	exit_leave $(msg_exit W "No systemd entries matching:${SEARCHTERM}")
+	exit_leave $(err_msg_exit W "No systemd entries matching:${SEARCHTERM}")
 fi
 
 
@@ -378,7 +378,7 @@ else
 fi
 
 list_set_prompt_msg '
-printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
+printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}"
 '
 list_set_select_action "manage unit file"
 list_set_sortable true

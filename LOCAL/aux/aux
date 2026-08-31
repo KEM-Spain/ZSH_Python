@@ -15,7 +15,6 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -40,8 +39,8 @@ action_do () {
 	local M_PIDS
 
 	for M in ${_MARKED};do
-		M_PIDS=$(get_pid ${M})
-		msg_box -H2 -p -PX "(<c>$(get_owner ${M})<N>) - <c>$(get_cmd ${M})<N>|<w>Process<N>:${M_PIDS}"
+		M_PIDS=$(get_field pid ${M})
+		msg_box -H2 -p -PX "(<c>$(get_field owner ${M})<N>) - <c>$(get_field cmd ${M})<N>|<w>Process<N>:${M_PIDS}"
 		[[ ${_MSG_KEY} == 'y' ]] && sudo kill -9 ${M_PIDS} >/dev/null 2>&1
 	done
 
@@ -51,14 +50,9 @@ action_do () {
 	done
 }
 
-squeeze () {
-	local TEXT=${1}
-	tr -s '[:space:]' <<<${TEXT}
-}
-
 item_decorate () {
 	local NDX=${1}
-	local D_OUT=$(get_cmd ${NDX})
+	local D_OUT=$(get_field cmd ${NDX})
 
 	if [[ ${_LIST_SELECTED[${NDX}]} -eq ${_STALE_ROW} ]];then
 		echo -n "${E_STRIKE}${E_RED_FG}${D_OUT}${E_RESET} ${E_RED_FG}${E_ITALIC}killed${E_RESET}" 
@@ -67,23 +61,15 @@ item_decorate () {
 	fi
 }
 
+get_field () {
+	local FIELD=${1}
+	local NDX=${2}
 
-get_owner () {
-	local NDX=$1
-
-	echo ${_OWNERS[${NDX}]}
-}
-
-get_pid () {
-	local NDX=$1
-
-	echo ${_PIDS[${NDX}]}
-}
-
-get_cmd () {
-	local NDX=$1
-
-	echo ${_CMDS[${NDX}]}
+	case ${FIELD} in 
+		owner) echo ${_OWNERS[${NDX}]};;
+		pid) echo ${_PIDS[${NDX}]};;
+		cmd) echo ${_CMDS[${NDX}]};;
+	esac
 }
 
 #--Begin GetOpts--
@@ -179,11 +165,11 @@ for R in ${RAWLIST};do
 
 	((NDX++))
 	if [[ -n ${R} ]];then
-		SQUEEZED=$(squeeze ${R})
+		read -r OWNER PID CMD <<<${R}
 
-		_OWNERS[${NDX}]=$(cut -d' ' -f1 <<<${SQUEEZED})
-		_PIDS[${NDX}]=$(cut -d' ' -f2 <<<${SQUEEZED})
-		_CMDS[${NDX}]=$(cut -d' ' -f3- <<<${SQUEEZED})
+		_OWNERS[${NDX}]=${OWNER}
+		_PIDS[${NDX}]=${PID}
+		_CMDS[${NDX}]=${CMD}
 
 		_LOCAL_LIST+=${R}
 
@@ -219,7 +205,7 @@ list_set_header 'printf "%-5s ${MAGENTA_FG}%${_LBL_WIDTH[p]}s %${_LBL_WIDTH[o]}s
 
 # Set line item
 list_set_line_item ' 
-printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%${_LBL_WIDTH[p]}s %${_LBL_WIDTH[o]}s %-${_LBL_WIDTH[c]}s${RESET}\n" ${_LIST_NDX} "$(get_pid ${_LIST_NDX})"  "$(get_owner ${_LIST_NDX})"  "$(item_decorate ${_LIST_NDX})" 
+printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}%${_LBL_WIDTH[p]}s %${_LBL_WIDTH[o]}s %-${_LBL_WIDTH[c]}s${RESET}\n" ${_LIST_NDX} "$(get_field pid ${_LIST_NDX})"  "$(get_field owner ${_LIST_NDX})"  "$(item_decorate ${_LIST_NDX})" 
 '
 
 list_set_select_action "kill"

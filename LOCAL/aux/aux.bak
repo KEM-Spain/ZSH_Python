@@ -51,11 +51,6 @@ action_do () {
 	done
 }
 
-squeeze () {
-	local TEXT=${1}
-	tr -s '[:space:]' <<<${TEXT}
-}
-
 item_decorate () {
 	local NDX=${1}
 	local D_OUT=$(get_cmd ${NDX})
@@ -66,7 +61,6 @@ item_decorate () {
 		echo -n ${D_OUT}
 	fi
 }
-
 
 get_owner () {
 	local NDX=$1
@@ -164,7 +158,7 @@ shift $(( OPTIND - 1 ))
 RAWLIST=("${(@f)$(ps --no-headers -Ao user,pid,command)}")
 
 NDX=0
-[[ ${#RAWLIST} -gt 100 ]] && msg_box "Working... ${#RAWLIST} lines"
+[[ ${#RAWLIST} -gt 500 ]] && msg_box "Working... ${#RAWLIST} lines"
 MSG="No matches found for:\"${WHITE_FG}${KEYWORD}${RESET}\""
 
 for R in ${RAWLIST};do
@@ -179,11 +173,11 @@ for R in ${RAWLIST};do
 
 	((NDX++))
 	if [[ -n ${R} ]];then
-		SQUEEZED=$(squeeze ${R})
+		read -r OWNER PID CMD <<<${R}
 
-		_OWNERS[${NDX}]=$(cut -d' ' -f1 <<<${SQUEEZED})
-		_PIDS[${NDX}]=$(cut -d' ' -f2 <<<${SQUEEZED})
-		_CMDS[${NDX}]=$(cut -d' ' -f3- <<<${SQUEEZED})
+		_OWNERS[${NDX}]=${OWNER}
+		_PIDS[${NDX}]=${PID}
+		_CMDS[${NDX}]=${CMD}
 
 		_LOCAL_LIST+=${R}
 

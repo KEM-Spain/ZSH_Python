@@ -75,23 +75,13 @@ usage () {
 	echo -e "${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type s) \n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
-	echo -e "${WHITE_FG}-R${RESET} daemon-reload"
-	echo -e "${WHITE_FG}-a${RESET} show only alias unit files"
-	echo -e "${WHITE_FG}-d${RESET} show only disabled unit files"
-	echo -e "${WHITE_FG}-e${RESET} show only enabled unit files"
-	echo -e "${WHITE_FG}-g${RESET} show only generated unit files"
-	echo -e "${WHITE_FG}-i${RESET} show only indirect unit files"
-	echo -e "${WHITE_FG}-m${RESET} show only masked unit files"
-	echo -e "${WHITE_FG}-r${RESET} show only running services"
-	echo -e "${WHITE_FG}-s${RESET} show only static unit files"
-	echo -e "${WHITE_FG}-t${RESET} show only transient unit files"
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDRadegimrst"
+OPTSTR=":HD"
 OPTIND=0
 RUNNING=false
 

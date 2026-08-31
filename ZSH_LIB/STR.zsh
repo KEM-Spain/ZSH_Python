@@ -259,18 +259,15 @@ str_proper () {
 	echo ${STR}
 }
 
-str_to_ascii () {
-	local STR=${1}
+str_to_ascii() {
+  [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	if [[ -n ${STR} ]];then
-		echo ${STR} | iconv -f utf-8 -t ascii//translit
-	else
-		while read STR;do
-			iconv -f utf-8 -t ascii//translit <<<${STR}
-		done
-	fi
+  # Process argument if provided, otherwise stream from STDIN
+  if (( ${#} > 0 )); then
+    iconv -f utf-8 -t ascii//TRANSLIT <<< "${1}"
+  else
+    iconv -f utf-8 -t ascii//TRANSLIT
+  fi
 }
 
 str_strip_ansi () {

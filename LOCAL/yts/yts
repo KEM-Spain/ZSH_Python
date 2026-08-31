@@ -190,7 +190,7 @@ action_do () {
 			
 			if [[ ${_QUICK_DOWNLOAD[${M}]} == 'false' ]];then
 				_QUICK_DOWNLOAD[${M}]=true
-				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
+				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture small file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="<w>Small Download <g>is complete...<N>"
 					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|${MSG}"
@@ -1199,6 +1199,7 @@ parse_rumble () {
 	local U=0
 	local URL=''
 	local K L
+	local WGET_OPTS='--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/125.0.0.0 Safari/537.36" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header="Accept-Language: en-US,en;q=0.5" --header="Referer: https://rumble.com/"'
 
 	# TODO: live broadcasts are seeping in; identify & block
 
@@ -1206,7 +1207,7 @@ parse_rumble () {
 
 	# Run query and filter known problem chars
 	{
-	CMD="wget -q -O - "${(qqq)QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g' -e 's/â€™/\x27/g' -e 's/â€.//g'"
+	CMD="wget ${WGET_OPTS} -q -O - "${(qqq)QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g'"
 	LIST=("${(f)$(eval ${CMD})}")
 	} 
 
@@ -1398,7 +1399,6 @@ query_youtube () {
 	local DKEY=''
 	local HIT=false
 	local LINE=''
-	local MSG_OUT=false
 	local NDX=0
 	local PROXY_CMD=''
 	local QKEY=''
@@ -1428,6 +1428,8 @@ query_youtube () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 
+	#_YT_OPTS="youtube:lang-en"
+	
 	while true;do
 		(( TRY++ ))
 		LIST=("${(f)$(eval ${g_PROXY_CMD} 2>/dev/null)}")
@@ -1448,29 +1450,22 @@ query_youtube () {
 
 		STR=$(str_to_ascii <<<${L}) # Scrub non ascii
 		STR=${STR:s/Streamed //} # Strip age of excess text
+		HIT=true
 
 		# Author verification
-		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]];then # Apply filtering to non strict results unless query is custom
-			HIT=false
-			AUTHOR="${${(@s/|/)L}[2]}"
-			AUTHOR=$(str_to_ascii ${AUTHOR:l})
-			QKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[QKEY]:l}) # strip spaces for comparison
-			DKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[DKEY]:l}) # strip spaces for comparison
-			if [[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]];then
-				[[ ${MSG_OUT} == 'false' ]] && { msg_box -x4 -t2 "<w>Filtering non-strict query by Author...<N>" && MSG_OUT=true }
+		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]]; then
+			AUTHOR=$(str_to_ascii "${(L)${(s:|:)L}[2]}") # 2nd field - lower case
+
+			if [[ ${AUTHOR// /} == *${(L)_QUERY_OPTS[QKEY]// /}* || ${AUTHOR// /} == *${(L)_QUERY_OPTS[DKEY]// /}* ]]; then # Exact or substring w/o space
+				logit ${_YT_DBG_LOG} "${0}: Retained:${AUTHOR}"
 				HIT=true
 			else
 				logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
+				HIT=false
 			fi
-		else
-			HIT=true
 		fi
 		 
-		if [[ ${DATA} == 'true' && ${_REJECTS[${NDX}]} == 'false' && ${HIT} == 'true' ]];then
-			_LOCAL_LIST+=${STR}
-		else
-			_QUERY_REJECTS+=${STR}
-		fi
+		[[ ${HIT} == 'true' ]] && _LOCAL_LIST+=${STR} || _QUERY_REJECTS+=${STR}
 	done
 
 	if [[ ${#_QUERY_REJECTS} -ne 0 && -n ${AUTHOR} && -n ${QKEY} && -n ${DKEY} ]];then
@@ -1492,7 +1487,7 @@ query_youtube () {
 			return 1
 		fi
 	else
-		logit ${_YT_DBG_LOG} "${0}: Query matched ${NDX} lines, _LOCAL_LIST has ${#_LOCAL_LIST} lines"
+		logit ${_YT_DBG_LOG} "${0}: _LOCAL_LIST has ${#_LOCAL_LIST} lines"
 	fi
 
 	for F in ${_LOCAL_LIST};do
@@ -1503,7 +1498,7 @@ query_youtube () {
 		AGETIME="(${AGE} ${TIME})"
 		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR})
 
-		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
+		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird language problem workaraound - spanish titles on blancolirio
 			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
 				logit ${_YT_DBG_LOG} "${0}: Translated TITLE:${TITLE}"
@@ -1538,12 +1533,13 @@ set_final_fn () {
 
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		logit ${_YT_DBG_LOG} "${0}: Overwriting file:${FN:t} with:${NEW_FN:t}"
+		logit ${_YT_DBG_LOG} "${0}: Overwriting file:${FN:t}"
+		logit ${_YT_DBG_LOG} "${0}: Clean filename:${NEW_FN:t}"
 		mv -f "${FN}" "${NEW_FN}"
 		[[ ${?} -ne 0 ]] && logit ${_YT_DBG_LOG} "${0}: Move failed ${FN} to ${NEW_FN}"
 	fi
 
-	logit ${_YT_DBG_LOG} "${0}: FN OUT:${NEW_FN}"
+	logit ${_YT_DBG_LOG} "${0}: Directory:${NEW_FN:h}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
 }
@@ -1855,6 +1851,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 				MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
 				_OB=($(sel_get_interior_coords))
 				msg_box -y${_OB[Y]} -w${_OB[W]} ${MSG} # Set msg relative position and width
+				[[ ${ENGINE} == 'rumble' ]] && _QUERY_OPTS[EXTRA]=' --impersonate chrome'
 				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
 				if [[ ${?} -eq 0 ]];then
 					download_select ${_QUERY_OPTS[QKEY]}

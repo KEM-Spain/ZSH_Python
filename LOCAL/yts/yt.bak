@@ -95,16 +95,15 @@ usage () {
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-# Execution
-
 PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
 [[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true
-logit ${_YT_DBG_LOG} "${0:t} PPCMD:${PPCMD}"
 
 if [[ ${CMDLINE} == 'true' ]];then
 	OPTSTR=":HDp:"
 	OPTIND=0
 	PREPEND=''
+
+	logit ${_YT_DBG_LOG} "${0:t} Command line execution"
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
@@ -118,35 +117,37 @@ if [[ ${CMDLINE} == 'true' ]];then
 	done
 	shift $((OPTIND -1))
 #--End GetOpts--
+else
+	logit ${_YT_DBG_LOG} "${0:t} Script execution"
 fi
+
+# Execution
+[[ ${#} -eq 0 ]] && usage 
 
 URL=$(grep -o -E 'http.*' <<<${(qqq)@})
 URL=${URL[1,-2]} # Eliminate trailing quote
 
+logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP}"
 logit ${_YT_DBG_LOG} "${0:t} URL:${URL}"
-logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP} ${(qqq)@}"
 
-eval "${_YT_DLP} ${(qqq)@}"
+eval "${_YT_DLP} ${(qqq)@}" 
 
 FN=$(last_file_downloaded)
 if [[ ${?} -eq 0 ]];then
 	if [[ ${CMDLINE} == 'true' ]];then # CMDLINE processing
-			FN="${${(@s/|/)FN}[1]}"
-			if [[ -n ${FN} ]];then
-				logit ${_YT_DBG_LOG} "${0:t} Cleaning file name:${FN:t}"
-				fsub -y -Y ${FN}
-				FN="${${(@s/|/)$(last_file_downloaded)}[1]}"
-				if [[ -n ${PREPEND} ]];then
-					logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}"
-					fsub -y -p ${(C)PREPEND} ${FN}
-				fi
+		FN="${${(@s/|/)FN}[1]}"
+		if [[ -n ${FN} ]];then
+			logit ${_YT_DBG_LOG} "${0:t} Cleaning file name:${FN:t}"
+			fsub -y -Y ${FN}
+			FN="${${(@s/|/)$(last_file_downloaded)}[1]}"
+			if [[ -n ${PREPEND} ]];then
+				logit ${_YT_DBG_LOG} "Prepending:${PREPEND} to ${FN:t}"
+				fsub -y -p ${(C)PREPEND} ${FN}
 			fi
-			logit ${_YT_URL_LOG} "${0:t} CMDLINE downloaded URL:${URL} to ${FN:t}"
-			logit ${_YT_DBG_LOG} "${0:t} Executed from command line:${@} PPCMD:${PPCMD}, TARGET:${FN:t}"
-	else
-		logit ${_YT_URL_LOG} "${0:t} SCRIPT downloaded URL:${URL} to ${FN:t}"
-		logit ${_YT_DBG_LOG} "${0:t} Executed from script:${@} PPCMD:${PPCMD}, TARGET:${FN:t}"
+		fi
 	fi
 fi
+
+logit ${_YT_URL_LOG} "${0:t} Downloaded URL:${URL} to ${FN:t}"
 
 exit_leave 

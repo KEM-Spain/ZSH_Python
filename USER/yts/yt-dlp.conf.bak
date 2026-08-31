@@ -1,0 +1,10 @@
+-P /home/kmiller/Downloads/Torrents/Library/Web
+--concurrent-fragments 4
+--fixup force
+--format b[ext=mp4]
+--ignore-errors
+--restrict-filenames
+--retries infinite
+--trim-filenames 100
+--js-runtimes deno:/home/kmiller/.deno/bin
+--remote-components ejs:npm

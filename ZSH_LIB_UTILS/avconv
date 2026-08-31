@@ -103,18 +103,24 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ -z ${1} ]] && usage "Missing argument:$(opt_type f)" || FN=${1}
-if [[ ${FN:e:l} == 'mov' ]];then
-	EXT=mkv
-elif [[ -z ${2} ]];then
-	usage "Missing argument:$(opt_type e)"
+
+# Parse args
+[[ -z ${1} ]] && usage "Missing arguments:$(opt_type f) $(opt_type e)" # No args
+
+if [[ ${#} -eq 1 ]];then
+	FN=${1}
+	if [[ ${#} -eq 1 && ${FN:e:l} == 'mov' ]];then # One arg allowed only for mov
+		EXT=mkv
+	else
+		usage "Missing argument:$(opt_type e)"
+	fi
+elif [[ ${#} -eq 2 ]];then
+	FN=${1} && EXT=${2} # Both args supplied
 else
-	EXT=${2}
+	usage "Missing argument:$(opt_type e)"
 fi
 
-[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit E "file not found:${1}")
-
-FN_EXT=${FN:e}
+[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit E "file not found:${1}") || FN_EXT=${FN:e}
 
 # Supported conversion of video to audio
 if [[ ${FN_EXT} == 'mp4' && ${EXT} == 'flac' ]];then
@@ -137,7 +143,6 @@ for E in ${_VID_EXT};do
 		break
 	elif [[ ${EXT:e} == ${E} ]];then
 		EXT=${EXT:e}
-		echo "Captured extension:${WHITE_FG}${EXT}${RESET}"
 		break
 	fi
 done
@@ -159,10 +164,14 @@ ETYPE=false
 
 echo "Processing ${FTYPE} file:${FN}"
 
-if [[ ${FN:e:l} == 'mov' ]];then
-	ffmpeg -hide_banner -loglevel error -y -i ${FN} -c copy -f matroska ${FN:r}.mkv
+if [[ ${FTYPE} == 'video' ]];then
+	if [[ ${FN:e:l} == 'mov' ]];then
+		ffmpeg -hide_banner -loglevel error -y -i ${FN} -c copy -f matroska ${FN:r}.mkv # mov files
+	else
+		ffmpeg -i ${FN} -c copy ${FN:r}.${EXT} # All other video
+	fi
 else
-	ffmpeg -hide_banner -loglevel error -y -i ${FN} ${FN:r}.${EXT}
+	ffmpeg -hide_banner -loglevel error -y -i ${FN} ${FN:r}.${EXT} # Audio
 fi
 
 exit_leave

@@ -588,7 +588,7 @@ msg_box_align () {
 		TEXT=$(str_trim ${TEXT})
 		PADDING=$(str_center_pad ${BOX_WIDTH} ${TEXT})
 		PAD_L=$(printf ' %.0s' {1..${PADDING}})
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET )) )
+		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )) )
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Centered text"
 	else # Unpadded
@@ -925,12 +925,12 @@ msg_stream () {
 	local -a MSG_LINES
 	local DELIM='|'
 	local STYLE=l
-	local FOLD_WIDTH=110
-	local FOLD
-	local MSG
-	local LINE_CNT
-	local PAD
-	local NDX
+	local FOLD_WIDTH=105
+	local FOLD=''
+	local MSG=''
+	local LINE_CNT=0
+	local PAD=''
+	local NDX=0
 
 	local OPTION
 	local OPTSTR=":f:lcn"
@@ -963,7 +963,7 @@ msg_stream () {
 		-e 's/  */ /g'  \
 		-e 's/</\xe2\x98\x87/g'  \
 		-e 's/|/or/g'  \
-		-e 's/^[[:blank:]]*//;s/[[:blank:]]*$//' | \
+		-e 's/^[[:space:]]*//;s/[[:space:]]*$//' | \
 		fold -s -w ${FOLD_WIDTH}  \
 	}
 
@@ -985,7 +985,9 @@ msg_stream () {
 	
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MSG COUNT with BLANK LINES REMOVED:${#MSG_LINES}"
 
-	msg_box -y20 -w$(( FOLD_WIDTH + 4 )) -P"<m>Last Page<N>" -pc -s${DELIM} -j${STYLE} ${MSG_LINES} # Display window
+	FOLD_WIDTH=$(( FOLD_WIDTH + 4 ))
+
+	msg_box -y20 -w${FOLD_WIDTH} -P"<m>Last Page<N>" -pc -s${DELIM} -j${STYLE} ${MSG_LINES} # Display window
 }
 
 msg_unicode_box () {

@@ -19,15 +19,16 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=()
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -a _VID_EXT=(mov avi mkv mp4 webm)
 typeset -a _AUD_EXT=(mp3 flac wav m4a)
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/UTILS.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 #--Begin GetOpts--
 local -a OPTIONS
@@ -46,7 +47,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -83,7 +84,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
@@ -102,18 +103,24 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ -z ${1} ]] && usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type f)" || FN=${1}
-if [[ ${FN:e:l} == 'mov' ]];then
-	EXT=mkv
-elif [[ -z ${2} ]];then
-	usage "${_SCRIPT_TAG} ${RED_FG}Missing argument${RESET}:$(opt_type e)"
+
+# Parse args
+[[ -z ${1} ]] && usage "Missing arguments:$(opt_type f) $(opt_type e)" # No args
+
+if [[ ${#} -eq 1 ]];then
+	FN=${1}
+	if [[ ${#} -eq 1 && ${FN:e:l} == 'mov' ]];then # One arg allowed only for mov
+		EXT=mkv
+	else
+		usage "Missing argument:$(opt_type e)"
+	fi
+elif [[ ${#} -eq 2 ]];then
+	FN=${1} && EXT=${2} # Both args supplied
 else
-	EXT=${2}
+	usage "Missing argument:$(opt_type e)"
 fi
 
-[[ ! -e ${FN} ]] && exit_leave $(msg_exit E "file not found:${1}")
-
-FN_EXT=${FN:e}
+[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit E "file not found:${1}") || FN_EXT=${FN:e}
 
 # Supported conversion of video to audio
 if [[ ${FN_EXT} == 'mp4' && ${EXT} == 'flac' ]];then
@@ -136,7 +143,6 @@ for E in ${_VID_EXT};do
 		break
 	elif [[ ${EXT:e} == ${E} ]];then
 		EXT=${EXT:e}
-		echo "Captured extension:${WHITE_FG}${EXT}${RESET}"
 		break
 	fi
 done
@@ -144,24 +150,28 @@ done
 FTYPE=false
 [[ ${_VID_EXT[(i)${FN_EXT}]} -le ${#_VID_EXT} ]] && FTYPE=video
 [[ ${_AUD_EXT[(i)${FN_EXT}]} -le ${#_AUD_EXT} ]] && FTYPE=audio
-[[ ${FTYPE} == 'false' ]] && exit_leave $(msg_exit E "unsupported file type:${FN:e}")
+[[ ${FTYPE} == 'false' ]] && exit_leave $(err_msg_exit E "unsupported file type:${FN:e}")
 
 ETYPE=false
 [[ ${_VID_EXT[(i)${EXT}]} -le ${#_VID_EXT} ]] && ETYPE=video
 [[ ${_AUD_EXT[(i)${EXT}]} -le ${#_AUD_EXT} ]] && ETYPE=audio
-[[ ${ETYPE} == 'false' ]] && exit_leave $(msg_exit E "unsupported extension:${EXT}")
+[[ ${ETYPE} == 'false' ]] && exit_leave $(err_msg_exit E "unsupported extension:${EXT}")
 
-[[ ${FTYPE} != ${ETYPE} ]] && exit_leave $(msg_exit E "${WHITE_FG}${FTYPE}${RESET}${ITALIC} not convertable to${RESET} ${WHITE_FG}${ETYPE}${RESET}")
+[[ ${FTYPE} != ${ETYPE} ]] && exit_leave $(err_msg_exit E "${WHITE_FG}${FTYPE}${RESET}${ITALIC} not convertable to${RESET} ${WHITE_FG}${ETYPE}${RESET}")
 
-[[ ${FTYPE} == 'video' && ! $(file -i ${FN}) =~ 'video' ]] && exit_leave $(msg_exit E "not a video file:${FN}")
-[[ ${FTYPE} == 'audio' && ! $(file -i ${FN}) =~ 'audio' ]] && exit_leave $(msg_exit E "not an audio file:${FN}")
+[[ ${FTYPE} == 'video' && ! $(file -i ${FN}) =~ 'video' ]] && exit_leave $(err_msg_exit E "not a video file:${FN}")
+[[ ${FTYPE} == 'audio' && ! $(file -i ${FN}) =~ 'audio' ]] && exit_leave $(err_msg_exit E "not an audio file:${FN}")
 
 echo "Processing ${FTYPE} file:${FN}"
 
-if [[ ${FN:e:l} == 'mov' ]];then
-	ffmpeg -hide_banner -loglevel error -y -i ${FN} -c copy -f matroska ${FN:r}.mkv
+if [[ ${FTYPE} == 'video' ]];then
+	if [[ ${FN:e:l} == 'mov' ]];then
+		ffmpeg -hide_banner -loglevel error -y -i ${FN} -c copy -f matroska ${FN:r}.mkv # mov files
+	else
+		ffmpeg -i ${FN} -c copy ${FN:r}.${EXT} # All other video
+	fi
 else
-	ffmpeg -hide_banner -loglevel error -y -i ${FN} ${FN:r}.${EXT}
+	ffmpeg -hide_banner -loglevel error -y -i ${FN} ${FN:r}.${EXT} # Audio
 fi
 
 exit_leave

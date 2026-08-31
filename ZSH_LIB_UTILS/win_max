@@ -22,19 +22,19 @@ _LOG=${_CFG_DIR}/${_SCRIPT}.log
 
 # Functions
 get_app_tag () {
-	local APP=${1:l} # Lowercase
-	local APP_TAG=''
+	local WDW=${1:l} # Lowercase
+	local WDW_APP=''
 
 	# Handle any alternate tags
-	if [[ -n ${_TITLE_MAP[${APP}]} ]];then
-		APP_TAG=${_TITLE_MAP[${APP}]}
-		logit ${_LOG} "${0}: APP:${APP} mapped to APP_TAG:${APP_TAG}"
+	if [[ -n ${_TITLE_MAP[${WDW}]} ]];then
+		WDW_APP=${_TITLE_MAP[${WDW}]}
+		logit ${_LOG} "${0}: WDW:${WDW} mapped to WDW_APP:${WDW_APP}"
 	else
-		logit ${_LOG} "${0}: APP:${APP} is unmapped"
-		APP_TAG=${APP}
+		logit ${_LOG} "${0}: WDW:${WDW} is unmapped"
+		WDW_APP=${WDW}
 	fi
 
-	echo ${APP_TAG}
+	echo ${WDW_APP}
 }
 
 get_id_title () {
@@ -63,7 +63,7 @@ get_id_title () {
 			fi
 		done
 	fi
-	[[ -z ${WID} ]] && logit ${_LOG} "${0}: ${TITLE_ARG:l} not found)"
+	[[ -z ${WID} ]] && logit ${_LOG} "${0}: ${TITLE_ARG:l} not found"
 
 	echo ${WID}
 }
@@ -118,18 +118,18 @@ get_id_wid () {
 }
 
 get_win_id () {
-	local ARG=${1}
-	local TYPE=${2}
+	local WDW=${1}
+	local ARG_TYPE=${2}
 	local WID=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	logit ${_LOG} "${0}: Obtaining WID for ARG:${ARG}"
+	logit ${_LOG} "${0}: Obtaining WID for WDW:${WDW}"
 
-	case ${TYPE} in
-		TITLE) WID=$(get_id_title $(get_app_tag ${ARG}));;
-		PID) WID=$(get_id_pid ${ARG});;
-		WID) WID=$(get_id_wid ${ARG});;
+	case ${ARG_TYPE} in
+		TITLE) WID=$(get_id_title $(get_app_tag ${WDW}));;
+		PID) WID=$(get_id_pid ${WDW});;
+		WID) WID=$(get_id_wid ${WDW});;
 	esac
 
 	echo ${WID}
@@ -163,7 +163,7 @@ is_maximized () {
 }
 
 set_cur_win () {
-	local EXPECT=${1}
+	local WAITING=${1}
 	local F1 F2 F3 F4 F5 MAX
 	local RETRIES=5
 	local TERMS=$(terms -c)
@@ -173,7 +173,7 @@ set_cur_win () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	logit ${_LOG} "${0}: Expecting window:${EXPECT}"
+	logit ${_LOG} "${0}: Waiting for window:${WAITING}"
 
 	[[ ${_QUICK} == 'true' ]] && RETRIES=2
 
@@ -197,9 +197,9 @@ set_cur_win () {
 
 			_WIN_LIST+="${F1}|${F2}|${F3}|${F4}|${F5}|${MAX}"
 
-			if [[ -n ${EXPECT} && ${F5:l} =~ ${EXPECT} ]];then # Hit expected window
-				[[ ${EXPECT} =~ 'terminal' && ${TERM_CNT} -ne ${TERMS} ]] && continue
-				logit ${_LOG} "${0}: Got expected window:${EXPECT}, wmctrl:${F5}"
+			if [[ -n ${WAITING} && ${F5:l} =~ ${WAITING} ]];then # Hit expected window
+				[[ ${WAITING} =~ 'terminal' && ${TERM_CNT} -ne ${TERMS} ]] && continue
+				logit ${_LOG} "${0}: Got expected window:${WAITING}, wmctrl:${F5}"
 				break 2
 			fi
 		done
@@ -309,11 +309,11 @@ shift $((OPTIND -1))
 WIN_ARG=${1:l} # Lowercase
 
 WID=''
-EXPECT=''
+WAITING=''
 if [[ -n ${1} ]];then
 	ARG_TYPE=TITLE
-	EXPECT=$(get_app_tag ${WIN_ARG})
-	WIN_ARG=${EXPECT}
+	WAITING=$(get_app_tag ${WIN_ARG})
+	WIN_ARG=${WAITING}
 elif [[ -n ${PID_ARG} ]];then
 	ARG_TYPE=PID
 	WIN_ARG=${PID_ARG}
@@ -326,7 +326,7 @@ fi
 
 logit ${_LOG} "-- Got ARG:${WIN_ARG}, TYPE:${ARG_TYPE} --"
 
-set_cur_win ${EXPECT} # Create list of open windows
+set_cur_win ${WAITING} # Create list of open windows
 
 # Get WID
 WIN_ID=$(get_win_id ${WIN_ARG} ${ARG_TYPE})

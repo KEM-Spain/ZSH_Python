@@ -19,7 +19,6 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -129,12 +128,13 @@ else
 	TAG="${WHITE_FG}(${RESET}UNFILTERED${WHITE_FG})${RESET}"
 fi
 
-while read LINE;do
+while read -u3 LINE;do
 	[[ ! ${LINE} =~ '=' ]] && continue
-	ALIAS=$(str_trim "${${(@s/=/)LINE}[1]}" | sed 's/alias//')
-	CMD=$(str_trim "${${(@s/=/)LINE}[2]}" | sed -e "s/'//g" -e 's/"//g')
+	ALIAS=$(str_trim "${${(@s/=/)LINE}[1]}")
+	ALIAS=${${=ALIAS}[2]}
+	CMD=$(str_trim "${${(@s/=/)LINE}[2]}" | sed -e "s/[\'\"]//g")
 	ALIASES[${ALIAS}]=${CMD}
-done < ${ALIAS_FN}
+done 3< ${ALIAS_FN}
 
 typeset -a MATCHED=()
 if [[ -n ${SEARCHTERM} ]];then
