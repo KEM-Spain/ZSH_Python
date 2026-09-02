@@ -1,13 +1,74 @@
-2026-08-31_08:56: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-08-31_08:56: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-08-31_08:56: query_youtube: Creating listing for QKEY:alexchristoforou STRICT:s
-2026-08-31_08:56: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Alex Christoforou ENGINE:youtube EOPT:s FKEY:alex christoforou QKEY:alexchristoforou TYPE:standard 
-2026-08-31_08:56: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
-2026-08-31_08:56: query_youtube: _LOCAL_LIST has 5 lines
-2026-08-31_08:56: query_youtube: Listing for QKEY:alexchristoforou contains 5 rows
-2026-08-31_08:56: query_youtube: Creating listing for QKEY:blancolirio STRICT:s
-2026-08-31_08:56: query_youtube: _QUERY_OPTS: AGE:recent DKEY:Blan Colirio ENGINE:youtube EOPT:s FKEY:blan colirio QKEY:blancolirio SMSG:0.0% TYPE:standard 
-2026-08-31_08:56: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "blancolirio"
-2026-08-31_08:56: query_youtube: _LOCAL_LIST has 1 lines
-2026-08-31_08:56: query_youtube: Translated TITLE:NTSB File On Philadelphia Learjet Crash January 2025
-2026-08-31_08:56: query_youtube: Listing for QKEY:blancolirio contains 1 rows
+2026-09-02_07:34: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-02_07:34: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-02_07:34: query_youtube: Creating listing for QKEY:judgingfreedom, query is strict
+2026-09-02_07:34: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Judging Freedom
+	-> ENGINE:youtube
+	-> EOPT:s
+	-> FKEY:judging freedom
+	-> QKEY:judgingfreedom
+	-> TYPE:standard
+2026-09-02_07:34: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "judgingfreedom"
+2026-09-02_07:34: query_youtube: Listing for QKEY:judgingfreedom contains 15 rows
+2026-09-02_07:34: query_youtube: Creating listing for QKEY:rickbeato, query is strict
+2026-09-02_07:34: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Rick Beato
+	-> ENGINE:youtube
+	-> EOPT:s
+	-> FKEY:rick beato
+	-> QKEY:rickbeato
+	-> SMSG:0.0%
+	-> TYPE:standard
+2026-09-02_07:34: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "rickbeato"
+2026-09-02_07:34: query_youtube: Listing for QKEY:rickbeato contains 2 rows
+2026-09-02_07:35: query_youtube: Creating listing for QKEY:danieldavisdeepdive, query is not strict
+2026-09-02_07:35: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Daniel Davis
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:daniel davis
+	-> QKEY:danieldavisdeepdive
+	-> SMSG:0.0%
+	-> TYPE:standard
+2026-09-02_07:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "danieldavisdeepdive"
+2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
+2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
+2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
+2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
+2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
+2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
+2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
+2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
+2026-09-02_07:35: query_youtube: Listing for QKEY:danieldavisdeepdive contains 8 rows
+2026-09-02_07:35: query_youtube: Creating listing for QKEY:dialogueworks, query is strict
+2026-09-02_07:35: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Dialogue Works
+	-> ENGINE:youtube
+	-> EOPT:s
+	-> FKEY:dialogue works
+	-> QKEY:dialogueworks
+	-> SMSG:
+	-> TYPE:standard
+2026-09-02_07:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "dialogueworks"
+2026-09-02_07:35: query_youtube: Listing for QKEY:dialogueworks contains 14 rows
+2026-09-02_07:35: query_youtube: Creating listing for QKEY:patrick henningsen, query is not strict
+2026-09-02_07:35: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Patrick Henningsen
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:patrick henningsen
+	-> QKEY:patrick henningsen
+	-> SMSG:0.0%
+	-> TYPE:custom
+2026-09-02_07:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "patrick henningsen"
+2026-09-02_07:35: query_youtube: Listing for QKEY:patrick henningsen contains 1 rows

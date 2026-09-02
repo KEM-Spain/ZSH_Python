@@ -130,6 +130,8 @@ URL=${URL[1,-2]} # Eliminate trailing quote
 logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP}"
 logit ${_YT_DBG_LOG} "${0:t} URL:${URL}"
 
+[[ ${URL:l} =~ 'rumble' ]] && _YT_DLP+=' --impersonate chrome'
+
 eval "${_YT_DLP} ${(qqq)@}" 
 
 FN=$(last_file_downloaded)

@@ -761,7 +761,6 @@ get_field () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	# TODO: agetime is malformed - investigate
 	case ${FIELD} in
 		age) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[age]}]}";;
 		agetime) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[agetime]}]}";;
@@ -788,7 +787,7 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'title' ]];then
-		STR=$(utf_to_iso ${STR})
+		#STR=$(utf_to_iso ${STR})
 		STR=$(str_word_clip ${STR} ${_FIELD_LEN[${FIELD}]})
 	fi
 
@@ -1356,7 +1355,7 @@ query_rumble () {
 	ping -w1 www.rumble.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
 
-	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} TYPE:${QRY_TYPE}"
+	logit ${_YT_DBG_LOG} "${0}:\n_QUERY_OPTS:\n $(for K in ${(ok)_QUERY_OPTS};do printf '\t-> %s:%s\n' ${K} ${_QUERY_OPTS[${K}]};done)"
 
 	_RUMBLE_ROWS=() # Clear
 
@@ -1372,7 +1371,7 @@ query_rumble () {
 		msg_box -c "<w>Requesting <c><I>livestream user<N> <w>search<N>..."
 	fi
 
-	logit ${_YT_DBG_LOG} "${0}: PARSER:${PARSER}, QUERY:${QRY}"
+	logit ${_YT_DBG_LOG} "${0}: QUERY:${QRY}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}:${LINENO} QKEY:${_QUERY_OPTS[QKEY]}, g_PROXY_CMD:${g_PROXY_CMD}"
@@ -1414,10 +1413,14 @@ query_youtube () {
 	ping -w1 www.youtube.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
-	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[EOPT]:=null}"
-	logit ${_YT_DBG_LOG} "${0}: _QUERY_OPTS: $(for K in ${(ok)_QUERY_OPTS};do printf '%s:%s ' ${K} ${_QUERY_OPTS[${K}]};done)"
+	if [[ ${_QUERY_OPTS[EOPT]:l} == 's' ]];then
+		STR="is strict" && STRICT_ARG='-s'
+	else
+		STR="is not strict" && STRICT_ARG=''
+	fi
 
-	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STRICT_ARG='-s' || STRICT_ARG=''
+	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]}, query ${STR}"
+	logit ${_YT_DBG_LOG} "${0}:\n_QUERY_OPTS:\n $(for K in ${(ok)_QUERY_OPTS};do printf '\t-> %s:%s\n' ${K} ${_QUERY_OPTS[${K}]};done)"
 
 	g_PROXY_CMD="node ${_JS_SCRIPT} ${STRICT_ARG} -a ${_QUERY_OPTS[AGE]} ${(qqq)_QUERY_OPTS[QKEY]}" # Quote key
 	logit ${_YT_DBG_LOG} "${0}: g_PROXY_CMD:${g_PROXY_CMD}"
@@ -1428,8 +1431,6 @@ query_youtube () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 
-	#_YT_OPTS="youtube:lang-en"
-	
 	while true;do
 		(( TRY++ ))
 		LIST=("${(f)$(eval ${g_PROXY_CMD} 2>/dev/null)}")
@@ -1454,18 +1455,17 @@ query_youtube () {
 
 		# Author verification
 		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]]; then
-			AUTHOR=$(str_to_ascii "${(L)${(s:|:)L}[2]}") # 2nd field - lower case
-
+			AUTHOR=$(str_to_ascii "${(L)${(s:|:)L}[2]}") && HIT=false # 2nd field - lower case
 			if [[ ${AUTHOR// /} == *${(L)_QUERY_OPTS[QKEY]// /}* || ${AUTHOR// /} == *${(L)_QUERY_OPTS[DKEY]// /}* ]]; then # Exact or substring w/o space
-				logit ${_YT_DBG_LOG} "${0}: Retained:${AUTHOR}"
-				HIT=true
-			else
-				logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
-				HIT=false
+				logit ${_YT_DBG_LOG} "${0}: Retained:${AUTHOR}" && HIT=true
 			fi
 		fi
 		 
-		[[ ${HIT} == 'true' ]] && _LOCAL_LIST+=${STR} || _QUERY_REJECTS+=${STR}
+		if [[ ${HIT} == 'true' ]];then
+			_LOCAL_LIST+=${STR}
+		else
+			logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}" && _QUERY_REJECTS+=${STR}
+		fi
 	done
 
 	if [[ ${#_QUERY_REJECTS} -ne 0 && -n ${AUTHOR} && -n ${QKEY} && -n ${DKEY} ]];then
@@ -1486,8 +1486,6 @@ query_youtube () {
 			logit ${_YT_DBG_LOG} "${0}: Search engine returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[EOPT]}"
 			return 1
 		fi
-	else
-		logit ${_YT_DBG_LOG} "${0}: _LOCAL_LIST has ${#_LOCAL_LIST} lines"
 	fi
 
 	for F in ${_LOCAL_LIST};do

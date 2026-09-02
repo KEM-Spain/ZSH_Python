@@ -190,7 +190,7 @@ action_do () {
 			
 			if [[ ${_QUICK_DOWNLOAD[${M}]} == 'false' ]];then
 				_QUICK_DOWNLOAD[${M}]=true
-				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture very small/quick file download - whole file grep
+				if grep -Eiq '100%' ${g_YTS_LOG};then # Capture small file download - whole file grep
 					logit ${_YT_DBG_LOG} "${0}: COMPLETED (very small file) NDX:${NDX}"
 					MSG="<w>Small Download <g>is complete...<N>"
 					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|${MSG}"
@@ -1356,7 +1356,7 @@ query_rumble () {
 	ping -w1 www.rumble.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "Rumble is down" && return 1
 
-	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} TYPE:${QRY_TYPE}"
+	logit ${_YT_DBG_LOG} "${0}:\n_QUERY_OPTS:\n $(for K in ${(ok)_QUERY_OPTS};do printf '\t-> %s:%s\n' ${K} ${_QUERY_OPTS[${K}]};done)"
 
 	_RUMBLE_ROWS=() # Clear
 
@@ -1372,7 +1372,7 @@ query_rumble () {
 		msg_box -c "<w>Requesting <c><I>livestream user<N> <w>search<N>..."
 	fi
 
-	logit ${_YT_DBG_LOG} "${0}: PARSER:${PARSER}, QUERY:${QRY}"
+	logit ${_YT_DBG_LOG} "${0}: QUERY:${QRY}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}:${LINENO} QKEY:${_QUERY_OPTS[QKEY]}, g_PROXY_CMD:${g_PROXY_CMD}"
@@ -1399,7 +1399,6 @@ query_youtube () {
 	local DKEY=''
 	local HIT=false
 	local LINE=''
-	local MSG_OUT=false
 	local NDX=0
 	local PROXY_CMD=''
 	local QKEY=''
@@ -1415,10 +1414,14 @@ query_youtube () {
 	ping -w1 www.youtube.com >/dev/null 2>&1
 	[[ ${?} -ne 0 ]] && msg_box -p -PK "YouTube is down" && return 1
 
-	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]} STRICT:${_QUERY_OPTS[EOPT]:=null}"
-	logit ${_YT_DBG_LOG} "${0}: _QUERY_OPTS: $(for K in ${(ok)_QUERY_OPTS};do printf '%s:%s ' ${K} ${_QUERY_OPTS[${K}]};done)"
+	if [[ ${_QUERY_OPTS[EOPT]:l} == 's' ]];then
+		STR="is strict" && STRICT_ARG='-s'
+	else
+		STR="is not strict" && STRICT_ARG=''
+	fi
 
-	[[ ${_QUERY_OPTS[EOPT]:l} == 's' ]] && STRICT_ARG='-s' || STRICT_ARG=''
+	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]}, query ${STR}"
+	logit ${_YT_DBG_LOG} "${0}:\n_QUERY_OPTS:\n $(for K in ${(ok)_QUERY_OPTS};do printf '\t-> %s:%s\n' ${K} ${_QUERY_OPTS[${K}]};done)"
 
 	g_PROXY_CMD="node ${_JS_SCRIPT} ${STRICT_ARG} -a ${_QUERY_OPTS[AGE]} ${(qqq)_QUERY_OPTS[QKEY]}" # Quote key
 	logit ${_YT_DBG_LOG} "${0}: g_PROXY_CMD:${g_PROXY_CMD}"
@@ -1429,8 +1432,6 @@ query_youtube () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 
-	#_YT_OPTS="youtube:lang-en"
-	
 	while true;do
 		(( TRY++ ))
 		LIST=("${(f)$(eval ${g_PROXY_CMD} 2>/dev/null)}")
@@ -1451,28 +1452,20 @@ query_youtube () {
 
 		STR=$(str_to_ascii <<<${L}) # Scrub non ascii
 		STR=${STR:s/Streamed //} # Strip age of excess text
+		HIT=true
 
 		# Author verification
-		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]];then # Apply filtering to non strict results unless query is custom
-			HIT=false
-			AUTHOR="${${(@s/|/)L}[2]}"
-			AUTHOR=$(str_to_ascii ${AUTHOR:l})
-			QKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[QKEY]:l}) # strip spaces for comparison
-			DKEY=$(tr -d '[:space:]' <<<${_QUERY_OPTS[DKEY]:l}) # strip spaces for comparison
-			if [[ ${AUTHOR} =~ ${QKEY} || ${AUTHOR} =~ ${DKEY} ]];then
-				[[ ${MSG_OUT} == 'false' ]] && { msg_box -x4 -t2 "<w>Filtering non-strict query by Author...<N>" && MSG_OUT=true }
-				HIT=true
-			else
-				logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}"
+		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]]; then
+			AUTHOR=$(str_to_ascii "${(L)${(s:|:)L}[2]}") && HIT=false # 2nd field - lower case
+			if [[ ${AUTHOR// /} == *${(L)_QUERY_OPTS[QKEY]// /}* || ${AUTHOR// /} == *${(L)_QUERY_OPTS[DKEY]// /}* ]]; then # Exact or substring w/o space
+				logit ${_YT_DBG_LOG} "${0}: Retained:${AUTHOR}" && HIT=true
 			fi
-		else
-			HIT=true
 		fi
 		 
-		if [[ ${DATA} == 'true' && ${_REJECTS[${NDX}]} == 'false' && ${HIT} == 'true' ]];then
+		if [[ ${HIT} == 'true' ]];then
 			_LOCAL_LIST+=${STR}
 		else
-			_QUERY_REJECTS+=${STR}
+			logit ${_YT_DBG_LOG} "${0}: Rejected:${AUTHOR}" && _QUERY_REJECTS+=${STR}
 		fi
 	done
 
@@ -1494,8 +1487,6 @@ query_youtube () {
 			logit ${_YT_DBG_LOG} "${0}: Search engine returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[EOPT]}"
 			return 1
 		fi
-	else
-		logit ${_YT_DBG_LOG} "${0}: Query matched ${NDX} lines, _LOCAL_LIST has ${#_LOCAL_LIST} lines"
 	fi
 
 	for F in ${_LOCAL_LIST};do
@@ -1506,7 +1497,7 @@ query_youtube () {
 		AGETIME="(${AGE} ${TIME})"
 		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR})
 
-		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird problem workaraound - spanish titles on blancolirio
+		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird language problem workaraound - spanish titles on blancolirio
 			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
 				logit ${_YT_DBG_LOG} "${0}: Translated TITLE:${TITLE}"

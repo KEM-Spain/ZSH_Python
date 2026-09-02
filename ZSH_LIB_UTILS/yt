@@ -118,7 +118,7 @@ if [[ ${CMDLINE} == 'true' ]];then
 	shift $((OPTIND -1))
 #--End GetOpts--
 else
-	logit ${_YT_DBG_LOG} "${0:t} Script execution"
+	logit ${_YT_DBG_LOG} "${0:t} script execution"
 fi
 
 # Execution
