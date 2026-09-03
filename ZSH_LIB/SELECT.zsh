@@ -532,7 +532,7 @@ sel_scroll () {
 		# Handle stored list position
 		sel_get_position
 		if [[ ${_TAG_DATA[RESTORE]} == 'true'  ]];then
-			BOX_TAG=${_SELECT_TAG_FILE} # Only maintain cursor position for differing menus unless _SAVE_MENU_POS is set
+			BOX_TAG=${_SELECT_TAG_FILE} # Only maintain cursor position for differing lists unless _SAVE_MENU_POS is set
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  BOX_TAG:${BOX_TAG}"
 		fi
 
@@ -540,11 +540,11 @@ sel_scroll () {
 		if [[ ${PAGE_CHANGE} == 'false' ]];then
 			if [[ ${_TAG_DATA[RESTORE]} == 'true' ]];then
 				if [[ ${_SAVE_MENU_POS} == 'true' ]];then
-					NDX=${_TAG_DATA[NDX]} # Restore menu position regardless
-					PAGE=${_TAG_DATA[PAGE]} # Restore menu position regardless
+					NDX=${_TAG_DATA[NDX]} # Restore list position regardless
+					PAGE=${_TAG_DATA[PAGE]} # Restore list position regardless
 					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:RESTORED POSITION: ${_TAG_DATA[NDX]}"
 				else
-					[[ ${BOX_TAG} != ${_SELECT_TAG_FILE} ]] && NDX=${_TAG_DATA[NDX]} && PAGE=${_TAG_DATA[PAGE]} # Restore menu position only if menu changed
+					[[ ${BOX_TAG} != ${_SELECT_TAG_FILE} ]] && NDX=${_TAG_DATA[NDX]} && PAGE=${_TAG_DATA[PAGE]} # Restore list position only if list changed
 					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:MENU CHANGED - RESTORED POSITION: ${_TAG_DATA[NDX]}"
 				fi
 				_TAG_DATA[RESTORE]=false
@@ -587,7 +587,7 @@ sel_scroll () {
 				break 2 # Quit navigation
 			fi
 
-			NAV=true # Return only menu selections
+			NAV=true # Return only list selections
 
 			case ${KEY} in
 				0) sel_set_position ${PAGE} ${NDX}; break 2;;
@@ -731,7 +731,7 @@ sel_set_position () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}: _SELECT_TAG_FILE:${_SELECT_TAG_FILE} PAGE:${PAGE}: NDX:${NDX}"
 
-	[[ -n ${_SELECT_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_SELECT_TAG_FILE} # Save menu position
+	[[ -n ${_SELECT_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_SELECT_TAG_FILE} # Save list position
 	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "_SELECT_TAG_FILE NOT defined"
 }
 

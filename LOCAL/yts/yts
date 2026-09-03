@@ -692,14 +692,14 @@ fav_get () {
 				;;
 		esac
 
-		clear
-
 		TAG="${MENU_LBL}.${g_LAST_FAV_TYPE}.query"
 		HDR="<B><w>${(C)MENU_LBL}${HDR_TAG} <B>Query<N>"
 		FTR="Run <w>${(C)MENU_LBL}<N> query, <w>(<N>s<w>)<N>how keys<N>, or <w>(<N>q<w>)<N>uit<N>"
 
 		sel_set_app_keys d r y c
 		sel_set_list ${LIST}
+
+		clear
 
 		msg_line_weight heavy
 		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}

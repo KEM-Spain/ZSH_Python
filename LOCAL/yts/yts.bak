@@ -761,7 +761,6 @@ get_field () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	# TODO: agetime is malformed - investigate
 	case ${FIELD} in
 		age) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[age]}]}";;
 		agetime) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[agetime]}]}";;
@@ -788,7 +787,7 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'title' ]];then
-		STR=$(utf_to_iso ${STR})
+		#STR=$(utf_to_iso ${STR})
 		STR=$(str_word_clip ${STR} ${_FIELD_LEN[${FIELD}]})
 	fi
 

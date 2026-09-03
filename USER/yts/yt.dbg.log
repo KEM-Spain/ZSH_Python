@@ -1,74 +1,43 @@
-2026-09-02_07:34: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-02_07:34: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-02_07:34: query_youtube: Creating listing for QKEY:judgingfreedom, query is strict
-2026-09-02_07:34: query_youtube:
+2026-09-02_23:48: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-02_23:48: log_update: Skipping expired inode:6343978
+2026-09-02_23:48: log_update: Skipping expired inode:6340070
+2026-09-02_23:48: log_update: Skipping expired inode:6343710
+2026-09-02_23:48: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-02_23:48: query_rumble:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Judging Freedom
-	-> ENGINE:youtube
-	-> EOPT:s
-	-> FKEY:judging freedom
-	-> QKEY:judgingfreedom
-	-> TYPE:standard
-2026-09-02_07:34: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "judgingfreedom"
-2026-09-02_07:34: query_youtube: Listing for QKEY:judgingfreedom contains 15 rows
-2026-09-02_07:34: query_youtube: Creating listing for QKEY:rickbeato, query is strict
-2026-09-02_07:34: query_youtube:
+	-> DKEY:Glenn Diesen
+	-> ENGINE:rumble
+	-> EOPT:c
+	-> FKEY:glenn diesen
+	-> QKEY:glenndiesen
+	-> TYPE:channel
+2026-09-02_23:48: query_rumble: QUERY:https://rumble.com/c/glenndiesen?page=1
+2026-09-02_23:48: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
+2026-09-02_23:49: query_youtube: Creating listing for QKEY:lawrence wilkerson, query is not strict
+2026-09-02_23:49: query_youtube:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Rick Beato
-	-> ENGINE:youtube
-	-> EOPT:s
-	-> FKEY:rick beato
-	-> QKEY:rickbeato
-	-> SMSG:0.0%
-	-> TYPE:standard
-2026-09-02_07:34: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "rickbeato"
-2026-09-02_07:34: query_youtube: Listing for QKEY:rickbeato contains 2 rows
-2026-09-02_07:35: query_youtube: Creating listing for QKEY:danieldavisdeepdive, query is not strict
-2026-09-02_07:35: query_youtube:
-_QUERY_OPTS:
- 	-> AGE:recent
-	-> DKEY:Daniel Davis
+	-> DKEY:Lawrence Wilkerson
 	-> ENGINE:youtube
 	-> EOPT:
-	-> FKEY:daniel davis
-	-> QKEY:danieldavisdeepdive
-	-> SMSG:0.0%
-	-> TYPE:standard
-2026-09-02_07:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "danieldavisdeepdive"
-2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
-2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
-2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
-2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
-2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
-2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
-2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
-2026-09-02_07:35: query_youtube: Retained:daniel davis / deep dive
-2026-09-02_07:35: query_youtube: Listing for QKEY:danieldavisdeepdive contains 8 rows
-2026-09-02_07:35: query_youtube: Creating listing for QKEY:dialogueworks, query is strict
-2026-09-02_07:35: query_youtube:
-_QUERY_OPTS:
- 	-> AGE:recent
-	-> DKEY:Dialogue Works
-	-> ENGINE:youtube
-	-> EOPT:s
-	-> FKEY:dialogue works
-	-> QKEY:dialogueworks
-	-> SMSG:
-	-> TYPE:standard
-2026-09-02_07:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "dialogueworks"
-2026-09-02_07:35: query_youtube: Listing for QKEY:dialogueworks contains 14 rows
-2026-09-02_07:35: query_youtube: Creating listing for QKEY:patrick henningsen, query is not strict
-2026-09-02_07:35: query_youtube:
-_QUERY_OPTS:
- 	-> AGE:recent
-	-> DKEY:Patrick Henningsen
-	-> ENGINE:youtube
-	-> EOPT:
-	-> FKEY:patrick henningsen
-	-> QKEY:patrick henningsen
-	-> SMSG:0.0%
+	-> FKEY:lawrence wilkerson
+	-> QKEY:lawrence wilkerson
 	-> TYPE:custom
-2026-09-02_07:35: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "patrick henningsen"
-2026-09-02_07:35: query_youtube: Listing for QKEY:patrick henningsen contains 1 rows
+2026-09-02_23:49: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "lawrence wilkerson"
+2026-09-02_23:49: query_youtube: Listing for QKEY:lawrence wilkerson contains 2 rows
+2026-09-02_23:49: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.MUwHu6
+2026-09-02_23:49: job_start: TITLE:Lawrence Wilkerson: NATO & The EU Are Dead - A New World Emerges 
+2026-09-02_23:49: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=H9gD_YOeJwA" PID:572842
+2026-09-02_23:49: yt script execution
+2026-09-02_23:49: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts
+2026-09-02_23:49: yt URL:https://youtube.com/watch?v=H9gD_YOeJwA
+2026-09-02_23:49: action_do: GENERATING HEADER
+2026-09-02_23:50: action_do: COMPLETED
+2026-09-02_23:50: action_do: POST-PROCESSING
+2026-09-02_23:50: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Glenn_Diesen - Lawrence_Wilkerson_-_NATO_the_EU_are_Dead_-_A_New_World_Emerges.mp4
+2026-09-02_23:50: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Glenn_Diesen - Lawrence_Wilkerson_-_NATO_the_EU_are_Dead_-_A_New_World_Emerges.mp4
+2026-09-02_23:50: set_final_fn: Overwriting file:Glenn_Diesen - Lawrence_Wilkerson_-_NATO_the_EU_are_Dead_-_A_New_World_Emerges.mp4
+2026-09-02_23:50: set_final_fn: Clean filename:Glenn Diesen - Lawrence Wilkerson - NATO The EU Are Dead - A New World.mp4
+2026-09-02_23:50: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-09-02_23:50: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.MUwHu6 was cleared for:lawrence wilkerson from:action_do
