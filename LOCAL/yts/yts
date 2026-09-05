@@ -245,6 +245,7 @@ action_do () {
 						((TRANS_ERR_CNT++))
 						TRANS_ERR_MSG=$(parse_err_msg ${LOG_LINE})
 						logit ${_YT_DBG_LOG} "${0}: PRE TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
+						logit ${_YT_DBG_LOG} "${0}: LOG:${LOG_LINE[1,80]}"
 						if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 							_FAILED[${M}]=true
 							_DOWNLOADS[${M}]=false
@@ -298,6 +299,7 @@ action_do () {
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))
 							logit ${_YT_DBG_LOG} "${0}: TRANSMISSION ERROR ${TRANS_ERR_CNT} of ${_TRANS_ERR_LIMIT}"
+							logit ${_YT_DBG_LOG} "${0}: LOG:${LOG_LINE[1,80]}"
 							LAST_TRANS_MSG=${TRANS_ERR_MSG}
 							if [[ ${TRANS_ERR_CNT} -ge ${_TRANS_ERR_LIMIT} ]];then
 								_FAILED[${M}]=true
@@ -429,14 +431,10 @@ download_indicator () {
 	#logit ${_YT_DBG_LOG} "${0}: SPEED:${SPEED}"
 
 	case ${SPEED} in
-		<1-2>) OBJ_COLOR="${BOLD}${RED_FG}";; # YouTube
-		<3-4>) OBJ_COLOR="${BOLD}${MAGENTA_FG}";;
-		<5-6>) OBJ_COLOR="${BOLD}${CYAN_FG}";;
-		<7-10>) OBJ_COLOR="${BOLD}${GREEN_FG}";;
-		<11-20>) OBJ_COLOR="${BOLD}${WHITE_FG}";;
-		<21-30>) OBJ_COLOR="${BOLD}${CYAN_FG}";;
-		<31-40>) OBJ_COLOR="${BOLD}${WHITE_FG}";;
-		*) OBJ_COLOR="${BOLD}${GREEN_FG}";;
+		<1-4>) OBJ_COLOR="${BOLD}${CYAN_FG}";;
+		<5-20>) OBJ_COLOR="${BOLD}${WHITE_FG}";;
+		<21-90>) OBJ_COLOR="${BOLD}${GREEN_FG}";;
+		*) OBJ_COLOR="${BOLD}${RED_FG}";;
 	esac
 
 	case ${SP_DIR} in
@@ -660,18 +658,24 @@ fav_get () {
 	local OPTS=''
 	local O_COLOR=''
 	local TAG=''
+	local UNK_TYPE=''
 	local L
 
-
-	for L in ${(k)_FAV_LIST};do # [DKEY]="QKEY:OPTS"
+	for L in ${(k)_FAV_LIST};do
 		OPTS="${${(@s/:/)${_FAV_LIST[${L}]}}[2]}"
 		MENU_TYPE=${OPTS[1]:l} # Embedded in OPTS
 		case ${MENU_TYPE} in
 			c) C_LIST+="${(C)L:gs/_/ /}";;
 			r) R_LIST+="${(C)L:gs/_/ /}";;
 			y) Y_LIST+="${(C)L:gs/_/ /}";;
+			*) UNK_TYPE=${MENU_TYPE};;
 		esac
 	done
+
+	if [[ -n ${UNK_TYPE} ]];then
+		logit ${_YT_DBG_LOG} "Bad menu type:${MENU_TYPE} in ${_YTS_FAVORITES}"
+		return 1
+	fi
 
 	while true;do
 		case ${g_LAST_FAV_TYPE} in
@@ -710,12 +714,14 @@ fav_get () {
 			[[ ${?} -eq 0 ]] && fav_load && return 1 # Reload favorites & return
 		fi
 
-		[[ ${_SEL_KEY} =~ 'y|r|c' ]] && g_LAST_FAV_TYPE=${_SEL_KEY}
-		if [[ ${_SEL_KEY} == '?' ]];then
-			_QUERY_OPTS[FKEY]=${_SEL_VAL:l} # Store selected _FAV_LIST key
+		if [[ ${_SEL_KEY} =~ 'y|r|c' ]];then
+			g_LAST_FAV_TYPE=${_SEL_KEY}
+		else
+			set_query_opts ${_SEL_VAL:l} # Store selected _FAV_LIST key
 			break
 		fi
 	done
+
 	return 0
 }
 
@@ -787,7 +793,6 @@ get_field () {
 	fi
 
 	if [[ ${FIELD} == 'title' ]];then
-		#STR=$(utf_to_iso ${STR})
 		STR=$(str_word_clip ${STR} ${_FIELD_LEN[${FIELD}]})
 	fi
 
@@ -1150,6 +1155,16 @@ log_update () {
 	} 2>/dev/null
 }
 
+needs_filter () {
+		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE:l} != 'c' ]];then
+			return 0
+		elif [[ ${_QUERY_OPTS[EOPT]:l} == 'f' ]];then
+			return 0
+		else
+			return 1
+		fi
+}
+
 open_website () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -1225,18 +1240,23 @@ parse_rumble () {
 	grep -q -m1 'locals_community' <<<${LIST}
 	[[ ${?} -eq 0 ]] && TNDX=3 || TNDX=2 # Either sets of 3 titles or sets of 2
 
-	for L in ${LIST};do
-		LINE=${L:Q}
-		TAG="${LINE%%:*}" # Discard everything past the first colon
-		TEXT="${LINE#*:}" # Discard everything before and including the first colon
-		case ${LINE} in
-			*relative_url:*) continue;;
-			*url:*) [[ ${TEXT} =~ "\.html" ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
-			*title:*) (( TCNT++));T3=$(( TCNT % TNDX ));[[ ${T3} -eq 0 ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
-			*duration:*) QDATA+=$(parse_rumble_duration ${TEXT});;
-			*upload_date:*) D="${${(@s/T/)TEXT}[1]}";U=$(date -d "${D}" +%s);QDATA+=$(parse_rumble_age ${U});;
-		esac
-	done
+	for L in "${LIST[@]}"; do
+    LINE=${L:Q}
+    TAG="${LINE%%:*}" # Discard everything past the first colon
+    TEXT="${LINE#*:}" # Discard everything before and including the first colon
+    case ${LINE} in
+      *relative_url:*) continue;;
+      *url:*) [[ ${TEXT} =~ "\.html" ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
+      *title:*)
+        (( TCNT++ ))
+        T3=$(( TCNT % TNDX ))
+        # Double quote both the input parameter and the command substitution result
+        [[ ${T3} -eq 0 ]] && QDATA+="$(fix_mojibake "${TEXT[2,-1]}")"
+        ;;
+      *duration:*) DURATION=$(parse_rumble_duration ${TEXT});QDATA+=${DURATION};;
+      *upload_date:*) D="${${(@s/T/)TEXT}[1]}";U=$(date -d "${D}" +%s);QDATA+=$(parse_rumble_age ${U});;
+    esac
+  done
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "--- BEGIN QDATA ---\n$(for K in ${QDATA};do echo ${K};done)\n --- END QDATA ---"
 
@@ -1454,9 +1474,9 @@ query_youtube () {
 		HIT=true
 
 		# Author verification
-		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE} != 'c' ]]; then
+		if needs_filter;then
 			AUTHOR=$(str_to_ascii "${(L)${(s:|:)L}[2]}") && HIT=false # 2nd field - lower case
-			if [[ ${AUTHOR// /} == *${(L)_QUERY_OPTS[QKEY]// /}* || ${AUTHOR// /} == *${(L)_QUERY_OPTS[DKEY]// /}* ]]; then # Exact or substring w/o space
+			if [[ ${AUTHOR// /} == *${(L)_QUERY_OPTS[QKEY]// /}* || ${AUTHOR// /} == *${(L)_QUERY_OPTS[DKEY]// /}* ]];then # Exact or substring w/o space
 				logit ${_YT_DBG_LOG} "${0}: Retained:${AUTHOR}" && HIT=true
 			fi
 		fi
@@ -1496,6 +1516,7 @@ query_youtube () {
 		AGETIME="(${AGE} ${TIME})"
 		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR})
 
+		# Title translations
 		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird language problem workaraound - spanish titles on blancolirio
 			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
@@ -1558,18 +1579,19 @@ set_item_color () {
 }
 
 set_query_opts () {
+	local FKEY=${1:gs/ /_/} # Normalize _FAV_LIST key
 	local DKEY=''
 	local ENGINE=''
 	local ENG_CODE=''
 	local ENG_OPT=''
-	local FKEY=''
 	local FVAL=''
 	local MENU_CODE=''
 	local OPTS=''
 	local QKEY=''
 	local QRY_TYPE=''
 
-	FKEY=${_QUERY_OPTS[FKEY]:gs/ /_/} # Normalize FKEY
+	_QUERY_OPTS[FKEY]=${FKEY} # Set FKEY
+
 	FVAL=${_FAV_LIST[${FKEY}]} # _FAV_LIST lookup
 
 	DKEY=${_QUERY_OPTS[FKEY]}
@@ -1844,18 +1866,13 @@ fi
 if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	while true;do
 		if fav_get;then
-			set_query_opts
-			if [[ -n ${_QUERY_OPTS[QKEY]} ]];then
-				MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
-				_OB=($(sel_get_interior_coords))
-				msg_box -y${_OB[Y]} -w${_OB[W]} ${MSG} # Set msg relative position and width
-				[[ ${ENGINE} == 'rumble' ]] && _QUERY_OPTS[EXTRA]=' --impersonate chrome'
-				query_${_QUERY_OPTS[ENGINE]} # Call the extractor
-				if [[ ${?} -eq 0 ]];then
-					download_select ${_QUERY_OPTS[QKEY]}
-				fi
-			else
-				msg_box -p -PK "Failed to get query options|$(msg_list_data $(for K in ${(k)_QUERY_OPTS};do echo "${K}:${_QUERY_OPTS[${K}]}";done))"
+			MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+			_OB=($(sel_get_interior_coords))
+			msg_box -y${_OB[Y]} -w${_OB[W]} ${MSG} # Set msg relative position and width
+			[[ ${ENGINE} == 'rumble' ]] && _QUERY_OPTS[EXTRA]=' --impersonate chrome'
+			query_${_QUERY_OPTS[ENGINE]} # Call the extractor
+			if [[ ${?} -eq 0 ]];then
+				download_select ${_QUERY_OPTS[QKEY]}
 			fi
 		fi
 	done

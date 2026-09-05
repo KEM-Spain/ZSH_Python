@@ -218,6 +218,22 @@ cmd_get_raw () {
 	echo ${CMD_LINE}
 }
 
+fix_mojibake () {
+  # Strip UTF-8 BOM, replace Mojibake, and clean leftover replacement chars (U+FFFD)
+  LC_ALL=C printf '%s\n' "$*" | LC_ALL=C sed \
+    -e "s/â€™/'/g" \
+    -e "s/â€˜/'/g" \
+    -e 's/â€“/-/g' \
+    -e 's/â€”/--/g' \
+    -e 's/â€œ/"/g' \
+    -e $'s/\xC3\xA2\xE2\x82\xAC\x9D/"/g' \
+    -e $'s/\xC3\xA2\xE2\x82\xAC\xEF\xBF\xBD/"/g' \
+    -e $'s/\xC3\xA2\xE2\x82\xAC/"/g' \
+    -e $'s/\xEF\xBF\xBD//g' \
+    -e 's/[[:space:]]\+/ /g' \
+    -e 's/^[[:space:]]*//;s/[[:space:]]*$//'
+}
+
 format_pct () {
 	local ARG=${1}
 	local -F1 P1
@@ -858,12 +874,6 @@ title_info () { # Shared with fsub and vid_to_lib
 	esac
 }
 
-utf_2_iso () {
-	local STR=${1}
-
-	printf '%s' "${STR}" | iconv -f UTF-8 -t ISO-8859-1 2>/dev/null
-}
-
 title_scrubber () {
 	local TITLE=${@}
 	local -A SEEN=()
@@ -873,7 +883,7 @@ title_scrubber () {
 	local PLURAL=''
 	local W U
 
-	TITLE=$(utf_to_iso ${TITLE})
+	TITLE="$(fix_mojibake "${TITLE}")"
 
 	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE} 2>/dev/null) # Convert any HTML 
 
@@ -911,37 +921,5 @@ title_scrubber () {
 	[[ -n ${STR} ]] && TITLE=${STR}
 
 	echo ${TITLE}
-}
-
-utf_to_iso () {
-  local STR="${*}"
-
-  perl -MEncode -pe '
-    BEGIN { binmode STDIN, ":utf8"; binmode STDOUT, ":bytes"; }
-
-    # Step 1: Decode double-encoded UTF-8 strings (Mojibake repair)
-    # Re-encodes cp1252/latin1 misreads back into raw bytes, then decodes as UTF-8 safely
-     
-    if (/[\xC2-\xF4]/) {
-        my $octets = Encode::encode("cp1252", $_, Encode::FB_DEFAULT);
-        my $decoded = eval { Encode::decode("utf-8", $octets, Encode::FB_CROAK) };
-        $_ = $decoded if defined $decoded;
-    }
-
-    # Step 2: Strip high Unicode characters (Emojis) that cannot exist in ISO-8859-15
-    # Doing this before encoding prevents byte corruption (like leftover "ð")
-
-    s/[^\x{0000}-\x{024F}\x{20AC}]//g;
-
-    # Step 3: Normalize remaining whitespace
-
-    s/\s+/ /g;
-    s/\s+$//;
-    $_ .= "\n";
-
-    # Step 4: Safely encode to ISO-8859-15 raw bytes
-
-    $_ = Encode::encode("iso-8859-15", $_, Encode::FB_QUIET);
-  ' <<< "${STR}" | iconv -f ISO-8859-15 -t UTF-8
 }
 
