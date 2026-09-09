@@ -487,7 +487,7 @@ fi
 OUT_FILE_OPT=${_FLIST[1]:h}/${OUT_FILE_OPT:r:gs/ /_/}.mp4
 
 NDX=0
-for F in ${_FLIST};do # Set inputs
+for F in ${(on)_FLIST};do # Set inputs
 	[[ -e ${F:t} ]] && FN=${F:t} || FN=${F} # Include path if needed
 	_INPUTS[${NDX}]="${FN}"
 	((NDX++))

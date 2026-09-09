@@ -1,14 +1,29 @@
-2026-09-05_09:37: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-05_09:37: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-05_09:37: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
-2026-09-05_09:37: query_youtube:
+2026-09-08_20:41: log_update: LOG lines BEFORE update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-08_20:41: log_update: LOG lines AFTER update:6 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-08_20:41: query_rumble:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Alex Christoforou
-	-> ENGINE:youtube
-	-> EOPT:s
-	-> FKEY:alex_christoforou
-	-> QKEY:alexchristoforou
-	-> TYPE:standard
-2026-09-05_09:37: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
-2026-09-05_09:37: query_youtube: Listing for QKEY:alexchristoforou contains 5 rows
+	-> DKEY:Syriana Analysis
+	-> ENGINE:rumble
+	-> EOPT:u
+	-> FKEY:syriana_analysis
+	-> QKEY:syrianaanalysis
+	-> TYPE:user
+2026-09-08_20:41: query_rumble: QUERY:https://rumble.com/user/syrianaanalysis/livestreams
+2026-09-08_20:41: query_rumble: Listing for QKEY:syrianaanalysis contains 25 rows
+2026-09-08_20:41: job_start: DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ruih34
+2026-09-08_20:41: job_start: TITLE:Sneako's Syria Debate: Islam, Israel & the CIA -- Who Really Won? 
+2026-09-08_20:41: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7f6zlw-sneakos-syria-debate-islam-israel-and-the-cia-who-really-won.html" PID:2629312
+2026-09-08_20:42: yt script execution
+2026-09-08_20:42: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts --impersonate chrome
+2026-09-08_20:42: yt URL:https://rumble.com/v7f6zlw-sneakos-syria-debate-islam-israel-and-the-cia-who-really-won.html
+2026-09-08_20:42: action_do: PRE-PROCESSING
+2026-09-08_20:42: action_do: GENERATING HEADER
+2026-09-08_20:50: action_do: COMPLETED
+2026-09-08_20:50: action_do: POST-PROCESSING
+2026-09-08_20:50: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/syrianaanalysis - Sneako_s_Syria_Debate_-_Islam_Israel_the_CIA_Who_Really_Won.mp4
+2026-09-08_20:50: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/syrianaanalysis - Sneako_s_Syria_Debate_-_Islam_Israel_the_CIA_Who_Really_Won.mp4
+2026-09-08_20:50: set_final_fn: Overwriting file:syrianaanalysis - Sneako_s_Syria_Debate_-_Islam_Israel_the_CIA_Who_Really_Won.mp4
+2026-09-08_20:50: set_final_fn: Clean filename:Syriana Analysis - Sneako's Syria Debate - Islam Israel The CIA WHO.mp4
+2026-09-08_20:50: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-09-08_20:50: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.ruih34 was cleared for:syrianaanalysis from:action_do

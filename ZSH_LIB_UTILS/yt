@@ -16,7 +16,7 @@ _YT_CFG=~/.local/share/yts
 _YT_DBG_LOG=${_YT_CFG}/yt.dbg.log
 _YT_URL_LOG=${_YT_CFG}/yt.url.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
-_YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG}"
+_YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG} --impersonate chrome"
 
 # Functions
 last_file_downloaded () {

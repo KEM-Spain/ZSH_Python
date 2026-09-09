@@ -60,6 +60,7 @@ typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
+typeset -A _TRANSLATED=(blancolirio 1)
 typeset -a _QUERY_REJECTS=()
 typeset -a _RUMBLE_PAGE=()
 typeset -a _RUMBLE_QRY_OPTS=(l c u g)
@@ -142,7 +143,6 @@ action_do () {
 	local MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
 	local NDX=0
 	local RETRIES=0
-	local SPEED=0
 	local TEXT=''
 	local TITLE=''
 	local TRANS_ERR_CNT=0
@@ -285,7 +285,7 @@ action_do () {
 				esac
 			else # HDRS_OUT == true
 				case ${LOG_LINE:l} in
-					*100%*|*fix*|*remux*)
+					*100%*|*fix*|*remux*|*merging*)
 						logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 						msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
 						_DOWNLOADS[${M}]=true
@@ -313,16 +313,17 @@ action_do () {
 						fi
 						;;
 					*eta*)
-						SPEED=$(get_speed ${LOG_LINE}) && download_indicator ${SPEED}
+						download_indicator $(get_speed ${LOG_LINE})
 						ETA=${LOG_LINE}
 						case ${LOG_LINE:l} in
-							*100*%) LINE_COLOR='<B><g>';;
+							*100*) LINE_COLOR='<B><g>';;
 							*mib/s*) LINE_COLOR='<w>';;
 							*kib/s*) LINE_COLOR='<B><y>';;
 						esac
 						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
 						continue
 						;;
+					*) logit ${_YT_DBG_LOG} "UNCAPTURED LOG LINE:${LOG_LINE:l}";;
 				esac
 			fi
 			sleep .2 # Log fetch delay
@@ -658,6 +659,7 @@ fav_get () {
 	local OPTS=''
 	local O_COLOR=''
 	local TAG=''
+	local UNK_TYPE=''
 	local L
 
 	for L in ${(k)_FAV_LIST};do
@@ -667,12 +669,12 @@ fav_get () {
 			c) C_LIST+="${(C)L:gs/_/ /}";;
 			r) R_LIST+="${(C)L:gs/_/ /}";;
 			y) Y_LIST+="${(C)L:gs/_/ /}";;
-			*) MENU_TYPE='unknown';;
+			*) UNK_TYPE=${MENU_TYPE};;
 		esac
 	done
 
-	if [[ ${MENU_TYPE} == 'unknown' ]];then
-		logit ${_YT_DBG_LOG} "Bad menu type in ${_YTS_FAVORITES}"
+	if [[ -n ${UNK_TYPE} ]];then
+		logit ${_YT_DBG_LOG} "Bad menu type:${MENU_TYPE} in ${_YTS_FAVORITES}"
 		return 1
 	fi
 
@@ -819,6 +821,12 @@ get_speed () {
 	else
 		echo "0|${TYPE}"
 	fi
+}
+
+is_spanish () {
+  local INPUT="${1}"
+  # Matches Spanish diacritics (á, é, í, ó, ú, ü, ñ, ¿, ¡) or top frequent Spanish words
+  [[ "${INPUT}" =~ '[áéíóúüñ¿¡]' ]] || [[ "${INPUT}" =~ '\b(el|la|los|las|un|una|y|que|en|de|por|para|es|como)\b' ]] && return 0 || return 1
 }
 
 item_decorate () {
@@ -1000,18 +1008,18 @@ log_clear () {
 
 	[[ ! -e ${g_YTS_LOG} ]] && return
 
-	if [[ ${g_PRESERVE_LOG} == 'false' ]];then
+	if [[ ${g_PRESERVE_LOG} == 'false' && ${_DEBUG} -eq 0 ]];then
 		rm -f ${g_YTS_LOG}
 		logit ${_YT_DBG_LOG} "${0}: Temp log file:${g_YTS_LOG} was cleared for:${_QUERY_OPTS[QKEY]} from:${FROM}"
 	else
-		logit ${_YT_DBG_LOG} "${0}: DEBUG TRIGGERED - log ${g_YTS_LOG} was retained for:${_QUERY_OPTS[QKEY]}"
+		logit ${_YT_DBG_LOG} "${0}: ${g_YTS_LOG} was retained for:${_QUERY_OPTS[QKEY]}"
 		msg_box -t3 "<w>Log was preserved<N>"
 	fi
 }
 
 log_find () { 
-	local TOP=${1} # Page top row supplied by LIST.zsh line 108
-	local BOT=${2} # Page bot row supplied by LIST.zsh line 108
+	local TOP=${1} # Page top row supplied by LIST.zsh
+	local BOT=${2} # Page bot row supplied by LIST.zsh
 	local LINE_NUM=''
 	local LIST_AU=''
 	local LIST_TITLE=''
@@ -1098,9 +1106,7 @@ log_to_file () {
 		LINE=$(grep -i ${LIST_AU} ${_YTS_DOWNLOAD_LOG} 2>/dev/null | grep ${LIST_TM} 2>/dev/null) # Match on author/time
 		if [[ -n ${LINE} ]];then 
 			FN="${${(@s/|/)LINE}[3]}"
-			if [[ -e ${_DOWNLOAD_DIR}/${FN} ]];then
-				break
-			fi
+			[[ -e ${_DOWNLOAD_DIR}/${FN} ]] && break
 		fi
 	done
 
@@ -1165,7 +1171,6 @@ needs_filter () {
 }
 
 open_website () {
-
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${1} in
@@ -1214,7 +1219,7 @@ parse_rumble () {
 	local K L
 	local WGET_OPTS='--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/125.0.0.0 Safari/537.36" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header="Accept-Language: en-US,en;q=0.5" --header="Referer: https://rumble.com/"'
 
-	# TODO: live broadcasts are seeping in; identify & block
+	# TODO: live broadcasts are seeping in; identified by "00:00" duration
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
@@ -1516,8 +1521,9 @@ query_youtube () {
 		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR})
 
 		# Title translations
-		if [[ ${AUTHOR} == 'blancolirio' ]];then # Weird language problem workaraound - spanish titles on blancolirio
-			if perl -wln -e "if (/\b.*[ae]ntes\b|\bll.*\b|\bel\b|\bya\b|\by\b|\bla\b|\bal\b|\bde\b|\bdel\b|\bque\b|\bpara\b|\bpor\b/) { exit 0 } else { exit 1 }" <<<${TITLE:l};then
+		if [[ ${_TRANSLATED[${AUTHOR}]} ]];then # Language problem workaraound - spanish titles
+			if is_spanish ${TITLE:l};then
+				msg_box "<w>Translating...<N>"
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
 				logit ${_YT_DBG_LOG} "${0}: Translated TITLE:${TITLE}"
 			fi

@@ -271,22 +271,22 @@ local_to_prod () {
 			[[ $? -ne 0 ]] && echo ${g_PROD_WILL_OVERWRITE_BACKUP}
 		fi
 
-		get_response "${RED_FG}Overwrite the ${_EM}production version${RESET}: ${WHITE_FG}${g_PROD_NAME}${RESET}\nwith the ${_EM}development${RESET} version: ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
+		get_response "${RED_FG}Overwrite the ${_EM}production version${RESET}: ${WHITE_FG}${g_PROD_NAME}${RESET} with\n\tthe ${_EM}development${RESET} version: ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
 		if [[ ${?} -eq 0 ]];then
 			prod_to_backup no_prompt
 			cp ${g_LOCAL_VERSION} ${g_PROD_VERSION}
-			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied to ${WHITE_FG}${g_PROD_NAME}${RESET}"
+			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied\n\tto ${WHITE_FG}${g_PROD_NAME}${RESET}"
 		else
 			exit_leave "${RED_FG}Operation cancelled${RESET}"
 		fi
 	else
 		# No existing production copy
 		echo "Creating an initial production copy:${g_PRODUCTION_DIR}/${FILE_ARG}"
-		get_response "Create ${_EM}production${RESET} version: ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET} with the ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
+		get_response "Create ${_EM}production${RESET} version: ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET} with\n\tthe ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
 		if [[ ${?} -eq 0 ]];then
 			prod_to_backup no_prompt
 			cp ${g_LOCAL_VERSION} ${g_PRODUCTION_DIR}/${FILE_ARG}
-			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied to ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET}"
+			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied\n\tto ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET}"
 		else
 			exit_leave "${RED_FG}Operation cancelled${RESET}"
 		fi
@@ -308,18 +308,18 @@ set_messages () {
 	g_LOCAL_EXISTS="A ${_EM}local${RESET} version of ${WHITE_FG}${g_LOCAL_NAME}${RESET} exists..."
 	g_LOCAL_EXISTS_PROD="A ${_EM}local${RESET} version of ${WHITE_FG}${g_PROD_NAME}${RESET} exists..."
 
-	g_BACKUP_VERSION_MSG="Making backup of ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET} to ${g_BACKUP_NAME}..."
+	g_BACKUP_VERSION_MSG="Making backup of ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET}\n\tto ${g_BACKUP_NAME}..."
 
-	g_LOCAL_MATCHES_BACKUP="The ${_EM}development${RESET} version:${g_LOCAL_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}existing${RESET} backup:${g_BACKUP_NAME}"
+	g_LOCAL_MATCHES_BACKUP="The ${_EM}development${RESET} version:${g_LOCAL_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET}\n\tthe ${_EM}existing${RESET} backup:${g_BACKUP_NAME}"
 	g_LOCAL_IS_MORE_RECENT="The ${GREEN_FG}${_EM}local${RESET} file:${g_LOCAL_NAME} is ${GREEN_FG}${_EM}more recent${RESET}"
-	g_LOCAL_WILL_OVERWRITE="File:${g_LOCAL_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}existing${RESET} backup:${g_BACKUP_NAME}"
+	g_LOCAL_WILL_OVERWRITE="File:${g_LOCAL_NAME} will ${RED_FG}${ITALIC}overwrite${RESET}\n\tthe ${_EM}existing${RESET}\n\tbackup:${g_BACKUP_NAME}"
 
 	g_PROD_DIFFERS_LOCAL="${RED_FG}Warning${RESET}:the ${_EM}production${RESET} version ${RED_FG}differs${RESET} from the ${_EM}local${RESET} version"
-	g_PROD_MATCHES_LOCAL="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}development${RESET} version:${g_LOCAL_NAME}"
+	g_PROD_MATCHES_LOCAL="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET}\n\tthe ${_EM}development${RESET} version:${g_LOCAL_NAME}"
 	g_PROD_IS_MORE_RECENT="The ${GREEN_FG}${_EM}production${RESET} file:${g_PROD_NAME} is ${GREEN_FG}${_EM}more recent${RESET}"
-	g_PROD_WILL_OVERWRITE="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}development${RESET} version:${g_LOCAL_NAME}"
+	g_PROD_WILL_OVERWRITE="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET}\n\tthe ${_EM}development${RESET} version:${g_LOCAL_NAME}"
 	g_PROD_MATCHES_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} ${GREEN_FG}${ITALIC}MATCHES${RESET} the ${_EM}backup${RESET} backup:${g_BACKUP_NAME}"
-	g_PROD_WILL_OVERWRITE_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET} the ${_EM}development${RESET} backup:${g_BACKUP_NAME}"
+	g_PROD_WILL_OVERWRITE_BACKUP="The ${_EM}production${RESET} version:${g_PROD_NAME} will ${RED_FG}${ITALIC}overwrite${RESET}\n\tthe ${_EM}development${RESET} backup:${g_BACKUP_NAME}"
 
 	if [[ ${_DEBUG} -gt 0 ]];then
 		dbg "${0}:${LINENO} g_BACKUP_NAME ${g_BACKUP_NAME}"
@@ -485,6 +485,7 @@ clear
 FILE_ARG=${1}
 if [[ -z ${FILE_ARG} ]];then
 	DEFAULT_FN=${PWD:t}
+	[[ -e ${DEFAULT_FN}.zsh ]] && DEFAULT_FN=${DEFAULT_FN}.zsh # Add zsh extension if needed
 	if [[ -e ${DEFAULT_FN} ]];then
 		FILE_ARG=${DEFAULT_FN} # Assign default file
 	else
