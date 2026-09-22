@@ -88,10 +88,10 @@ copy_dev_files () {
 
 	echo "${GREEN_FG}DEVELOPMENT FILES${RESET}" >&2
 
+	DEV_DIRS=("${(f)$(find ${_SRC_CODE} -maxdepth 1 -type d ! -path ${_SRC_CODE})}")
 	BIN_LIST=("${(f)$(find /usr/local/bin -type f ! -path /usr/local/bin)}")
-	DEV_DIRS=("${(f)$(find ${_SRC_CODE} -maxdepth 1 -type d)}")
 
-	for D in ${DEV_DIRS};do
+	for D in ${(o)DEV_DIRS};do
 		DEV_LIST[${D:t}]=1
 	done
 

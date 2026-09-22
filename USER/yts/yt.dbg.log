@@ -1,14 +1,14 @@
-2026-09-05_09:37: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-05_09:37: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-05_09:37: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
-2026-09-05_09:37: query_youtube:
+2026-09-22_10:47: log_update: LOG lines BEFORE update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-22_10:47: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-22_10:47: query_youtube: Creating listing for QKEY:americanexception, query is not strict
+2026-09-22_10:47: query_youtube:
 _QUERY_OPTS:
- 	-> AGE:recent
-	-> DKEY:Alex Christoforou
+ 	-> AGE:all
+	-> DKEY:American Exception
 	-> ENGINE:youtube
-	-> EOPT:s
-	-> FKEY:alex_christoforou
-	-> QKEY:alexchristoforou
-	-> TYPE:standard
-2026-09-05_09:37: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
-2026-09-05_09:37: query_youtube: Listing for QKEY:alexchristoforou contains 5 rows
+	-> EOPT:
+	-> FKEY:american_exception
+	-> QKEY:americanexception
+	-> TYPE:custom
+2026-09-22_10:47: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a all "americanexception"
+2026-09-22_10:47: query_youtube: Listing for QKEY:americanexception contains 16 rows

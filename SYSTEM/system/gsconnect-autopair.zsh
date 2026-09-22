@@ -9,7 +9,7 @@ _TARGET_IP="192.168.18.105"
 _TARGET_NAME="Xiaomi 14T"
 
 # Functions
-execution_section () {
+poll_target () {
   if target_is_device; then
     pair_phone ${_TARGET_ID}
   fi
@@ -72,6 +72,6 @@ mkdir -p ${AUTOPAIR_CFG}
 logit "Starting GSConnect auto-pair daemon..."
 
 while true;do
-  execution_section
+  poll_target
   sleep 5
 done

@@ -14,7 +14,6 @@
 
 ### Python: 
 + Torrent search engine
-+ Deluge is the client
 
 ### Perl:
 + Embedded in zsh scripts as needed

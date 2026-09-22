@@ -158,7 +158,7 @@ usage () {
 	local OPTS=$(parse_opts ${OPTSTR})
 	local -a PENDING_MSGS=(${@})
 	(
-	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)]\n"
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type t)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-I${RESET} enable keyword case sensitivity (default:case insensitive)"
@@ -202,10 +202,10 @@ shift $(( OPTIND - 1 ))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ ${#} -ne 0 ]] && TIPNAME=${1} || TIPNAME=''
+[[ ${#} -ne 0 ]] && TIPNAME=${1} || exit_leave $(err_msg_exit "Missing argument <TIPNAME>")
 
 if [[ ! -e ${_TIP_DIR}/${TIPNAME}.tip ]];then
-	exit_leave $(err_msg_exit "TIP:${TIPNAME} not found")
+	exit_leave $(err_msg_exit "No such tip file: ${TIPNAME}")
 fi
 
 if [[ -n ${KEYWORD} ]];then

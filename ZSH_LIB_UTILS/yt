@@ -16,7 +16,7 @@ _YT_CFG=~/.local/share/yts
 _YT_DBG_LOG=${_YT_CFG}/yt.dbg.log
 _YT_URL_LOG=${_YT_CFG}/yt.url.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
-_YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG}"
+_YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG} "
 
 # Functions
 last_file_downloaded () {
@@ -94,7 +94,9 @@ usage () {
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
+#--End GetOpts--
 
+# Execution
 PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
 [[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true
 
@@ -103,7 +105,7 @@ if [[ ${CMDLINE} == 'true' ]];then
 	OPTIND=0
 	PREPEND=''
 
-	logit ${_YT_DBG_LOG} "${0:t} Command line execution"
+	EXEC_SRC="command line"
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
@@ -116,21 +118,20 @@ if [[ ${CMDLINE} == 'true' ]];then
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
 	shift $((OPTIND -1))
-#--End GetOpts--
 else
-	logit ${_YT_DBG_LOG} "${0:t} script execution"
+	EXEC_SRC="script"
 fi
 
-# Execution
+logit ${_YT_DBG_LOG} "${0:t} Executed from: ${(C)EXEC_SRC}"
+
 [[ ${#} -eq 0 ]] && usage 
 
 URL=$(grep -o -E 'http.*' <<<${(qqq)@})
 URL=${URL[1,-2]} # Eliminate trailing quote
 
-logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP}"
-logit ${_YT_DBG_LOG} "${0:t} URL:${URL}"
+[[ ! ${_YT_DLP} =~ 'impersonate' ]] && _YT_DLP+=' --impersonate chrome'
 
-[[ ${URL:l} =~ 'rumble' ]] && _YT_DLP+=' --impersonate chrome'
+logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP} ${(qqq)@}" 
 
 eval "${_YT_DLP} ${(qqq)@}" 
 

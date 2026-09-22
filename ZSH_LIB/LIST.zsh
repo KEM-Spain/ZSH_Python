@@ -1295,47 +1295,66 @@ list_sort_flat () {
             PREFIX=""
             MODIFIED_L="${L}"
 
-            # Key matching logic using native Zsh expansions (Zero external binaries)
-            if [[ ${SORT_KEY} =~ "year" ]]; then
-                PREFIX="${_CAL_SORT[year]}${SORT_KEY}"
-            elif [[ ${SORT_KEY} =~ "month" ]]; then
-                PREFIX="${_CAL_SORT[month]}${SORT_KEY}"
-            elif [[ ${SORT_KEY} =~ "week" ]]; then
-                PREFIX="${_CAL_SORT[week]}${SORT_KEY}"
-            elif [[ ${SORT_KEY} =~ "day" ]]; then
-                PREFIX="${_CAL_SORT[day]}${SORT_KEY}"
-            elif [[ ${SORT_KEY} =~ "hour" ]]; then
-                PREFIX="${_CAL_SORT[hour]}${SORT_KEY}"
-            elif [[ ${SORT_KEY} =~ "min" ]]; then
-                PREFIX="${_CAL_SORT[minute]}${SORT_KEY}"
-            elif [[ ${SORT_KEY} =~ "sec" ]]; then
-                PREFIX="${_CAL_SORT[second]}${SORT_KEY}"
-            elif [[ ${SORT_KEY} =~ '^[A-Za-z]' ]]; then
-                PREFIX="${SORT_KEY[1]}"
-            elif [[ ${SORT_KEY} =~ '^[(]?\d{4}-\d{2}-\d{2}' ]]; then
-                PREFIX="${SORT_KEY[1,10]}"
-                FLIP=true
-            elif [[ ${SORT_KEY} =~ '\d{4}$' ]]; then
-                PREFIX="ZZZZ"
-                # Pure Zsh regex replacement (replaces perl -pe 's/(.*)(\d{4})$/\2\1\2/g')
-                [[ ${L} =~ '(.*)([0-9]{4})$' ]] && MODIFIED_L="${match[2]}${match[1]}${match[2]}"
-            elif [[ ${SORT_KEY} =~ '\d[.]\d\D' ]]; then
-                PREFIX="ZZZZ"
-                # Pure Zsh regex replacement (replaces perl -pe 's/([.]\d)(.*)((G|M).*)$/${1}0 ${3}/g')
-                [[ ${L} =~ '([.][0-9])(.*)((G|M).*)$' ]] && MODIFIED_L="${match[1]}0 ${match[3]}"
-            elif [[ ${SORT_KEY} =~ 'Mi?B' ]]; then
-                PREFIX="A888"
-            elif [[ ${SORT_KEY} =~ 'Gi?B' ]]; then
-                PREFIX="B999"
-            elif [[ ${SORT_KEY} =~ ':' ]]; then
-                PREFIX="B999"
-            elif [[ ${SORT_KEY} =~ '-' ]]; then
-                PREFIX="A888"
-            else
-                PREFIX="${SORT_KEY}"
-            fi
+						case "${SORT_KEY}" in
+								*year*|*[0-9]y*)
+										PREFIX="${_CAL_SORT[year]}${SORT_KEY}"
+										;;
+								*month*|*[0-9]mo*)
+										PREFIX="${_CAL_SORT[month]}${SORT_KEY}"
+										;;
+								*week*|*[0-9]w*)
+										PREFIX="${_CAL_SORT[week]}${SORT_KEY}"
+										;;
+								*day*|*[0-9]d*)
+										PREFIX="${_CAL_SORT[day]}${SORT_KEY}"
+										;;
+								*hour*|*[0-9]h*)
+										PREFIX="${_CAL_SORT[hour]}${SORT_KEY}"
+										;;
+								*min*|*[0-9]m*)
+										PREFIX="${_CAL_SORT[minute]}${SORT_KEY}"
+										;;
+								*sec*|*[0-9]s*)
+										PREFIX="${_CAL_SORT[second]}${SORT_KEY}"
+										;;
+								[A-Za-z]*)
+										PREFIX="${SORT_KEY[1]}"
+										;;
+								<->-<->-<->*) # Matches leading YYYY-MM-DD pattern
+										PREFIX="${SORT_KEY[1,10]}"
+										FLIP=true
+										;;
+								*[0-9][0-9][0-9][0-9])
+										PREFIX="ZZZZ"
+										[[ ${L} =~ '(.*)([0-9]{4})$' ]] && MODIFIED_L="${match[2]}${match[1]}${match[2]}"
+										;;
+								*?.*?) # Fallback pattern for regex structures like \d.\d\D
+										if [[ ${SORT_KEY} =~ '\d[.]\d\D' ]]; then
+												PREFIX="ZZZZ"
+												[[ ${L} =~ '([.][0-9])(.*)((G|M).*)$' ]] && MODIFIED_L="${match[1]}0 ${match[3]}"
+										else
+												PREFIX="${SORT_KEY}"
+										fi
+										;;
+								*Mi?B*)
+										PREFIX="A888"
+										;;
+								*Gi?B*)
+										PREFIX="B999"
+										;;
+								*[:-]*)
+										# Grouped colon or hyphen checks
+										case "${SORT_KEY}" in
+												*[:]* ) PREFIX="B999" ;;
+												*[-]* ) PREFIX="A888" ;;
+										esac
+										;;
+								*)
+										PREFIX="${SORT_KEY}"
+										;;
+						esac
 
-            # Properly append as an array element
+            # Append sort key as an array element
             SORT_ARRAY+=("${PREFIX}${DELIM}${MODIFIED_L}")
         done
 

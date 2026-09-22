@@ -184,14 +184,15 @@ sel_get_position () {
 	local PAGE=0
 	local NDX=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ -e ${_SELECT_TAG_FILE} ]];then
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 		IFS='|' read -r PAGE NDX < ${_SELECT_TAG_FILE} # Retrieve stored position
 		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
 		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
 		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
-		/bin/rm -f ${_SELECT_TAG_FILE}
+		#/bin/rm -f ${_SELECT_TAG_FILE} # Remove tag file
 	fi
 }
 
@@ -529,11 +530,11 @@ sel_scroll () {
 			tcup ${D_COORDS[MAP_X]} ${D_COORDS[MAP_Y]};echo $(msg_markup ${_SEL_LIST_META[MAP]})
 		fi
 
-		# Handle stored list position
+		# Handle list position
 		sel_get_position
 		if [[ ${_TAG_DATA[RESTORE]} == 'true'  ]];then
-			BOX_TAG=${_SELECT_TAG_FILE} # Only maintain cursor position for differing lists unless _SAVE_MENU_POS is set
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  BOX_TAG:${BOX_TAG}"
+			BOX_TAG=${_SELECT_TAG_FILE} # Maintain cursor position if _SAVE_MENU_POS is set
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  BOX_TAG:${BOX_TAG}"
 		fi
 
 		NDX=1 # Initialize index
@@ -729,10 +730,10 @@ sel_set_position () {
 	local PAGE=${1}
 	local NDX=${2}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}: _SELECT_TAG_FILE:${_SELECT_TAG_FILE} PAGE:${PAGE}: NDX:${NDX}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _SELECT_TAG_FILE:${_SELECT_TAG_FILE} PAGE:${PAGE}: NDX:${NDX}"
 
 	[[ -n ${_SELECT_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_SELECT_TAG_FILE} # Save list position
-	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "_SELECT_TAG_FILE NOT defined"
+	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "_SELECT_TAG_FILE NOT found"
 }
 
 sel_show_keys () {

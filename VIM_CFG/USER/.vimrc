@@ -5,6 +5,24 @@ if !has("gui_running")
 	let g:rainbow_guifgs = ['RoyalBlue3', 'DarkOrange3', 'DarkOrchid3', 'FireBrick']
 	let g:rainbow_ctermfgs = ['lightblue', 'lightgreen', 'yellow', 'red', 'magenta']
 
+	function! CheckLongLines()
+    " Check up to the first 100 lines for length exceeding 1000 characters
+    let l:threshold = 1000
+    let l:max_lines = min([100, line('$')])
+
+    for l:i in range(1, l:max_lines)
+        if strlen(getline(l:i)) > l:threshold
+						echohl WarningMsg
+            echom "Long lines detected (> " . l:threshold . " chars): performance options applied."
+            echohl None
+            setlocal nowrap syntax=OFF nocursorline nofoldenable
+            break
+        endif
+    endfor
+	endfunction
+
+	autocmd BufReadPost * call CheckLongLines()
+
 	function! DisplayList(list)
 		redraw
 		if a:list == 'msgp'

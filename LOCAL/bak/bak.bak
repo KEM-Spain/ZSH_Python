@@ -56,13 +56,6 @@ source ${_LIB_DIR}/MSG.zsh
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
-do_wait () {
-	local REPLY
-
-	echo -n "${WHITE_ON_GREY}Press any key to continue...${RESET}"
-	read
-}
-
 get_prod_dir () {
 	local FN=${1}
 	local EXELIST=("${(f)$(fut findexe -p ${FN:t})}")
@@ -205,7 +198,7 @@ get_response () {
 	echo -n "${MSG}${RESET}?\n(y/n)${RESET}:"
 
 	read -k1 RESPONSE;echo
-	[[ ${RESPONSE} == 'y' ]] && return 0 || return 1
+	[[ ${RESPONSE:l} == 'y' ]] && return 0 || return 1
 }
 
 make_backup () {
@@ -486,9 +479,8 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
 
 # Execution
-[[ ${_DEBUG} -eq 0 ]] && do_smcup
-
-set_exit_callback do_wait
+clear
+#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 FILE_ARG=${1}
 if [[ -z ${FILE_ARG} ]];then

@@ -10,10 +10,10 @@ dbg_arglist () {
 	local NDX=0
 	local TEXT=''
 
-	[[ ${#} -eq 0 ]] && return
+	[[ ${#} -eq 0 ]] && echo "${functrace[1]}:${WHITE_FG}ARGS:NONE${RESET}" && return
 
 	TEXT=${@}
-	echo "${functrace[2]}"
+	echo "${functrace[1]}"
 	if [[ ${#TEXT} -lt 100 ]];then
 		echo -n "[${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
 		for A in "${@}";do
@@ -81,7 +81,7 @@ dbg_parse () {
 dbg_record () {
 	local LINE
 
-	_DEBUG_LINES+="-- msgs --"
+	#_DEBUG_LINES+="-- msgs --"
 
 	while read LINE;do
 		_DEBUG_LINES+=${LINE}
@@ -98,7 +98,7 @@ dbg_to_file () {
 	local -a ARGS=(${@})
 	local A
 
-	[[ -n ${ARGS} ]] && echo "-- msgs --" >>${_DEBUG_FILE}
+	#[[ -n ${ARGS} ]] && echo "-- msgs --" >>${_DEBUG_FILE}
 	for A in ${ARGS};do
 		echo ${A} >>${_DEBUG_FILE}
 	done

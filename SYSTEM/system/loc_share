@@ -36,7 +36,7 @@ fi
 if [[ -d ${LOCAL_SHARE}/${1} ]];then
 	cd ${LOCAL_SHARE}/${1}
 else
-	echo "Invalid sub directory of ${LOCAL_SHARE}:${WHITE_FG}${1}${RESET}"
+	echo "${LOCAL_SHARE}:${WHITE_FG}${1}${RESET} not found"
 	return
 fi
 

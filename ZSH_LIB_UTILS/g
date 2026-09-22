@@ -281,7 +281,7 @@ if [[ ${FILELIST} == 'true' ]];then
 else
 	{
 	tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
-	[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
+	[[ -n ${GR_OPT_RECURSE} ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
 	[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
 	echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Files:${WHITE_FG}${FTYPE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
 	if [[ -n ${LINENUM_OPT} ]];then
