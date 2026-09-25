@@ -16,7 +16,7 @@ _YT_CFG=~/.local/share/yts
 _YT_DBG_LOG=${_YT_CFG}/yt.dbg.log
 _YT_URL_LOG=${_YT_CFG}/yt.url.log
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
-_YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG} --impersonate chrome"
+_YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG} "
 
 # Functions
 last_file_downloaded () {
@@ -129,7 +129,12 @@ logit ${_YT_DBG_LOG} "${0:t} Executed from: ${(C)EXEC_SRC}"
 URL=$(grep -o -E 'http.*' <<<${(qqq)@})
 URL=${URL[1,-2]} # Eliminate trailing quote
 
-[[ ${URL:l} =~ 'rumble' ]] && _YT_DLP+=' --impersonate chrome'
+[[ ! ${_YT_DLP} =~ 'impersonate' ]] && _YT_DLP+=' --impersonate chrome'
+if [[ ${URL:l} =~ 'rumble' ]];then
+	logit ${_YT_DBG_LOG} "${0:t} Rumble URL: invoking aria2c and passing cookies"
+	_YT_DLP+=' --downloader aria2c --downloader-args "aria2c: -x 16 -s 16"'
+	_YT_DLP+=" --cookies ${_YT_CFG}/cookies.txt"
+fi
 
 logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP} ${(qqq)@}" 
 

@@ -1,0 +1,33 @@
+#!/usr/bin/zsh
+# Inline ansi
+RESET="\033[m"
+RED_FG="\033[31m"
+
+# Alias md points to make_dir
+
+usage () {
+  echo "Usage: md [OPTION]... DIRECTORY..."
+  exit
+}
+
+[[ ${#} -eq 0 ]] && echo "Insufficient args" && usage || ARGS=${@}
+if [[ ${#} -eq 1 ]];then
+  [[ -d ${1} ]] && echo "A directory with that name already exists" && exit 1
+  if [[ -f ${1} ]];then
+    QUERY="A file exists with that name - save the file to ${1}.save"
+    echo -n "\n${QUERY}: (y/n)?"
+    read -sq RESPONSE
+    if [[ ${RESPONSE} != "y" ]];then
+      echo "no\n"
+      echo "${RED_FG}Operation cancelled${RESET}" && exit 1
+    fi
+    mv ${1} ${1}.save
+    mkdir ${1}
+    [[ ${?} -eq 0 ]] && echo "\nSaved the file to ${1}.save, created directory"
+  else
+    mkdir ${1}
+  fi
+else
+  mkdir ${ARGS}
+fi
+

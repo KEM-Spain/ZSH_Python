@@ -29,8 +29,8 @@ typeset -a _MOVELIST=()
 # Constants
 _CFG_DIR=~/.local/share/${_SCRIPT}
 _LIB=/usr/local/lib
-_VW=/usr/local/bin/system/vid_watch
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
+_SYSTEM_DIR=/usr/local/bin/system/vid_watch
 _TITLE_JUNK_REGEX='[.(_ ]'
 
 #_BASEDIR=${PWD} # Test mode
@@ -41,8 +41,8 @@ _DELUGE_STATE=~/.config/deluge/state
 _INCOMPLETED_DIR=${_BASEDIR}/Incomplete
 _LIBRARY_DIR=${_BASEDIR}/Library
 _LOG=${_CFG_DIR}/${0:t}.log
-_MOVIES_SUB=movies
-_SERIES_SUB=series
+_MOVIES_SUB=Movies
+_SERIES_SUB=Series
 
 # Vars 
 _SERVICE_MODE=''
@@ -65,10 +65,10 @@ clean_media () {
 		echo "${CYAN_FG}$(str_unicode_line ${#MSG})${RESET}"
 
 		WORKDIR=${_VIDEOS[1]:h}
-		logit "${0} calling ${_VW}/fsub ${FSUB_OPTS} ${WORKDIR}"
-		echo "${0} calling ${_VW}/fsub ${FSUB_OPTS} ${WORKDIR}"
-		${_VW}/fsub "${FSUB_OPTS} ${WORKDIR}"
-		[[ ${?} -ne 0 ]] && logit "${0}: ${_VW}/fsub returned an error"
+		logit "${0} calling ${_SYSTEM_DIR}/fsub ${FSUB_OPTS} ${WORKDIR}"
+		echo "${0} calling ${_SYSTEM_DIR}/fsub ${FSUB_OPTS} ${WORKDIR}"
+		${_SYSTEM_DIR}/fsub "${FSUB_OPTS} ${WORKDIR}"
+		[[ ${?} -ne 0 ]] && logit "${0}: ${_SYSTEM_DIR}/fsub returned an error"
 	else
 		logit "${0} No videos found at DEST:${DEST}"
 	fi

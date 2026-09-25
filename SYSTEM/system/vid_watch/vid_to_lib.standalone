@@ -29,8 +29,8 @@ typeset -a _MOVELIST=()
 # Constants
 _CFG_DIR=~/.local/share/${_SCRIPT}
 _LIB=/usr/local/lib
-_VW=/usr/local/bin/system/vid_watch
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
+_SYSTEM_DIR=/usr/local/bin/system/vid_watch
 _TITLE_JUNK_REGEX='[.(_ ]'
 
 #_BASEDIR=${PWD} # Test mode
@@ -48,16 +48,44 @@ _SERIES_SUB=Series
 _SERVICE_MODE=''
 
 # Functions
-do_rmcup () {
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+dbg_arglist () {
+	local A
+	local NDX=0
+	local TEXT=''
 
-	[[ ${_SMCUP} == 'false' ]] && return
-	tput -T ${_TERM} rmcup
-	_SMCUP=false
+	[[ ${#} -eq 0 ]] && echo "${functrace[1]}:${WHITE_FG}ARGS:NONE${RESET}" && return
+
+	TEXT=${@}
+	echo "${functrace[1]}"
+	if [[ ${#TEXT} -lt 100 ]];then
+		echo -n "[${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
+		for A in "${@}";do
+			((NDX++))
+			echo -n " ${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
+		done
+		echo ''
+	else
+		echo "[${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
+		for A in "${@}";do
+			((NDX++))
+			echo "${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
+		done
+	fi
+}
+
+do_rmcup () {
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	if [[ ${_SMCUP} == 'true' ]];then
+		tput -T ${_TERM} rmcup >&2
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Executed rmcup"
+		_SMCUP=false
+	fi
 }
 
 do_rmso () {
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	tput -T ${_TERM} rmso
 }
 
@@ -66,7 +94,7 @@ exit_pre_exit () {
 	local -a USER_PIDS=()
 	local C F P
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${_PRE_EXIT_RAN} == 'true' ]] && return
 	
@@ -102,7 +130,7 @@ exit_pre_exit () {
 }
 
 set_exit_value () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	_EXIT_VALUE=${1}
 }
@@ -111,7 +139,7 @@ arr_is_populated () {
 	local -a ARR=(${@})
 	local RC
 	
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARR:${#ARR}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${#} -eq 0 ]] && echo "${0}: ${RED_FG}requires a quoted argument${RESET} of type <ARRAY> ${#}" >&2
 
@@ -128,14 +156,14 @@ exit_leave () {
 	local OPT=''
 	local RET=''
 
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	if [[ -n ${1} ]];then
 		RET=$( echo "${1}" | sed 's/^[-+]*[0-9]*//g' )
 		[[ -z ${RET} ]] && set_exit_value ${1} && shift
 	fi
 
 	_EXIT_MSGS=(${@})
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
@@ -182,7 +210,7 @@ max () {
 	local MAX=0
 	local N
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for N in ${NUMLIST};do
 		[[ ${N} -gt ${MAX} ]] && MAX=${N}
@@ -196,7 +224,7 @@ min () {
 	local N
 	local MIN=${NUMLIST[1]}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for N in ${NUMLIST};do
 		[[ ${N} -lt ${MIN} ]] && MIN=${N}
@@ -209,7 +237,7 @@ str_unicode_line () {
 	local LENGTH=${1}
 	local HORIZ_BAR="\\u2500%.0s"
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@} LENGTH:${LENGTH}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	do_rmso
 	printf "\\u2500%.0s" {1..$(( ${LENGTH} ))}
@@ -232,10 +260,10 @@ clean_media () {
 		echo "${CYAN_FG}$(str_unicode_line ${#MSG})${RESET}"
 
 		WORKDIR=${_VIDEOS[1]:h}
-		logit "${0} calling ${_VW}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
-		echo "${0} calling ${_VW}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
-		${_VW}/fsub.standalone "${FSUB_OPTS} ${WORKDIR}"
-		[[ ${?} -ne 0 ]] && logit "${0}: ${_VW}/fsub.standalone returned an error"
+		logit "${0} calling ${_SYSTEM_DIR}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
+		echo "${0} calling ${_SYSTEM_DIR}/fsub.standalone ${FSUB_OPTS} ${WORKDIR}"
+		${_SYSTEM_DIR}/fsub.standalone "${FSUB_OPTS} ${WORKDIR}"
+		[[ ${?} -ne 0 ]] && logit "${0}: ${_SYSTEM_DIR}/fsub.standalone returned an error"
 	else
 		logit "${0} No videos found at DEST:${DEST}"
 	fi
@@ -482,8 +510,8 @@ shift $((OPTIND -1))
 
 logit "${_SCRIPT} started, _SERVICE_MODE:${_SERVICE_MODE}"
 
-[[ ! -e ${_LIBRARY_DIR}/movies ]] && mkdir ${_LIBRARY_DIR}/movies 
-[[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
+[[ ! -e ${_LIBRARY_DIR}/${_MOVIES_SUB} ]] && mkdir ${_LIBRARY_DIR}/${_MOVIES_SUB} 
+[[ ! -e ${_LIBRARY_DIR}/${_SERIES_SUB} ]] && mkdir ${_LIBRARY_DIR}/${_SERIES_SUB} 
 
 echo "Scanning ${_COMPLETED_DIR} for video..."
 _VIDEOS=("${(f)$(find ${_COMPLETED_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_COMPLETED_DIR})}")

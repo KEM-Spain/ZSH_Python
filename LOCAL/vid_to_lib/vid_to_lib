@@ -29,8 +29,8 @@ typeset -a _MOVELIST=()
 # Constants
 _CFG_DIR=~/.local/share/${_SCRIPT}
 _LIB=/usr/local/lib
-_VW=/usr/local/bin/system/vid_watch
 _VIDEO_REGEX='.*\(mkv\|mp4\|avi\)$'
+_SYSTEM_DIR=/usr/local/bin/system/vid_watch
 _TITLE_JUNK_REGEX='[.(_ ]'
 
 #_BASEDIR=${PWD} # Test mode
@@ -65,10 +65,10 @@ clean_media () {
 		echo "${CYAN_FG}$(str_unicode_line ${#MSG})${RESET}"
 
 		WORKDIR=${_VIDEOS[1]:h}
-		logit "${0} calling ${_VW}/fsub ${FSUB_OPTS} ${WORKDIR}"
-		echo "${0} calling ${_VW}/fsub ${FSUB_OPTS} ${WORKDIR}"
-		${_VW}/fsub "${FSUB_OPTS} ${WORKDIR}"
-		[[ ${?} -ne 0 ]] && logit "${0}: ${_VW}/fsub returned an error"
+		logit "${0} calling ${_SYSTEM_DIR}/fsub ${FSUB_OPTS} ${WORKDIR}"
+		echo "${0} calling ${_SYSTEM_DIR}/fsub ${FSUB_OPTS} ${WORKDIR}"
+		${_SYSTEM_DIR}/fsub "${FSUB_OPTS} ${WORKDIR}"
+		[[ ${?} -ne 0 ]] && logit "${0}: ${_SYSTEM_DIR}/fsub returned an error"
 	else
 		logit "${0} No videos found at DEST:${DEST}"
 	fi
@@ -315,8 +315,8 @@ shift $((OPTIND -1))
 
 logit "${_SCRIPT} started, _SERVICE_MODE:${_SERVICE_MODE}"
 
-[[ ! -e ${_LIBRARY_DIR}/movies ]] && mkdir ${_LIBRARY_DIR}/movies 
-[[ ! -e ${_LIBRARY_DIR}/series ]] && mkdir ${_LIBRARY_DIR}/series 
+[[ ! -e ${_LIBRARY_DIR}/${_MOVIES_SUB} ]] && mkdir ${_LIBRARY_DIR}/${_MOVIES_SUB} 
+[[ ! -e ${_LIBRARY_DIR}/${_SERIES_SUB} ]] && mkdir ${_LIBRARY_DIR}/${_SERIES_SUB} 
 
 echo "Scanning ${_COMPLETED_DIR} for video..."
 _VIDEOS=("${(f)$(find ${_COMPLETED_DIR} -regex "${_VIDEO_REGEX}" ! -path ${_COMPLETED_DIR})}")

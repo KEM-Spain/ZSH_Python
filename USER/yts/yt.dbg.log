@@ -1,14 +1,5 @@
-2026-09-22_10:47: log_update: LOG lines BEFORE update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-22_10:47: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-22_10:47: query_youtube: Creating listing for QKEY:americanexception, query is not strict
-2026-09-22_10:47: query_youtube:
-_QUERY_OPTS:
- 	-> AGE:all
-	-> DKEY:American Exception
-	-> ENGINE:youtube
-	-> EOPT:
-	-> FKEY:american_exception
-	-> QKEY:americanexception
-	-> TYPE:custom
-2026-09-22_10:47: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a all "americanexception"
-2026-09-22_10:47: query_youtube: Listing for QKEY:americanexception contains 16 rows
+2026-09-24_17:28: log_update: LOG lines BEFORE update:11 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-24_17:28: log_update: LOG lines AFTER update:11 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-24_17:29: yt Executed from: Command Line
+2026-09-24_17:29: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome "https://www.youtube.com/watch?v=z9JDC2r_hVA"
+2026-09-24_17:30: yt Cleaning file name:John_Kiriakou_Jenin_Younes_with_Glenn_on_Rising_Dangers_to_Whistle-Blowers-[z9JDC2r_hVA].mp4

@@ -41,8 +41,8 @@ _DELUGE_STATE=~/.config/deluge/state
 _INCOMPLETED_DIR=${_BASEDIR}/Incomplete
 _LIBRARY_DIR=${_BASEDIR}/Library
 _LOG=${_CFG_DIR}/${0:t}.log
-_MOVIES_SUB=movies
-_SERIES_SUB=series
+_MOVIES_SUB=Movies
+_SERIES_SUB=Series
 
 # Vars 
 _SERVICE_MODE=''

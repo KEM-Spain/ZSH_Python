@@ -41,7 +41,7 @@ zmodload zsh/datetime
 typeset -A _CANCELLED=()
 typeset -A _CONT_COORDS=()
 typeset -A _DOWNLOADS=()
-typeset -A _ENG_CODES=(youtube Y rumble R)
+typeset -A _ENG_CODES=(youtube y rumble r)
 typeset -A _FAILED=()
 typeset -A _FAV_LIST=()
 typeset -A _FIELD_LEN=()
@@ -80,6 +80,7 @@ _INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)
 # Constants
 _CFG_DIR=~/.local/share/yts
 _ACTION=download
+_TEMP_DIR=/tmp
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
@@ -105,7 +106,7 @@ _YT_DBG_LOG=${_CFG_DIR}/yt.dbg.log
 g_CMDLINE_ARGS=false
 g_INDICATOR_FLIP=false
 g_LAST_CODE_UPD=?
-g_LAST_FAV_TYPE=y
+g_ACTIVE_FAV_MENU=y
 g_LAST_SPEED=0
 g_LAST_STYPE=0
 g_MASK_NDX=1
@@ -121,15 +122,14 @@ g_SNDX=0
 action_do () {
 	local AUTHOR=''
 	local DEST=''
-	local DEST_1=''
-	local DEST_2=''
 	local DEST_LINE=''
 	local DL_CNT=0
+	local DL_DIR=''
 	local DUP_LINE=''
 	local ETA=''
 	local FRAME_PAD=8
-	local HDR1_TXT=0
-	local HDR2_TXT=0
+	local HDR1_TXT=''
+	local HDR2_TXT=''
 	local HDRS_OUT=false
 	local HDR_LEN=0
 	local HRZ_CTR=0
@@ -217,7 +217,7 @@ action_do () {
 						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 						continue
 						;;
-					*'already been'*|*100%*)
+					*'already been'*)
 						logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 						MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${LOG_LINE})
 						MSG=${MSG[1,60]}
@@ -261,18 +261,18 @@ action_do () {
 						DEST_LINE=$(grep -Ei 'destination' ${g_YTS_LOG}) # Capture destination - whole file grep
 						if [[ ${?} -eq 0 ]];then
 							logit ${_YT_DBG_LOG} "${0}: GENERATING HEADER"
-							DEST=("${(f)$(sed -e "s#${_DOWNLOAD_DIR}/#${_DOWNLOAD_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Delimit file and path
-							DEST_1="${${(@s/|/)DEST}[1]}" # Isolate path
-							DEST_1="${(z)${(@s/]/)DEST_1}[2,-1]}" # Remove leading log tag
-							EG_ON;DEST_1=${DEST_1/(#b)(Destination)/<w>${match[1]}<N>:<w>};EG_OFF # Add color codes
+							DEST=("${(f)$(sed -e "s#${_TEMP_DIR}/#${_TEMP_DIR}|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Delimit file and path
 
-							HDR1_TXT="${${(@s/|/)${DEST:r}}[2]//_/ }" # Clear file name
+							HDR1_TXT="${${(@s/|/)${DEST:r}}[2]//_/ }" # Clean file name
 							HDR1_TXT=${HDR1_TXT:r} # Remove additional ext if file ext is doubled as in: .f616.mp4
 							HDR1_TXT=$(trim_title ${HDR1_TXT})
-							HDR1_TXT="<w>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
-							HDR2_TXT="$(str_trim ${DEST_1})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
+							HDR1_TXT="<B><c>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
+
+							HDR2_TXT="<B><c>Destination<N>: $(str_trim ${_DOWNLOAD_DIR})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}<N>${INFO_TAG}"
+							
 							HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
 							HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
+							
 							HRZ_CTR=$(center -H -w${HDR_LEN}) # Horiz center
 
 							[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR} # Adjust frame width/center
@@ -280,6 +280,7 @@ action_do () {
 							msg_box -C -O${CYAN_FG} -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 							msg_box -C -jl ${HDR2_TXT}
 							msg_box -C -jl "<c>$(str_unicode_line $(( _CONT_COORDS[W] - 2 )))<N>" # Divider line
+
 							HDRS_OUT=true
 							continue
 						fi
@@ -499,7 +500,7 @@ download_select () {
 
 	# Set headings
 	list_set_header_init
-	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${(C)_QUERY_OPTS[ENGINE]} ${(C)SEARCHTERM} ${(C)_QUERY_OPTS[TYPE]} $(list_get_selected_count)'
+	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${(C)_QUERY_OPTS[ENGINE]} ${(C)SEARCHTERM} "${(C)_QUERY_OPTS[TYPE]}[${_QUERY_OPTS[AGE]}]" $(list_get_selected_count)'
 	list_set_header 'printf " "'
 	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[age]} "Age" ${_FIELD_LEN[author]} "Author" ${_FIELD_LEN[title]} "Title"'
 	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[age]} "$(str_unicode_line ${_FIELD_LEN[age]})" ${_FIELD_LEN[author]} "$(str_unicode_line ${_FIELD_LEN[author]})" ${_FIELD_LEN[title]} "$(str_unicode_line ${_FIELD_LEN[title]})"'
@@ -690,7 +691,7 @@ fav_get () {
 	fi
 
 	while true;do
-		case ${g_LAST_FAV_TYPE} in
+		case ${g_ACTIVE_FAV_MENU} in
 			c) LIST=(${C_LIST})
 				MENU_LBL='custom'
 				HDR_TAG=${CUSTOM_MSG}
@@ -708,11 +709,11 @@ fav_get () {
 				;;
 		esac
 
-		TAG="${MENU_LBL}.${g_LAST_FAV_TYPE}.query"
+		TAG="${MENU_LBL}.${g_ACTIVE_FAV_MENU}.query"
 		HDR="<B><w>${(C)MENU_LBL}${HDR_TAG} <B>Query<N>"
 		FTR="Run <w>${(C)MENU_LBL}<N> query, <w>(<N>s<w>)<N>how keys<N>, or <w>(<N>q<w>)<N>uit<N>"
 
-		sel_set_app_keys d r y c
+		sel_set_app_keys d r y c w
 		sel_set_list ${LIST}
 
 		clear
@@ -721,13 +722,19 @@ fav_get () {
 		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
 		msg_line_weight light
 
+		if [[ ${_SEL_KEY} == 'w' ]];then
+			open_website y
+			open_website r
+			return
+		fi
+
 		if [[ ${_SEL_KEY} == 'd' ]];then
-			fav_delete ${_SEL_VAL} ${g_LAST_FAV_TYPE} # Call key delete
+			fav_delete ${_SEL_VAL} ${g_ACTIVE_FAV_MENU} # Call key delete
 			[[ ${?} -eq 0 ]] && fav_load && return 1 # Reload favorites & return
 		fi
 
 		if [[ ${_SEL_KEY} =~ 'y|r|c' ]];then
-			g_LAST_FAV_TYPE=${_SEL_KEY}
+			g_ACTIVE_FAV_MENU=${_SEL_KEY}
 		else
 			set_query_opts ${_SEL_VAL:l} # Store selected _FAV_LIST key
 			break
@@ -1176,7 +1183,7 @@ log_update () {
 }
 
 needs_filter () {
-		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_LAST_FAV_TYPE:l} != 'c' ]];then
+		if [[ ${_QUERY_OPTS[EOPT]:l} != 's' && ${g_ACTIVE_FAV_MENU:l} != 'c' ]];then
 			return 0
 		elif [[ ${_QUERY_OPTS[EOPT]:l} == 'f' ]];then
 			return 0
@@ -1191,7 +1198,7 @@ open_website () {
 	case ${1} in
 		y) firefox "https://www.youtube.com/feed/subscriptions" >/dev/null 2>&1 &;;
 		r) firefox "https://www.rumble.com/subscriptions" >/dev/null 2>&1 &;;
-		*) exit_leave $(err_msg_exit E "Invalid $(opt_type w): Enter y for YouTube, r for Rumble")
+		*) exit_leave $(err_msg_exit E "Invalid $(opt_type w):${1} Enter y for YouTube, r for Rumble")
 	esac
 }
 
@@ -1535,6 +1542,8 @@ query_youtube () {
 		AGETIME="(${AGE} ${TIME})"
 		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR})
 
+		[[ ! ${AGE} =~ [0-9] ]] && continue # Skip any videos not having valid age
+
 		# Title translations
 		if [[ ${_TRANSLATED[${AUTHOR}]} ]];then # Language problem workaraound - spanish titles
 			if is_spanish ${TITLE:l};then
@@ -1766,7 +1775,7 @@ HELP_OPT=false
 SEARCHTERM=''
 VERSION_OPT=false
 WEB_OPT=''
-AGE_OPT=''
+AGE_OPT='recent'
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -1787,13 +1796,10 @@ shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution
-if [[ -n ${AGE_OPT} ]];then
-	[[ ! ${AGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]] && usage "Invalid $(opt_type a):${AGE_OPT}"
-else
-	[[ ${ENGINE} == 'youtube' ]] && AGE_OPT=recent # Default
-fi
+# TODO: Rewrite fav list parsing
+[[ ! ${AGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]] && usage "Invalid $(opt_type a):${AGE_OPT}"
+_QUERY_OPTS[AGE]=${AGE_OPT}
 
-[[ -n ${AGE_OPT} ]] && _QUERY_OPTS[AGE]=${AGE_OPT}
 [[ -n ${WEB_OPT} ]] && open_website ${WEB_OPT} && exit_leave
 
 [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "ARGS IN:${@}, ENGINE:${ENGINE}"

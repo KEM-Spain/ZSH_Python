@@ -78,8 +78,8 @@ alias syminstall='sudo apt-get -sy install '
 alias upgrades='sudo apt-get -s dist-upgrade '
 
 # Linux
-alias md='mkdir'
-alias mv='mv -i'
+alias md='/usr/local/bin/system/make_dir '
+alias mv='mv -i '
 alias cls='tput clear'
 
 # Bunzip2

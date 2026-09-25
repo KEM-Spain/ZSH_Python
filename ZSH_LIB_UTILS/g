@@ -14,6 +14,11 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
+E_CYAN_FG=$(echo -n "\033[36m")
+E_GREEN_FG=$(echo -n "\033[32m")
+E_RESET=$(echo -n "\033[m")
+E_BOLD=$(echo -n "\033[1m")
+E_ITALIC=$(echo -n "\033[3m")
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -22,7 +27,7 @@ _DEPS+=(MSG.zsh DURABLE.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
-_COL_MAX=138
+_COL_MAX=160
 
 # Declarations
 typeset -a LIST
@@ -248,8 +253,8 @@ echo "\n" >&2
 [[ ${LONGEST_FN} -lt 5 ]] && LONGEST_FN=4
 
 if ! arr_is_populated "${LIST}";then
-	echo "${WHITE_FG}Grep command${RESET}:${CMD_MSG}" | tr -s '[:space:]'
 	do_rmcup
+	echo "${WHITE_FG}Grep command${RESET}:${CMD_MSG}" | tr -s '[:space:]'
 	[[ -n ${FTYPE} ]] && FTYPE_MSG=" (of type:${WHITE_FG}${FTYPE}${RESET}) " || FTYPE_MSG=' '
 	exit_leave $(err_msg_exit W "No files${FTYPE_MSG}found containing:${SEARCHTERM}")
 fi
@@ -282,18 +287,17 @@ else
 	{
 	tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
 	[[ -n ${GR_OPT_RECURSE} ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
-	[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
+	[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG="${E_RESET}(${E_ITALIC}${E_CYAN_FG}case insensitive${E_RESET})" || CASE_MSG="${E_RESET}(${E_ITALIC}${E_BOLD}${E_CYAN_FG}case sensitive${E_RESET})"
 	echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Files:${WHITE_FG}${FTYPE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
 	if [[ -n ${LINENUM_OPT} ]];then
 		[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
-		REM=$(( (_COL_MAX - LONGEST_FN) - 8))
-		printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text"
+		REM=$(( (_COL_MAX - LONGEST_FN) - 8)) printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text Matching:${E_GREEN_FG}${(qqq)SEARCHTERM}${E_RESET} ${CASE_MSG}"
 		echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- )))  ${MAGENTA_FG}$(str_unicode_line 4)${RESET} ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN - 4 )))${RESET}"
 		echo
 	else
 		[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 4 ))
 		REM=$(( (_COL_MAX - LONGEST_FN) - 4))
-		printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text"
+		printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text Matching:${E_GREEN_FG}${(qqq)SEARCHTERM}${E_RESET} ${CASE_MSG}"
 		echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- ))) ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN-- )))${RESET}"
 		echo
 	fi
