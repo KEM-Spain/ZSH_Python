@@ -99,7 +99,7 @@ _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
 _YTS_FAV_NEW=${_CFG_DIR}/yts.favorites.new
 _YTS_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
-_YTS_URL_LOG=${_CFG_DIR}/yts.url.log
+_YT_URL_LOG=${_CFG_DIR}/yt.url.log
 _YT_DBG_LOG=${_CFG_DIR}/yt.dbg.log
 
 # Globals
@@ -166,7 +166,7 @@ action_do () {
 		RETRIES=0
 		HDRS_OUT=false
 
-		logit ${_YTS_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
+		logit ${_YT_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
 
 		unsetopt localtraps # Initialize CTRL-C trap
 		trap job_kill INT
@@ -319,9 +319,8 @@ action_do () {
 						download_indicator $(get_speed ${LOG_LINE})
 						ETA=${LOG_LINE}
 						case ${LOG_LINE:l} in
-							*100*) LINE_COLOR='<B><g>';;
 							*mib/s*) LINE_COLOR='<B><w>';;
-							*kib/s*) LINE_COLOR='<B><y>';;
+							*kib/s*) LINE_COLOR='<B><c>';;
 						esac
 						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
 						continue
@@ -716,16 +715,18 @@ fav_get () {
 		sel_set_app_keys d r y c w
 		sel_set_list ${LIST}
 
-		clear
-
 		msg_line_weight heavy
 		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
 		msg_line_weight light
 
+		clear
+
 		if [[ ${_SEL_KEY} == 'w' ]];then
+			msg_box -t2 "Opening YouTube and Rumble websites"
 			open_website y
 			open_website r
-			return
+			_SEL_KEY=''
+			return 2
 		fi
 
 		if [[ ${_SEL_KEY} == 'd' ]];then
@@ -1891,10 +1892,12 @@ fi
 
 if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 	while true;do
+		clear
 		if fav_get;then
+			[[ ${?} -eq 2 ]] && { clear && continue }
 			MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
 			_OB=($(sel_get_interior_coords))
-			msg_box -y${_OB[Y]} -w${_OB[W]} ${MSG} # Position and display msg
+			msg_box -x10 -y${_OB[Y]} -w${_OB[W]} ${MSG} # Position and display msg
 			[[ ${ENGINE} == 'rumble' ]] && _QUERY_OPTS[EXTRA]=' --impersonate chrome'
 			if query_${_QUERY_OPTS[ENGINE]};then # Call the extractor
 				download_select ${_QUERY_OPTS[QKEY]}

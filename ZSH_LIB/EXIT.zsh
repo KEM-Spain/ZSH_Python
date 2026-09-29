@@ -200,7 +200,10 @@ scrub_tmp () {
 		if arr_in_array "_EXIT_ACTIVE_PIDS" ${${(s/./)F:t}[1]};then
 			continue
 		else
-			/bin/rm -f ${F}
+			[[ ! -r ${F} ]] && continue # Only regular files
+			[[ ${_DEBUG} -ne 0 ]] && echo "Deleting ${F}" 
+			/bin/rm -f ${F} >/dev/null 2>&1
+			[[ ${?} -ne 0 ]] && echo "Deletion of ${F} was unsuccessful" 
 		fi
 	done
 }

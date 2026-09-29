@@ -1,4 +1,4 @@
-(async function(){
+(async function() {
 	const os = require("os")
 	const HOME = os.homedir()
 	const MODS = "/node_modules"
@@ -40,6 +40,7 @@
 	if (strict) { 
 		console.log("strict filter active")
 	}
+
 	videos.forEach(function (v) {
 		has_match = false
 		if (age === "all") { /* any age is default */
@@ -49,13 +50,13 @@
 				msgout = true
 			}
 		} else if (age === "recent") { /* any recent age */
-				if ( v.ago.indexOf("hour") >= 0 || v.ago.indexOf("day") >= 0 || v.ago.indexOf("min") >= 0 ) {
-					has_match = true
-					if (msgout === false) {
-						console.log("matched on age:recent")
-						msgout = true
-					}
+			if (/(?:Streamed\s+)?[0-9]+[hdm]\b/.test(v.ago)) {
+				has_match = true
+				if (msgout === false) {
+					console.log("matched on age:recent")
+					msgout = true
 				}
+			}
 		} else {
 			if (v.ago.indexOf(age) >= 0) { /* age was specified */
 				has_match = true
@@ -67,6 +68,7 @@
 		} 
 		v.title = v.title.replace(/\|/g, ':') /* titles contain pipe delim */
 		v.author.name = v.author.name.replace(/\|/g, '') /* author contains pipe delim */
+
 		if (has_match) {
 			if (strict) { /* searchterm must be in author */
 				t_arg = searchterm.toLowerCase()

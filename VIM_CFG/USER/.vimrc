@@ -105,8 +105,8 @@ if !has("gui_running")
 
 	"add app shebangs
 	nnoremap <c-e> ggi#!/usr/bin/zsh<CR> <ESC>:echom "zsh app"<CR>
-	nnoremap <c-p> ggi#!/usr/bin/env python3<CR> <ESC>:echom "python app"<CR>
-	nnoremap <c-l> ggi#!/usr/bin/env perl<CR> <ESC>:echom "perl app"<CR>
+	nnoremap <c-P> ggi#!/usr/bin/env python3<CR> <ESC>:echom "python app"<CR>
+	nnoremap <c-L> ggi#!/usr/bin/env perl<CR> <ESC>:echom "perl app"<CR>
 
 	"find left anchored
 	nnoremap <c-f> :/^

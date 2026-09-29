@@ -1,0 +1,90 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLINK="\033[5m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+CYAN_ON_GREY="\033[0m\033[0;1;36;100m"
+GREEN_ON_GREY="\033[0m\033[0;1;32;100m"
+MAGENTA_ON_GREY="\033[0m\033[0;1;35;100m"
+RED_ON_GREY="\033[0m\033[0;1;31;100m"
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+YELLOW_ON_GREY="\033[0m\033[0;1;33;100m"
+
+# Path to your log file (update as needed)
+_YTS_CFG_DIR=~/.local/share/yts
+LOG_FILE="${_YTS_CFG_DIR}/${1}"
+
+if [[ ! -f "$LOG_FILE" ]]; then
+    print "Error: Log file '$LOG_FILE' not found." >&2
+    exit 1
+fi
+
+# Calculate the cutoff epoch timestamp for 7 days ago
+# Using GNU date (standard on Ubuntu)
+CUTOFF_EPOCH=$(date -d "7 days ago" +%s)
+
+TEMP_FILE=$(mktemp)
+
+# Read the log file line by line
+NDX=0
+FILE_LINES=$(wc -l < ${LOG_FILE})
+
+clear
+echo "Processing:${LOG_FILE}" >&2
+echo "Eliminating lines older than: $(date -d @1790070778)" >&2
+while IFS= read -r LINE; do
+    ((NDX++))
+		tput cup 3 0; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${FILE_LINES} $(( NDX * 100. / ${FILE_LINES} )) >&2
+
+    # Extract the date prefix (YYYY-MM-DD) from the beginning of the line
+    log_date="${LINE[1,10]}"
+
+    # Validate date format roughly, then convert to epoch for comparison
+    if [[ "$log_date" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+        log_epoch=$(date -d "$log_date" +%s 2>/dev/null)
+
+        # If date conversion succeeded and it's within the last 7 days, keep it
+        if [[ -n "$log_epoch" ]] && (( log_epoch >= CUTOFF_EPOCH )); then
+            print -- "$LINE" >> "$TEMP_FILE"
+        fi
+    else
+        # Optional: Keep malformed lines or skip them (currently keeping them safe)
+        print -- "$LINE" >> "$TEMP_FILE.rejects"
+    fi
+done < "$LOG_FILE"
+
+if [[ -f ${TEMP_FILE}.rejects ]];then
+    FILE_LINES=$(wc -l < ${TEMP_FILE}.rejects)
+    echo "\nRejected ${FILE_LINES} malformed log lines..." >&2
+fi
+
+# Replace the original log file with the filtered temporary file
+
+FILE_LINES=$(wc -l < ${TEMP_FILE})
+
+QUERY="Reduce ${LOG_FILE} to ${WHITE_FG}${FILE_LINES}${RESET} lines"
+echo -n "\n${QUERY}: (y/n)?"
+read -sq RESPONSE
+if [[ ${RESPONSE} != "y" ]];then
+	echo "no\n"
+	echo "${RED_FG}Operation cancelled${RESET}" && exit 1
+fi
+echo
+mv "$TEMP_FILE" "$LOG_FILE"
+print "Log cleanup complete. Retained entries from the last 7 days in $LOG_FILE."

@@ -1,5 +1,28 @@
-2026-09-24_17:28: log_update: LOG lines BEFORE update:11 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-24_17:28: log_update: LOG lines AFTER update:11 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-24_17:29: yt Executed from: Command Line
-2026-09-24_17:29: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome "https://www.youtube.com/watch?v=z9JDC2r_hVA"
-2026-09-24_17:30: yt Cleaning file name:John_Kiriakou_Jenin_Younes_with_Glenn_on_Rising_Dangers_to_Whistle-Blowers-[z9JDC2r_hVA].mp4
+2026-09-29_09:51: log_update: LOG lines BEFORE update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-29_09:51: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-29_09:51: query_rumble:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Due Dissidence
+	-> ENGINE:rumble
+	-> EOPT:l
+	-> FKEY:due_dissidence
+	-> QKEY:duedissidence
+	-> TYPE:live
+2026-09-29_09:51: query_rumble: QUERY:https://rumble.com/c/duedissidence/livestreams
+2026-09-29_09:51: query_rumble: Listing for QKEY:duedissidence contains 25 rows
+2026-09-29_09:52: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.1l6qDE
+2026-09-29_09:52: job_start: TITLE:Tiffany Cianci on Private Equity, Data Centers, MAHA, Thomas Massie, and 
+2026-09-29_09:52: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7g3kf0-tiffany-cianci-on-private-equity-data-centers-maha-thomas-massie-and-more.html" PID:1758402
+2026-09-29_09:52: yt Executed from: Script
+2026-09-29_09:52: yt Rumble URL: invoking aria2c and pulling Brave cookies dynamically
+2026-09-29_09:52: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7g3kf0-tiffany-cianci-on-private-equity-data-centers-maha-thomas-massie-and-more.html"
+2026-09-29_09:52: action_do: GENERATING HEADER
+2026-09-29_09:56: action_do: COMPLETED
+2026-09-29_09:56: action_do: POST-PROCESSING
+2026-09-29_09:57: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Due_Dissidence - Tiffany_Cianci_on_Private_Equity_Data_Centers_MAHA_Thomas_Massie_and_More.mp4
+2026-09-29_09:57: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Due_Dissidence - Tiffany_Cianci_on_Private_Equity_Data_Centers_MAHA_Thomas_Massie_and_More.mp4
+2026-09-29_09:57: set_final_fn: Overwriting file:Due_Dissidence - Tiffany_Cianci_on_Private_Equity_Data_Centers_MAHA_Thomas_Massie_and_More.mp4
+2026-09-29_09:57: set_final_fn: Clean filename:Due Dissidence - Tiffany Cianci On Private Equity Data Centers MAHA.mp4
+2026-09-29_09:57: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-09-29_09:57: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.1l6qDE was cleared for:duedissidence from:action_do

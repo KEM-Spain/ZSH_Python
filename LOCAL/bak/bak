@@ -24,6 +24,8 @@ typeset -a _PROD_DIRS=(${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /u
 _LIB_DIR=/usr/local/lib
 _BIN_DIR=/usr/local/bin
 _EM=${BOLD}${ITALIC}
+_PROD_TARGET=${PWD}/.prod_target
+_PROD_EXE=''
 
 # Globals
 g_BACKUP_NAME=?
@@ -58,9 +60,13 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Functions
 get_prod_dir () {
 	local FN=${1}
-	local EXELIST=("${(f)$(fut findexe -p ${FN:t})}")
+	local EXELIST=''
 	local F D
 	local FX DX
+
+	[[ -n ${_PROD_EXE} ]] && { echo ${_PROD_EXE:h} && return }
+
+	EXELIST=("${(f)$(fut findexe -p ${FN:t})}")
 
 	for F in ${EXELIST};do
 		FX=$(tr '/' '_' <<<${F})
@@ -480,18 +486,28 @@ shift $(( OPTIND - 1 ))
 
 # Execution
 clear
+tabs 2
 #[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-FILE_ARG=${1}
-if [[ -z ${FILE_ARG} ]];then
-	DEFAULT_FN=${PWD:t}
-	[[ -e ${DEFAULT_FN}.zsh ]] && DEFAULT_FN=${DEFAULT_FN}.zsh # Add zsh extension if needed
-	if [[ -e ${DEFAULT_FN} ]];then
-		FILE_ARG=${DEFAULT_FN} # Assign default file
+if [[ ${#} -eq 0 ]];then
+	# TODO: Modify PROD_TARGET construct to handle multiple targets keyed by FILE_ARG
+	if [[ -e ${_PROD_TARGET} ]];then
+		_PROD_EXE="$(< ${_PROD_TARGET})"
+		FILE_ARG="${$(< ${_PROD_TARGET}):t}"
+		echo "Found PROD_TARGET, FILE_ARG:${FILE_ARG}"
 	else
-		msg_box -p -PK "Default argument is:<w>${PWD:t}<N>|There is <r>no corresponding file<N> with that name"
-		exit_leave
+		DEFAULT_FN=${PWD:t}
+		[[ -e ${DEFAULT_FN}.zsh ]] && DEFAULT_FN=${DEFAULT_FN}.zsh # Add zsh extension if applicable
+
+		if [[ -e ${DEFAULT_FN} ]];then
+			FILE_ARG=${DEFAULT_FN} # Assign default file
+		else
+			msg_box -p -PK "Attempted to derive a filename from the directory name:<w>${PWD:t}<N>|But there is <r>no corresponding file<N> with that name|You must provide a filename"
+			exit_leave
+		fi
 	fi
+else
+	FILE_ARG=${1}
 fi
 
 # Ensure file exists
