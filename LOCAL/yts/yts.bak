@@ -99,7 +99,7 @@ _YTS_DOWNLOAD_LOG=${_CFG_DIR}/yts.downloads
 _YTS_FAVORITES=${_CFG_DIR}/yts.favorites
 _YTS_FAV_NEW=${_CFG_DIR}/yts.favorites.new
 _YTS_UPD_MARKER=${_CFG_DIR}/yts-upd.lastrun
-_YTS_URL_LOG=${_CFG_DIR}/yts.url.log
+_YT_URL_LOG=${_CFG_DIR}/yt.url.log
 _YT_DBG_LOG=${_CFG_DIR}/yt.dbg.log
 
 # Globals
@@ -166,7 +166,7 @@ action_do () {
 		RETRIES=0
 		HDRS_OUT=false
 
-		logit ${_YTS_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
+		logit ${_YT_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
 
 		unsetopt localtraps # Initialize CTRL-C trap
 		trap job_kill INT

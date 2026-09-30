@@ -1,28 +1,83 @@
-2026-09-29_09:51: log_update: LOG lines BEFORE update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-29_09:51: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-09-29_09:51: query_rumble:
+2026-09-30_13:19: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-30_13:19: log_update: Skipping expired inode:26869795
+2026-09-30_13:19: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-09-30_13:19: query_youtube: Creating listing for QKEY:judgingfreedom, query is not strict
+2026-09-30_13:19: query_youtube:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Due Dissidence
+	-> DKEY:Judging Freedom
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:judging_freedom
+	-> QKEY:judgingfreedom
+	-> TYPE:standard
+2026-09-30_13:19: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "judgingfreedom"
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Rejected:the grayzone
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-09-30_13:19: query_youtube: Listing for QKEY:judgingfreedom contains 14 rows
+2026-09-30_13:20: query_rumble:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Glenn Diesen
 	-> ENGINE:rumble
-	-> EOPT:l
-	-> FKEY:due_dissidence
-	-> QKEY:duedissidence
-	-> TYPE:live
-2026-09-29_09:51: query_rumble: QUERY:https://rumble.com/c/duedissidence/livestreams
-2026-09-29_09:51: query_rumble: Listing for QKEY:duedissidence contains 25 rows
-2026-09-29_09:52: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.1l6qDE
-2026-09-29_09:52: job_start: TITLE:Tiffany Cianci on Private Equity, Data Centers, MAHA, Thomas Massie, and 
-2026-09-29_09:52: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7g3kf0-tiffany-cianci-on-private-equity-data-centers-maha-thomas-massie-and-more.html" PID:1758402
-2026-09-29_09:52: yt Executed from: Script
-2026-09-29_09:52: yt Rumble URL: invoking aria2c and pulling Brave cookies dynamically
-2026-09-29_09:52: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7g3kf0-tiffany-cianci-on-private-equity-data-centers-maha-thomas-massie-and-more.html"
-2026-09-29_09:52: action_do: GENERATING HEADER
-2026-09-29_09:56: action_do: COMPLETED
-2026-09-29_09:56: action_do: POST-PROCESSING
-2026-09-29_09:57: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Due_Dissidence - Tiffany_Cianci_on_Private_Equity_Data_Centers_MAHA_Thomas_Massie_and_More.mp4
-2026-09-29_09:57: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Due_Dissidence - Tiffany_Cianci_on_Private_Equity_Data_Centers_MAHA_Thomas_Massie_and_More.mp4
-2026-09-29_09:57: set_final_fn: Overwriting file:Due_Dissidence - Tiffany_Cianci_on_Private_Equity_Data_Centers_MAHA_Thomas_Massie_and_More.mp4
-2026-09-29_09:57: set_final_fn: Clean filename:Due Dissidence - Tiffany Cianci On Private Equity Data Centers MAHA.mp4
-2026-09-29_09:57: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
-2026-09-29_09:57: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.1l6qDE was cleared for:duedissidence from:action_do
+	-> EOPT:c
+	-> FKEY:glenn_diesen
+	-> QKEY:glenndiesen
+	-> SMSG:
+	-> TYPE:channel
+2026-09-30_13:20: query_rumble: QUERY:https://rumble.com/c/glenndiesen?page=1
+2026-09-30_13:20: query_rumble: Listing for QKEY:glenndiesen contains 25 rows
+2026-09-30_13:20: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.XPcC4x
+2026-09-30_13:20: job_start: TITLE:Seyed M. Marandi: Israel, Saudi Arabia and the US: All-in on War? 
+2026-09-30_13:20: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7g3nvo-seyed-m.-marandi-israel-saudi-arabia-and-the-us-all-in-on-war.html" PID:353627
+2026-09-30_13:20: yt Executed from: Script
+2026-09-30_13:20: yt Rumble URL: invoking aria2c and pulling Brave cookies dynamically
+2026-09-30_13:20: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7g3nvo-seyed-m.-marandi-israel-saudi-arabia-and-the-us-all-in-on-war.html"
+2026-09-30_13:20: action_do: GENERATING HEADER
+2026-09-30_13:20: action_do: TRANSMISSION ERROR 1 of 6
+2026-09-30_13:20: action_do: LOG:[download] Got error: Failed to perform, curl: (35) BoringSSL SSL_connect: Conne
+2026-09-30_13:20: job_kill: Killed 353968
+2026-09-30_13:20: job_cancel: Job was reset
+2026-09-30_13:20: job_retry: Job retry...
+2026-09-30_13:20: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.HIyx0S
+2026-09-30_13:20: job_start: TITLE:Seyed M. Marandi: Israel, Saudi Arabia and the US: All-in on War? 
+2026-09-30_13:20: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7g3nvo-seyed-m.-marandi-israel-saudi-arabia-and-the-us-all-in-on-war.html" PID:357915
+2026-09-30_13:20: yt Executed from: Script
+2026-09-30_13:20: yt Rumble URL: invoking aria2c and pulling Brave cookies dynamically
+2026-09-30_13:20: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7g3nvo-seyed-m.-marandi-israel-saudi-arabia-and-the-us-all-in-on-war.html"
+2026-09-30_13:22: action_do: COMPLETED
+2026-09-30_13:22: action_do: POST-PROCESSING
+2026-09-30_13:22: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Glenn_Diesen_Greater_Eurasia - Seyed_M._Marandi_-_Israel_Saudi_Arabia_and_the_US_-_All-in_on_War.mp4
+2026-09-30_13:22: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Glenn_Diesen_Greater_Eurasia - Seyed_M._Marandi_-_Israel_Saudi_Arabia_and_the_US_-_All-in_on_War.mp4
+2026-09-30_13:22: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - Seyed_M._Marandi_-_Israel_Saudi_Arabia_and_the_US_-_All-in_on_War.mp4
+2026-09-30_13:22: set_final_fn: Clean filename:Glenn Diesen - Seyed M. Marandi Israel Saudi Arabia.mp4
+2026-09-30_13:22: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-09-30_13:22: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.HIyx0S was cleared for:glenndiesen from:action_do
+2026-09-30_13:22: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.MbR0H6
+2026-09-30_13:22: job_start: TITLE:Fred Weir: NATO & Russia on a Collision Course for 30 Years 
+2026-09-30_13:22: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7g21bu-fred-weir-nato-and-russia-on-a-collision-course-for-30-years.html" PID:372719
+2026-09-30_13:22: yt Executed from: Script
+2026-09-30_13:22: yt Rumble URL: invoking aria2c and pulling Brave cookies dynamically
+2026-09-30_13:22: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7g21bu-fred-weir-nato-and-russia-on-a-collision-course-for-30-years.html"
+2026-09-30_13:22: action_do: GENERATING HEADER
+2026-09-30_13:24: action_do: COMPLETED
+2026-09-30_13:24: action_do: POST-PROCESSING
+2026-09-30_13:24: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Glenn_Diesen_Greater_Eurasia - Fred_Weir_-_NATO_Russia_on_a_Collision_Course_for_30_Years.mp4
+2026-09-30_13:24: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Glenn_Diesen_Greater_Eurasia - Fred_Weir_-_NATO_Russia_on_a_Collision_Course_for_30_Years.mp4
+2026-09-30_13:24: set_final_fn: Overwriting file:Glenn_Diesen_Greater_Eurasia - Fred_Weir_-_NATO_Russia_on_a_Collision_Course_for_30_Years.mp4
+2026-09-30_13:24: set_final_fn: Clean filename:Glenn Diesen - Fred Weir NATO Russia On A Collision.mp4
+2026-09-30_13:24: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-09-30_13:24: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.MbR0H6 was cleared for:glenndiesen from:action_do

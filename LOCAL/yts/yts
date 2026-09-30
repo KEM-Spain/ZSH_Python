@@ -187,6 +187,7 @@ action_do () {
 				MSG="Cancelling download..."
 				msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 				_CANCELLED[${M}]=true
+				TRANS_ERR_CNT=0
 				break
 			fi
 			

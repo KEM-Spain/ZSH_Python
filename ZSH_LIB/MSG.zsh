@@ -341,6 +341,8 @@ msg_box () {
 		dbg "${0}: BOX_STYLE:${WHITE_FG}${TEXT_STYLE}${RESET}"
 	fi
 
+	source ${_LIB_DIR}/STTY_TRAP.zsh # Prevent user inputs from reaching the terminal display
+
 	# Prepare display
 	[[ ${SO} == 'true' ]] && tput smso # Standout mode
 

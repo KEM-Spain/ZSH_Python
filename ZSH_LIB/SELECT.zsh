@@ -499,6 +499,8 @@ sel_scroll () {
 	local TAG_PAGE=0
 	local X_OFF=0
 	
+	source ${_LIB_DIR}/STTY_TRAP.zsh # Prevent user inputs from reaching the terminal display
+
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	cursor_off

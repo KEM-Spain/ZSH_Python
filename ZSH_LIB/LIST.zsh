@@ -678,6 +678,8 @@ list_select () {
 	local SEL_ALL=' '
 	local L R S 
 
+	source ${_LIB_DIR}/STTY_TRAP.zsh # Prevent user inputs from reaching the terminal display
+
 	# Initialization
 	_LIST=(${@})
 	_SELECT_ALL=false
