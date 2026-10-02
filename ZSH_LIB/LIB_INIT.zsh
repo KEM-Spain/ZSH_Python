@@ -81,4 +81,4 @@ _FUNC_TRAP=true
 # Initialize debugging
 [[ -e ${_DEBUG_FILE} ]] && /bin/rm ${_DEBUG_FILE}
 
-stty -echo
+#stty -echo
