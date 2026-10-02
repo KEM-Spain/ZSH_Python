@@ -490,6 +490,7 @@ tabs 2
 #[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${#} -eq 0 ]];then
+	# TODO: Modify PROD_TARGET construct to handle multiple targets keyed by FILE_ARG
 	if [[ -e ${_PROD_TARGET} ]];then
 		_PROD_EXE="$(< ${_PROD_TARGET})"
 		FILE_ARG="${$(< ${_PROD_TARGET}):t}"

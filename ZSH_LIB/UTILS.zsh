@@ -350,67 +350,10 @@ get_kde_device () {
 	return ${?}
 }
 
-#get_keys () {
-#	local PROMPT=${@}
-#	local -a NUM
-#	local IDLE_TIME=0
-#	local K1=''
-#	local K2=''
-#	local K3=''
-#	local KEY=''
-#	local MY_PPID=${PPID}
-#	local RESP=?;
-#
-#	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-#
-#	[[ -n ${PROMPT} ]] && (tcup $(( _MAX_ROWS - 2 )) 0;printf "${PROMPT}")>&2 # Position cursor and display prompt to STDERR
-#
-#	while true;do
-#		KEY=''; K1=''; K2=''; K3=''
-#
-#		while read -t1 -sk1 KEY;do
-#			# Slurp input buffer
-#			read -sk1 -t 0.0001 K1 >/dev/null 2>&1
-#			read -sk1 -t 0.0001 K2 >/dev/null 2>&1
-#			read -sk1 -t 0.0001 K3 >/dev/null 2>&1
-#			KEY+=${K1}${K2}${K3}
-#
-#			case "${KEY}" in 
-#				$'\x0A') RESP=0;;  # Return
-#				$'\e[A') RESP=1;;  # Up
-#				$'\e[B') RESP=2;;  # Down
-#				$'\e[D') RESP=3;;  # Left
-#				$'\e[C') RESP=4;;  # Right
-#				$'\e[5~') RESP=5;; # PgUp
-#				$'\e[6~') RESP=6;; # PgDn
-#				$'\e[H') RESP=7;;  # Home
-#				$'\e[F') RESP=8;;  # End
-#				$'\x7F') if [[ ${#NUM} -gt 0 ]];then # BackSpace
-#                   NUM[${#NUM}]=()
-#                   echo -n " ">&2
-#                 fi;;
-#				*) RESP=$(printf '%d' "'${KEY}");; # Ascii letter value
-#			esac
-#
-#			if [[ ${RESP} != "?" ]];then
-#				if [[ -z ${NUM} ]];then
-#					case ${RESP} in
-#						<48-57>) RESP=${KEY};; # Numeric
-#						<65-122>) RESP=${KEY};; # Alpha
-#					esac
-#					echo ${RESP}
-#				else
-#					echo "K${(j::)NUM}"
-#				fi
-#				[[ -n ${KEY} ]] && break 2 || continue
-#			fi
-#		done
-#	done
-#}
-
 get_keys () {
 	local PROMPT=${@}
-	local -a NUM
+	local -a NUM=()
+	local DRAIN=''
 	local IDLE_TIME=0
 	local K1=''
 	local K2=''
@@ -418,19 +361,17 @@ get_keys () {
 	local KEY=''
 	local MY_PPID=${PPID}
 	local RESP=?
-	local _drain=''
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	# 1. ENTRY DRAIN: Clear any leftover garbage in the buffer from previous actions
-	while read -s -t 0.001 -k 1 _drain >/dev/null 2>&1; do :; done
+	#while read -s -t 0.001 -k 1 DRAIN >/dev/null 2>&1; do :; done # ENTRY DRAIN: Clear any leftover garbage in the buffer
 
 	[[ -n ${PROMPT} ]] && (tcup $(( _MAX_ROWS - 2 )) 0;printf "${PROMPT}")>&2 # Position cursor and display prompt to STDERR
 
 	while true;do
 		KEY=''; K1=''; K2=''; K3=''
 
-		while read -t1 -sk1 KEY;do
+		while read -sk1 KEY;do
 			# Slurp input buffer
 			read -sk1 -t 0.0001 K1 >/dev/null 2>&1
 			read -sk1 -t 0.0001 K2 >/dev/null 2>&1
@@ -455,9 +396,7 @@ get_keys () {
 			esac
 
 			if [[ ${RESP} != "?" ]];then
-				# 2. EXIT DRAIN: If a user held down a key, eat the rest of the 
-				# queued buffer characters so they don't leak out to the terminal screen
-				while read -s -t 0.001 -k 1 _drain >/dev/null 2>&1; do :; done
+				#while read -s -t 0.001 -k 1 _drain >/dev/null 2>&1; do :; done # EXIT DRAIN: Clear any leftover garbage in the buffer
 
 				if [[ -z ${NUM} ]];then
 					case ${RESP} in
@@ -475,21 +414,22 @@ get_keys () {
 }
 
 inline_vi_edit () {
+	# Requires xdotool
+	local PROMPT=${1}
+	local CUR_VALUE=${2}
+	local PERL_SCRIPT
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
+	stty echo
 	cursor_on
-
-	# Requires xdotool
-	
-	local PERL_SCRIPT
 
 	read -r -d '' PERL_SCRIPT <<'___EOF'
 	use warnings;
 	use strict;
 	use Term::ReadLine;
 
-	my $term = new Term::ReadLine 'list_search';
+	my $term = new Term::ReadLine 'inline';
 	$term->parse_and_bind("set editing-mode vi");
 
 	system('xdotool key Home End &');
@@ -503,6 +443,7 @@ ___EOF
 	perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
 
 	cursor_off
+	stty -echo
 }
 
 is_bare_word () {

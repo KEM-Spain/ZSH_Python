@@ -57,7 +57,6 @@ _DEPS=(ANSI.zsh DBG.zsh ERROR.zsh EXIT.zsh UTILS.zsh)
 _LOW_DBG=1
 _MID_DBG=2
 _HIGH_DBG=3
-
 typeset -A _DEBUG_LEVELS=(
 ${_LOW_DBG} LOW
 ${_MID_DBG} MID
@@ -81,3 +80,5 @@ _FUNC_TRAP=true
 
 # Initialize debugging
 [[ -e ${_DEBUG_FILE} ]] && /bin/rm ${_DEBUG_FILE}
+
+stty -echo

@@ -507,7 +507,7 @@ list_search_find () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: DIR: ${DIR}"
 
-	NEXT_TARGET=$(list_search_get_key ${DIR})
+	NEXT_TARGET=$(list_search_parse_key ${DIR})
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: NEXT KEY: ${NEXT_TARGET}"
 
 	IFS=":" read R C P T <<<${NEXT_TARGET}
@@ -523,7 +523,7 @@ list_search_find () {
 	return 0
 }
 
-list_search_get_key () {
+list_search_parse_key () {
 	local MODE=${1}
 	local NDX=0
 	local CUR_TGT_NDX=0
@@ -677,8 +677,6 @@ list_select () {
 	local SELECT_PROMPT=''
 	local SEL_ALL=' '
 	local L R S 
-
-	source ${_LIB_DIR}/STTY_TRAP.zsh # Prevent user inputs from reaching the terminal display
 
 	# Initialization
 	_LIST=(${@})

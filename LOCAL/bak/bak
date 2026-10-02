@@ -502,7 +502,7 @@ if [[ ${#} -eq 0 ]];then
 		if [[ -e ${DEFAULT_FN} ]];then
 			FILE_ARG=${DEFAULT_FN} # Assign default file
 		else
-			msg_box -p -PK "Attempted to derive a filename from the directory name:<w>${PWD:t}<N>|But there is <r>no corresponding file<N> with that name|You must provide a filename"
+			msg_box -p -PK "<r>No file corresponds to the name<N>:<w>${DEFAULT_FN}<N>|Please provide a filename"
 			exit_leave
 		fi
 	fi

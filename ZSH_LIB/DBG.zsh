@@ -30,6 +30,42 @@ dbg_arglist () {
 	fi
 }
 
+dbg_functrace () {
+	local -a COMPOSITE_TRACE=()
+	local -a FIELDS=()
+	local INDENT=''
+	local FUNC_NAME=''
+	local FILE_PATH=''
+	local LINE_NUM=0
+	local ENTRY=''
+	local I
+
+	# 1. Build the composite array directly from the built-in arrays
+	for (( I = 1; I <= ${#functrace}; I++ )); do
+		FUNC_NAME="${functrace[I]%:*}"
+		FILE_PATH="${funcfiletrace[I]%:*}"
+		LINE_NUM="${funcfiletrace[I]##*:}"
+
+		# Format: "function_name|file_path|line_number"
+		COMPOSITE_TRACE+=("${FUNC_NAME}|${FILE_PATH}|${LINE_NUM}")
+	done
+
+	echo "\n${WHITE_FG}Functrace Call List${RESET}"
+
+	# 2. Iterate through the composite array (reversed order)
+	for I in "${(Oa)COMPOSITE_TRACE[@]}"; do
+		FIELDS=(${(s:|:)I})
+		FUNC_NAME="${FIELDS[1]:t}"
+		FILE_PATH="${FIELDS[2]:t}"
+		LINE_NUM="${FIELDS[3]}"
+
+		[[ ${file_path} =~ ${_SCRIPT} ]] && continue
+
+		echo "Caller:${INDENT}-> ${CYAN_FG}${FUNC_NAME}${RESET} in ${FILE_PATH}:${WHITE_FG}${RESET} from line ${WHITE_FG}${LINE_NUM}${RESET}"
+		INDENT+=" "
+	done
+}
+
 dbg () {
 	local -a ARGS=("${@}")
 	local LINE
