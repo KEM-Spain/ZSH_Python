@@ -1,2 +1,215 @@
-2026-10-02_09:46: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-02_09:46: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-03_09:22: log_update: LOG lines BEFORE update:5 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-03_09:22: log_update: Skipping expired inode:26869820
+2026-10-03_09:22: log_update: Skipping expired inode:26869822
+2026-10-03_09:22: log_update: Skipping expired inode:26869827
+2026-10-03_09:22: log_update: Skipping expired inode:26869830
+2026-10-03_09:22: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-03_09:24: query_youtube: Creating listing for QKEY:garland_nixon, query is not strict
+2026-10-03_09:24: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Garland Nixon
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:garland_nixon
+	-> QKEY:garland_nixon
+	-> TYPE:standard
+2026-10-03_09:24: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "garland_nixon"
+2026-10-03_09:24: query_youtube: Retained titles matching:garland nixon
+2026-10-03_09:24: query_youtube: Retained titles matching:garland nixon
+2026-10-03_09:24: query_youtube: Retained titles matching:garland nixon
+2026-10-03_09:24: query_youtube: Retained titles matching:garland nixon
+2026-10-03_09:24: query_youtube: Retained titles matching:garland nixon
+2026-10-03_09:24: query_youtube: Retained titles matching:garland nixon
+2026-10-03_09:24: query_youtube: Listing for QKEY:garland_nixon contains 6 rows
+2026-10-03_09:24: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.ijrUFP
+2026-10-03_09:24: job_start: TITLE:Perfidious Albion - w/ Alex Krainer & Harley Schlanger - The British Empire 
+2026-10-03_09:24: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=A9eG0eioRIY" PID:1143683
+2026-10-03_09:24: yt Executed from: Script
+2026-10-03_09:24: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=A9eG0eioRIY"
+2026-10-03_09:24: action_do: GENERATING HEADER
+2026-10-03_09:24: action_do: COMPLETED
+2026-10-03_09:24: action_do: POST-PROCESSING
+2026-10-03_09:24: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Garland_Nixon - PERFIDIOUS_ALBION_-_W_ALEX_KRAINER_HARLEY_SCHLANGER_-_THE_BRITISH_EMPIRE_IS_ALWAYS_U.mp4
+2026-10-03_09:24: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Garland_Nixon - PERFIDIOUS_ALBION_-_W_ALEX_KRAINER_HARLEY_SCHLANGER_-_THE_BRITISH_EMPIRE_IS_ALWAYS_U.mp4
+2026-10-03_09:24: set_final_fn: Overwriting file:Garland_Nixon - PERFIDIOUS_ALBION_-_W_ALEX_KRAINER_HARLEY_SCHLANGER_-_THE_BRITISH_EMPIRE_IS_ALWAYS_U.mp4
+2026-10-03_09:24: set_final_fn: Clean filename:Garland Nixon - Perfidious Albion - W Alex Krainer Harley Schlanger -.mp4
+2026-10-03_09:24: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-03_09:24: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.ijrUFP was cleared for:garland_nixon from:action_do
+2026-10-03_09:25: query_youtube: Creating listing for QKEY:blancolirio, query is strict
+2026-10-03_09:25: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Blan Colirio
+	-> ENGINE:youtube
+	-> EOPT:s
+	-> FKEY:blan_colirio
+	-> QKEY:blancolirio
+	-> SMSG:
+	-> TYPE:strict
+2026-10-03_09:25: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "blancolirio"
+2026-10-03_09:25: query_youtube: Translated TITLE:Knife Fight In Fly Dubai Cabin
+2026-10-03_09:25: query_youtube: Translated TITLE:NTSB Preliminary Report on Porterville Runway Incursion, September 1, 2026
+2026-10-03_09:25: query_youtube: Translated TITLE:NTSB Preliminary Report on N6510L in Fresno, Ca, September 5, 2026, 4 Dead
+2026-10-03_09:25: query_youtube: Translated TITLE:Morning Racing Fuel
+2026-10-03_09:25: query_youtube: Listing for QKEY:blancolirio contains 4 rows
+2026-10-03_09:25: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.R3aVkI
+2026-10-03_09:25: job_start: TITLE:Knife Fight In Fly Dubai Cabin 
+2026-10-03_09:25: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=qR-c5-vSvJM" PID:1153309
+2026-10-03_09:25: yt Executed from: Script
+2026-10-03_09:25: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=qR-c5-vSvJM"
+2026-10-03_09:25: action_do: PRE-PROCESSING
+2026-10-03_09:25: action_do: GENERATING HEADER
+2026-10-03_09:25: action_do: COMPLETED
+2026-10-03_09:25: action_do: POST-PROCESSING
+2026-10-03_09:25: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/blancolirio - Fly_Dubai_Cockpit_Knife_Fight.mp4
+2026-10-03_09:25: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/blancolirio - Fly_Dubai_Cockpit_Knife_Fight.mp4
+2026-10-03_09:25: set_final_fn: Overwriting file:blancolirio - Fly_Dubai_Cockpit_Knife_Fight.mp4
+2026-10-03_09:25: set_final_fn: Clean filename:Blan Colirio - Fly Dubai Cockpit Knife Fight.mp4
+2026-10-03_09:25: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-03_09:25: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.R3aVkI was cleared for:blancolirio from:action_do
+2026-10-03_09:25: query_youtube: Creating listing for QKEY:danieldavisdeepdive, query is not strict
+2026-10-03_09:25: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Daniel Davis
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:daniel_davis
+	-> QKEY:danieldavisdeepdive
+	-> SMSG:Inf%
+	-> TYPE:standard
+2026-10-03_09:25: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "danieldavisdeepdive"
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Retained titles matching:daniel davis / deep dive
+2026-10-03_09:25: query_youtube: Listing for QKEY:danieldavisdeepdive contains 9 rows
+2026-10-03_09:26: query_youtube: Creating listing for QKEY:dannyhaiphong, query is strict
+2026-10-03_09:26: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Danny Haiphong
+	-> ENGINE:youtube
+	-> EOPT:s
+	-> FKEY:danny_haiphong
+	-> QKEY:dannyhaiphong
+	-> SMSG:
+	-> TYPE:strict
+2026-10-03_09:26: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "dannyhaiphong"
+2026-10-03_09:26: query_youtube: Listing for QKEY:dannyhaiphong contains 3 rows
+2026-10-03_09:26: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.EV8yRB
+2026-10-03_09:26: job_start: TITLE:Alastair Crooke: Trump SURGES 10,000 Troops! Iran HITS US Carrier Next 
+2026-10-03_09:26: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=x7oZ_tPv2fM" PID:1160012
+2026-10-03_09:26: yt Executed from: Script
+2026-10-03_09:26: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=x7oZ_tPv2fM"
+2026-10-03_09:26: action_do: GENERATING HEADER
+2026-10-03_09:28: action_do: COMPLETED
+2026-10-03_09:28: action_do: POST-PROCESSING
+2026-10-03_09:29: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Danny_Haiphong - Alastair_Crooke_-_Trump_SURGES_10_000_Troops_Iran_HITS_US_Carrier_Next.mp4
+2026-10-03_09:29: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Danny_Haiphong - Alastair_Crooke_-_Trump_SURGES_10_000_Troops_Iran_HITS_US_Carrier_Next.mp4
+2026-10-03_09:29: set_final_fn: Overwriting file:Danny_Haiphong - Alastair_Crooke_-_Trump_SURGES_10_000_Troops_Iran_HITS_US_Carrier_Next.mp4
+2026-10-03_09:29: set_final_fn: Clean filename:Danny Haiphong - Alastair Crooke - Trump SURGES 10 000 Troops Iran.mp4
+2026-10-03_09:29: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-03_09:29: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.EV8yRB was cleared for:dannyhaiphong from:action_do
+2026-10-03_09:34: query_youtube: Creating listing for QKEY:judgingfreedom, query is not strict
+2026-10-03_09:34: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Judging Freedom
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:judging_freedom
+	-> QKEY:judgingfreedom
+	-> SMSG:Inf%
+	-> TYPE:standard
+2026-10-03_09:34: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "judgingfreedom"
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Rejected:the grayzone
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-03_09:34: query_youtube: Listing for QKEY:judgingfreedom contains 19 rows
+2026-10-03_09:34: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Jlyg4s
+2026-10-03_09:34: job_start: TITLE:Max Blumenthal : Netanyahu's Last Election? 
+2026-10-03_09:34: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=xcdC8L5exMc" PID:1187170
+2026-10-03_09:34: yt Executed from: Script
+2026-10-03_09:34: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate chrome "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=xcdC8L5exMc"
+2026-10-03_09:34: action_do: GENERATING HEADER
+2026-10-03_09:34: action_do: COMPLETED
+2026-10-03_09:34: action_do: POST-PROCESSING
+2026-10-03_09:34: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - Max_Blumenthal_-_Netanyahu_s_Last_Election.mp4
+2026-10-03_09:34: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - Max_Blumenthal_-_Netanyahu_s_Last_Election.mp4
+2026-10-03_09:34: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - Max_Blumenthal_-_Netanyahu_s_Last_Election.mp4
+2026-10-03_09:34: set_final_fn: Clean filename:Judging Freedom - Max Blumenthal - Netanyahu's Last Election.mp4
+2026-10-03_09:34: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-03_09:34: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Jlyg4s was cleared for:judgingfreedom from:action_do
+2026-10-03_09:42: yt Executed from: Command Line
+2026-10-03_09:42: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox "https://www.youtube.com/watch?v=iWIVjKtw9MM"
+2026-10-03_09:43: yt Cleaning file name:NYT_Publishes_More_Contradictory_Evidence_on_Cornell_Case-[iWIVjKtw9MM].mp4
+2026-10-03_09:46: query_youtube: Creating listing for QKEY:neil-oliver, query is not strict
+2026-10-03_09:46: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Neil Oliver
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:neil_oliver
+	-> QKEY:neil-oliver
+	-> SMSG:
+	-> TYPE:standard
+2026-10-03_09:46: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "neil-oliver"
+2026-10-03_09:46: query_youtube: Retained titles matching:neil oliver
+2026-10-03_09:46: query_youtube: Retained titles matching:neil oliver
+2026-10-03_09:46: query_youtube: Retained titles matching:neil oliver
+2026-10-03_09:46: query_youtube: Listing for QKEY:neil-oliver contains 3 rows
+2026-10-03_09:49: yt Executed from: Command Line
+2026-10-03_09:49: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox "https://www.youtube.com/watch?v=7Qdm4EiItsM"
+2026-10-03_09:49: yt Cleaning file name:INTEL_Roundtable_w_Larry_Johnson_Joe_Kent_-_Week_Wrap_2-OCT-[7Qdm4EiItsM].mp4
+2026-10-03_11:07: query_youtube: Creating listing for QKEY:thegrayzone, query is strict
+2026-10-03_11:07: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:The Grayzone
+	-> ENGINE:youtube
+	-> EOPT:s
+	-> FKEY:the_grayzone
+	-> QKEY:thegrayzone
+	-> SMSG:
+	-> TYPE:strict
+2026-10-03_11:07: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "thegrayzone"
+2026-10-03_11:07: query_youtube: Listing for QKEY:thegrayzone contains 2 rows
+2026-10-03_11:07: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.Y7MWEk
+2026-10-03_11:07: job_start: TITLE:Flydubai Airs Out Israeli Elections - Max On Judging Freedom 
+2026-10-03_11:07: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=0W6MzmVEQRk" PID:1234526
+2026-10-03_11:07: yt Executed from: Script
+2026-10-03_11:07: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=0W6MzmVEQRk"
+2026-10-03_11:07: action_do: GENERATING HEADER
+2026-10-03_11:07: action_do: COMPLETED
+2026-10-03_11:07: action_do: POST-PROCESSING
+2026-10-03_11:07: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/The_Grayzone - Flydubai_airs_out_Israeli_elections_-_Max_on_Judging_Freedom.mp4
+2026-10-03_11:07: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/The_Grayzone - Flydubai_airs_out_Israeli_elections_-_Max_on_Judging_Freedom.mp4
+2026-10-03_11:07: set_final_fn: Overwriting file:The_Grayzone - Flydubai_airs_out_Israeli_elections_-_Max_on_Judging_Freedom.mp4
+2026-10-03_11:07: set_final_fn: Clean filename:Grayzone - Flydubai Airs Out Israeli Elections - Max On Judging.mp4
+2026-10-03_11:07: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-03_11:07: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.Y7MWEk was cleared for:thegrayzone from:action_do

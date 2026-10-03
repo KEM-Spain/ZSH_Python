@@ -1898,8 +1898,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			[[ ${?} -eq 2 ]] && { clear && continue }
 			MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
 			_OB=($(sel_get_interior_coords))
-			msg_box -x10 -y${_OB[Y]} -w${_OB[W]} ${MSG} # Position and display msg
-			[[ ${ENGINE} == 'rumble' ]] && _QUERY_OPTS[EXTRA]=' --impersonate chrome'
+			msg_box -x10 -y${_OB[Y]} -w${_OB[W]} ${MSG}
 			if query_${_QUERY_OPTS[ENGINE]};then # Call the extractor
 				download_select ${_QUERY_OPTS[QKEY]}
 			fi

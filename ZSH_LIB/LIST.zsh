@@ -754,6 +754,7 @@ list_select () {
 	list_display_page
 
 	# Main navigation loop
+	stty -echo
 	while true;do
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}STARTING NAVIGATION FOR PAGE:${_PAGE_DATA[PAGE]}${RESET}"
 
@@ -821,6 +822,7 @@ list_select () {
 		done
 		list_navigator ${NAV_KEY}
 	done
+	stty echo
 
 	return $(list_get_selected_count)
 }

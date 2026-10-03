@@ -343,6 +343,7 @@ msg_box () {
 
 	# Prepare display
 	[[ ${SO} == 'true' ]] && tput smso # Standout mode
+	stty -echo
 
 	# Call once for CONTINUOUS messages
 	if [[ ${CONTINUOUS} == 'true' ]];then
@@ -521,6 +522,7 @@ msg_box () {
 	# Restore display
 	tput rc # Restore cursor position
 	tcup ${_MAX_ROWS} ${_MAX_COLS} # Drop cursor to bottom right corner
+	stty echo
 }
 
 msg_box_align () {

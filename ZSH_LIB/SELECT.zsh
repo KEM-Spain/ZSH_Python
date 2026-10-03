@@ -573,6 +573,7 @@ sel_scroll () {
 		sel_cursor_hilite $(( NDX + X_OFF )) ${_SEL_LIST_META[Y]} ${_PAGE[${NDX}]} # Initial item hilite
 
 		# Get user inputs
+		stty -echo
 		while true;do
 			KEY=$(get_keys)
 			_SEL_KEY='?'
@@ -649,6 +650,7 @@ sel_scroll () {
 			fi
 		done
 	done
+	stty echo
 
 	return 0
 }
