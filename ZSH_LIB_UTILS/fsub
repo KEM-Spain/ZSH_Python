@@ -1027,7 +1027,7 @@ fi
 if [[ ${PREPEND} == "true" ]];then
 	logit ${_LOG} "Prepend was called with:${PREPEND_TAG}"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Prepending file names" >&2
-	do_prepend ${PREPEND_TAG}
+	do_prepend ${(C)PREPEND_TAG}
 	[[ ${?} -ne 0 ]] && echo "No matches for prepend" >&2
 fi
 

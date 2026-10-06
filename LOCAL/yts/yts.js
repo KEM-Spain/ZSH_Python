@@ -77,11 +77,11 @@
 				v_arg = v_arg.replace(/ /g, '')
 				if (v_arg.indexOf(t_arg) >= 0) { /* searchterm is in author */
 					if (msgout === false) {
-						console.log("strict accept:"+v_arg+" == "+t_arg) /* searchterm NOT in title */
+						console.log("strict pass:"+v_arg+" == "+t_arg) /* searchterm found */
 						msgout = true
 					}
 				} else {
-					console.log("strict reject:"+v_arg+" != "+t_arg) /* searchterm NOT in title */
+					console.log("strict fail:"+v_arg+" != "+t_arg) /* searchterm NOT found */
 					return	
 				}
 			}

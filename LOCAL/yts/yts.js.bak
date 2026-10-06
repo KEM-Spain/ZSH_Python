@@ -1,4 +1,4 @@
-(async function(){
+(async function() {
 	const os = require("os")
 	const HOME = os.homedir()
 	const MODS = "/node_modules"
@@ -40,6 +40,7 @@
 	if (strict) { 
 		console.log("strict filter active")
 	}
+
 	videos.forEach(function (v) {
 		has_match = false
 		if (age === "all") { /* any age is default */
@@ -67,6 +68,7 @@
 		} 
 		v.title = v.title.replace(/\|/g, ':') /* titles contain pipe delim */
 		v.author.name = v.author.name.replace(/\|/g, '') /* author contains pipe delim */
+
 		if (has_match) {
 			if (strict) { /* searchterm must be in author */
 				t_arg = searchterm.toLowerCase()

@@ -168,8 +168,6 @@ sel_cursor_norm () {
 sel_disp_page () {
 	local NDX=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
 	for (( NDX=1; NDX <= ${#_PAGE}; NDX++ ));do
 		sel_cursor_norm $(( _SEL_LIST_META[X] + NDX - 1 )) ${_SEL_LIST_META[Y]} ${_PAGE[${NDX}]}
 	done
@@ -184,15 +182,12 @@ sel_get_position () {
 	local PAGE=0
 	local NDX=0
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
 	if [[ -e ${_SELECT_TAG_FILE} ]];then
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 		IFS='|' read -r PAGE NDX < ${_SELECT_TAG_FILE} # Retrieve stored position
 		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
 		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
 		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
-		#/bin/rm -f ${_SELECT_TAG_FILE} # Remove tag file
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}: _TAG_DATA:${(kv)_TAG_DATA}"
 	fi
 }
 

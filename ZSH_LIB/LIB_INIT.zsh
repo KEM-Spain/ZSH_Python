@@ -1,4 +1,5 @@
 # Default Options
+# TODO: Identify 'no arg' functions and eliminate calls to dbg_arglist
 setopt warncreateglobal # Monitor locals
 setopt rematchpcre # Use perl regex
 
@@ -66,7 +67,7 @@ ${_HIGH_DBG} HIGH
 # LIB var inits
 _CURSOR_STATE=on
 _DEBUG=0
-_DEBUG_INIT=true
+[[ ${_DEBUG_INIT} == 'false' ]] && _DEBUG_INIT=true || _DEBUG_INIT=false
 _EXIT_MSGS=''
 _EXIT_SCRUB=true
 _SMCUP=false
