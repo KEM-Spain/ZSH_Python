@@ -650,7 +650,7 @@ logit () {
 		if [[ -n ${_LOG} ]];then
 			LOG=${_LOG} # Log is defined
 		else
-			LOG=/tmp/${0}.log # Define log
+			LOG=/tmp/${0}.log # Define default log
 		fi
 	fi
 

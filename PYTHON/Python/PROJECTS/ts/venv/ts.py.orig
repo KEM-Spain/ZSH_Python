@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-import cloudscraper
 import os
 import sys
 
+# Early bootstrap error logger to catch import or startup crashes before logging initializes
 def _bootstrap_log(message):
     try:
         log_dir = os.path.expanduser('~/.local/share/ts')
@@ -33,6 +33,7 @@ except Exception as e:
     _bootstrap_log(f"[FATAL] Import error during startup: {e}")
     raise
 
+# Constants
 BOLD = "\033[1m"
 DEFAULT_ENGINE = "pb"
 ITALIC = "\033[3m"
@@ -166,10 +167,10 @@ class SearchWin(Gtk.Window):
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
 
+        # Header / Engine Switcher
         engine_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         engine_label = Gtk.Label(label="Search Engine:")
-        engine_label.set_xalign(0)
-        engine_label.set_yalign(0.5)
+        engine_label.set_alignment(0, 0.5)
         
         self.engine_combo = Gtk.ComboBoxText()
         for key, name in SUPPORTED_ENGINES.items():
@@ -180,6 +181,7 @@ class SearchWin(Gtk.Window):
         engine_box.pack_start(engine_label, False, False, 0)
         engine_box.pack_start(self.engine_combo, True, True, 0)
 
+        # Search Entry with Auto-Completion
         self.entry = Gtk.Entry()
         self.entry.set_placeholder_text("Enter search phrase...")
         self.entry.connect("activate", self.on_search)
@@ -194,8 +196,10 @@ class SearchWin(Gtk.Window):
         completion.set_inline_completion(True)
         self.entry.set_completion(completion)
 
+        # Spinner
         self.spinner = Gtk.Spinner()
 
+        # Action Buttons
         bbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_search = Gtk.Button(label="Search")
         btn_search.connect("clicked", self.on_search)
@@ -353,6 +357,7 @@ class ListingWin(Gtk.Window):
 
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
 
+        # Top Control Bar (Engine Switcher & Actions)
         top_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         engine_label = Gtk.Label(label="Engine:")
         self.engine_combo = Gtk.ComboBoxText()
@@ -364,6 +369,7 @@ class ListingWin(Gtk.Window):
         top_bar.pack_start(engine_label, False, False, 0)
         top_bar.pack_start(self.engine_combo, False, False, 0)
 
+        # TreeView Setup
         self.treeview = Gtk.TreeView(model=self.torrent_list_store)
         self.treeview.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
         self.treeview.set_cursor(0)
@@ -389,6 +395,7 @@ class ListingWin(Gtk.Window):
         scrollable.set_vexpand(True)
         scrollable.add(self.treeview)
 
+        # Bottom Buttons
         bbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_download = Gtk.Button(label="Download Selected")
         btn_download.connect("clicked", self.on_download)
@@ -439,51 +446,43 @@ class EztvModel:
     @staticmethod
     def get_list(search_term):
         log = logging.getLogger("ts_logger")
-        url = f"{EztvModel.myUrl}/search/{search_term.replace(' ', '-')}"
-        log.debug(f"[EZTV] Requesting URL with cloudscraper: {url}")
+        url = f"{EztvModel.myUrl}/search/{search_term.replace(' ', '%20')}"
+        log.debug(f"[Eztv] Requesting URL: {url}")
         try:
-            scraper = cloudscraper.create_scraper()
-            page = scraper.get(url, headers=HEADERS, timeout=15)
-            log.debug(f"[EZTV] Response status: {page.status_code}, Length: {len(page.content)}")
-        except Exception as e:
-            log.error(f"[EZTV] Request failed: {e}")
+            page = requests.get(url, headers=HEADERS, timeout=10)
+            log.debug(f"[Eztv] Response status: {page.status_code}, Length: {len(page.content)}")
+        except requests.RequestException as e:
+            log.error(f"[Eztv] Request failed: {e}")
             return 1, None
 
-        soup = Soup(page.content.decode('ISO-8859-1', errors='ignore'), features="html.parser")
+        detail = Strainer('tr', {'class': 'forum_header_border'})
+        soup = Soup(page.content.decode('ISO-8859-1', errors='ignore'), features="html.parser", parse_only=detail)
+        tds = soup.find_all("td", attrs={"class": "forum_thread_post", "align": "center"})
+        log.debug(f"[Eztv] Found {len(tds)} matching tds.")
+
+        a_tags = [td.find_all("a", attrs={"class": "magnet"})[0] for td in tds if td.find_all("a", attrs={"class": "magnet"})]
+        links = [a["href"] for a in a_tags]
+        raw_titles = [a["title"] for a in a_tags]
+
+        if not raw_titles or all(search_term.lower() not in rt.lower() for rt in raw_titles):
+            log.debug("[Eztv] No matching titles found.")
+            return 1, None
+
+        titles = [ascii_only(re.sub(r'\[eztv\]|\(.*\)', '', rt.replace('Magnet Link', ''))) for rt in raw_titles]
+        sz_age = [str(tag.get_text()).strip() for tag in soup.find_all("td", attrs={"class": "forum_thread_post", "align": "center"}) if not tag.find('a') and len(tag.attrs) == 2]
         
-        rows = soup.find_all("tr", attrs={"class": "forum_thread_post"})
-        log.debug(f"[EZTV] Found {len(rows)} result rows.")
-        if not rows:
-            # Fallback check for generic table rows if specific class changes
-            rows = soup.find_all("tr", attrs={"name": "hover"})
-            log.debug(f"[EZTV] Fallback rows check found {len(rows)} rows.")
-            if not rows:
-                return 1, None
+        ages, raw_sizes = [], []
+        for i, val in enumerate(sz_age):
+            (raw_sizes if i % 2 == 0 else ages).append(val)
 
-        torrent_list = []
-        for row in rows:
-            cols = row.find_all("td")
-            if len(cols) < 4:
-                continue
-            try:
-                title = cols[1].get_text().strip()
-                link_tag = cols[2].find("a", attrs={"class": "magnet"})
-                if not link_tag:
-                    # Fallback link search
-                    link_tag = cols[2].find("a", href=lambda h: h and h.startswith("magnet:"))
-                link = link_tag['href'] if link_tag and link_tag.has_attr('href') else ""
-                size = cols[3].get_text().strip()
-                age = cols[4].get_text().strip() if len(cols) > 4 else ""
-                seeds = 0 
-                leeches = 0
-                if title and link:
-                    torrent_list.append((ascii_only(title), age, seeds, leeches, size, link))
-            except Exception as ex:
-                log.debug(f"[EZTV] Row parse error: {ex}")
-                continue
+        sizes = [sz.replace('GB', 'G').replace('MB', 'M').replace('KB', 'K') for sz in raw_sizes]
+        seeds = [sd.get_text().strip() if sd.get_text().strip().isdigit() else 0 for sd in soup.find_all("td", attrs={"align": "center", "class": "forum_thread_post_end"})]
+        leeches = [0] * len(seeds)
 
-        log.debug(f"[EZTV] Parsed {len(torrent_list)} torrent items successfully.")
-        return (0, torrent_list) if torrent_list else (1, None)
+        torrent_list = [(titles[i], ages[i], seeds[i], leeches[i], sizes[i], links[i]) for i in range(min(len(titles), len(links), len(ages), len(seeds), len(sizes)))]
+        log.debug(f"[Eztv] Parsed {len(torrent_list)} torrent items.")
+        return 0, torrent_list
+
 
 class LimeModel:
     myUrl = ENGINE_URLS["lime"]
@@ -506,14 +505,13 @@ class LimeModel:
         divs = soup.find_all("div", attrs={"class": "tt-name"})
         log.debug(f"[Lime] Found {len(divs)} divs with class 'tt-name'.")
         if not divs:
-            log.debug("[Lime] No divs found matching tt-name")
             return 1, None
 
         titles = [str(div.get_text()).strip() for div in divs]
         age_size = [str(td.get_text()).strip() for td in soup.find_all("td", attrs={"class": "tdnormal"})]
-        leeches = [str(td.get_text()).strip() for td in soup.find_all("td", attrs={"class": "tdleech"})]
-        seeds = [str(td.get_text()).strip() for td in soup.find_all("td", attrs={"class": "tdseed"})]
-        links = [div.find('a')['href'] for div in divs if div.find('a') and div.find('a').has_attr('href')]
+        leeches = [int(lr) if lr.isdigit() else 0 for lr in [str(td.get_text()).strip() for td in soup.find_all("td", attrs={"class": "tdleech"})]]
+        seeds = [int(sr) if sr.isdigit() else 0 for sr in [str(td.get_text()).strip() for td in soup.find_all("td", attrs={"class": "tdseed"})]]
+        links = [div.a['href'] for div in divs if div.a and 'href' in div.a]
 
         raw_ages, raw_sizes = [], []
         for i, val in enumerate(age_size):
@@ -522,16 +520,10 @@ class LimeModel:
         ages = [re.sub(r'\s[-]\s.*$', '', ra) for ra in raw_ages]
         sizes = [rs.replace('GB', 'G').replace('MB', 'M').replace('KB', 'K') for rs in raw_sizes]
 
-        log.debug(f'[Lime] Extracted counts -> titles: {len(titles)}, ages: {len(ages)}, seeds: {len(seeds)}, leeches: {len(leeches)}, sizes: {len(sizes)}, links: {len(links)}')
-
-        min_len = min(len(titles), len(ages), len(seeds), len(leeches), len(sizes), len(links))
-        if min_len == 0:
-            log.debug("[Lime] Mismatched or zero-length arrays detected.")
-            return 1, None
-
-        torrent_list = [(ascii_only(titles[i]), ages[i], seeds[i], leeches[i], sizes[i], links[i]) for i in range(min_len)]
-        log.debug(f"[Lime] Parsed {len(torrent_list)} torrent items successfully.")
+        torrent_list = [(ascii_only(titles[i]), ages[i], seeds[i], leeches[i], sizes[i], links[i]) for i in range(min(len(titles), len(ages), len(seeds), len(leeches), len(sizes), len(links)))]
+        log.debug(f"[Lime] Parsed {len(torrent_list)} torrent items.")
         return 0, torrent_list
+
 
 class PBModel:
     myUrl = ENGINE_URLS["pb"]
@@ -549,7 +541,7 @@ class PBModel:
             d_year = date_sects.group(2).strip()
             d_year = str(today.year) if ":" in d_year or not d_year else d_year
             return d_year + "-" + date_sects.group(1)
-        return "Unknown"
+        return None
 
     @staticmethod
     def get_list(search_term):
@@ -570,42 +562,28 @@ class PBModel:
         for t in soup.find_all("tr"):
             if t.find("td", attrs={"class": "vertTh"}):
                 t_list = t.find_all()
-                if len(t_list) > 2:
+                if len(t_list) > 4:
                     titles.append(ascii_only(t_list[2].text.strip()))
-                    dates.append(PBModel.date_cleaner(t_list[4]) if len(t_list) > 4 else "Unknown")
+                    dates.append(PBModel.date_cleaner(t_list[4]))
 
         log.debug(f"[PB] Extracted {len(titles)} raw titles.")
         if not titles:
             return 1, None
 
-        magnets = []
-        for a in soup.find_all("a", href=True):
-            if a['href'].startswith("magnet:?"):
-                magnets.append(a['href'])
-        
-        log.debug(f"[PB] Extracted {len(magnets)} magnet links.")
-
+        links = soup.find_all("a", attrs={"title": re.compile('^Download')})
         tds = soup.find_all("td", attrs={"align": "right"})
+
         sizes, seeds, leeches = [], [], []
-        
-        if len(tds) >= 3:
-            a, b, c = 0, 1, 2
-            while c < len(tds):
-                sizes.append(PBModel.size_cleaner(tds[a].text))
-                seeds.append(tds[b].text.strip())
-                leeches.append(tds[c].text.strip())
-                a, b, c = a + 3, b + 3, c + 3
-        
-        log.debug(f"[PB] Extracted sizes: {len(sizes)}, seeds: {len(seeds)}, leeches: {len(leeches)}")
+        a, b, c = 0, 1, 2
+        while c < len(tds):
+            sizes.append(PBModel.size_cleaner(tds[a].text))
+            seeds.append(tds[b].text.strip())
+            leeches.append(tds[c].text.strip())
+            a, b, c = a + 3, b + 3, c + 3
 
-        min_len = min(len(titles), len(dates), len(seeds), len(leeches), len(sizes), len(magnets)) if (titles and dates and seeds and leeches and sizes and magnets) else 0
-        
-        if min_len == 0:
-            log.debug(f"[PB] Mismatched array lengths. Titles: {len(titles)}, Dates: {len(dates)}, Seeds: {len(seeds)}, Leeches: {len(leeches)}, Sizes: {len(sizes)}, Magnets: {len(magnets)}")
-            return 1, None
-
-        torrent_list = [(titles[i], dates[i], seeds[i], leeches[i], sizes[i], magnets[i]) for i in range(min_len)]
-        log.debug(f"[PB] Parsed {len(torrent_list)} torrent items successfully.")
+        magnets = [link['href'] for link in links if 'href' in link]
+        torrent_list = [(titles[i], dates[i], seeds[i], leeches[i], sizes[i], magnets[i]) for i in range(min(len(titles), len(dates), len(seeds), len(leeches), len(sizes), len(magnets)))]
+        log.debug(f"[PB] Parsed {len(torrent_list)} torrent items.")
         return 0, torrent_list
 
 
@@ -631,21 +609,11 @@ class TorrentRequest:
                 self.engine_key = listing_win.popup_entry
                 continue
             elif listing_win.download:
-                log = logging.getLogger("ts_logger")
                 for title in listing_win.selected_titles:
                     magnet = listing_win.magnet_dict.get(title)
                     if magnet:
-                        try:
-                            log.debug(f"Launching client for magnet: {title[:30]}...")
-                            subprocess.Popen(
-                                [TORRENT_CLIENT, magnet],
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL,
-                                start_new_session=True
-                            )
-                            time.sleep(1.2)
-                        except Exception as e:
-                            log.error(f"Failed to launch torrent client: {e}")
+                        subprocess.Popen([TORRENT_CLIENT, magnet], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        time.sleep(1.2)
                 app_exit()
 
 

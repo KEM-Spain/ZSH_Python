@@ -224,17 +224,17 @@ _OPTLIST[zle]="ZLE"
 
 # Functions
 get_info () {
-	local SEL_VAL=${1}
+	local SEL_VAL=${1:l}
+	local KEYWORD=''
+	local DESC=''
+	local MANABLE=''
+	local NDX=0
+	local -a WORD_MATCH=()
 	local M
-	local KEYWORD
-	local DESC
-	local MANABLE
-	local NDX
 
-	if [[ ${SEL_VAL:l} != 'nomatch' && ${SEL_VAL:l} != 'notify' ]];then
-		KEYWORD=$(sed 's/^no//' <<<${SEL_VAL})
-	else
-		KEYWORD=${SEL_VAL}
+	KEYWORD=${SEL_VAL}
+	if [[ ${KEYWORD} != 'nomatch' && ${KEYWORD:l} != 'notify' ]];then
+		[[ ${KEYWORD} =~ "^no" ]] && KEYWORD=$(sed 's/^no//' <<<${KEYWORD})
 	fi
 
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} KEYWORD:${KEYWORD} _OPTLIST:${_OPTLIST[${KEYWORD}]}"
@@ -245,7 +245,8 @@ get_info () {
 		DESC=$(man zshoptions | sed -n "/${MANABLE}/,/^ *$/p" | tr -s '[:space:]' | fold -w80)
 		msg_stream -f100 -l "man --nh --nj --ascii zshoptions | tr -d '[<>]' | sed -nr '/^[[:space:]]*${MANABLE}/,/^[[:space:]]{,10}([A-Z]|[_]){2}/p' | head -n -2"
 	else
-		msg_box -p -PK "${KEYWORD} is an invalid option"
+		WORD_MATCH=("${(f)$(for M in ${(k)_OPTLIST};do [[ ${M} =~ ${KEYWORD} ]] && echo ${M}; done)}")
+		msg_box -p -PK -H1 "zsh option:<w>${KEYWORD} <r>not found<N>|<U>Possible matches<N>|<Z>|$(msg_list_bullet ${WORD_MATCH})"
 	fi
 
 	msg_box_clear
@@ -324,10 +325,11 @@ shift $(( OPTIND - 1 ))
 tabs -8
 
 if [[ -n ${1} ]];then
-	# Arg passed; go direct; no list
-	_LOCAL_LIST+="${1}"
-	get_info 1
-	exit_leave
+	if get_info ${1};then
+		_LOCAL_LIST+="${1}" # Arg passed; go direct; no list
+	else
+		exit_leave
+	fi
 else
 	if [[ ${INTERACTIVE_LIST} == 'false' ]];then
 		(

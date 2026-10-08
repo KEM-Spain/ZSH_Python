@@ -129,24 +129,26 @@ _reload_aliases () {
 }
 
 _reload_funcs () {
+	local -a MODIFIED=()
+	local C_TIME=''
+	local F_TIME=''
+	local HOURS=0
 	local F
-	local FILE
-	local HOURS
 
 	MODIFIED=("${(f)$(
 		find -L ${_SYS_FUNCTIONS} -type f
 		find -L ${_CMP_FUNCTIONS} -type f
 	)}")
 
-	NOW=$(date +'%s')
+	C_TIME=$(date +'%s')
 	for F in ${MODIFIED};do
-		FILE=$(date +'%s' -r ${F}) # Last file mod secs
-		HOURS=$(((NOW - FILE)/3600)) # Last file mod hours
+		F_TIME=$(date +'%s' -r ${F}) # Last file mod secs
+		HOURS=$(((C_TIME - F_TIME)/3600)) # Last file mod hours
 		if [[ ${HOURS} -le 24 ]];then # Today?
 			echo "Refreshing functions..."
-			unfunction ${F} &> /dev/null
-			autoload -Uz ${F}
-			sudo touch -d '25 hours ago' $(realpath ${F})
+			unfunction ${F:t} &> /dev/null
+			autoload -Uz ${F:t}
+			touch -d '25 hours ago' $(realpath ${F})
 		fi
 	done
 }

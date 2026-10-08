@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+import sys
+
+def patch_file():
+    filename = "ts.py"
+    try:
+        with open(filename, "r") as f:
+            code = f.read()
+    except FileNotFoundError:
+        print(f"Error: {filename} not found.")
+        sys.exit(1)
+
+    # 1. Guarantee top-level import
+    if "import cloudscraper" not in code:
+        code = code.replace("import requests", "import requests\nimport cloudscraper")
+
+    # Clean up any stray/misplaced imports in code body
+    code = code.replace("\n    import cloudscraper\n", "\n")
+
+    # 2. Locate and replace EztvModel
+    start_idx = code.find("class EztvModel:")
+    if start_idx == -1:
+        print("Error: class EztvModel not found in ts.py")
+        sys.exit(1)
+
+    end_idx = code.find("class ", start_idx + len("class EztvModel:"))
+    if end_idx == -1:
+        end_idx = len(code)
+
+    eztv_replacement = """class EztvModel:
+    myUrl = ENGINE_URLS["eztv"]
+
+    @staticmethod
+    def get_list(search_term):
+        log = logging.getLogger("ts_logger")
+        url = f"{EztvModel.myUrl}/search/{search_term.replace(' ', '-')}"
+        log.debug(f"[EZTV] Requesting URL with cloudscraper: {url}")
+        try:
+            scraper = cloudscraper.create_scraper()
+            page = scraper.get(url, headers=HEADERS, timeout=15)
+            log.debug(f"[EZTV] Response status: {page.status_code}, Length: {len(page.content)}")
+        except Exception as e:
+            log.error(f"[EZTV] Request failed: {e}")
+            return 1, None
+
+        soup = Soup(page.content.decode('ISO-8859-1', errors='ignore'), features="html.parser")
+        
+        rows = soup.find_all("tr", attrs={"class": "forum_thread_post"})
+        log.debug(f"[EZTV] Found {len(rows)} result rows.")
+        if not rows:
+            # Fallback check for generic table rows if specific class changes
+            rows = soup.find_all("tr", attrs={"name": "hover"})
+            log.debug(f"[EZTV] Fallback rows check found {len(rows)} rows.")
+            if not rows:
+                return 1, None
+
+        torrent_list = []
+        for row in rows:
+            cols = row.find_all("td")
+            if len(cols) < 4:
+                continue
+            try:
+                title = cols[1].get_text().strip()
+                link_tag = cols[2].find("a", attrs={"class": "magnet"})
+                if not link_tag:
+                    # Fallback link search
+                    link_tag = cols[2].find("a", href=lambda h: h and h.startswith("magnet:"))
+                link = link_tag['href'] if link_tag and link_tag.has_attr('href') else ""
+                size = cols[3].get_text().strip()
+                age = cols[4].get_text().strip() if len(cols) > 4 else ""
+                seeds = 0 
+                leeches = 0
+                if title and link:
+                    torrent_list.append((ascii_only(title), age, seeds, leeches, size, link))
+            except Exception as ex:
+                log.debug(f"[EZTV] Row parse error: {ex}")
+                continue
+
+        log.debug(f"[EZTV] Parsed {len(torrent_list)} torrent items successfully.")
+        return (0, torrent_list) if torrent_list else (1, None)
+
+"""
+
+    code = code[:start_idx] + eztv_replacement + code[end_idx:]
+
+    with open(filename, "w") as f:
+        f.write(code)
+    print("Successfully patched EztvModel in ts.py!")
+
+if __name__ == "__main__":
+    patch_file()

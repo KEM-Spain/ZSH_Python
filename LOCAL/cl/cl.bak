@@ -19,7 +19,10 @@ WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
-  
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
+RED_FG_I="${ITALIC}${RED_FG}"
+GREEN_FG_I="${ITALIC}${GREEN_FG}"
+
 # Declarations
 typeset -a _LOCAL_FILES
 typeset -a _PROD_DIRS=(/usr/local/bin /usr/local/lib ${HOME}/.local/bin ${HOME}/.local/share)
@@ -29,6 +32,8 @@ _CODEBASE=~/Code
 _LOCAL=${_CODEBASE}/LOCAL
 _LANG=${_CODEBASE}/LANG
 _PYPROJ=${_LANG}/Python/PROJECTS
+_LOG=/tmp/cl.log
+_SCRIPT=${0:t}
 
 # Functions
 get_prod () {
@@ -36,12 +41,22 @@ get_prod () {
 	local EXELIST=("${(f)$(fut findexe ${FN:t})}")
 	local F D
 	local FX DX
+	local PROD_EXE=''
+
+	logit ${_LOG} "${0}: FN:${FN}"
+
+	if [[ -e ${PWD}/.prod_target ]];then
+		PROD_EXE="$(< ${PWD}/.prod_target)"
+		logit ${_LOG} "${0}: returning PROD_EXE:${PROD_EXE}"
+		echo ${PROD_EXE}
+		return
+	fi
 
 	for F in ${EXELIST};do
-		FX=${F:gs/\//_/}
+		FX=$(tr '/' '_' <<<${F})
 		for D in ${_PROD_DIRS};do
-			DX=${D:gs/\//_/}
-			if [[ ${DX} =~ ${FX} ]];then
+			DX=$(tr '/' '_' <<<${D})
+			if grep -q ${DX} <<<${FX};then
 				echo ${F}
 				return
 			fi
@@ -49,10 +64,29 @@ get_prod () {
 	done
 }
 
-# Usage
-if [[ ${1} == '-H' ]];then
+logit () {
+	local LOG=''
+	local MSG=''
+	local STAMP=$(date +'%Y-%m-%d_%H:%M:')
+
+	# Collect args
+	[[ ${#} -gt 1 ]] && LOG=${1} && shift
+	MSG=${@}
+
+	if [[ -z ${LOG} ]];then # No log passed
+		if [[ -n ${_LOG} ]];then
+			LOG=${_LOG} # Log is defined
+		else
+			LOG=/tmp/${0}.log # Define default log
+		fi
+	fi
+
+	echo "${STAMP} ${MSG}" >> ${LOG}
+}
+
+usage () {
 	tabs 5
-	echo "\n${WHITE_FG}Usage${RESET}:${0:t} [-H] [<dir>]"
+	echo "\n${WHITE_FG}Usage${RESET}:${_SCRIPT} [-H] [<dir>]"
 	echo "${WHITE_FG} Desc${RESET}:Change to development directory\n"
 	echo "Directories searched:\n"
 	echo "${_CODEBASE}"
@@ -60,10 +94,16 @@ if [[ ${1} == '-H' ]];then
 	echo "${_LANG}"
 	echo "${_PYPROJ}"
 	echo
-	return
-fi
+	exit
+}
+
+# Usage
+[[ ${1} == '-H' ]] && usage
 
 # Execution
+[[ ${#} -gt 1 ]] && echo "${RED_FG}Too many args${RESET}" && usage
+logit ${_LOG} "${_SCRIPT}: PWD:${PWD} ARGS:${1}"
+
 [[ -z ${1} ]] && cd ${_CODEBASE}
 
 if [[ -d ${_LOCAL}/${1} ]];then
@@ -94,23 +134,27 @@ _LOCAL_FILES=()
 	LONGEST=0
 	for F in ${PWD}/*;do
 		[[ ${F:e} == 'bak' ]] && continue
-		if [[ $(file ${F}) =~ 'zsh script' || ${F:e} == 'zsh' || ${F:e} == 'js' ]];then
+		if [[ $(file ${F}) =~ 'zsh script' || ${F:e} == 'zsh' || ${F:e} == 'js' || ${F:e} == 'py' ]];then
 			_LOCAL_FILES+=${F}
-			[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F}
+			[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F:t}
 		fi
 	done
 } >/dev/null 2>&1
 
-
+PROD=''
 if [[ -n ${_LOCAL_FILES} ]];then
 	for F in ${_LOCAL_FILES};do
+		logit ${_LOG} "${_SCRIPT}: F:${F}"
 		PROD=$(get_prod ${F})
+		logit ${_LOG} "${_SCRIPT}: PROD:${PROD}"
 		if [[ -n ${PROD} ]];then
-			diff -b ${F} ${PROD} >/dev/null 2>&1
-			if [[ ${?} -ne 0 ]];then
-				printf "Development:${WHITE_FG}%*s${RESET} ${BOLD}${RED_FG}%-15s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F}   'does not match' ${PROD}
-			else
-				printf "Development:${WHITE_FG}%*s${RESET} ${BOLD}${GREEN_FG}%-15s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F} '       matches' ${PROD}
+			if [[ ${F:t} == ${PROD:t} ]];then
+				diff -b ${F} ${PROD} >/dev/null 2>&1
+				if [[ ${?} -ne 0 ]];then
+					printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${RED_FG_I}%-s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'does not match' ${PROD:t}
+				else
+					printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${GREEN_FG_I}%-s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'matches' ${PROD:t}
+				fi
 			fi
 		fi
 	done
