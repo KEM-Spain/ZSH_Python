@@ -293,6 +293,7 @@ action_do () {
 						logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 						msg_box -C -jl "<B><g>Download is complete<N>" # Show completed message
 						_DOWNLOADS[${M}]=true
+						g_PRESERVE_LOG=false
 						logit ${_YT_DBG_LOG} "${0}: POST-PROCESSING"
 						post_process
 						log_add ${M}
@@ -853,7 +854,7 @@ item_decorate () {
 	local NDX=${1}
 	local STR
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."

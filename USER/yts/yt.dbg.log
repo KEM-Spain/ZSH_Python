@@ -1,13 +1,17 @@
-2026-10-10_11:13: log_update: LOG lines BEFORE update:10 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-10_11:13: log_update: LOG lines AFTER update:10 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-10_11:13: query_rumble:
+2026-10-10_18:20: log_update: LOG lines BEFORE update:12 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-10_18:20: log_update: Skipping expired inode:26869862
+2026-10-10_18:20: log_update: Skipping expired inode:26869795
+2026-10-10_18:20: log_update: Skipping expired inode:26869800
+2026-10-10_18:20: log_update: LOG lines AFTER update:9 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-10_18:20: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
+2026-10-10_18:20: query_youtube:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Jimmy Dore
-	-> ENGINE:rumble
-	-> EOPT:c
-	-> FKEY:jimmy_dore
-	-> QKEY:thejimmydoreshow
-	-> TYPE:channel
-2026-10-10_11:13: query_rumble: QUERY:https://rumble.com/c/thejimmydoreshow?page=1
-2026-10-10_11:13: query_rumble: Listing for QKEY:thejimmydoreshow contains 25 rows
+	-> DKEY:Alex Christoforou
+	-> ENGINE:youtube
+	-> EOPT:s
+	-> FKEY:alex_christoforou
+	-> QKEY:alexchristoforou
+	-> TYPE:strict
+2026-10-10_18:20: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
+2026-10-10_18:20: query_youtube: Listing for QKEY:alexchristoforou contains 3 rows
