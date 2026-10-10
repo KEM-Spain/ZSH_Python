@@ -87,7 +87,7 @@ tcup () {
 	local CAUGHT_BAD_X=false
 	local CAUGHT_BAD_Y=false
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	#[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${X} -lt 0 ]] && X=1 && CAUGHT_BAD_X=true
 	[[ ${Y} -lt 0 ]] && Y=1 && CAUGHT_BAD_Y=true

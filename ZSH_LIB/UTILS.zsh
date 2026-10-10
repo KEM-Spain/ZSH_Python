@@ -218,20 +218,59 @@ cmd_get_raw () {
 	echo ${CMD_LINE}
 }
 
-fix_mojibake () {
-  # Strip UTF-8 BOM, replace Mojibake, and clean leftover replacement chars (U+FFFD)
-  LC_ALL=C printf '%s\n' "$*" | LC_ALL=C sed \
-    -e "s/â€™/'/g" \
-    -e "s/â€˜/'/g" \
-    -e 's/â€“/-/g' \
-    -e 's/â€”/--/g' \
-    -e 's/â€œ/"/g' \
-    -e $'s/\xC3\xA2\xE2\x82\xAC\x9D/"/g' \
-    -e $'s/\xC3\xA2\xE2\x82\xAC\xEF\xBF\xBD/"/g' \
-    -e $'s/\xC3\xA2\xE2\x82\xAC/"/g' \
-    -e $'s/\xEF\xBF\xBD//g' \
-    -e 's/[[:space:]]\+/ /g' \
-    -e 's/^[[:space:]]*//;s/[[:space:]]*$//'
+fix_mojibake() {
+  local TEXT="$*"
+  [[ -z "${TEXT}" ]] && return 0
+
+  python3 -c "
+import sys, re, html
+
+text = sys.argv[1]
+
+# 1. Decode HTML entities
+text = html.unescape(text)
+
+# 2. Direct byte-map for known mojibake artifacts
+replacements = {
+    'â€œ': '\x27',
+    'â€': '\x27',
+    'â€': '\x27',
+    'â€™': '\x27',
+    'â€˜': '\x27',
+    'â€“': '–',
+    'â€”': '—',
+    'â„¢': '',
+    'Â£': '£',
+    'Â€': '€',
+    'Â': ''
+}
+for k, v in replacements.items():
+    text = text.replace(k, v)
+
+# 3. Safe byte decoding recovery
+for _ in range(2):
+    try:
+        b = text.encode('latin1')
+        decoded = b.decode('utf-8')
+        if decoded != text:
+            text = decoded
+    except Exception:
+        break
+
+# 4. Convert ALL double quote variants directly to single quotes
+text = text.replace('\"', \"'\").replace('“', \"'\").replace('”', \"'\")
+
+# 5. Clean up any empty single quote pairs or redundant multi-quote artifacts (e.g., '' -> empty)
+text = re.sub(r\"''+\", '', text)
+
+# 6. Remove trademark artifacts and extra spaces
+text = re.sub(r'(?i)\b[tT][mM]\b', '', text)
+text = re.sub(r'[™®©]', '', text)
+text = re.sub(r'\s{2,}', ' ', text)
+text = re.sub(r'[\ufffd\uFFFD]', '', text)
+
+print(text.strip(), end='')
+" "${TEXT}"
 }
 
 format_pct () {
@@ -885,14 +924,12 @@ title_scrubber () {
 	local TITLE=${@}
 	local -A SEEN=()
 	local -a UCASE_WORDS=()
-	local STR=''
+	local STR="${TITLE}"
 	local UCASE_LIMIT=4
 	local PLURAL=''
 	local W U
 
-	TITLE="$(fix_mojibake "${TITLE}")"
-
-	STR=$(html2text -width ${_MAX_COLS} -ascii <<<${TITLE} 2>/dev/null) # Convert any HTML 
+	STR="$(fix_mojibake "${STR}")"
 
 	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
 	for U in ${UCASE_WORDS};do
@@ -901,32 +938,27 @@ title_scrubber () {
 
 	STR=${(C)STR} # Proper case
 
-	# Expose UCASE and ACRONYMS
-	STR=$(sed 's/\x27/ /g' <<<${STR} 2>/dev/null) # Apostrophes
-	STR=$(echo "${STR}" | perl -pe 's/_/ /g' 2>/dev/null) # Underscores
-	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim 2>/dev/null) # Hyphens and braces
-	STR=$(echo "${STR}" | perl -pe 's/\.*$//g' 2>/dev/null) # Dots
+	# Structural formatting (underscores, braces, dots)
+	STR=$(echo "${STR}" | perl -pe 's/_/ /g' 2>/dev/null)
+	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim 2>/dev/null)
+	STR=$(echo "${STR}" | perl -pe 's/\.*$//g' 2>/dev/null)
 
+	# Acronym preservation and UCASE limiting
 	for W in ${(z)STR};do
 		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
 		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
 			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
 			SEEN[${W}]=1
-		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Retain orginal uppercased if not excessive
+		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Limit UCASE
 			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) 
+				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null)
 				SEEN[${W}]=1
 			fi
 		fi
 	done
 
-	STR=$(echo "${STR}" | perl -pe 's/(.)\s([Rr]e|[Ll]l|[Ss]|[Tt]|[Vv]e)(\s|[[:punct:]]|$)/\1\x{027}\2 /g') # Replace missing apostrophes
-	STR=$(echo "${STR}" | perl -pe 's/(\x{27})([A-Z])/\1\L\2/g') # Fix UC letter following apostrophe if present
-	STR=$(echo "${STR}" | perl -pe 's/[Ww]\x{02f}/w\x{02f}/g') # Fix 'with' abbv
-
 	[[ -n ${STR} ]] && TITLE=${STR}
 
 	echo ${TITLE}
 }
-

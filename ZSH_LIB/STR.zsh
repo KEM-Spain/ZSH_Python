@@ -151,7 +151,7 @@ str_pluralize () {
 	local WORD=${1}
 	local CNT=${2}
 	local RETURN_BOTH=${3:=false} # Any 3rd arg triggers 
-	local RETURN_WORD
+	local VALUE=''
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
@@ -161,67 +161,67 @@ str_pluralize () {
 	fi
 
 	case ${WORD:l} in
-		is) RETURN_WORD="are";;
-		app) RETURN_WORD="apps";;
-		candidate) RETURN_WORD="candidates";;
-		choice) RETURN_WORD="choices";;
-		command) RETURN_WORD="commands";;
-		commit) RETURN_WORD="commits";;
-		config) RETURN_WORD="configs";;
-		country) RETURN_WORD="countries";;
-		cup) RETURN_WORD="cups";;
-		day) RETURN_WORD="days";;
-		degree) RETURN_WORD="degrees";;
-		device) RETURN_WORD="devices";;
-		dir) RETURN_WORD="dirs";;
-		directory) RETURN_WORD="directories";;
-		download) RETURN_WORD="downloads";;
-		duplicate) RETURN_WORD="duplicates";;
-		entry) RETURN_WORD="entries";;
-		file) RETURN_WORD="files";;
-		foot) RETURN_WORD="feet";;
-		function) RETURN_WORD="functions";;
-		gram) RETURN_WORD="grams";;
-		inch) RETURN_WORD="inches";;
-		inode) RETURN_WORD="inodes";;
-		item) RETURN_WORD="items";;
-		kilo) RETURN_WORD="kilos";;
-		kilometer) RETURN_WORD="kilometers";;
-		library) RETURN_WORD="libraries";;
-		link) RETURN_WORD="links";;
-		line) RETURN_WORD="lines";;
-		level) RETURN_WORD="levels";;
-		log) RETURN_WORD="logs";;
-		match) RETURN_WORD="matches";;
-		meter) RETURN_WORD="meters";;
-		mile) RETURN_WORD="miles";;
-		milliliter) RETURN_WORD="milliliters";;
-		object) RETURN_WORD="objects";;
-		option) RETURN_WORD="options";;
-		ounce) RETURN_WORD="ounces";;
-		package) RETURN_WORD="packages";;
-		pound) RETURN_WORD="pounds";;
-		process) RETURN_WORD="processes";;
-		reminder) RETURN_WORD="reminders";;
-		result) RETURN_WORD="results";;
-		row) RETURN_WORD="rows";;
-		title) RETURN_WORD="titles";;
-		torrent) RETURN_WORD="torrents";;
-		track) RETURN_WORD="tracks";;
-		video) RETURN_WORD="videos";;
-		was) RETURN_WORD="were";;
-		*) RETURN_WORD=${WORD};;
+		is) VALUE="are";;
+		app) VALUE="apps";;
+		candidate) VALUE="candidates";;
+		choice) VALUE="choices";;
+		command) VALUE="commands";;
+		commit) VALUE="commits";;
+		config) VALUE="configs";;
+		country) VALUE="countries";;
+		cup) VALUE="cups";;
+		day) VALUE="days";;
+		degree) VALUE="degrees";;
+		device) VALUE="devices";;
+		dir) VALUE="dirs";;
+		directory) VALUE="directories";;
+		download) VALUE="downloads";;
+		duplicate) VALUE="duplicates";;
+		entry) VALUE="entries";;
+		file) VALUE="files";;
+		foot) VALUE="feet";;
+		function) VALUE="functions";;
+		gram) VALUE="grams";;
+		inch) VALUE="inches";;
+		inode) VALUE="inodes";;
+		item) VALUE="items";;
+		kilo) VALUE="kilos";;
+		kilometer) VALUE="kilometers";;
+		library) VALUE="libraries";;
+		link) VALUE="links";;
+		line) VALUE="lines";;
+		level) VALUE="levels";;
+		log) VALUE="logs";;
+		match) VALUE="matches";;
+		meter) VALUE="meters";;
+		mile) VALUE="miles";;
+		milliliter) VALUE="milliliters";;
+		object) VALUE="objects";;
+		option) VALUE="options";;
+		ounce) VALUE="ounces";;
+		package) VALUE="packages";;
+		pound) VALUE="pounds";;
+		process) VALUE="processes";;
+		reminder) VALUE="reminders";;
+		result) VALUE="results";;
+		row) VALUE="rows";;
+		title) VALUE="titles";;
+		torrent) VALUE="torrents";;
+		track) VALUE="tracks";;
+		video) VALUE="videos";;
+		was) VALUE="were";;
+		*) VALUE=${WORD};;
 	esac
 
-	[[ ${WORD} == ${(C)WORD} ]] && RETURN_WORD=${(C)RETURN_WORD} || RETURN_WORD=${RETURN_WORD}
+	[[ ${WORD} == ${(C)WORD} ]] && VALUE=${(C)VALUE} || VALUE=${VALUE}
 
 	if [[ ${WORD} == ${WORD:u} ]];then # Assume uppercase
-		RETURN_WORD=${RETURN_WORD:u}
+		VALUE=${VALUE:u}
 	else # Assume mixed or lowercase
-		RETURN_WORD=${RETURN_WORD}
+		VALUE=${VALUE}
 	fi
 
-	[[ ${RETURN_BOTH} == 'false' ]] && echo "${RETURN_WORD}" || echo "${CNT} ${RETURN_WORD}"
+	[[ ${RETURN_BOTH} == 'false' ]] && echo "${VALUE}" || echo "${CNT} ${VALUE}"
 }
 
 str_rep_char () {

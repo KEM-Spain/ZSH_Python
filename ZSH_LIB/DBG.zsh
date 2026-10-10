@@ -13,19 +13,17 @@ dbg_arglist () {
 	[[ ${#} -eq 0 ]] && echo "${functrace[1]}:${YELLOW_FG}no args passed${RESET}" && return
 
 	TEXT=${@}
-	echo "${functrace[1]}"
+	echo "${BOLD}${ITALIC}${WHITE_FG}${functrace[1]}${RESET} [${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
 	if [[ ${#TEXT} -lt 100 ]];then
-		echo -n "[${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
 		for A in "${@}";do
 			((NDX++))
-			echo -n " ${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
+			echo -n " Arg:${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
 		done
 		echo ''
 	else
-		echo "[${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"
 		for A in "${@}";do
 			((NDX++))
-			echo "${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
+			echo "Arg:${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
 		done
 	fi
 }

@@ -101,6 +101,8 @@ msg_box () {
 	local OPTSTR=":A:H:P:O:CIRT:cf:h:j:pqrs:t:uw:x:y:Zz"
 	OPTIND=0
 
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	while getopts ${OPTSTR} OPTION;do
 		case ${OPTION} in
 			A) COORD_ARGS=(${(z)OPTARG});; # Create array of coordinates
@@ -131,8 +133,6 @@ msg_box () {
 		esac
 	done
 	shift $(( OPTIND - 1 ))
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -n ${TAG_ARG} ]] && TAG=${TAG_ARG} || TAG=${_MSG_BOX_TAG}
 
@@ -329,7 +329,6 @@ msg_box () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "$(for L in ${(Oa)funcstack};do echo TAG:${TAG} FUNCSTACK:${L};done)"
 
 	box_coords_set ${TAG} X ${BOX_X_COORD} Y ${BOX_Y_COORD} H ${BOX_HEIGHT} W ${BOX_WIDTH} S ${TEXT_STYLE}
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SAVED TAG:${TAG} _BOX_COORDS: $(box_coords_get ${TAG})"
 
 	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 		dbg "${0}: --- BOX COORDS ---"
@@ -614,18 +613,18 @@ msg_box_clear () {
 	local W_COORD_ARG=''
 	local X
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MED_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Process arguments
 	if [[ ${#} -eq 1 ]];then
 		TAG=${1}
-		[[ ${_DEBUG} -ge ${HIGH_DBG} && -z ${TAG} ]] && dbg "${0}:TAG is null" && return 1 || dbg "TAG:${TAG}"
+		[[ ${_DEBUG} -ge ${MED_DBG} && -z ${TAG} ]] && dbg "${0}:TAG is null" && return 1 || dbg "TAG:${TAG}"
 		BOX_COORDS=($(box_coords_get ${TAG})) # Tag passed
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
+		[[ ${_DEBUG} -ge ${_MED_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
 		[[ -z ${BOX_COORDS} ]] && return 1
 	elif [[ ${#} -eq 4 ]];then
 		BOX_COORDS=($(box_coords_get ${_LAST_MSG_TAG})) # overrides passed - apply to last msg
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
+		[[ ${_DEBUG} -ge ${_MED_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
 		[[ -z ${BOX_COORDS} ]] && return 1
 
 		X_COORD_ARG=${1}
@@ -640,18 +639,20 @@ msg_box_clear () {
 		[[ ${W_COORD_ARG} != 'W' ]] && BOX_COORDS[W]=${W_COORD_ARG}
 	else
 		BOX_COORDS=($(box_coords_get ${_LAST_MSG_TAG})) # No args passed - use last msg
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
+		[[ ${_DEBUG} -ge ${_MED_DBG} ]] && dbg "${0}: TAG:${TAG} BOX_COORDS:${(kv)BOX_COORDS}"
 		[[ -z ${BOX_COORDS} ]] && return 1
 	fi
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Starting on ROW ${BOX_COORDS[X]:=null} and clearing from COL ${BOX_COORDS[Y]:=null} for ${BOX_COORDS[W]:=null} COLS for ${BOX_COORDS[H]:=null} LINES"
+	[[ ${_DEBUG} -ge ${_MED_DBG} ]] && dbg "${0}: Starting on ROW ${BOX_COORDS[X]:=null} and clearing from COL ${BOX_COORDS[Y]:=null} for ${BOX_COORDS[W]:=null} COLS for ${BOX_COORDS[H]:=null} LINES"
 
 	for (( X=${BOX_COORDS[X]}; X <= ( ${BOX_COORDS[X]} + ${BOX_COORDS[H]} - 1 ); X++));do
 		tcup ${X} ${BOX_COORDS[Y]}
 		tput ech ${BOX_COORDS[W]}
 	done
 
-	[[ ${_REPAINT} == 'true' ]] && box_coords_repaint ${TAG} # Resides in UTILS.zsh
+	# TODO: find out why this isn't being called from lft when exit_request is declined
+	[[ ${_DEBUG} -ge ${_MED_DBG} ]] && dbg "${0}: _REPAINT:${_REPAINT}, TAG:${TAG}"
+	[[ ${_REPAINT} == 'true' ]] && box_coords_repaint ${TAG} # Resides in BOX.zsh
 
 	return 0
 }

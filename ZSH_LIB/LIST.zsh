@@ -1323,7 +1323,7 @@ list_sort_flat () {
 										PREFIX="${SORT_KEY[1]}"
 										;;
 								<->-<->-<->*) # Matches leading YYYY-MM-DD pattern
-										PREFIX="${SORT_KEY[1,10]}"
+										PREFIX="${SORT_KEY[1,-1]}"
 										FLIP=true
 										;;
 								*[0-9][0-9][0-9][0-9])
@@ -1519,7 +1519,7 @@ list_write_to_file () {
 
 	if [[ -n ${ALIST[1]} ]];then
 		[[ -e ${_SCRIPT}.out ]] && rm -f ${_SCRIPT}.out
-		msg_box -c -p "Writing ${#ALIST} list $(str_pluralize item) to file: ${_SCRIPT}.out|Press any key"
+		msg_box -c -p "Writing ${#ALIST} list $(str_pluralize item ${#ALIST}) to file: ${_SCRIPT}.out|Press any key"
 		for L in ${ALIST};do
 			echo ${L} >> ${_SCRIPT}.out
 		done

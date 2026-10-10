@@ -1,4 +1,13 @@
-2026-10-08_13:30: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-08_13:30: log_update: Skipping expired inode:26869825
-2026-10-08_13:30: log_update: Skipping expired inode:26869844
-2026-10-08_13:30: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-10_11:13: log_update: LOG lines BEFORE update:10 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-10_11:13: log_update: LOG lines AFTER update:10 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-10_11:13: query_rumble:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Jimmy Dore
+	-> ENGINE:rumble
+	-> EOPT:c
+	-> FKEY:jimmy_dore
+	-> QKEY:thejimmydoreshow
+	-> TYPE:channel
+2026-10-10_11:13: query_rumble: QUERY:https://rumble.com/c/thejimmydoreshow?page=1
+2026-10-10_11:13: query_rumble: Listing for QKEY:thejimmydoreshow contains 25 rows
