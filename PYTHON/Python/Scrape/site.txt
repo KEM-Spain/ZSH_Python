@@ -1,0 +1,204 @@
+import requests # pip install requests
+from bs4 import BeautifulSoup as bs # pip install beautifulsoup4
+
+#Load our first page
+# Load the webpage content
+
+r = requests.get("https://keithgalli.github.io/web-scraping/example.html")
+
+# Convert to a beautiful soup object
+soup = bs(r.content)
+
+# Print out our html
+print(soup.prettify())
+
+#Start using Beautiful Soup to Scrape
+find and find_all
+first_header = soup.find("h2")
+
+headers = soup.find_all("h2")
+print(headers)
+
+# Pass in a list of elements to look for
+first_header = soup.find(["h1", "h2"])
+
+headers = soup.find_all(["h1", "h2"])
+print(headers)
+
+# You can pass in attributes to the find/find_all function
+paragraph = soup.find_all("p", attrs={"id": "paragraph-id"})
+print(paragraph)
+
+# You can nest find/find_all calls
+body = soup.find('body')
+div = body.find('div')
+header = div.find('h1')
+print(header)
+
+# We can search specific strings in our find/find_all calls
+import re
+
+paragraphs = soup.find_all("p", string=re.compile("Some"))
+print(paragraphs)
+
+headers = soup.find_all("h2", string=re.compile("(H|h)eader"))
+headers
+
+select (CSS selector)
+print(soup.body.prettify())
+content = soup.select("div p")
+print(content)
+
+paragraphs = soup.select("h2 ~ p")
+print(paragraphs)
+
+bold_text = soup.select("p#paragraph-id b")
+print(bold_text)
+
+paragraphs = soup.select("body > p")
+print(paragraphs)
+
+for paragraph in paragraphs:
+  print(paragraph.select("i"))
+
+# Grab by element with specific property
+soup.select("[align=middle]")
+
+#Get different properties of the HTML
+# use .string
+header = soup.find("h2")
+print(header.string)
+
+# If multiple child elements use get_text
+div = soup.find("div")
+print(div.prettify())
+print(div.get_text())
+
+# Get a specific property from an element
+link = soup.find("a")
+print(link['href']
+
+paragraphs = soup.select("p#paragraph-id")
+print(paragraphs[0]['id'])
+
+#Code navigation
+# Path Syntax
+print(soup.body.prettify())
+
+# Know the terms: Parent, Sibling, Child
+
+soup.body.find("div").find_next_siblings()
+
+#Exercises!
+#Go to https://keithgalli.github.io/web-scraping/webpage.html
+#Load the webpage
+# Load the webpage content
+
+r = requests.get("https://keithgalli.github.io/web-scraping/webpage.html")
+
+# Convert to a beautiful soup object
+webpage = bs(r.content)
+
+# Print out our html
+print(webpage.prettify())
+
+#Grab all of the social links from the webpage
+#Do this in at least 3 different ways
+
+links = webpage.select("ul.socials a")
+actual_links = [link['href'] for link in links]
+print(actual_links)
+
+ulist = webpage.find("ul", attrs={"class": "socials"})
+links = ulist.find_all("a")
+actual_links = [link['href'] for link in links]
+print(actual_links)
+
+links = webpage.select("li.social a")
+actual_links = [link['href'] for link in links]
+print(actual_links)
+
+links = webpage.select("body ul li.social a")
+print(links)
+
+#Exercise #2: Grab all text on the webpage
+#Just get stuff above the Photos tag
+
+header = webpage.body.find("h2", string="Photos")
+previous_elements = header.find_previous_siblings()
+previous_elements_sorted = previous_elements[::-1]
+elements = [x.get_text() for x in previous_elements_sorted]
+text = "\n".join(elements)
+print(text)
+
+#Scrape the Table
+l = []
+for tr in table_rows:
+    td = tr.find_all('td')
+    row = [tr.text for tr in td]
+    l.append(row)
+pd.DataFrame(l, columns=["A", "B", ...])
+import pandas as pd
+
+table = webpage.select("table.hockey-stats")[0]
+columns = table.find("thead").find_all("th")
+column_names = [c.string for c in columns]
+
+table_rows = table.find("tbody").find_all("tr")
+l = []
+for tr in table_rows:
+    td = tr.find_all('td')
+    row = [str(tr.get_text()).strip() for tr in td]
+    l.append(row)
+
+df = pd.DataFrame(l, columns=column_names)
+df.head()
+
+#S	Team	League	GP	G	A	TP	PIM	+/-		POST	GP	G	A	TP	PIM	+/-
+#0	2014-15	MIT (Mass. Inst. of Tech.)	ACHA II	17	3	9	12	20		|
+#1	2015-16	MIT (Mass. Inst. of Tech.)	ACHA II	9	1	1	2	2		|
+#2	2016-17	MIT (Mass. Inst. of Tech.)	ACHA II	12	5	5	10	8	0	|
+#3	2017-18	Did not play								|
+#4	2018-19	MIT (Mass. Inst. of Tech.)	ACHA III	8	5	10	15	8		|
+#Grab all fun facts that use word "is"
+
+import re
+
+facts = webpage.select("ul.fun-facts li")
+facts_with_is = [fact.find(string=re.compile("is")) for fact in facts]
+facts_with_is = [fact.find_parent().get_text() for fact in facts_with_is if fact]
+print(facts_with_is)
+
+#Download an Image
+# Done locally, but here is the code
+import requests # pip install requests
+from bs4 import BeautifulSoup as bs # pip install beautifulsoup4
+
+# Load the webpage content
+url = "https://keithgalli.github.io/web-scraping/"
+r = requests.get(url+"webpage.html")
+
+# Convert to a beautiful soup object
+webpage = bs(r.content)
+
+images = webpage.select("div.row div.column img")
+image_url = images[0]['src']
+full_url = url + image_url
+
+img_data = requests.get(full_url).content
+with open('lake_como.jpg', 'wb') as handler:
+    handler.write(img_data)
+
+#Solve the mystery challenge!
+files = webpage.select("div.block a")
+relative_files = [f['href'] for f in files]
+
+url = "https://keithgalli.github.io/web-scraping/"
+for f in relative_files:
+  full_url = url + f
+  page = requests.get(full_url)
+  bs_page = bs(page.content)
+  secret_word_element = bs_page.find("p", attrs={"id": "secret-word"})
+  secret_word = secret_word_element.string
+  print(secret_word)
+
