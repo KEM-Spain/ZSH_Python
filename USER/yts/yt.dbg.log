@@ -1,17 +1,34 @@
-2026-10-10_18:20: log_update: LOG lines BEFORE update:12 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-10_18:20: log_update: Skipping expired inode:26869862
-2026-10-10_18:20: log_update: Skipping expired inode:26869795
-2026-10-10_18:20: log_update: Skipping expired inode:26869800
-2026-10-10_18:20: log_update: LOG lines AFTER update:9 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-10_18:20: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
-2026-10-10_18:20: query_youtube:
+2026-10-12_09:26: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-12_09:26: log_update: Skipping expired inode:26869802
+2026-10-12_09:26: log_update: Skipping expired inode:26869797
+2026-10-12_09:26: log_update: Skipping expired inode:26869807
+2026-10-12_09:26: log_update: Skipping expired inode:26869815
+2026-10-12_09:26: log_update: Skipping expired inode:26869818
+2026-10-12_09:26: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-12_09:26: query_rumble:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Alex Christoforou
-	-> ENGINE:youtube
-	-> EOPT:s
-	-> FKEY:alex_christoforou
-	-> QKEY:alexchristoforou
-	-> TYPE:strict
-2026-10-10_18:20: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
-2026-10-10_18:20: query_youtube: Listing for QKEY:alexchristoforou contains 3 rows
+	-> DKEY:Due Dissidence
+	-> ENGINE:rumble
+	-> EOPT:l
+	-> FKEY:due_dissidence
+	-> QKEY:duedissidence
+	-> TYPE:live
+2026-10-12_09:26: query_rumble: QUERY:https://rumble.com/c/duedissidence/livestreams
+2026-10-12_09:26: query_rumble: Listing for QKEY:duedissidence contains 25 rows
+2026-10-12_09:27: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.auZNVy
+2026-10-12_09:27: job_start: TITLE:Activists SPEAK OUT After Mamdani Protest, Levin RAGES at NYT Report, Trump 
+2026-10-12_09:27: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7gpm1s-activists-speak-out-after-mamdani-protest-levin-rages-at-nyt-report-trump-f.html" PID:716701
+2026-10-12_09:27: yt Executed from: Script
+2026-10-12_09:27: yt Rumble CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave
+2026-10-12_09:27: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7gpm1s-activists-speak-out-after-mamdani-protest-levin-rages-at-nyt-report-trump-f.html"
+2026-10-12_09:27: action_do: PRE-PROCESSING
+2026-10-12_09:27: action_do: GENERATING HEADER
+2026-10-12_10:37: action_do: COMPLETED
+2026-10-12_10:37: action_do: POST-PROCESSING
+2026-10-12_10:38: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Due_Dissidence - Activists_SPEAK_OUT_After_Mamdani_Protest_Levin_RAGES_at_NYT_Report_Trump_FUMES_Ove.mp4
+2026-10-12_10:38: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Due_Dissidence - Activists_SPEAK_OUT_After_Mamdani_Protest_Levin_RAGES_at_NYT_Report_Trump_FUMES_Ove.mp4
+2026-10-12_10:38: set_final_fn: Overwriting file:Due_Dissidence - Activists_SPEAK_OUT_After_Mamdani_Protest_Levin_RAGES_at_NYT_Report_Trump_FUMES_Ove.mp4
+2026-10-12_10:38: set_final_fn: Clean filename:Due Dissidence - Activists Speak Out After Mamdani Protest Levin Rages.mp4
+2026-10-12_10:38: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-12_10:38: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.auZNVy was cleared for:duedissidence from:action_do

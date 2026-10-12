@@ -26,7 +26,6 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
 _DEFAULT_SLICE=wordnet
-_PAT_2="From "
 
 #--Begin GetOpts--
 local -a OPTIONS
@@ -124,6 +123,8 @@ shift $(( OPTIND -1 ))
 if [[ ${UNFILTERED} == 'true' ]];then
 	dict ${KEYWORD}
 else
+	_PAT_2="From "
+
 	if [[ -n ${SLICE} ]];then
 		_DEFAULT_SLICE=${SLICE}
 		[[ ! ${SLICE} =~ "collab|easton|gazet|wordnet" ]] && usage "Invalid slice:${SLICE}"
@@ -135,13 +136,21 @@ else
 	PAT_1=$(grep -m1 -i ${_DEFAULT_SLICE} <<<${DEF})
 	PAT_1=${PAT_1[1,20]}
 
-	sed -n "/$PAT_1/,/$_PAT_2/p" <<<${DEF} | sed '$d' # Slice pattern and drop last line
+	if [[ -n ${PAT_1} ]];then
+		sed -n "/$PAT_1/,/$_PAT_2/p" <<<${DEF} | sed '$d' # Slice pattern and drop last line
+	else
+		echo ${DEF}
+	fi
 
 	if [[ ${THESAURUS} == 'true' ]];then
 		_DEFAULT_SLICE=moby
 		PAT_1=$(grep -m1 -i ${_DEFAULT_SLICE} <<<${DEF})
 		PAT_1=${PAT_1[1,20]}
-		sed -n "/$PAT_1/,/$_PAT_2/p" <<<${DEF} | sed '$d' # Slice pattern and drop last line
+		if [[ -n ${PAT_1} ]];then
+			sed -n "/$PAT_1/,/$_PAT_2/p" <<<${DEF} | sed '$d' # Slice pattern and drop last line
+		else
+			echo ${DEF}
+		fi
 	fi
 fi
 } | mypager

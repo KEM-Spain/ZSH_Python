@@ -14,7 +14,6 @@ STRIKE="\033[9m"
 ITALIC="\033[3m"
 UNDER="\033[4m"
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -140,6 +139,7 @@ if [[ ${PRE_APPROVED} == false ]];then
 		[[ ${L:l} =~ "^remv" ]] && SECTION=REMV 
 
 		IN_SECTION=true
+
 		case ${SECTION} in
 			INST) 
 				DOUPGRADE=true
@@ -152,7 +152,6 @@ if [[ ${PRE_APPROVED} == false ]];then
 				;;
 			*) IN_SECTION=false;;
 		esac
-
 		(( CNT++ ))
 
 		if [[ ${IN_SECTION} == true ]];then
@@ -176,6 +175,7 @@ if [[ ${PRE_APPROVED} == false ]];then
 				read -sq RESPONSE
 				if [[ ${RESPONSE} == "y" ]];then
 					echo && sudo apt-get -y autoremove | tee -a ${LOG}
+					sudo snap refresh
 				else
 					echo -n "no\n"
 				fi
@@ -195,8 +195,6 @@ if [[ ${PRE_APPROVED} == false ]];then
 		fi
 	fi
 fi
-
-sudo snap refresh
 
 if qry_reboot;then
 	rb -r
