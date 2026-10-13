@@ -140,7 +140,7 @@ _LOCAL_FILES=()
 		fi
 	done
 } >/dev/null 2>&1
-(( LONGEST++ ))
+(( LONGEST+=5 ))
 
 PROD=''
 if [[ -n ${_LOCAL_FILES} ]];then
@@ -152,9 +152,9 @@ if [[ -n ${_LOCAL_FILES} ]];then
 			if [[ ${F:t} == ${PROD:t} ]];then
 				diff -b ${F} ${PROD} >/dev/null 2>&1
 				if [[ ${?} -ne 0 ]];then
-					printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${RED_FG_I}%-s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'does not match' ${PROD:t}
+					printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${RED_FG_I}%15s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'does not match' ${PROD:t}
 				else
-					printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${GREEN_FG_I}%-s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'matches' ${PROD:t}
+					printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${GREEN_FG_I}%8s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'matches' ${PROD:t}
 				fi
 			fi
 		fi

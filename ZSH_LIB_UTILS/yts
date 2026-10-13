@@ -60,7 +60,7 @@ typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _STATUS_MSGS=()
-typeset -A _TRANSLATED=(blancolirio 1)
+typeset -a _TRANSLATED=(blancolirio glenndiesen)
 typeset -a _QUERY_REJECTS=()
 typeset -a _RUMBLE_PAGE=()
 typeset -a _RUMBLE_QRY_OPTS=(l c u g)
@@ -1547,7 +1547,7 @@ query_youtube () {
 		[[ ! ${AGE} =~ [0-9] ]] && continue # Skip any videos not having valid age
 
 		# Title translations
-		if [[ ${_TRANSLATED[${AUTHOR}]} ]];then # Language problem workaraound - spanish titles
+		if $(arr_in_array _TRANSLATED ${_QUERY_OPTS[QKEY]});then # Language problem workaraound - spanish titles
 			if is_spanish ${TITLE:l};then
 				msg_box "<w>Translating...<N>"
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)

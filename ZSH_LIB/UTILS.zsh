@@ -234,7 +234,6 @@ text = html.unescape(text)
 replacements = {
     'â€œ': '\x27',
     'â€': '\x27',
-    'â€': '\x27',
     'â€™': '\x27',
     'â€˜': '\x27',
     'â€“': '–',
@@ -257,13 +256,10 @@ for _ in range(2):
     except Exception:
         break
 
-# 4. Convert ALL double quote variants directly to single quotes
-text = text.replace('\"', \"'\").replace('“', \"'\").replace('”', \"'\")
+# 4. Convert alternative quote characters to standard single quotes safely
+text = text.replace('“', \"'\").replace('”', \"'\").replace('\"', \"'\")
 
-# 5. Clean up any empty single quote pairs or redundant multi-quote artifacts (e.g., '' -> empty)
-text = re.sub(r\"''+\", '', text)
-
-# 6. Remove trademark artifacts and extra spaces
+# 5. Clean up extra spaces while preserving legitimate apostrophes and punctuation
 text = re.sub(r'(?i)\b[tT][mM]\b', '', text)
 text = re.sub(r'[™®©]', '', text)
 text = re.sub(r'\s{2,}', ' ', text)
@@ -929,19 +925,29 @@ title_scrubber () {
 	local PLURAL=''
 	local W U
 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TITLE:${TITLE}"
+
 	STR="$(fix_mojibake "${STR}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: fix_mojibake STR:${STR}"
 
 	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
 	for U in ${UCASE_WORDS};do
 		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
 	done
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
 	STR=${(C)STR} # Proper case
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Proper case STR:${STR}"
 
-	# Structural formatting (underscores, braces, dots)
+	# Fix Zsh capitalization forcing letters after apostrophes to uppercase (e.g., Trump'S -> Trump's)
+	STR=$(echo "${STR}" | perl -pe "s/'([A-Z])/'\L\$1/g" 2>/dev/null)
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Lowercase post-apostrophe STR:${STR}"
+
+	# Structural formatting (underscores, braces, dots) - keeping apostrophes safe
 	STR=$(echo "${STR}" | perl -pe 's/_/ /g' 2>/dev/null)
 	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim 2>/dev/null)
-	STR=$(echo "${STR}" | perl -pe 's/\.*$//g' 2>/dev/null)
+	STR=$(echo "${STR}" | perl -pe 's/\.{2,}$//g' 2>/dev/null)
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: uscore, brace, dots STR:${STR}"
 
 	# Acronym preservation and UCASE limiting
 	for W in ${(z)STR};do
@@ -957,8 +963,11 @@ title_scrubber () {
 			fi
 		fi
 	done
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Acronyms STR:${STR}"
 
 	[[ -n ${STR} ]] && TITLE=${STR}
 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Returning TITLE:${TITLE}"
 	echo ${TITLE}
 }
+

@@ -1,34 +1,64 @@
-2026-10-12_09:26: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-12_09:26: log_update: Skipping expired inode:26869802
-2026-10-12_09:26: log_update: Skipping expired inode:26869797
-2026-10-12_09:26: log_update: Skipping expired inode:26869807
-2026-10-12_09:26: log_update: Skipping expired inode:26869815
-2026-10-12_09:26: log_update: Skipping expired inode:26869818
-2026-10-12_09:26: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-12_09:26: query_rumble:
+2026-10-13_17:17: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-13_17:17: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-13_17:17: query_youtube: Creating listing for QKEY:judgingfreedom, query is not strict
+2026-10-13_17:17: query_youtube:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Due Dissidence
-	-> ENGINE:rumble
-	-> EOPT:l
-	-> FKEY:due_dissidence
-	-> QKEY:duedissidence
-	-> TYPE:live
-2026-10-12_09:26: query_rumble: QUERY:https://rumble.com/c/duedissidence/livestreams
-2026-10-12_09:26: query_rumble: Listing for QKEY:duedissidence contains 25 rows
-2026-10-12_09:27: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.auZNVy
-2026-10-12_09:27: job_start: TITLE:Activists SPEAK OUT After Mamdani Protest, Levin RAGES at NYT Report, Trump 
-2026-10-12_09:27: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://rumble.com/v7gpm1s-activists-speak-out-after-mamdani-protest-levin-rages-at-nyt-report-trump-f.html" PID:716701
-2026-10-12_09:27: yt Executed from: Script
-2026-10-12_09:27: yt Rumble CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave
-2026-10-12_09:27: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies-from-browser brave "-o" "%(channel)s - %(title).200s.%(ext)s" "https://rumble.com/v7gpm1s-activists-speak-out-after-mamdani-protest-levin-rages-at-nyt-report-trump-f.html"
-2026-10-12_09:27: action_do: PRE-PROCESSING
-2026-10-12_09:27: action_do: GENERATING HEADER
-2026-10-12_10:37: action_do: COMPLETED
-2026-10-12_10:37: action_do: POST-PROCESSING
-2026-10-12_10:38: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Due_Dissidence - Activists_SPEAK_OUT_After_Mamdani_Protest_Levin_RAGES_at_NYT_Report_Trump_FUMES_Ove.mp4
-2026-10-12_10:38: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Due_Dissidence - Activists_SPEAK_OUT_After_Mamdani_Protest_Levin_RAGES_at_NYT_Report_Trump_FUMES_Ove.mp4
-2026-10-12_10:38: set_final_fn: Overwriting file:Due_Dissidence - Activists_SPEAK_OUT_After_Mamdani_Protest_Levin_RAGES_at_NYT_Report_Trump_FUMES_Ove.mp4
-2026-10-12_10:38: set_final_fn: Clean filename:Due Dissidence - Activists Speak Out After Mamdani Protest Levin Rages.mp4
-2026-10-12_10:38: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
-2026-10-12_10:38: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.auZNVy was cleared for:duedissidence from:action_do
+	-> DKEY:Judging Freedom
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:judging_freedom
+	-> QKEY:judgingfreedom
+	-> TYPE:standard
+2026-10-13_17:17: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "judgingfreedom"
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Rejected:newsmax
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Retained titles matching:judge napolitano - judging freedom
+2026-10-13_17:17: query_youtube: Listing for QKEY:judgingfreedom contains 13 rows
+2026-10-13_17:17: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.BAubO2
+2026-10-13_17:17: job_start: TITLE:Prof. John Mearsheimer : Can Trump Bluff Iran Into Surrender? 
+2026-10-13_17:17: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=bRBJpw-Dc0g" PID:346045
+2026-10-13_17:17: yt Executed from: Script
+2026-10-13_17:17: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=bRBJpw-Dc0g"
+2026-10-13_17:17: action_do: PRE-PROCESSING
+2026-10-13_17:17: action_do: PRE-PROCESSING
+2026-10-13_17:17: action_do: GENERATING HEADER
+2026-10-13_17:17: action_do: COMPLETED
+2026-10-13_17:17: action_do: POST-PROCESSING
+2026-10-13_17:17: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - PROF._John_Mearsheimer_-_Can_Trump_Bluff_Iran_Into_Surrender.mp4
+2026-10-13_17:17: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - PROF._John_Mearsheimer_-_Can_Trump_Bluff_Iran_Into_Surrender.mp4
+2026-10-13_17:17: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - PROF._John_Mearsheimer_-_Can_Trump_Bluff_Iran_Into_Surrender.mp4
+2026-10-13_17:17: set_final_fn: Clean filename:Judging Freedom - Prof. John Mearsheimer - Can Trump Bluff Iran Into.mp4
+2026-10-13_17:17: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-13_17:17: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.BAubO2 was cleared for:judgingfreedom from:action_do
+2026-10-13_17:17: job_start: CREATED DOWNLOAD LOG:/home/kmiller/.local/share/yts/yt.log.dG9RYY
+2026-10-13_17:17: job_start: TITLE:AMB Chas Freeman : IS Saudi Arabia Collapsing? 
+2026-10-13_17:17: job_start: CMD:nohup yt -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=O8uD5tt5-3I" PID:351112
+2026-10-13_17:17: yt Executed from: Script
+2026-10-13_17:17: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox "-o" "%(channel)s - %(title).200s.%(ext)s" "https://youtube.com/watch?v=O8uD5tt5-3I"
+2026-10-13_17:17: action_do: PRE-PROCESSING
+2026-10-13_17:17: action_do: PRE-PROCESSING
+2026-10-13_17:18: action_do: GENERATING HEADER
+2026-10-13_17:18: action_do: COMPLETED
+2026-10-13_17:18: action_do: POST-PROCESSING
+2026-10-13_17:18: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - AMB_Chas_Freeman_-_Is_Saudi_Arabia_Collapsing.mp4
+2026-10-13_17:18: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Judge_Napolitano_-_Judging_Freedom - AMB_Chas_Freeman_-_Is_Saudi_Arabia_Collapsing.mp4
+2026-10-13_17:18: set_final_fn: Overwriting file:Judge_Napolitano_-_Judging_Freedom - AMB_Chas_Freeman_-_Is_Saudi_Arabia_Collapsing.mp4
+2026-10-13_17:18: set_final_fn: Clean filename:Judging Freedom - AMB Chas Freeman - IS Saudi Arabia Collapsing.mp4
+2026-10-13_17:18: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-13_17:18: log_clear: Temp log file:/home/kmiller/.local/share/yts/yt.log.dG9RYY was cleared for:judgingfreedom from:action_do
+2026-10-13_17:18: yt Executed from: Command Line
+2026-10-13_17:18: yt CMD:/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts  --paths temp:/tmp --impersonate firefox "https://www.youtube.com/watch?v=4r6kmhXNYI4"
+2026-10-13_17:19: yt Cleaning file name:Aaron_Mate_-_Trump_Turns_on_Zelenskyy-[4r6kmhXNYI4].mp4
+2026-10-13_17:19: Prepending:judging freedom to Aaron Mate - Trump Turns On Zelenskyy.mp4
