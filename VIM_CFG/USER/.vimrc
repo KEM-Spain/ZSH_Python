@@ -160,11 +160,8 @@ if !has("gui_running")
 		autocmd FileType * setlocal tabstop=2 shiftwidth=2 softtabstop=2 expandtab
 	augroup END
 
-	" Auto-Reformat on Save ---
-	"augroup AutoIndentOnSave
-	"	autocmd!
-	"	autocmd BufWritePre * normal! gg=G``
-	"augroup END
+	" Auto-Reformat python files on Save ---
+	autocmd BufWritePre *.py %s/\s\+$//e
 
 	" Other Settings
 	set backspace=2 "backspace del all

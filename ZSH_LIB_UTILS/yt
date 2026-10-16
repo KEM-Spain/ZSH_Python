@@ -122,6 +122,8 @@ else
 	EXEC_SRC="script"
 fi
 
+[[ ${#} -gt 1 ]] && exit_leave $(err_msg_exit "Too many arguments")
+
 logit ${_YT_DBG_LOG} "${0:t} Executed from: ${(C)EXEC_SRC}"
 
 [[ ${#} -eq 0 ]] && usage 
@@ -138,9 +140,10 @@ if [[ ${URL:l} =~ 'rumble' ]];then
 	logit ${_YT_DBG_LOG} "${0:t} Rumble CMD:${_YT_DLP}"
 fi
 
-logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP} ${(qqq)@}" 
-
-eval "${_YT_DLP} ${(qqq)@}" 
+logit ${_YT_DBG_LOG} "${0:t} Calling CMD:${_YT_DLP} ${(qqq)@}" 
+(
+eval "${_YT_DLP} ${(qqq)@}" 2>&1
+) | tee -a ${_YT_DBG_LOG}
 
 FN=$(last_file_downloaded)
 if [[ ${?} -eq 0 ]];then

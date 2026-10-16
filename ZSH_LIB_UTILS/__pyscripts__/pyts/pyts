@@ -7,7 +7,7 @@ def _bootstrap_log(message):
     try:
         log_dir = os.path.expanduser('~/.local/share/ts')
         os.makedirs(log_dir, exist_ok=True)
-        with open(os.path.join(log_dir, 'debug.log'), 'a') as f:
+        with open(os.path.join(log_dir, 'ts.log'), 'a') as f:
             f.write(f"{message}\n")
     except Exception:
         pass
@@ -34,36 +34,31 @@ except Exception as e:
     raise
 
 BOLD = "\033[1m"
-DEFAULT_ENGINE = "pb"
+WHITE = "\033[0;37m"
 ITALIC = "\033[3m"
 RED = "\033[0;31m"
 RESET = "\033[0m"
 REVERSE = "\033[7m"
+
+DEFAULT_ENGINE = "pb"
 SCRIPT = os.path.basename(sys.argv[0])
 TORRENT_CLIENT = "/usr/bin/deluge"
-WHITE = "\033[0;37m"
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 }
 
-SUPPORTED_ENGINES = {
-    "pb": "The Pirate Bay",
-    "lime": "Lime Torrents",
-    "eztv": "Eztv Torrents"
-}
-
-ENGINE_URLS = {
-    "pb": "https://thepiratebay10.info",
-    "lime": "https://www.limetorrents.fun",
-    "eztv": "https://eztv.re"
+ENGINES = {
+    "pb": ("The Pirate Bay", "https://thepiratebay10.info"),
+    "lime": ("Lime Torrents", "https://www.limetorrents.fun"),
+    "eztv": ("Eztv Torrents", "https://eztv.re")
 }
 
 USAGE_TXT = """
 Usage: {} [-h] [-e <ENGINE>] [<TITLE>]
 
-Options:-h: help
-        -e: <ENGINE>
+Options:-h, --help:   help
+        -e, --engine: <ENGINE>
 
 DESC: Search engine for {}
       Enter <TITLE> via gui or on the command line
@@ -86,7 +81,7 @@ def ascii_only(string):
 
 def get_cmdline():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "he:", ["engine="])
+        opts, args = getopt.getopt(sys.argv[1:], "he:", ["help", "engine="])
     except getopt.GetoptError as err:
         sys.stderr.write(str(err) + "\n")
         sys.stderr.flush()
@@ -108,17 +103,17 @@ def get_cmdline():
 def init_logging():
     sys_logger = logging.getLogger("ts_logger")
     sys_logger.setLevel(logging.DEBUG)
-    
+
     log_path = os.path.expanduser('~/.local/share/ts')
     os.makedirs(log_path, exist_ok=True)
-    log_file = os.path.join(log_path, 'debug.log')
-    
+    log_file = os.path.join(log_path, 'ts.log')
+
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
     file_handler.setFormatter(formatter)
     sys_logger.addHandler(file_handler)
-    
+
     sys_logger.debug("--- Logging Initialized Successfully ---")
     return sys_logger
 
@@ -170,9 +165,9 @@ class SearchWin(Gtk.Window):
         engine_label = Gtk.Label(label="Search Engine:")
         engine_label.set_xalign(0)
         engine_label.set_yalign(0.5)
-        
+
         self.engine_combo = Gtk.ComboBoxText()
-        for key, name in SUPPORTED_ENGINES.items():
+        for key, (name, url) in ENGINES.items():
             self.engine_combo.append(key, name)
         self.engine_combo.set_active_id(self.engine_key)
         self.engine_combo.connect("changed", self.on_engine_changed)
@@ -199,7 +194,7 @@ class SearchWin(Gtk.Window):
         bbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         btn_search = Gtk.Button(label="Search")
         btn_search.connect("clicked", self.on_search)
-        
+
         btn_clear = Gtk.Button(label="Clear History")
         btn_clear.connect("clicked", self.on_clear_history)
 
@@ -219,6 +214,7 @@ class SearchWin(Gtk.Window):
         self.connect("delete-event", lambda w, e: app_exit())
 
         self.show_all()
+        self.entry.grab_focus()
         if self.search_term:
             self.entry.set_text(self.search_term)
             self.do_query(self.search_term)
@@ -265,7 +261,7 @@ class SearchWin(Gtk.Window):
             "eztv": EztvModel
         }
         self.model_class = model_map.get(self.engine_key, PBModel)
-        self.set_title(f"Torrent Search - {SUPPORTED_ENGINES[self.engine_key]}")
+        self.set_title(f"Torrent Search - {ENGINES[self.engine_key][0]}")
 
     def on_clear_history(self, button):
         self.hist_model.clear()
@@ -301,7 +297,7 @@ class SearchWin(Gtk.Window):
         self.entry.set_sensitive(True)
         if return_val == 1 or not torrent_list:
             self.entry.set_text("")
-            self.entry.set_placeholder_text("No results found. Try another term.")
+            self.entry.set_placeholder_text("Search was unsuccessful...")
         else:
             self.torrent_list = torrent_list
             self.destroy()
@@ -310,7 +306,7 @@ class SearchWin(Gtk.Window):
 
 class ListingWin(Gtk.Window):
     def __init__(self, torrent_list, engine_key):
-        super().__init__(title=f"Torrent Listing - {SUPPORTED_ENGINES[engine_key]}")
+        super().__init__(title=f"Torrent Listing - {ENGINES[engine_key][0]}")
         self.torrent_list = torrent_list
         self.engine = engine_key
 
@@ -356,7 +352,7 @@ class ListingWin(Gtk.Window):
         top_bar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         engine_label = Gtk.Label(label="Engine:")
         self.engine_combo = Gtk.ComboBoxText()
-        for key, name in SUPPORTED_ENGINES.items():
+        for key, (name, url) in ENGINES.items():
             self.engine_combo.append(key, name)
         self.engine_combo.set_active_id(self.engine)
         self.engine_combo.connect("changed", self.on_engine_combo_changed)
@@ -434,7 +430,7 @@ class ListingWin(Gtk.Window):
 
 
 class EztvModel:
-    myUrl = ENGINE_URLS["eztv"]
+    myUrl = ENGINES["eztv"][1]
 
     @staticmethod
     def get_list(search_term):
@@ -450,7 +446,7 @@ class EztvModel:
             return 1, None
 
         soup = Soup(page.content.decode('ISO-8859-1', errors='ignore'), features="html.parser")
-        
+
         rows = soup.find_all("tr", attrs={"class": "forum_thread_post"})
         log.debug(f"[EZTV] Found {len(rows)} result rows.")
         if not rows:
@@ -474,7 +470,7 @@ class EztvModel:
                 link = link_tag['href'] if link_tag and link_tag.has_attr('href') else ""
                 size = cols[3].get_text().strip()
                 age = cols[4].get_text().strip() if len(cols) > 4 else ""
-                seeds = 0 
+                seeds = 0
                 leeches = 0
                 if title and link:
                     torrent_list.append((ascii_only(title), age, seeds, leeches, size, link))
@@ -486,7 +482,7 @@ class EztvModel:
         return (0, torrent_list) if torrent_list else (1, None)
 
 class LimeModel:
-    myUrl = ENGINE_URLS["lime"]
+    myUrl = ENGINES["lime"][1]
 
     @staticmethod
     def get_list(search_term):
@@ -534,7 +530,7 @@ class LimeModel:
         return 0, torrent_list
 
 class PBModel:
-    myUrl = ENGINE_URLS["pb"]
+    myUrl = ENGINES["pb"][1]
 
     @staticmethod
     def size_cleaner(sz):
@@ -582,12 +578,12 @@ class PBModel:
         for a in soup.find_all("a", href=True):
             if a['href'].startswith("magnet:?"):
                 magnets.append(a['href'])
-        
+
         log.debug(f"[PB] Extracted {len(magnets)} magnet links.")
 
         tds = soup.find_all("td", attrs={"align": "right"})
         sizes, seeds, leeches = [], [], []
-        
+
         if len(tds) >= 3:
             a, b, c = 0, 1, 2
             while c < len(tds):
@@ -595,11 +591,11 @@ class PBModel:
                 seeds.append(tds[b].text.strip())
                 leeches.append(tds[c].text.strip())
                 a, b, c = a + 3, b + 3, c + 3
-        
+
         log.debug(f"[PB] Extracted sizes: {len(sizes)}, seeds: {len(seeds)}, leeches: {len(leeches)}")
 
         min_len = min(len(titles), len(dates), len(seeds), len(leeches), len(sizes), len(magnets)) if (titles and dates and seeds and leeches and sizes and magnets) else 0
-        
+
         if min_len == 0:
             log.debug(f"[PB] Mismatched array lengths. Titles: {len(titles)}, Dates: {len(dates)}, Seeds: {len(seeds)}, Leeches: {len(leeches)}, Sizes: {len(sizes)}, Magnets: {len(magnets)}")
             return 1, None
@@ -663,7 +659,7 @@ if __name__ == "__main__":
         CmdLineSearch = ' '.join(CmdLineSearch) if CmdLineSearch else None
         CmdLineEngine = option_dict.get("engine", DEFAULT_ENGINE)
 
-        if CmdLineEngine not in SUPPORTED_ENGINES:
+        if CmdLineEngine not in ENGINES:
             sys.stderr.write(f"{BOLD}{RED}Error{RESET}: Unsupported engine \"{CmdLineEngine}\"\n")
             sys.stderr.flush()
             app_exit(1)

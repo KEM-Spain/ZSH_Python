@@ -90,6 +90,7 @@ _JS_SCRIPT=${_CFG_DIR}/yts.js
 _MAX_DL_TITLE=74
 _MAX_FLEN=120
 _MAX_LS_TITLE=80
+_MAX_MSG_LEN=55
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
@@ -140,6 +141,7 @@ action_do () {
 	local LAST_LOG_LINE=''
 	local LINE_COLOR=''
 	local LOG_LINE=''
+	local LOG_REPEATS=0
 	local MSG=''
 	local MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
 	local NDX=0
@@ -210,10 +212,20 @@ action_do () {
 				LOG_LINE=$(sed "s//\n/g" <<<${LOG_LINE} | tail -1 | str_trim) 2>/dev/null # Convert linefeeds to newlines - get last trimmed
 			fi
 
+			if [[ ${LAST_LOG_LINE:l} == ${LOG_LINE:l} ]];then
+				((LOG_REPEATS++))
+				if [[ ${LOG_REPEATS} -gt 10 ]];then
+					msg_box -z -t2 "Transmission stalled...exiting"
+					job_kill
+					break
+				fi
+			fi
+			LAST_LOG_LINE=${LOG_LINE}
+
 			if [[ ${HDRS_OUT} == 'false' ]];then 
 				case ${LOG_LINE:l} in
 					*sleeping*|*hlsnative*|*^\[info\]*)
-						MSG="Pre-Processing: ${LOG_LINE[1,60]}"
+						MSG="Pre-Processing: $(str_word_clip ${LOG_LINE} ${_MAX_MSG_LEN})"
 						logit ${_YT_DBG_LOG} "${0}: PRE-PROCESSING"
 						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 						continue
@@ -221,7 +233,7 @@ action_do () {
 					*'already been'*)
 						logit ${_YT_DBG_LOG} "${0}: ALREADY DOWNLOADED"
 						MSG=$(sed -E "s#^(.*/)(.*)( has.*)#\2#" <<<${LOG_LINE})
-						MSG=${MSG[1,60]}
+						MSG=$(str_word_clip ${MSG} ${_MAX_MSG_LEN})
 						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>|<B>Has already been downloaded<N>"
 						_DOWNLOADS[${M}]=true
 						break
@@ -298,7 +310,7 @@ action_do () {
 						log_add ${M}
 						break
 						;;
-					*error*|*warning*)
+					*error*|*warning*|*unable*|*403*)
 						TRANS_ERR_MSG=$(parse_err_msg ${LOG_LINE})
 						if [[ ${TRANS_ERR_MSG} != ${LAST_TRANS_MSG} ]];then
 							((TRANS_ERR_CNT++))
@@ -322,13 +334,14 @@ action_do () {
 						case ${LOG_LINE:l} in
 							*mib/s*) LINE_COLOR='<B><w>';;
 							*kib/s*) LINE_COLOR='<B><c>';;
+							*) LINE_COLOR='<B><r>';;
 						esac
 						msg_box -C -jl "${LINE_COLOR}${ETA[1,59]}<N>"
 						continue
 						;;
-					*)	if [[ -n ${LAST_LOG_LINE} && ${LOG_LINE:l} != ${LAST_LOG_LINE} ]];then
+					*)	if [[ -n ${LAST_LOG_LINE:l} && ${LOG_LINE:l} != ${LAST_LOG_LINE} ]];then
 								logit ${_YT_DBG_LOG} "UNCAPTURED LOG LINE:${LOG_LINE:l}"
-								LAST_LOG_LINE=${LOG_LINE:l}	
+								LAST_LOG_LINE=${LOG_LINE}	
 							fi;;
 				esac
 			fi
@@ -367,9 +380,10 @@ cfg_init () {
 	local CFG_STATE=0
 	local -A CFG_MSGS=(1 "Missing configuration directory:${_CFG_DIR}" 2 "Missing favorites file:${_YTS_FAVORITES}")
 
-	[[ -e ${_YT_DBG_LOG} ]] && /bin/rm -f ${_YT_DBG_LOG} # Clear any existing log
 	[[ -d ${_CFG_DIR} ]] && CFG_STATE=0 || CFG_STATE=1 # Dir exists
 	[[ -f ${_YTS_FAVORITES} ]] && CFG_STATE=0 || CFG_STATE=2 # Favorites file found
+	#[[ -e ${_YT_DBG_LOG} ]] && /bin/rm -f ${_YT_DBG_LOG} # Kill old log
+	#logit "Logging started..." > ${_YT_DBG_LOG} # Start fresh log
 
 	echo ${CFG_MSGS[${CFG_STATE}]}
 
@@ -853,8 +867,6 @@ item_decorate () {
 	local NDX=${1}
 	local STR
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-	
 	if [[ ${_DOWNLOADS[${NDX}]} == 'true' ]];then
 		STR="Downloaded..."
 	elif [[ ${_CANCELLED[${NDX}]} == 'true' ]];then
@@ -869,8 +881,6 @@ item_decorate () {
 		STR=$(get_field agetime ${NDX})
 	fi
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: STR:${STR}"
-
 	echo -n ${STR}
 }
 
@@ -878,8 +888,6 @@ job_kill () {
 	local -a PIDS=()
 	local PID
 	local P
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	g_PRESERVE_LOG=false
 
@@ -889,6 +897,7 @@ job_kill () {
 			kill -9 ${P} >/dev/null 2>&1
 			find ${_DOWNLOAD_DIR} -maxdepth 1 \( -name '*part' -or -name '*ytdl' \) -exec rm -rf {} \; # Clear any intermediate files
 			logit ${_YT_DBG_LOG} "${0}: Killed ${P}"
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0} killing ${P}"
 		done
 	fi
 
@@ -900,10 +909,7 @@ job_kill () {
 }
 
 job_cancel () {
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
 	job_kill
-
 	logit ${_YT_DBG_LOG} "${0}: Job was reset"
 }
 
@@ -914,7 +920,6 @@ job_retry () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	
 	job_cancel && sleep .1
-
 	logit ${_YT_DBG_LOG} "${0}: Job retry..."
 
 	job_start ${URL} ${TITLE}
@@ -936,7 +941,7 @@ job_start () {
 	CMD="nohup yt -o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL}" # Limit title len
 
 	[[ ! -w ${g_YTS_LOG} ]] && exit_leave $(err_msg_exit "Unable to access log file:${g_YTS_LOG}")
-	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} 2>/dev/null # Log command
+	echo "${0} CMD:${CMD}" >> ${g_YTS_LOG} # Log command
 
 	eval "${CMD} >> ${g_YTS_LOG} >/dev/null 2>&1" & # Start background job
 	g_PID=$!
@@ -1798,7 +1803,7 @@ shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution
-# TODO: Rewrite fav list parsing
+# TODO: Rewrite fav list parsing ???why did I write this???
 [[ ! ${AGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]] && usage "Invalid $(opt_type a):${AGE_OPT}"
 _QUERY_OPTS[AGE]=${AGE_OPT}
 

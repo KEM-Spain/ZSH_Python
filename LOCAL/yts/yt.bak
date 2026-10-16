@@ -122,6 +122,8 @@ else
 	EXEC_SRC="script"
 fi
 
+[[ ${#} -gt 1 ]] && exit_leave $(err_msg_exit "Too many arguments")
+
 logit ${_YT_DBG_LOG} "${0:t} Executed from: ${(C)EXEC_SRC}"
 
 [[ ${#} -eq 0 ]] && usage 
@@ -131,16 +133,16 @@ URL=${URL[1,-2]} # Eliminate trailing quote
 
 # Apply command line options
 _YT_DLP+=" --paths temp:/tmp" # Place temp files in /tmp
-[[ ! ${_YT_DLP} =~ 'impersonate' ]] && _YT_DLP+=' --impersonate chrome'
+[[ ! ${_YT_DLP} =~ 'impersonate' ]] && _YT_DLP+=' --impersonate firefox'
 if [[ ${URL:l} =~ 'rumble' ]];then
-	logit ${_YT_DBG_LOG} "${0:t} Rumble URL: invoking aria2c and pulling Brave cookies dynamically"
 	_YT_DLP+=' --downloader aria2c --downloader-args "aria2c: -x 16 -s 16"'
 	_YT_DLP+=' --cookies-from-browser brave'
+	logit ${_YT_DBG_LOG} "${0:t} Rumble CMD:${_YT_DLP}"
 fi
 
-logit ${_YT_DBG_LOG} "${0:t} CMD:${_YT_DLP} ${(qqq)@}" 
-
-eval "${_YT_DLP} ${(qqq)@}" 
+logit ${_YT_DBG_LOG} "${0:t} Calling CMD:${_YT_DLP} ${(qqq)@}" 
+eval "${_YT_DLP} ${(qqq)@} | tee -a ${_YT_DBG_LOG} 2>&1"
+logit ${_YT_DBG_LOG} "${0:t} Command execution was recorded in log" 
 
 FN=$(last_file_downloaded)
 if [[ ${?} -eq 0 ]];then

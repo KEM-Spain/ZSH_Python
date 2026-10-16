@@ -925,6 +925,7 @@ title_scrubber () {
 	local PLURAL=''
 	local W U
 
+	#TODO: apostrophes are being replaced with spaces
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TITLE:${TITLE}"
 
 	STR="$(fix_mojibake "${STR}")"

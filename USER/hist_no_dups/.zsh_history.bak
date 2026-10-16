@@ -105,7 +105,6 @@
 : 1782085332:0;ux gs
 : 1782117503:0;ip -4 addr show wlo1 
 : 1782145014:0;gsettings get org.gnome.Shell.Extensions.GSConnect id
-: 1782145923:0;pkill -f gsconnect
 : 1782218981:0;dbus-monitor --session
 : 1782253016:0;p2k 169
 : 1782253103:0;k2p 60
@@ -146,9 +145,7 @@
 : 1784884187:0;beautysh external
 : 1785055575:0;export LANG=en_US.UTF-8\
 : 1785243587:0;:e CENTER.zsh
-: 1785325580:0;qbittorrent --help
 : 1785332652:0;python rutracker.p
-: 1785335389:0;python3 -m pip install curl-cffi --break-system-packages
 : 1785368336:0;tst_mod DBG.zsh
 : 1785409002:0;lst 2>x
 : 1785443683:0;tst_keys "PROMPT "
@@ -165,7 +162,6 @@
 : 1785663601:0;genv -H
 : 1785666793:0;gsub A A
 : 1785674151:0;./irm 6409237
-: 1785680918:0;recipe cauli
 : 1785699249:0;:1
 : 1785834684:0;./lsc 
 : 1785883013:0;vl yts
@@ -193,18 +189,14 @@
 : 1786394875:0;wless -s
 : 1786395375:0;/usr/local/bin/xut wid
 : 1786406770:0;whereis deno
-: 1786529876:0;\
 : 1786613671:0;gitlog win_max
 : 1786616080:0;run_enpass -D
 : 1786621854:0;./win_max -D viber
 : 1786631942:0;md5sum "Im Old Fashioned.flac"
 : 1786632162:0;sha256sum "Moments Notice.flac"
 : 1786635311:0;for f in *.flac; do ffmpeg -i "$f" "${f%.flac}.wav"; done
-: 1786657635:0;./listing -i ~/package-lock.json
 : 1786657799:0;apropos link
-: 1786657940:0;> .xxx
 : 1786658087:0;l. x 2>x
-: 1786666446:0;M
 : 1786697052:0;zopts -H
 : 1786697576:0;builtin set
 : 1786744373:0;ffprobe "Joe Kent on Israel Involvement in Trump Shooting⧸Charlie Kirk Assassination & New 3rd Party\! [K5fBLP.webm"
@@ -213,7 +205,6 @@
 : 1786784440:0;icons warn
 : 1786787982:0;installed gnome
 : 1786986158:0;scrcpy --max-fps=30
-: 1786986244:0;install arp-scan 
 : 1786986277:0;arp-scan --localnet
 : 1786986352:0;192.168.1.31
 : 1786986391:0;adb connect 192.168.1.31:5555
@@ -221,2592 +212,3832 @@
 : 1787031603:0;s2e "De conformidad con lo dispuesto en el artículo 16.1 2o pÃ�rrafo, de la\
 : 1787037669:0;z
 : 1787037712:0;echo $PATH
-: 1787037832:0;type deno
-: 1787038552:0;/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts "https://www.youtube.com/watch?v=mvJJNePAnyA"\
 : 1787215811:0;c2f 32
 : 1787321678:0;haruna "New Evidence - Charlie Kirk Was Killed By A Military Drone W John Cullen.mp4"
 : 1787404805:0;pipx install curl-cffi
-: 1787568820:0;lsd yt.log*
 : 1787638214:0;Z
 : 1787638309:0;i
 : 1787639270:0;curl -sL --http2 \\
 : 1787654030:0;avconv Mentour\ Pilot\ -\ Delta\ GO\ AROUND\ The\ Terrifying\ Story\ Of\ Delta\ Flight.mp4 mkv
 : 1787657195:0;k/tlsd
 : 1787657231:0;hist_no_dups -Fd
-: 1788157228:0;vi ./yts
 : 1788158296:0;Cat q
 : 1788285696:0;convert 
-: 1788326155:0;T
-: 1788327509:0;qsl
 : 1788327516:0;qsl -H
 : 1788327988:0;tracker3 daemon -s
-: 1788334341:0;G
 : 1788336562:0;rb 0r
-: 1788356621:0;P
-: 1788380548:0;g
-: 1788466972:0;m
 : 1788467953:0;zsh_sort_funcs UTILS.zsh
-: 1788468100:0;me x
 : 1788524482:0;e2 twice
 : 1788534577:0;grep curl yt.log*
-: 1788592262:0;yts 
 : 1788930391:0;cl 
 : 1788930880:0;kdeconnect-cli -l
-: 1788932418:0;bak bak
 : 1788934451:0;locate curl-cffi
 : 1788962119:0;unzip archive.zip
 : 1788962451:0;openssl pkcs12 -in "kurtmiller (12345678).pfx" -noout -info
 : 1788979439:0;env
 : 1788979454:0;env 
 : 1788979782:0;node yt-search 
-: 1789027788:0;verb_dump
 : 1789029208:0;e2s 'anything else you may need is here'
-: 1789139995:0;chkupd
-: 1789154360:0;remind -e
-: 1789194910:0;mp4_merge -d
-: 1789199619:0;ll -t
-: 1789199663:0;..
-: 1789204386:0;.ls mp4_merge
 : 1789244116:0;tip -H
-: 1789244352:0;backup -f
 : 1789289739:0;vi /tmp/913779.yts_debug.out
 : 1789307811:0;pdfopen Easy_Dahl.pdf
 : 1789330700:0;Lm
-: 1789369577:0;s
 : 1789370329:0;cat launchers/run_pycharm-community_pycharm-community
 : 1789454180:0;yt 'The Elephant Graveyard'
-: 1789454988:0;man pup
-: 1789455011:0;b
 : 1789455229:0;jq --help
-: 1789455368:0;rm 17*
-: 1789496154:0;l
-: 1789507160:0;aux ffmpeg
 : 1789557308:0;adb shell "pm list packages -f -u && echo '\n=== GLOBAL SETTINGS ===' && settings list global && echo '\n=== SECURE SETTINGS ===' && settings list secure && echo '\n=== APPOPS SUMMARY ===' && dumpsys appops" > ~/full_system_report.txt
 : 1789560802:0;md adb
 : 1789576584:0;apps google
 : 1789577496:0;xrandr --dpi 144 && google-earth-pro; xrandr --dpi 96
-: 1789578117:0;O
-: 1789586459:0;h
-: 1789586508:0;,
 : 1789586601:0;V
-: 1789633108:0;o
-: 1789635937:0;upd_locate -fu
 : 1789635964:0;sudo apt install proton-vpn-gnome-desktop
-: 1789637162:0;E
-: 1789638163:0;nut
-: 1789648117:0;D
 : 1789712911:0;log_check 
 : 1789727719:0;lsfuncs fsub
-: 1789751731:0;chkupd
-: 1789751866:0;ll
-: 1789751874:0;aux proton
-: 1789751886:0;Tw
-: 1789751888:0;ll
-: 1789751889:0;yts
-: 1789751956:0;ll
-: 1789753164:0;yts
-: 1789753605:0;ll
-: 1789756251:0;lsd
-: 1789756259:0;ll
-: 1789756537:0;recipe green
-: 1789756659:0;D
-: 1789756669:0;ll
-: 1789756682:0;upd_locate -fu
-: 1789756704:0;locate greenwheat
-: 1789756714:0;locate --help
-: 1789756724:0;locate -i greenwheat
-: 1789756730:0;D
-: 1789756734:0;ll
-: 1789756738:0;o
-: 1789760621:0;o
-: 1789762833:0;t
-: 1789762946:0;yt 'https://www.youtube.com/watch?v=eCDz6DXGxXo&pp=0gcJCSQMAYcqIYzv'
-: 1789763045:0;ll
-: 1789763048:0;Tw
-: 1789763050:0;ll
-: 1789763097:0;ll
-: 1789795520:0;lsd
-: 1789795542:0;ll
-: 1789795906:0;lsd
-: 1789795913:0;ll
-: 1789796197:0;ll
-: 1789796202:0;yts
-: 1789796240:0;yts -wy
-: 1789796338:0;ll
-: 1789796342:0;yts
-: 1789796523:0;.ls yts
-: 1789796751:0;cl yts
-: 1789796754:0;vi yts
-: 1789796937:0;bak -r
-: 1789797049:0;ll
-: 1789797057:0;lsd
-: 1789797060:0;ll
-: 1789797064:0;lsd
-: 1789797076:0;ll
-: 1789797085:0;,
-: 1789797086:0;,
-: 1789797090:0;vi yts
-: 1789797342:0;bak -r
-: 1789797350:0;ll
-: 1789797352:0;ll
-: 1789797371:0;fsub 'fixed audio'
-: 1789797379:0;fsub -i 'fixed audio'
-: 1789797382:0;ll
-: 1789798532:0;yts
-: 1789798610:0;,
-: 1789798800:0;cl yts
-: 1789798802:0;vi yts
-: 1789799100:0;bak -r
-: 1789799108:0;ll
-: 1789799110:0;Tw
-: 1789799111:0;ll
-: 1789799117:0;yts
-: 1789799202:0;yts -wy
-: 1789799416:0;yt -p'Daniel Davis' 'https://www.youtube.com/watch?v=JWGx7nhhp-k'
-: 1789799606:0;ll
-: 1789799686:0;yt -p'Daniel Davis' 'https://www.youtube.com/watch?v=YgedVv0glNc'
-: 1789800262:0;ll
-: 1789806418:0;e2s sealer
-: 1789806475:0;e2s tile sealer
-: 1789807260:0;s2e '    verificador de pesas y medidas\
-'
-: 1789807279:0;s2e verificador de pesas y medidas\
-'
-: 1789807288:0;s2e verificador de pesas y medidas
-: 1789808985:0;.ls firefox
-: 1789808995:0;.ls
-: 1789809009:0;type .ls
-: 1789809063:0;.ls x
-: 1789809072:0;rb -l
-: 1789809101:0;chkupd
-: 1789809138:0;.ls
-: 1789809141:0;.ls x
-: 1789809174:0;Tw
-: 1789809179:0;lsd
-: 1789809186:0;ll
-: 1789809187:0;lsd
-: 1789809193:0;ll
-: 1789809197:0;.ls
-: 1789809229:0;..
-: 1789809231:0;..
-: 1789809257:0;ll
-: 1789809275:0;locate firefox
-: 1789809290:0;locate firefox | grep book
-: 1789809300:0;locate firefox 
-: 1789809316:0;locate firefox  | grep -v snap
-: 1789809423:0;locate firefox  | grep conf
-: 1789809575:0;ll.
-: 1789809583:0;ll
-: 1789809594:0;llr
-: 1789809689:0;g -r url
-: 1789809701:0;g -r book
-: 1789809705:0;g -r z
-: 1789809708:0;g -r a
-: 1789809727:0;ll
-: 1789809734:0;g -H
-: 1789809781:0;ll
-: 1789809785:0;..
-: 1789809786:0;ll
-: 1789809814:0;cat profiles.ini
-: 1789809844:0;ll
-: 1789809857:0;vi favicons.sqlite
-: 1789809885:0;cat prefs.js
-: 1789809977:0;g favicon
-: 1789810116:0;spell gnostic
-: 1789810126:0;dict gnostic
-: 1789810325:0;Tw
-: 1789810327:0;ll
-: 1789815191:0;lsd
-: 1789815202:0;ll
-: 1789815207:0;yts -wy
-: 1789815284:0;yts
-: 1789819246:0;lsd
-: 1789819253:0;ll
-: 1789829001:0;mp4_merge
 : 1789829006:0;mp4_merge -d
-: 1789829010:0;ll
-: 1789829121:0;yts
-: 1789829362:0;cl yts
-: 1789830140:0;mp4_merge jimm
-: 1789833399:0;yts
-: 1789833482:0;ll
-: 1789835523:0;lsd
-: 1789835530:0;ll
-: 1789835531:0;yts
-: 1789841409:0;yt 'Tucker Carlson' 'https://www.youtube.com/watch?v=uSR7xKimncM'
-: 1789845990:0;yt 'https://youtu.be/gCuDLkfzXjc?is=Yi9WhfGeqkCjattJ'
-: 1789846071:0;ll
-: 1789846074:0;Tw
-: 1789846152:0;ll
-: 1789846153:0;lsd
-: 1789846163:0;yt 'https://www.youtube.com/watch?v=GLVCMld1_Ag'
-: 1789846195:0;yt 'https://www.youtube.com/watch?v=gsLeBp3Z0MU'
-: 1789846226:0;ll
-: 1789850306:0;yts
-: 1789855476:0;lsd
-: 1789857826:0;lsd
-: 1789857832:0;ll
-: 1789884338:0;backup
-: 1789884493:0;repo
-: 1789884529:0;.ls yts
-: 1789884531:0;ll
-: 1789884538:0;vi yt.log*
-: 1789884767:0;clear
-: 1789884771:0;.ls
-: 1789884773:0;ll
-: 1789884776:0;.ls yts
-: 1789884778:0;ll
-: 1789884803:0;wc yt.log*
-: 1789884811:0;wc -l yt.log*
-: 1789884821:0;wc -c yt.log*
 : 1789884854:0;g
-: 1789884962:0;vi yt.log.ChGZ2c
-: 1789884980:0;vi yt.log.TCPcpN
-: 1789885022:0;cat yt.log.TCPcpN
-: 1789885089:0;vi yt.log.TCPcpN
-: 1789885146:0;vi yt.log.cgGZ4M
-: 1789885207:0;type vi
-: 1789885259:0;type vim
-: 1789885262:0;man vim
-: 1789885582:0;wc -l yt.log*
-: 1789886100:0;ll
 : 1789886122:0;k/wc
-: 1789886126:0;wc -l yt.log*
-: 1789886143:0;vi yt.log.ChGZ2c
-: 1789886176:0;vi yt.log.cgGZ4M
-: 1789886195:0;vi yt.log.TCPcpN
-: 1789886210:0;vi yt.log*
-: 1789886246:0;cl yts
-: 1789886249:0;vi yts
-: 1789886442:0;vi yts
-: 1789886447:0;,
-: 1789886454:0;vi yt.log*
-: 1789886549:0;vi yt.log*
-: 1789886765:0;vi yt.log*
 : 1789886805:0;backup -f
-: 1789886809:0;backup -F
-: 1789886927:0;repo
-: 1789890669:0;Tw
-: 1789890670:0;ll
-: 1789890673:0;lsd
-: 1789890679:0;ll
-: 1789890683:0;yts -wy
-: 1789891226:0;yts
-: 1789891467:0;.ls yts
-: 1789891469:0;ll
-: 1789891712:0;vi yt-dlp.conf
-: 1789892494:0;ll
-: 1789892607:0;wget 'https://www.youtube.com/@americanexception9407/videos'
-: 1789892609:0;ll
-: 1789892620:0;ll
-: 1789892622:0;vi videos
-: 1789892686:0;rm videos
-: 1789892751:0;yt-dlp --flat-playlist --print title "https://www.youtube.com/@americanexception9407/videos"
-: 1789892800:0;yt-dlp --flat-playlist --print title "https://www.youtube.com/@americanexception9407/videos" > ae.titles
-: 1789892808:0;cl yts
-: 1789892863:0;yt-dlp --flat-playlist --print title "https://rumble.com/c/AlexanderMercouris/videos?e9s=src_v1_cmd"
-: 1789893108:0;yt-dlp --flat-playlist --print title "https://rumble.com/c/AlexanderMercouris"
-: 1789893135:0;yt-dlp --help
-: 1789893159:0;yt-dlp -v --flat-playlist --print title "https://rumble.com/c/AlexanderMercouris"
-: 1789893375:0;yt-dlp --flat-playlist --playlist-start 1 --playlist-end 50 --print title "https://rumble.com/c/AlexanderMercouris"
-: 1789893397:0;yt-dlp --flat-playlist --playlist-start 1 --playlist-end 10 --print title "https://rumble.com/c/AlexanderMercouris"
-: 1789893407:0;yt-dlp --flat-playlist --playlist-start 1 --playlist-end 1 --print title "https://rumble.com/c/AlexanderMercouris"
-: 1789893416:0;yt-dlp -v --flat-playlist --playlist-start 1 --playlist-end 1 --print title "https://rumble.com/c/AlexanderMercouris"
-: 1789893570:0;yt-dlp -v --flat-playlist --playlist-start 1 --playlist-end 1 --print title "https://rumble.com/user/AlexanderMercouris"
-: 1789893694:0;yt-dlp --playlist-end 1 --print title "https://rumble.com/c/AlexanderMercouris/rss.xml"
-: 1789893717:0;yt-dlp -v --playlist-end 1 --print title "https://rumble.com/c/AlexanderMercouris/rss.xml"
-: 1789893734:0;yt-dlp -v --playlist-end 1 --print title "https://rumble.com/user/AlexanderMercouris/rss.xml"
-: 1789893815:0;curl -s "https://rumble.com/c/AlexanderMercouris/rss.xml" | grep -o '<title>.*<\/title>' | sed 's/<title>\|<\/title>//g'
-: 1789893831:0;curl -s "https://rumble.com/user/AlexanderMercouris/rss.xml" | grep -o '<title>.*<\/title>' | sed 's/<title>\|<\/title>//g'
-: 1789893849:0;curl -s "https://rumble.com/c/AlexanderMercouris/rss.xml" | grep -o '<title>.*<\/title>' | sed 's/<title>\|<\/title>//g'
-: 1789893909:0;vi -e testit
-: 1789893974:0;testit
-: 1789894005:0;vi testit
-: 1789894015:0;testit
-: 1789894216:0;vi testit
-: 1789894292:0;testit
-: 1789894297:0;vi testit
-: 1789894324:0;testit
-: 1789894326:0;vi testit
-: 1789894344:0;testit
-: 1789894353:0;vi testit
-: 1789894408:0;vi testit
-: 1789894422:0;testit
-: 1789894480:0;testit >testit.out 2>&1
-: 1789894485:0;cat testit.out
-: 1789894544:0;vi testit
-: 1789894579:0;testit | tee testit.out 2>&1
-: 1789894585:0;cat testit.out
-: 1789894598:0;testit | tee testit.out 
-: 1789894601:0;cat testit.out
-: 1789894693:0;vi testit
-: 1789894715:0;rm testit.out
-: 1789894721:0;testit
-: 1789894723:0;ll
-: 1789894800:0;vi testit
-: 1789894808:0;testit
-: 1789894866:0;ll
-: 1789894881:0;vi testit
-: 1789894888:0;testit
-: 1789894975:0;vi testit
-: 1789894982:0;testit
-: 1789895327:0;vi testit
-: 1789895418:0;testit
-: 1789895485:0;vi testit
-: 1789895491:0;testit
-: 1789895546:0;testit https://rumble.com/c/AlexanderMercouris" 
-: 1789895551:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789895566:0;testit "https://rumble.com/user/AlexanderMercouris" 
-: 1789895592:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789895599:0;ll
-: 1789895606:0;l.
-: 1789895612:0;ll
-: 1789895617:0;llr
-: 1789895628:0;..
-: 1789895629:0;ll
-: 1789895705:0;vi testit
-: 1789895719:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789895723:0;ll
-: 1789895731:0;rm rumble_page_dump.html
-: 1789895736:0;ll
-: 1789895752:0;vi rumble_scrape_20260920_111519.log
-: 1789895796:0;lsd
-: 1789895800:0;ll
-: 1789895801:0;..
-: 1789895861:0;,
-: 1789895864:0;vi rumble_scrape_20260920_111519.log
-: 1789895951:0;..
-: 1789895954:0;vi testit
-: 1789895969:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789895982:0;ll
-: 1789895986:0;vi rumble_run.log
-: 1789896000:0;rm rumble_run.log
-: 1789896001:0;ll
-: 1789896007:0;ll
-: 1789896013:0;vi rumble_scrape_20260920_111929.log
-: 1789896112:0;..
-: 1789896157:0;vi testit
-: 1789896173:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789896180:0;ll
-: 1789896185:0;vi rumble_page_dump.html 
-: 1789896402:0;vi testit
-: 1789896409:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789896423:0;ll
-: 1789896440:0;ll
-: 1789896446:0;vi rumble_scrape_20260920_112649.log
-: 1789896476:0;..
-: 1789896477:0;ll
-: 1789896479:0;vi rumble_page_dump.html
-: 1789896611:0;,
-: 1789896618:0;vi rumble_scrape_20260920_112649.log
-: 1789896627:0;,
-: 1789896629:0;ll
-: 1789896631:0;vi rumble_page_dump.html
-: 1789896646:0;grep -i title ./rumble_page_dump.html
-: 1789896759:0;vi rumble_page_dump.html
-: 1789897161:0;vi testit
-: 1789897177:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789897460:0;vi testit
-: 1789897479:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789897489:0;vi testit
-: 1789897508:0;vi testit
-: 1789897514:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789897590:0;vi testit
-: 1789897597:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789897605:0;ll
-: 1789897608:0;vi AlexanderMercouris.txt
-: 1789897625:0;testit -v "https://rumble.com/c/AlexanderMercouris" 
-: 1789897738:0;vi testit
-: 1789897746:0;testit -v "https://rumble.com/c/AlexanderMercouris" 
-: 1789897803:0;vi testit
-: 1789897810:0;testit -v "https://rumble.com/c/AlexanderMercouris" 
-: 1789897820:0;ll
-: 1789897823:0;vi AlexanderMercouris.txt
-: 1789897970:0;vi testit
-: 1789897978:0;testit -v "https://rumble.com/c/AlexanderMercouris" 
-: 1789897989:0;ll
-: 1789897992:0;vi AlexanderMercouris.txt
-: 1789898077:0;ll
-: 1789898134:0;vi testit
-: 1789898145:0;testit -v "https://rumble.com/c/AlexanderMercouris" 
-: 1789898255:0;vi testit
-: 1789898263:0;testit -v "https://rumble.com/c/AlexanderMercouris" 
-: 1789898271:0;ll
-: 1789898274:0;vi AlexanderMercouris.txt
-: 1789898335:0;ll
-: 1789898402:0;yt-dlp --flat-playlist --print title "https://www.youtube.com/@americanexception9407/videos"
-: 1789898560:0;vi rumble_query
-: 1789898577:0;testit "https://rumble.com/c/AlexanderMercouris" 
-: 1789898639:0;video_list "https://rumble.com/c/AlexanderMercouris" 
-: 1789898650:0;ll
-: 1789898674:0;video_list "https://www.youtube.com/@americanexception9407/videos"
-: 1789898685:0;ll
-: 1789898692:0;vi videos.txt
-: 1789898906:0;vi video_list
-: 1789898916:0;video_list "https://www.youtube.com/@americanexception9407/videos"
-: 1789898925:0;ll
-: 1789898949:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899003:0;ll
-: 1789899036:0;,
-: 1789899042:0;vi video_list
-: 1789899050:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899066:0;ll
-: 1789899071:0;vi americanexception9407.txt
-: 1789899080:0;rm videos.txt
-: 1789899082:0;ll
-: 1789899189:0;vi video_list
-: 1789899200:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899213:0;ll
-: 1789899224:0;vi americanexception9407.txt
-: 1789899227:0;rm americanexception9407.txt
-: 1789899233:0;ll
-: 1789899234:0;lsd
-: 1789899245:0;ll
-: 1789899247:0;vi scrape_20260920_121320.log
-: 1789899267:0;rm scrape_20260920_121320.log
-: 1789899268:0;..
-: 1789899273:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899287:0;ll
-: 1789899290:0;vi americanexception9407.txt
-: 1789899349:0;vi video_list
-: 1789899357:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899395:0;ll
-: 1789899401:0;vi scrape_20260920_121557.log
-: 1789899480:0;,,
-: 1789899482:0;..
-: 1789899484:0;vi video_list
-: 1789899494:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899498:0;ll
-: 1789899500:0;vi americanexception9407.txt
-: 1789899508:0;rm americanexception9407.txt
-: 1789899511:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899522:0;ll
-: 1789899524:0;vi americanexception9407.txt
-: 1789899600:0;vi video_list
-: 1789899610:0;rm americanexception9407.txt
-: 1789899613:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899673:0;ll
-: 1789899676:0;vi americanexception9407.txt
-: 1789899766:0;vi video_list
-: 1789899775:0;rm americanexception9407.txt
-: 1789899779:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899828:0;rm *
-: 1789899830:0;..
-: 1789899831:0;ll
-: 1789899836:0;vi video_list
-: 1789899844:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789899909:0;ll
-: 1789899912:0;cat americanexception9407.txt
-: 1789899991:0;vi video_list
-: 1789899998:0;rm americanexception9407.txt
-: 1789900002:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789900065:0;vi americanexception9407.txt
-: 1789900072:0;time
-: 1789900156:0;vi video_list
-: 1789900214:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789900282:0;ll
-: 1789900288:0;vi scrape_20260920_123014.log
-: 1789900338:0;..
-: 1789900342:0;vi video_list
-: 1789900408:0;rm americanexception9407.txt
-: 1789900412:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789900445:0;cl yts
-: 1789900448:0;ll
-: 1789900454:0;lsd
-: 1789900601:0;ll
-: 1789900608:0;vi video_list
-: 1789900617:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789900624:0;ll
-: 1789900675:0;vi video_list
-: 1789900682:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789900693:0;ll
-: 1789900725:0;vi video_list
-: 1789900731:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789900740:0;ll
-: 1789900795:0;vi video_list
-: 1789900802:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789900815:0;ll
-: 1789900819:0;cat americanexception9407.txt
-: 1789900897:0;h
-: 1789900900:0;ll
-: 1789901051:0;cl yts
-: 1789901055:0;vi video_list
-: 1789901068:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789901194:0;vi video_list
-: 1789901200:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789901205:0;ll
-: 1789901209:0;vi americanexception9407.txt
-: 1789901216:0;vi americanexception9407.txt
-: 1789901223:0;rm americanexception9407.txt
-: 1789901226:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789901238:0;vi americanexception9407.txt
 : 1789901342:0;yt-dlp --flat-playlist \\
-       --playlist-end 25 \\
-       --print "%(upload_date)s|%(title)s|%(duration_string)s" \\
-       "https://www.youtube.com/@americanexception9407/videos"
-: 1789901385:0;vi x
-: 1789901392:0;vi video_list
-: 1789901402:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789901465:0;ll
-: 1789901467:0;vi americanexception9407.txt
-: 1789901705:0;vi video_list
-: 1789901715:0;rm americanexception9407.txt
-: 1789901719:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789901774:0;vi video_list
-: 1789901781:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789901794:0;ll
-: 1789901797:0;cat americanexception9407.txt
-: 1789901985:0;vi video_list
-: 1789901994:0;video_list -v "https://www.youtube.com/@americanexception9407/videos"
-: 1789902028:0;vi americanexception9407.txt
-: 1789902161:0;ll
-: 1789902171:0;rm rumble_page_dump.html
-: 1789902173:0;ll
-: 1789902176:0;ll
-: 1789902178:0;lsd
-: 1789902182:0;ll
-: 1789902183:0;vi scrape_20260920_125954.log
-: 1789902324:0;..
-: 1789902329:0;vi video_list
-: 1789902347:0;vi video_list
-: 1789902363:0;ll
-: 1789902377:0;vi video_list
-: 1789902456:0;video_list
-: 1789902458:0;vi video_list
-: 1789902640:0;video_list "https://rumble.com/c/AlexanderMercouris" 
-: 1789902649:0;ll
-: 1789902665:0;ll
-: 1789902672:0;vi scrape_20260920_131040.log
-: 1789902772:0;..
-: 1789902775:0;vi video_list
-: 1789902786:0;video_list "https://rumble.com/c/AlexanderMercouris" 
-: 1789902794:0;ll
-: 1789902806:0;rm AlexanderMercouris.txt americanexception9407.txt
-: 1789902809:0;video_list "https://rumble.com/c/AlexanderMercouris" 
-: 1789902817:0;ll
-: 1789902824:0;cat AlexanderMercouris.txt
-: 1789902834:0;video_list "https://www.youtube.com/@americanexception9407/videos"
-: 1789902867:0;ll
-: 1789902869:0;cat americanexception9407.txt
-: 1789902906:0;video_list "https://www.youtube.com/theduran"
-: 1789902992:0;video_list "https://www.youtube.com/@theduran/videos"
-: 1789903011:0;ll
-: 1789903062:0;vi scrape_20260920_131632.log
-: 1789903080:0;l
-: 1789903083:0;rm *
-: 1789903085:0;..
-: 1789903086:0;ll
-: 1789907463:0;Tw
-: 1789907464:0;lsd
-: 1789907478:0;ll
-: 1789908970:0;yts
-: 1789909004:0;ll
-: 1789909007:0;lsd
-: 1789909009:0;ll
-: 1789930528:0;lsd
-: 1789930531:0;ll
-: 1789930532:0;yts
-: 1789930883:0;yts -wy
-: 1789930976:0;yts
-: 1789931574:0;.ls yts
-: 1789931575:0;ll
-: 1789931597:0;vi yt-dlp.conf
-: 1789931685:0;rm yt.log*
-: 1789931687:0;ll
-: 1789931736:0;cl yts
-: 1789931738:0;vi yts
-: 1789931773:0;bak -r
-: 1789931777:0;,
-: 1789931778:0;,
-: 1789931780:0;.ls yts
-: 1789931784:0;vi yt-dlp.conf
-: 1789931797:0;bak -r
-: 1789931806:0;,
-: 1789931808:0;bak -r
-: 1789931817:0;yts
-: 1789931893:0;ll
-: 1789931956:0;vi americanexception9407.txt
-: 1789931980:0;..
-: 1789931993:0;md video_list
-: 1789932027:0;ll
-: 1789932032:0;cl video_list
-: 1789932033:0;ll
-: 1789932049:0;vi video_list
-: 1789932304:0;Tw
-: 1789932305:0;ll
-: 1789932568:0;lsd
-: 1789939989:0;Tm
-: 1789939990:0;lsd
-: 1789939994:0;ll
-: 1789940000:0;Tw
-: 1789940001:0;ll
-: 1789940067:0;lsd
-: 1789940072:0;ll
-: 1789943517:0;;sd
-: 1789943518:0;lsd
-: 1789943524:0;ll
-: 1789967389:0;yts -wy
-: 1789967808:0;yts
-: 1789967874:0;.ls yts
-: 1789967876:0;ll
-: 1789967882:0;ll -t
-: 1789967912:0;vi yt.log*
-: 1789967963:0;rm yt.log*
-: 1789967968:0;ll
-: 1789967978:0;yts aux
-: 1789967985:0;aux yts
-: 1789967995:0;aux ffmpeg
-: 1789967997:0;ll
-: 1789968003:0;vi yt-dlp.conf
-: 1789968267:0;cl yts
-: 1789968278:0;vi yts
-: 1789968951:0;bak -r
-: 1789968958:0;Tw
-: 1789968959:0;ll
-: 1789968968:0;yts
-: 1789968994:0;.ls yts
-: 1789968995:0;ll
-: 1789969003:0;vi yt.log.yW2gMT
-: 1789969045:0;rm yt.log.yW2gMT
-: 1789969051:0;cl yts
-: 1789969057:0;vi yts
-: 1789969503:0;bak -r yt
-: 1789969506:0;bak -r
-: 1789969510:0;./yts
-: 1789969552:0;.ls yts
-: 1789969553:0;ll
-: 1789969567:0;,
-: 1789969570:0;ll
-: 1789969628:0;yt 'https://rumble.com/v7fqzw2-ed-sheeran-crashes-out-on-stage-paid-shills-attack-mtg-over-gas-prices-iran.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
-: 1789969638:0;vi yt
-: 1789969659:0;bak -r yt
-: 1789969662:0;yt 'https://rumble.com/v7fqzw2-ed-sheeran-crashes-out-on-stage-paid-shills-attack-mtg-over-gas-prices-iran.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
-: 1789969689:0;,
-: 1789969690:0;ll
-: 1789969693:0;,
-: 1789969695:0;ll
-: 1789969697:0;,
-: 1789969701:0;vi yt.dbg.log
-: 1789969725:0;g impersonate
-: 1789969732:0;,
-: 1789969734:0;g impersonate
-: 1789969756:0;vi yt
-: 1789969936:0;bak -r yt
-: 1789969942:0;yt 'https://rumble.com/v7fqzw2-ed-sheeran-crashes-out-on-stage-paid-shills-attack-mtg-over-gas-prices-iran.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
-: 1789973177:0;ll
-: 1789973182:0;Tw
-: 1789973183:0;ll
-: 1789973191:0;lsd
-: 1789973196:0;ll
-: 1789973235:0;ll
-: 1789973513:0;ll
-: 1789974965:0;cl yts
-: 1789974983:0;Tw
-: 1789974987:0;yts -wy
 : 1789975015:0;G
-: 1789975089:0;yts
-: 1789975238:0;yts
-: 1789975327:0;ll
-: 1789976230:0;yts
-: 1789976279:0;yts
-: 1789976814:0;d
-: 1789977715:0;aux ffm
-: 1789977725:0;ll
-: 1789977727:0;Tw
-: 1789977728:0;ll
-: 1789978106:0;backup
-: 1789981736:0;lsd
-: 1789981741:0;ll
-: 1789981745:0;yts -wy
-: 1789982949:0;yts
-: 1789983011:0;repo
-: 1789983061:0;cl
-: 1789983063:0;l.
-: 1789983069:0;cl yts
-: 1789983073:0;l.
-: 1789983078:0;rm .venv_scraper
-: 1789983087:0;repo
-: 1789983132:0;Tw
-: 1789983133:0;ll
-: 1789987585:0;lsd
-: 1789987590:0;ll
-: 1789987608:0;lsd
-: 1789987618:0;ll
-: 1789987624:0;yts -wr
-: 1789987703:0;yts
-: 1789988311:0;Tw
-: 1789988315:0;vi x
-: 1789988708:0;cat 
-: 1789988712:0;cat  x
-: 1789988738:0;yt 'https://www.youtube.com/watch?v=M9exQF0665g'
-: 1789988766:0;yt 'https://www.youtube.com/watch?v=QoRQXZ0plHg'
-: 1789988798:0;rm x
-: 1789988800:0;ll
-: 1789990930:0;lsd
-: 1789990934:0;ll
-: 1789998228:0;chkupd
-: 1789998303:0;sut info
-: 1789998707:0;lsfuncs UTILS.zsh
-: 1789999439:0;c2i 36.4
-: 1789999820:0;tx
-: 1789999821:0;tc
-: 1789999827:0;show luf
-: 1790005708:0;Tw
-: 1790005712:0;yts
-: 1790006253:0;e2s sticky
-: 1790009106:0;lsd
-: 1790009124:0;ll
-: 1790013919:0;recipe bharta
-: 1790014164:0;google 'baingan bharta'
-: 1790014720:0;yt 'https://www.youtube.com/watch?v=zw5H0fFkj-k'
-: 1790015945:0;clear
-: 1790015947:0;lsd
-: 1790015953:0;ll
-: 1790016006:0;ll
-: 1790025204:0;lsd
-: 1790025209:0;ll
-: 1790029919:0;lsd
-: 1790029926:0;ll
-: 1790060898:0;yts -wy
-: 1790061038:0;yts
-: 1790061145:0;cl yts
-: 1790061149:0;yts -H
-: 1790061162:0;vi yts
-: 1790061717:0;./yts
-: 1790061727:0;./yts -a all
-: 1790061846:0;vi yts
-: 1790061983:0;./yts -a all
 : 1790062021:0;./yts 
-: 1790062075:0;vi yts
 : 1790062096:0;lsfuncs ./yts
-: 1790062165:0;vi yts
-: 1790062303:0;vi yt
-: 1790062313:0;vi yts.js
-: 1790062475:0;bak -r yts.js
-: 1790062511:0;vi yts
-: 1790062728:0;./yts -a all
-: 1790062742:0;vi x
-: 1790062799:0;vi yts
-: 1790062818:0;rm x
-: 1790062820:0;./yts -a all
-: 1790062830:0;vi x
-: 1790062855:0;g age
-: 1790062968:0;rm x
-: 1790062970:0;vi yts
-: 1790063046:0;./yts -a all
-: 1790063063:0;vi x
-: 1790063069:0;vi yts
-: 1790063318:0;./yts -a all
-: 1790063331:0;vi x
-: 1790063353:0;vi yts
-: 1790063430:0;./yts -a all
-: 1790063502:0;ll
-: 1790063504:0;rm x
-: 1790063509:0;g sort
-: 1790063963:0;vi x
-: 1790064082:0;vi x
-: 1790064265:0;./yts -a all
-: 1790064272:0;./yts -a all 2>x
-: 1790064276:0;vi x
-: 1790064384:0;vi x
-: 1790064487:0;./yts -a all 
-: 1790064812:0;./yts -a all 
-: 1790065074:0;./yts -a all 
-: 1790065090:0;vi x
-: 1790065145:0;rm x
-: 1790065182:0;./yts -a all 
-: 1790065196:0;vi x
-: 1790065384:0;rm x
-: 1790065387:0;./yts -a all 
-: 1790065402:0;vi x
-: 1790065479:0;rm x
-: 1790065482:0;./yts -a all 
-: 1790065495:0;vi x
-: 1790065557:0;rm x
-: 1790065559:0;./yts -a all 
-: 1790065575:0;vi x
-: 1790065668:0;rm x
-: 1790065672:0;./yts -a all 
-: 1790065689:0;vi x
-: 1790065963:0;rm x
-: 1790065966:0;./yts -a all 
-: 1790065978:0;vi x
-: 1790066106:0;vi missed
-: 1790066331:0;vi cstmt
-: 1790066436:0;rm x
-: 1790066441:0;./yts -a all 
-: 1790066488:0;vi x
-: 1790066513:0;ll
-: 1790066520:0;vi x
-: 1790066578:0;lsd
-: 1790066586:0;ll
-: 1790066826:0;./yts -a all 
-: 1790066867:0;cl LIBS
-: 1790066875:0;bak LIST.zsh
-: 1790066885:0;bak DBG.zsh
-: 1790066890:0;cl LIBS
-: 1790066896:0;bak SELECT.zsh
-: 1790066898:0;ll
-: 1790066902:0;,
-: 1790066905:0;cl yts
-: 1790066909:0;bak -r
-: 1790066913:0;cl yts
-: 1790066917:0;backup
-: 1790067005:0;repo
-: 1790067063:0;cl video_list
-: 1790067066:0;l.
-: 1790067068:0;ll
-: 1790067073:0;llr
-: 1790067124:0;cl yts
-: 1790067126:0;l.
-: 1790067127:0;llr
-: 1790067195:0;repo
-: 1790067351:0;repo
-: 1790067359:0;.ls yts
-: 1790067360:0;lsd
-: 1790067370:0;ll
-: 1790067377:0;cl
-: 1790067384:0;..
-: 1790067389:0;rm x
-: 1790067393:0;ll
-: 1790067399:0;ll
-: 1790067405:0;ll
-: 1790067407:0;..
-: 1790067408:0;ll
-: 1790067410:0;llr
-: 1790067436:0;..
-: 1790067437:0;ll
-: 1790067522:0;repo
-: 1790067580:0;b
-: 1790067750:0;repo
-: 1790067841:0;repo
-: 1790067960:0;repo
-: 1790068045:0;repo
-: 1790068084:0;cl
-: 1790068085:0;ll
-: 1790068088:0;..
-: 1790068094:0;ll
-: 1790068097:0;llr
-: 1790068099:0;ll
-: 1790068176:0;cl repo
-: 1790068179:0;bak repo
-: 1790068180:0;ll
-: 1790068197:0;vi git_reset
-: 1790068217:0;ll
-: 1790068222:0;..
-: 1790068223:0;ll
-: 1790068234:0;gitlog
-: 1790068499:0;ll
-: 1790068503:0;vi README.md
-: 1790068511:0;..
-: 1790068512:0;ll
-: 1790068570:0;git log --since="2 weeks ago"
-: 1790068581:0;..
-: 1790068587:0;..
-: 1790068592:0;git log --since="2 weeks ago"
-: 1790068600:0;l.
-: 1790068607:0;ll
-: 1790068626:0;l.
-: 1790068633:0;git log --since="2 weeks ago"
-: 1790068809:0;cl repo
-: 1790068811:0;ll
-: 1790068819:0;git_reset 9cdcb9e33a0cac6717fca2720a71197d5c076d94
 : 1790068830:0;c
-: 1790068832:0;cl
-: 1790068835:0;repo
-: 1790068885:0;repo
-: 1790068978:0;..
-: 1790068982:0;ll
-: 1790068988:0;..
-: 1790068992:0;ll
 : 1790068998:0;git log --since="2 weeks ago"
-: 1790071509:0;Tw
-: 1790071511:0;lsd
-: 1790071514:0;ll
-: 1790071516:0;yts
-: 1790076928:0;lsd
-: 1790076933:0;ll
-: 1790076935:0;yts
-: 1790076957:0;yts -wy
-: 1790076995:0;yts
-: 1790082726:0;yts -wy
-: 1790082736:0;lsd
-: 1790082742:0;ll
-: 1790082890:0;yts
-: 1790089485:0;Tw
-: 1790089491:0;mp4_merge jimm
-: 1790098660:0;ll
-: 1790098662:0;ld
-: 1790098663:0;lsd
-: 1790098683:0;yts
-: 1790098819:0;cl yts
-: 1790098823:0;vi yts
-: 1790099016:0;bak -r
-: 1790099024:0;yts
-: 1790099032:0;vi yts
-: 1790099076:0;bak -r
-: 1790099083:0;yts
-: 1790099104:0;ll
-: 1790099108:0;yts
-: 1790099368:0;ll
-: 1790099378:0;.ls
-: 1790099381:0;.ls yts
-: 1790099389:0;vi yt.dbg.log
-: 1790099426:0;ll
-: 1790099433:0;vi yt.log.9GaGZV
-: 1790099447:0;ll
-: 1790099452:0;rm yt.log.9GaGZV
-: 1790099453:0;ll
-: 1790099460:0;vi yt.log.CRqyzS
-: 1790099472:0;rm yt.log.CRqyzS
-: 1790099473:0;ll
-: 1790099476:0;,
-: 1790099478:0;ll
-: 1790099481:0;cl yts
-: 1790099508:0;Tw
-: 1790099510:0;yts
-: 1790099521:0;yt -wy
-: 1790099525:0;yts -wy
-: 1790099584:0;yts
-: 1790100690:0;ll
-: 1790102482:0;lsd
-: 1790102494:0;ll
-: 1790102964:0;Tm
-: 1790102966:0;ll
-: 1790104269:0;Tw
-: 1790104272:0;lsd
-: 1790104281:0;lsd
-: 1790108222:0;ll
-: 1790108225:0;yts
-: 1790108262:0;g recent
-: 1790112368:0;Tm
-: 1790112369:0;lsd
-: 1790112388:0;imdb the rivals of 
-: 1790112998:0;cl yts
-: 1790113003:0;vi yts
-: 1790113653:0;g -I FAV_LIST
-: 1790113739:0;g -nI FAV_LIST
-: 1790113754:0;vi yts
-: 1790113790:0;yts
-: 1790113816:0;vi yts
-: 1790113846:0;cl yts
-: 1790113869:0;g '|'
-: 1790113879:0;g '\|'
-: 1790113926:0;grep '|' yts
-: 1790113934:0;grep -n '|' yts
-: 1790113951:0;grep -n '|' yts | grep -i fav
-: 1790114036:0;grep -n '|' yts | mypager
-: 1790114071:0;vi yts
-: 1790114135:0;yts
-: 1790114152:0;vi yts
-: 1790114249:0;g -I FAV_LIST
-: 1790114288:0;vi yts
-: 1790114318:0;g -nI FAV_LIST
-: 1790114355:0;grep  -n FAV_LIST yt
-: 1790114357:0;grep  -n FAV_LIST yts
-: 1790114696:0;grep  -n Q_OPTS yts
-: 1790114721:0;grep  -n ':' yts
-: 1790114742:0;grep  -n ':' yts | grep -i Q_OPTS
-: 1790114909:0;grep  -n 'DISPLAY_LABEL' yts
-: 1790114941:0;grep  -n 'FAV_LIST' yts
-: 1790115097:0;bak -r
-: 1790115099:0;ll
-: 1790115108:0;vi yts
-: 1790115141:0;bak -r
-: 1790115146:0;Tw
-: 1790115147:0;lsd
-: 1790115151:0;ll
-: 1790144547:0;yts
-: 1790144661:0;cl yts
-: 1790144667:0;vi yts
-: 1790144681:0;bak -r
-: 1790144685:0;,
-: 1790144687:0;ll
-: 1790144691:0;yts
-: 1790145107:0;cl yts
-: 1790145110:0;vi yts
-: 1790145166:0;yts -D
-: 1790145413:0;.ls yts
-: 1790145417:0;ll
-: 1790145424:0;ll -t
-: 1790145433:0;vi yt.log.cibEPO
-: 1790145657:0;rm yt.log*
-: 1790145663:0;ll
-: 1790145677:0;,
-: 1790145814:0;vi yts
-: 1790145818:0;,
-: 1790145823:0;cl yts
-: 1790145826:0;vi yts
-: 1790145933:0;bak -r
-: 1790145947:0;Tw
-: 1790145949:0;ll
-: 1790146080:0;yts
-: 1790146120:0;yts -wy
-: 1790146218:0;yt 'https://www.youtube.com/watch?v=tpdXsPh5q1Y&t=49s'
-: 1790146254:0;ll
-: 1790146266:0;vut info
-: 1790146560:0;yts
-: 1790147450:0;.ls yts
-: 1790147453:0;vi yt.dbg.log
-: 1790147567:0;Tw
-: 1790147568:0;ll
-: 1790147594:0;math '1.7 / 12'
-: 1790147657:0;,
-: 1790147658:0;ll
-: 1790147687:0;,
-: 1790147689:0;ll
-: 1790147867:0;cl yts
-: 1790147887:0;.ls yts
-: 1790147890:0;vi yt-dlp.conf
-: 1790147996:0;type ejs
-: 1790148004:0;type npm
 : 1790148022:0;npm --help
-: 1790148046:0;npm ll
-: 1790148056:0;npm ls
-: 1790148648:0;install aria2c
 : 1790148661:0;install aria2
 : 1790148689:0;aria2c --version
-: 1790148761:0;,
-: 1790148765:0;vi yt
-: 1790148950:0;,
-: 1790148955:0;vi yt.dbg.log
-: 1790148990:0;yt 'https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html'
-: 1790149019:0;vi yt
-: 1790149022:0;,
-: 1790149027:0;yt 'https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html'
-: 1790149045:0;vi yt
-: 1790149056:0;yt 'https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html'
-: 1790149076:0;vi yt
-: 1790149167:0;yt 'https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html'
-: 1790149184:0;Tw
-: 1790149186:0;lsd
-: 1790149195:0;ll
-: 1790149197:0;,
-: 1790149199:0;,
-: 1790149202:0;,
-: 1790149206:0;.ls yts
-: 1790149208:0;vi yt.dbg.log
-: 1790149773:0;ll
-: 1790149802:0;,
-: 1790149805:0;vi yt
-: 1790149889:0;yt 'https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html'
-: 1790149922:0;vi ~/.local/share/yts/yt.dbg.log
-: 1790150019:0;/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts --impersonate chrome --downloader aria2c --downloader-args "aria2c: -x 16 -s 16" --cookies /home/kmiller/.local/share/yts/cookies.txt "https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html"
-: 1790150134:0;yt-dlp --cookies /home/kmiller/.local/share/yts/cookies.txt --list-formats "https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html"
-: 1790150162:0;vi x
 : 1790150210:0;/usr/local/bin/yt-dlp --config-locations /home/kmiller/.local/share/yts --impersonate chrome --concurrent-fragments 16 --cookies /home/kmiller/.local/share/yts/cookies.txt "https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html"
-: 1790150243:0;Tw
-: 1790150244:0;lsd
-: 1790150275:0;.ls yts
-: 1790150279:0;vi yt-dlp.conf
-: 1790150289:0;,
-: 1790150291:0;ll
-: 1790150297:0;cl yts
-: 1790150315:0;yt 'https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html'
-: 1790150443:0;,
-: 1790150445:0;lsd
-: 1790150455:0;ll
-: 1790150457:0;,
-: 1790150466:0;.ls yts
-: 1790150469:0;vi yt-dlp.conf
-: 1790150482:0;yt 'https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html'
-: 1790150489:0;,
-: 1790150492:0;yt 'https://rumble.com/v7fujsg-can-medbeds-regrow-limbs-and-cure-cancer-scam-or-secret-tech.html'
-: 1790150552:0;Tw
-: 1790150557:0;rm *part
-: 1790150562:0;ll
-: 1790150570:0;rm *ytdl
-: 1790150573:0;ll
-: 1790150578:0;,
-: 1790150583:0;vi yt-dlp.conf
-: 1790150601:0;bak -r yt
-: 1790150604:0;,
-: 1790150606:0;bak -r yt
-: 1790150899:0;yts
-: 1790151056:0;,
-: 1790151058:0;,
-: 1790151063:0;.ls yts
-: 1790151066:0;vi yt-dlp.conf
-: 1790151080:0;yts
-: 1790151190:0;vi yt-dlp.conf
-: 1790151200:0;yts
-: 1790151299:0;Tw
-: 1790151300:0;ll
-: 1790151400:0;cl yts
-: 1790151402:0;vi yt
-: 1790151467:0;bak -r yt
-: 1790151470:0;,
-: 1790151471:0;ll
-: 1790153581:0;lsd
-: 1790153603:0;ll
-: 1790153863:0;lsd
-: 1790153872:0;ll
-: 1790153881:0;yts -a all
-: 1790157702:0;ll
-: 1790158104:0;recipe chicken
-: 1790160292:0;lsd
-: 1790160302:0;ll
-: 1790162980:0;lsd
-: 1790162987:0;ll
-: 1790172207:0;yts
-: 1790172226:0;yts -wy
-: 1790172244:0;cl yts
-: 1790172256:0;vi yts
-: 1790172434:0;yts
-: 1790172465:0;vi yts
-: 1790172482:0;yts
-: 1790172529:0;vi yts
-: 1790172735:0;yts
-: 1790172755:0;yts
-: 1790172790:0;vi yts
-: 1790172831:0;yts
-: 1790172840:0;vi yts
-: 1790172920:0;yts
-: 1790172928:0;vi x
-: 1790172952:0;vi yts
-: 1790172967:0;vi yts
-: 1790172976:0;rm x
-: 1790172980:0;yts
-: 1790172989:0;vi x
-: 1790172997:0;rm x
-: 1790173000:0;vi yts
-: 1790173089:0;rm x
-: 1790173092:0;yts
-: 1790173280:0;bak -r
-: 1790173295:0;Tw
-: 1790173296:0;ll
-: 1790175429:0;lsd
-: 1790175443:0;ll
-: 1790175522:0;e2s whole wheat
-: 1790175568:0;remind
 : 1790175574:0;remind -e
-: 1790175584:0;chkupd
-: 1790179603:0;Tw
-: 1790179606:0;yts
-: 1790179962:0;yt 'Daniel Davis' 'https://www.youtube.com/watch?v=z6Wuxj6iNE0'
-: 1790179999:0;yt 'Daniel Davis' 'https://www.youtube.com/watch?v=jZCfQ_8KUUI'
-: 1790180028:0;ll
-: 1790180069:0;fsub -p'Daniel Davis' "The Old World Order IS Breaking - Trump Won't Let Go Alastair Crooke.mp4"
-: 1790180070:0;ll
-: 1790180577:0;yts
-: 1790180614:0;yt 'https://youtu.be/EBcR24yvo0U?is=Q1J3GuHbeAonb2iO'
-: 1790180702:0;ll
-: 1790180728:0;fsub -yp'Olivia Swing' 'The Iran Connection No One IS Talking About.mp4'
-: 1790180730:0;ll
-: 1790181887:0;ld
-: 1790181890:0;ld
-: 1790181894:0;lsd
-: 1790182057:0;ll
-: 1790187181:0;t
-: 1790187190:0;yts
-: 1790187239:0;ll
-: 1790187330:0;fsub -yp'Daniel Davis' "The Houthis Red Sea Offensive Drawing The West Toward More War.mp4"
-: 1790187331:0;ll
-: 1790189410:0;lsd
-: 1790189417:0;ll
-: 1790195082:0;yts
-: 1790195244:0;ll
-: 1790201293:0;Tw
-: 1790201294:0;ll
-: 1790201303:0;Tm
-: 1790201305:0;lsd
-: 1790201308:0;ll
-: 1790201327:0;,
-: 1790201328:0;lsd
-: 1790201338:0;ll
-: 1790201347:0;yts
-: 1790201408:0;.ls yts
-: 1790201411:0;vi yt-dlp.conf
-: 1790201431:0;,
-: 1790205730:0;lsd
-: 1790205746:0;ll
-: 1790232369:0;vi Samsung_TV_Info
-: 1790232856:0;d
-: 1790232857:0;ll
-: 1790232861:0;O
-: 1790232867:0;ll
-: 1790232878:0;ll
-: 1790232887:0;lsd
-: 1790232894:0;ll
-: 1790232900:0;me "MuseScore-Studio-4.7.5.260831071-x86_64.AppImage"
-: 1790232901:0;ll
-: 1790232927:0;i musescore.desktop
-: 1790232931:0;vi musescore.desktop
-: 1790233031:0;usa
 : 1790233048:0;ms m*
-: 1790233063:0;ll m*
 : 1790233111:0;ln -f -s musescore.desktop /opt/musescore/musescore.desktop
-: 1790233112:0;ll
-: 1790233117:0;ll m*
-: 1790233123:0;vi musescore.desktop
-: 1790233161:0;ll -l
-: 1790233170:0;l -l
-: 1790233175:0;l -H
-: 1790233191:0;l -L
-: 1790233223:0;s
-: 1790233234:0;vi run_musescore
-: 1790233274:0;type run_appimage
-: 1790233282:0;vi run_musescore
-: 1790233289:0;type run_app_image
-: 1790233292:0;s
-: 1790233296:0;vi run_app_image
-: 1790233375:0;O
-: 1790233378:0;ll
-: 1790233391:0;unlink musescore.desktop
-: 1790233392:0;ll
-: 1790233480:0;..
-: 1790233487:0;f appimage
-: 1790233495:0;f AppImage
-: 1790233499:0;f
-: 1790233510:0;f -d AppImage
-: 1790233691:0;Tw
-: 1790233692:0;ll
-: 1790233708:0;D
-: 1790233709:0;ll
-: 1790235310:0;cat Bank.txt
-: 1790236073:0;Tw
-: 1790236074:0;yts
-: 1790236258:0;cl yts
-: 1790236262:0;vi yt
-: 1790236470:0;./yt 'https://www.youtube.com/watch?v=4JPviK7wagg'
-: 1790236524:0;Tw
-: 1790236525:0;ll
-: 1790236588:0;fsub -yp'Tucker Carlson' "Gas Prices Skyrocket Trump Freaks Out His Powerlessness IS Exposed - The True War Agenda Revealed.mp4"
-: 1790236590:0;ll
-: 1790236603:0;fsub -t100 "Tucker Carlson - Gas Prices Skyrocket Trump Freaks Out His Powerlessness IS Exposed - The True War Agenda Revealed.mp4"
-: 1790236606:0;ll
-: 1790240066:0;,
-: 1790240070:0;bak -r
-: 1790240079:0;bak -r yt
-: 1790240082:0;ll
-: 1790240084:0;Tw
-: 1790240086:0;yts
-: 1790240242:0;,
-: 1790240248:0;vi yt
-: 1790240266:0;g down
-: 1790240301:0;vi yts
-: 1790240436:0;yts
-: 1790240532:0;vi x
-: 1790240684:0;rm x
-: 1790240687:0;yts
-: 1790240729:0;vi x
-: 1790240751:0;vi yts
-: 1790240866:0;rm x
-: 1790240871:0;yts
-: 1790240931:0;vi x
-: 1790241183:0;.ls yts
-: 1790241184:0;ll
-: 1790241188:0;,
-: 1790241205:0;yts -D
-: 1790241209:0;rm x
-: 1790241211:0;yts -D
-: 1790241273:0;vi x
-: 1790241436:0;Tw
-: 1790241437:0;ll
-: 1790241703:0;rm x
-: 1790241706:0;yts -D
-: 1790241742:0;rm x
-: 1790241747:0;vi x
-: 1790241750:0;vi yts
-: 1790241995:0;yts 
-: 1790241998:0;rm x
-: 1790242000:0;yts 
-: 1790242034:0;vi yts
-: 1790242140:0;rm x
-: 1790242144:0;yts 
-: 1790242173:0;rm x
-: 1790242175:0;vi yts
-: 1790242499:0;rm x
-: 1790242502:0;yts 
-: 1790242535:0;rm x
-: 1790242539:0;vi yts
-: 1790242613:0;yts 
-: 1790242651:0;ll
-: 1790242658:0;bak -r
-: 1790242663:0;Tw
-: 1790242664:0;ll
-: 1790242792:0;yts
-: 1790242882:0;cl yts
-: 1790242884:0;vi yts
-: 1790242903:0;bak -r
-: 1790243056:0;.ls yts
-: 1790243059:0;vi yt-dlp.conf
-: 1790243069:0;,
-: 1790243074:0;yts
-: 1790243286:0;vi yts
-: 1790243403:0;kk
-: 1790243404:0;vi yts
-: 1790243474:0;yts
-: 1790243580:0;vi yts
-: 1790243675:0;yts
-: 1790243822:0;vi yts
-: 1790243892:0;yts
-: 1790243965:0;bak -r
-: 1790243971:0;ll
-: 1790243978:0;lsd
-: 1790243985:0;ll
-: 1790245689:0;recipe masala
-: 1790245793:0;recipe masala
-: 1790245813:0;D
-: 1790245818:0;ll
-: 1790245831:0;o Garam\ Masala.pdf
-: 1790245893:0;o
-: 1790245950:0;o
-: 1790256398:0;o
-: 1790257327:0;o G*
-: 1790261907:0;Tw
-: 1790261909:0;yts
-: 1790261931:0;ll
-: 1790261933:0;Tw
-: 1790261934:0;ll
-: 1790263687:0;yts
-: 1790263776:0;yt 'https://www.youtube.com/watch?v=z9JDC2r_hVA'
-: 1790284024:0;ll
-: 1790284037:0;lssd
-: 1790284041:0;lsd
-: 1790285720:0;lsd
-: 1790286742:0;.ls yts
-: 1790286744:0;ll
-: 1790286757:0;g neil
-: 1790286784:0;grep -i neil yts.downloads
-: 1790286795:0;grep -i neil yts.url.log
-: 1790286963:0;ll
-: 1790286970:0;lsd
-: 1790286977:0;ll
-: 1790286982:0;b
-: 1790287005:0;type rb
-: 1790287010:0;rb -H
-: 1790287021:0;k,
-: 1790287025:0;l,
-: 1790287026:0;l.
-: 1790287027:0;ll
-: 1790287056:0;frcp -H
 : 1790287060:0;frcp 
-: 1790287080:0;rm frcp
-: 1790287083:0;ll
-: 1790287115:0;..
-: 1790287125:0;pip
-: 1790287141:0;pip list
-: 1790287497:0;locate rutracker
-: 1790287602:0;uls
-: 1790287606:0;ll
-: 1790287609:0;ll
-: 1790287615:0;vi rutracker.py
 : 1790287654:0;\
-
-: 1790287661:0;.ls qBittorrent
-: 1790287662:0;ll
-: 1790287676:0;ll
-: 1790287679:0;ll
-: 1790287689:0;vi rutracker.py
-: 1790287878:0;type qbittorrent
-: 1790287888:0;locate qbittorrent
-: 1790287973:0;ll
-: 1790288013:0;diff rutracker.py.patched rutracker.py
 : 1790288025:0;md ~/stash
-: 1790288028:0;ll
-: 1790288034:0;h
-: 1790288043:0;..
-: 1790288047:0;l.
-: 1790288049:0;ll
-: 1790288052:0;..
-: 1790288053:0;ll
-: 1790288061:0;ll
-: 1790288078:0;.ls qBittorrent/nova3/engines
-: 1790288079:0;ll
-: 1790288092:0;ll
-: 1790288105:0;rm __pycache__
-: 1790288247:0;ll
-: 1790288265:0;vi rutracker.py
-: 1790288452:0;rm rutracker.py
-: 1790288466:0;ll
-: 1790288634:0;vi rutracker.py
-: 1790289460:0;vi rutracker.py
-: 1790289563:0;vi rutracker.py
-: 1790289743:0;ll
-: 1790289803:0;d
-: 1790289804:0;ll
-: 1790289823:0;ll
-: 1790289831:0;cat rutracker.org_cookies.txt
-: 1790290095:0;vi rutracker.py
-: 1790290313:0;vi rutracker.py
 : 1790290516:0;.ls 
-: 1790290551:0;ll
-: 1790290563:0;ll
-: 1790290593:0;ll
-: 1790290682:0;ll
-: 1790290697:0;python3 rutracker.py
-: 1790290788:0;.ls qBittorrent/nova3/engines
-: 1790290790:0;ll
-: 1790290794:0;python3 rutracker.py
-: 1790290879:0;vi rutracker.py
-: 1790290921:0;ll
-: 1790290923:0;,
-: 1790290925:0;ll
-: 1790290941:0;,
-: 1790290948:0;python3 rutracker.py
-: 1790290964:0;vi rutracker.py
-: 1790290984:0;,
-: 1790290985:0;ll
-: 1790290990:0;pwd
-: 1790291113:0;,
-: 1790291129:0;ll
-: 1790291144:0;vi rutracker.py
-: 1790291169:0;python3 rutracker.py
-: 1790291260:0;pip install --upgrade curl_cffi
-: 1790291340:0;pip install --user --upgrade curl_cffi
-: 1790291385:0;pip install --upgrade curl_cffi --break-system-packages
-: 1790291418:0;python3 rutracker.py
-: 1790318025:0;uls
-: 1790318026:0;ll
-: 1790318076:0;ll
-: 1790318081:0;..
-: 1790318145:0;ll
-: 1790318154:0;ll
-: 1790318171:0;ll
-: 1790318179:0;rm stash
-: 1790318181:0;ll
-: 1790318211:0;vi rutracker.py
-: 1790318403:0;ll
-: 1790318416:0;..
-: 1790318446:0;h
-: 1790318463:0;.ls
-: 1790318491:0;md escribe
-: 1790318504:0;ll
-: 1790318510:0;h
-: 1790318518:0;.lc
-: 1790318537:0;uls
-: 1790318546:0;O
-: 1790318562:0;locate escribe
-: 1790318618:0;desktop
-: 1790318682:0;.ls
-: 1790318686:0;..
-: 1790318691:0;llr
-: 1790318704:0;ll
-: 1790318706:0;ll
-: 1790318728:0;g conf
 : 1790318731:0;k
-: 1790318732:0;g conf
-: 1790318745:0;g conf 2>x
-: 1790318751:0;cat x
-: 1790318776:0;g conf
-: 1790318790:0;rm x
-: 1790318793:0;g conf
-: 1790318828:0;g conf
-: 1790318875:0;g ecig
-: 1790318916:0;ll
-: 1790318920:0;ll
-: 1790318924:0;ll
-: 1790318933:0;.ls escribe
-: 1790318934:0;ll
-: 1790319035:0;usa
-: 1790319041:0;g nemo
-: 1790319559:0;h
-: 1790319635:0;ll
-: 1790319643:0;vi get_notification_channels.py
-: 1790319697:0;cl
-: 1790319737:0;ll
-: 1790319748:0;..
-: 1790319772:0;ll
-: 1790319792:0;vi wifi.notes
-: 1790319828:0;ll
-: 1790319838:0;vi get_keys.new
-: 1790319862:0;md get_keys
-: 1790319874:0;type md
 : 1790319884:0;man mkdir
-: 1790319912:0;md -p get_keys
-: 1790320105:0;type md
-: 1790320119:0;cl
-: 1790320138:0;md make_dir
-: 1790320143:0;cl make_dir
-: 1790320152:0;vi -e make_dir
-: 1790320216:0;make_dir
-: 1790320228:0;vi -e make_dir
-: 1790320358:0;make_dir
-: 1790320374:0;vi -e make_dir
-: 1790320442:0;make_dir test
-: 1790320444:0;ll
-: 1790320453:0;vi make_dir
-: 1790320779:0;ll
-: 1790320786:0;make_dir test
-: 1790320789:0;make_dir test
-: 1790320791:0;ll
-: 1790320816:0;make_dir
-: 1790320822:0;vi make_dir
-: 1790320885:0;make_dir test
-: 1790320886:0;ll
-: 1790320890:0;make_dir test
-: 1790320901:0;ll
-: 1790320916:0;rd test
-: 1790320917:0;ll
-: 1790320923:0;>test
-: 1790320924:0;ll
-: 1790320928:0;make_dir test
-: 1790320932:0;ll
 : 1790320940:0;>test
-: 1790320945:0;ll
-: 1790320964:0;echo "X" > test
-: 1790320973:0;s
-: 1790321009:0;,
-: 1790321011:0;ll
-: 1790321036:0;ll
-: 1790321140:0;..
-: 1790321146:0;ll
-: 1790321149:0;vi make_dir
-: 1790321276:0;echo "X" > test
-: 1790321277:0;ll
 : 1790321281:0;rd test
-: 1790321286:0;rm test
-: 1790321290:0;echo "X" > test
-: 1790321298:0;make_dir test
-: 1790321308:0;ll
-: 1790321319:0;vi make_dir
-: 1790321497:0;make_dir test
-: 1790321507:0;ll
-: 1790321531:0;vi make_dir
-: 1790321574:0;make_dir test
-: 1790321591:0;rm test
-: 1790321601:0;make_dir test
-: 1790321615:0;ll
-: 1790321634:0;vi make_dir
-: 1790321679:0;rm test
-: 1790321688:0;make_dir test
-: 1790321698:0;ll
-: 1790321720:0;vi make_dir
-: 1790321752:0;rm test.save test
-: 1790321754:0;ll
-: 1790321759:0;make_dir test
-: 1790321763:0;ll
-: 1790321766:0;rm test
-: 1790321780:0;echo "X" > test
-: 1790321783:0;make_dir test
-: 1790321794:0;ll
-: 1790321804:0;vi make_dir
-: 1790321838:0;rm test
-: 1790321845:0;ll
-: 1790321850:0;echo "X" > test
 : 1790321855:0;make_dir test
-: 1790321860:0;ll
-: 1790321879:0;vi make_dir
-: 1790322064:0;bak -r
-: 1790322135:0;ll
-: 1790322143:0;rm test test.save
-: 1790322151:0;echo "X" > test
-: 1790322157:0;md test
-: 1790322233:0;ll
-: 1790322237:0;rm test
-: 1790322243:0;Tw
-: 1790322244:0;ll
-: 1790322246:0;backup
-: 1790322508:0;lsd
-: 1790322515:0;ll
-: 1790329621:0;lsd
-: 1790329624:0;ll
-: 1790329687:0;T
-: 1790329688:0;ll
-: 1790329692:0;ll
 : 1790329742:0;b
-: 1790329778:0;lft
-: 1790329793:0;lst
-: 1790329798:0;,
-: 1790329802:0;lft
-: 1790329843:0;llr
 : 1790329861:0;lsd -d
-: 1790329870:0;ll
-: 1790329878:0;s
-: 1790329892:0;ll
-: 1790329899:0;g series
-: 1790329967:0;cl vid_to_lib
-: 1790329976:0;bak -P
-: 1790330005:0;bak
-: 1790330012:0;cl vid_to_lib
-: 1790330022:0;vi vid_to_lib
-: 1790330118:0;make_standalone
-: 1790330124:0;make_standalone vid_to_lib
-: 1790330127:0;ll
-: 1790330137:0;bak -r
-: 1790330151:0;bak -r vid_to_lib.standalone
-: 1790330159:0;,
-: 1790330161:0;,
-: 1790330163:0;s
-: 1790330168:0;ll
-: 1790330180:0;g series
-: 1790330339:0;g series
-: 1790330366:0;g series
-: 1790330399:0;g series
-: 1790330412:0;g series
-: 1790330493:0;g series
-: 1790330529:0;g series
-: 1790330578:0;g series
-: 1790330617:0;g series
-: 1790330659:0;g series
-: 1790330738:0;g series
-: 1790330778:0;g series
-: 1790330901:0;g series
-: 1790331072:0;g series
-: 1790331114:0;g series
-: 1790331154:0;g series
-: 1790331332:0;g series
-: 1790331378:0;g series
-: 1790331402:0;g -I Series
-: 1790331423:0;backup
-: 1790332597:0;repo
-: 1790332622:0;recipe chicken
-: 1790335197:0;recipe cauli
-: 1790335296:0;D
-: 1790335329:0;ll
-: 1790335343:0;o Al*
-: 1790335411:0;o
-: 1790335509:0;Tw
-: 1790335510:0;ll
-: 1790335520:0;lsd
-: 1790335529:0;ll
-: 1790338601:0;recipe baingan
-: 1790340817:0;o Al*
-: 1790340824:0;,
-: 1790340827:0;o Al*
-: 1790341853:0;o Al*
-: 1790343521:0;Tw
-: 1790343522:0;ll
-: 1790343528:0;ldf
-: 1790343531:0;lsd
-: 1790343535:0;ll
-: 1790343567:0;yts
-: 1790343943:0;ll
-: 1790343949:0;.ls yts
-: 1790343950:0;ll
-: 1790343957:0;vi yt.dbg.log
-: 1790343994:0;,
-: 1790344040:0;yt -p'Judging Freedom' 'https://www.youtube.com/watch?v=HneTJtQezIE'
-: 1790344074:0;yt -p'Judging Freedom' 'https://www.youtube.com/watch?v=T3ZOB5jlfdY'
-: 1790344101:0;yt -p'Judging Freedom' 'https://www.youtube.com/watch?v=jAXdzlkIEIg'
-: 1790344129:0;yt -p'Judging Freedom' 'https://www.youtube.com/watch?v=jAXdzlkIEIg'
-: 1790344167:0;yt -p'Judging Freedom' 'https://www.youtube.com/watch?v=qIsl-7n0Svg'
-: 1790344213:0;ll
-: 1790344544:0;ll
-: 1790344660:0;lsd
-: 1790344664:0;ll
-: 1790344733:0;yt -p'Dialog Works' 'https://www.youtube.com/watch?v=sAbMA1hGjyo'
-: 1790344809:0;yts
-: 1790345578:0;Tw
-: 1790345580:0;lsd
-: 1790345590:0;ll
-: 1790345790:0;ll
-: 1790345798:0;vut info
-: 1790345854:0;ll
-: 1790345869:0;ll
 : 1790346362:0;T
-: 1790346369:0;ll
-: 1790346434:0;fsub -Y
-: 1790346440:0;ll
-: 1790346453:0;m
-: 1790346464:0;M
-: 1790346481:0;dut external
-: 1790346488:0;M
-: 1790346497:0;cat list
-: 1790346529:0;md Videos
-: 1790352077:0;ll
-: 1790352096:0;fsub -Y "5_15_The_Angels_Have_Gone-[M8mXfLAtHCI].mp3"
-: 1790352127:0;ll
-: 1790352351:0;lsd
-: 1790352650:0;Tm
-: 1790352653:0;ll
-: 1790352688:0;ln -s /media/kmiller/EXT_2/Music/Videos/The\ Dukes\ Of\ September\ -\ Live\ From\ The\ Lincoln\ Center\ \(2012\).mkv .
-: 1790352689:0;ll
 : 1790353282:0;M
 : 1790353567:0;recipe baingan
-: 1790355029:0;ll
-: 1790355032:0;vi music_list
-: 1790355105:0;vi music_list
-: 1790355230:0;vi music_list
-: 1790359770:0;Tw
-: 1790359776:0;yts
-: 1790359797:0;yts -D
-: 1790359861:0;cl yts
-: 1790359865:0;vi yts
-: 1790359883:0;g cyan_fg
-: 1790359976:0;.ls yts
-: 1790359991:0;vi yt.log*
-: 1790360060:0;ll
-: 1790360073:0;vi yt*log
-: 1790360126:0;node /home/kmiller/.local/share/yts/yts.js -s -a recent "alexchristoforou"
-: 1790360135:0;node /home/kmiller/.local/share/yts/yts.js -a recent "alexchristoforou"
-: 1790360142:0;node /home/kmiller/.local/share/yts/yts.js -a all "alexchristoforou"
-: 1790360253:0;Tw
-: 1790360273:0;yt 'https://www.youtube.com/watch?v=C2NosUzBNNw'
-: 1790360305:0;ll
-: 1790360331:0;fsub -yp 'Alex Christoforou' "Europe Diesel Panic As West Pressures Putin For Meeting Netanyahu UN Walkout.mp4"
-: 1790360332:0;ll
-: 1790360350:0;node /home/kmiller/.local/share/yts/yts.js -a all "alexchristoforou"
-: 1790360373:0;node /home/kmiller/.local/share/yts/yts.js -a all "alexchristoforou" | grep hour
-: 1790360381:0;node /home/kmiller/.local/share/yts/yts.js -a all "alexchristoforou" | grep day
-: 1790360393:0;node /home/kmiller/.local/share/yts/yts.js -a all "alexchristoforou" | grep mo
-: 1790360464:0;ll
-: 1790360494:0;lsd
-: 1790360511:0;ll
-: 1790363994:0;yts
-: 1790364042:0;.ls
-: 1790364048:0;vi yt.dbg.log
-: 1790364068:0;node /home/kmiller/.local/share/yts/yts.js -s -a recent "syrianaanalysis"
-: 1790364074:0;node /home/kmiller/.local/share/yts/yts.js -a recent "syrianaanalysis"
-: 1790364080:0;node /home/kmiller/.local/share/yts/yts.js -a all "syrianaanalysis"
-: 1790364095:0;node /home/kmiller/.local/share/yts/yts.js -s -a all "syrianaanalysis"
-: 1790364120:0;vi yts.js
-: 1790364146:0;vi yts.js
-: 1790364234:0;vi x
-: 1790364305:0;cl yts
-: 1790364316:0;ll
-: 1790364372:0;vi x
-: 1790364748:0;node ./yts.js -s -a all "syrianaanalysis"
-: 1790364765:0;vi yts.js
-: 1790365092:0;vi yts.js
-: 1790365103:0;node ./yts.js -s -a all "syrianaanalysis"
-: 1790365114:0;node ./yts.js -s -a recent "syrianaanalysis"
-: 1790365124:0;node ./yts.js -a recent "syrianaanalysis"
-: 1790365138:0;node ./yts.js -s -a all "syrianaanalysis"
-: 1790365143:0;node ./yts.js -a recent "syrianaanalysis"
-: 1790365172:0;vi x
-: 1790365229:0;vi yts.hs
-: 1790365233:0;vi yts.js
-: 1790365240:0;node ./yts.js -a recent "syrianaanalysis"
-: 1790365252:0;node ./yts.js -a all "syrianaanalysis"
-: 1790365313:0;vi yts.hs
-: 1790365321:0;vi yts.js
-: 1790365328:0;node ./yts.js -a recent "syrianaanalysis"
-: 1790365339:0;node ./yts.js -a all "syrianaanalysis"
-: 1790365361:0;vi x
-: 1790365403:0;vi yts.js
-: 1790365413:0;node ./yts.js -a recent "syrianaanalysis"
-: 1790365446:0;bak -r yts.hs
-: 1790365449:0;bak -r yts.js
-: 1790365460:0;Tw
-: 1790365462:0;yts
-: 1790365506:0;cl yts
-: 1790365512:0;vi yts.js
-: 1790365607:0;lsd
-: 1790406802:0;lsd
-: 1790406992:0;ll
-: 1790407000:0;cl yts
-: 1790407008:0;vi yts.hs
-: 1790407014:0;vi yts.js
-: 1790407619:0;bak -r yts.js
-: 1790407623:0;ll
-: 1790407626:0;vi x
-: 1790407721:0;vi yts.js
-: 1790407879:0;rm x
-: 1790407880:0;ll
-: 1790407889:0;.ls yts
-: 1790407896:0;node ./yts.js -a recent "syrianaanalysis"
-: 1790407919:0;,
-: 1790407920:0;ll
-: 1790407932:0;Tw
-: 1790407934:0;ll
-: 1790408366:0;vi yts
-: 1790408476:0;./yts
-: 1790408497:0;vi yts
-: 1790408580:0;./yts >x 2>&1
-: 1790408595:0;./yts 2>x
-: 1790408607:0;vi x
-: 1790408715:0;./yts
-: 1790408760:0;vi yts
-: 1790408906:0;./yts
-: 1790408920:0;vi yts
-: 1790408936:0;./yts
-: 1790408967:0;bak -r
-: 1790409090:0;cl yts
-: 1790409095:0;yts
-: 1790409117:0;,
-: 1790409127:0;vi yts
-: 1790409227:0;./yts
-: 1790409251:0;vi yts
-: 1790409262:0;./yts
-: 1790409279:0;vi yts
-: 1790409291:0;bak -r yts
-: 1790409296:0;clear
-: 1790409299:0;yts
-: 1790409348:0;yts
-: 1790409465:0;ll
-: 1790409468:0;rm x
-: 1790409469:0;ll
-: 1790409472:0;vi yts
-: 1790409483:0;clear
-: 1790409490:0;Tw
-: 1790409492:0;ll
-: 1790410588:0;lsd
-: 1790410595:0;ll
-: 1790412740:0;lsd
-: 1790417742:0;cl
-: 1790417759:0;h
-: 1790417765:0;,
-: 1790417776:0;md ru_tracker
-: 1790417780:0;cl ru_tracker
 : 1790417796:0;h
-: 1790417800:0;l
-: 1790417804:0;ll
-: 1790417815:0;P
-: 1790417818:0;ll
-: 1790417834:0;ll
-: 1790417836:0;..
-: 1790417837:0;ll
-: 1790417845:0;ll
-: 1790417850:0;o
-: 1790417856:0;rm AirbnbPhoto.jpg
-: 1790417858:0;..
-: 1790417859:0;ll
-: 1790417873:0;o
-: 1790417887:0;ll
-: 1790417909:0;ll
-: 1790417922:0;cl ru
-: 1790417925:0;cl ru_tracker
-: 1790417926:0;ll
-: 1790417928:0;o
 : 1790418092:0;groupadd prowlarr
-: 1790418099:0;sudo groupadd prowlarr
-: 1790418105:0;groups
-: 1790418114:0;sut
-: 1790418123:0;sut
-: 1790418135:0;sut pw_info
-: 1790418174:0;md /var/lib/prowlarr
-: 1790418182:0;sudo md /var/lib/prowlarr
-: 1790418505:0;sudo useradd prowlarr
-: 1790418526:0;sut pw_info
-: 1790418564:0;sudo groupadd --help
-: 1790418614:0;sudo groupadd -U
-: 1790418623:0;sudo groupadd --U
-: 1790418644:0;sudo groupadd -U prowlarr
-: 1790418736:0;vi /etc/group
-: 1790418753:0;sudo useradd prowlarr
-: 1790418765:0;sut pw_info
-: 1790418817:0;ll prow*
-: 1790418822:0;ll 
-: 1790418875:0;sudo chown prowlarr prowlarr:prowlarr
-: 1790418898:0;sudo chown root:prowlarr prowlarr
 : 1790418903:0;ll 
-: 1790418908:0;ll p*
-: 1790418934:0;sudo chmod 775 prowlarr
-: 1790418936:0;ll p*
-: 1790419016:0;cl ru_tracker
-: 1790419018:0;wget --content-disposition 'http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=x64'
-: 1790419023:0;ll
-: 1790419029:0;ext Prowlarr.master.2.6.5.5623.linux-core-x64.tar.gz
-: 1790419031:0;ll
-: 1790419083:0;O
-: 1790419096:0;md Prowlarr
-: 1790419100:0;sudo md Prowlarr
-: 1790419101:0;ll
-: 1790419106:0;,
-: 1790419107:0;ll
-: 1790419114:0;,
-: 1790419118:0;rm Prowlarr
-: 1790419121:0;,
-: 1790419135:0;sudo mv Prowlarr /opt
 : 1790419138:0;O
-: 1790419139:0;ll
-: 1790419167:0;sudo chown root:prowlarr Prowlarr
-: 1790419168:0;ll
-: 1790419179:0;sudo chmod 775 Prowlarr
-: 1790419180:0;ll
-: 1790419210:0;sudo chown prowlarr:prowlarr Prowlarr
-: 1790419211:0;ll
-: 1790419260:0;sudo chown prowlarr:prowlarr -R /opt/Prowlarr
-: 1790419262:0;ll
-: 1790419293:0;cl ru_tracker
-: 1790419303:0;vi prowlarr.setup
-: 1790419396:0;vi prowlarr.setup
-: 1790419464:0;vi prowlarr.setup
-: 1790419478:0;prowlarr.setup
-: 1790419484:0;me prowlarr.setup
-: 1790419486:0;prowlarr.setup
-: 1790419492:0;vi prowlarr.setup
-: 1790419508:0;lsc
-: 1790419548:0;lsc
-: 1790419571:0;vi prowlarr.setup
 : 1790419624:0;cat /etc/systemd/system/prowlarr.service
-: 1790419637:0;ll
-: 1790419656:0;vi prowlarr.setup
-: 1790419774:0;prowlarr.setup
-: 1790419794:0;cat prowlarr.setup
-: 1790419824:0;ll
-: 1790419847:0;vi prowlarr.setup
-: 1790419881:0;ll
-: 1790419891:0;ll
-: 1790419894:0;l
 : 1790419898:0;/bin/ls
-: 1790419919:0;l.
-: 1790419959:0;l
-: 1790420006:0;l
-: 1790420009:0;l -D
-: 1790420114:0;ll
-: 1790420116:0;l
-: 1790420215:0;l
-: 1790420218:0;l -D
-: 1790420294:0;ll
-: 1790420453:0;l
-: 1790420455:0;ll
-: 1790420467:0;ll -DD
-: 1790420530:0;ll -DD
-: 1790420572:0;l
-: 1790420576:0;ll
-: 1790420583:0;ll -D
-: 1790420645:0;l
-: 1790420647:0;ll
-: 1790420651:0;ll -DD
-: 1790421474:0;ll
 : 1790421476:0;o
-: 1790421683:0;o Prowlarr_Install.odt
-: 1790428533:0;lsd
-: 1790428538:0;ll
-: 1790430455:0;lsd
-: 1790430459:0;ll
-: 1790438787:0;lsd
-: 1790438791:0;ll
-: 1790438876:0;o Prowlarr_Install.odt
 : 1790441638:0;D
-: 1790441648:0;ll b*
-: 1790441651:0;ll B*
-: 1790441964:0;lsd
-: 1790442028:0;o B*
-: 1790446324:0;o Prowlarr_Install.odt
-: 1790446479:0;flog
-: 1790447592:0;ll
-: 1790447594:0;Tw
-: 1790447595:0;ll
-: 1790447599:0;lsd
-: 1790447602:0;ll
 : 1790447646:0;E
-: 1790447666:0;vi passwd
-: 1790447682:0;vi group
-: 1790447696:0;ll
-: 1790447700:0;ll
-: 1790447708:0;..
-: 1790447714:0;cl ru_tracker
-: 1790447715:0;ll
-: 1790447723:0;rm Prowlarr*
-: 1790447725:0;ll
-: 1790447729:0;rm prowlarr.setup
-: 1790447731:0;ll
-: 1790447748:0;rm prowlarr.service
-: 1790447765:0;rm Prowlarr
-: 1790447770:0;rb -r
-: 1790447832:0;chkupd
-: 1790448505:0;.ls
-: 1790448523:0;llr
-: 1790448561:0;vi x
-: 1790448757:0;cl
-: 1790448769:0;upd_locate
-: 1790448805:0;.ls qBittorrent
-: 1790448811:0;ll
-: 1790448821:0;locate rutracker.py
-: 1790448894:0;cl ru_tracker
-: 1790448895:0;ll
 : 1790448908:0;python3 -c "import curl_cffi; print(curl_cffi.__version__)"
-: 1790449127:0;python3 ~/Code/LOCAL/ru_tracker/rutracker.py "test"
-: 1790449168:0;pwd
-: 1790449256:0;PYTHONPATH=~/.local/share/data/qBittorrent/nova3 python3 rutracker.py "test"
-: 1790449291:0;.ls qBittorrent
-: 1790449292:0;llr
-: 1790449307:0;rm x
-: 1790449311:0;llr
-: 1790449336:0;,
-: 1790449425:0;ll
-: 1790449429:0;l.
-: 1790449439:0;rm .\~lock.Prowlarr_Install.odt\#
-: 1790449441:0;ll
-: 1790449531:0;vi -e doit
-: 1790449549:0;doit
-: 1790449556:0;ll
-: 1790449559:0;vi doit
-: 1790449635:0;doit
-: 1790449637:0;ll
-: 1790449653:0;cat doit
-: 1790449669:0;..
-: 1790449679:0;rm *py
-: 1790449686:0;,
-: 1790449689:0;vi doit
-: 1790449736:0;doit
-: 1790449737:0;ll
-: 1790449750:0;python3 rutracker.py "test"
-: 1790449818:0;grep -n "curl_cffi" ~/Code/LOCAL/ru_tracker/rutracker.py
-: 1790449998:0;ll
-: 1790450016:0;vi -e doit
-: 1790450025:0;doit
-: 1790450059:0;vi doit
-: 1790450068:0;doit
-: 1790450339:0;vi -e playwright
-: 1790450351:0;playwright
-: 1790450422:0;ll
-: 1790450475:0;vi get_cookies.py
-: 1790450511:0;ll
-: 1790450513:0;cat doit
-: 1790450518:0;rm doit
-: 1790450523:0;doit2
-: 1790450525:0;ll
-: 1790450529:0;me doit2
-: 1790450533:0;doit2
-: 1790450556:0;vi get_cookies.py
-: 1790450571:0;ll
-: 1790450579:0;rm doit2
-: 1790450580:0;ll
-: 1790450711:0;vi doit
-: 1790450720:0;me doit
-: 1790450722:0;doit
-: 1790450836:0;vi doit
-: 1790450861:0;doit
-: 1790450958:0;vi doit
-: 1790450968:0;doit
-: 1790451038:0;doit
-: 1790451089:0;vi doit
-: 1790451098:0;doit
-: 1790451198:0;vi doit
-: 1790451207:0;doit
-: 1790451278:0;vi doit
-: 1790451286:0;doit
-: 1790451389:0;vi doit
-: 1790451401:0;doit
-: 1790451503:0;vi doit
-: 1790451512:0;doit
-: 1790451656:0;rm -rf ~/.cache/playwright_rutracker_profile\
-python3 get_cookies.py
-: 1790451719:0;vi doit
-: 1790451727:0;doit
-: 1790451785:0;vi doit
-: 1790451794:0;doit
-: 1790451876:0;vi doit
-: 1790451884:0;doit
-: 1790451927:0;vi doit
-: 1790451936:0;doit
-: 1790451983:0;vi doit
-: 1790451991:0;doit
-: 1790452047:0;vi doit
-: 1790452054:0;doit
-: 1790452081:0;vi doit
-: 1790452087:0;doit
-: 1790452114:0;vi doit
-: 1790452121:0;doit
-: 1790452171:0;vi doit
-: 1790452180:0;doit
-: 1790452247:0;vi doit
-: 1790452254:0;doit
-: 1790452312:0;vi doit
-: 1790452321:0;doit
-: 1790452361:0;vi doit
-: 1790452371:0;doit
-: 1790452410:0;vi doit
-: 1790452416:0;doit
-: 1790452463:0;vi doit
-: 1790452469:0;doit
-: 1790452528:0;vi doit
-: 1790452534:0;doit
-: 1790452568:0;doit
-: 1790452669:0;vi doit
-: 1790452675:0;doit
-: 1790452739:0;vi doit
-: 1790452749:0;doit
-: 1790452793:0;vi doit
-: 1790452803:0;doit
-: 1790452819:0;install xvfb-run
-: 1790452849:0;install xvfb
-: 1790452857:0;doit
-: 1790453011:0;vi -e plugin
-: 1790453085:0;zll
-: 1790453086:0;ll
-: 1790453135:0;vi rutracker.py
-: 1790453347:0;.ls qBittorrent/nova3/engines
-: 1790453348:0;ll
-: 1790453388:0;ll
-: 1790453393:0;rm rutracker.org_cookies.txt
-: 1790453394:0;ll
-: 1790453589:0;vi rutracker.py
-: 1790453613:0;cl ru_tracker
-: 1790453618:0;ll
-: 1790453638:0;vi doit
-: 1790453648:0;doit
-: 1790453676:0;vi doit
-: 1790453683:0;doit
-: 1790453823:0;vi rutracker.py
-: 1790453860:0;vi doit
-: 1790453864:0;doit
-: 1790453876:0;ll
-: 1790453924:0;vi doit
-: 1790453932:0;doit
-: 1790454006:0;upd_locate
-: 1790454039:0;locate rutracker_search.py
-: 1790454045:0;locate rutracker
-: 1790454053:0;locate rutracker | grep py
-: 1790454115:0;vi rutracker.py
-: 1790454147:0;locate rutracker | grep py
-: 1790454225:0;vi x
-: 1790454304:0;vi fetch_rutracker.py
-: 1790454459:0;vi doit
-: 1790454481:0;doit
-: 1790454509:0;vi doit
-: 1790454556:0;vi rutracker.py
-: 1790454647:0;vi rutracker.py
-: 1790454979:0;ll
-: 1790454982:0;rm x
-: 1790454984:0;ll
-: 1790455018:0;ll
-: 1790455054:0;vi x
-: 1790455270:0;md tests
-: 1790455277:0;ll
-: 1790455280:0;rm x
-: 1790455281:0;ll
-: 1790455301:0;ll
-: 1790455311:0;ll
-: 1790455326:0;rm __pycache__
-: 1790455331:0;rm __init__.py
-: 1790455332:0;ll
-: 1790455335:0;rm doit
-: 1790455336:0;ll
-: 1790455345:0;rm plugin
-: 1790455346:0;ll
-: 1790455435:0;vi rutracker.py
-: 1790456384:0;spell europeans
-: 1790456453:0;spell commission
-: 1790457986:0;Tm
-: 1790457986:0;ll
-: 1790457990:0;lsd
-: 1790457998:0;ll
-: 1790458210:0;Tw
-: 1790458213:0;yts
-: 1790458355:0;yts
-: 1790463077:0;lsd
-: 1790463082:0;ll
-: 1790463123:0;yts
-: 1790463191:0;.ls yts
-: 1790463202:0;rm yt.log*
-: 1790463235:0;Tw
-: 1790463240:0;yt 'https://rumble.com/v7g0epu-netanyahu-humiliated-by-mass-walkout-at-united-nations.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
-: 1790463253:0;yt 'https://rumble.com/v7g0epu-netanyahu-humiliated-by-mass-walkout-at-united-nations.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
-: 1790463335:0;yt 'https://www.youtube.com/watch?v=Kw8ZpgioX8w'
-: 1790463376:0;yt 'https://www.youtube.com/watch?v=wXn2e9rrzPU&pp=0gcJCS8MAYcqIYzv'
-: 1790463407:0;yt 'https://www.youtube.com/watch?v=ZDp5Iupu0UQ'
-: 1790463435:0;yt 'https://www.youtube.com/watch?v=_lOkUf7ywz8'
-: 1790495321:0;clear
-: 1790495322:0;ll
-: 1790495331:0;lsd
-: 1790495346:0;lsd
-: 1790495350:0;ll
-: 1790495357:0;yts
-: 1790495425:0;.ls yts
-: 1790495426:0;ll
-: 1790495453:0;yt 'https://rumble.com/v7g0zwo-john-laughland-manufactured-heroes-nato-rebranding-of-criminal-networks.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
-: 1790495477:0;yt-dlp 'https://rumble.com/v7g0zwo-john-laughland-manufactured-heroes-nato-rebranding-of-criminal-networks.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
-: 1790495497:0;yt-dlp -U
-: 1790495604:0;cl ru_tracker
-: 1790495605:0;ll
-: 1790495629:0;upd_locate -fu
-: 1790495655:0;vi link_qbit_engines
-: 1790495824:0;link_qbit_engines
-: 1790495864:0;vi link_qbit_engines
-: 1790495900:0;link_qbit_engines
-: 1790495904:0;vi link_qbit_engines
-: 1790495929:0;link_qbit_engines
-: 1790495955:0;vi link_qbit_engines
-: 1790496019:0;link_qbit_engines
-: 1790496027:0;ll
-: 1790496031:0;vi link_qbit_engines
-: 1790496129:0;link_qbit_engines -u
-: 1790496130:0;ll
-: 1790496140:0;vi link_qbit_engines
-: 1790496174:0;link_qbit_engines -u
-: 1790496178:0;ll
-: 1790496186:0;vi link_qbit_engines
-: 1790496219:0;link_qbit_engines -u
-: 1790496225:0;ll
-: 1790496233:0;link_qbit_engines 
-: 1790496235:0;ll
-: 1790496240:0;link_qbit_engines -u
-: 1790496242:0;ll
-: 1790496253:0;vi link_qbit_engines
-: 1790496288:0;link_qbit_engines -u
-: 1790496294:0;link_qbit_engines 
-: 1790496296:0;ll
-: 1790496302:0;link_qbit_engines -u
-: 1790496303:0;ll
-: 1790496324:0;vi playwright
-: 1790496332:0;rm playwright
-: 1790496333:0;ll
-: 1790496346:0;pip list
-: 1790496382:0;pip list p
-: 1790496394:0;pip --help list 
-: 1790496419:0;ll
-: 1790496439:0;pip list | column
-: 1790496448:0;pip list | column 3
-: 1790496457:0;pip list | column 4
-: 1790496461:0;pip list | column -4
-: 1790496478:0;pip list | cols -4
-: 1790496494:0;pip list | cols -c4
-: 1790496506:0;pip list | cols 
 : 1790496651:0;type ansi2txt
-: 1790496664:0;pip list | ansi2txt
-: 1790496699:0;Tw
-: 1790496700:0;ll
-: 1790497074:0;cl ru_tracker
-: 1790497075:0;ll
-: 1790497106:0;vi link_qbit_engines
-: 1790497204:0;link_qbit_engines
-: 1790497205:0;ll
-: 1790497215:0;link_qbit_engines -u
-: 1790497216:0;ll
-: 1790497223:0;ll
-: 1790497238:0;vi link_qbit_engines
-: 1790497279:0;link_qbit_engines -u
-: 1790497280:0;ll
-: 1790497320:0;ll
 : 1790497329:0;link_qbit_engines 
-: 1790497330:0;ll
-: 1790497346:0;link_qbit_engines  -u
-: 1790497347:0;ll
-: 1790497456:0;vi link_qbit_engines
-: 1790497496:0;link_qbit_engines
-: 1790497497:0;ll
-: 1790497502:0;link_qbit_engines -u
-: 1790497503:0;ll
-: 1790497512:0;vi link_qbit_engines
-: 1790497635:0;link_qbit_engines
-: 1790497647:0;vi link_qbit_engines
-: 1790497655:0;link_qbit_engines
-: 1790497659:0;ll
-: 1790497664:0;link_qbit_engines -u
-: 1790497678:0;vi rutracker.py
-: 1790497772:0;ll
-: 1790497909:0;lst
-: 1790497929:0;ll
-: 1790497948:0;vi rutracker.py
-: 1790498464:0;vi rutracker.py
-: 1790498555:0;cl ru_tracker
-: 1790498767:0;fut findexe rutracker.py
-: 1790498796:0;ll
-: 1790498833:0;vi .prod_target
-: 1790498903:0;me .prod_target
-: 1790498907:0;.prod_target
-: 1790498912:0;vi .prod_target
-: 1790499037:0;bak
-: 1790499098:0;bak
-: 1790499128:0;bak
-: 1790499526:0;bak
-: 1790499592:0;bak
-: 1790499777:0;bak
-: 1790499827:0;bak
-: 1790500149:0;bak
-: 1790500196:0;ll
-: 1790500198:0;l.
-: 1790500200:0;ll
-: 1790500220:0;vi rutracker.py
-: 1790500247:0;bak
-: 1790500258:0;bak -P
-: 1790500270:0;vi rutracker.py
 : 1790500276:0;bak 
-: 1790500286:0;bak  -r
-: 1790500295:0;cl bak
-: 1790500298:0;bak
-: 1790500300:0;ll
-: 1790500304:0;vi bak
-: 1790501795:0;cl ru_tracker
-: 1790501797:0;ll
-: 1790501802:0;vi doit
-: 1790501943:0;vi doit
-: 1790502046:0;doit
 : 1790502052:0;me doit
-: 1790502054:0;doit
-: 1790502064:0;vi doit
-: 1790502081:0;doit
-: 1790502102:0;link_qbit_engines
-: 1790502105:0;doit
-: 1790502193:0;vi doit
-: 1790502297:0;doit
-: 1790502300:0;ll
-: 1790502313:0;vi doit
-: 1790502326:0;doit
-: 1790502372:0;vi -e testit
-: 1790502398:0;testit
-: 1790502411:0;vi testit
-: 1790502417:0;testit
-: 1790502465:0;vi testit
-: 1790502475:0;testit
-: 1790502512:0;vi testit
-: 1790502522:0;testit
-: 1790502587:0;vi testit
-: 1790502595:0;testit
-: 1790502675:0;vi testit
-: 1790502692:0;testit
-: 1790502820:0;vi doit
-: 1790502830:0;doit
-: 1790502831:0;ll
-: 1790502848:0;vi test_rutracker.py
-: 1790502856:0;vi doit
-: 1790502870:0;python test_rutracker.py
-: 1790502958:0;python test_rutracker.py
-: 1790503229:0;vi rutracker.py
-: 1790503239:0;python test_rutracker.py
-: 1790503255:0;ll
-: 1790503294:0;vi test_rutracker.py
-: 1790503328:0;doit
-: 1790503333:0;vi test_rutracker.py
-: 1790503342:0;python test_rutracker.py
-: 1790503367:0;python test_rutracker.py >test_rutracker.out 2>&1
-: 1790503374:0;ll
-: 1790503383:0;cat test_rutracker.out
-: 1790503562:0;vi rutracker.py
-: 1790503619:0;python test_rutracker.py 2>&1 | tee test_rutracker.out
-: 1790503636:0;cat test_rutracker.out
-: 1790503741:0;vi rutracker.py
-: 1790503898:0;vi rutracker.py
-: 1790503921:0;vi rutracker.py
-: 1790503931:0;python test_rutracker.py 2>&1 | tee test_rutracker.out
-: 1790504185:0;vi rutracker.py
-: 1790504192:0;python test_rutracker.py 2>&1 | tee test_rutracker.out
-: 1790504299:0;python3 /tmp/rutracker_worker.py 2>&1 | tee worker.out
-: 1790504762:0;ll
-: 1790504766:0;vi test_rutracker.py
-: 1790504838:0;g 'rows = page'
-: 1790504845:0;g 'rows = '
-: 1790504983:0;vi rutracker.py
-: 1790505024:0;python test_rutracker.py 2>&1 | tee test_rutracker.out
-: 1790505134:0;ll
-: 1790505464:0;ll
-: 1790505612:0;vi rutracker_worker.py
-: 1790505630:0;python rutracker_worker.py
-: 1790505640:0;ll
-: 1790505722:0;file *rutr*
-: 1790505909:0;lsd
-: 1790505929:0;ll
-: 1790505943:0;python3 test_rutracker.py
-: 1790505961:0;python test_rutracker.py 2>&1 | tee test_rutracker.out
-: 1790506115:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790506222:0;vi rutracker_worker.py
-: 1790506232:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790506376:0;vi rutracker_worker.py
-: 1790506389:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790506460:0;vi rutracker_worker.py
-: 1790506469:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790506500:0;vi rutracker_worker.py
-: 1790506506:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790506689:0;vi rutracker_worker.py
-: 1790506698:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790506804:0;vi rutracker_worker.py
-: 1790506811:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790506918:0;vi rutracker_session.json
-: 1790506925:0;vi rutracker_worker.py
-: 1790506938:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790507149:0;vi rutracker_worker.py
-: 1790507155:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790507206:0;vi rutracker_worker.py
-: 1790507337:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790507462:0;vi rutracker_worker.py
-: 1790507472:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790507588:0;vi rutracker_worker.py
-: 1790507595:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790507730:0;vi rutracker_worker.py
-: 1790507736:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790507847:0;vi rutracker_worker.py
-: 1790507853:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790508024:0;vi rutracker_worker.py
-: 1790508031:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790508135:0;vi rutracker_worker.py
-: 1790508142:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790508247:0;vi rutracker_worker.py
-: 1790508253:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790508357:0;vi rutracker_worker.py
-: 1790508363:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790508464:0;vi rutracker_worker.py
-: 1790508470:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790508560:0;vi rutracker_worker.py
-: 1790508568:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790508662:0;vi rutracker_worker.py
-: 1790508668:0;python3 rutracker_worker.py "https://rutracker.org/forum/tracker.php?nm=ubuntu"
-: 1790511026:0;ll
-: 1790511035:0;md bak
-: 1790511047:0;ll
-: 1790511062:0;ll
-: 1790511068:0;rm testit
-: 1790511083:0;rm debug_page.html
-: 1790511084:0;ll
-: 1790511104:0;rm __pycache__
-: 1790511114:0;vi playwright_profile
+: 1790504299:0;python3 /tmp/rutracker_worker.py 2>&1 
 : 1790511132:0;file playwright_profile
-: 1790511140:0;ll
-: 1790511468:0;vi rutracker.json
-: 1790511478:0;ll
-: 1790511493:0;vi rutracker.py
-: 1790511498:0;ll
-: 1790511518:0;python3 rutracker.py "ubuntu"
-: 1790511536:0;l.
-: 1790511560:0;python3 rutracker.py "ubuntu" 2>&1 | tee test.out
-: 1790511653:0;vi rutracker.py
-: 1790511659:0;python3 rutracker.py "ubuntu" 2>&1 | tee test.out
-: 1790511718:0;.ls qBittorrent
-: 1790511720:0;ll
-: 1790511742:0;md search
-: 1790511743:0;ll
-: 1790511757:0;cl ru_tracker
-: 1790511785:0;,
-: 1790511787:0;ll
-: 1790511833:0;,
-: 1790511840:0;vi rutracker.py
-: 1790511857:0;,
-: 1790511859:0;ll
-: 1790511868:0;,
-: 1790511870:0;ll
-: 1790511899:0;,
-: 1790511901:0;ll
-: 1790511906:0;,
 : 1790512023:0;P
-: 1790512026:0;ll
-: 1790512082:0;cl ru_tracker
-: 1790512083:0;ll
-: 1790512451:0;vi rutracker.py
-: 1790512476:0;python3 rutracker.py "ubuntu"
-: 1790512510:0;python3 rutracker.py "dukes of september"
-: 1790512539:0;python3 rutracker.py "david bowie"
-: 1790512646:0;vi rutracker.py
-: 1790512654:0;python3 rutracker.py "david bowie"
-: 1790512685:0;python3 rutracker.py "david bowie" 2>&1 | tee test.out
-: 1790512832:0;vi rutracker.py
-: 1790513084:0;cl ru_tracker
-: 1790513086:0;ll
-: 1790513182:0;python3 rutracker.py "david bowie" 2>&1 | tee test.out
 : 1790513273:0;aux chrome
 : 1790513350:0;pkill -f chrome
-: 1790513360:0;python3 rutracker.py "david bowie" 2>&1 | tee test.out
-: 1790513431:0;vi rutracker.py
-: 1790513446:0;python3 rutracker.py "david bowie" 2>&1 | tee test.out
-: 1790513608:0;vi rutracker.py
-: 1790513615:0;python3 rutracker.py "david bowie" 2>&1 | tee test.out
-: 1790513792:0;qbittorrent --loglevel=debug
-: 1790513828:0;type qbittorrent
-: 1790513840:0;qbittorrent --help
-: 1790513917:0;vi rutracker.py
-: 1790514050:0;dpkg -l | grep qbittorrent || flatpak list | grep -i qbittorrent || snap list | grep -i qbittorrent
-: 1790514175:0;vi rutracker.json
-: 1790514189:0;vi rutracker.json
-: 1790514608:0;ll
 : 1790514610:0;rm *
-: 1790514614:0;..
-: 1790514616:0;rm search
-: 1790514624:0;cl ru_tracker
-: 1790514750:0;,
-: 1790514757:0;ll
-: 1790514765:0;cl ru_tracker
-: 1790514779:0;vi rutracker.json
-: 1790514855:0;vi rutracker.py
-: 1790514938:0;vi rutracker.py
-: 1790515100:0;,
-: 1790515102:0;ll
-: 1790515113:0;rm __*
-: 1790515121:0;ll
-: 1790515149:0;,
-: 1790515152:0;vi .prod_target
-: 1790515166:0;cl ru_tracker
-: 1790515170:0;ll
-: 1790515180:0;rm __*
-: 1790515188:0;ll
-: 1790515194:0;rm Screenshot\ from\ 2026-09-27\ 14-26-55.png
-: 1790515195:0;ll
-: 1790515204:0;rm test.out
-: 1790515206:0;ll
-: 1790515215:0;python3 rutracker.py "david bowie" 2>&1 | tee test.out
-: 1790515350:0;python3 -c "import playwright, bs4; print('Imports successful!')"
-: 1790515398:0;vi rutracker.json
-: 1790515511:0;flog
-: 1790515583:0;qbittorrent
 : 1790515596:0;qbittorrent 2>x
-: 1790515600:0;vi x
-: 1790515608:0;qbittorrent --help
-: 1790515648:0;qbittorrent -v
-: 1790515668:0;locate qbittorrent
-: 1790515704:0;vi /home/kmiller/.local/share/qBittorrent/logs/qbittorrent.log\
-
-: 1790515996:0;vi rutracker.py
-: 1790516039:0;ll
-: 1790516044:0;ll
-: 1790516054:0;rm rutracker.json rutracker.py
-: 1790516056:0;ll
-: 1790516146:0;cl ru_tracker
-: 1790516147:0;ll
-: 1790516150:0;rm x
 : 1790516221:0;qbittorrent
-: 1790516415:0;vi -e testit
-: 1790516426:0;testit
-: 1790516453:0;testit 2>&1 | tee test.out
-: 1790516530:0;,
 : 1790516541:0;..
-: 1790516542:0;ll
-: 1790516558:0;vi -e testit
-: 1790516572:0;testit
-: 1790516589:0;testit 2>&1 | tee test.out
-: 1790516764:0;vi testit
-: 1790516775:0;testit
-: 1790516789:0;testit 2>&1 | tee test.out
-: 1790516834:0;vi testit
-: 1790516846:0;testit 2>&1 | tee test.out
-: 1790516932:0;vi testit
-: 1790516941:0;testit 2>&1 | tee test.out
-: 1790516950:0;pwd
 : 1790517032:0;upd_locate -fu
-: 1790517050:0;locate rutrcker.py
-: 1790517056:0;locate rutracker.py
-: 1790517258:0;ll ./engines
-: 1790517271:0;testit 2>&1 | tee test.out
-: 1790517403:0;vi testit
-: 1790517413:0;testit 2>&1 | tee test.out
-: 1790517597:0;vi testit
-: 1790517607:0;testit 2>&1 | tee test.out
-: 1790517699:0;python3 ../nova2.py engines rutracker test "ubuntu"
 : 1790517738:0;find ~/.local/share/qBittorrent /usr -name "nova2.py" 2>/dev/null
-: 1790517771:0;python3 nova2.py engines rutracker test "ubuntu"
-: 1790517817:0;python3 -u nova2.py engines rutracker test "ubuntu"
-: 1790517859:0;vi testit
-: 1790517871:0;testit 2>&1 | tee test.out
-: 1790517902:0;vi testit
-: 1790517909:0;testit 2>&1 | tee test.out
-: 1790517950:0;vi testit
-: 1790517958:0;testit 2>&1 | tee test.out
-: 1790518016:0;vi testit
-: 1790518025:0;testit 2>&1 | tee test.out
-: 1790518064:0;vi testit
-: 1790518077:0;testit 2>&1 | tee test.out
-: 1790518155:0;vi testit
-: 1790518162:0;testit 2>&1 | tee test.out
-: 1790518350:0;vi engines/rutracker.py
-: 1790518373:0;python3 engines/rutracker.py ubuntu
-: 1790518416:0;PYTHONPATH=. python3 engines/rutracker.py ubuntu
-: 1790518492:0;vi engines/rutracker.py
-: 1790518500:0;PYTHONPATH=. python3 engines/rutracker.py ubuntu
-: 1790518554:0;PYTHONPATH=. python3 engines/rutracker.py ubuntu 2>&1 | tee test.out
-: 1790518613:0;vi engines/rutracker.py
-: 1790518681:0;PYTHONPATH=. python3 engines/rutracker.py ubuntu
-: 1790518868:0;which xvfb xvfb-run
-: 1790518901:0;sudo apt update && sudo apt install xvfb
+: 1790518162:0;testit 2>&1 
 : 1790518913:0;which xvfb xvfb-run
-: 1790518970:0;vi engines/rutracker.py
-: 1790519069:0;xvfb-run python3 engines/rutracker.py ubuntu
-: 1790519147:0;PYTHONPATH=. xvfb-run python3 engines/rutracker.py ubuntu 2>&1 | tee test.out
-: 1790519269:0;PYTHONPATH=. xvfb-run python3 engines/rutracker.py ubuntu
-: 1790519296:0;usa
-: 1790519416:0;,
-: 1790519429:0;cl ru_tracker
-: 1790519445:0;rm testit
-: 1790519447:0;,
-: 1790519449:0;rm testit
-: 1790519451:0;ll
-: 1790519454:0;rm test.out
-: 1790519455:0;ll
-: 1790519461:0;,
-: 1790519463:0;ll
-: 1790519484:0;usa
-: 1790519490:0;,
-: 1790519515:0;l
-: 1790519516:0;ll
-: 1790519616:0;ll
-: 1790519623:0;bak rutracker.py
-: 1790519660:0;vi rutracker.py
-: 1790519665:0;ll
-: 1790519748:0;yt 'https://rumble.com/v7g0zwo-john-laughland-manufactured-heroes-nato-rebranding-of-criminal-networks.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
-: 1790519968:0;xvfb-run qbittorrent
-: 1790521804:0;,
 : 1790521807:0;,
-: 1790521808:0;ll
 : 1790521874:0;xvfb-run qbittorrent
-: 1790521892:0;rb -r
+: 1790594893:0;%(title)s
+: 1790522022:0;cl ru_tracker
+: 1790522024:0;ll
+: 1790522052:0;installed xvfb
+: 1790522107:0;qbittorrent
+: 1790522170:0;.ls qBittorrent/nova3/engines
+: 1790522171:0;ll
+: 1790522174:0;..
+: 1790522177:0;llr
+: 1790522196:0;..
+: 1790522200:0;ll
+: 1790522203:0;vi qbittorrent.log
+: 1790522227:0;ll
+: 1790522232:0;,
+: 1790522234:0;ll
+: 1790522260:0;cl ru_tracker
+: 1790522262:0;ll
+: 1790522285:0;bak -P rutracker.py
+: 1790522394:0;qbittorrent
+: 1790522662:0;ll
+: 1790522675:0;.ls qBittorrent/logs
+: 1790522677:0;ll
+: 1790522685:0;grep rut
+: 1790522696:0;g rut
+: 1790522847:0;,
+: 1790522852:0;vi rutracker.py
+: 1790522869:0;qbittorrent
+: 1790522999:0;cat /tmp/rutracker_qbit.log
+: 1790523224:0;vi install_utils
+: 1790523240:0;me install_utils
+: 1790523244:0;install_utils
+: 1790523318:0;vi install_utils
+: 1790523327:0;install_utils
+: 1790523374:0;vi install_utils.out
+: 1790523453:0;playwright install chromium
+: 1790523461:0;h
+: 1790523462:0;ll
+: 1790523471:0;,
+: 1790523472:0;ll
+: 1790523488:0;upd_locate
+: 1790523517:0;locate playwright
+: 1790523564:0;locate playwright > locate.out
+: 1790523805:0;qbittorrent
+: 1790524682:0;yts
+: 1790524808:0;ll
+: 1790525360:0;ll
+: 1790525361:0;,
+: 1790525367:0;cl ru_tracker
+: 1790525371:0;vi rutracker.py
+: 1790525392:0;qbittorrent
+: 1790525407:0;bak -r rutracker.py
+: 1790525415:0;qbittorrent
+: 1790525706:0;ll
+: 1790525708:0;Tw
+: 1790525709:0;ll
+: 1790525712:0;ld
+: 1790525713:0;j
+: 1790525714:0;lsd
+: 1790528581:0;yts
+: 1790528694:0;yt 'https://www.youtube.com/watch?v=EFTP43ST7hI'
+: 1790534603:0;yts
+: 1790534650:0;ll
+: 1790535618:0;cl ru_tracker
+: 1790535624:0;vi rutracker.py
+: 1790535911:0;bak -r
+: 1790536414:0;Tw
+: 1790536415:0;lsd
+: 1790536422:0;ll
+: 1790536423:0;yts
+: 1790536706:0;yt 'https://www.youtube.com/watch?v=TSFJkgwvIPo'
+: 1790536828:0;ll
+: 1790536852:0;yt 'https://www.youtube.com/watch?v=3tiwEaAn4ms'
+: 1790536920:0;yt 'https://www.youtube.com/watch?v=REXck6-mF4c'
+: 1790536938:0;yt 'https://www.youtube.com/watch?v=UTutSmJYIPg'
+: 1790537044:0;yt 'https://www.youtube.com/watch?v=GxCw7cN44fE'
+: 1790537064:0;yt 'https://www.youtube.com/watch?v=GxCw7cN44fE'
+: 1790537290:0;ll
+: 1790537294:0;yt 'https://www.youtube.com/watch?v=fI8sYWO65Sk'
+: 1790537362:0;cl yts
+: 1790537366:0;vi yts
+: 1790537527:0;yts
+: 1790537604:0;vi yts
+: 1790537661:0;yts
+: 1790537676:0;vi yts
+: 1790537744:0;yts
+: 1790537759:0;vi yts
+: 1790537815:0;yts
+: 1790537826:0;vi yts
+: 1790537876:0;yts
+: 1790537915:0;yts
+: 1790537949:0;bak -r
+: 1790538043:0;bak -r
+: 1790538058:0;cl ru_tracker
+: 1790538080:0;ll
+: 1790542879:0;yts
+: 1790542949:0;yt 'https://rumble.com/v7g2bxw-losing-so-badly-day-209-trump-no-to-hormuz-deal-ireland-against-israel-oran.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
+: 1790542957:0;yt 'https://rumble.com/v7g2bxw-losing-so-badly-day-209-trump-no-to-hormuz-deal-ireland-against-israel-oran.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
+: 1790542960:0;yt 'https://rumble.com/v7g2bxw-losing-so-badly-day-209-trump-no-to-hormuz-deal-ireland-against-israel-oran.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
+: 1790542962:0;yt 'https://rumble.com/v7g2bxw-losing-so-badly-day-209-trump-no-to-hormuz-deal-ireland-against-israel-oran.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
+: 1790543036:0;clear
+: 1790543037:0;ll
+: 1790543122:0;lsd
+: 1790543130:0;ll
+: 1790546806:0;lsd
+: 1790546824:0;ll
+: 1790579425:0;lsd
+: 1790579428:0;ll
+: 1790579437:0;yts
+: 1790580029:0;ll
+: 1790580279:0;d
+: 1790580281:0;ll
+: 1790580288:0;.ls yts
+: 1790580305:0;lsd
+: 1790580333:0;ll
+: 1790580341:0;rm yt.log*
+: 1790580348:0;yts
+: 1790580373:0;Tw
+: 1790580378:0;yts
+: 1790580513:0;cl yts
+: 1790580522:0;vi yts
+: 1790580575:0;.ls yts
+: 1790580591:0;ll
+: 1790580617:0;bak -r yt
+: 1790580623:0;,
+: 1790580626:0;bak -r yt
+: 1790580652:0;cl ru_tracker
+: 1790580655:0;ll
+: 1790580680:0;ll
+: 1790580693:0;g cook
+: 1790580712:0;g session
+: 1790580746:0;g session
+: 1790580773:0;vi export_cookies.py
+: 1790580972:0;cl yts
+: 1790580981:0;g green
+: 1790581027:0;vi yts
+: 1790585134:0;ll
+: 1790585135:0;lsd
+: 1790585138:0;ll
+: 1790591239:0;cl ru_tracker
+: 1790591249:0;vi rutracker.py
+: 1790591751:0;rutracker.py
+: 1790591755:0;vi rutracker.py
+: 1790591786:0;bak -r
+: 1790591823:0;bak -r
+: 1790591894:0;vi /tmp/rutracker_qbit.log
+: 1790592259:0;vi rutracker.py
+: 1790592272:0;bak -r
+: 1790592567:0;g xv
+: 1790592770:0;vi rutracker.py
+: 1790592777:0;bak -r
+: 1790592914:0;g xv
+: 1790593166:0;alias libre
+: 1790593176:0;gl libre
+: 1790593180:0;gal libre
+: 1790593191:0;gal writer
+: 1790593196:0;gal writ
+: 1790593203:0;gal
+: 1790593290:0;libreoffice  gemeni_checkpoint
+: 1790593549:4;libreoffice --writer gemini_checkpoint
+: 1790593633:0;touch gemini_checkpoin.odt && libreoffice --writer gemini_checkpoin.odt\
+ 
+: 1790593661:0;ll
+: 1790594509:0;s
+: 1790594534:0;vi -e run_libreoffice
+: 1790594699:0;office
+: 1790594726:0;vi run_libreoffice
+: 1790594773:0;office
+: 1790594785:0;vi run_libreoffice
+: 1790594799:0;office
+: 1790594806:0;office test
+: 1790594820:0;ll
+: 1790594830:0;file test
+: 1790594837:0;rm test
+: 1790594838:0;ll
+: 1790594854:0;l.
+: 1790594856:0;ll
+: 1790594883:0;office  gemeni_checkpoint
+: 1790594887:0;alias
+: 1790594908:0;cl ru_tracker
+: 1790594910:0;ll
+: 1790594925:0;..
+: 1790594936:0;upd_locate -fu
+: 1790594959:0;locate gemeni_checkpoint
+: 1790594966:0;locate gemeni_
+: 1790594969:0;locate gemini_
+: 1790594991:0;cl yts
+: 1790594993:0;ll
+: 1790595009:0;ll
+: 1790595013:0;cl yts
+: 1790595017:0;bak -P
+: 1790595022:0;bak -r
+: 1790595027:0;yts
+: 1790595058:0;ll
+: 1790595063:0;cl ru_tracker
+: 1790595065:0;ll
+: 1790595077:0;office gemini_checkpoint.odt
+: 1790595168:0;spell anomolies
+: 1790595276:0;sudo apt update\
+sudo apt install fonts-noto-core fonts-noto-ui-core fonts-noto-color-emoji
+: 1790596306:0;jq -r '.addons[] | select(.type == "extension") | "\(.defaultLocale.name) (\(.id)) [Active: \(.active)]"' ~/.mozilla/firefox/*.default*/extensions.json
+: 1790596438:0;jq -r '.addons[] | select(.type == "extension") | "\(.defaultLocale.name)  � Active: \(.active)"' ~/.mozilla/firefox/*.default*/extensions.json
+: 1790596515:0;jq -r '.addons[] | select(.location != "app-builtin" and .location != "app-system-defaults") | "\(.defaultLocale.name // .id) [Location: \(.location)]"' ~/.mozilla/firefox/*.default*/extensions.json
+: 1790597054:0;h
+: 1790597060:0;d
+: 1790597078:0;office firefox_display
+: 1790597127:0;ll
+: 1790597141:0;vi gemini-code-1790592241568.py
+: 1790597147:0;rm gemini-code-1790592241568.py
+: 1790597148:0;ll
+: 1790597157:0;cat firefox_display
+: 1790597178:0;locate content-prefs.sqlite
+: 1790597250:0;locate content-prefs.sqlite
+: 1790597258:0;upd_locate -fu
+: 1790597265:0;locate content-prefs.sqlite
+: 1790597332:0;upd_locate -fu
+: 1790597339:0;locate content-prefs.sqlite
+: 1790597367:0;upd_locate -fu
+: 1790597374:0;locate content-prefs.sqlite
+: 1790597419:0;locate content-prefs.sqlite
+: 1790597448:0;upd_locate -fu
+: 1790597456:0;locate content-prefs.sqlite
+: 1790597506:0;ll
+: 1790597509:0;cat firefox_display
+: 1790597670:0;locate content-prefs.sqlite
+: 1790597718:0;fc-cache -f -v
+: 1790597754:0;rm -f /home/kmiller/snap/firefox/common/.mozilla/firefox/qqgoeug9.default/content-prefs.sqlite*
+: 1790598840:0;cl ru_tracker
+: 1790598842:0;ll
+: 1790598847:0;vi rutracker.py
+: 1790598854:0;bak -r
+: 1790599136:0;vi rutracker.py
+: 1790599175:0;vi /tmp/rutracker_qbit.log
+: 1790599204:0;vi rutracker.py
+: 1790599421:0;vi rutracker.py
+: 1790599428:0;bak -r
+: 1790599485:0;vi rutracker.py
+: 1790599494:0;bak -r
+: 1790599617:0;bak -r
+: 1790599745:0;vi rutracker.py
+: 1790599754:0;bak -r
+: 1790599821:0;vi rutracker.py
+: 1790600003:0;vi rutracker.py
+: 1790600020:0;bak -r
+: 1790600297:0;vi rutracker.py
+: 1790600305:0;bak -r
+: 1790600377:0;cat /tmp/rutracker_qbit.log
+: 1790600496:0;vi rutracker.py
+: 1790600503:0;bak -r
+: 1790600860:0;vi rutracker.py
+: 1790600869:0;bak -r
+: 1790604540:0;sut cam on
+: 1790604761:0;sut cam off
+: 1790604775:0;clear
+: 1790607057:0;Tw
+: 1790607058:0;lsd
+: 1790607074:0;ll
+: 1790610633:0;yts
+: 1790610826:0;cl yts
+: 1790610830:0;g
+: 1790610832:0;G
+: 1790610842:0;ll
+: 1790610845:0;vi yts
+: 1790610974:0;./yts
+: 1790610986:0;vi yts
+: 1790611004:0;./yts
+: 1790611144:0;bak -r
+: 1790611199:0;man apt
+: 1790611507:0;sudo vim /etc/apt/sources.list
+: 1790611598:0;sudo vim /etc/apt/sources.list.d/ubuntu.sources
+: 1790611831:0;sudo apt source qbittorrent
+: 1790611993:0;sudo vim /etc/apt/sources.list
+: 1790612064:0;sudo apt source qbittorrent
+: 1790612101:0;vi x
+: 1790612174:0;sudo vim /etc/apt/sources.list
+: 1790612195:0;sudo vim /etc/apt/sources.list.d/ubuntu.sources
+: 1790612228:0;sudo apt update\
+apt source qbittorrent
+: 1790612312:0;ll
+: 1790612321:0;..
+: 1790612326:0;md qbit
+: 1790612328:0;,
+: 1790612341:0;ll
+: 1790612343:0;rm x
+: 1790612345:0;ll
+: 1790612349:0;cl qbit
+: 1790612351:0;ll
+: 1790612357:0;ll
+: 1790613621:0;cl ru_tracker
+: 1790613626:0;vi rutracker.py
+: 1790613632:0;bak -r
+: 1790613748:0;vi rutracker.py
+: 1790613757:0;bak -r
+: 1790614009:0;vi rutracker.py
+: 1790614053:0;bak -r
+: 1790614421:0;vi rutracker.py
+: 1790614430:0;bak -r
+: 1790614724:0;vi rutracker_proxy.py
+: 1790614728:0;ll
+: 1790614748:0;vi rutracker.py
+: 1790614754:0;ll
+: 1790614826:0;python3 rutracker_proxy.py &
+: 1790614838:0;bak -r
+: 1790615049:0;aux rut
+: 1790615057:0;vi rutracker_proxy.py
+: 1790615069:0;python3 rutracker_proxy.py &
+: 1790615202:0;aux rut
+: 1790615209:0;vi rutracker_proxy.py
+: 1790615217:0;python3 rutracker_proxy.py &
+: 1790615439:0;vi rutracker.py
+: 1790615544:0;vi rutracker.py
+: 1790615582:0;s
+: 1790615583:0;ll
+: 1790615590:0;,
+: 1790615767:0;ll
+: 1790615775:0;link_qbit_engines -u
+: 1790615776:0;ll
+: 1790615782:0;lsd
+: 1790615834:0;ll
+: 1790615836:0;..
+: 1790615848:0;rm qbit
+: 1790615852:0;,
+: 1790615853:0;ll
+: 1790615865:0;ll
+: 1790615874:0;..
+: 1790615875:0;ll
+: 1790615893:0;rm playwright_profile
+: 1790615897:0;rm __pycache__
+: 1790615899:0;ll
+: 1790615905:0;cat install_utils
+: 1790615912:0;ll
+: 1790615919:0;ll
+: 1790615954:0;l.
+: 1790616271:0;T
+: 1790616274:0;ll
+: 1790616287:0;M
+: 1790616304:0;md "Boz Scaggs"
+: 1790616310:0;ll
+: 1790616328:0;ll
+: 1790616331:0;llr
+: 1790616344:0;,
+: 1790616345:0;ll
+: 1790616347:0;,
+: 1790616348:0;ll
+: 1790616352:0;T
+: 1790616355:0;ll
+: 1790616358:0;llr
+: 1790616366:0;,
+: 1790616368:0;M
+: 1790616395:0;ll
+: 1790616397:0;llr
+: 1790616401:0;ll
+: 1790616410:0;T
+: 1790616414:0;ll
+: 1790616419:0;TM
+: 1790616520:0;T
+: 1790616522:0;Tv
+: 1790616524:0;Tm
+: 1790616529:0;Tv
+: 1790616550:0;Tw
+: 1790616552:0;ll
+: 1790617269:0;spell innocents
+: 1790617577:0;spell venal
+: 1790617586:0;dict venal
+: 1790618126:0;spell repulsed
+: 1790620027:0;spell irrelavent
+: 1790623026:0;yts
+: 1790623136:0;yt 'https://www.youtube.com/watch?v=564IWG28Bos
+: 1790623139:0;yt 'https://www.youtube.com/watch?v=564IWG28Bos'
+: 1790623829:0;M
+: 1790623834:0;vi music_list
+: 1790624059:0;ll
+: 1790624075:0;Lm
+: 1790624078:0;Tm
+: 1790624082:0;llr
+: 1790624092:0;,
+: 1790624108:0;md "Herbie Hancock"
+: 1790624132:0;ll
+: 1790624134:0;llr
+: 1790624231:0;vi /tmp/rutracker_qbit.log
+: 1790624254:0;.ls yts
+: 1790624260:0;rm yt.log*
+: 1790624264:0;ll
+: 1790624266:0;,
+: 1790624268:0;ll
+: 1790624413:0;..
+: 1790624417:0;vi music_list
+: 1790624656:0;cl ru_tracker
+: 1790624657:0;ll
+: 1790624835:0;vi rutracker_proxy.py
+: 1790624885:0;cat /tmp/rutracker_qbit.log
+: 1790624922:0;cat /tmp/rutracker_qbit.log
+: 1790625052:0;vi rutracker_proxy.py
+: 1790625063:0;aux
+: 1790625069:0;aux ru
+: 1790625219:0;cat /tmp/rutracker_qbit.log
+: 1790625223:0;cat /tmp/rutracker_qbit.log
+: 1790625275:0;ll
+: 1790625431:0;vi rutracker_proxy.py
+: 1790625783:0;aux rutracker
+: 1790625786:0;aux ru
+: 1790625813:0;python3 rutracker_proxy.py &
+: 1790625826:0;aux proxy
+: 1790625834:0;ll
+: 1790625859:0;vi .prod_target
+: 1790625974:0;cl bak
+: 1790625975:0;bak
+: 1790626028:0;bak
+: 1790626035:0;clear
+: 1790626037:0;bak
+: 1790626049:0;clear
+: 1790626061:0;/usr/local/bin/bak
+: 1790626086:0;/usr/local/bin/bak
+: 1790626094:0;vi bak
+: 1790626756:0;./bak
+: 1790626766:0;ll
+: 1790626816:0;vi bak
+: 1790626937:0;./bak
+: 1790626939:0;vi bak
+: 1790627049:0;./bak
+: 1790627060:0;bak -r
+: 1790627069:0;bak
+: 1790627073:0;,
+: 1790627081:0;bak -P
+: 1790627088:0;ll
+: 1790627090:0;,
+: 1790627092:0;vi bak
+: 1790627143:0;bak -r
+: 1790627169:0;Tw
+: 1790627170:0;lsd
+: 1790627180:0;ll
+: 1790627208:0;M
+: 1790627218:0;ll
+: 1790627224:0;ll
+: 1790627250:0;ll
+: 1790627253:0;llr
+: 1790627265:0;Tw
+: 1790627267:0;ll
+: 1790629454:0;t
+: 1790631891:0;yts
+: 1790632034:0;ll
+: 1790666593:0;lsd
+: 1790666623:0;yts
+: 1790666839:0;yt 'https://rumble.com/v7g2294-sunday-wire-ep-614-un-blowout-the-beginning-of-the-end-for-israel.html?e9s=src_v1_clr%2Csrc_v1_upp_a'
+: 1790666920:0;.ls yts
+: 1790666928:0;ll
+: 1790666944:0;ll
+: 1790666963:0;rm rumble_cookies.txt
+: 1790666968:0;cl yts
+: 1790666975:0;vi yts
+: 1790667209:0;bak -r yt
+: 1790667215:0;yt 'https://rumble.com/v7g2294-sunday-wire-ep-614-un-blowout-the-beginning-of-the-end-for-israel.html?e9s=src_v1_clr%2Csrc_v1_upp_a'
+: 1790667892:0;vi yt
+: 1790667967:0;yt 'https://rumble.com/v7g45ym-kim-confronts-journalist-trying-to-expose-her-and-others-as-ops.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
+: 1790668165:0;ll
+: 1790668171:0;bak -r yt
+: 1790668177:0;Tw
+: 1790668179:0;ll
+: 1790668301:0;yts
+: 1790668677:0;ll
+: 1790668683:0;ll
+: 1790669018:0;M
+: 1790669026:0;cat music_list
+: 1790673033:0;.ls yts
+: 1790673036:0;g diss
+: 1790673075:0;vi yts.url.log
+: 1790673117:0;,
+: 1790673120:0;cl yts
+: 1790673123:0;g log
+: 1790673147:0;g -I log
+: 1790673158:0;g -I LOG
+: 1790673170:0;g -I LOGA=
+: 1790673172:0;g -I LOG=
+: 1790673215:0;vi yts
+: 1790673290:0;bak -r
+: 1790674792:0;,
+: 1790674793:0;,
+: 1790674796:0;.ls yts
+: 1790674800:0;vi yt.url.log
+: 1790675093:0;,
+: 1790675106:0;vi -e log_scrubber
+: 1790675273:0;log_scrubber yts.url.log
+: 1790675296:0;vi -e log_scrubber
+: 1790675324:0;log_scrubber yts.url.log
+: 1790675335:0;vi log_scrubber
+: 1790675416:0;log_scrubber yts.url.log
+: 1790675422:0;vi log_scrubber
+: 1790675433:0;log_scrubber yts.url.log
+: 1790675441:0;vi log_scrubber
+: 1790675542:0;log_scrubber yts.url.log
+: 1790675546:0;vi log_scrubber
+: 1790675564:0;log_scrubber yts.url.log
+: 1790675566:0;vi log_scrubber
+: 1790675578:0;log_scrubber yts.url.log
+: 1790675626:0;date -d 1790070778 
+: 1790675640:0;date -d @1790070778 
+: 1790675686:0;log_scrubber yts.url.log
+: 1790675695:0;vi log_scrubber
+: 1790675736:0;vi log_scrubber
+: 1790675761:0;log_scrubber yts.url.log
+: 1790675769:0;vi log_scrubber
+: 1790675884:0;wc -l ~/.local/share/yts/yts.url.log
+: 1790676030:0;wc -l < ~/.local/share/yts/yts.url.log
+: 1790676138:0;vi log_scrubber
+: 1790676261:0;log_scrubber yts.url.log
+: 1790676267:0;vi log_scrubber
+: 1790676280:0;log_scrubber yts.url.log
+: 1790676286:0;vi log_scrubber
+: 1790676337:0;log_scrubber yts.url.log
+: 1790676450:0;vi log_scrubber
+: 1790676691:0;log_scrubber yts.url.log
+: 1790676756:0;vi log_scrubber
+: 1790676858:0;log_scrubber yts.url.log
+: 1790676917:0;vi log_scrubber
+: 1790677039:0;log_scrubber yts.url.log
+: 1790677056:0;vi log_scrubber
+: 1790677072:0;log_scrubber yts.url.log
+: 1790677084:0;vi log_scrubber
+: 1790677108:0;log_scrubber yts.url.log
+: 1790677127:0;vi log_scrubber
+: 1790677139:0;ll
+: 1790677161:0;vi /tmp/*rejects
+: 1790677174:0;vi log_scrubber
+: 1790677204:0;log_scrubber yts.url.log
+: 1790677244:0;vi log_scrubber
+: 1790677394:0;log_scrubber yts.url.log
+: 1790677427:0;vi log_scrubber
+: 1790677434:0;log_scrubber yts.url.log
+: 1790677719:0;,
+: 1790677725:0;vi yts.url.log
+: 1790677760:0;,
+: 1790677766:0;log_scrubber yt.url.log
+: 1790677788:0;vi log_scrubber
+: 1790677839:0;log_scrubber yt.url.log
+: 1790677859:0;vi log_scrubber
+: 1790677942:0;log_scrubber yt.url.log
+: 1790677956:0;vi log_scrubber
+: 1790677985:0;log_scrubber yt.url.log
+: 1790678008:0;,
+: 1790678012:0;,
+: 1790678023:0;log_scrubber yts.downloads
+: 1790678041:0;,
+: 1790678042:0;ll
+: 1790678056:0;vi yt.dbg.log
+: 1790678071:0;lsd
+: 1790678076:0;ll
+: 1790678086:0;rm rumble.com_cookies.txt
+: 1790678087:0;ll
+: 1790678094:0;backup
+: 1790678176:0;repo
+: 1790678272:0;ll
+: 1790678276:0;,
+: 1790678277:0;ll
+: 1790678383:0;yts
+: 1790678645:0;yts
+: 1790678861:0;Tw
+: 1790678862:0;lsd
+: 1790678870:0;ll
+: 1790697075:0;yt
+: 1790697077:0;yts
+: 1790697878:0;h
+: 1790697881:0;.ls
+: 1790697962:0;.ls escribe
+: 1790697964:0;ll
+: 1790699198:0;Tw
+: 1790699199:0;ll
+: 1790699202:0;yts
+: 1790699542:0;cl yts
+: 1790699546:0;vi yts
+: 1790699596:0;vi yts
+: 1790699747:0;bak -r
+: 1790699751:0;yts
+: 1790699797:0;ll
+: 1790699799:0;Tw
+: 1790699800:0;ll
+: 1790699816:0;yts
+: 1790699824:0;ll
+: 1790699831:0;cl yts
+: 1790699834:0;,
+: 1790699838:0;ll
+: 1790699845:0;cl yts
+: 1790699847:0;vi yts
+: 1790699860:0;Tw
+: 1790699874:0;yts
+: 1790699931:0;yt 'https://rumble.com/v7g50k4-hollywood-turns-chris-hansen-into-the-villain-after-he-spent-years-catching.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
+: 1790699956:0;clear
+: 1790700041:0;pip install --upgrade curl_cffi
+: 1790700155:0;locate curl_cffi
+: 1790700159:0;upd_locate
+: 1790700177:0;locate curl_cffi
+: 1790700187:0;locate curl_cffi >x
+: 1790700310:0;pipx install --upgrade curl_cffi
+: 1790700387:0;pipx upgrade curl_cffi
+: 1790700428:0;yts
+: 1790700486:0;yt 'https://rumble.com/v7g50mi-candace-goes-scorched-earth-on-tpusa-after-scathing-report-on-charlies-deat.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
+: 1790700593:0;yt 'https://rumble.com/v7g50mi-candace-goes-scorched-earth-on-tpusa-after-scathing-report-on-charlies-deat.html?e9s=src_v1_mfp%2Csrc_v1_mfp_a'
+: 1790700712:0;yts
+: 1790700828:0;Tw
+: 1790700829:0;ll
+: 1790700853:0;fsub -p 'Jimmy Dore' 'Candace Goes Scorched Earth On Tpusa After Scathing Report On Charlie'\''s Death Released.mp4'
+: 1790700855:0;ll
+: 1790705151:0;mp4_merge jimm
+: 1790705167:0;mp4_merge judg
+: 1790705177:0;ll
+: 1790707839:0;Tm
+: 1790707845:0;Tv
+: 1790707847:0;ll
+: 1790717227:0;ll
+: 1790718545:0;ll
+: 1790718558:0;osd "Hereditary 2018 1080p.mp4"
+: 1790718570:0;ll
+: 1790718628:0;osd "Hereditary 2018 1080p.mp4"
+: 1790718645:0;ll
+: 1790718732:0;vi Hereditary\ 2018\ 1080p.srt
+: 1790718875:0;rm Hereditary\ 2018\ 1080p.srt
+: 1790718879:0;vut info
+: 1790718890:0;osd "Hereditary 2018 1080p.mp4"
+: 1790719011:0;rm "Hereditary 2018 1080p.mp4"
+: 1790719014:0;osd "Hereditary 2018 1080p.mp4"
+: 1790719031:0;rm "Hereditary 2018 1080p*
+: 1790719036:0;rm Hereditary 2018 1080p*
+: 1790719038:0;ll
+: 1790719044:0;rm Hereditary*
+: 1790719047:0;ll
+: 1790719163:0;Tw
+: 1790719164:0;lsd
+: 1790719182:0;ll
+: 1790719419:0;Tv
+: 1790719420:0;ll
+: 1790719437:0;Tv
+: 1790719439:0;ll
+: 1790719449:0;osd "Hereditary 2018 1080p.mp4"
+: 1790723168:0;rb -l
+: 1790723194:0;chkupd
+: 1790723223:0;chkupd
+: 1790723277:0;rb -r
+: 1790754317:0;aux ru
+: 1790754366:0;cl ru_tracker
+: 1790754367:0;ll
+: 1790754375:0;vi rutracker_proxy.py
+: 1790755131:0;echo $PATH
+: 1790755153:0;vi rutracker.py
+: 1790755573:0;ll
+: 1790755589:0;cat rutracker.json
+: 1790756135:0;M
+: 1790756265:0;ll
+: 1790756291:0;..
+: 1790756295:0;ll
+: 1790756344:0;ll
+: 1790756360:0;..
+: 1790756360:0;ll
+: 1790756389:0;Tw
+: 1790756390:0;ll
+: 1790756394:0;lsd
+: 1790756397:0;ll
+: 1790756407:0;yts
+: 1790763228:0;ll
+: 1790763229:0;lsd
+: 1790763240:0;ll
+: 1790763250:0;cl yts
+: 1790763259:0;bak -P yt
+: 1790763266:0;bak -r yt
+: 1790763270:0;cl yt
+: 1790763273:0;cl yts
+: 1790763288:0;ull
+: 1790763292:0;g get_keys
+: 1790763321:0;cl yts
+: 1790763336:0;vi question
+: 1790763438:0;,
+: 1790763442:0;g get_keys
+: 1790763456:0;,
+: 1790763460:0;vi question
+: 1790764015:0;..
+: 1790764025:0;h
+: 1790764027:0;rm x
+: 1790764030:0;cl yts
+: 1790764233:0;vi getkeys
+: 1790764243:0;vi getkeys_call
+: 1790764558:0;vi getkeys
+: 1790764602:0;ll
+: 1790764612:0;rm question
+: 1790764646:0;yts
+: 1790764964:0;vi seal_leaks
+: 1790765116:0;vi seal_leaks
+: 1790766518:0;yts
+: 1790766541:0;ll
+: 1790766553:0;rm getkeys seal_leaks
+: 1790766554:0;ll
+: 1790766586:0;.ls yts
+: 1790766587:0;ll
+: 1790766597:0;rm yt.log*
+: 1790766601:0;ll
+: 1790766612:0;backup
+: 1790766832:0;cl LIBS
+: 1790766849:0;bak EXIT.zsh
+: 1790766852:0;cl LIBS
+: 1790766858:0;bak LIST.zsh
+: 1790766876:0;cl LIBS
+: 1790766888:0;bak MSG.zsh
+: 1790766891:0;cl LIBS
+: 1790766900:0;bak SELECT.zsh
+: 1790766905:0;cl LIBS
+: 1790766911:0;bak UTILS.zsh
+: 1790766914:0;ll
+: 1790766916:0;cl LIBS
+: 1790766936:0;cl LIBS
+: 1790766952:0;vi STTY_TRAP.zsh
+: 1790767023:0;cl LIBS
+: 1790767034:0;bak -r STTY_TRAP.zsh
+: 1790767042:0;cl LIBS
+: 1790767056:0;ull
+: 1790767073:0;,
+: 1790767075:0;ll
+: 1790767084:0;me STTY_TRAP.zsh
+: 1790767085:0;ll
+: 1790767109:0;chmod 755 LIB_DEPS.zsh
+: 1790767110:0;ll
+: 1790767176:0;Tw
+: 1790767178:0;lsd
+: 1790767188:0;yts
+: 1790767542:0;repo
+: 1790767586:0;ll
+: 1790779624:0;yts
+: 1790779698:0;yt 'https://www.youtube.com/watch?v=LtYQBx9G65Y'
+: 1790779726:0;ll
+: 1790779792:0;yts
+: 1790779898:0;yts
+: 1790779920:0;yt 'https://www.youtube.com/watch?v=9KyaFIoF8iw&pp=0gcJCToMAYcqIYzv'
+: 1790779934:0;l
+: 1790779935:0;ll
+: 1790779994:0;yts
+: 1790780025:0;yt 'https://www.youtube.com/watch?v=GEqNEAWjrLc'
+: 1790780038:0;cl yts
+: 1790780048:0;cl LIBS
+: 1790780059:0;vi LIST.zsh
+: 1790780337:0;bak -r LIST.zsh
+: 1790780343:0;bak -r MSG.zsh
+: 1790780348:0;bak -r SELECT.zsh
+: 1790780352:0;cl LIBS
+: 1790780367:0;G
+: 1790789356:0;ll
+: 1790789358:0;lsd
+: 1790789362:0;l
+: 1790789363:0;ll
+: 1790791076:0;yts
+: 1790792838:0;lsd
+: 1790794374:0;yts
+: 1790798818:0;Tw
+: 1790798822:0;lsd
+: 1790798847:0;ll
+: 1790799294:0;yt 'https://www.youtube.com/watch?v=yMTxIuM1hw0
+: 1790799297:7;yt 'https://www.youtube.com/watch?v=yMTxIuM1hw0'
+: 1790799308:0;ll
+: 1790799442:0;yts
+: 1790799828:0;cl LIBS
+: 1790799833:0;vi STTY_TRAP.zsh
+: 1790799874:0;Tw
+: 1790799875:0;ll
+: 1790799918:0;ll
+: 1790803048:0;lsd
+: 1790803053:0;yts
+: 1790803982:0;lsd
+: 1790804002:0;ll
+: 1790804030:0;Tv
+: 1790804031:0;lsd
+: 1790804035:0;ll
+: 1790804042:0;Tw
+: 1790804044:0;yts
+: 1790804112:0;yt 'https://www.youtube.com/watch?v=s2PF61X0274'
+: 1790805977:0;ll
+: 1790805980:0;lsd
+: 1790805993:0;ll
+: 1790806909:0;lsd
+: 1790806932:0;cl yts
+: 1790808171:0;yts
+: 1790808191:0;yts
+: 1790808200:0;yts
+: 1790808357:0;yts
+: 1790808795:0;./yts
+: 1790808828:0;./yts
+: 1790808866:0;./yts
+: 1790808878:0;./yts
+: 1790808911:0;cl LIBS
+: 1790808918:0;bak UTILS.zsh
+: 1790808920:0;ll
+: 1790808923:0;cl LIBS
+: 1790809845:0;cat x
+: 1790809879:0;ll
+: 1790809887:0;vi y
+: 1790809924:0;ll
+: 1790810391:0;vi TERMINAL.zsh
+: 1790810410:0;g trap
+: 1790810476:0;vi LIB_INIT.zsh
+: 1790810623:0;vi LIB_INIT.zsh
+: 1790810648:0;vi EXIT.zsh
+: 1790810791:0;vi TERMINAL.zsh
+: 1790811004:0;lsd
+: 1790811036:0;rm x
+: 1790837699:0;clear
+: 1790837700:0;ll
+: 1790837707:0;clear
+: 1790837712:0;Tw
+: 1790837713:0;ll
+: 1790837756:0;lsd
+: 1790837775:0;ll
+: 1790837969:0;cl LIBS
+: 1790837991:0;vi LIB_INIT.zsh
+: 1790838240:0;bak -r TERMINAL.zsh
+: 1790838246:0;ll
+: 1790838251:0;me TERMINAL.zsh
+: 1790838297:0;cl LIBS
+: 1790838316:0;bak -r LIB_INIT.zsh
+: 1790838338:0;ll
+: 1790838353:0;ll
+: 1790838364:0;bak -r TERM.zsh
+: 1790838373:0;ull
+: 1790838380:0;rm STTY_TRAP.zsh TERMINAL.zsh
+: 1790838382:0;,
+: 1790838387:0;cl LIB
+: 1790838390:0;cl LIB
+: 1790838394:0;cl LIBS
+: 1790838446:0;vi LIB_DEPS.zsh
+: 1790838538:0;vi LIB_INIT.zsh
+: 1790838573:0;bak -r LIB_INIT.zsh
+: 1790838581:0;cl LIBS
+: 1790838610:0;vi LIST.zsh
+: 1790838697:0;bak -r LIST.zsh
+: 1790838704:0;vi MSG.zsh
+: 1790838781:0;bak -r MSG.zsh
+: 1790838787:0;bak -r LIST.zsh
+: 1790838794:0;bak -r SELECT.zsh
+: 1790838799:0;cl LIBS
+: 1790838814:0;cl yts
+: 1790838820:0;yts
+: 1790838879:0;yts
+: 1790839170:0;yts
+: 1790839227:0;cl LIBS
+: 1790839824:0;,
+: 1790839931:0;yts
+: 1790839957:0;cat /tmp/TERM.dbg
+: 1790840063:0;yts
+: 1790840072:0;yts
+: 1790840156:0;yts
+: 1790840177:0;yts
+: 1790840182:0;yts
+: 1790840190:0;yts
+: 1790840224:0;yts
+: 1790840230:0;yts
+: 1790840597:0;yts
+: 1790840688:0;yts
+: 1790840702:0;yts
+: 1790840901:0;ll
+: 1790840907:0;rm x y
+: 1790840909:0;ll
+: 1790840919:0;cl LIBS
+: 1790840968:0;bak LIST.zsh
+: 1790840974:0;cl LIBS
+: 1790840984:0;,
+: 1790840987:0;ll
+: 1790841016:0;cl yts
+: 1790841294:0;ll
+: 1790842155:0;lsd
+: 1790842166:0;ll
+: 1790842255:0;cl LIBS
+: 1790842274:0;bak LIB_INIT.zsh
+: 1790842329:0;vi LIST.zsh
+: 1790842445:0;bak -r LIST.zsh
+: 1790842451:0;yts
+: 1790842470:0;g enter_silent
+: 1790842479:0;vi MSG.zsh
+: 1790842524:0;bak -r MSG.zsh
+: 1790842531:0;bak -r SELECT.zsh
+: 1790842534:0;cl LIBS
+: 1790842539:0;yts
+: 1790842555:0;g exit_sil
+: 1790842563:0;vi LIST.zsh
+: 1790842586:0;bak -r SELECT.zsh
+: 1790842591:0;bak -r MSG.zsh
+: 1790842599:0;bak -r LIST.zsh
+: 1790842602:0;cl LIBS
+: 1790842615:0;ull
+: 1790842618:0;rm TERM.zsh
+: 1790842620:0;,
+: 1790842623:0;yts
+: 1790849862:0;yts
+: 1790853784:0;lsd
+: 1790853801:0;rm TERM.zsh
+: 1790853805:0;bak
+: 1790853938:0;bak
+: 1790853997:0;bak
+: 1790854052:0;bak
+: 1790854068:0;cl bak
+: 1790854070:0;bak
+: 1790854074:0;,
+: 1790854084:0;ull
+: 1790854097:0;,
+: 1790854104:0;g source
+: 1790854157:0;g silent
+: 1790854169:0;vi STTY_TRAP.zsh
+: 1790854383:0;bak -r STTY_TRAP.zsh
+: 1790854387:0;yts
+: 1790854400:0;vi STTY_TRAP.zsh
+: 1790854415:0;bak -r STTY_TRAP.zsh
+: 1790854418:0;yts
+: 1790854438:0;vi STTY_TRAP.zsh
+: 1790854538:0;bak -r STTY_TRAP.zsh
+: 1790854542:0;yts -D
+: 1790854552:0;vi STTY_TRAP.zsh
+: 1790854576:0;bak -r STTY_TRAP.zsh
+: 1790854580:0;yts -D
+: 1790854627:0;vi STTY_TRAP.zsh
+: 1790854676:0;bak -r STTY_TRAP.zsh
+: 1790854680:0;yts -D
+: 1790854730:0;man zshall
+: 1790854813:0;vi STTY_TRAP.zsh
+: 1790854945:0;bak -r STTY_TRAP.zsh
+: 1790854949:0;yts -D
+: 1790854982:0;vi STTY_TRAP.zsh
+: 1790855075:0;bak -r STTY_TRAP.zsh
+: 1790855079:0;yts -D
+: 1790855097:0;vi STTY_TRAP.zsh
+: 1790855141:0;bak -r STTY_TRAP.zsh
+: 1790855145:0;yts -D
+: 1790855156:0;vi STTY_TRAP.zsh
+: 1790855219:0;g arglist
+: 1790855248:0;vi STTY_TRAP.zsh
+: 1790855261:0;vi STTY_TRAP.zsh
+: 1790855283:0;bak -r STTY_TRAP.zsh
+: 1790855285:0;yts
+: 1790855291:0;yts -D
+: 1790855305:0;vi DBG.zsh
+: 1790855514:0;bak -r DBG.zsh
+: 1790855520:0;vi STTY_TRAP.zsh
+: 1790855533:0;g arglist
+: 1790855552:0;vi STTY_TRAP.zsh
+: 1790855613:0;bak -r STTY_TRAP.zsh
+: 1790855618:0;yts -D
+: 1790855630:0;vi STTY_TRAP.zsh
+: 1790855649:0;bak -r STTY_TRAP.zsh
+: 1790855653:0;yts -D
+: 1790855690:0;vi DBG.zsh
+: 1790855722:0;bak -r DBG.zsh
+: 1790855725:0;yts -D
+: 1790855750:0;vi DBG.zsh
+: 1790855791:0;bak -r DBG.zsh
+: 1790855795:0;yts -D
+: 1790855827:0;vi DBG.zsh
+: 1790855843:0;bak -r DBG.zsh
+: 1790855846:0;yts -D
+: 1790855891:0;vi DBG.zsh
+: 1790855967:0;bak -r DBG.zsh
+: 1790855971:0;yts -D
+: 1790856018:0;vi DBG.zsh
+: 1790856071:0;bak -r DBG.zsh
+: 1790856075:0;yts -D
+: 1790856184:0;vi DBG.zsh
+: 1790856212:0;bak -r DBG.zsh
+: 1790856216:0;yts -D
+: 1790856237:0;vi DBG.zsh
+: 1790856277:0;bak -r DBG.zsh
+: 1790856281:0;yts -D
+: 1790856292:0;vi DBG.zsh
+: 1790856331:0;bak -r DBG.zsh
+: 1790856334:0;yts -D
+: 1790856354:0;vi DBG.zsh
+: 1790856387:0;bak -r DBG.zsh
+: 1790856390:0;yts -D
+: 1790856501:0;vi DBG.zsh
+: 1790856552:0;bak -r DBG.zsh
+: 1790856556:0;yts -D
+: 1790856601:0;bak -r DBG.zsh
+: 1790856604:0;vi DBG.zsh
+: 1790856628:0;bak -r DBG.zsh
+: 1790856631:0;yts -D
+: 1790856656:0;bak -r DBG.zsh
+: 1790856660:0;vi DBG.zsh
+: 1790856681:0;bak -r DBG.zsh
+: 1790856684:0;yts -D
+: 1790856724:0;vi DBG.zsh
+: 1790856750:0;bak -r DBG.zsh
+: 1790856754:0;yts -D
+: 1790856843:0;tip zsh
+: 1790857087:0;vi DBG.zsh
+: 1790857276:0;bak -r DBG.zsh
+: 1790857280:0;yts -D
+: 1790857299:0;vi DBG.zsh
+: 1790857381:0;bak -r DBG.zsh
+: 1790857385:0;yts -D
+: 1790857444:0;vi DBG.zsh
+: 1790857484:0;bak -r DBG.zsh
+: 1790857488:0;yts -D
+: 1790857543:0;vi DBG.zsh
+: 1790857578:0;bak -r DBG.zsh
+: 1790857585:0;vi STTY_TRAP.zsh
+: 1790857626:0;bak -r STTY_TRAP.zsh
+: 1790857630:0;yts -D
+: 1790857699:0;vi DBG.zsh
+: 1790857723:0;bak -r STTY_TRAP.zsh
+: 1790857729:0;bak -r DBG.zsh
+: 1790857732:0;yts -D
+: 1790857765:0;vi DBG.zsh
+: 1790857902:0;vi DBG.zsh
+: 1790858088:0;bak -r STTY_TRAP.zsh
+: 1790858101:0;bak -r DBG.zsh
+: 1790858110:0;yts -D
+: 1790858152:0;vi DBG.zsh
+: 1790858201:0;bak -r DBG.zsh
+: 1790858204:0;yts -D
+: 1790858435:0;vi DBG.zsh
+: 1790858461:0;vi STTY_TRAP.zsh
+: 1790858477:0;bak -r STTY_TRAP.zsh
+: 1790858484:0;bak -r DBG.zsh
+: 1790858488:0;yts -D
+: 1790858528:0;vi DBG.zsh
+: 1790858796:0;bak -r DBG.zsh
+: 1790858800:0;yts -D
+: 1790858817:0;vi DBG.zsh
+: 1790858858:0;bak -r DBG.zsh
+: 1790858862:0;yts -D
+: 1790858879:0;vi DBG.zsh
+: 1790859013:0;bak -r DBG.zsh
+: 1790859016:0;yts -D
+: 1790859028:0;vi DBG.zsh
+: 1790859044:0;bak -r DBG.zsh
+: 1790859048:0;yts -D
+: 1790859132:0;cl LIBS
+: 1790859149:0;vi DBG.zsh
+: 1790859184:0;bak -r DBG.zsh
+: 1790859189:0;yts -D
+: 1790859249:0;vi DBG.zsh
+: 1790859269:0;bak -r DBG.zsh
+: 1790859273:0;yts -D
+: 1790859284:0;vi DBG.zsh
+: 1790859308:0;bak -r DBG.zsh
+: 1790859311:0;yts -D
+: 1790859407:0;vi DBG.zsh
+: 1790859427:0;bak -r DBG.zsh
+: 1790859431:0;yts -D
+: 1790859456:0;vi DBG.zsh
+: 1790859473:0;bak -r DBG.zsh
+: 1790859475:0;yts -D
+: 1790859486:0;vi DBG.zsh
+: 1790859507:0;bak -r DBG.zsh
+: 1790859510:0;yts -D
+: 1790859588:0;vi DBG.zsh
+: 1790859677:0;bak -r DBG.zsh
+: 1790859686:0;bak -r STTY_TRAP.zsh
+: 1790859691:0;yts -D
+: 1790859729:0;vi STTY_TRAP.zsh
+: 1790859741:0;bak -r STTY_TRAP.zsh
+: 1790859746:0;yts -D
+: 1790859773:0;stty
+: 1790859790:0;man stty
+: 1790859794:0;man stty -a
+: 1790859802:0;stty -a
+: 1790859823:0;vi STTY_TRAP.zsh
+: 1790859973:0;bak -r STTY_TRAP.zsh
+: 1790859976:0;yts -D
+: 1790860071:0;vi STTY_TRAP.zsh
+: 1790860169:0;bak -r STTY_TRAP.zsh
+: 1790860173:0;yts -D
+: 1790860200:0;vi STTY_TRAP.zsh
+: 1790860214:0;bak -r STTY_TRAP.zsh
+: 1790860217:0;yts -D
+: 1790860232:0;vi STTY_TRAP.zsh
+: 1790860276:0;bak -r STTY_TRAP.zsh
+: 1790860278:0;yts -D
+: 1790860337:0;vi STTY_TRAP.zsh
+: 1790860344:0;bak -r STTY_TRAP.zsh
+: 1790860347:0;yts -D
+: 1790860461:0;vi DBG.zsh
+: 1790860490:0;bak -r DBG.zsh
+: 1790860493:0;yts -D
+: 1790860542:0;yts
+: 1790860555:0;yts -D
+: 1790860702:0;stty -a | grep echo
+: 1790860714:0;stty -a | grep -o echo
+: 1790860723:0;stty -a | grep -ow echo
+: 1790860727:0;stty -a | grep -o echo
+: 1790860739:0;stty -a | grep -oE 'echo*'
+: 1790860749:0;stty -a | grep -oP 'echo*'
+: 1790860755:0;stty -a | grep -oP '*echo*'
+: 1790860760:0;stty -a | grep -oP 'echo*'
+: 1790860767:0;stty -a | grep -P 'echo*'
+: 1790860796:0;stty -a | grep -P '-echo'
+: 1790860803:0;stty -a | grep -P '\-echo'
+: 1790860821:0;stty -a | grep -P '\-echo\b'
+: 1790860826:0;stty -a | grep -P '\echo\b'
+: 1790860831:0;stty -a | grep -P '\becho\b'
+: 1790860842:0;stty -a | grep -P '\b\-?echo\b'
+: 1790860880:0;vi STTY_TRAP.zsh
+: 1790860911:0;vi STTY_TRAP.zsh
+: 1790860926:0;bak -r STTY_TRAP.zsh
+: 1790860929:0;yts -D
+: 1790861017:0;stty -a | grep -P '\b\-echo\b'
+: 1790861029:0;vi DBG.zsh
+: 1790861115:0;vi DBG.zsh
+: 1790861134:0;bak -r STTY_TRAP.zsh
+: 1790861137:0;yts -D
+: 1790861173:0;vi STTY_TRAP.zsh
+: 1790861332:0;bak -r STTY_TRAP.zsh
+: 1790861335:0;yts -D
+: 1790861371:0;vi STTY_TRAP.zsh
+: 1790861434:0;bak -r STTY_TRAP.zsh
+: 1790861436:0;yts -D
+: 1790869155:0;Tw
+: 1790869157:0;yts
+: 1790870192:0;yts
+: 1790871100:0;lsd
+: 1790878602:0;lsd
+: 1790878612:0;ll
+: 1790878615:0;yts
+: 1790884064:0;Tw
+: 1790884066:0;ll
+: 1790884071:0;lsd
+: 1790884076:0;ll
+: 1790884550:0;rm Tucker\ Carlson\ -\ The\ Most\ Sickening\ Story\ The\ Media\ Says\ Doesn\'t\ Exist.mp4
+: 1790884635:0;yts
+: 1790884905:0;lsd
+: 1790884917:0;ll
+: 1790886094:0;Ts
+: 1790886095:0;ll
+: 1790886440:0;yts
+: 1790886451:0;yts
+: 1790886512:0;cl LIBS
+: 1790886520:0;bak STTY_TRAP.zsh
+: 1790886523:0;ll
+: 1790886530:0;rm x
+: 1790886611:0;yts
+: 1790888331:0;vi STTY_TRAP.zsh
+: 1790888369:0;bak -P STTY_TRAP.zsh
+: 1790888379:0;vi STTY_TRAP.zsh.bak
+: 1790888398:0;bak -r STTY_TRAP.zsh
+: 1790888402:0;yts
+: 1790888410:0;yts
+: 1790889333:0;Tw
+: 1790889335:0;ll
+: 1790889337:0;lsd
+: 1790889500:0;yts
+: 1790889565:0;yts
+: 1790889570:0;k
+: 1790889572:0;yts
+: 1790889579:0;yts
+: 1790889584:0;yts
+: 1790890186:0;yts
+: 1790890301:0;Tw
+: 1790890338:0;yt 'https://rumble.com/v7g8jqe-bari-weiss-rumored-out-at-cbs-mamdani-panders-to-nyc-zionists-trump-doubts-.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1790890633:0;ll
+: 1790890642:0;vut info
+: 1790890794:0;ll
+: 1790890813:0;ll
+: 1790925290:0;cl LIBS
+: 1790925300:0;bak MSG.zsh
+: 1790925392:0;vi LIST.zsh
+: 1790925402:0;vi MSG.zsh
+: 1790925411:0;vi SELECT.zsh
+: 1790925420:0;vi LIB_INIT.zsh
+: 1790925443:0;bak -r LIST.zsh
+: 1790925455:0;bak -r MSG.zsh
+: 1790925464:0;bak -r SELECT.zsh
+: 1790925473:0;bak -r LIB_INIT.zsh
+: 1790925482:0;cl lib
+: 1790925486:0;cl LIB
+: 1790925492:0;cl LIBS
+: 1790925509:0;yts
+: 1790925533:0;ull
+: 1790925541:0;stty -a
+: 1790925555:0;g source
+: 1790925666:0;yts
+: 1790925677:0;yts
+: 1790925720:0;rb -l
+: 1790925790:0;vi .zshrc
+: 1790925892:0;rb -l
+: 1790925946:0;chkupd
+: 1790925993:0;yts
+: 1790926654:0;yts
+: 1790926699:0;yts
+: 1790926787:0;yts
+: 1790926797:0;yts
+: 1790926819:0;yts
+: 1790927012:0;yts
+: 1790927064:0;yts
+: 1790927169:0;yts
+: 1790927183:0;ll
+: 1790927190:0;stty -a
+: 1790927206:0;yts
+: 1790927218:0;gsq
+: 1790927223:0;gsq terminal
+: 1790927297:0;gsq terminal
+: 1790927501:0;gsq terminal
+: 1790927534:0;gsq terminal
+: 1790927654:0;b
+: 1790927661:0;g inline
+: 1790927673:0;g inline_vi
+: 1790927698:0;g inline_vi
+: 1790927712:0;g vi_edit
+: 1790927717:0;g edit
+: 1790927775:0;vi gsq
+: 1790927881:0;g perl_script
+: 1790927930:0;vi gsq
+: 1790928028:0;ull
+: 1790928034:0;g inline_vi
+: 1790928098:0;lsd
+: 1790928163:0;lsd
+: 1790928246:0;lsd
+: 1790928291:0;lsd
+: 1790928376:0;gsq terminal
+: 1790928489:0;gsq terminal
+: 1790928520:0;g inline
+: 1790928550:0;b
+: 1790928552:0;vi gsq
+: 1790928564:0;g inline
+: 1790928582:0;g inline_vi
+: 1790928588:0;g perl
+: 1790928633:0;g perl_script
+: 1790928659:0;vi gsq
+: 1790928802:0;gsq terminal
+: 1790928824:0;vi gsq
+: 1790928857:0;vi audio_tags
+: 1790928894:0;audio_tags
+: 1790928900:0;vi audio_tags
+: 1790928948:0;g inline_vi
+: 1790928970:0;g perl_script
+: 1790928979:0;vi myp
+: 1790928984:0;vi mypager
+: 1790929001:0;cl
+: 1790929003:0;ll
+: 1790929004:0;l
+: 1790929009:0;backup
+: 1790929525:0;repo
+: 1790929543:0;.ls yts
+: 1790929549:0;rm yt.log*
+: 1790929555:0;cl LIBS
+: 1790929563:0;bak LIB_DEPS.zsh
+: 1790929569:0;bak LIB_INIT.zsh
+: 1790929573:0;bak UTILS.zsh
+: 1790929575:0;ll
+: 1790929582:0;rm STTY_TRAP.zsh
+: 1790929583:0;ll
+: 1790929593:0;rm STTY_TRAP.zsh.bak
+: 1790929596:0;ull
+: 1790929602:0;rm STTY_TRAP.zsh
+: 1790929620:0;cl LIBS
+: 1790929627:0;repo
+: 1790929693:0;stty -a
+: 1790929725:0;vi LIB_INIT.zsh
+: 1790929743:0;repo
+: 1790929778:0;repo
+: 1790929912:0;ull
+: 1790929920:0;grep stty
+: 1790929928:0;g stty
+: 1790929943:0;vi LIB_INIT.zsh
+: 1790929961:0;g stty
+: 1790929985:0;repo
+: 1790929999:0;cl LIBS
+: 1790930013:0;repo
+: 1790930255:0;yts
+: 1790930276:0;g
+: 1790930278:0;b
+: 1790930286:0;f get_keys
+: 1790930289:0;f get_key
+: 1790930302:0;f get_
+: 1790930311:0;f get
+: 1790930319:0;g get_keys
+: 1790930323:0;g get_
+: 1790930342:0;g get_k
+: 1790930367:0;ull
+: 1790930371:0;g get_k
+: 1790930383:0;vi LIST.zsh
+: 1790930459:0;vi SELECT.zsh
+: 1790930477:0;yts
+: 1790930501:0;vi SELECT.zsh
+: 1790930570:0;yts
+: 1790930586:0;stty -a
+: 1790930602:0;vi LIST
+: 1790930605:0;vi LIST.zsh
+: 1790930653:0;vi MSG.zsh
+: 1790930748:0;yts
+: 1790930754:0;k
+: 1790930757:0;yts
+: 1790930769:0;ll
+: 1790930774:0;cl LIBS
+: 1790930793:0;vi LIB_INIT.zsh
+: 1790930804:0;bak -r LIB_INIT.zsh
+: 1790948209:0;yts
+: 1790949809:0;b
+: 1790949814:0;g sttt
+: 1790949820:0;g stty
+: 1790949849:0;ull
+: 1790949851:0;g stty
+: 1790949873:0;yts
+: 1790954191:0;Tw
+: 1790954192:0;lsd
+: 1790954213:0;ll
+: 1790954228:0;lsd
+: 1790954231:0;ll
+: 1790954699:0;yts
+: 1790954949:0;	yt 'https://www.youtube.com/watch?v=y1PhHxyxPxM'
+: 1790963393:0;math '84/3'
+: 1790964993:0;ll
+: 1790965002:0;lsd
+: 1790965005:0;ll
+: 1790965007:0;yts
+: 1790968146:0;yts
+: 1791011934:0;ll
+: 1791011945:0;lsd
+: 1791011956:0;ll
+: 1791011981:0;lsd
+: 1791011987:0;ll
+: 1791012108:0;lsd
+: 1791012117:0;ll
+: 1791012121:0;yts
+: 1791012485:0;cl yts
+: 1791012490:0;vi yt
+: 1791013341:0;cl yts
+: 1791013368:0;yt 'https://www.youtube.com/watch?v=iWIVjKtw9MM'
+: 1791013398:0;bak -r yt
+: 1791013401:0;ll
+: 1791013409:0;g cookies
+: 1791013418:0;g impers
+: 1791013430:0;vi yts
+: 1791013553:0;bak -r
+: 1791013562:0;cl yts
+: 1791013769:0;yt 'https://www.youtube.com/watch?v=7Qdm4EiItsM'
+: 1791013805:0;.ls yts
+: 1791013806:0;ll
+: 1791013816:0;vi yt.dbg.log
+: 1791013883:0;vi yt.log.a6VM5O
+: 1791013917:0;rm yt.log.a6VM5O
+: 1791013918:0;ll
+: 1791013937:0;vi yts.js
+: 1791014242:0;backup
+: 1791014465:0;ll
+: 1791014469:0;Tw
+: 1791014469:0;ll
+: 1791018543:0;ll
+: 1791018557:0;lsd
+: 1791018573:0;ll
+: 1791020398:0;lsd
+: 1791020425:0;l
+: 1791020428:0;repo
+: 1791020459:0;cl LIBS
+: 1791020786:0;bak LIST.zsh
+: 1791020793:0;bak MSG.zsh
+: 1791020799:0;bak SELECT.zsh
+: 1791020803:0;cl LIBS
+: 1791020807:0;repo
+: 1791020834:0;ll
+: 1791020868:0;cl bak
+: 1791020870:0;vi bak
+: 1791021120:0;bak
+: 1791021133:0;cl LIBS
+: 1791021167:0;bak -r ANSI.zsh PATH.zsh WIN.zsh
+: 1791021209:0;,
+: 1791021212:0;vi bak
+: 1791021238:0;ll
+: 1791021245:0;hist
+: 1791021279:0;vi bak.bak
+: 1791021296:0;bak -r bak
+: 1791021301:0;,
+: 1791021306:0;bak -r ANSI.zsh PATH.zsh WIN.zsh
+: 1791021460:0;bak -r ANSI.zsh PATH.zsh WIN.zsh
+: 1791021502:0;cl bak
+: 1791021513:0;bak -P
+: 1791021523:0;vi bak.bak
+: 1791021535:0;bak -r
+: 1791034336:0;Tw
+: 1791034337:0;ll
+: 1791038158:0;lsd
+: 1791038162:0;ll
+: 1791044657:0;yts
+: 1791044697:0;yt 'https://rumble.com/v7gbz5m-russia-hits-bridges-embassies-plan-exit-france-on-fire-macron-silent.html?e9s=src_v1_mfp'
+: 1791044776:0;yts
+: 1791052869:0;ll
+: 1791053106:0;yts
+: 1791053197:0;yt 'https://www.youtube.com/watch?v=icxWtNOZr74'
+: 1791053306:0;fsub -yp'daniel davis' "Diplomacy IS Now A Crime In Britian Ian Proud.mp4"
+: 1791053308:0;ll
+: 1791053366:0;ll
+: 1791074672:0;lsd
+: 1791074685:0;ll
+: 1791074710:0;lsd
+: 1791074738:0;lsd
+: 1791080551:0;ll
+: 1791105339:0;lsd
+: 1791105348:0;ll
+: 1791105600:0;yts
+: 1791105811:0;yts
+: 1791105991:0;ll /tmp/177*
+: 1791106034:0;cat /tmp/1779758.yts_debug.out
+: 1791106152:0;cat hist.msg.0XeKkS
+: 1791106201:0;b
+: 1791106208:0;g 'hist.msg'
+: 1791106215:0;ull
+: 1791106218:0;g 'hist.msg'
+: 1791106225:0;,
+: 1791106252:0;g 'hist'
+: 1791106318:0;g 'history'
+: 1791106391:0;g '/tmp'
+: 1791106466:0;ull
+: 1791106468:0;g '/tmp'
+: 1791106537:0;,
+: 1791106549:0;ll
+: 1791106598:0;cl yts
+: 1791106611:0;bak -P yts.js
+: 1791106627:0;bak yts.js
+: 1791106631:0;cl yts
+: 1791106742:0;b restore
+: 1791106747:0;g restore
+: 1791106770:0;g position
+: 1791106775:0;g pos
+: 1791106793:0;g save
+: 1791106797:0;ull
+: 1791106799:0;g save
+: 1791106824:0;g -n save
+: 1791107208:0;cl yts
+: 1791107420:0;yts -DDD
+: 1791109154:0;yts -DD
+: 1791109327:0;yts -DD
+: 1791109412:0;clear
+: 1791109414:0;ll
+: 1791109429:0;vi 1791107433_yts_rumble.dbg
+: 1791109447:0;rm 1791107433_yts_rumble.dbg
+: 1791109461:0;yts -DD
+: 1791109609:0;cl yts
+: 1791109613:0;vi yts
+: 1791109690:0;yts -DD
+: 1791109879:0;yts -DD
+: 1791110041:0;yts -DD
+: 1791110132:0;yts -DD
+: 1791110227:0;yts -DD
+: 1791110539:0;yts -DD
+: 1791110869:0;todo
+: 1791110884:0;fut -H
+: 1791110912:0;fut
+: 1791110928:0;fut
+: 1791110938:0;fut lscolors
+: 1791110984:0;yts -DD
+: 1791111055:0;Tw
+: 1791111056:0;lsd
+: 1791111062:0;ll
+: 1791111507:0;g dbg
+: 1791111563:0;g -I dbg
+: 1791111629:0;ull
+: 1791111638:0;debug_init
+: 1791111642:0;g debug_init
+: 1791111756:0;,
+: 1791111762:0;yts -dd
+: 1791111769:0;yts -DD
+: 1791113162:0;lsd
+: 1791113168:0;ll
+: 1791115219:0;;sd
+: 1791115220:0;lsd
+: 1791115223:0;ll
+: 1791115225:0;yts
+: 1791119152:0;lsd
+: 1791119155:0;ll
+: 1791120514:0;e2s 'pinenuts'
+: 1791120754:0;lssd
+: 1791120755:0;lsld
+: 1791120756:0;lsd
+: 1791120761:0;ll
+: 1791125670:0;lsd
+: 1791125675:0;ll
+: 1791126312:0;yts -DD
+: 1791126412:0;ll
+: 1791126422:0;ll
+: 1791126489:0;yts
+: 1791126556:0;yt 'https://www.youtube.com/watch?v=As-RINydLxI'
+: 1791126573:0;Tw
+: 1791126574:0;ll
+: 1791126577:0;lsd
+: 1791126579:0;ll
+: 1791130918:0;lsd
+: 1791130922:0;ll
+: 1791130924:0;yts
+: 1791130974:0;yt 'https://www.youtube.com/watch?v=6ZbkdY7q-6o'
+: 1791131156:0;yt 'https://www.youtube.com/watch?v=Tp3Zlakx5SM'
+: 1791131572:0;ll
+: 1791136574:0;yts
+: 1791137289:0;installed equal
+: 1791137295:0;apps equal
+: 1791137371:0;apps easy
+: 1791137404:0;easyeffects
+: 1791137631:0;aux easy
+: 1791137635:0;aux 
+: 1791137688:0;apps easyeffects
+: 1791137778:0;reinstall easyeffects
+: 1791138213:0;uninstall easyeffects
+: 1791138229:0;purge easyeffects
+: 1791138324:0;install flatpak
+: 1791138345:0;flatpak install easyeffects
+: 1791138381:0;uninstall flatpak
+: 1791138390:0;purge flatpak
+: 1791138405:0;sudo apt install easyeffects\
+
+: 1791138435:0;easyeffects
+: 1791146573:0;lsd
+: 1791146584:0;yts
+: 1791146636:0;yt 'https://rumble.com/v7gdg3q-sunday-wire-ep-615-netanyahus-false-flag-frenzy-trump-departs-from-reality.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1791146788:0;yts
+: 1791147045:0;aux ffmpeg
+: 1791147049:0;ll
+: 1791147052:0;Tw
+: 1791147054:0;ll
+: 1791147078:0;yt 'https://rumble.com/v7gdg3q-sunday-wire-ep-615-netanyahus-false-flag-frenzy-trump-departs-from-reality.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1791151282:0;ll
+: 1791151836:0;lsd
+: 1791151840:0;ll
+: 1791152167:0;yt 'https://21stcenturywire.com/2026/10/04/sunday-screening-the-trap-part-1-2-2026/'
+: 1791152200:0;yt 'https://www.aljazeera360.com/video/1017661?t=0'
+: 1791186248:0;clear
+: 1791186250:0;chkupd
+: 1791186358:0;chkupd -H
+: 1791186384:0;do-release-upgrade -d
+: 1791186573:0;ll
+: 1791186591:0;sut info
+: 1791186742:0;yts
+: 1791188999:0;yt 'https://rumble.com/v7gdm5i-zach-bryan-reps-free-palestine-at-gillette-tuckers-white-grievance-pivot-br.html?e9s=src_v1_mfp'
+: 1791189013:0;yt 'https://rumble.com/v7gdm5i-zach-bryan-reps-free-palestine-at-gillette-tuckers-white-grievance-pivot-br.html?e9s=src_v1_mfp'
+: 1791189058:0;ll
+: 1791189097:0;rm "Due_Dissidence - *"
+: 1791189115:0;rm "Due_Dissidence*"
+: 1791189124:0;rm "/tmp/Due_Dissidence*"
+: 1791189133:0;ll "/tmp/Due_Dissidence*"
+: 1791189141:0;/bin/rm "/tmp/Due_Dissidence*"
+: 1791189156:0;ll
+: 1791191553:0;ll
+: 1791191593:0;lsd
+: 1791191599:0;ll
+: 1791191655:0;yts
+: 1791191829:0;yts
+: 1791191859:0;clear
+: 1791191869:0;rb -r
+: 1791191958:0;chkupd
+: 1791191991:0;Tw
+: 1791191992:0;ll
+: 1791191995:0;yts
+: 1791192004:0;yts
+: 1791192028:0;ll
+: 1791192032:0;yt 'https://www.youtube.com/watch?v=GxpejV5y3vg'
+: 1791205315:0;clear
+: 1791205729:0;yts
+: 1791206423:0;yts
+: 1791216577:0;yts
+: 1791216692:0;yt -p'Judging Freedom' 'https://www.youtube.com/watch?v=GiTHXDqOHFk'
+: 1791216801:0;ll
+: 1791216811:0;lsd
+: 1791216915:0;ll
+: 1791216934:0;ll
+: 1791229436:0;lsd
+: 1791230197:0;ll
+: 1791239231:0;Tm
+: 1791239235:0;Tv
+: 1791239237:0;lsd
+: 1791239240:0;ll
+: 1791239243:0;Tw
+: 1791239244:0;ll
+: 1791239246:0;lsd
+: 1791239249:0;ll
+: 1791239257:0;fsub
+: 1791239273:0;fsub -C
+: 1791239303:0;fsub -s
+: 1791239328:0;fsub '- ' '-'
+: 1791239341:0;fsub -- '- ' '-'
+: 1791239347:0;ll
+: 1791271109:0;yts
+: 1791272926:0;cl LIBS
+: 1791272939:0;bak DBG.zsh
+: 1791272954:0;cl LIBS
+: 1791272974:0;bak LIB_INIT.zsh
+: 1791272984:0;cl LIBS
+: 1791272993:0;bak SELECT.zsh
+: 1791273003:0;clear
+: 1791273016:0;backup
+: 1791274775:0;repo
+: 1791274802:0;.ls yts
+: 1791274811:0;rm yt.log*
+: 1791274815:0;repo
+: 1791274845:0;clear
+: 1791292206:0;Tw
+: 1791292207:0;ll
+: 1791293398:0;yts
+: 1791293838:0;cl
+: 1791293848:0;C
+: 1791293850:0;c
+: 1791293864:0;ll
+: 1791293869:0;ll
+: 1791293872:0;vi ts
+: 1791293890:0;ll
+: 1791293895:0;vi ts.py
+: 1791294377:0;ll
+: 1791294394:0;vi ts.py
+: 1791294689:0;python ts.py
+: 1791294736:0;vi ts.py
+: 1791294742:0;python ts.py
+: 1791294771:0;flog 
+: 1791294805:0;ll
+: 1791294817:0;cl
+: 1791294823:0;,
+: 1791294845:0;ll
+: 1791294979:0;vi ts.py
+: 1791294995:0;me ts.py
+: 1791294998:0;./ts.py
+: 1791295216:0;vi ts.py
+: 1791295226:0;me ts.pyt
+: 1791295228:0;me ts.py
+: 1791295232:0;./ts.py
+: 1791295244:0;ll
+: 1791295256:0;./ts.py --help
+: 1791295274:0;vi ts.py
+: 1791295287:0;./ts.py -h
+: 1791295346:0;vi ts.py
+: 1791295360:0;./ts.py -h
+: 1791295366:0;./ts.py 
+: 1791295533:0;vi ts.py
+: 1791295540:0;./ts.py 
+: 1791295551:0;./ts.py  -h
+: 1791295560:0;vi ts.py
+: 1791295664:0;vi ts.py
+: 1791295672:0;./ts.py  
+: 1791295692:0;./ts.py  -h
+: 1791295749:0;ll
+: 1791295816:0;./ts.py 'the godfather'
+: 1791295835:0;./ts.py "test search"
+: 1791295896:0;vi ts.py
+: 1791295912:0;./ts.py "test search"
+: 1791295941:0;vi ts.py
+: 1791296001:0;me ./ts.py
+: 1791296005:0;./ts.py
+: 1791296039:0;ll
+: 1791296074:0;l.
+: 1791296076:0;ll
+: 1791296102:0;vi ./ts.py
+: 1791296124:0;vi ~/.ts/debug.log
+: 1791296153:0;.ls
+: 1791296176:0;md ts
+: 1791296178:0;.ls ts
+: 1791296224:0;,
+: 1791296230:0;c
+: 1791296248:0;ll
+: 1791296252:0;vi ts.py
+: 1791296280:0;./ts.py "test search"
+: 1791296286:0;./ts.py
+: 1791296295:0;ll
+: 1791296310:0;cat ~/.local/share/ts/
+: 1791296317:0;ll
+: 1791296321:0;h
+: 1791296346:0;ll
+: 1791296352:0;./ts.py
+: 1791296397:0;vi ts.py
+: 1791296412:0;d
+: 1791296413:0;lsd
+: 1791296433:0;ll
+: 1791296436:0;me ts.py
+: 1791296441:0;ts.py
+: 1791296491:0;me ts.py
+: 1791296498:0;./ts.py
+: 1791296513:0;vi ts.py
+: 1791296526:0;vi ts.py
+: 1791296545:0;d
+: 1791296554:0;rm ts.py
+: 1791296560:0;rm gemini-code-1791296533171.py
+: 1791296561:0;ll
+: 1791296571:0;ll
+: 1791296574:0;vi gemini-code-1791296565308.py
+: 1791296603:0;me ts.py
+: 1791296611:0;ts.py
+: 1791296644:0;cat ~/.local/share/ts/debug.log
+: 1791296656:0;Cat ~/.local/share/ts/debug.log
+: 1791296764:0;vi ~/Downloads/gemini-code-1791296742762.py
+: 1791296892:0;vi ~/Downloads/gemini-code-1791296742762.py
+: 1791297024:0;vi -e patchit
+: 1791297038:0;patchit
+: 1791297116:0;ll
+: 1791297162:0;vi ts.py
+: 1791297174:0;vi ts.py
+: 1791297209:0;vi ts.py
+: 1791297219:0;./ts.py
+: 1791301937:0;vi patchit
+: 1791301964:0;patchit
+: 1791302095:0;./ts.py
+: 1791302577:0;vi patchit
+: 1791302589:0;patchit
+: 1791302597:0;./ts.py
+: 1791302629:0;ll
+: 1791302648:0;vi ~/.local/share/ts/debug.log
+: 1791302767:0;vi patchit
+: 1791302775:0;patchit
+: 1791302780:0;./ts.py
+: 1791302839:0;vi ~/.local/share/ts/debug.log
+: 1791302890:0;vi ts.py
+: 1791302936:0;vi ts.py
+: 1791302979:0;./ts.py
+: 1791303362:0;vi patchit
+: 1791303369:0;patchit
+: 1791303379:0;./ts.py 
+: 1791303406:0;vi patchit
+: 1791303416:0;patchit
+: 1791303419:0;./ts.py 
+: 1791303442:0;vi patchit
+: 1791303449:0;patchit
+: 1791303452:0;./ts.py 
+: 1791303485:0;vi patchit
+: 1791303491:0;patchit
+: 1791303495:0;./ts.py 
+: 1791303631:0;./venv/bin/pip install cloudscraper
+: 1791303637:0;ll
+: 1791303652:0;pip install cloudscraper --break-system-packages
+: 1791303658:0;./ts.py 
+: 1791303689:0;Cat ~/.local/share/ts/debug.log
+: 1791303754:0;2026-10-06 18:09:39,719 [DEBUG] --- Logging Initialized Successfully ---\
+2026-10-06 18:10:01,123 [DEBUG] [Eztv] Requesting URL: https://eztv.re/search/fugitive\
+2026-10-06 18:10:01,340 [DEBUG] [Eztv] Response status: 403, Length: 5686\
+2026-10-06 18:10:01,343 [DEBUG] [Eztv] Found 0 matching tds.\
+2026-10-06 18:10:01,343 [DEBUG] [Eztv] No matching titles found.\
+2026-10-06 18:20:59,181 [DEBUG] --- Logging Initialized Successfully ---\
+2026-10-06 18:21:15,448 [ERROR] [EZTV] Request failed: name 'scraper' is not defined\
+
+: 1791303759:0;vi patchit
+: 1791303766:0;patchit
+: 1791303773:0;./ts.py 
+: 1791303799:0;Cat ~/.local/share/ts/debug.log
+: 1791304034:0;chkupd
+: 1791304843:0;c
+: 1791304905:0;ll
+: 1791304915:0;vi ts.py
+: 1791305124:0;ts.py
+: 1791305141:0;ll
+: 1791305376:0;Tw
+: 1791305381:0;yt 'https://www.youtube.com/watch?v=oSLBJvwi-5g'
+: 1791305392:0;ll
+: 1791310569:0;yts
+: 1791310873:0;yts
+: 1791310932:0;yt 'https://www.youtube.com/watch?v=fFbQWpEf4Eg'
+: 1791310952:0;Tw
+: 1791310977:0;fsub -y -p'daniel davis' 'Iran Diplomacy Flatlines - DOES War With Iran Move To Hormuz.mp4'
+: 1791310979:0;ll
+: 1791311010:0;ll
+: 1791311021:0;ll -t
+: 1791311140:0;lsd
+: 1791311158:0;ll
+: 1791311160:0;ll -t
+: 1791311229:0;ll
+: 1791311244:0;ll
+: 1791316843:0;d
+: 1791316845:0;o
+: 1791317092:0;,
+: 1791317093:0;lsd
+: 1791317097:0;ll
+: 1791317102:0;lsd
+: 1791317104:0;ll
+: 1791317131:0;vut info
+: 1791317180:0;yts
+: 1791317229:0;ll
+: 1791317256:0;yt -p'Judging Freedom' 'https://www.youtube.com/watch?v=AuSfg7-R3RM'
+: 1791317279:0;yt -p'Judging Freedom' 'https://www.youtube.com/watch?v=rttlF8rgUQI'
+: 1791317299:0;ll
+: 1791319109:0;las
+: 1791319110:0;lsd
+: 1791321904:0;lsd
+: 1791321918:0;ll
+: 1791322329:0;ts.py
+: 1791322431:0;ts.py
+: 1791322543:0;ts.py
+: 1791323043:0;Tv
+: 1791323044:0;ll
+: 1791323078:0;vut info
+: 1791323106:0;head "The Taste Of Tea 2004.sfv"
+: 1791323135:0;head -100 "The Taste Of Tea 2004.sfv"
+: 1791323156:0;ll
+: 1791323160:0;Tw
+: 1791323161:0;ll
+: 1791323218:0;TM
+: 1791323220:0;Tm
+: 1791323224:0;TM
+: 1791323225:0;ll
+: 1791323228:0;Tm
+: 1791323229:0;ll
+: 1791323232:0;Tw
+: 1791323233:0;ll
+: 1791324171:0;lsd
+: 1791324179:0;ll
+: 1791324302:0;recipe leeks
+: 1791324522:0;e2s weapon
+: 1791324537:0;clear
+: 1791325806:0;lsd
+: 1791325810:0;ll
+: 1791327412:0;lsd
+: 1791327425:0;ll
+: 1791327479:0;cl
+: 1791327481:0;ll
+: 1791327482:0;l
+: 1791327493:0;cl ru_tracker
+: 1791327496:0;l
+: 1791327497:0;l.
+: 1791327502:0;cat .prod_target
+: 1791327517:0;..
+: 1791327522:0;md ts
+: 1791327560:0;,
+: 1791327590:0;l.
+: 1791327595:0;vi .prod_target
+: 1791327670:0;ll
+: 1791327676:0;vi pyts
+: 1791327687:0;./pyts
+: 1791327698:0;./ts.py
+: 1791327717:0;cl ru_tracker
+: 1791327720:0;vi .prod_target
+: 1791327723:0;,
+: 1791327743:0;cl ts
+: 1791327756:0;bak -r ts.py
+: 1791327765:0;ll
+: 1791327773:0;,
+: 1791327777:0;cl ru_tracker
+: 1791327782:0;cat .prod_target
+: 1791327790:0;,
+: 1791327791:0;ll
+: 1791327797:0;l.
+: 1791327800:0;,
+: 1791327803:0;l.
+: 1791327806:0;,
+: 1791327808:0;ll
+: 1791327810:0;l.
+: 1791327813:0;ll
+: 1791327834:0;bak -D -r ts.py
+: 1791327895:0;bak -r ts.py
+: 1791327940:0;vi bak
+: 1791328253:0;cl ts
+: 1791328261:0;bak -r ts.py
+: 1791328297:0;vi .prod_target
+: 1791328306:0;bak -r ts.py
+: 1791328359:0;bak -r 
+: 1791328406:0;vi .prod_target
+: 1791328505:0;bak -r 
+: 1791329077:0;bak -r 
+: 1791329142:0;bak -r ts.py
+: 1791329169:0;bak -r
+: 1791329264:0;bak -r ts.py
+: 1791329282:0;bak
+: 1791329312:0;ll
+: 1791329351:0;l.
+: 1791329566:0;bak ts.py
+: 1791329665:0;bak ts.py
+: 1791330016:0;bak ts.py
+: 1791330043:0;cl yts
+: 1791330050:0;bak -P
+: 1791330061:0;cl bak
+: 1791330069:0;ll
+: 1791330110:0;./bak -r
+: 1791330114:0;ll
+: 1791330117:0;me bak
+: 1791330119:0;./bak -r
+: 1791330127:0;bak
+: 1791330141:0;Tw
+: 1791330142:0;lsd
+: 1791330150:0;ll
+: 1791330211:0;cl bak
+: 1791330214:0;vi bak
+: 1791330270:0;cl ru_tracker
+: 1791330273:0;bak
+: 1791330285:0;ll
+: 1791330290:0;bak
+: 1791330323:0;vi bak
+: 1791330331:0;,
+: 1791330337:0;vi bak
+: 1791330704:0;./bak
+: 1791330709:0;vi bak
+: 1791330784:0;ll
+: 1791330804:0;gitlog bak
+: 1791330829:0;ll
+: 1791330847:0;./bak
+: 1791330851:0;me bak
+: 1791330853:0;./bak
+: 1791330864:0;bak -r
+: 1791330868:0;vi bak
+: 1791331543:0;Tw
+: 1791331544:0;lsd
+: 1791331550:0;ll
+: 1791331597:0;cl ts
+: 1791331606:0;cl yts
+: 1791331616:0;bak -P yts
+: 1791331627:0;bak
+: 1791331629:0;ll
+: 1791357492:0;cl bak
+: 1791357932:0;fut findexe ts.py
+: 1791358285:0;cl ts
+: 1791358287:0;ll
+: 1791359140:0;cl ts
+: 1791359183:0;chkupd
+: 1791359255:0;ll
+: 1791359306:0;vi ubuntu.sources
+: 1791359346:0;g multiverse
+: 1791359383:0;chkupd
+: 1791359430:0;chkupd
+: 1791359501:0;chkupd
+: 1791359589:0;chkupd
+: 1791360149:0;,
+: 1791360152:0;cl ts
+: 1791360252:0;cl ts
+: 1791360273:0;cl ts
+: 1791360276:0;ll
+: 1791360339:0;cl ts
+: 1791360348:0;type cl
+: 1791360374:0;/etc/zsh/system_wide/functions/cl ts
+: 1791360689:0;cl
+: 1791360700:0;cl cl
+: 1791360706:0;bak cl
+: 1791360710:0;ll
+: 1791360729:0;rb -l
+: 1791360756:0;cl ts
+: 1791360778:0;cat .prod_target
+: 1791362368:0;cl yts
+: 1791362386:0;cl yts
+: 1791362390:0;cl ts
+: 1791362395:0;ts bak
+: 1791362396:0;cl bak
+: 1791362407:0;l.
+: 1791362410:0;cl bak
+: 1791362422:0;cl yts
+: 1791362425:0;cl ts
+: 1791362428:0;cl bak
+: 1791362433:0;c bak
+: 1791362436:0;cl bak
+: 1791362738:0;cl cl
+: 1791362743:0;bak cl
+: 1791362751:0;cl ts
+: 1791362754:0;cl bak
+: 1791362757:0;cl bak
+: 1791362774:0;cl cl
+: 1791362776:0;vi cl
+: 1791363006:0;bak -r
+: 1791363017:0;cl bak
+: 1791363021:0;cl ts
+: 1791363038:0;c ts
+: 1791363044:0;cl ts
+: 1791363259:0;cl cl
+: 1791363281:0;cl cl
+: 1791363380:0;vi cl
+: 1791363518:0;cl cl
+: 1791363522:0;cl cl
+: 1791363527:0;bak -r cl
+: 1791363530:0;cl cl
+: 1791363537:0;cl ts
+: 1791363689:0;cl cl
+: 1791363692:0;vi cl
+: 1791364166:0;bak -r
+: 1791364228:0;cl LIBS
+: 1791364245:0;,
+: 1791364249:0;vi cl
+: 1791364261:0;bak -r
+: 1791364263:0;,
+: 1791364266:0;cl LIBS
+: 1791364288:0;cl LIBS
+: 1791364293:0;bak UTILS.zsh
+: 1791364295:0;ll
+: 1791364597:0;cl cl
+: 1791364605:0;vi cl
+: 1791364678:0;cl 
+: 1791364681:0;,
+: 1791364684:0;cl cl
+: 1791364689:0;bak -r
+: 1791364710:0;vi cl
+: 1791364803:0;vi cl
+: 1791364833:0;cl
+: 1791364849:0;,
+: 1791364853:0;cl cl
+: 1791364857:0;bak -r
+: 1791364876:0;cl cl
+: 1791364918:0;vi cl
+: 1791364994:0;ci cl
+: 1791364998:0;vi cl
+: 1791365016:0;cl bak -r
+: 1791365036:0;cl cl
+: 1791365063:0;bak -r
+: 1791365114:0;cl cl
+: 1791365142:0;vi logit.log
+: 1791365176:0;cl cl
+: 1791365183:0;b
+: 1791365188:0;g global
+: 1791365218:0;zopts warn
+: 1791365230:0;zopts 
+: 1791365250:0;zopts -H
+: 1791365261:0;zopts warn
+: 1791365278:0;b
+: 1791365292:0;vi zopts
+: 1791365550:0;zopts warn
+: 1791365572:0;vi zopts
+: 1791365659:0;zopts warn
+: 1791365666:0;vi zopts
+: 1791365742:0;zopts warn
+: 1791365751:0;vi zopts
+: 1791365792:0;zopts warn
+: 1791365824:0;vi zopts
+: 1791365898:0;zopts warn
+: 1791365908:0;vi zopts
+: 1791365985:0;zopts warn
+: 1791365988:0;vi zopts
+: 1791366023:0;zopts warn
+: 1791366033:0;zopts warnglobal
+: 1791366041:0;vi zopts
+: 1791366058:0;zopts warncreateglobal
+: 1791366075:0;vi zopts
+: 1791366185:0;zopts warn
+: 1791366192:0;vi zopts
+: 1791366250:0;zopts warn
+: 1791366262:0;vi zopts
+: 1791366296:0;zopts warn
+: 1791366306:0;vi zopts
+: 1791366380:0;zopts warn
+: 1791366400:0;vi zopts
+: 1791366419:0;zopts warn
+: 1791366432:0;vi zopts
+: 1791366610:0;vi lsfuncs
+: 1791366654:0;b msglist
+: 1791366658:0;g msglist
+: 1791366665:0;g msg_list
+: 1791366727:0;vi gitlog
+: 1791366913:0;zopts warn
+: 1791366924:0;vi zopts
+: 1791366937:0;zopts warn
+: 1791366953:0;vi zopts
+: 1791367022:0;zopts warn
+: 1791367041:0;vi zopts
+: 1791367086:0;zopts warn
+: 1791367095:0;vi zopts
+: 1791367137:0;zopts warn
+: 1791367160:0;vi zopts
+: 1791367196:0;zopts warn
+: 1791367207:0;vi zopts
+: 1791367217:0;zopts warn
+: 1791367238:0;vi zopts
+: 1791367255:0;zopts warn
+: 1791367277:0;vi zopts
+: 1791367306:0;zopts warn
+: 1791367315:0;vi zopts
+: 1791367328:0;zopts warn
+: 1791367499:0;vi zopts
+: 1791367514:0;zopts warn
+: 1791367535:0;zopts global
+: 1791367603:0;g warncreate
+: 1791367610:0;ull
+: 1791367611:0;g warncreate
+: 1791367618:0;vi LIST.zsh
+: 1791367650:0;cl cl
+: 1791367652:0;vi cl
+: 1791367675:0;type logit
+: 1791367682:0;vi cl
+: 1791367795:0;./cl
+: 1791367805:0;vi cl
+: 1791367842:0;./cl
+: 1791367870:0;vi cl
+: 1791367889:0;./cl
+: 1791367927:0;ll
+: 1791367935:0;vi cl
+: 1791367939:0;vi cl
+: 1791367960:0;./cl
+: 1791368001:0;vi cl
+: 1791368010:0;./cl
+: 1791368030:0;vi /tmp/cl
+: 1791368035:0;,
+: 1791368039:0;cl cl
+: 1791368041:0;vi cl
+: 1791368164:0;cl cl
+: 1791368179:0;vi cl
+: 1791368196:0;./cl cl
+: 1791368206:0;cat /tmp/cl.log
+: 1791368239:0;vi cl
+: 1791368262:0;./cl cl
+: 1791368265:0;cat /tmp/cl.log
+: 1791368276:0;vi cl
+: 1791368352:0;./cl cl
+: 1791368356:0;./cl cl bl
+: 1791368360:0;vi cl
+: 1791368386:0;./cl cl bl
+: 1791368401:0;vi cl
+: 1791368463:0;cl -H
+: 1791368470:0;vi cl
+: 1791368482:0;./cl cl bl
+: 1791368486:0;vi cl
+: 1791368508:0;./cl cl bl
+: 1791368516:0;vi cl
+: 1791368554:0;./cl cl bl
+: 1791368584:0;vi cl
+: 1791368668:0;./cl cl
+: 1791368671:0;bak -r
+: 1791368677:0;cat /tmp/cl.log
+: 1791368690:0;vi cl
+: 1791368710:0;bak -r
+: 1791368714:0;bak ts
+: 1791368720:0;cl ts
+: 1791368741:0;cl ts
+: 1791368759:0;cl cl
+: 1791368770:0;vi cl
+: 1791368803:0;cl cl
+: 1791368808:0;bak -r
+: 1791368825:0;cl cl
+: 1791368835:0;cl cl
+: 1791368846:0;cat /tmp/cl.log
+: 1791368882:0;cl ru_tracker
+: 1791368900:0;cl cl
+: 1791368904:0;cl ru_tracker
+: 1791368906:0;cl cl
+: 1791368923:0;vi cl
+: 1791369018:0;bak -r
+: 1791369035:0;chkupd
+: 1791369063:0;cl cl
+: 1791369076:0;rb -r
+: 1791369171:0;cl cl
+: 1791369181:0;cat /tmp/cl.log
+: 1791369197:0;cl ts
+: 1791369200:0;cat /tmp/cl.log
+: 1791369210:0;cl cl
+: 1791369215:0;cat /tmp/cl.log
+: 1791369242:0;vi cl
+: 1791369275:0;bak -r
+: 1791369290:0;cl ts
+: 1791369293:0;cl cl
+: 1791369297:0;cat /tmp/cl.log
+: 1791369328:0;vi cl
+: 1791369362:0;bak -r
+: 1791369380:0;cl ts
+: 1791369387:0;cl cl
+: 1791369391:0;cat /tmp/cl.log
+: 1791369524:0;bak -r
+: 1791369542:0;cl cl
+: 1791369547:0;cl ts
+: 1791369552:0;cat /tmp/cl.log
+: 1791369575:0;rm /tmp/cl.log
+: 1791369578:0;cl cl
+: 1791369607:0;bak -r
+: 1791369629:0;cl cl
+: 1791369639:0;cat /tmp/cl.log
+: 1791369673:0;vi cl
+: 1791369764:0;vi cl.bak
+: 1791369825:0;bak -r
+: 1791369846:0;cl cl
+: 1791369860:0;vi cl
+: 1791369916:0;bak -r
+: 1791369926:0;exi
+: 1791369939:0;cl cl
+: 1791369945:0;vi cl
+: 1791369955:0;c
+: 1791369963:0;vi cl
+: 1791369991:0;bak -r
+: 1791370005:0;cl cl
+: 1791370012:0;cat /tmp/cl.log
+: 1791370024:0;cl ts
+: 1791370044:0;cl bak
+: 1791370049:0;vi bak
+: 1791370068:0;cl cl
+: 1791370070:0;vi cl
+: 1791370208:0;bak -r
+: 1791370221:0;cl ts
+: 1791370226:0;cat /tmp/cl.log
+: 1791370276:0;cl cl
+: 1791370280:0;vi cl
+: 1791370308:0;bak -r
+: 1791370316:0;rm /tmp/cl.log
+: 1791370336:0;cl ts
+: 1791370343:0;cat /tmp/cl.log
+: 1791370361:0;cl cl
+: 1791370363:0;vi cl
+: 1791370435:0;bak -r
+: 1791378567:0;Tw
+: 1791378570:0;lsd
+: 1791378575:0;ll
+: 1791378581:0;cl cl
+: 1791378583:0;ll
+: 1791378643:0;cl ru_tracker
+: 1791378652:0;cl ts
+: 1791378659:0;cl cl
+: 1791378662:0;vi cl
+: 1791378723:0;cat /tmp/cl.log
+: 1791378766:0;vi cl
+: 1791378883:0;vi cl
+: 1791379099:0;bak -r
+: 1791379133:0;ll
+: 1791379137:0;cl cl
+: 1791379144:0;cat /tmp/cl.log
+: 1791379173:0;rm /tmp/cl.log
+: 1791379177:0;cl ts
+: 1791379182:0;cat /tmp/cl.log
+: 1791379234:0;ll
+: 1791379243:0;bak
+: 1791379260:0;ll
+: 1791379279:0;cl ru_tracker
+: 1791379302:0;cl ts
+: 1791379305:0;cl cl
+: 1791379313:0;cat /tmp/cl.log
+: 1791379364:0;vi cl
+: 1791379409:0;cl ru_tracker
+: 1791379424:0;,
+: 1791379427:0;vi cl
+: 1791379493:0;bak -r
+: 1791379512:0;cl cl
+: 1791379528:0;vi cl
+: 1791379552:0;bak -r
+: 1791379568:0;cl cl
+: 1791379576:0;cl ru_tracker
+: 1791379595:0;cl cl
+: 1791379599:0;vi cl
+: 1791379664:0;./cl
+: 1791379668:0;ll
+: 1791379671:0;me cl
+: 1791379674:0;./cl
+: 1791379677:0;bak -r
+: 1791379694:0;cl ru_tracker
+: 1791379700:0;cl ts
+: 1791379704:0;cl cl
+: 1791379788:0;cl bak
+: 1791379815:0;cl ru_tracker
+: 1791379868:0;cl cl
+: 1791379870:0;vi cl
+: 1791379913:0;bak -r
+: 1791379935:0;cl cl
+: 1791379950:0;vi cl
+: 1791380026:0;cl cl
+: 1791380034:0;./cl cl
+: 1791380044:0;vi cl
+: 1791380217:0;./cl cl
+: 1791380279:0;./cl cl
+: 1791380290:0;vi cl
+: 1791380351:0;./cl cl
+: 1791380355:0;vi cl
+: 1791380369:0;./cl cl
+: 1791380373:0;vi cl
+: 1791380387:0;./cl cl
+: 1791380444:0;vi cl
+: 1791380476:0;./cl cl
+: 1791380509:0;vi cl
+: 1791380528:0;./cl cl
+: 1791380535:0;vi cl
+: 1791380584:0;./cl cl
+: 1791380601:0;vi cl
+: 1791380693:0;./cl cl
+: 1791380705:0;vi cl
+: 1791380713:0;./cl cl
+: 1791380758:0;vi cl
+: 1791380815:0;bak -r
+: 1791380834:0;cl ru_tracker
+: 1791380849:0;cl cl
+: 1791380853:0;vi cl
+: 1791380909:0;bak -r
+: 1791382390:0;lsd
+: 1791382394:0;Tw
+: 1791382395:0;lsd
+: 1791382400:0;yts
+: 1791383288:0;.ls yts
+: 1791383295:0;vi yt-dlp.conf
+: 1791383397:0;ll
+: 1791383406:0;ll
+: 1791383508:0;vi yt-dlp.conf
+: 1791383768:0;Tw
+: 1791383768:0;ll
+: 1791383937:0;ll
+: 1791401168:0;lsd
+: 1791401174:0;ll
+: 1791401182:0;yts
+: 1791401274:0;yt 'https://www.youtube.com/watch?v=5hK6qFSA890'
+: 1791401305:0;yt 'https://www.youtube.com/watch?v=40v6lm5s3ZQ'
+: 1791402033:0;ll
+: 1791402059:0;fsub -yp'Judging Freedom' "Phil Giraldi - Did The US Really Leave Iraq.mp4"
+: 1791402069:0;fsub -yp'Judging Freedom' "Col. Douglas Macgregor - How DO Washington's Proxy Wars End.mp4"
+: 1791402070:0;ll
+: 1791404679:0;lsd
+: 1791404686:0;ll
+: 1791405795:0;yts
+: 1791414648:0;dict iternerate
+: 1791414667:0;dict itenerate
+: 1791414685:0;spell itenerate
+: 1791414698:0;spell itinerate
+: 1791443754:0;ll
+: 1791443757:0;yts
+: 1791443952:0;ll
+: 1791443961:0;lsd
+: 1791443966:0;ll
+: 1791458976:0;lsd
+: 1791458983:0;ll
+: 1791459019:0;yts
+: 1791459023:0;cl yts
+: 1791459096:0;cl yts
+: 1791459987:0;vi x
+: 1791460064:0;rm x
+: 1791460085:0;function _reload_funcs\
+exit
+: 1791460122:0;functions _reload_funcs
+: 1791460218:0;_reload_funcs
+: 1791460230:0;. .zshrc
+: 1791460268:0;functions cl
+: 1791460287:0;type cl
+: 1791460305:0;cl 
+: 1791460307:0;cl cl
+: 1791460329:0;ci cl
+: 1791460330:0;vi cl
+: 1791460404:0;cl cl
+: 1791460411:0;./cl cl
+: 1791460448:0;vi cl
+: 1791460480:0;./cl cl
+: 1791460490:0;vi cl
+: 1791460513:0;./cl cl
+: 1791460523:0;vi cl
+: 1791460539:0;./cl cl
+: 1791460560:0;bak -r
+: 1791460566:0;cl cl
+: 1791460578:0;vi cl
+: 1791460643:0;cl cl
+: 1791460648:0;bak -r
+: 1791460652:0;cl cl
+: 1791460672:0;vi cl
+: 1791460769:0;cl cl
+: 1791460776:0;bak -r
+: 1791460779:0;cl cl
+: 1791460800:0;vi cl
+: 1791460822:0;cl cl
+: 1791460839:0;bak -r
+: 1791460842:0;cl cl
+: 1791460845:0;cl cl
+: 1791460860:0;vi cl
+: 1791460879:0;cl cl
+: 1791460882:0;bak -r
+: 1791460884:0;cl cl
+: 1791460892:0;vi cl
+: 1791460938:0;cl cl
+: 1791460941:0;bak -r
+: 1791460944:0;cl cl
+: 1791460957:0;cl yts
+: 1791460967:0;cl LIBS
+: 1791461003:0;cl cl
+: 1791461005:0;vi cl
+: 1791461039:0;bak -r
+: 1791461044:0;cl LIBS
+: 1791461062:0;cl cl
+: 1791461064:0;vi cl
+: 1791461079:0;bak -r
+: 1791461084:0;cl LIBS
+: 1791461099:0;,
+: 1791461101:0;vi cl
+: 1791461125:0;bak -r
+: 1791461130:0;cl LIBS
+: 1791461212:0;bak
+: 1791461252:0;ll
+: 1791461257:0;cl ts
+: 1791461265:0;bak
+: 1791461305:0;bak
+: 1791461320:0;bak
+: 1791461351:0;bak
+: 1791461431:0;bak
+: 1791461486:0;bak
+: 1791461556:0;bak
+: 1791461631:0;bak
+: 1791461679:0;bak
+: 1791461746:0;bak
+: 1791461837:0;bak
+: 1791461859:0;bak bak
+: 1791461876:0;cl bak
+: 1791461879:0;bak bak
+: 1791461900:0;bak bak
+: 1791461931:0;vi bak
+: 1791461948:0;bak bak
+: 1791461957:0;bak -r
+: 1791461987:0;backup
+: 1791462077:0;repo
+: 1791462157:0;gitlog .zshrc
+: 1791463898:0;clear
+: 1791463902:0;Tw
+: 1791463903:0;ll
+: 1791463908:0;yt
+: 1791463910:0;yts
+: 1791464005:0;cl yts
+: 1791464009:0;vi yts
+: 1791464035:0;g title
+: 1791464224:0;yts
+: 1791464291:0;vi titles
+: 1791464334:0;ll
+: 1791464338:0;rm x
+: 1791464339:0;ll
+: 1791464650:0;yts
+: 1791464752:0;cl LIBS
+: 1791464762:0;bak UTILS.zsh
+: 1791464767:0;vi UTILS.zsh
+: 1791464869:0;bak -r UTILS.zsh
+: 1791464950:0;ll
+: 1791464957:0;rm titles UTILS.zsh
+: 1791464958:0;ll
+: 1791470833:0;.ls yts
+: 1791470834:0;ll
+: 1791470844:0;vi yt.url.log
+: 1791474088:0;cl yts
+: 1791474094:0;Tw
+: 1791474103:0;lsd
+: 1791474111:0;ll
+: 1791474113:0;yts
+: 1791474214:0;yt 'https://www.youtube.com/watch?v=vxvd7sSH-Aw'
+: 1791474226:0;yts
+: 1791474249:0;yt 'https://www.youtube.com/watch?v=f0RAPIaGRLQ&pp=0gcJCTUMAYcqIYzv'
+: 1791474423:0;yts
+: 1791474543:0;ll
+: 1791474573:0;fsub -yp 'The Duran' "France Protests Spiral Out Of Control As Euro Crisis Looms.mp4" "France Protests Spiral Out Of Control As Euro Crisis Looms.mp4"
+: 1791474574:0;ll
+: 1791474580:0;yts
+: 1791474865:0;yt -p'chris hedges' 'https://rumble.com/v7f0bm0-fighting-big-money-in-politics-w-karishma-manzur-tchr.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1791474892:0;Tw
+: 1791474893:0;ll
+: 1791475374:0;ll
+: 1791482751:0;yts
+: 1791485752:0;lsd
+: 1791485758:0;ll
+: 1791490422:0;yts
+: 1791490662:0;yt 'https://www.youtube.com/watch?v=O7-1OaTiQxg'
+: 1791490774:0;ll
+: 1791491599:0;lsd
+: 1791491606:0;ll
+: 1791491620:0;yts
+: 1791492005:0;ticker
+: 1791492319:0;type notesnook
+: 1791492329:0;o
+: 1791492332:0;O
+: 1791492337:0;ll
+: 1791492341:0;..
+: 1791492344:0;rm notesnook
+: 1791492347:0;s
+: 1791492366:0;uls
+: 1791492427:0;Tw
+: 1791492430:0;ll
+: 1791492435:0;yts
+: 1791492460:0;ll
+: 1791492755:0;lsd
+: 1791492762:0;ll
+: 1791492848:0;lsd
+: 1791492852:0;ll
+: 1791492855:0;Tm
+: 1791492856:0;ll
+: 1791492864:0;TM
+: 1791492870:0;Tw
+: 1791492872:0;ll
+: 1791493064:0;lst
+: 1791493075:0;lsf
+: 1791493089:0;lscpu
+: 1791493117:0;b
+: 1791493137:0;,
+: 1791493139:0;lft
+: 1791493472:0;lft
+: 1791493482:0;vi x
+: 1791493590:0;rm x
+: 1791493641:0;lft
+: 1791493788:0;lft
+: 1791494098:0;lft
+: 1791494168:0;cl LIBS
+: 1791494174:0;bak LIST.zsh
+: 1791494179:0;cl LIBS
+: 1791494249:0;b
+: 1791494251:0;lft
+: 1791494428:0;lsfuncs LIST.zsh
+: 1791494467:0;ull
+: 1791494478:0;g redraw
+: 1791494482:0;b
+: 1791494483:0;g redraw
+: 1791494493:0;g draw
+: 1791494508:0;ull
+: 1791494510:0;g draw
+: 1791494519:0;g buffer
+: 1791494598:0;lsfuncs LIST.zsh
+: 1791494657:0;cl yts
+: 1791494660:0;vi yts
+: 1791494667:0;lsfuncs yts
+: 1791494693:0;lsfuncs UTILS.zsh
+: 1791494754:0;lsfuncs SELECT.zsh
+: 1791494829:0;ull
+: 1791494884:0;lsd
+: 1791494891:0;ll
+: 1791494915:0;gitlog LIST.zsh
+: 1791494955:0;lsfuncs 08334e89\#LIST.zsh.log.out
+: 1791495002:0;lsfuncs 08334e89\#LIST.zsh
+: 1791495031:0;vi 08334e89\#LIST.zsh
+: 1791495279:0;rm 08334e89\#LIST.zsh
+: 1791495281:0;ll
+: 1791495565:0;vi MSG.zsh
+: 1791495966:0;vi BOX.zsh
+: 1791496009:0;g repaint
+: 1791496036:0;g msg_box_clear
+: 1791496062:0;lft
+: 1791496068:0;lft
+: 1791496132:0;lft
+: 1791496264:0;vi EXIT.zsh
+: 1791496288:0;lft -DDDDD
+: 1791496467:0;vi TPUT.zsh
+: 1791496544:0;lft -DDDDD
+: 1791496591:0;vi BOX.zsh
+: 1791496600:0;lft -DDDDD
+: 1791496631:0;vi BOX.zsh
+: 1791496659:0;lft -DDDDD
+: 1791496682:0;vi EXIT.zsh
+: 1791496707:0;lft -DDDDD
+: 1791496742:0;vi EXIT.zsh
+: 1791496751:0;vi BOX.zsh
+: 1791496822:0;lsfuncs /usr/local/bin/lft
+: 1791496839:0;grep -i repain /usr/local/bin/lft
+: 1791496853:0;grep -i msg_box /usr/local/bin/lft
+: 1791496865:0;grep -i msg /usr/local/bin/lft
+: 1791496881:0;vi EXIT.zsh
+: 1791496913:0;vi MSG.zsh
+: 1791496972:0;cl LIBS
+: 1791496978:0;bak MSG.zsh
+: 1791496981:0;todo
+: 1791504723:0;Tw
+: 1791504725:0;lsd
+: 1791504741:0;ll
+: 1791532916:0;yts
+: 1791532997:0;lsd
+: 1791533013:0;ll
+: 1791534029:0;lsd
+: 1791534036:0;ll
+: 1791534556:0;ll
+: 1791535164:0;cl LIBS
+: 1791535177:0;g exr
+: 1791536335:0;vi EXIT.zsh
+: 1791536911:0;cl LIBS
+: 1791536932:0;bak -r EXIT.zsh
+: 1791536940:0;bak -r MSG.zsh
+: 1791536942:0;ll
+: 1791536950:0;lft
+: 1791536959:0;lft -DDD
+: 1791537049:0;vi DBG.zsh
+: 1791537118:0;bak -r DBG.zsh
+: 1791537121:0;lft -DDD
+: 1791537167:0;vi DBG.zsh
+: 1791537216:0;bak -r DBG.zsh
+: 1791537219:0;lft -DDD
+: 1791537285:0;vi DBG.zsh
+: 1791537400:0;bak -r DBG.zsh
+: 1791537404:0;lft -DDD
+: 1791537473:0;vi DBG.zsh
+: 1791537514:0;vi DBG.zsh
+: 1791537592:0;bak -r DBG.zsh
+: 1791537596:0;lft -DDD
+: 1791537885:0;cl LIBS
+: 1791537895:0;vi MSG.zsh
+: 1791537913:0;bak -r MSG.zsh
+: 1791537930:0;vi TPUT.zsh
+: 1791537974:0;vi TPUT.zsh
+: 1791538020:0;bak -r TPUT.zsh
+: 1791538028:0;lft -DDD
+: 1791538083:0;vi LIST.zsh
+: 1791538119:0;lft -DD
+: 1791538176:0;lft -DD
+: 1791538201:0;,
+: 1791538341:0;cl LIBS
+: 1791538346:0;vi DBG.zsh
+: 1791538376:0;lft -DD
+: 1791538401:0;lft -DDD
+: 1791538444:0;cl LIBS
+: 1791538452:0;bak -r DBG.zsh
+: 1791538460:0;lft -DDD
+: 1791538911:0;g exit_request
+: 1791538976:0;vi EXIT.zsh
+: 1791539097:0;bak -r EXIT.zsh
+: 1791539105:0;lft -DDDD
+: 1791539241:0;vi EXIT.zsh
+: 1791539268:0;bak -r EXIT.zsh
+: 1791539276:0;vi MSG.zsh
+: 1791539341:0;lft -DDDD
+: 1791539407:0;cl LIBS
+: 1791539415:0;bak -r EXIT.zsh
+: 1791539420:0;lft -DDDD
+: 1791539454:0;vi MSG.zsh
+: 1791539497:0;lft -DDDD
+: 1791539590:0;cl LIBS
+: 1791539595:0;vi MSG.zsh
+: 1791539619:0;lft -DDDD
+: 1791539631:0;vi MSG.zsh
+: 1791539636:0;cl LIBS
+: 1791539645:0;bak -r MSG.zsh
+: 1791539649:0;lft -DDDD
+: 1791539692:0;vi EXIT.zsh
+: 1791539817:0;bak -r MSG.zsh
+: 1791539820:0;lft -DDDD
+: 1791539887:0;vi EXIT.zsh
+: 1791539918:0;lft -DDDD
+: 1791539935:0;cl LIBS
+: 1791539942:0;bak -r EXIT.zsh
+: 1791539945:0;lft -DDDD
+: 1791539988:0;g getopts
+: 1791539995:0;vi CENTER.zsh
+: 1791540047:0;vi PATH.zsh
+: 1791540067:0;vi SELECT.zsh
+: 1791540083:0;vi STR.zsh
+: 1791540123:0;vi DBG.zsh
+: 1791540240:0;bak -r DBG.zsh
+: 1791540246:0;lft -DDDD
+: 1791540284:0;vi DBG.zsh
+: 1791540361:0;bak -r DBG.zsh
+: 1791540364:0;lft -DDDD
+: 1791540427:0;vi DBG.zsh
+: 1791540445:0;bak -r DBG.zsh
+: 1791540449:0;lft -DDDD
+: 1791540511:0;vi DBG.zsh
+: 1791540523:0;bak -r DBG.zsh
+: 1791540527:0;lft -DDDD
+: 1791540565:0;vi DBG.zsh
+: 1791540603:0;lft -DDDD
+: 1791540610:0;bak -r DBG.zsh
+: 1791540614:0;lft -DDDD
+: 1791540621:0;vi DBG.zsh
+: 1791540641:0;bak -r DBG.zsh
+: 1791540643:0;lft -DDDD
+: 1791540778:0;vi DBG.zsh
+: 1791540946:0;bak -r DBG.zsh
+: 1791540951:0;bak -r STR.zsh
+: 1791540955:0;lft -DDDD
+: 1791541083:0;vi STR.zsh
+: 1791541150:0;bak -r STR.zsh
+: 1791541153:0;lft -DDDD
+: 1791541290:0;vi STR.zsh
+: 1791541307:0;bak -r STR.zsh
+: 1791541386:0;lft
+: 1791541537:0;g pluralize
+: 1791541588:0;vi LIST.zsh
+: 1791541635:0;bak -r LIST.zsh
+: 1791541642:0;g pluralize
+: 1791541655:0;cl LIBS
+: 1791541659:0;b
+: 1791541662:0;g pluralize
+: 1791541672:0;vi ft
+: 1791541676:0;vi lft
+: 1791541703:0;lft -DDD
+: 1791541827:0;lft
+: 1791541858:0;yts
+: 1791550603:0;yts
+: 1791569912:0;Tw
+: 1791569915:0;lsd
+: 1791569942:0;Tw
+: 1791569947:0;lsd
+: 1791569958:0;flog
+: 1791570030:0;lsd
+: 1791570054:0;ll
+: 1791570056:0;yts
+: 1791570654:0;yts
+: 1791570671:0;yts
+: 1791570718:0;yt -p'syriana analysis' 'https://www.youtube.com/watch?v=VSZlWaWR9po'
+: 1791570767:0;yt -p'syriana analysis' 'https://www.youtube.com/watch?v=LtYQBx9G65Y'
+: 1791570865:0;ll
+: 1791570872:0;backup
+: 1791570941:0;ll
+: 1791584182:0;lsd
+: 1791584187:0;ll
+: 1791584958:0;lft
+: 1791584979:0;lft
+: 1791585008:0;math '3*16'
+: 1791585023:0;tput cols
+: 1791585039:0;math '158-(3*16)'
+: 1791585378:0;lft
+: 1791585438:0;lft
+: 1791585441:0;vi x
+: 1791585567:0;lft
+: 1791585607:0;lft
+: 1791585642:0;lft
+: 1791585829:0;lft
+: 1791585902:0;lft
+: 1791585923:0;rm x
+: 1791585948:0;lft
+: 1791585992:0;lft
+: 1791586112:0;b
+: 1791586114:0;lft
+: 1791586122:0;h
+: 1791586124:0;lft
+: 1791586134:0;lft
+: 1791586145:0;Tw
+: 1791586147:0;lft
+: 1791586214:0;tput cols
+: 1791586438:0;flog
+: 1791586489:0;ll
+: 1791586492:0;Tw
+: 1791586493:0;ll
+: 1791586802:0;ll
+: 1791586832:0;ll
+: 1791586843:0;rm term.out
+: 1791587013:0;journalctl --user -u gnome-shell -e
+: 1791587024:0;coredumpctl list terminator
+: 1791587085:0;cat /var/crash/_usr_bin_terminator*
+: 1791587293:0;ll
+: 1791587297:0;Tw
+: 1791587415:0;yts
+: 1791587678:0;yts
+: 1791587779:0;yts
+: 1791587908:0;yts
+: 1791587993:0;yts
+: 1791588089:0;yts
+: 1791588182:0;yts
+: 1791588276:0;yts
+: 1791588309:0;P
+: 1791588313:0;ll
+: 1791588316:0;rm *
+: 1791588474:0;yts
+: 1791588554:0;P
+: 1791588560:0;rm *
+: 1791588607:0;ll
+: 1791588624:0;ll
+: 1791588684:0;yts
+: 1791588720:0;rm *
+: 1791588735:0;ll
+: 1791588859:0;yts
+: 1791589002:0;yts
+: 1791589190:0;yts
+: 1791589369:0;yts
+: 1791589412:0;rm *
+: 1791589583:0;yts
+: 1791589709:0;yts
+: 1791589847:0;o
+: 1791590017:0;yts
+: 1791590142:0;yts
+: 1791590164:0;rn *
+: 1791590166:0;rm *
+: 1791590231:0;yts
+: 1791590405:0;yts
+: 1791590570:0;yts
+: 1791590596:0;rm *
+: 1791590795:0;yts
+: 1791590873:0;yts
+: 1791591053:0;Tw
+: 1791591054:0;lsd
+: 1791591065:0;ll
+: 1791591066:0;yts
+: 1791591305:0;yts
+: 1791591430:0;yts
+: 1791591785:0;yts
+: 1791591836:0;yts
+: 1791591914:0;yts
+: 1791592039:0;yts
+: 1791592225:0;yts
+: 1791592449:0;yts
+: 1791592474:0;ll
+: 1791592493:0;ll
+: 1791592576:0;/bin/vim /usr/local/lib/UTILS.zsh
+: 1791592617:0;Tw
+: 1791592620:0;ll
+: 1791592629:0;yts
+: 1791592668:0;P
+: 1791592672:0;rm *
+: 1791592840:0;yts
+: 1791593015:0;yts
+: 1791593563:0;yts
+: 1791593675:0;yts
+: 1791593799:0;yts
+: 1791593899:0;yts
+: 1791594036:0;yts
+: 1791594138:0;yts
+: 1791594169:0;yts 2>x
+: 1791594183:0;cat x
+: 1791594258:0;yts
+: 1791594326:0;yts
+: 1791594339:0;yts 2>x
+: 1791594454:0;yts
+: 1791594468:0;yts 2>x
+: 1791594525:0;yts
+: 1791594640:0;yts
+: 1791618944:0;Tw
+: 1791618945:0;lsd
+: 1791618954:0;ll
+: 1791619836:0;cl LIBS
+: 1791619843:0;bak UTILS.zsh
+: 1791619849:0;yts
+: 1791619867:0;ll
+: 1791619870:0;cl yts
+: 1791619872:0;ll
+: 1791619899:0;rb -r
+: 1791619977:0;locale
+: 1791620314:0;vi /etc/default/locale
+: 1791620442:0;upd_locate -fu
+: 1791620466:0;locate locale
+: 1791620698:0;locale
+: 1791620717:0;h
+: 1791620720:0;rm x
+: 1791620723:0;ll
+: 1791620728:0;locale
+: 1791620753:0;locale
+: 1791620778:0;vi x
+: 1791620829:0;locate locale >>x
+: 1791620832:0;vi x
+: 1791621181:0;vi .zshrc
+: 1791621207:0;z
+: 1791621213:0;g locale
+: 1791621369:0;grep -rnw '/etc/' -e 'LC_ALL' 2>/dev/null
+: 1791621417:0;vi zshenv
+: 1791621532:0;vi zshenv
+: 1791621547:0;rb -r
+: 1791621622:0;locale
+: 1791621638:0;z
+: 1791621653:0;grep -rnw '/etc/' -e 'LC_ALL' 2>/dev/null
+: 1791621712:0;grep -rnw '/etc/' -e 'LC_ALL' 2>/dev/null >x
+: 1791621722:0;rm x
+: 1791621732:0;h
+: 1791621735:0;rm x
+: 1791621750:0;grep -rnw '/etc/' -e 'LC_ALL' >x 2>/dev/null
+: 1791621751:0;vi x
+: 1791621770:0;grep --color=never -rnw '/etc/' -e 'LC_ALL' >x 2>/dev/null
+: 1791621773:0;vi x
+: 1791621925:0;grep --color=never -rnw '/' -e 'LC_ALL' >x 2>/dev/null
+: 1791622181:0;rm x
+: 1791622282:0;sudo grep -rnw '/etc/systemd/' -e 'LC_ALL' 2>/dev/null
+: 1791622403:0;vi find_lc_all.py
+: 1791622420:0;sudo python3 find_lc_all.py
+: 1791622425:0;ll
+: 1791622485:0;vi find_lc_all.py
+: 1791622498:0;sudo python3 find_lc_all.py
+: 1791622546:0;vi find_lc_all.py
+: 1791622553:0;sudo python3 find_lc_all.py
+: 1791622563:0;sudo python3 find_lc_all.py >x
+: 1791622628:0;vi find_lc_all.py
+: 1791622635:0;sudo python3 find_lc_all.py >x
+: 1791622757:0;vi x
+: 1791622779:0;vi .zshrc
+: 1791622809:0;rb -r
+: 1791622885:0;locale
+: 1791622906:0;locale >x
+: 1791622909:0;lsd
+: 1791622918:0;rm find_lc_all.py
+: 1791622920:0;ll
+: 1791623255:0;locale 
+: 1791623262:0;locale > x
+: 1791623367:0;echo "Test: ñ, ç, Ã�, é, í, ó, ú, ü, €"
+: 1791623383:0;python3 -c "import sys; print(sys.getdefaultencoding(), sys.stdout.encoding)"
+: 1791623441:0;yts
+: 1791623517:0;yts
+: 1791623567:0;yts
+: 1791623613:0;yts
+: 1791624116:0;cl yts
+: 1791624121:0;cl LIBS
+: 1791624133:0;backup
+: 1791624174:0;repo
+: 1791624189:0;.ls yts
+: 1791624197:0;ll
+: 1791624202:0;rm yt.log*
+: 1791624206:0;repo
+: 1791624241:0;h
+: 1791624243:0;rm x
+: 1791624260:0;cl yts
+: 1791624263:0;yts
+: 1791624851:0;ll
+: 1791624866:0;Tw
+: 1791624867:0;lsd
+: 1791624877:0;tun info
+: 1791624882:0;vut info
+: 1791624903:0;lsd
+: 1791624910:0;ll
+: 1791624921:0;lsd
+: 1791624924:0;ll
+: 1791628415:0;lsd
+: 1791628426:0;Tw
+: 1791628429:0;lsd
+: 1791628444:0;ll
+: 1791642319:0;yts
+: 1791642443:0;b
+: 1791642454:0;g title_scrubber
+: 1791642491:0;.ls yts
+: 1791642493:0;ll
+: 1791642502:0;vi yt.log.
+: 1791642506:0;vi yt.log.4WsjrY
+: 1791642529:0;rm yt.log.4WsjrY
+: 1791642531:0;ll
+: 1791642533:0;cl yts
+: 1791642632:0;bak -r
+: 1791642639:0;cl yts
+: 1791642648:0;yts
+: 1791643036:0;cl yts
+: 1791643047:0;g aria
+: 1791643366:0;yts
+: 1791643414:0;.ls yts
+: 1791643415:0;ll
+: 1791643425:0;vi yt.log.0qW07G
+: 1791643493:0;vi yt-dlp.conf
+: 1791643514:0;cl yt
+: 1791643516:0;cl yts
+: 1791643519:0;vi yt
+: 1791643709:0;Tw
+: 1791643710:0;ll
+: 1791643842:0;yts
+: 1791646286:0;lsd
+: 1791646300:0;ll
+: 1791646403:0;lsd
+: 1791646406:0;ll
+: 1791649246:0;lsd
+: 1791649250:0;yts
+: 1791653068:0;ll
+: 1791653498:0;c
+: 1791653513:0;cl ts
+: 1791653517:0;,
+: 1791653531:0;ll
+: 1791653537:0;ll
+: 1791653555:0;make --help
+: 1791653583:0;make -nd
+: 1791653659:0;ll
+: 1791653666:0;cat makefile
+: 1791653734:0;make 
+: 1791653742:0;vi pyts
+: 1791653762:0;make install
+: 1791653847:0;b
+: 1791653853:0;ll
+: 1791653856:0;vi pyts
+: 1791653860:0;ll
+: 1791653864:0;vi pyts
+: 1791653968:0;ll
+: 1791653973:0;,
+: 1791653975:0;,
+: 1791654002:0;p
+: 1791654081:0;p
+: 1791654100:0;p
+: 1791654104:0;c
+: 1791654120:0;p
+: 1791654131:0;ll
+: 1791654141:0;cat snip
+: 1791654148:0;rm snip
+: 1791654149:0;ll
+: 1791654165:0;vi ts.py.rej
+: 1791654173:0;rm ts.py.rej
+: 1791654180:0;cat html.txt
+: 1791654186:0;rm html.txt
+: 1791654187:0;ll
+: 1791654192:0;cat notes
+: 1791654199:0;rm notes
+: 1791654200:0;ll
+: 1791654213:0;rm ts.py.orig
+: 1791654214:0;ll
+: 1791654220:0;rm ts.py.old
+: 1791654221:0;ll
+: 1791654232:0;rm html2bs4.py
+: 1791654233:0;ll
+: 1791654238:0;cat pyvenv.cfg
+: 1791654260:0;ll resources
+: 1791654262:0;ll
+: 1791654355:0;ll
+: 1791654368:0;..
+: 1791654369:0;ll
+: 1791654374:0;ll
+: 1791654378:0;llr
+: 1791654386:0;..
+: 1791654387:0;ll
+: 1791654412:0;Tw
+: 1791654415:0;repo
+: 1791654434:0;.ls yts
+: 1791654443:0;rm yt.log*
+: 1791654446:0;ll
+: 1791654449:0;repo
+: 1791654639:0;repo
+: 1791654707:0;h
+: 1791654710:0;c
+: 1791654723:0;llr
+: 1791654740:0;repo
+: 1791654751:0;Tw
+: 1791654753:0;repo
+: 1791654794:0;repo
+: 1791654840:0;repo
+: 1791654855:0;lsd
+: 1791654861:0;ll
+: 1791664647:0;lsd
+: 1791664666:0;ll
+: 1791664699:0;yts
+: 1791664864:0;ll
+: 1791664868:0;cl yts
+: 1791664873:0;G
+: 1791664910:0;ll
+: 1791664923:0;h
+: 1791664924:0;ll
+: 1791664927:0;b
+: 1791664928:0;ll
+: 1791664930:0;l
+: 1791664960:0;cl
+: 1791672359:0;Tm
+: 1791672360:0;lsd
+: 1791672366:0;ll
+: 1791676047:0;lsd
+: 1791676051:0;ll
+: 1791676073:0;yts
+: 1791676164:0;Tw
+: 1791676165:0;ll
+: 1791676169:0;lsd
+: 1791676177:0;ll
+: 1791677125:0;lsd
+: 1791677128:0;ll
+: 1791705247:0;rb -r
+: 1791705331:0;rb -p
+: 1791705421:0;chkupd
+: 1791705860:0;chkupd
+: 1791706277:0;chkupd
+: 1791706350:0;tput lines
+: 1791706520:0;chkupd
+: 1791706789:0;chkupd
+: 1791706934:0;chkupd
+: 1791707149:0;chkupd
+: 1791707255:0;chkupd
+: 1791707385:0;chkupd
+: 1791707556:0;chkupd
+: 1791707593:0;chkupd
+: 1791707886:0;vi ~/.chkupd.log
+: 1791708199:0;sudo apt-get -s dist-upgrade
+: 1791708276:0;chkupd
+: 1791708304:0;chkupd
+: 1791708384:0;Tw
+: 1791708385:0;lsd
+: 1791708388:0;ll
+: 1791710951:0;yts
+: 1791711175:0;yt 'https://www.youtube.com/watch?v=Y6b0NjykVj0'
+: 1791711747:0;yts
+: 1791712335:0;yt 'katie halper' 'https://www.youtube.com/watch?v=QEqmCTiWDik'
+: 1791712344:0;yt -p'katie halper' 'https://www.youtube.com/watch?v=QEqmCTiWDik'
+: 1791712455:0;yts
+: 1791712583:0;yt -p'daniel davis' 'https://www.youtube.com/watch?v=alPw8Mwz5xE'
+: 1791712614:0;yt -p'daniel davis' 'https://www.youtube.com/watch?v=wuU7h3RDRpg'
+: 1791712746:0;yts
+: 1791713279:0;yt 'glenn diesen' 'https://www.youtube.com/watch?v=DXpHtE8P2T4'
+: 1791713297:0;yt -p'glenn diesen' 'https://www.youtube.com/watch?v=DXpHtE8P2T4'
+: 1791713346:0;yts
+: 1791713393:0;yts
+: 1791713426:0;yts
+: 1791713501:0;yts
+: 1791724212:0;ll
+: 1791725782:0;e2s five hundred
+: 1791725803:0;e2s fifiteen hundred
+: 1791725837:0;e2s two hundred fifty
+: 1791725870:0;e2s 'two hundred fifty'
+: 1791725889:0;e2s 'fifteen thousnd'
+: 1791725895:0;e2s 'fifteen thousand'
+: 1791725927:0;cleaar
+: 1791725928:0;clear
+: 1791732946:0;lsd
+: 1791732952:0;ll
+: 1791738884:0;ll
+: 1791742567:0;lsd
+: 1791742572:0;ll
+: 1791742658:0;yts
+: 1791743874:0;ll
+: 1791746182:0;yts
+: 1791746273:0;yt 'https://www.youtube.com/watch?v=QHjXUU2Z0WA'
+: 1791746299:0;Tw
+: 1791746300:0;lsd
+: 1791746305:0;ll
+: 1791746343:0;ll
+: 1791746460:0;rm Israel\ Panics\ After\ UK\ Green\ Party\ Declares\ Zionism\ IS\ Racism.mp4
+: 1791754404:0;ll
+: 1791754771:0;lsd
+: 1791754777:0;ll
+: 1791756427:0;Tm
+: 1791756428:0;lsd
+: 1791756433:0;ll
+: 1791756435:0;Tw
+: 1791756436:0;ll
+: 1791759206:0;lsd
+: 1791759225:0;ll
+: 1791788895:0;lsd
+: 1791788925:0;ll
+: 1791789992:0;yts
+: 1791791109:0;clear
+: 1791791110:0;ll
+: 1791794350:0;ll
+: 1791794597:0;lsd
+: 1791794613:0;ll
+: 1791803237:0;ll
+: 1791807150:0;adb --help
+: 1791807383:0;c
+: 1791807395:0;vi phone_dump
+: 1791807531:0;adb devices
+: 1791807553:0;adb devices
+: 1791807616:0;adb devices
+: 1791815210:0;recipe leeks
+: 1791816357:0;f2c 325
+: 1791817374:0;dict kakicostracy
+: 1791817433:0;dict kakistocracy
+: 1791817472:0;/usr/bin/dict kakistocracy
+: 1791817488:0;type dict
+: 1791817580:0;dict kakistocracy
+: 1791817612:0;dict kakistocracy
+: 1791817769:0;dict kakistocracy
+: 1791817974:0;dict kakistocracy
+: 1791817993:0;dict kakistocracy
+: 1791818046:0;dict kakistocracy
+: 1791818069:8;lsd
+: 1791818078:0;ll
+: 1791818113:0;dict kakistocracy
+: 1791818142:0;dict top
+: 1791818152:0;dict stop
+: 1791818259:0;dict stop
+: 1791818264:0;dict kakistocracy
+: 1791818442:0;dict kakistocracy
+: 1791818452:0;dict thoery
+: 1791818460:0;dict theory
+: 1791818468:0;dict --help
+: 1791818475:0;dict -t theory
+: 1791818494:0;.ls yts
+: 1791818496:0;ll
+: 1791818501:0;backup
+: 1791818652:0;repo
+: 1791818686:0;cl yts
+: 1791818703:0;chkupd
+: 1791826025:0;yts
+: 1791827393:0;yts
+: 1791832366:0;yt 'https://www.youtube.com/watch?v=LhmlZwdZkOI'
+: 1791832684:0;ll
+: 1791832687:0;lsd
+: 1791832704:0;ll
+: 1791835585:0;lsd
+: 1791835590:0;ll
+: 1791839217:0;yt 'https://www.youtube.com/watch?v=RafttrR7BWM'
+: 1791843179:0;Tm
+: 1791843182:0;ldf
+: 1791843183:0;lsd
+: 1791843187:0;ll
+: 1791843194:0;Tw
+: 1791843196:0;ll
+: 1791843199:0;lsd
+: 1791843203:0;ll
+: 1791877599:0;yts
+: 1791878037:0;cl yts
+: 1791878042:0;vi yts
+: 1791878071:0;vi yts
+: 1791878283:0;yts
+: 1791878335:0;vi yts
+: 1791878446:0;yts
+: 1791878549:0;G
+: 1791878807:0;yts
+: 1791878814:0;cl yts
+: 1791878820:0;bak -r yts
+: 1791879228:0;rb -r
+: 1791879284:0;chkupd
+: 1791879478:0;e
+: 1791879479:0;E
+: 1791879484:0;ll
+: 1791879506:0;g universe
+: 1791879518:0;g -r universe
+: 1791879545:0;lsd
+: 1791879551:0;g -r universe
+: 1791879565:0;ll
+: 1791879592:0;g ubuntu
+: 1791879648:0;rm jellyfin.sources
+: 1791879664:0;typora
+: 1791879706:0;b
+: 1791879710:0;g typora
+: 1791879719:0;s
+: 1791879721:0;g typora
+: 1791879726:0;g typora
+: 1791879728:0;ll
+: 1791879732:0;..
+: 1791879739:0;E
+: 1791879746:0;ll
+: 1791879750:0;ll
+: 1791879791:0;ll ub*
+: 1791879813:0;vi ubuntu.sources
+: 1791879851:0;sudo mv ubuntu.sources ubuntu.sources.bak
+: 1791879852:0;ll
+: 1791879867:0;lsd
+: 1791879879:0;l
+: 1791879881:0;ll
+: 1791879887:0;lsd
+: 1791879907:0;ll
+: 1791879913:0;ll *save
+: 1791879936:0;rm jellyfin.sources.save
+: 1791879937:0;ll
+: 1791879989:0;diff plexmediaserver.list plexmediaserver.list.save
+: 1791879997:0;man diff
+: 1791880011:0;diff -s plexmediaserver.list plexmediaserver.list.save
+: 1791880076:0;diff -s brave-browser-release.list.save brave-browser-release.sources
+: 1791880089:0;md save
+: 1791880107:0;.ls
+: 1791880117:0;.c
+: 1791880133:0;.ls
+: 1791880145:0;md apt
+: 1791880157:0;E
+: 1791880167:0;ll
+: 1791880189:0;sudo mv *save ~/.local/share/apt
+: 1791880190:0;ll
+: 1791880194:0;chkupd
+: 1791880284:0;sudo apt update
+: 1791880305:0;..
+: 1791880307:0;ll
+: 1791880340:0;sudo mv sources.list.save ~/.local/share/apt
+: 1791880341:0;ll
+: 1791880353:0;lsd
+: 1791880356:0;ll
+: 1791880361:0;llr
+: 1791880375:0;ll
+: 1791880379:0;rm jellyfin.gpg
+: 1791880381:0;..
+: 1791880382:0;llr
+: 1791880409:0;llr
+: 1791880436:0;G
+: 1791880471:0;Tw
+: 1791880472:0;lsd
+: 1791880480:0;ll
+: 1791883841:0;lsd
+: 1791883846:0;ll
+: 1791888838:0;cl yts
+: 1791888842:0;yts
+: 1791889600:0;yt 'https://www.youtube.com/watch?v=yBcosCkNckI'
+: 1791889633:0;ll
+: 1791889636:0;Tw
+: 1791889636:0;ll
+: 1791889693:0;ll
+: 1791890294:0;yts -D
+: 1791890431:0;yts -D
+: 1791890559:0;yts -D
+: 1791890592:0;yts -DD
+: 1791890611:0;yts -DD
+: 1791890740:0;yts -DD
+: 1791890886:0;vi x
+: 1791891137:0;rm x
+: 1791891142:0;yts -DD
+: 1791891216:0;cl libs
+: 1791891223:0;bak UTILS.zsh
+: 1791891230:0;cl LIBS
+: 1791891299:0;clc l
+: 1791891300:0;cl cl
+: 1791891301:0;ll
+: 1791891305:0;./cl
+: 1791891310:0;./cl cl
+: 1791891329:0;vi cl
+: 1791891374:0;./cl cl
+: 1791891378:0;vi cl
+: 1791891392:0;./cl cl
+: 1791891411:0;bak -r
+: 1791891416:0;cl LIBS
+: 1791891450:0;,
+: 1791891454:0;vi cl
+: 1791891473:0;./cl cl
+: 1791891481:0;bak -r
+: 1791891486:0;cl LIBS
+: 1791891504:0;,
+: 1791891509:0;vi cl
+: 1791891522:0;./cl cl
+: 1791891530:0;bak -r
+: 1791891536:0;cl LIBS
+: 1791891583:0;,
+: 1791891590:0;vi cl
+: 1791891630:0;./cl cl
+: 1791891637:0;bak -r
+: 1791891641:0;cl LIBS
+: 1791891677:0;,
+: 1791891680:0;vi cl
+: 1791891700:0;./cl cl
+: 1791891706:0;bak -r
+: 1791891709:0;cl LIBS
+: 1791891751:0;,
+: 1791891754:0;vi cl
+: 1791891786:0;./cl cl
+: 1791891792:0;bak -r
+: 1791891796:0;cl LIBS
+: 1791891817:0;,
+: 1791891824:0;vi cl
+: 1791891843:0;./cl cl
+: 1791891856:0;bak -r
+: 1791891859:0;cl LIBS
+: 1791891890:0;,
+: 1791891895:0;vi cl
+: 1791891908:0;./cl cl
+: 1791891913:0;bak -r
+: 1791891917:0;cl LIBS
+: 1791891924:0;,
+: 1791891928:0;vi cl
+: 1791891978:0;./cl cl
+: 1791891985:0;bak -r
+: 1791891989:0;cl LIBS
+: 1791892006:0;,
+: 1791892008:0;vi cl
+: 1791892061:0;./cl cl
+: 1791892065:0;bak -r
+: 1791892068:0;cl LIBS
+: 1791892091:0;cl yts
+: 1791892143:0;Tw
+: 1791892145:0;llsd
+: 1791892146:0;lsd
+: 1791892152:0;ll
+: 1791898583:0;lsd
+: 1791898613:0;ll
+: 1791898716:0;ll
+: 1791898725:0;ll -H
+: 1791898815:0;/bin/ls -x
+: 1791898825:0;/bin/ls -1
+: 1791899170:0;yts
+: 1791899330:0;yts
+: 1791899400:0;/bin/ls -1
+: 1791899419:0;yts
+: 1791899468:0;cl LIBS
+: 1791899477:0;vi x
+: 1791899550:0;bak UTILS.zsh
+: 1791899553:0;vi UTILS.zsh
+: 1791899572:0;bak -r
+: 1791899579:0;bak -r UTILS.zsh
+: 1791899582:0;yts
+: 1791899673:0;cl yts
+: 1791899678:0;Tw
+: 1791899680:0;ll
+: 1791904629:0;yts
+: 1791904710:0;yt -p'judging freedom' 'https://www.youtube.com/watch?v=4r6kmhXNYI4'
+: 1791904748:0;Tw
+: 1791904749:0;ll
+: 1791904763:0;cl LIBS
+: 1791904775:0;vi UTILS.zsh
+: 1791904905:0;bak -r UTILS.zsh
+: 1791904911:0;backup
+: 1791905005:0;repo
+: 1791905021:0;rm x
+: 1791905027:0;clear
+: 1791905028:0;ll
+: 1791905032:0;clear
+: 1791905058:0;..
+: 1791905062:0;rm archive
+: 1791905064:0;ll
+: 1791905085:0;./find_deps
+: 1791905092:0;..
+: 1791905096:0;../find_music
+: 1791905119:0;./utils/find_deps
+: 1791905186:0;https://www.youtube.com/watch?v=4r6kmhXNYI4
+: 1791905202:0;vi ./utils/find_deps
+: 1791905243:0;./utils/find_deps
+: 1791905249:0;vi ./utils/find_deps
+: 1791905267:0;./utils/find_deps
+: 1791905270:0;vi ./utils/find_deps
+: 1791905286:0;./utils/find_deps
+: 1791905292:0;vi ./utils/find_deps
+: 1791905329:0;./utils/find_deps
+: 1791905348:0;vi ./utils/find_deps
+: 1791905397:0;./utils/find_deps
+: 1791905455:0;./utils/find_deps
+: 1791905537:0;ll
+: 1791905543:0;./utils/find_deps
+: 1791905548:0;vi ./utils/find_deps
+: 1791905564:0;./utils/find_deps
+: 1791905585:0;ll ./utils
+: 1791913845:0;Tw
+: 1791913846:0;yts
+: 1791913958:0;ll
+: 1791914039:0;yt 'https://www.youtube.com/watch?v=74ws4Wshc_I&pp=0gcJCTcMAYcqIYzv'
+: 1791914120:0;ll
+: 1791914185:0;yts
+: 1791914282:0;lsd
+: 1791914289:0;ll
+: 1791914305:0;ll
+: 1791914309:0;lsd
+: 1791914360:0;vut info
+: 1791914420:0;lsd
+: 1791914433:0;yts
+: 1791915399:0;mp4_merge jimm
+: 1791915413:0;ll
+: 1791915424:0;lsd
+: 1791915427:0;ll
+: 1791915460:0;fsub -yp'christoforo' "Yandex Hit Bot Myth Busted Zelensky Demands Diesel Deal Boris Debunks Andy.mp4"
+: 1791915461:0;ll
+: 1791919029:0;lsd
+: 1791919036:0;ll
+: 1791919249:0;yts
+: 1791919274:0;yt -p'daniel davis' 'https://www.youtube.com/watch?v=rW8Lyyxz0SM'
+: 1791919404:0;vut info
+: 1791919427:0;ll
+: 1791919463:0;ll
+: 1791919468:0;vut info
+: 1791919491:0;vut info -H
+: 1791919529:0;vut info -H
+: 1791919532:0;vut info 
+: 1791920704:0;yts
+: 1791920719:0;ll
+: 1791920729:0;yts
+: 1791920806:0;yt -p'judging freedom' 'https://www.youtube.com/watch?v=FvwnhxOyx6o'
+: 1791920844:0;yt -p'judging freedom' 'https://www.youtube.com/watch?v=oEx_nOuM1VY'
+: 1791920888:0;ll
+: 1791920900:0;vut info
+: 1791921339:0;lsd
+: 1791921372:0;ll
+: 1791925853:0;lsd
+: 1791925859:0;ll
+: 1791926738:0;yt 'https://rumble.com/v7gt4qw-pepe-escobar-iran-and-yemen-escalate-the-house-of-saud-will-collapse.html?e9s=src_v1_mfp'
+: 1791927023:0;ll
+: 1791927056:0;fsub -yp'Glenn Diesen' "Pepe Escobar - Iran Yemen Escalate The House Of Saud Will Collapse.mp4" "Pepe Escobar - Iran Yemen Escalate The House Of Saud Will Collapse.mp4"
+: 1791927057:0;ll
+: 1791929046:0;lsd
+: 1791929065:0;ll
+: 1791959696:0;lsd
+: 1791959706:0;ll
+: 1791960110:0;ll
+: 1791960625:0;ll
+: 1791962269:0;lsd
+: 1791962273:0;ll
+: 1791962343:0;cl
+: 1791962345:0;ll
+: 1791962360:0;cl run_
+: 1791962364:0;cl run_app_image
+: 1791962367:0;ll
+: 1791962375:0;bak run_app_image
+: 1791962383:0;vi run_app_image
+: 1791962413:0;..
+: 1791962423:0;h
+: 1791963413:0;TM
+: 1791963419:0;Tw
+: 1791963435:0;l
+: 1791963521:0;c
+: 1791963529:0;p
+: 1791963531:0;ll
+: 1791963535:0;ll
+: 1791963540:0;ll
+: 1791963544:0;vi ts.py
+: 1791963999:0;vi ts.py
+: 1791964280:0;./ts.py
+: 1791964287:0;./ts.py -h
+: 1791964305:0;vi ts.py
+: 1791964512:0;./ts.py --help
+: 1791964518:0;vi ts.py
+: 1791964585:0;./ts.py --help
+: 1791964601:0;vi ts.py
+: 1791964751:0;./ts.py --help
+: 1791964760:0;vi ts.py
+: 1791964830:0;vi ts.py
+: 1791964870:0;./ts.py --help
+: 1791964937:0;make install
+: 1791964946:0;..
+: 1791964950:0;make install
+: 1791964959:0;b
+: 1791964964:0;pyts --help
+: 1791964969:0;pyts 
+: 1791964975:0;vi pyts
+: 1791964999:0;pyts 
+: 1791965013:0;vi pyts
+: 1791965050:0;vi __pyscripts__/pyts/pyts
+: 1791965058:0;vi pyts
+: 1791965076:0;pyts 
+: 1791965082:0;pyts  sss
+: 1791965093:0;pyts --help
+: 1791965126:0;ll
+: 1791965133:0;cat pyts
+: 1791965152:0;vi pyts
+: 1791965159:0;pyts --help
+: 1791965176:0;,
+: 1791965182:0;vi makefile
+: 1791965219:0;ll
+: 1791965228:0;vi pyts
+: 1791965263:0;make install
+: 1791965265:0;b
+: 1791965267:0;vi pyts
+: 1791965274:0;k/he
+: 1791965278:0;pyts --help
+: 1791965289:0;,
+: 1791965290:0;..
+: 1791965299:0;vi ts.py
+: 1791965572:0;Cat ts.py
+: 1791965602:0;Cat ts.py | hexdump -C | mypager
+: 1791965624:0;p
+: 1791965636:0;vi ts.py
+: 1791965820:0;p
+: 1791965826:0;p
+: 1791965828:0;P
+: 1791965832:0;ll
+: 1791965837:0;lsd
+: 1791965885:0;ll
+: 1791965887:0;o
+: 1791966293:0;,
+: 1791966294:0;,
+: 1791966303:0;vi ts.py
+: 1791966308:0;vi ts.py
+: 1791966453:0;https://www.youtube.com/watch?v=74ws4Wshc_I&pp=0gcJCTcMAYcqIYzv
+: 1791966456:0;p
+: 1791966457:0;ll
+: 1791966465:0;./ts.py
+: 1791967538:0;make install
+: 1791967553:0;./ts.py
+: 1791967652:0;Tw
+: 1791967654:0;lsd
+: 1791967659:0;ll
+: 1791967664:0;yts
+: 1791975847:0;lsd
+: 1791975874:0;ll
+: 1791975994:0;p
+: 1791976002:0;vi ./ts.py
+: 1791976078:0;./ts.py
+: 1791976097:0;make install
+: 1791976164:0;yts
+: 1791976328:0;cl yts
+: 1791976331:0;vi yts
+: 1791976682:0;bak -r
+: 1791976687:0;Tw
+: 1791976688:0;ll
+: 1791976697:0;yts
+: 1791976774:0;ll
+: 1791977166:0;lsd
+: 1791978182:0;ll
+: 1791991739:0;lsd
+: 1791991762:0;ll
+: 1791991823:0;yt
+: 1791991827:0;cl
+: 1791991880:0;clear
+: 1791991890:0;Tw
+: 1791991891:0;ll
+: 1791992113:0;yts
+: 1791992218:0;ll
+: 1791992882:0;lsd
+: 1791992887:0;ll
+: 1791997399:0;yts
+: 1791998604:0;ll
+: 1792001365:0;lsd
+: 1792010425:0;yts
+: 1792010569:0;cl yts
+: 1792010574:0;vi yts
+: 1792010733:0;./yts
+: 1792010737:0;vi yts
+: 1792010781:0;./yts
+: 1792010938:0;G
+: 1792010966:0;lsd
+: 1792010971:0;ll
+: 1792011612:0;ll
+: 1792011617:0;cl yts
+: 1792011625:0;bak -r
+: 1792013742:0;Tw
+: 1792013745:0;lsd
+: 1792013750:0;ll
+: 1792015797:0;lsd
+: 1792015813:0;ll
+: 1792018238:0;lsd
+: 1792018246:0;ll
+: 1792018249:0;lsd
+: 1792018252:0;ll
+: 1792047104:0;yts
+: 1792047307:0;yt 'Galloway' 'https://www.youtube.com/watch?v=V2IYgnFsycI'
+: 1792047441:0;cl yts
+: 1792047444:0;vi yt
+: 1792047581:0;yt 'Galloway' 'https://www.youtube.com/watch?v=V2IYgnFsycI'
+: 1792047623:0;yt -p'Galloway' 'https://www.youtube.com/watch?v=V2IYgnFsycI'
+: 1792047653:0;vi yt
+: 1792047840:0;yt -p'Galloway' 'https://www.youtube.com/watch?v=V2IYgnFsycI'
+: 1792047876:0;cl yts
+: 1792047880:0;,
+: 1792047883:0;lsd
+: 1792047957:0;ll
+: 1792047983:0;clear
+: 1792047990:0;bak -r yt
+: 1792047994:0;ll
+: 1792048033:0;ll -t
+: 1792048043:0;lft
+: 1792048063:0;lft
+: 1792048456:0;ll
+: 1792048596:0;yts
+: 1792048790:0;.ls yts
+: 1792048793:0;ll
+: 1792048803:0;cat yt.log.0XDlMX
+: 1792048950:0;cl yts
+: 1792048954:0;vi yts
+: 1792049028:0;./yts
+: 1792049125:0;cat ~/.local/share/yts/yt.log.0XDlMX 
+: 1792049134:0;rm ~/.local/share/yts/yt.log.0XDlMX 
+: 1792049143:0;ll ~/.local/share/yts/
+: 1792049152:0;./yts
+: 1792049194:0;ll ~/.local/share/yts/
+: 1792049205:0;./yts -DD
+: 1792049317:0;cl yts
+: 1792049331:0;vi yts
+: 1792049605:0;vi yts
+: 1792049664:0;./yts -DD
+: 1792049783:0;vi yts
+: 1792050699:0;./yts
+: 1792050763:0;vi yts
+: 1792050799:0;./yts
+: 1792050916:0;.ls yts
+: 1792050919:0;ll
+: 1792050940:0;vi yt.log.BjAjMQ
+: 1792050972:0;vi yt.log.oQceD0
+: 1792050986:0;,
+: 1792050989:0;vi yts
+: 1792052303:0;rm ~/.local/share/yts/yt.log*
+: 1792052375:0;vi yts
+: 1792052725:0;./yts
+: 1792052769:0;rm ~/.local/share/yts/yt.log*
+: 1792052780:0;vi yts
+: 1792052997:0;./yts
+: 1792053031:0;vi yts
+: 1792053059:0;./yts
+: 1792053091:0;vi yts
+: 1792053280:0;./yts
+: 1792053309:0;vi yts
+: 1792053329:0;./yts
+: 1792053367:0;.ls yts
+: 1792053368:0;ll
+: 1792053382:0;vi yt.dbg.log
+: 1792053435:0;clear
+: 1792053439:0;clear
+: 1792053482:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792053722:0;vi yts
+: 1792054098:0;vi yts
+: 1792054191:0;./yts
+: 1792054211:0;ll
+: 1792054230:0;vi yts
+: 1792054248:0;./yts
+: 1792054271:0;ll
+: 1792054273:0;cat x
+: 1792054291:0;rm x
+: 1792054299:0;vi yts
+: 1792054445:0;./yts
+: 1792054465:0;.ls yts
+: 1792054466:0;ll
+: 1792054474:0;vi yt.dbg.log
+: 1792054506:0;,
+: 1792054508:0;vi yts
+: 1792054586:0;./yts
+: 1792054614:0;.ls yts
+: 1792054615:0;ll
+: 1792054623:0;cat yt.log.Lc2ydS
+: 1792054672:0;cat yt.dbg.log
+: 1792054738:0;,
+: 1792054742:0;vi yts
+: 1792054746:0;cl yts
+: 1792054749:0;vi yts
+: 1792055052:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792055094:0;vi yts
+: 1792055177:0;./yts
+: 1792055202:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792055225:0;ll
+: 1792055228:0;Tw
+: 1792055228:0;ll
+: 1792055252:0;.ls yts
+: 1792055254:0;ll
+: 1792055257:0;g http
+: 1792055269:0;g error
+: 1792055395:0;vi yt
+: 1792055398:0;,
+: 1792055399:0;vi yt
+: 1792055498:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792055512:0;.ls yts
+: 1792055514:0;ll
+: 1792055519:0;vi yt.dbg.log
+: 1792055541:0;,
+: 1792055544:0;vi yt
+: 1792055587:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792055597:0;,
+: 1792055600:0;vi yt.dbg.log
+: 1792055685:0;vi yts
+: 1792055688:0;,
+: 1792055691:0;vi yts
+: 1792055833:0;./yts
+: 1792055847:0;Tw
+: 1792055848:0;lsd
+: 1792055854:0;ll
+: 1792055856:0;,
+: 1792055860:0;,
+: 1792055868:0;ll
+: 1792055876:16;./yts
+: 1792055913:0;.ls yts
+: 1792055916:0;cat yt.dbg.log
+: 1792055949:0;ll
+: 1792055976:0;vi yt.url.log
+: 1792055996:0;ll
+: 1792055999:0;,
+: 1792056000:0;ll
+: 1792056009:0;vi yts
+: 1792056078:0;./yts
+: 1792056104:0;vi yts
+: 1792056163:0;bak -r yt
+: 1792056169:0;./yts
+: 1792056208:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792056251:0;vi yt
+: 1792056297:0;g yt_dbg_log
+: 1792056339:0;vi yts
+: 1792056429:0;bak -r yt
+: 1792056434:0;./yts
+: 1792056456:0;,
+: 1792056461:0;vi yt.dbg.log
+: 1792056481:0;,
+: 1792056496:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792056514:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792056534:0;vi yts
+: 1792056690:0;cl yts
+: 1792056695:0;./yts
+: 1792056744:0;vi yt
+: 1792056768:0;bak -r yt
+: 1792056773:0;./yts
+: 1792056787:0;rm ~/.local/share/yts/yt.dbg.log
+: 1792056863:0;cl yts
+: 1792056865:0;vi yt
+: 1792056918:0;vi yts
+: 1792057164:0;bak -r
+: 1792057166:0;yts
+: 1792057177:0;./yts
+: 1792057231:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792057237:0;vi yts
+: 1792057249:0;vi yts
+: 1792057321:0;g yt_dbg_log
+: 1792057335:0;vi yts
+: 1792057379:0;./yts
+: 1792057409:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792057466:0;vi yt
+: 1792057619:0;vi yt
+: 1792057693:0;bak -r yt
+: 1792057696:0;./yts
+: 1792057727:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792057774:0;vi yt
+: 1792057793:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792057801:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792057840:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792057846:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792057866:0;vi yt
+: 1792057893:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792057908:0;T
+: 1792057909:0;Tw
+: 1792057910:0;lsd
+: 1792057914:0;ll
+: 1792057916:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792057925:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792057966:0;vi yt
+: 1792058026:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792058036:0;sd
+: 1792058037:0;lsd
+: 1792058041:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792058046:0;ll
+: 1792058050:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792058068:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792058107:0;vi x
+: 1792058174:0;rm ~/.local/share/yts/yt.dbg.log
+: 1792058176:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792058183:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792058193:0;Cat ~/.local/share/yts/yt.dbg.log
+: 1792058211:0;vi x
+: 1792058386:0;vi yt
+: 1792058418:0;rm ~/.local/share/yts/yt.dbg.log
+: 1792058422:0;yt 'https://rumble.com/v7gud06-howard-lutnick-caught-in-a-brazen-lie-about-data-centers.html?e9s=src_v1_mfp%2Csrc_v1_mfp_by_creator'
+: 1792058429:0;Cat ~/.local/share/yts/yt.dbg.log
+: 1792058500:0;bak -r yt
+: 1792058509:0;yts
+: 1792058534:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792058558:0;..
+: 1792058562:0;cl yts
+: 1792058565:0;vi yts
+: 1792058675:0;cat ~/.local/share/yts/yt.dbg.log
+: 1792058722:0;ll
+: 1792058724:0;rm x
+: 1792058729:0;bak yts
+: 1792058736:0;cl yts
+: 1792060660:0;yts
+: 1792060720:0;yt 'https://www.youtube.com/watch?v=V2IYgnFsycI'
