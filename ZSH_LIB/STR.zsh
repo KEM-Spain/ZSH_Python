@@ -309,35 +309,15 @@ str_to_hex () {
 }
 
 str_trim () {
-	local TEXT_IN=${@}
-	local TEXT
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	if [[ -z ${TEXT_IN} && ! -t 0 ]];then
-		read TEXT
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_IN:\"${TEXT}\""
-		TEXT=$(sed 's/\t/ /g' <<<${TEXT}) # Tabs distort output
-		TEXT=$(sed 's/^ *//' <<<${TEXT}) # Leading spaces
-		TEXT=$(sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' <<<${TEXT})
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_OUT:\"${TEXT}\""
-		echo ${TEXT}
-	else
-		TEXT_IN=$(sed 's/\t/ /g' <<<${TEXT_IN}) # Tabs distort output
-		TEXT_IN=$(sed 's/^ *//' <<<${TEXT_IN}) # Leading spaces
-		TEXT_IN=$(sed 's/^[[:blank:]]*//;s/[[:blank:]]*$//' <<<${TEXT_IN})
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TEXT_OUT:\"${TEXT_IN}\""
-		echo ${TEXT_IN}
-	fi
-}
-
-str_truncate () {
-	local LENGTH=${1} && shift
 	local TEXT=${@}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	setopt localoptions extended_glob
 
-	echo ${TEXT[1,${LENGTH}]}
+	[[ ! -t 0 ]] && read -r TEXT # Input is piped
+	
+	TEXT="${TEXT##[[:space:]]#}" # Strip leading whitespace
+	TEXT="${TEXT%%[[:space:]]#}" # Strip trailing whitespace
+	print -r -- "${TEXT}"
 }
 
 str_unicode_line () {
@@ -394,3 +374,18 @@ str_nolf () {
 		tr '\012' ' ' <<<${STR}
 	done
 }
+
+str_rpad () {
+	local STR=${1}
+	local LEN=${2}
+
+	echo ${(r:${LEN}:)STR}
+}
+
+str_lpad () {
+	local STR=${1}
+	local LEN=${2}
+
+	echo ${(l:${LEN}:)STR}
+}
+

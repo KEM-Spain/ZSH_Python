@@ -6,17 +6,23 @@ source ${_LIB_DIR}/LIB_INIT.zsh
 _DEPS+=()
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
-# Declarations
+# Declarations & Constants
 typeset -a AUDIO=()
 typeset -a VIDEO=()
 typeset -a LIST=()
+typeset -a YT_DLP_OPTS=()
+typeset -a OPTIONS=()
 
 # Constants
-_YT_CFG=~/.local/share/yts
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
+_YT_CFG=~/.local/share/yts
 _YT_DBG_LOG=${_YT_CFG}/yt.dbg.log
-_YT_DLP="/usr/local/bin/yt-dlp --config-locations ${_YT_CFG} "
+_YT_DLP='/usr/local/bin/yt-dlp'
 _YT_URL_LOG=${_YT_CFG}/yt.url.log
+
+_YT_DLP_OPTS+=(
+--config-locations ${(qqq)_YT_CFG}
+)
 
 # Functions
 last_file_downloaded () {
@@ -37,15 +43,13 @@ last_file_downloaded () {
 }
 
 #--Begin GetOpts--
-local -a OPTIONS
-local OPTION
-local DESC
-
 read -r -d '' DESC<<EOF
 Manage download from YouTube and Rumble.
 \tUse option -p to prepend a label to the filename
 EOF
 
+OPTION=''
+OPTSTR=''
 parse_opts () {
 	local OPTS=${@}
 	local -a OPTSTR
@@ -96,9 +100,7 @@ usage () {
 }
 #--End GetOpts--
 
-# Execution
-PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
-[[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true
+[[ -t 0 ]] && CMDLINE=true || CMDLINE=false
 
 if [[ ${CMDLINE} == 'true' ]];then
 	OPTSTR=":HDp:"
@@ -118,32 +120,19 @@ if [[ ${CMDLINE} == 'true' ]];then
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
 	shift $((OPTIND -1))
+	[[ ${#} -eq 0 ]] && usage 
+	ARGS="${(qqq)1}" # Enclose url
 else
 	EXEC_SRC="script"
+	ARGS="${@}"
 fi
 
-[[ ${#} -gt 1 ]] && exit_leave $(err_msg_exit "Too many arguments")
+logit ${_YT_DBG_LOG} "${0:t} Executed from: ${EXEC_SRC}"
 
-logit ${_YT_DBG_LOG} "${0:t} Executed from: ${(C)EXEC_SRC}"
+CMD="${_YT_DLP} ${_YT_DLP_OPTS} ${ARGS}"
 
-[[ ${#} -eq 0 ]] && usage 
-
-URL=$(grep -o -E 'http.*' <<<${(qqq)@})
-URL=${URL[1,-2]} # Eliminate trailing quote
-
-# Apply command line options
-_YT_DLP+=" --paths temp:/tmp" # Place temp files in /tmp
-[[ ! ${_YT_DLP} =~ 'impersonate' ]] && _YT_DLP+=' --impersonate firefox'
-if [[ ${URL:l} =~ 'rumble' ]];then
-	_YT_DLP+=' --downloader aria2c --downloader-args "aria2c: -x 16 -s 16"'
-	_YT_DLP+=' --cookies-from-browser brave'
-	logit ${_YT_DBG_LOG} "${0:t} Rumble CMD:${_YT_DLP}"
-fi
-
-logit ${_YT_DBG_LOG} "${0:t} Calling CMD:${_YT_DLP} ${(qqq)@}" 
-(
-eval "${_YT_DLP} ${(qqq)@}" 2>&1
-) | tee -a ${_YT_DBG_LOG}
+logit ${_YT_DBG_LOG} "${0:t} CMD:${CMD}"
+eval "${CMD}"
 
 FN=$(last_file_downloaded)
 if [[ ${?} -eq 0 ]];then
@@ -161,6 +150,7 @@ if [[ ${?} -eq 0 ]];then
 	fi
 fi
 
-logit ${_YT_URL_LOG} "${0:t} Downloaded URL:${URL} to ${FN:t}"
+URL=$(grep -o -E 'http.*' <<<${(qqq)@})
+logit ${_YT_URL_LOG} "${0:t} Downloaded URL:${URL[1,-2]} to ${FN:t}"
 
 exit_leave

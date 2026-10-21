@@ -301,10 +301,10 @@ path_get_raw () {
 }
 
 path_get_raw_cmdline () {
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	local RAW_CMD_LINE=''
 
 	fc -R
-	local RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
+	RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
 
 	echo ${RAW_CMD_LINE}
 }
@@ -315,8 +315,6 @@ path_get_raw_args () {
 	local -a TOKENS
 	local A
 	local RAW_PATH
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	fc -R
 	RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
@@ -366,8 +364,6 @@ path_get_tokens () {
 
 path_has_wildcard () {
 	local RARGS=$(path_get_raw_args)
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${RARGS} =~ '\x2A' ]] && return 0 || return 1
 }

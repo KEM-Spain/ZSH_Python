@@ -84,6 +84,45 @@ logit () {
 	echo "${STAMP} ${MSG}" >> ${LOG}
 }
 
+code_status () {
+	local -a _LOCAL_FILES=()
+	local LONGEST=0
+	local PROD=''
+	local F
+
+	_LOCAL_FILES=()
+	{
+		LONGEST=0
+		for F in ${PWD}/*;do
+			[[ ${F:e} == 'bak' ]] && continue
+			if [[ $(file ${F}) =~ 'zsh script' || ${F:e} == 'zsh' || ${F:e} == 'js' || ${F:e} == 'py' ]];then
+				_LOCAL_FILES+=${F}
+				[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F:t}
+			fi
+		done
+	} >/dev/null 2>&1
+	(( LONGEST+=5 ))
+
+	PROD=''
+	if [[ -n ${_LOCAL_FILES} ]];then
+		for F in ${_LOCAL_FILES};do
+			logit ${_LOG} "${_SCRIPT}: F:${F}"
+			PROD=$(get_prod ${F})
+			logit ${_LOG} "${_SCRIPT}: PROD:${PROD}"
+			if [[ -n ${PROD} ]];then
+				if [[ ${F:t} == ${PROD:t} ]];then
+					diff -b ${F} ${PROD} >/dev/null 2>&1
+					if [[ ${?} -ne 0 ]];then
+						printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${RED_FG_I}%15s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'does not match' ${PROD:t}
+					else
+						printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${GREEN_FG_I}%8s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'matches' ${PROD:t}
+					fi
+				fi
+			fi
+		done
+	fi
+}
+
 usage () {
 	tabs 5
 	echo "\n${WHITE_FG}Usage${RESET}:${_SCRIPT} [-H] [<dir>]"
@@ -102,61 +141,32 @@ usage () {
 
 # Execution
 [[ ${#} -gt 1 ]] && echo "${RED_FG}Too many args${RESET}" && usage
-logit ${_LOG} "${_SCRIPT}: PWD:${PWD} ARGS:${1}"
+[[ ${#} -eq 0 ]] && ARG=${PWD:t} || ARG=${1}
+logit ${_LOG} "${_SCRIPT}: PWD:${PWD} ARGS:${ARG}"
 
-[[ -z ${1} ]] && cd ${_CODEBASE}
+#[[ -z ${1} ]] && cd ${_CODEBASE}
 
-if [[ -d ${_LOCAL}/${1} ]];then
-	cd ${_LOCAL}/${1} 
-elif [[ -d ${_LOCAL}/${(U)1} ]];then
-	cd ${_LOCAL}/${(U)1} 
-elif [[ -d ${_LANG}/${1} ]];then
-	cd ${_LANG}/${1} 
-elif [[ -d ${_LANG}/${(U)1} ]];then
-	cd ${_LANG}/${(U)1} 
-elif [[ -d ${_CODEBASE}/${1} ]];then
-	cd ${_CODEBASE}/${1} 
-elif [[ -d ${_CODEBASE}/${(U)1} ]];then
-	cd ${_CODEBASE}/${(U)1} 
-elif [[ -d ${_PYPROJ}/${1} ]];then
-	cd ${_PYPROJ}/${1} 
+if [[ -d ${_LOCAL}/${ARG} ]];then
+	cd ${_LOCAL}/${ARG} 
+elif [[ -d ${_LOCAL}/${(U)ARG} ]];then
+	cd ${_LOCAL}/${(U)ARG} 
+elif [[ -d ${_LANG}/${ARG} ]];then
+	cd ${_LANG}/${ARG} 
+elif [[ -d ${_LANG}/${(U)ARG} ]];then
+	cd ${_LANG}/${(U)ARG} 
+elif [[ -d ${_CODEBASE}/${ARG} ]];then
+	cd ${_CODEBASE}/${ARG} 
+elif [[ -d ${_CODEBASE}/${(U)ARG} ]];then
+	cd ${_CODEBASE}/${(U)ARG} 
+elif [[ -d ${_PYPROJ}/${ARG} ]];then
+	cd ${_PYPROJ}/${ARG} 
 	[[ -d venv ]] && cd venv
-elif [[ -d ${_PYPROJ}/${(U)1} ]];then
-	cd ${_PYPROJ}/${(U)1} 
+elif [[ -d ${_PYPROJ}/${(U)ARG} ]];then
+	cd ${_PYPROJ}/${(U)ARG} 
 	[[ -d venv ]] && cd venv
 else
-	echo "No development directory found:${WHITE_FG}${1}${RESET}"
+	echo "No development directory found:${WHITE_FG}${ARG}${RESET}"
 	return
 fi
 
-_LOCAL_FILES=()
-{
-	LONGEST=0
-	for F in ${PWD}/*;do
-		[[ ${F:e} == 'bak' ]] && continue
-		if [[ $(file ${F}) =~ 'zsh script' || ${F:e} == 'zsh' || ${F:e} == 'js' || ${F:e} == 'py' ]];then
-			_LOCAL_FILES+=${F}
-			[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F:t}
-		fi
-	done
-} >/dev/null 2>&1
-(( LONGEST+=5 ))
-
-PROD=''
-if [[ -n ${_LOCAL_FILES} ]];then
-	for F in ${_LOCAL_FILES};do
-		logit ${_LOG} "${_SCRIPT}: F:${F}"
-		PROD=$(get_prod ${F})
-		logit ${_LOG} "${_SCRIPT}: PROD:${PROD}"
-		if [[ -n ${PROD} ]];then
-			if [[ ${F:t} == ${PROD:t} ]];then
-				diff -b ${F} ${PROD} >/dev/null 2>&1
-				if [[ ${?} -ne 0 ]];then
-					printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${RED_FG_I}%15s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'does not match' ${PROD:t}
-				else
-					printf "Development:${WHITE_FG}%-*s${RESET} ${BOLD}${GREEN_FG_I}%8s${RESET} Production:${WHITE_FG}%s${RESET}\n" ${LONGEST} ${F:t} 'matches' ${PROD:t}
-				fi
-			fi
-		fi
-	done
-fi
+code_status

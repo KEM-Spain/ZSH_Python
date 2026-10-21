@@ -925,7 +925,6 @@ title_scrubber () {
 	local PLURAL=''
 	local W U
 
-	#TODO: apostrophes are being replaced with spaces
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TITLE:${TITLE}"
 
 	STR="$(fix_mojibake "${STR}")"
@@ -937,20 +936,19 @@ title_scrubber () {
 	done
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
-	STR=${(C)STR} # Proper case
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Proper case STR:${STR}"
-
-	# Fix Zsh capitalization forcing letters after apostrophes to uppercase (e.g., Trump'S -> Trump's)
-	STR=$(echo "${STR}" | perl -pe "s/'([A-Z])/'\L\$1/g" 2>/dev/null)
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Lowercase post-apostrophe STR:${STR}"
-
-	# Structural formatting (underscores, braces, dots) - keeping apostrophes safe
+	# Structural formatting (underscores, braces, dots) - explicitly keeping apostrophes safe
 	STR=$(echo "${STR}" | perl -pe 's/_/ /g' 2>/dev/null)
 	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim 2>/dev/null)
 	STR=$(echo "${STR}" | perl -pe 's/\.{2,}$//g' 2>/dev/null)
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: uscore, brace, dots STR:${STR}"
 
-	# Acronym preservation and UCASE limiting
+	STR=${(C)STR} # Proper case
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Proper case STR:${STR}"
+
+	STR=$(echo "${STR}" | perl -pe "s/'([A-Z])/'\L\$1/g" 2>/dev/null) # Fix proper case glitch with apostrophes
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Lowercase post-apostrophe STR:${STR}"
+
+	# Acronym preservation and UCASE limiting (using word boundaries that don't swallow apostrophes)
 	for W in ${(z)STR};do
 		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
 		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
@@ -971,4 +969,3 @@ title_scrubber () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Returning TITLE:${TITLE}"
 	echo ${TITLE}
 }
-
