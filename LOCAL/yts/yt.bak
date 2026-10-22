@@ -100,9 +100,12 @@ usage () {
 }
 #--End GetOpts--
 
-
 # Execution
-[[ -t 0 ]] && CMDLINE=true && CMDLINE=false
+# Execution
+PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
+[[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true
+
+[[ -t 0 ]] && CMDLINE=true || CMDLINE=false
 
 if [[ ${CMDLINE} == 'true' ]];then
 	OPTSTR=":HDp:"
@@ -123,8 +126,7 @@ if [[ ${CMDLINE} == 'true' ]];then
 	done
 	shift $((OPTIND -1))
 	[[ ${#} -eq 0 ]] && usage 
-	[[ ${#} -gt 1 ]] && exit_leave $(err_msg_exit "Too many arguments")
-	ARGS="${(qqq)@}" # Enclose url
+	ARGS="${(qqq)1}" # Enclose url
 else
 	EXEC_SRC="script"
 	ARGS="${@}"

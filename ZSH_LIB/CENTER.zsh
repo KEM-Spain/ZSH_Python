@@ -267,8 +267,8 @@ center () {
 	local VERT=false
 
 	local COORD_ARGS='' # COORDS array content
-	local _HEIGHT=0  # HEIGHT of a box to display
-	local _WIDTH=0  # WIDTH of a box to display, width of text to center, or the text itself
+	local _HEIGHT=0  # HEIGHT of object to display
+	local _WIDTH=0  # WIDTH of object to display, width of text to center, or the text itself
 	local _X_OFF=0   # Optional Vertical offset from center
 	local _Y_OFF=0   # Optional Horizontal offset from center
 	local JOB=''
@@ -297,13 +297,13 @@ center () {
 	shift $((OPTIND -1))
 	#--End GetOpts--
 	
-	if ! validate_is_number ${_WIDTH};then # Allow WIDTH to be passed as text
+	if ! validate_is_number ${_WIDTH};then # If WIDTH is a string of text; use its length
 		_WIDTH=${#_WIDTH}
 	fi
 
 	if ! validate_args ${JOB};then
 		echo "\nArguments for ${JOB} failed validation" >&2
-		kill $$
+		return 1
 	fi
 
 	case ${JOB} in

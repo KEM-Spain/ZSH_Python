@@ -1,0 +1,38 @@
+#!/usr/bin/zsh
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=()
+source ${_LIB_DIR}/LIB_DEPS.zsh
+source ./MSG.zsh
+
+# --- Paste or source your library functions above this line ---
+
+clear
+
+# 1. Test BOX Job (Returns X, Y, H, W -> Passed via -A)
+res_box=$(center -B -h 10 -w 30 -x 1 -y -1)
+msg_box -p -P K -A "${res_box}" -s '|' "BOX Job Test:|Result: ${res_box}"
+
+# 2. Test VERT Job (Returns X coordinate -> Passed via -x)
+res_vert=$(center -V -h 12)
+msg_box -p -P K -x ${res_vert} -h 6 -w 30 -s '|' "VERT Job Test:|X Coordinate: ${res_vert}"
+
+# 3. Test HORZ Job (Returns Y coordinate -> Passed via -y)
+res_horz=$(center -H -w 40)
+msg_box -p -P K -y ${res_horz} -h 6 -w 40 -s '|' "HORZ Job Test:|Y Coordinate: ${res_horz}"
+
+# 4. Test REL_C Job (Returns X, Y, H, W -> Passed via -A)
+res_rel_c=$(center -R -c "X 0 Y 0 H 24 W 80" -h 10 -w 30 -x 2 -y 2)
+msg_box -p -P K -A "${res_rel_c}" -s '|' "REL_C Job Test:|Result: ${res_rel_c}"
+
+# 5. Test REL_X Job (Returns X coordinate -> Passed via -x)
+res_rel_x=$(center -X -c "X 0 Y 0 H 24 W 80" -h 10 -x 1)
+msg_box -p -P K -x ${res_rel_x} -h 6 -w 30 -s '|' "REL_X Job Test:|X Coordinate: ${res_rel_x}"
+
+# 6. Test REL_Y Job (Returns Y coordinate -> Passed via -y)
+res_rel_y=$(center -Y -c "X 0 Y 0 H 24 W 80" -w 30 -y -2)
+msg_box -p -P K -y ${res_rel_y} -h 6 -w 30 -s '|' "REL_Y Job Test:|Y Coordinate: ${res_rel_y}"
+
+echo "=== All Centering Tests Complete ==="

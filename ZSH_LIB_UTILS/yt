@@ -100,7 +100,9 @@ usage () {
 }
 #--End GetOpts--
 
-[[ -t 0 ]] && CMDLINE=true || CMDLINE=false
+# Execution
+PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
+[[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true
 
 if [[ ${CMDLINE} == 'true' ]];then
 	OPTSTR=":HDp:"

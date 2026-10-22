@@ -67,6 +67,8 @@ typeset -a _RUMBLE_QRY_OPTS=(l c u g)
 typeset -a _STERMS=()
 typeset -a _STRIP_WORDS=()
 typeset -aU _LOCAL_LIST=()
+typeset -A _SPINNER_COORDS=()
+typeset -A _RC=()
 
 # Display Constants
 _CONT_WIDTH=86
@@ -76,7 +78,9 @@ _INFO_W=$((_CONT_WIDTH - 6 ))
 _CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
 _IND_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4 -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_IND_W} -y30) H 4 W ${_IND_W}) # Indicator coords
 _INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 5 W ${_INFO_W}) # Info coords
-
+_RC=($(get_relative_center "${(kv)_CONT_COORDS}" 1 4)) # Center spinner under continuous box
+_SPINNER_COORDS=(ROW $(( _CONT_COORDS[X] + _CONT_COORDS[H] + 1 )) COL ${_RC[Y]})
+# TODO: possibly place sinner on right side of continuous box after destination
 # Constants
 _YT_CFG_DIR=~/.local/share/yts
 _ACTION=download
@@ -155,204 +159,208 @@ action_do () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	for M in ${_MARKED};do
-		((DL_CNT++))
-		_QUICK_DOWNLOAD[${M}]=false
-		_CANCELLED[${DL_CNT}]=false
-		_DOWNLOADS[${DL_CNT}]=false
-		_FAILED[${DL_CNT}]=false
-		_FUTURE[${DL_CNT}]=false
-		AUTHOR=$(get_field author ${M})
-		TITLE=$(get_field title ${M})
-		URL=$(get_field url ${M})
-		RETRIES=0
+	# Suppress terminal echo for the entire download action batch
+	stty -echo # Prevent any keypresses from echoing on the term
+	{
+		for M in ${_MARKED};do
+			((DL_CNT++))
+			_QUICK_DOWNLOAD[${M}]=false
+			_CANCELLED[${DL_CNT}]=false
+			_DOWNLOADS[${DL_CNT}]=false
+			_FAILED[${DL_CNT}]=false
+			_FUTURE[${DL_CNT}]=false
+			AUTHOR=$(get_field author ${M})
+			TITLE=$(get_field title ${M})
+			URL=$(get_field url ${M})
+			RETRIES=0
 
-		logit ${_YT_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
+			logit ${_YT_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
 
-		unsetopt localtraps # Initialize CTRL-C trap
-		trap job_kill INT
+			unsetopt localtraps # Initialize CTRL-C trap
+			trap job_kill INT
 
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Starting job for:${URL}"
-		job_start "${URL}"
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Starting job for:${URL}"
+			job_start "${URL}"
 
-		msg_box -t${_MSG_DELAY[LONG]} -O${CYAN_FG} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested...<N>"
+			msg_box -t${_MSG_DELAY[LONG]} -O${CYAN_FG} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested...<N>"
 
-		msg_box -z -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Initializing download...<N>"
+			msg_box -z -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Initializing download...<N>"
 
-		# 1. Robust pre-loop (no spinner here)
-		HDRS_OUT=false
-		while true;do
-			read -s -t0.1 -k1 INT_KEY
-			if [[ ${INT_KEY} == 'k' ]]; then
-				job_cancel
-				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED during initialization"
-				MSG="Cancelling download..."
-				msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
-				_CANCELLED[${M}]=true
-				TRANS_ERR_CNT=0
-				break
+			HDRS_OUT=false
+			while true;do
+				read -s -t0.1 -k1 INT_KEY 2>/dev/null
+				if [[ ${INT_KEY} == 'k' ]]; then
+					job_cancel
+					logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED during initialization"
+					MSG="Cancelling download..."
+					msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
+					_CANCELLED[${M}]=true
+					TRANS_ERR_CNT=0
+					break
+				fi
+
+				if grep -q -Ei -m1 'already been' ${g_YTS_LOG} 2>/dev/null; then
+					logit ${_YT_DBG_LOG} "${0}: No download - video already exists"
+					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>File was already downloaded...<N>"
+					_CANCELLED[${M}]=true
+					break
+				fi
+
+				if grep -q -Ei -m1 '403' ${g_YTS_LOG} 2>/dev/null; then
+					logit ${_YT_DBG_LOG} "${0}: No download - 403 error"
+					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
+					_CANCELLED[${M}]=true
+					break
+				fi
+
+				PRE_HDR_ERR=$(grep -Ei -m1 'will begin' ${g_YTS_LOG} 2>/dev/null)
+				if [[ ${?} -eq 0 ]]; then
+					logit ${_YT_DBG_LOG} "${0}: No download - future broadcast"
+					[[ ! ${PRE_HDR_ERR:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${PRE_HDR_ERR})
+					MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
+					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
+					_FUTURE[${M}]=true
+					break
+				fi
+
+				DEST_LINE=$(grep -Ei -m1 'Destination:' ${g_YTS_LOG} 2>/dev/null)
+				if [[ ${?} -eq 0 ]]; then
+					HDRS_OUT=true
+					break
+				fi
+
+				sleep .5
+			done
+
+			[[ ${HDRS_OUT} == 'false' ]] && continue # Job was aborted or completed early
+
+			logit ${_YT_DBG_LOG} "${0}: GENERATING HEADER"
+			DEST=("${(f)$(sed -e "s#/tmp/#/tmp|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Delimit path and fn
+
+			HDR1_TXT="${${(@s/|/)${DEST}}[2]}"
+			if [[ ${HDR1_TXT} =~ "\.[^.]+\.[^.]+$" ]];then # Double extension
+				HDR1_TXT=${HDR1_TXT:r}
 			fi
 
-			if grep -q -Ei -m1 'already been' ${g_YTS_LOG} 2>/dev/null; then
-				logit ${_YT_DBG_LOG} "${0}: No download - video already exists"
-				msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>File was already downloaded...<N>"
-				_CANCELLED[${M}]=true
-				break
-			fi
-
-			if grep -q -Ei -m1 '403' ${g_YTS_LOG} 2>/dev/null; then
-				logit ${_YT_DBG_LOG} "${0}: No download - 403 error"
-				msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
-				_CANCELLED[${M}]=true
-				break
-			fi
-
-			PRE_HDR_ERR=$(grep -Ei -m1 'will begin' ${g_YTS_LOG} 2>/dev/null)
-			if [[ ${?} -eq 0 ]]; then
-				logit ${_YT_DBG_LOG} "${0}: No download - future broadcast"
-				[[ ! ${PRE_HDR_ERR:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${PRE_HDR_ERR})
-				MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-				msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
-				_FUTURE[${M}]=true
-				break
-			fi
-
-			DEST_LINE=$(grep -Ei -m1 'Destination:' ${g_YTS_LOG} 2>/dev/null)
-			if [[ ${?} -eq 0 ]]; then
-				HDRS_OUT=true
-				break
-			fi
-
-			sleep .5
-		done
-
-		[[ ${HDRS_OUT} == 'false' ]] && continue # Job was aborted or completed early
-
-		logit ${_YT_DBG_LOG} "${0}: GENERATING HEADER"
-		DEST=("${(f)$(sed -e "s#/tmp/#/tmp|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Delimit path and fn
-
-		HDR1_TXT="${${(@s/|/)${DEST}}[2]}"
-		if [[ ${HDR1_TXT} =~ "\.[^.]+\.[^.]+$" ]];then # Double extension
 			HDR1_TXT=${HDR1_TXT:r}
-		fi
 
-		HDR1_TXT=${HDR1_TXT:r}
+			HDR1_TXT="<B><I><h>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
+			HDR2_TXT="<B><I><h>Destination<N>: $(str_trim ${_DOWNLOAD_DIR})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}${INFO_TAG}"
 
-		HDR1_TXT="<B><I><h>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
-		HDR2_TXT="<B><I><h>Destination<N>: $(str_trim ${_DOWNLOAD_DIR})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}${INFO_TAG}"
+			HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
+			HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
+			HRZ_CTR=$(center -H -w${HDR_LEN})
 
-		HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
-		HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
-		HRZ_CTR=$(center -H -w${HDR_LEN})
+			[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR}
 
-		[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR}
+			msg_box -C -O${CYAN_FG} -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
+			msg_box -C -jl ${HDR2_TXT}
+			msg_box -C -jl "<c>$(str_unicode_line ${_MAX_MSG_LEN})<N>"
+			msg_box -C -jl "<B><c>Download started, waiting for log activity to begin...<N>"
 
-		msg_box -C -O${CYAN_FG} -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
-		msg_box -C -jl ${HDR2_TXT}
-		msg_box -C -jl "<c>$(str_unicode_line ${_MAX_MSG_LEN})<N>"
-		msg_box -C -jl "<B><c>Download started, waiting for log activity to begin...<N>"
+			zmodload zsh/zselect # Live progress monitoring with zselect
+			exec 3< <(tail -Fn0 "${g_YTS_LOG}")
 
-		# 2. Live progress monitoring with zselect & top-right corner spinner
-		zmodload zsh/zselect
-		exec 3< <(tail -Fn0 "${g_YTS_LOG}")
+			local -a zsel_reply
+			spinner start
 
-		local -a zsel_reply
-		# Start spinner in the top right corner (Row 1, near right edge)
-		spinner start 1 $(( COLUMNS - 3 ))
+			while true; do
+				zselect -t 10 -a zsel_reply -r 3
 
-		while true; do
-			zselect -t 10 -a zsel_reply -r 3
+				# Check keyboard input instantly on every loop iteration
+				read -s -t0.01 -k1 INT_KEY 2>/dev/null
+				if [[ ${INT_KEY} == 'k' ]]; then
+					spinner stop
+					job_cancel
+					logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED during download"
+					MSG="Cancelling download..."
+					msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
+					_CANCELLED[${M}]=true
+					TRANS_ERR_CNT=0
+					break
+				fi
 
-			# Check keyboard input instantly on every loop iteration
-			read -s -t0.01 -k1 INT_KEY 2>/dev/null
-			if [[ ${INT_KEY} == 'k' ]]; then
-				spinner stop 1 $(( COLUMNS - 3 ))
-				job_cancel
-				logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED during download"
-				MSG="Cancelling download..."
-				msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
-				_CANCELLED[${M}]=true
-				TRANS_ERR_CNT=0
-				break
-			fi
+				# Check log pipe activity (FD 3)
+				if (( ${zsel_reply[(I)3]} )); then
+					if read -u3 -r LOG_LINE; then
 
-			# Check log pipe activity (FD 3)
-			if (( ${zsel_reply[(I)3]} )); then
-				if read -u3 -r LOG_LINE; then
-					# Log activity received: stop spinner in top right corner
-					spinner stop 1 $(( COLUMNS - 3 ))
+						MSG=$(str_word_clip ${LOG_LINE} ${_MAX_MSG_LEN})
+						MSG="$(str_rpad ${MSG} ${_MAX_MSG_LEN})"
 
-					MSG=$(str_word_clip ${LOG_LINE} ${_MAX_MSG_LEN})
-					MSG="$(str_rpad ${MSG} ${_MAX_MSG_LEN})"
-
-					if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]]; then
-						case ${LOG_LINE:l} in
-							*merging*)
-								logit ${_YT_DBG_LOG} "${0}: COMPLETED"
-								_DOWNLOADS[${M}]=true
-								post_process
-								log_add ${M}
-								MSG="$(str_rpad "Download is complete" ${_MAX_MSG_LEN})"
-								msg_box -C -jl "<B><g>${MSG}<N>"
-								break
-								;;
-							*eta*|*cn:*)
-								ETA=${LOG_LINE:l}
-								case ${ETA} in
-									*mib*) LINE_COLOR='<B><w>';;
-									*kib*) LINE_COLOR='<B><c>';;
-									*) LINE_COLOR='<B><r>';;
-								esac
-								msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
-								;;
-							*)
-								tcup 20 45; printf "%s" ${MSG}
-								sleep .1
-								;;
-						esac
-					elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]]; then
-						case ${LOG_LINE:l} in
-							*moving*)
-								logit ${_YT_DBG_LOG} "${0}: COMPLETED"
-								_DOWNLOADS[${M}]='true'
-								post_process
-								log_add ${M}
-								MSG="$(str_rpad "Download is complete" ${_MAX_MSG_LEN})"
-								msg_box -C -jl "<B><g>${MSG}<N>"
-								break
-								;;
-							*size*|*eta*)
-								ETA=${LOG_LINE:l}
-								case ${ETA} in
-									*mib*) LINE_COLOR='<B><w>';;
-									*kib*) LINE_COLOR='<B><c>';;
-									*) LINE_COLOR='<B><r>';;
-								esac
-								msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
-								;;
-							*)
-								tcup 20 45; printf "%s" ${MSG}
-								sleep .1
-								;;
-						esac
+						if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]]; then
+							case ${LOG_LINE:l} in
+								*merging*)
+									spinner stop
+									logit ${_YT_DBG_LOG} "${0}: COMPLETED"
+									_DOWNLOADS[${M}]=true
+									post_process
+									log_add ${M}
+									MSG="$(str_rpad "Download is complete" ${_MAX_MSG_LEN})"
+									msg_box -C -jl "<B><g>${MSG}<N>"
+									break
+									;;
+								*eta*|*cn:*)
+									ETA=${LOG_LINE:l}
+									case ${ETA} in
+										*mib*) LINE_COLOR='<B><w>';;
+										*kib*) LINE_COLOR='<B><c>';;
+										*) LINE_COLOR='<B><r>';;
+									esac
+									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
+									;;
+								*)
+									tcup $(( _CONT_COORDS[X] + _CONT_COORDS[H] )); tput ech 80
+									tcup $(( _CONT_COORDS[X] + _CONT_COORDS[H] )) $(( _CONT_COORDS[Y] + 2 )); printf "%s" ${MSG}
+									sleep .1
+									;;
+							esac
+						elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]]; then
+							case ${LOG_LINE:l} in
+								*moving*)
+									spinner stop
+									logit ${_YT_DBG_LOG} "${0}: COMPLETED"
+									_DOWNLOADS[${M}]='true'
+									post_process
+									log_add ${M}
+									MSG="$(str_rpad "Download is complete" ${_MAX_MSG_LEN})"
+									msg_box -C -jl "<B><g>${MSG}<N>"
+									break
+									;;
+								*size*|*eta*)
+									ETA=${LOG_LINE:l}
+									case ${ETA} in
+										*mib*) LINE_COLOR='<B><w>';;
+										*kib*) LINE_COLOR='<B><c>';;
+										*) LINE_COLOR='<B><r>';;
+									esac
+									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
+									;;
+								*)
+									tcup 20 45; printf "%s" ${MSG}
+									sleep .1
+									;;
+							esac
+						fi
 					fi
 				fi
-			else
-				# Timeout hit (no log line yet): tick spinner in top right corner
-				spinner tick 1 $(( COLUMNS - 3 ))
-			fi
+
+				# Tick the spinner continuously on every loop iteration
+				spinner tick
+			done
+			exec 3<&-
+			log_clear ${0}
+			sleep 1 # Job request delay
+		done # List complete
+
+		for M in ${_MARKED};do
+			[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
 		done
-		exec 3<&-
-		log_clear ${0}
-		sleep 1 # Job request delay
-	done # List complete
 
-	for M in ${_MARKED};do
-		[[ ${_DOWNLOADS[${M}]} == 'true' ]] && list_set_selected ${M} ${_STALE_ROW} || list_set_selected ${M} ${_AVAIL_ROW}
-	done
-
-	_MARKED=()
-	trap - INT # Downloads are finished; cancel trap
+		_MARKED=()
+		trap - INT # Downloads are finished; cancel trap
+	} always {
+		stty echo
+	}
 	return 0
 }
 
@@ -420,92 +428,6 @@ clean_title () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: RETURNING TITLE:${TITLE}"
 	echo ${TITLE}
-}
-
-dashed_line () {
-	local CNT=10
-	local LEN=5
-	local X=0
-	local STR=''
-
-	for ((X=0; X<=CNT; X++));do
-		STR+="$(str_unicode_line ${LEN}) "
-	done
-	
-	echo "${STR}"
-}
-
-download_indicator () {
-	local SPEED="${${(@s/./)${1}}[1]}"
-	local STYPE="${${(@s/|/)${1}}[2]}"
-
-	local L_OBJ="\\u2B9A"
-	local M_OBJ="\\u2B9A"
-	local R_OBJ="\\u2B9A"
-
-#	local L_OBJ="\\u23FA"
-#	local M_OBJ="\\u25CF"
-#	local R_OBJ="\\u2B24"
-
-	local -A OBJS=()
-	local -A OBJS_1=(1 ${L_OBJ} 2 ${M_OBJ} 3 ${R_OBJ})
-	local -A OBJS_2=(1 ${R_OBJ} 2 ${M_OBJ} 3 ${L_OBJ})
-	local BORDER_COLOR=''
-	local DELAY=.3
-	local IND_X=$(( _IND_COORDS[X] + 1 ))
-	local IND_Y=$(( _IND_COORDS[Y] + 7 ))
-	local L_SIDE="\\u2770"
-	local R_SIDE="\\u2771"
-	local MASK=""
-	local OBJ_COLOR="${BOLD}${WHITE_FG}" # Default
-	local SP_DIR=I
-
-	[[ -z ${SPEED} ]] && SPEED=0
-	[[ -z ${g_LAST_SPEED} ]] && g_LAST_SPEED=0
-
-	if [[ ( ${STYPE} == 'M' && ${g_LAST_STYPE} == 'K' ) || ${SPEED} -ge ${g_LAST_SPEED} ]];then 
-		SP_DIR=I # Stable or Increasing
-	elif [[ ( ${STYPE} == 'K' && ${g_LAST_STYPE} == 'M' ) || ${SPEED} -lt ${g_LAST_SPEED} ]];then 
-		SP_DIR=D # Decreasing
-	fi
-
-	#logit ${_YT_DBG_LOG} "${0}: SPEED:${SPEED}"
-
-	case ${SPEED} in
-		<1-4>) OBJ_COLOR="${BOLD}${CYAN_FG}";;
-		<5-20>) OBJ_COLOR="${BOLD}${WHITE_FG}";;
-		<21-90>) OBJ_COLOR="${BOLD}${GREEN_FG}";;
-		*) OBJ_COLOR="${BOLD}${RED_FG}";;
-	esac
-
-	case ${SP_DIR} in
-		I) BORDER_COLOR="${BOLD}${GREEN_FG}";;
-		D) BORDER_COLOR="${BOLD}${YELLOW_FG}";;
-	esac
-
-	OBJS=(${(kv)OBJS_1}) # Init
-
-	if [[ ${g_INDICATOR_FLIP} == 'true' ]];then
-		OBJS=(${(kv)OBJS_2})
-	fi
-
-	case ${g_MASK_NDX} in
-		1) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}${OBJS[1]}    ${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
-		2) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}  ${OBJS[2]}  ${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
-		3) MASK="${BORDER_COLOR}${L_SIDE}${RESET} ${OBJ_COLOR}    ${OBJS[3]}${RESET} ${BORDER_COLOR}${R_SIDE}${RESET}";;
-	esac
-
-	if [[ ${g_MASK_NDX} -eq 3 ]];then
-		[[ ${g_INDICATOR_FLIP} == 'true' ]] && g_INDICATOR_FLIP=false || g_INDICATOR_FLIP=true
-	fi
-
-	(( g_MASK_NDX++))
-	[[ ${g_MASK_NDX} -gt 3 ]] && g_MASK_NDX=1
-
- 	tcup ${IND_X} ${IND_Y} && echo -n "${MASK}" && sleep ${DELAY}
-
-	g_LAST_SPEED=${SPEED}
-	g_LAST_STYPE=${STYPE}
 }
 
 download_select () {
@@ -852,25 +774,6 @@ get_field () {
 	echo -n ${STR}
 }
 
-get_speed () {
-	local SPEED=${@}
-	local TYPE=''
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-	
-	SPEED=$(sed -E 's/^.*at\s+//' <<<${SPEED:l} | cut -d' ' -f1 | sed 's/[/]s//')
-	[[ ${SPEED} =~ 'mib' ]] && TYPE=M || TYPE=K
-	SPEED=$(sed 's/.ib//' <<<${SPEED})
-
-	[[ ${SPEED} == '100%' ]] && SPEED=0 # Completed
-
-	if validate_is_number ${SPEED};then
-		echo "${SPEED}|${TYPE}"
-	else
-		echo "0|${TYPE}"
-	fi
-}
-
 is_spanish () {
   local INPUT="${1}"
   # Matches Spanish diacritics (á, é, í, ó, ú, ü, ñ, ¿, ¡) or top frequent Spanish words
@@ -898,6 +801,11 @@ item_decorate () {
 	echo -n ${STR}
 }
 
+job_cancel () {
+	job_kill
+	logit ${_YT_DBG_LOG} "${0}: Job was reset"
+}
+
 job_kill () {
 	local -a PIDS=()
 	local PID
@@ -920,11 +828,6 @@ job_kill () {
 		log_clear "job_kill"
 		exit_leave $(err_msg_exit "Operation cancelled")
 	fi
-}
-
-job_cancel () {
-	job_kill
-	logit ${_YT_DBG_LOG} "${0}: Job was reset"
 }
 
 job_retry () {
@@ -1692,6 +1595,31 @@ set_rumble_row () {
 	done
 }
 
+spinner () {
+    local ACTION=${1:-tick}
+    local ROW=${2:-${_SPINNER_COORDS[ROW]}}
+    local COL=${3:-${_SPINNER_COORDS[COL]}}
+
+    [[ ${_SPINNER_COORDS[ROW]} -ne ${ROW} ]] && _SPINNER_COORDS[ROW]=${ROW}
+    [[ ${_SPINNER_COORDS[COL]} -ne ${COL} ]] && _SPINNER_COORDS[COL]=${COL}
+
+    (( $+_SPIN_NDX )) || typeset -g _SPIN_NDX=1
+		local -a chars=('▰▱▱▱' '▱▰▱▱' '▱▱▰▱' '▱▱▱▰' '▱▱▰▱' '▱▰▱▱')
+
+    case ${ACTION} in
+        start)
+            _SPIN_NDX=1
+            ;;
+        stop)
+            tcup ${ROW} ${COL} && printf " " # Clear spinner
+            ;;
+        tick|*)
+            tcup ${ROW} ${COL} && printf "${GREEN_FG}%s${RESET}" "${chars[_SPIN_NDX]}"
+            (( _SPIN_NDX = ( _SPIN_NDX % ${#chars[@]} ) + 1 ))
+            ;;
+    esac
+}
+
 total_rejects () {
 	local TL_VIDS=${1}
 	local TL_RJ=0
@@ -1710,34 +1638,6 @@ total_rejects () {
 	[[ ${TL_RJ} -ne 0 ]] && RJ_PCT=$(( (TL_RJ/TL_VIDS) * 100 ))
 
 	echo "${RJ_PCT}%"
-}
-
-spinner() {
-    local action=${1:-tick}
-    local row=${2:-1}
-    local col=${3:-$(( COLUMNS - 3 ))}
-
-    (( $+_SPIN_IDX )) || typeset -g _SPIN_IDX=1
-    #local -a chars=('|' '/' '-' '\')
-		local -a chars=('▰▱▱▱' '▱▰▱▱' '▱▱▰▱' '▱▱▱▰' '▱▱▰▱' '▱▰▱▱')
-
-    case ${action} in
-        start)
-            _SPIN_IDX=1
-            #tput civis # Hide cursor globally for operations
-            ;;
-        stop)
-            tcup ${row} ${col}
-            printf " " # Clear the character
-            # Intentionally omitted tput cnorm here so cursor stays hidden
-            ;;
-        tick|*)
-            tcup ${row} ${col}
-            #printf "\033[36m%s\033[0m" "${chars[_SPIN_IDX]}"
-            printf "${GREEN_FG}%s${RESET}" "${chars[_SPIN_IDX]}"
-            (( _SPIN_IDX = (_SPIN_IDX % ${#chars[@]} ) + 1 ))
-            ;;
-    esac
 }
 
 #--Begin GetOpts--
@@ -1827,7 +1727,7 @@ shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution
-# TODO: Rewrite fav list parsing ???why did I write this???
+# TODO: Rewrite fav list parsing to handle options more intuitively; maybe use associative array
 [[ ! ${AGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]] && usage "Invalid $(opt_type a):${AGE_OPT}"
 _QUERY_OPTS[AGE]=${AGE_OPT}
 
