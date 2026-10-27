@@ -1,29 +1,36 @@
-2026-10-22_17:04: Logging started...
-2026-10-22_17:04: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-22_17:04: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-22_17:04: query_youtube: Creating listing for QKEY:syrianaanalysis, query is strict
-2026-10-22_17:04: query_youtube:
+2026-10-27_21:24: Logging started...
+2026-10-27_21:24: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-27_21:24: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-27_21:24: query_youtube: Creating listing for QKEY:neil-oliver, query is not strict
+2026-10-27_21:24: query_youtube:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Syriana Analysis
+	-> DKEY:Neil Oliver
 	-> ENGINE:youtube
-	-> EOPT:s
-	-> FKEY:syriana_analysis
-	-> QKEY:syrianaanalysis
-	-> TYPE:strict
-2026-10-22_17:04: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "syrianaanalysis"
-2026-10-22_17:04: query_youtube: Filter: Matching titles:0, Rejects:0
-2026-10-22_17:04: query_youtube: Listing for QKEY:syrianaanalysis contains 4 rows
-2026-10-22_17:04: Starting background job for URL: https://youtube.com/watch?v=9hnr8SNX8hQ (Title: )
-2026-10-22_17:04: yt Executed from: script
-2026-10-22_17:04: yt CMD:/usr/local/bin/yt-dlp --config-locations "/home/kmiller/.local/share/yts" -o '%(channel)s - %(title).200s.%(ext)s' "https://youtube.com/watch?v=9hnr8SNX8hQ" &>/home/kmiller/.local/share/yts/yts_11323.log &
-2026-10-22_17:04: Job PID:
-2026-10-22_17:04: Logging to /home/kmiller/.local/share/yts/yts_11323.log
-2026-10-22_17:04: action_do: GENERATING HEADER
-2026-10-22_17:04: action_do: COMPLETED
-2026-10-22_17:04: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Syriana_Analysis - Iran_War_2.0_-_Netanyahu_to_Trump_-_Finish_the_Job_Ehsan_Safarnejad.mp4
-2026-10-22_17:04: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Syriana_Analysis - Iran_War_2.0_-_Netanyahu_to_Trump_-_Finish_the_Job_Ehsan_Safarnejad.mp4
-2026-10-22_17:04: set_final_fn: Overwriting file:Syriana_Analysis - Iran_War_2.0_-_Netanyahu_to_Trump_-_Finish_the_Job_Ehsan_Safarnejad.mp4
-2026-10-22_17:04: set_final_fn: Clean filename:Syriana Analysis - Iran War 2.0 Netanyahu To Trump Finish The Job.mp4
-2026-10-22_17:04: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
-2026-10-22_17:04: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_11323.log was cleared for:syrianaanalysis from:action_do
+	-> EOPT:
+	-> FKEY:neil_oliver
+	-> QKEY:neil-oliver
+	-> TYPE:standard
+2026-10-27_21:24: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "neil-oliver"
+2026-10-27_21:24: query_youtube: Filter: Matching titles:3, Rejects:0
+2026-10-27_21:24: query_youtube: Listing for QKEY:neil-oliver contains 3 rows
+2026-10-27_21:24: Starting download for URL: https://youtube.com/watch?v=E59lteAvQLQ (Cookies: none)
+2026-10-27_21:24: yt CMDLINE:false
+2026-10-27_21:24: yt URL:https://youtube.com/watch?v=E59lteAvQLQ
+2026-10-27_21:24: yt Executed from: script COOKIES:null
+2026-10-27_21:24: Logging to /home/kmiller/.local/share/yts/yts_32709.log
+2026-10-27_21:24: action_do: GENERATING HEADER
+2026-10-27_21:24: action_do: DEST:[download] Destination: /tmp|Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].f399.mp4
+2026-10-27_21:24: clean_title: RAW_TITLE:Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ]
+2026-10-27_21:24: clean_title: AUTHOR:Neil Oliver, TITLE:Neil Oliver - ...Replacement Migration Convid Trump Brexit
+2026-10-27_21:24: clean_title: COMPLETED TITLE:Neil Oliver - Neil Oliver - ...Replacement Migration Convid Trump 
+2026-10-27_21:25: action_do: COMPLETED
+2026-10-27_21:25: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].mp4
+2026-10-27_21:25: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].mp4
+2026-10-27_21:25: clean_title: RAW_TITLE:Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].mp4
+2026-10-27_21:25: clean_title: AUTHOR:Neil Oliver, TITLE:Neil Oliver - ...Replacement Migration Convid Trump Brexit
+2026-10-27_21:25: clean_title: COMPLETED TITLE:Neil Oliver - Neil Oliver - ...Replacement Migration Convid Trump 
+2026-10-27_21:25: set_final_fn: Overwriting file:Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].mp4
+2026-10-27_21:25: set_final_fn: Clean filename:Neil Oliver - Neil Oliver - ...Replacement Migration Convid Trump.mp4
+2026-10-27_21:25: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-27_21:25: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_32709.log was cleared for:neil-oliver from:action_do

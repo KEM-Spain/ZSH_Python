@@ -105,7 +105,7 @@ info () {
 			[[ ${L:l} =~ 'audio:[[:space:]]*([^[:space:]]+)' ]] && AUD=$match[1]
 		done
 
-		SDUR="${${(@s/:/)DUR}[2]}"
+		SDUR=${DUR}
 
 		[[ -e ${FN}.srt ]] && SUB=external
 		[[ ${AUD:l} != 'none' ]] && AUD=${AUD}
@@ -206,7 +206,7 @@ ___EOF
 	printf "\n${WHITE_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} "Title" "Duration" "Codec" "Resolution" "Audio" "Subtitle"
 	printf "${MAGENTA_FG}%-*s %11s %5s %10s %5s %8s${RESET}\n" ${LONGEST} $(str_unicode_line ${LONGEST}) $(str_unicode_line 11) $(str_unicode_line 5) $(str_unicode_line 10) $(str_unicode_line 5) $(str_unicode_line 8)
 	NDX=0
-	for K in ${(k)_VLIST};do
+	for K in ${(nk)_VLIST};do
 		((NDX++))
 		TIT="${${(@s/:/)K}[2]}"
 		DUR="${${(@s/|/)${_VLIST[${K}]}}[1]}"

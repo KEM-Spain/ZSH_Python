@@ -1,6 +1,5 @@
 #!/usr/bin/zsh
 
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -14,11 +13,11 @@ _SCRIPT=${0:t}
 _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
-typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox haruna_haruna haruna simple-scan "document scanner")
+typeset -A _APP_TAGS=(brave brave-browser obs com.obsproject.studio firefox firefox_firefox org.mozilla.firefox haruna haruna_haruna simple-scan "document scanner")
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
 typeset -A _SCAN=()
 typeset -A _SEEN=()
-typeset -A _WAITTIMES=()
+typeset -A _WAIT_TIMES=()
 typeset -a _APPS_NON_DOCK=(chrome enpass vlc losslesscut)
 typeset -a _APPS_TO_SCAN=()
 typeset -a _BLACKLIST=(enpass pyts libreoffice org.gnome.terminal)
@@ -65,49 +64,60 @@ clear_idle_apps () {
 cfg_create () {
 	[[ ! -e ${_CFG_DIR} ]] && mkdir ${_CFG_DIR}
 
-	if [[ ! -e ${_CFG_DIR}/${_SCRIPT}.xml ]];then
-		{ cat << ______cfg_EOF
-		<wait_app_start>
-		<entry> 
-		  <app>haruna</app>
-		  <waittime>10</waittime>
-		</entry>
-		<entry>
-		  <app>musescore</app>
-		  <waittime>4</waittime>
-		</entry>
-		<entry>
-		  <app>audacity</app>
-		  <waittime>10</waittime>
-		</entry>
-		<entry>
-		  <app>viber</app>
-		  <waittime>3</waittime>
-		</entry>
-		</wait_app_start>
-______cfg_EOF
-		} > ${_CFG_DIR}/${_SCRIPT}.xml
-	fi 
+	{ cat << ____CFG_EOF
+	<wait_app_start>
+	<entry> 
+		<app>haruna</app>
+		<waittime>10</waittime>
+	</entry>
+	<entry>
+		<app>musescore</app>
+		<waittime>4</waittime>
+	</entry>
+	<entry>
+		<app>audacity</app>
+		<waittime>10</waittime>
+	</entry>
+	<entry>
+		<app>viber</app>
+		<waittime>3</waittime>
+	</entry>
+	<entry>
+		<app>chrome</app>
+		<waittime>3</waittime>
+	</entry>
+	</wait_app_start>
+____CFG_EOF
+	} > ${_CFG_DIR}/${_SCRIPT}.xml
 }
 
 cfg_load () {
-	local APP=''
-	local WT=''
-	local LINE=''
-	local FN=${_CFG_DIR}/${_SCRIPT}.xml
-	local MAX=$(xmllint --xpath "count(wait_app_start/entry)" ${FN})
-	local X=0
+  local APP=''
+  local WT=''
+  local FN=${_CFG_DIR}/${_SCRIPT}.xml
+  local MAX=$(xmllint --xpath "count(/wait_app_start/entry)" ${FN})
+  local X=0
+	local K
 
-	for (( X=1; X<=${MAX}; X++ ));do
-		APP=$(xmllint --xpath "wait_app_start/entry[${X}]/app//text()" ${FN})
-		WT=$(xmllint --xpath "wait_app_start/entry[${X}]/waittime//text()" ${FN})
-		_WAITTIMES=[${APP}]=${WT}
+  for (( X=1; X<=${MAX}; X++ )); do
+    APP=$(xmllint --xpath "string(/wait_app_start/entry[${X}]/app)" ${FN})
+    WT=$(xmllint --xpath "string(/wait_app_start/entry[${X}]/waittime)" ${FN})
+    if [[ -n "$APP" ]]; then
+      _WAIT_TIMES["${APP}"]="${WT}"
+    fi
+  done
+
+	for K in ${(k)_WAIT_TIMES};do
+		logit ${_LOG} "${0}: WAIT TIMES: KEY:${K} VAL:${_WAIT_TIMES[${K}]}"
 	done
 }
 
 get_app_tag () {
 	local APP=${1:l} # Lowercase
 	local APP_TAG=''
+
+	# Strip reverse-DNS domain prefix if present (e.g. org.mozilla.firefox -> firefox)
+	[[ ${APP} == *.* ]] && APP=${APP##*.}
 
 	# Handle any alternate tags
 	if [[ -n ${_APP_TAGS[${APP}]} ]];then
@@ -178,18 +188,19 @@ get_wid () {
 
 has_waittime () {
 	local APP=${1}
-	local WT=0
+	local WT=""
 	local A
 
 	cfg_load
 
 	logit ${_LOG} "Seeking waittime for ${APP}"
-	for A in ${(k)_WAITTIMES};do
+	for A in ${(k)_WAIT_TIMES};do
 		logit ${_LOG} "Inspecting wait time ${A}"
-		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAITTIMES[${A}]} && break
+		[[ ${A:l} =~ ${APP:l} ]] && WT=${_WAIT_TIMES[${A}]} && break
 	done
 
-	[[ -z ${WT} ]] && echo 0 || echo ${WT}
+	# Fallback to 2 seconds if unlisted so windows have time to map
+	[[ -z ${WT} ]] && echo 2 || echo ${WT}
 }
 
 is_blacklisted () {
@@ -221,18 +232,20 @@ scan_apps () {
 	local RC=0
 	local S
 	local WT
+	local TAG
 
 	if [[ -n ${_SEEN} ]];then
 		clear_idle_apps
 	fi
 
 	for S in ${(k)_SCAN};do
-		if [[ ${_APPS_TO_SCAN[(i)${S:l}]} -le ${#_APPS_TO_SCAN} ]];then
-			if [[ ${_BLACKLIST[(i)${S:l}]} -le ${#_BLACKLIST} ]];then
+		TAG=$(get_app_tag ${S})
+		if [[ ${_APPS_TO_SCAN[(i)${TAG}]} -le ${#_APPS_TO_SCAN} || ${_APPS_TO_SCAN[(i)${S:l}]} -le ${#_APPS_TO_SCAN} ]];then
+			if [[ ${_BLACKLIST[(i)${TAG}]} -le ${#_BLACKLIST} || ${_BLACKLIST[(i)${S:l}]} -le ${#_BLACKLIST} ]];then
 				logit ${_LOG} "BLACKLISTED ${S}"
 			else
-				logit ${_LOG} "SEEKING:${S:l}"
-				APP=$(get_app_tag ${S})
+				logit ${_LOG} "SEEKING:${TAG}"
+				APP=$(get_app_tag ${TAG})
 
 				is_maximized ${APP}
 				RC=${?}
@@ -250,7 +263,13 @@ scan_apps () {
 							_SEEN[${APP}]=1
 							logit ${_LOG} "ADDED ${APP} TO SEEN"
 							;;
-						*) logit ${_LOG} "${APP} NO WINDOW EXISTS";;
+						*) WT=$(has_waittime ${APP})
+							logit ${_LOG} "${APP} NO WINDOW EXISTS, waiting ${WT}s..."
+							[[ ${WT} -ne 0 ]] && sleep ${WT}
+							logit ${_LOG} "MAXIMIZING ${APP}";win_max ${APP}
+							_SEEN[${APP}]=1
+							logit ${_LOG} "ADDED ${APP} TO SEEN"
+							;;
 					esac
 				else
 					logit ${_LOG} "NO ACTION - ALREADY SEEN:${APP}"
@@ -284,9 +303,10 @@ while IFS= read -ru3 LINE;do
 	else
 		if [[ (${LINE:l} =~ 'string' || ${LINE:l} =~ 'array') && ${LINE:l} =~ '\.desktop' ]];then
 			STR=$(grep --color=never -o -E '["].*.desktop["]' <<<${LINE} | tr -d '["]' | sed 's/.desktop//')
-			_SCAN[${STR:t}]=1
+			STR=${STR:t:l}
+			_SCAN[${STR}]=1
 			[[ -n ${STR} ]] && logit ${_LOG} "SCAN STR:${STR}"
 			scan_apps
 		fi
 	fi
-done 3< <(dbus-monitor)
+done 3< <(dbus-monitor "type='signal'")

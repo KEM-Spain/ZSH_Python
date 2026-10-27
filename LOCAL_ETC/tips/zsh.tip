@@ -4180,7 +4180,33 @@ tip_zsh_EOF_2
 
 cat << tip_zsh_EOF_3
 
+${E_MAGENTA_FG}STRING SUBSTITUTION${E_RESET}
+▸ **Start anchor (`#`):** `${VAR/#pattern/replace}` matches and replaces the pattern only if it occurs at the beginning of the string (`^` in regex).
+▸ **End anchor (`%`):** `${VAR/%pattern/replace}` matches and replaces the pattern only if it occurs at the very end of the string (`$` in regex).
+▸ **Both anchors (`#%`):** `${VAR/#%pattern/replace}` requires the pattern to match the entire string from start to finish.
+
+▸ **Using the start anchor (`#`):**
+
+  var="foo bar foo"
+  echo \${var/#foo/baz}
+  # Output: baz bar foo
+  # Note: The second 'foo' is untouched because it is not at the start.
+
+▸ **Using the end anchor (`%`):**
+
+  var="foo bar foo"
+  echo \${var/%foo/baz}
+  # Output: foo bar baz
+  # Note: The first 'foo' is untouched because it is not at the end.
+
+▸ **Using both anchors (`#%`):**
+
+  var="foobar"
+  echo \${var/#%foobar/baz}
+  # Output: baz
+
 ${E_MAGENTA_FG}FLAGS_MODIFIERS${E_RESET}
+▸ **Pattern matching behavior:** Keep in mind that these patterns use zsh globbing syntax rather than standard regular expressions unless extended modifiers or `GLOB_SUBST` are explicitly configured.
 ================================================================================
                        ZSH FLAGS AND MODIFIERS CHEATSHEET
 ================================================================================

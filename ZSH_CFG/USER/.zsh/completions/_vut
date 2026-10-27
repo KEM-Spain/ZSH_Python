@@ -1,10 +1,10 @@
-#comdef vut
+#compdef vut
 
 _vut() {
     local line state
 
     _arguments -C \
-               "1::->cmds" \
+          "1::->cmds" \
 					"-H[help]" \
 					"-D[debug]" \
                "*::arg:->args"

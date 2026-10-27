@@ -930,39 +930,35 @@ title_scrubber () {
 	STR="$(fix_mojibake "${STR}")"
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: fix_mojibake STR:${STR}"
 
-	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
-	for U in ${UCASE_WORDS};do
-		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
-	done
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: UCASE_WORDS:${UCASE_WORDS}"
+	STR=$(perl -pe 's/n_t(?=[\W_])/n'\''t/gi; s/(?<=[a-zA-Z])_(?=(?:[st]|re|m|ve|ll|d)(?:[\W_]|$))/'\''/gi; s/_/ /g' <<< "${STR}")
+	STR=$(perl -pe 's/\-?\[.*//' <<< "${STR}")
+	STR=$(perl -pe 's/\.{2,}$//g' <<< "${STR}")
+	STR=$(str_proper <<< "${STR}")
+	STR=$(str_trim <<< "${STR}")
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: STR after cleaning:${STR}"
 
-	# Structural formatting (underscores, braces, dots) - explicitly keeping apostrophes safe
-	STR=$(echo "${STR}" | perl -pe 's/_/ /g' 2>/dev/null)
-	STR=$(echo "${STR}" | perl -pe 's/\-?\[.*//' | str_trim 2>/dev/null)
-	STR=$(echo "${STR}" | perl -pe 's/\.{2,}$//g' 2>/dev/null)
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: uscore, brace, dots STR:${STR}"
-
-	STR=${(C)STR} # Proper case
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Proper case STR:${STR}"
-
-	STR=$(echo "${STR}" | perl -pe "s/'([A-Z])/'\L\$1/g" 2>/dev/null) # Fix proper case glitch with apostrophes
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Lowercase post-apostrophe STR:${STR}"
-
-	# Acronym preservation and UCASE limiting (using word boundaries that don't swallow apostrophes)
-	for W in ${(z)STR};do
-		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
-		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
-			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
-			SEEN[${W}]=1
-		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Limit UCASE
-			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null)
-				SEEN[${W}]=1
-			fi
-		fi
-	done
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Acronyms STR:${STR}"
+# TODO: Uppercase word limits are not working
+#	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
+#	for U in ${UCASE_WORDS};do
+#		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
+#	done
+#	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: UCASE_WORDS:${UCASE_WORDS}"
+#
+#	# Acronym preservation and UCASE limiting (using word boundaries that don't swallow apostrophes)
+#	for W in ${(z)STR};do
+#		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
+#		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
+#		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
+#			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
+#			SEEN[${W}]=1
+#		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Limit UCASE
+#			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
+#				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null)
+#				SEEN[${W}]=1
+#			fi
+#		fi
+#	done
+#	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Acronyms STR:${STR}"
 
 	[[ -n ${STR} ]] && TITLE=${STR}
 

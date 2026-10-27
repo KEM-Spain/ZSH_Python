@@ -92,6 +92,7 @@ usage () {
 	echo -e "\n${WHITE_FG}\nUsage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type u)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
+	echo -e "${WHITE_FG}-c${RESET} use browser cookies"
 	echo -e "${WHITE_FG}-p $(opt_type t)${RESET}prepend text to filename"
 	echo -e "\n${WHITE_FG}DESC${RESET}:${DESC}"
 	) >&2
@@ -101,16 +102,18 @@ usage () {
 #--End GetOpts--
 
 # Execution
-# Execution
-PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
-[[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true
+# Delete null bytes entirely
+#PPCMD=$(</proc/$PPID/cmdline | tr -d '\0') # Eliminate null terminator
+PPCMD="${$(</proc/$PPID/cmdline)//$'\0'/}"
+[[ ${PPCMD} =~ '^(zsh|/usr/bin/zsh)$' ]] && CMDLINE=true || CMDLINE=false
 
-[[ -t 0 ]] && CMDLINE=true || CMDLINE=false
+logit ${_YT_DBG_LOG} "${0:t} CMDLINE:${CMDLINE}"
 
 if [[ ${CMDLINE} == 'true' ]];then
-	OPTSTR=":HDp:"
+	OPTSTR=":HDcp:"
 	OPTIND=0
 	PREPEND=''
+	COOKIES=false
 
 	EXEC_SRC="command line"
 
@@ -118,6 +121,7 @@ if [[ ${CMDLINE} == 'true' ]];then
 		case $OPTION in
 		  H) usage;;
 		  D) dbg_set_level;;
+		  c) COOKIES=true;;
 		  p) PREPEND=${OPTARG} && CMDLINE=true;;
 		  :) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
 		 \?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
@@ -125,19 +129,40 @@ if [[ ${CMDLINE} == 'true' ]];then
 		[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 	done
 	shift $((OPTIND -1))
-	[[ ${#} -eq 0 ]] && usage 
-	ARGS="${(qqq)1}" # Enclose url
+	[[ ${#} -eq 0 ]] && usage
+	[[ ${#} -gt 1 ]] && exit_leave $(err_msg_exit "Too many args")
+	URL="${1}" # Enclose url
 else
 	EXEC_SRC="script"
-	ARGS="${@}"
+	# Handle optional -c flag passed programmatically from yts
+	if [[ ${1} == '-c' ]]; then
+		logit ${_YT_DBG_LOG} "${0:t} GOT COOKIE OPTION"
+		COOKIES=true
+		shift
+	fi
+	URL="${1}"
+	LOG="${2}"
+	logit ${_YT_DBG_LOG} "${0:t} URL:${URL}"
 fi
 
-logit ${_YT_DBG_LOG} "${0:t} Executed from: ${EXEC_SRC}"
+if [[ ${COOKIES} == 'true' || ${URL} =~ 'youtube' ]];then
+	_YT_DLP_OPTS+="--cookies-from-browser brave"
+fi
 
-CMD="${_YT_DLP} ${_YT_DLP_OPTS} ${ARGS}"
+logit ${_YT_DBG_LOG} "${0:t} Executed from: ${EXEC_SRC} COOKIES:${COOKIES:=null}"
+
+URL=${(qqq)URL}
+if [[ ${EXEC_SRC} == 'script' ]];then
+	CMD="${_YT_DLP} ${_YT_DLP_OPTS} ${URL}"
+	eval "setsid ${CMD} &>${LOG}" >/dev/null 2>&1 &
+	echo $! # Return PID
+	exit 0
+else
+	CMD="${_YT_DLP} ${_YT_DLP_OPTS} ${URL}"
+	eval "${CMD}"
+fi
 
 logit ${_YT_DBG_LOG} "${0:t} CMD:${CMD}"
-eval "${CMD}"
 
 FN=$(last_file_downloaded)
 if [[ ${?} -eq 0 ]];then

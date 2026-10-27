@@ -47,6 +47,7 @@ msg_box () {
 	local GAP_NDX=0
 	local HDR_MAX=0
 	local KEY=''
+	local MIN_REQUIRED_WIDTH=0
 	local MAX_ELEM=0
 	local MSG_COLS=0
 	local MSG_DTL=0
@@ -90,6 +91,7 @@ msg_box () {
 	local PROMPT_USER=false
 	local QUIET=false
 	local RELATIVE=false
+	local RET_VALUES=false
 	local SAFE=true
 	local BUFFER_FULL=false
 	local SO=false
@@ -98,7 +100,7 @@ msg_box () {
 	local TIMEOUT=0
 	local MSG_W_COORD_ARG=0
 
-	local OPTSTR=":A:H:P:O:CIRT:cf:h:j:pqrs:t:uw:x:y:Zz"
+	local OPTSTR=":A:H:P:O:CIRT:cf:h:j:pqrs:t:uvw:x:y:Zz"
 	OPTIND=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -124,6 +126,7 @@ msg_box () {
 			s) DELIM_ARG="${OPTARG}";; # Use this delimiter to parse message sections
 			t) TIMEOUT="${OPTARG}";; # Display message for this time limit
 			u) SAFE=false;; # Ensure no coordinates violate available screen dimensions
+			v) RET_VALUES=true;; # Return values from msg_list_number
 			w) MSG_W_COORD_ARG=${OPTARG};; # Specify a message box width other than the default
 			x) MSG_X_COORD_ARG=${OPTARG};; # Specify a message display row other than the default
 			y) MSG_Y_COORD_ARG=${OPTARG};; # Specify a message display col other than the default
@@ -179,9 +182,9 @@ msg_box () {
 	# Get message delimiter
 	[[ ${DELIM_ARG} != 'false' ]] && _DELIM=${DELIM_ARG} # Assign delimiter
 
-	if [[ ${#DELIM} -gt 1 ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Invalid delimiter:${DELIM}. Resetting to '|'"
-		DELIM='|' # Set to rational default
+	if [[ ${#_DELIM} -gt 1 ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Invalid delimiter:${_DELIM}. Resetting to '|'"
+		_DELIM='|' # Set to rational default
 	fi
 
 	# Flash progress msg if requested
@@ -190,6 +193,7 @@ msg_box () {
 	MSGS=("${(f)$(msg_box_parse ${MAX_LINE_WIDTH} ${MSG})}")
 	[[ -n ${MSG_FOOTER} ]] && MSG_FOOTER=("${(f)$(msg_box_parse ${MAX_LINE_WIDTH} ${MSG_FOOTER})}")
 
+	# TODO: if _DELIM is set to other than '|' the prompt (MSG_FOOTER) fails to display
 	# Separate headers and footers from body
 	if [[ ${HDR_LINES} -ne 0 ]];then
 		MSG_HEADER=(${MSGS[1,$(( HDR_LINES ))]})
@@ -268,9 +272,12 @@ msg_box () {
 	[[ ${MSG_H_COORD_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${MSG_H_COORD_ARG}
 
 	# Safety: Ensure box width fits content
-	local MIN_REQUIRED_WIDTH=$(( MSG_COLS + 2 ))
-	if [[ ${MSG_W_COORD_ARG} -ne 0 && ${BOX_WIDTH} -lt ${MIN_REQUIRED_WIDTH} ]]; then
-		BOX_WIDTH=${MIN_REQUIRED_WIDTH}
+	if [[ ${CONTINUOUS} == 'false' ]];then # CONTINUOUS - no adjustments to BOX_WIDTH
+		MIN_REQUIRED_WIDTH=$(( MSG_COLS + 2 ))
+		if [[ ${MSG_W_COORD_ARG} -ne 0 && ${BOX_WIDTH} -lt ${MIN_REQUIRED_WIDTH} ]]; then
+			[[ ${_DEBUG} -ge ${_MED_DBG} ]] && dbg "${0}: EXPANDED BOX WIDTH"
+			BOX_WIDTH=${MIN_REQUIRED_WIDTH}
+		fi
 	fi
 
 	if [[ ${RELATIVE} == 'true' ]];then
@@ -376,6 +383,8 @@ msg_box () {
 		SCR_NDX=$(( BOX_X_COORD + ${#MSG_HEADER} ))
 		DTL_NDX=0
 
+		local NUM_LIST=false
+		local -A LIST_VALS=()
 		for (( MSG_NDX=1;MSG_NDX<=${#MSG_BODY};MSG_NDX++));do
 			(( SCR_NDX++ ))
 			(( DTL_NDX++ ))
@@ -383,6 +392,11 @@ msg_box () {
 			tcup ${SCR_NDX} ${BOX_TEXT_CSR}
 			tput ech $(( BOX_WIDTH - 2 ))
 			echo -n "${MSG_OUT}"
+
+			if [[ ${MSG_OUT} =~ "[0-9]\)" ]];then
+				NUM_LIST=true
+				LIST_VALS[${DTL_NDX}]="$(str_trim ${MSG_OUT#*) })"
+			fi
 
 			[[ ${SO} == 'true' ]] && tput smso
 
@@ -424,6 +438,7 @@ msg_box () {
 
 		if [[ ${PROMPT_USER} == "true" ]];then
 			_MSG_KEY=$(get_keys)
+			[[ ${NUM_LIST} == 'true' && ${RET_VALUES} == 'true' && "${_MSG_KEY}" != "0" ]] && _MSG_KEY=${LIST_VALS[${_MSG_KEY}]}
 		fi
 	fi
 
@@ -460,30 +475,30 @@ msg_box_align () {
 	if [[ ${MSG} =~ '<Z>' ]];then
 		MSG_OUT=" "
 	elif [[ ${MSG} =~ '<SEP>' ]];then
-		MSG_OUT=$(str_unicode_line ${BOX_SPAN})
+		MSG_OUT=${MSG:gs/<SEP>/$(str_unicode_line ${BOX_SPAN})/}
 	elif [[ ${MSG} =~ '<L>' ]];then
-		MSG=$(sed -e 's/^.*<L>/\\u2022 /' <<<${MSG})
+		MSG=${MSG/*<L>/\\u2022 }
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET - 1 )))
+		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${MSG} =~ '<X>' ]];then
-		MSG=$(sed -e 's/^.*<X>//' <<<${MSG})
+		MSG=${MSG##*<X>}
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET - 1 )))
+		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${MSG} =~ '<D>' ]];then
-		MSG=$(sed -e 's/^.*<D>//' <<<${MSG})
+		MSG=${MSG##*<D>}
 		LBL=${${(s/:/)MSG}[1]}
 		LBL=${LBL:gs/#/ /}
 		VAL=${${(s/:/)MSG}[2]}
 		MSG="<c>${LBL}<N>:<w>${VAL}<N>"
 		TEXT=$(msg_nomarkup ${MSG})
 		PAD_L=' '
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET )) )
+		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${BOX_STYLE:l} == 'l' ]];then
 		TEXT=$(msg_nomarkup ${MSG})
@@ -495,8 +510,8 @@ msg_box_align () {
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PADDING=$(str_center_pad ${BOX_WIDTH} ${TEXT})
-		PAD_L=$(printf ' %.0s' {1..${PADDING}})
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )) )
+		PAD_L=$(str_lpad "" ${PADDING})
+		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	else
 		TEXT=$(msg_nomarkup ${MSG})
@@ -613,33 +628,32 @@ msg_line_weight () {
 
 msg_list_bullet () {
 	local -a MSG=(${@})
-	local DELIM='|'
 	local NDX=0
 	local L
 
 	for L in ${MSG};do
 		(( NDX++))
 		echo -n "<L>${L}"
-		[[ ${NDX} -lt ${#MSG} ]] && echo ${DELIM}
+		[[ ${NDX} -lt ${#MSG} ]] && echo ${_DELIM}
 	done
 }
 
 msg_list_number () {
 	local -a MSG=(${@})
-	local DELIM='|'
 	local NDX=0
+	local -A MSG_LIST_VALUES=()
 	local L
 
 	for L in ${MSG};do
 		(( NDX++))
 		echo -n "<X>${NDX}) ${L}"
-		[[ ${NDX} -lt ${#MSG} ]] && echo ${DELIM}
+		MSG_LIST_VALUES[${NDX}]=${L}
+		[[ ${NDX} -lt ${#MSG} ]] && echo ${_DELIM}
 	done
 }
 
 msg_list_data () {
 	local -a MSG=(${@})
-	local DELIM='|'
 	local LBL
 	local LINE=''
 	local MARK=0
@@ -663,7 +677,7 @@ msg_list_data () {
 		PAD=$(( PAD + ${#L} ))
 		VAL=${${(s/:/)L}[2]}
 		LINE="<D> ${(l(${PAD})(#))L}:${VAL}"
-		[[ ${NDX} -lt ${#MSG} ]] && echo -n ${LINE}${DELIM} || echo -n ${LINE}
+		[[ ${NDX} -lt ${#MSG} ]] && echo -n ${LINE}${_DELIM} || echo -n ${LINE}
 	done
 }
 
@@ -770,7 +784,6 @@ msg_proc () {
 msg_stream () {
 	local -a CMD
 	local -a MSG_LINES
-	local DELIM='|'
 	local STYLE=l
 	local FOLD_WIDTH=105
 	local FOLD=''
@@ -809,7 +822,7 @@ msg_stream () {
 
 	LINE_CNT=0
 	while read -p ${COPROC[0]} MSG;do
-		MSG_LINES+="<w>${MSG}<N>${DELIM}"
+		MSG_LINES+="<w>${MSG}<N>${_DELIM}"
 		(( LINE_CNT++))
 	done
 
@@ -822,7 +835,7 @@ msg_stream () {
 	[[ -z ${#MSG_LINES[1]} || ${MSG_LINES[1]:l} =~ 'unable to locate' ]] && return
 
 	FOLD_WIDTH=$(( FOLD_WIDTH + 4 ))
-	msg_box -y20 -w${FOLD_WIDTH} -P"<m>Last Page<N>" -pc -s${DELIM} -j${STYLE} ${MSG_LINES}
+	msg_box -y20 -w${FOLD_WIDTH} -P"<m>Last Page<N>" -pc -s${_DELIM} -j${STYLE} ${MSG_LINES}
 }
 
 msg_unicode_box () {

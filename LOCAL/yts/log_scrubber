@@ -26,6 +26,12 @@ RED_ON_WHITE="\033[0m\033[0;1;31;107m"
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 YELLOW_ON_GREY="\033[0m\033[0;1;33;100m"
 
+# Execution
+if [[ ${#} -eq 0 ]];then
+    echo "Missing argument:<LOG_FILE>"
+    exit
+fi
+
 # Path to your log file (update as needed)
 _YTS_CFG_DIR=~/.local/share/yts
 LOG_FILE="${_YTS_CFG_DIR}/${1}"

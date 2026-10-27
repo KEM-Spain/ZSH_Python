@@ -224,6 +224,16 @@ str_pluralize () {
 	[[ ${RETURN_BOTH} == 'false' ]] && echo "${VALUE}" || echo "${CNT} ${VALUE}"
 }
 
+str_proper () {
+	local STR=${@}
+
+	[[ ! -t 0 ]] && read -r STR # Input is piped
+	
+	STR=$(perl -pe 's/(\[.*?\])|([a-zA-Z]+(?:\'\''[a-zA-Z]+)?)/defined $1 ? $1 : ucfirst(lc($2))/ge' <<< "${STR}")
+
+	print -r -- "${STR}"
+}
+
 str_rep_char () {
 	local CHAR=${1}
 	local LENGTH=${2}
@@ -246,17 +256,6 @@ str_no_ansi () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	echo ${STR} | perl -pe 's/\x1B\[+[\d;]*[mK]//g'
-}
-
-str_proper () {
-	local STR=${@}
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	STR=${(C)STR} # Proper case
-	STR=$(sed 's/\(\o047\)\([A-Z]\)/\1\L\2/g' <<<${STR}) # Fix proper case anonmaly: UC letter following apostrophe
-
-	echo ${STR}
 }
 
 str_to_ascii() {

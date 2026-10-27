@@ -24,7 +24,8 @@ msg_box () {
 	local -a MSG_BODY=()
 	local -a MSG_FOOTER=()
 	local -a MSG_FOLD=()
-	local -A CONT_COORDS=()
+	local -A COORD_ARGS=()
+	local -a MSG=()
 
 	local MAX_X_COORD=$(( _MAX_ROWS - 5 )) # Not including frame 5 up from bottom, 4 with frame
 	local MAX_Y_COORD=$(( _MAX_COLS - 10 )) # Not including frame 10 from sides, 9 with frame
@@ -47,6 +48,7 @@ msg_box () {
 	local GAP_NDX=0
 	local HDR_MAX=0
 	local KEY=''
+	local MIN_REQUIRED_WIDTH=0
 	local MAX_ELEM=0
 	local MSG_COLS=0
 	local MSG_DTL=0
@@ -72,8 +74,6 @@ msg_box () {
 	local H K M T X 
 
 	# OPTIONS
-	local -A COORD_ARGS=()
-	local -a MSG=()
 	local CLEAR_MSG=false
 	local CONTINUOUS=false
 	local DELIM_ARG=false
@@ -179,9 +179,9 @@ msg_box () {
 	# Get message delimiter
 	[[ ${DELIM_ARG} != 'false' ]] && _DELIM=${DELIM_ARG} # Assign delimiter
 
-	if [[ ${#DELIM} -gt 1 ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Invalid delimiter:${DELIM}. Resetting to '|'"
-		DELIM='|' # Set to rational default
+	if [[ ${#_DELIM} -gt 1 ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Invalid delimiter:${_DELIM}. Resetting to '|'"
+		_DELIM='|' # Set to rational default
 	fi
 
 	# Flash progress msg if requested
@@ -242,7 +242,7 @@ msg_box () {
 		MSG_PAGES=$(( ${#MSG_BODY} / PG_LINES ))
 		PARTIAL=$((${#MSG_BODY} % PG_LINES ))
 		[[ ${PARTIAL} -ne 0 ]] && (( MSG_PAGES++))
-		NAV_BAR=$(sed "s/_MSG_PG/${MSG_PAGES}/" <<< ${NAV_BAR})
+		NAV_BAR=${NAV_BAR//_MSG_PG/${MSG_PAGES}}
 
 		if [[ -n ${MSG_HEADER} ]];then
 			MSG_HEADER=(${MSG_HEADER} ${NAV_BAR} ${MSG_SEP})
@@ -268,9 +268,12 @@ msg_box () {
 	[[ ${MSG_H_COORD_ARG} -eq 0 ]] && BOX_HEIGHT=$(( PG_LINES + ${#MSG_HEADER} + ${#MSG_FOOTER} + 2 )) || BOX_HEIGHT=${MSG_H_COORD_ARG}
 
 	# Safety: Ensure box width fits content
-	local MIN_REQUIRED_WIDTH=$(( MSG_COLS + 2 ))
-	if [[ ${MSG_W_COORD_ARG} -ne 0 && ${BOX_WIDTH} -lt ${MIN_REQUIRED_WIDTH} ]]; then
-		BOX_WIDTH=${MIN_REQUIRED_WIDTH}
+	if [[ ${CONTINUOUS} == 'false' ]];then # CONTINUOUS - no adjustments to BOX_WIDTH
+		MIN_REQUIRED_WIDTH=$(( MSG_COLS + 2 ))
+		if [[ ${MSG_W_COORD_ARG} -ne 0 && ${BOX_WIDTH} -lt ${MIN_REQUIRED_WIDTH} ]]; then
+			[[ ${_DEBUG} -ge ${_MED_DBG} ]] && dbg "${0}: EXPANDED BOX WIDTH"
+			BOX_WIDTH=${MIN_REQUIRED_WIDTH}
+		fi
 	fi
 
 	if [[ ${RELATIVE} == 'true' ]];then
@@ -292,8 +295,6 @@ msg_box () {
 
 	box_coords_set ${TAG} X ${BOX_X_COORD} Y ${BOX_Y_COORD} H ${BOX_HEIGHT} W ${BOX_WIDTH} S ${TEXT_STYLE}
 
-	stty -echo
-
 	# Call once for CONTINUOUS messages
 	if [[ ${CONTINUOUS} == 'true' ]];then
 		if [[ ${_CONT_DATA[BOX]} == 'false' ]];then
@@ -311,7 +312,7 @@ msg_box () {
 
 		if [[ ${MSG_PAGING} == 'true' ]];then
 			GAP=$(msg_calc_gap ${#MSG_BODY} ${PG_LINES})
-			for (( GAP_NDX=1;GAP_NDX<=${GAP};GAP_NDX++));do
+			for (( GAP_NDX=1; GAP_NDX<=GAP; GAP_NDX++ ));do
 				MSG_BODY+=" "
 			done
 		fi
@@ -378,7 +379,7 @@ msg_box () {
 		SCR_NDX=$(( BOX_X_COORD + ${#MSG_HEADER} ))
 		DTL_NDX=0
 
-		for (( MSG_NDX=1;MSG_NDX<=${#MSG_BODY};MSG_NDX++));do
+		for (( MSG_NDX=1; MSG_NDX<=${#MSG_BODY}; MSG_NDX++ ));do
 			(( SCR_NDX++ ))
 			(( DTL_NDX++ ))
 			MSG_OUT=$(msg_box_align ${TAG} ${MSG_BODY[${MSG_NDX}]})
@@ -415,7 +416,7 @@ msg_box () {
 		# Footer
 		[[ ${MSG_PAGING} == 'true' ]] && SCR_NDX=${PAGING_BOT}
 
-		for (( MSG_NDX=1;MSG_NDX<=${#MSG_FOOTER};MSG_NDX++));do
+		for (( MSG_NDX=1; MSG_NDX<=${#MSG_FOOTER}; MSG_NDX++ ));do
 			(( SCR_NDX++))
 			(( DTL_NDX++))
 			MSG_OUT=$(msg_box_align ${TAG} ${MSG_FOOTER[${MSG_NDX}]})
@@ -437,7 +438,6 @@ msg_box () {
 	# Restore display
 	tput rc
 	tcup ${_MAX_ROWS} ${_MAX_COLS}
-	stty echo
 }
 
 msg_box_align () {
@@ -463,30 +463,30 @@ msg_box_align () {
 	if [[ ${MSG} =~ '<Z>' ]];then
 		MSG_OUT=" "
 	elif [[ ${MSG} =~ '<SEP>' ]];then
-		MSG_OUT=$(str_unicode_line ${BOX_SPAN})
+		MSG_OUT=${MSG//<SEP>/$(str_unicode_line ${BOX_SPAN})}
 	elif [[ ${MSG} =~ '<L>' ]];then
-		MSG=$(sed -e 's/^.*<L>/\\u2022 /' <<<${MSG})
+		MSG=${MSG/*<L>/\\u2022 }
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET - 1 )))
+		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${MSG} =~ '<X>' ]];then
-		MSG=$(sed -e 's/^.*<X>//' <<<${MSG})
+		MSG=${MSG##*<X>}
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET - 1 )))
+		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${MSG} =~ '<D>' ]];then
-		MSG=$(sed -e 's/^.*<D>//' <<<${MSG})
+		MSG=${MSG##*<D>}
 		LBL=${${(s/:/)MSG}[1]}
-		LBL=${LBL:gs/#/ /}
+		LBL=${LBL//#/ }
 		VAL=${${(s/:/)MSG}[2]}
 		MSG="<c>${LBL}<N>:<w>${VAL}<N>"
 		TEXT=$(msg_nomarkup ${MSG})
 		PAD_L=' '
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET )) )
+		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${BOX_STYLE:l} == 'l' ]];then
 		TEXT=$(msg_nomarkup ${MSG})
@@ -498,8 +498,8 @@ msg_box_align () {
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PADDING=$(str_center_pad ${BOX_WIDTH} ${TEXT})
-		PAD_L=$(printf ' %.0s' {1..${PADDING}})
-		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )) )
+		PAD_L=$(str_lpad "" ${PADDING})
+		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	else
 		TEXT=$(msg_nomarkup ${MSG})
@@ -542,7 +542,7 @@ msg_box_clear () {
 		[[ -z ${BOX_COORDS} ]] && return 1
 	fi
 
-	for (( X=${BOX_COORDS[X]}; X <= ( ${BOX_COORDS[X]} + ${BOX_COORDS[H]} - 1 ); X++));do
+	for (( X=${BOX_COORDS[X]}; X <= ( ${BOX_COORDS[X]} + ${BOX_COORDS[H]} - 1 ); X++ ));do
 		tcup ${X} ${BOX_COORDS[Y]}
 		tput ech ${BOX_COORDS[W]}
 	done
@@ -566,17 +566,17 @@ msg_box_parse () {
 	local -a MSGS_OUT=()
 	local DELIM_COUNT=0
 	local MSG=''
-	local K L T 
+	local K L T X 
 
-	MSGS_IN=$(tr -d "\n" <<<${MSGS_IN})
-	MSGS_IN=$(sed -E "s/[\\\][${_DELIM}]/_DELIM_/g" <<<${MSGS_IN})
+	MSGS_IN=${MSGS_IN//$'\n'/}
+	MSGS_IN=${MSGS_IN//\\${_DELIM}/_DELIM_}
 
 	DELIM_COUNT=$(grep --color=never -o "[${_DELIM}]" <<<${MSGS_IN} | wc -l)
 
-	for (( X=1; X <= $(( ${DELIM_COUNT} + 1 )); X++ ));do
+	for (( X=1; X <= $(( DELIM_COUNT + 1 )); X++ ));do
 		[[ ${DELIM_COUNT} -ne 0 ]] && MSG=$(cut -d"${_DELIM}" -f${X} <<<${MSGS_IN}) || MSG=${MSGS_IN}
-	 	MSG=$(sed "s/_DELIM_/${_DELIM}/g" <<<${MSG})
-		L=$(tr -d '[:space:]' <<<${MSG})
+	 	MSG=${MSG//_DELIM_/${_DELIM}}
+		L=${MSG//[[:space:]]/}
 		[[ -z ${L} ]] && continue
 		if [[ ${#MSG} -gt ${MAX_WIDTH} ]];then
 			MSG_FOLD=("${(f)$(fold -s -w${MAX_WIDTH} <<<${MSG})}")
@@ -647,7 +647,7 @@ msg_list_data () {
 	local LINE=''
 	local MARK=0
 	local MAX=0
-	NDX=0
+	local NDX=0
 	local PAD=0
 	local VAL
 	local L 
@@ -661,7 +661,7 @@ msg_list_data () {
 	NDX=0
 	for L in ${MSG};do
 		((NDX++))
-		MARK=${L[(i)[:]]}
+		MARK=${L[(i)[:]}
 		[[ ${MARK} -lt ${MAX} ]] && PAD=$(( MAX - MARK )) || PAD=0
 		PAD=$(( PAD + ${#L} ))
 		VAL=${${(s/:/)L}[2]}
@@ -820,7 +820,7 @@ msg_stream () {
 		[[ ${MSG_LINES[-1]} == "<w><N>|" ]] && MSG_LINES[-1]=() || break
 	done
 
-	MSG_LINES[-1]=$(sed 's/|//g' <<< ${MSG_LINES[-1]})
+	MSG_LINES[-1]=${MSG_LINES[-1]//|/}
 
 	[[ -z ${#MSG_LINES[1]} || ${MSG_LINES[1]:l} =~ 'unable to locate' ]] && return
 
@@ -920,8 +920,10 @@ msg_warn () {
 	local MSG=${@}
 	local LABEL='Warning'
 
-	grep -q '|' <<<${MSG}
-	[[ ${?} -eq 0 ]] && LABEL${${(s/|/)MSG}[1]} && MSG${${(s/|/)MSG}[2]}
+	if [[ ${MSG} == *\|* ]]; then
+		LABEL=${${(s/|/)MSG}[1]}
+		MSG=${${(s/|/)MSG}[2]}
+	fi
 
 	if [[ -n ${MSG} ]];then
 		[[ ${MSG} =~ ":" ]] && MSG=$(perl -p -e 's/:(.*)/\e[m:\e[3;37m$1\e[m/g' <<<${MSG})

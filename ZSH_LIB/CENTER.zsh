@@ -51,16 +51,18 @@ get_relative_center () {
 
 get_relative_x () {
 	local -A RGN_COORDS=(${(z)1}) # Coords of region to place object
-	local HEIGHT=${2} # Height of object
-	local X_OFF=${3:=0}
+	local HEIGHT="${2}" # Height of object
+	local X_OFF="${3:=0}" # X offset
+	local Y_OFF="${4:=0}" # Y offset
 	local RX=${RGN_COORDS[X]}
 	local RY=${RGN_COORDS[Y]}
 	local RH=${RGN_COORDS[H]}
 	local RW=${RGN_COORDS[W]}
-	local -F3 RGN_CTR=0
-	local -F3 OBJ_CTR=0
-	local -F3 REM=0
+	local -F3 RGN_CTR=0 # Region center
+	local -F3 OBJ_CTR=0 # Object center
+	local -F3 REM=0 # Remainder
 	local -i X=0
+	local -i Y=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
@@ -72,24 +74,26 @@ get_relative_x () {
 	REM=$(( OBJ_CTR % 2 ))
 	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
 
-	X=$(( RGN_CTR - OBJ_CTR ))
+	X=$(( RGN_CTR - OBJ_CTR - 1 ))
 
 	[[ ${X_OFF} -ne 0 ]] && X=$(( X + X_OFF ))
 
-	echo ${X}
+	echo $((X))
 }
 
 get_relative_y () {
 	local -A RGN_COORDS=(${(z)1}) # Coords of region to place object
-	local WIDTH=${2} # Width of object
-	local Y_OFF=${3:=0}
+	local WIDTH="${2}" # Width of object
+	local X_OFF="${3:=0}" # X offset
+	local Y_OFF="${4:=0}" # Y offset
 	local RX=${RGN_COORDS[X]}
 	local RY=${RGN_COORDS[Y]}
 	local RH=${RGN_COORDS[H]}
 	local RW=${RGN_COORDS[W]}
-	local -F3 RGN_CTR=0
-	local -F3 OBJ_CTR=0
-	local -F3 REM=0
+	local -F3 RGN_CTR=0 # Region center
+	local -F3 OBJ_CTR=0 # Object center
+	local -F3 REM=0 # Remainder
+	local -i X=0
 	local -i Y=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -102,11 +106,11 @@ get_relative_y () {
 	REM=$(( OBJ_CTR % 2 ))
 	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
 
-	Y=$(( RGN_CTR - OBJ_CTR ))
+	Y=$(( RGN_CTR - OBJ_CTR + 1 ))
 
 	[[ ${Y_OFF} -ne 0 ]] && Y=$(( Y + Y_OFF ))
 
-	echo ${Y}
+	echo $((Y))
 }
 
 get_box_center () {
@@ -311,8 +315,8 @@ center () {
 		VERT) get_vert_center ${_HEIGHT};;
 		HORZ) get_horz_center ${_WIDTH};;
 		REL_C) get_relative_center ${COORD_ARGS} ${_HEIGHT} ${_WIDTH} ${_X_OFF} ${_Y_OFF};;
-		REL_X) get_relative_x ${COORD_ARGS} ${_HEIGHT} ${_X_OFF};;
-		REL_Y) get_relative_y ${COORD_ARGS} ${_WIDTH} ${_Y_OFF};;
+		REL_X) get_relative_x ${COORD_ARGS} ${_HEIGHT} ${_X_OFF} ${_Y_OFF};;
+		REL_Y) get_relative_y ${COORD_ARGS} ${_WIDTH} ${_X_OFF} ${_Y_OFF};;
 	esac
 }
 

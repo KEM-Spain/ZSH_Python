@@ -46,7 +46,6 @@ typeset -A _FAILED=()
 typeset -A _FAV_LIST=()
 typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
-typeset -A _IND_COORDS=()
 typeset -A _INFO_COORDS=()
 typeset -A _MENU_TYPES=(1 Custom 2 Rumble 3 YouTube)
 typeset -A _MSG_DELAY=(SHORT .5 MED 2 LONG 4)
@@ -68,43 +67,42 @@ typeset -a _STERMS=()
 typeset -a _STRIP_WORDS=()
 typeset -aU _LOCAL_LIST=()
 typeset -A _SPINNER_COORDS=()
-typeset -A _RC=()
+typeset _RY=0
 
 # Display Constants
 _CONT_WIDTH=86
-_IND_W=25 # Offsets X=2, Y=30
-_INFO_W=$((_CONT_WIDTH - 6 ))
-
+INF_W=$((_CONT_WIDTH - 7 ))
+INF_H=5
 _CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
-_IND_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4 -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_IND_W} -y30) H 4 W ${_IND_W}) # Indicator coords
-_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 5 W ${_INFO_W}) # Info coords
-_RC=($(get_relative_center "${(kv)_CONT_COORDS}" 1 4)) # Center spinner under continuous box
-_SPINNER_COORDS=(ROW $(( _CONT_COORDS[X] - 1 )) COL ${_RC[Y]})
-# TODO: possibly place sinner on right side of continuous box after destination
+_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${INF_W}) H ${INF_H} W ${INF_W}) # Info coords
+_RY=$(get_relative_y "${(kv)_CONT_COORDS}" 1 4) # Relative center of box
+_SPINNER_COORDS=(ROW $(( _CONT_COORDS[X] - 1 )) COL ${_RY}) # Center spinner under continuous box
+
 # Constants
-_YT_CFG_DIR=~/.local/share/yts
 _ACTION=download
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
+_YT_DLP_CFG=~/.local/share/yts
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
 _FIELD_LEN[author]=26
 _FIELD_LEN[title]=80
-_JS_SCRIPT=${_YT_CFG_DIR}/yts.js
+_JS_SCRIPT=${_YT_DLP_CFG}/yts.js
 _MAX_AUTHOR=27
-_MAX_TITLE=74
 _MAX_FLEN=120
 _MAX_MSG_LEN=$(( _CONT_COORDS[W] - 2 ))
+_MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive" "deep focus podcast")
 _TRANS_ERR_LIMIT=6
-_YTS_DOWNLOAD_LOG=${_YT_CFG_DIR}/yts.downloads
-_YTS_FAVORITES=${_YT_CFG_DIR}/yts.favorites
-_YTS_FAV_NEW=${_YT_CFG_DIR}/yts.favorites.new
-_YTS_UPD_MARKER=${_YT_CFG_DIR}/yts-upd.lastrun
-_YT_URL_LOG=${_YT_CFG_DIR}/yt.url.log
-_YT_DBG_LOG=${_YT_CFG_DIR}/yt.dbg.log
+_YTS_DOWNLOAD_LOG=${_YT_DLP_CFG}/yts.downloads
+_YTS_FAVORITES=${_YT_DLP_CFG}/yts.favorites
+_YTS_FAV_NEW=${_YT_DLP_CFG}/yts.favorites.new
+_YTS_UPD_MARKER=${_YT_DLP_CFG}/yts-upd.lastrun
+_YT_DBG_LOG=${_YT_DLP_CFG}/yt.dbg.log
+_YT_URL_LOG=${_YT_DLP_CFG}/yt.url.log
+_WGET_OPTS='--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/125.0.0.0 Safari/537.36" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header="Accept-Charset: UTF-8,*;q=0.5" --header="Accept-Language: en-US,en;q=0.5" --header="Referer: https://rumble.com/"'
 
 # Globals
 g_CMDLINE_ARGS=false
@@ -117,13 +115,14 @@ g_MASK_NDX=1
 g_PREFER_LIVE=''
 g_PRESERVE_LOG=false
 g_PROXY_CMD=''
+g_SNDX=0
 g_WHEN=''
 g_YTS_LOG=''
-g_SNDX=0
 
 # Functions
 
 action_do () {
+	local -a ZSEL_REPLY=()
 	local AUTHOR=''
 	local DEST=''
 	local DEST_LINE=''
@@ -155,7 +154,7 @@ action_do () {
 	local TRANS_ERR_CNT=0
 	local TRANS_ERR_MSG=0
 	local URL=''
-	local M
+	local M X Y W
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
@@ -173,6 +172,8 @@ action_do () {
 			TITLE=$(get_field title ${M})
 			URL=$(get_field url ${M})
 			RETRIES=0
+			local RETRIED_COOKIES=false
+			local COOKIE_FLAG=''
 
 			logit ${_YT_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
 
@@ -180,7 +181,7 @@ action_do () {
 			trap job_kill INT
 
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Starting job for:${URL}"
-			job_start "${URL}"
+			job_start "${URL}" "${COOKIE_FLAG}"
 
 			msg_box -t${_MSG_DELAY[LONG]} -O${CYAN_FG} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested...<N>"
 
@@ -189,7 +190,7 @@ action_do () {
 			HDRS_OUT=false
 			while true;do
 				read -s -t0.1 -k1 INT_KEY 2>/dev/null
-				if [[ ${INT_KEY} == 'k' ]]; then
+				if [[ ${INT_KEY} == 'k' ]];then
 					job_cancel
 					logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED during initialization"
 					MSG="Cancelling download..."
@@ -199,22 +200,32 @@ action_do () {
 					break
 				fi
 
-				if grep -q -Ei -m1 'already been' ${g_YTS_LOG} 2>/dev/null; then
+				if grep -q -Ei -m1 'already been' ${g_YTS_LOG} 2>/dev/null;then
 					logit ${_YT_DBG_LOG} "${0}: No download - video already exists"
 					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>File was already downloaded...<N>"
 					_CANCELLED[${M}]=true
 					break
 				fi
 
-				if grep -q -Ei -m1 '403' ${g_YTS_LOG} 2>/dev/null; then
+				if grep -q -Ei -m1 '403' ${g_YTS_LOG} 2>/dev/null;then
 					logit ${_YT_DBG_LOG} "${0}: No download - 403 error"
-					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
-					_CANCELLED[${M}]=true
-					break
+					if [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' && ${RETRIED_COOKIES} == 'false' ]];then
+						RETRIED_COOKIES=true
+						COOKIE_FLAG='-c'
+						logit ${_YT_DBG_LOG} "${0}: Rumble 403 encountered - retrying with cookies (-c)"
+						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying with cookies...<N>"
+						job_cancel
+						job_start "${URL}" "${COOKIE_FLAG}"
+						continue
+					else
+						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
+						_FAILED[${M}]=true
+						break
+					fi
 				fi
 
 				PRE_HDR_ERR=$(grep -Ei -m1 'will begin' ${g_YTS_LOG} 2>/dev/null)
-				if [[ ${?} -eq 0 ]]; then
+				if [[ ${?} -eq 0 ]];then
 					logit ${_YT_DBG_LOG} "${0}: No download - future broadcast"
 					[[ ! ${PRE_HDR_ERR:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${PRE_HDR_ERR})
 					MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
@@ -224,7 +235,7 @@ action_do () {
 				fi
 
 				DEST_LINE=$(grep -Ei -m1 'Destination:' ${g_YTS_LOG} 2>/dev/null)
-				if [[ ${?} -eq 0 ]]; then
+				if [[ ${?} -eq 0 ]];then
 					HDRS_OUT=true
 					break
 				fi
@@ -236,6 +247,7 @@ action_do () {
 
 			logit ${_YT_DBG_LOG} "${0}: GENERATING HEADER"
 			DEST=("${(f)$(sed -e "s#/tmp/#/tmp|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Delimit path and fn
+			logit ${_YT_DBG_LOG} "${0}: DEST:${DEST}"
 
 			HDR1_TXT="${${(@s/|/)${DEST}}[2]}"
 			if [[ ${HDR1_TXT} =~ "\.[^.]+\.[^.]+$" ]];then # Double extension
@@ -255,22 +267,30 @@ action_do () {
 
 			msg_box -C -O${CYAN_FG} -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 			msg_box -C -jl ${HDR2_TXT}
-			msg_box -C -jl "<c>$(str_unicode_line ${_MAX_MSG_LEN})<N>"
+			msg_box -C -jl "<c><SEP><N>"
 			msg_box -C -jl "<B><c>Download started, waiting for log activity to begin...<N>"
 
 			zmodload zsh/zselect # Live progress monitoring with zselect
 			exec 3< <(tail -Fn0 "${g_YTS_LOG}")
 
-			local -a zsel_reply
-			tcup $(( _CONT_COORDS[X] - 1 )) $(( _CONT_COORDS[Y] )); tput ech 80
+			# Border clearing coords
+			X=$(( _CONT_COORDS[X] - 1 ))
+			Y=${_CONT_COORDS[Y]}
+			W=${_CONT_COORDS[W]}
+
+			tcup ${X} ${Y};tput ech ${W} # Clear line over cont box
+			X=$(( _CONT_COORDS[X] + _CONT_COORDS[H] ))
+			tcup ${X} ${Y};tput ech ${W} # Clear line below cont box
+			tcup $((++X)) ${Y};tput ech ${W} # Clear additional line 
+
 			spinner start
 
 			while true; do
-				zselect -t 10 -a zsel_reply -r 3
+				zselect -t 10 -a ZSEL_REPLY -r 3
 
 				# Check keyboard input instantly on every loop iteration
 				read -s -t0.01 -k1 INT_KEY 2>/dev/null
-				if [[ ${INT_KEY} == 'k' ]]; then
+				if [[ ${INT_KEY} == 'k' ]];then
 					spinner stop
 					job_cancel
 					logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED during download"
@@ -282,13 +302,13 @@ action_do () {
 				fi
 
 				# Check log pipe activity (FD 3)
-				if (( ${zsel_reply[(I)3]} )); then
-					if read -u3 -r LOG_LINE; then
+				if (( ${ZSEL_REPLY[(I)3]} ));then
+					if read -u3 -r LOG_LINE;then
 
 						MSG=$(str_word_clip ${LOG_LINE} ${_MAX_MSG_LEN})
 						MSG="$(str_rpad ${MSG} ${_MAX_MSG_LEN})"
 
-						if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]]; then
+						if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
 							case ${LOG_LINE:l} in
 								*merging*)
 									spinner stop
@@ -310,12 +330,11 @@ action_do () {
 									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
 									;;
 								*)
-									tcup $(( _CONT_COORDS[X] + _CONT_COORDS[H] )) $(( _CONT_COORDS[Y] + 2 )); tput ech 80
 									tcup $(( _CONT_COORDS[X] + _CONT_COORDS[H] )) $(( _CONT_COORDS[Y] + 2 )); printf "%s" ${MSG}
 									sleep .1
 									;;
 							esac
-						elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]]; then
+						elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 							case ${LOG_LINE:l} in
 								*moving*)
 									spinner stop
@@ -337,7 +356,7 @@ action_do () {
 									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
 									;;
 								*)
-									tcup 20 45; printf "%s" ${MSG}
+									tcup 20 45; printf "${WHITE_ON_GREY}%s${RESET}" ${MSG}
 									sleep .1
 									;;
 							esac
@@ -384,9 +403,9 @@ action_warn () {
 
 cfg_init () {
 	local CFG_STATE=0
-	local -A CFG_MSGS=(1 "Missing configuration directory:${_YT_CFG_DIR}" 2 "Missing favorites file:${_YTS_FAVORITES}")
+	local -A CFG_MSGS=(1 "Missing configuration directory:${_YT_DLP_CFG}" 2 "Missing favorites file:${_YTS_FAVORITES}")
 
-	[[ -d ${_YT_CFG_DIR} ]] && CFG_STATE=0 || CFG_STATE=1 # Dir exists
+	[[ -d ${_YT_DLP_CFG} ]] && CFG_STATE=0 || CFG_STATE=1 # Dir exists
 	[[ -f ${_YTS_FAVORITES} ]] && CFG_STATE=0 || CFG_STATE=2 # Favorites file found
 	[[ -e ${_YT_DBG_LOG} ]] && /bin/rm -f ${_YT_DBG_LOG} # Kill old log
 	logit ${_YT_DBG_LOG} "Logging started..." # Start fresh log
@@ -397,37 +416,33 @@ cfg_init () {
 }
 
 clean_title () {
-	local RAW_TITLE=${1:gs/_/ /}
-	local AUTHOR=''
-	local TITLE=''
+	local RAW_TITLE=${1}
 	local MAX_HDR=${2:=${_MAX_TITLE}}
+	local -a PARTS=()
+	local AUTHOR=''
+	local HYPHEN_CNT=0
 	local STR=''
+	local TITLE=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: RAW_TITLE:${RAW_TITLE}"
 
-	[[ ${RAW_TITLE} =~ "[[:alpha:]] s [[:alpha:]]" ]] && RAW_TITLE=${RAW_TITLE:gs/ s /\'s /} # Missing apostrophe glitch
+	logit ${_YT_DBG_LOG} "${0}: RAW_TITLE:${RAW_TITLE}"
 
-	AUTHOR=$(str_trim "${${(@s/-/)RAW_TITLE}[1]}")
-	TITLE=$(str_trim "${${(@s/-/)RAW_TITLE}[2,-1]}")
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: AUTHOR:${AUTHOR}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: TITLE:${TITLE}"
-	[[ ${AUTHOR} != ${_QUERY_OPTS[DKEY]} ]] && AUTHOR=${_QUERY_OPTS[DKEY]}
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: AUTHOR/DKEY:${AUTHOR}"
-	[[ ${#AUTHOR} -gt ${_MAX_AUTHOR} ]] && AUTHOR="${${(@s/ /)AUTHOR}[1,2]}" # Reduce multi-section author to one
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: AUTHOR SECTION:${AUTHOR}"
-	TITLE="${AUTHOR} - ${TITLE}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: TITLE:${TITLE}"
+	AUTHOR=${_QUERY_OPTS[DKEY]}
+	TITLE=${RAW_TITLE//${AUTHOR}/} # Strip author from title if present
+	TITLE=$(title_scrubber ${TITLE})
+	logit ${_YT_DBG_LOG} "${0}: AUTHOR:${AUTHOR}, TITLE:${TITLE}"
 	
-	STR=$(keyword_strip <<<${TITLE})
+	TITLE=$(keyword_strip <<<${TITLE})
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Stripped keywords:${STR}"
 
-	STR=$(title_scrubber ${STR})
+	TITLE="${AUTHOR} - ${TITLE}" # Assemble TITLE
+	TITLE=$(str_word_clip ${TITLE} ${MAX_HDR}) # Limit length at word boundary
 
-	TITLE=$(str_word_clip ${STR} ${MAX_HDR}) # Limit length at word boundary
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Limited length to:${MAX_HDR}:${TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: COMPLETED TITLE:${TITLE}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: TITLE:${TITLE}"
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: RETURNING TITLE:${TITLE}"
 	echo ${TITLE}
 }
 
@@ -818,7 +833,7 @@ job_kill () {
 	if [[ ${?} -eq 0 ]];then
 		for P in ${PIDS};do
 			kill -9 ${P} >/dev/null 2>&1
-			find ${_DOWNLOAD_DIR} -maxdepth 1 \( -name '*part' -or -name '*ytdl' \) -exec rm -rf {} \; # Clear any intermediate files
+			find /tmp -maxdepth 1 \( -name '*part' -or -name '*ytdl' -or -name '*.mp4*' \) -exec rm -rf {} \; # Clear any intermediate files
 			logit ${_YT_DBG_LOG} "${0}: Killed ${P}"
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0} killing ${P}"
 		done
@@ -845,21 +860,17 @@ job_retry () {
 
 job_start () {
 	local URL=${1}
-	local TITLE=${2}
-	local YTS_LOG="${_YT_CFG_DIR}/yts_${RANDOM}.log"
+	local COOKIE_ARG=${2}
+	local YTS_LOG="${_YT_DLP_CFG}/yts_${RANDOM}.log"
 	local PID=0
 
-	logit ${_YT_DBG_LOG} "Starting background job for URL: ${URL} (Title: ${TITLE})"
+	logit ${_YT_DBG_LOG} "Starting download for URL: ${URL} (Cookies: ${COOKIE_ARG:-none})"
 
-	PID=$(yt "-o '%(channel)s - %(title).200s.%(ext)s' ${(qqq)URL} &>${YTS_LOG} &")
+	$(yt ${COOKIE_ARG} ${URL} ${YTS_LOG})
 
-	logit ${_YT_DBG_LOG} "Job PID:${PID}"
 	logit ${_YT_DBG_LOG} "Logging to ${YTS_LOG}"
 
 	g_YTS_LOG=${YTS_LOG}
-
-	# Return PID
-	echo ${PID}
 }
 
 keyword_strip () {
@@ -1058,13 +1069,13 @@ log_update () {
 	local INODE=''
 	local LINE=''
 	local LOG_LINE=''
-	local NEW_LOG=${_YT_CFG_DIR}/log.new
+	local NEW_LOG=${_YT_DLP_CFG}/log.new
 	local L
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	{
-		[[ -e ${_YT_CFG_DIR}/log.new ]] && /bin/rm -f ${NEW_LOG}
+		[[ -e ${_YT_DLP_CFG}/log.new ]] && /bin/rm -f ${NEW_LOG}
 		logit ${_YT_DBG_LOG} "${0}: LOG lines BEFORE update:$(wc -l ${_YTS_DOWNLOAD_LOG})"
 
 		HAS_NEW_LOG=false
@@ -1147,23 +1158,19 @@ parse_rumble () {
 	local NDX=0
 	local SET=0
 	local T3=0
-	local TAG=''
 	local TCNT=0
-	local TNDX=0
 	local TEXT=''
 	local TITLE=''
+	local TNDX=0
 	local U=0
 	local URL=''
 	local K L
-	local WGET_OPTS='--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/125.0.0.0 Safari/537.36" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header="Accept-Charset: UTF-8,*;q=0.5" --header="Accept-Language: en-US,en;q=0.5" --header="Referer: https://rumble.com/"'
-
-	# TODO: live broadcasts are seeping in; identified by "00:00" duration
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Run query and filter known problem chars
 	{
-	CMD="wget ${WGET_OPTS} -q -O - "${(qqq)QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g'"
+	CMD="wget ${_WGET_OPTS} -q -O - "${(qqq)QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g'"
 	LIST=("${(f)$(eval ${CMD})}")
 	} 
 
@@ -1184,7 +1191,6 @@ parse_rumble () {
 
 	for L in "${LIST[@]}"; do
     LINE=${L:Q}
-    TAG="${LINE%%:*}" # Discard everything past the first colon
     TEXT="${LINE#*:}" # Discard everything before and including the first colon
     case ${LINE} in
       *relative_url:*) continue;;
@@ -1492,9 +1498,7 @@ set_final_fn () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	NEW_FN=${FN:t:r:gs/_/ /} # Tail, no extension, swap underscore
-	NEW_FN=$(clean_title ${NEW_FN}) # Strip problematic chars
-	NEW_FN=$(sed "s/${_QUERY_OPTS[QKEY]:l}/${_QUERY_OPTS[DKEY]}/I" <<<${NEW_FN}) # Add creator
+	NEW_FN=$(clean_title ${FN:t}) # Strip problematic chars
 	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
 	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FLEN}) # Limit length at word boundary
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Restore path and extension
@@ -1590,6 +1594,7 @@ set_rumble_row () {
 		esac
 
 		if [[ $(( NDX % 4 )) -eq 0 ]];then
+			[[ ${DURATION} =~ '00:00' ]] && continue # No livestreams
 			(( g_SNDX++ ))
 			_RUMBLE_ROWS[${g_SNDX}]="${URL}|${TITLE}|${DURATION}|${AGE}"
 		fi
@@ -1612,7 +1617,7 @@ spinner () {
             _SPIN_NDX=1
             ;;
         stop)
-            tcup ${ROW} ${COL} && printf " " # Clear spinner
+            tcup ${ROW} ${COL} && printf "    " # Clear spinner
             ;;
         tick|*)
             tcup ${ROW} ${COL} && printf "${GREEN_FG}%s${RESET}" "${chars[_SPIN_NDX]}"
