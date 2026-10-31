@@ -150,12 +150,8 @@ ______EOF
 	#--End GetOpts--
 	 
 	# Execution
-	if [[ ${#} -eq 0 ]];then
-		usage "Missing argument:<FILE>" 
-		return 1
-	else
-		FN=${1}
-	fi
+	FN=${1}
+	[[ -z ${FN} ]] && return
 
 	[[ ${VERBOSE} == 'true' ]] && echo "${CYAN_FG}Searching for:${FN}${RESET}" >&2
 
@@ -175,7 +171,7 @@ ______EOF
 
 	for D in ${PROD_LIST};do
 		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ${D}${RESET}" >&2
-		FLIST+=("${(f)$(find ${D} -type f -name "${FN}" -executable >/dev/null 2>1)}")
+		FLIST+=("${(f)$(find ${D} -type f -name "${FN}" -executable 2>&1)}")
 	done
 
 	if ! arr_is_populated "${FLIST}";then
@@ -1539,6 +1535,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
+
 # Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}
 
