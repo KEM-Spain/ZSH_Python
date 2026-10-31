@@ -1,10 +1,11 @@
 #compdef sut
 
 _sut() {
-    local line state
+    local context curcontext="$curcontext" state line
+    typeset -A opt_args
 
     _arguments -C \
-               "1: :->cmds" \
+          "1: :->cmds" \
 					"-H[help]" \
 					"-D[debug]" \
                "*::arg:->args"

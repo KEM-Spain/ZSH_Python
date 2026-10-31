@@ -189,7 +189,7 @@ external () {
     if [[ ${DEV} == 'null' ]];then
       for D in ${(k)_PART};do
         [[ ${_SMCUP} == 'true' ]] && do_rmcup
-        [[ ${_MP[${_PART[${D}]}]:l} == 'unmounted' ]] && echo "${_PART[${D}]} is unmounted" || echo "${_PART[${D}]} is mounted"
+        [[ ${_MP[${_PART[${D}]}]:l} == 'unmounted' ]] && echo "${_PART[${D}]} is unmounted (external)" || echo "${_PART[${D}]} is mounted (external)"
       done
     elif [[ -z ${_MP[${DEV}]} ]];then
       return 1

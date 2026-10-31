@@ -45,6 +45,13 @@ E_RED_BG=$(echo -n "\033[41m")
 E_WHITE_BG=$(echo -n "\033[47m")
 E_YELLOW_BG=$(echo -n "\033[43m")
 
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(SELECT.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _EXTERNAL_FILES
 typeset -a _TIPS
@@ -65,14 +72,9 @@ zsh_cheatsheet "${_EXT_DIR}/zsh-cheatsheet.md"
 
 _SCRIPT_FQFN=${0}
 
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/SELECT.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
-
 # Functions
 find_keyword () {
+	local TIPNAME=${1}
 	local -A OPTS=('-w' '-w' '-i' '-i' '-d' '-n')
 	local -a DETAIL=()
 	local -a GREP_OPTS=()
@@ -90,11 +92,12 @@ find_keyword () {
 
 	if [[ ${GREP_OPTS} =~ '-n' ]];then
 		for F in ${_TIPS};do
+			[[ ${TIPNAME} != "${F:t:r}" ]] && continue
 			DETAIL=("${(f)$(grep ${GREP_OPTS} ${KW} ${F})}")
 			[[ ${?} -eq 0 ]] && HIT=true || HIT=false
 			for D in ${DETAIL};do
-				LN=$(cut -d: -f1 <<<${D})
-				TEXT=$(cut -d: -f2 <<<${D})
+				LN="${${(@s/:/)D}[1]}"
+				TEXT="${${(@s/:/)D}[2]}"
 				printf "${BOLD}${MAGENTA_FG}%20s ${CYAN_FG}%4s ${WHITE_FG}%.90s${RESET}\n" ${F:t} ${LN} "$(str_trim ${TEXT} | tr -d '\n' | sed "s/${KW}/${E_RED_FG}${KW}${E_RESET}/g")"
 			done
 		done | mypager wait
@@ -155,26 +158,26 @@ usage () {
 	local OPTS=$(parse_opts ${OPTSTR})
 	local -a PENDING_MSGS=(${@})
 	(
-	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} [$(opt_type t)]\n"
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type t)\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug (repeats increase level)"
 	echo -e "${WHITE_FG}-I${RESET} enable keyword case sensitivity (default:case insensitive)"
-	echo -e "${WHITE_FG}-W${RESET} disable keyword word matches (default:whole words only)"
-	echo -e "${WHITE_FG}-d${RESET} add line number detail for keyword search results"
+	echo -e "${WHITE_FG}-w${RESET} disable whole word matches for keyword search (default:whole words only)"
+	echo -e "${WHITE_FG}-d${RESET} disable line number detail for keyword search results"
 	echo -e "${WHITE_FG}-k $(opt_type k)${RESET} search for keyword"
 	echo -e "${WHITE_FG}-l${RESET} list available tips"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDIWdk:l"
+OPTSTR=":HDIwdk:l"
 OPTIND=0
 
 KEYWORD=''
-KEYWORD_DETAIL=''
+KEYWORD_DETAIL='-d'
 WHOLE_WORD='-w'
 CASE='-i'
 SHOW_TIPS=false
@@ -184,8 +187,8 @@ while getopts ${OPTSTR} OPTION;do
      H) usage;;
      D) dbg_set_level;;
      I) CASE='';;
-     W) WHOLE_WORD='';;
-     d) KEYWORD_DETAIL='-d';;
+     w) WHOLE_WORD='';;
+     d) KEYWORD_DETAIL='';;
      k) KEYWORD=${OPTARG};;
      l) SHOW_TIPS=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
@@ -199,12 +202,16 @@ shift $(( OPTIND - 1 ))
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
-[[ ${#} -ne 0 ]] && ARG=${1} || ARG=''
+[[ ${#} -ne 0 ]] && TIPNAME=${1} || exit_leave $(err_msg_exit "Missing argument <TIPNAME>")
+
+if [[ ! -e ${_TIP_DIR}/${TIPNAME}.tip ]];then
+	exit_leave $(err_msg_exit "No such tip file: ${TIPNAME}")
+fi
 
 if [[ -n ${KEYWORD} ]];then
 	echo "Searching for KEYWORD:${WHITE_FG}\"${KEYWORD}\"${RESET}"
 	do_rmcup
-	find_keyword ${CASE} ${WHOLE_WORD} ${KEYWORD_DETAIL} ${KEYWORD}
+	find_keyword ${TIPNAME} ${CASE} ${WHOLE_WORD} ${KEYWORD_DETAIL} ${KEYWORD} 
 	exit_leave
 fi
 
@@ -221,11 +228,11 @@ fi
 
 clear
 do_smcup
-if [[ -n ${ARG} ]];then
-	if [[ -e ${_TIP_DIR}/${ARG}.tip ]];then
-		source ${_TIP_DIR}/${ARG}.tip
+if [[ -n ${TIPNAME} ]];then
+	if [[ -e ${_TIP_DIR}/${TIPNAME}.tip ]];then
+		source ${_TIP_DIR}/${TIPNAME}.tip
 	else
-		MSG=$(err_msg_exit "No tips for:${ARG} found")
+		MSG=$(err_msg_exit "TIP:${TIPNAME} not found")
 	fi
 else
 	while true;do

@@ -25,7 +25,7 @@ GREEN_FG_I="${ITALIC}${GREEN_FG}"
 
 # Declarations
 typeset -a _LOCAL_FILES
-typeset -a _PROD_DIRS=(/usr/local/bin /usr/local/lib ${HOME}/.local/bin ${HOME}/.local/share)
+typeset -a _PROD_DIRS=(/usr/local/bin /usr/local/lib ${HOME}/.local/bin ${HOME}/.local/share ${HOME}/.zsh/completions)
 
 # Constants
 _CODEBASE=~/Code
@@ -38,7 +38,7 @@ _SCRIPT=${0:t}
 # Functions
 get_prod () {
 	local FN=${1}
-	local EXELIST=("${(f)$(fut findexe ${FN:t})}")
+	local EXELIST=("${(f)$(fut findexe -p ${FN:t})}");EXELIST+=("${(f)$(fut findexe -p ${FN:t})}")
 	local F D
 	local FX DX
 	local PROD_EXE=''
@@ -95,7 +95,7 @@ code_status () {
 		LONGEST=0
 		for F in ${PWD}/*;do
 			[[ ${F:e} == 'bak' ]] && continue
-			if [[ $(file ${F}) =~ 'zsh script' || ${F:e} == 'zsh' || ${F:e} == 'js' || ${F:e} == 'py' ]];then
+			if [[ $(file ${F}) =~ 'zsh script' || ${F:e} == 'zsh' || ${F:e} == 'js' || ${F:e} == 'py' || ${F:t} =~ "^_" ]];then
 				_LOCAL_FILES+=${F}
 				[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F:t}
 			fi

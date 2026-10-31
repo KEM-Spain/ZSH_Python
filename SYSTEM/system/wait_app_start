@@ -13,7 +13,7 @@ _SCRIPT=${0:t}
 _SYS_APPS=/usr/local/bin/system/launchers
 
 # Declarations
-typeset -A _APP_TAGS=(brave brave-browser obs com.obsproject.studio firefox firefox_firefox org.mozilla.firefox haruna haruna_haruna simple-scan "document scanner")
+typeset -A _APP_TAGS=(brave-browser brave com.obsproject.studio obs firefox_firefox firefox org.mozilla.firefox firefox haruna_haruna haruna simple-scan "document scanner")
 typeset -A _FLD_LIST=(WID 1 DID 2 PID 3 CLIENT 4 TITLE 5)
 typeset -A _SCAN=()
 typeset -A _SEEN=()

@@ -41,7 +41,7 @@ get_relative_center () {
 	REM=$(( OBJ_CTR % 2 ))
 	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
 
-	Y=$(( RGN_CTR - OBJ_CTR + 1 ))
+	Y=$(( RGN_CTR - OBJ_CTR - 1 ))
 
 	[[ ${X_OFF} -ne 0 ]] && X=$(( X + X_OFF ))
 	[[ ${Y_OFF} -ne 0 ]] && Y=$(( Y + Y_OFF ))
@@ -106,7 +106,7 @@ get_relative_y () {
 	REM=$(( OBJ_CTR % 2 ))
 	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
 
-	Y=$(( RGN_CTR - OBJ_CTR + 1 ))
+	Y=$(( RGN_CTR - OBJ_CTR - 1 ))
 
 	[[ ${Y_OFF} -ne 0 ]] && Y=$(( Y + Y_OFF ))
 
@@ -176,7 +176,7 @@ get_horz_center () {
 	if [[ ${RGN_CENTER} -eq ${WIDTH_CENTER} ]];then
 		Y=${WIDTH_CENTER}
 	else
-		Y=$(( RGN_CENTER - WIDTH_CENTER + 1 ))
+		Y=$(( RGN_CENTER - WIDTH_CENTER - 1 ))
 	fi
 
 	echo ${Y}

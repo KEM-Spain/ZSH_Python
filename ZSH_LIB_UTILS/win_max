@@ -52,8 +52,6 @@ get_id_title () {
 		for W in ${_WIN_LIST};do
 			WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
 			TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
-			#WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
-			#TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Seeking ARG:${TITLE_ARG} in list of (${#_WIN_LIST}): WID:${WID}, TITLE:${TITLE}"
 			if [[ ${TITLE:l} =~ ${TITLE_ARG:l} ]];then
 				logit ${_LOG} "${0}: Returning WID:${WID} (found title:${TITLE_ARG:l})"
@@ -81,9 +79,6 @@ get_id_pid () {
 		WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
 		PID="${${(@s/|/)W}[${_FLD_LIST[PID]}]}"
 		TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
-		#WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
-		#PID=$(cut -d'|' -f${_FLD_LIST[PID]} <<<${W})
-		#TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Seeking ARG:${PID_ARG} in list of (${#_WIN_LIST}): PID:${PID}, WID:${WID}, TITLE:${TITLE}"
 		if [[ ${PID_ARG} =~ ${PID} ]];then
 			logit ${_LOG} "${0}: Found PID:${PID} with WID:${WID}, TITLE:${TITLE}"
@@ -105,8 +100,6 @@ get_id_wid () {
 	for W in ${_WIN_LIST};do
 		WID="${${(@s/|/)W}[${_FLD_LIST[WID]}]}"
 		TITLE="${${(@s/|/)W}[${_FLD_LIST[TITLE]}]}"
-		#WID=$(cut -d'|' -f${_FLD_LIST[WID]} <<<${W})
-		#TITLE=$(cut -d'|' -f${_FLD_LIST[TITLE]} <<<${W})
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Seeking ARG:${WID_ARG} in list of (${#_WIN_LIST}): WID:${WID}, TITLE:${TITLE}"
 		if [[ ${WID_ARG} =~ ${WID} ]];then
 			logit ${_LOG} "${0}: Found WID:${WID} with TITLE:${TITLE}"

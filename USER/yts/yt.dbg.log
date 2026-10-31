@@ -1,36 +1,78 @@
-2026-10-27_21:24: Logging started...
-2026-10-27_21:24: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-27_21:24: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-27_21:24: query_youtube: Creating listing for QKEY:neil-oliver, query is not strict
-2026-10-27_21:24: query_youtube:
+2026-10-30_22:42: Logging started...
+2026-10-30_22:42: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-30_22:42: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
+2026-10-30_22:42: query_youtube: Creating listing for QKEY:theduran, query is not strict
+2026-10-30_22:42: query_youtube:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:Neil Oliver
+	-> DKEY:The Duran
 	-> ENGINE:youtube
 	-> EOPT:
-	-> FKEY:neil_oliver
-	-> QKEY:neil-oliver
+	-> FKEY:the_duran
+	-> QKEY:theduran
 	-> TYPE:standard
-2026-10-27_21:24: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "neil-oliver"
-2026-10-27_21:24: query_youtube: Filter: Matching titles:3, Rejects:0
-2026-10-27_21:24: query_youtube: Listing for QKEY:neil-oliver contains 3 rows
-2026-10-27_21:24: Starting download for URL: https://youtube.com/watch?v=E59lteAvQLQ (Cookies: none)
-2026-10-27_21:24: yt CMDLINE:false
-2026-10-27_21:24: yt URL:https://youtube.com/watch?v=E59lteAvQLQ
-2026-10-27_21:24: yt Executed from: script COOKIES:null
-2026-10-27_21:24: Logging to /home/kmiller/.local/share/yts/yts_32709.log
-2026-10-27_21:24: action_do: GENERATING HEADER
-2026-10-27_21:24: action_do: DEST:[download] Destination: /tmp|Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].f399.mp4
-2026-10-27_21:24: clean_title: RAW_TITLE:Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ]
-2026-10-27_21:24: clean_title: AUTHOR:Neil Oliver, TITLE:Neil Oliver - ...Replacement Migration Convid Trump Brexit
-2026-10-27_21:24: clean_title: COMPLETED TITLE:Neil Oliver - Neil Oliver - ...Replacement Migration Convid Trump 
-2026-10-27_21:25: action_do: COMPLETED
-2026-10-27_21:25: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].mp4
-2026-10-27_21:25: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].mp4
-2026-10-27_21:25: clean_title: RAW_TITLE:Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].mp4
-2026-10-27_21:25: clean_title: AUTHOR:Neil Oliver, TITLE:Neil Oliver - ...Replacement Migration Convid Trump Brexit
-2026-10-27_21:25: clean_title: COMPLETED TITLE:Neil Oliver - Neil Oliver - ...Replacement Migration Convid Trump 
-2026-10-27_21:25: set_final_fn: Overwriting file:Neil_Oliver_-_...REPLACEMENT_migration_Convid_Trump_Brexit...-[E59lteAvQLQ].mp4
-2026-10-27_21:25: set_final_fn: Clean filename:Neil Oliver - Neil Oliver - ...Replacement Migration Convid Trump.mp4
-2026-10-27_21:25: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
-2026-10-27_21:25: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_32709.log was cleared for:neil-oliver from:action_do
+2026-10-30_22:42: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "theduran"
+2026-10-30_22:42: query_youtube: Filter: Matching titles:7, Rejects:0
+2026-10-30_22:42: query_youtube: Listing for QKEY:theduran contains 7 rows
+2026-10-30_22:43: query_youtube: Creating listing for QKEY:pilot_debrief, query is not strict
+2026-10-30_22:43: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Pilot Debrief
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:pilot_debrief
+	-> QKEY:pilot_debrief
+	-> SMSG:
+	-> TYPE:standard
+2026-10-30_22:43: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "pilot_debrief"
+2026-10-30_22:43: query_youtube: Filter: Matching titles:1, Rejects:07h ago|BushcatTom|Disco Pilot Debrief|https://youtube.com/watch?v=PDkEFRTfKpo|8:36
+2026-10-30_22:43: query_youtube: Listing for QKEY:pilot_debrief contains 1 rows
+2026-10-30_22:43: query_youtube: Creating listing for QKEY:katiehalper, query is strict
+2026-10-30_22:43: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Katie Halper
+	-> ENGINE:youtube
+	-> EOPT:s
+	-> FKEY:katie_halper
+	-> QKEY:katiehalper
+	-> SMSG:
+	-> TYPE:strict
+2026-10-30_22:43: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "katiehalper"
+2026-10-30_22:43: query_youtube: Filter: Matching titles:0, Rejects:07h ago|BushcatTom|Disco Pilot Debrief|https://youtube.com/watch?v=PDkEFRTfKpo|8:36
+2026-10-30_22:43: query_youtube: Listing for QKEY:katiehalper contains 4 rows
+2026-10-30_22:43: query_youtube: Creating listing for QKEY:kimiversen, query is not strict
+2026-10-30_22:43: query_youtube:
+_QUERY_OPTS:
+ 	-> AGE:recent
+	-> DKEY:Kim Iversen
+	-> ENGINE:youtube
+	-> EOPT:
+	-> FKEY:kim_iversen
+	-> QKEY:kimiversen
+	-> SMSG:0.0%
+	-> TYPE:standard
+2026-10-30_22:43: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "kimiversen"
+2026-10-30_22:43: query_youtube: Filter: Matching titles:4, Rejects:07h ago|BushcatTom|Disco Pilot Debrief|https://youtube.com/watch?v=PDkEFRTfKpo|8:36
+2026-10-30_22:43: query_youtube: Listing for QKEY:kimiversen contains 4 rows
+2026-10-30_22:43: Starting download for URL: https://youtube.com/watch?v=vhm8ngYxtxU (Cookies: none)
+2026-10-30_22:43: yt CMDLINE:false
+2026-10-30_22:43: yt URL:https://youtube.com/watch?v=vhm8ngYxtxU
+2026-10-30_22:43: yt Executed from: script COOKIES:null
+2026-10-30_22:43: Logging to /home/kmiller/.local/share/yts/yts_2748.log
+2026-10-30_22:43: action_do: GENERATING HEADER
+2026-10-30_22:43: action_do: DEST:[download] Destination: /tmp|The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].f399.mp4
+2026-10-30_22:43: clean_title: RAW_TITLE:The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU]
+2026-10-30_22:43: clean_title: AUTHOR:Kim Iversen, TITLE:The Brutal Reality Of The Russell Brand Trial
+2026-10-30_22:43: clean_title: COMPLETED TITLE:Kim Iversen - Brutal Reality Of The Russell Brand Trial 
+2026-10-30_22:43: action_do: COMPLETED
+2026-10-30_22:44: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].mp4
+2026-10-30_22:44: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].mp4
+2026-10-30_22:44: clean_title: RAW_TITLE:The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].mp4
+2026-10-30_22:44: clean_title: AUTHOR:Kim Iversen, TITLE:The Brutal Reality Of The Russell Brand Trial
+2026-10-30_22:44: clean_title: COMPLETED TITLE:Kim Iversen - Brutal Reality Of The Russell Brand Trial 
+2026-10-30_22:44: set_final_fn: Overwriting file:The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].mp4
+2026-10-30_22:44: set_final_fn: Clean filename:Kim Iversen - Brutal Reality Of The Russell Brand Trial.mp4
+2026-10-30_22:44: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-10-30_22:44: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_2748.log was cleared for:kimiversen from:action_do

@@ -37,7 +37,7 @@ action_do () {
 		((NDX++))
 		for F in ${_FUNC_MATCH};do
 			grep -q ${F} ${_LIST[${M}]}
-			[[ ${?} -eq 0 ]] && FUNCTIONS+=$(cut -d '(' -f1 <<<${F})
+			[[ ${?} -eq 0 ]] && FUNCTIONS+="${${(@s/(/)F}[1]}"
 		done
 		if [[ ${NO_PROMPTS} == 'true' ]];then
 			for F in ${FUNCTIONS};do
@@ -45,7 +45,7 @@ action_do () {
 			done | less -S -P "Viewing functions within\:$(sed 's/\./\\./' <<<${_LIST[${M}]})" # Less hides dots in prompt - must escape
 		else
 			#[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling msg_box with: ${#FUNCTIONS} lines"
-			msg_box -H2 -P"Show function code (y/n)?" -c -p "File:<w>${_LIST[${M}]}<N>|Functions:<w>${#FUNCTIONS}<N>|$(msg_list_bullet ${(o)FUNCTIONS})"
+			msg_box -H2 -P"Show function code (y/n)?" -c -p "File:<w>${_LIST[${M}]}<N>|Found <w>${#FUNCTIONS}<N> $(str_pluralize function ${#FUNCTIONS})|$(msg_list_bullet ${(o)FUNCTIONS})"
 			if [[ ${_MSG_KEY} == 'y' ]];then
 				for F in ${FUNCTIONS};do
 					func_print ${_LIST[${M}]} ${F}
@@ -83,9 +83,7 @@ WHITE_FG="\033[37m"
 
 read -r -d '' DESC<<EOF
 Displays functions within script file(s)
-\t<PATH> can be fully qualified
-\tIf <PATH> is only a file name, current dir will be assumed
-\t<SEARCHTERM> - limit to function names containing <SEARCHTERM>
+<SEARCHTERM> - functions matching <SEARCHTERM>
 EOF
 
 parse_opts () {
@@ -123,29 +121,26 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-n${RESET} no prompting"
-	echo -e "${WHITE_FG}-a${RESET} no ansi (pertains to print options only)"
-	echo -e "${WHITE_FG}-l${RESET} print list of files/functions (<SEARCHTERM> will apply)"
-	echo -e "${WHITE_FG}-p${RESET} print functions in files (<SEARCHTERM> will apply)"
+	echo -e "${WHITE_FG}-l${RESET} print list of files/functions [<SEARCHTERM>]"
+	echo -e "${WHITE_FG}-p${RESET} print functions in files [<SEARCHTERM>]"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDanlp"
+OPTSTR=":HDnlp"
 
 OPTIND=0
 
 PRINT_LIST=false
 PRINT_FUNCS=false
 NO_PROMPTS=false
-NO_ANSI=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     a) NO_ANSI=true;;
      n) NO_PROMPTS=true;;
      l) PRINT_LIST=true;;
      p) PRINT_FUNCS=true;;
@@ -158,9 +153,9 @@ shift $(( OPTIND - 1 ))
 
 # Execution
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH="${${(@s/|/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 [[ ${#} -ge 1 ]] && ARG_1=${1} || ARG_1=''
@@ -266,7 +261,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 	fi
 fi
 
-if [[ ${NO_ANSI} == 'true' ]];then
+if [[ ${PRINT_FUNCS} == 'true' || ${PRINT_LIST} == 'true' ]];then # No ansi 
 	C='' && R=''
 else
 	C=${WHITE_FG} && R=${RESET}
@@ -294,7 +289,7 @@ if [[ ${PRINT_FUNCS} == 'true' ]];then
 		for M in ${_FUNC_MATCH};do
 			grep -q ${M} ${L}
 			if [[ ${?} -eq 0 ]];then
-				FUNC=$(cut -d '(' -f1 <<<${M})
+				FUNC="${${(@s/(/)M}[1]}"
 				func_print ${L} ${FUNC}
 			fi
 		done
@@ -302,7 +297,7 @@ if [[ ${PRINT_FUNCS} == 'true' ]];then
 	exit_leave
 fi
 
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
+[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ -n ${FILE_ARG} ]];then # Process a single file arg directly
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} FILE_ARG:${FILE_ARG} process file - exit"

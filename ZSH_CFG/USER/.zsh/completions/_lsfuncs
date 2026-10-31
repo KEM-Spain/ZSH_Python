@@ -1,14 +1,38 @@
 #compdef lsfuncs
 
-_arguments \
-'-H[help]' \
-'-D[debug]' \
-'-n[no prompting]' \
-'-a[no ansi (when printing)]' \
-'-l[print list (<SEARCHTERM> may apply)]' \
-'-f[print functions (<SEARCHTERM> may apply)]' \
+_lsfuncs() {
+    local -a zsh_files
+    local f first_line
 
-_files -W ${PWD} lsfuncs
-_files -W /usr/local/bin lsfuncs
-_files -W /usr/local/lib lsfuncs
+    zsh_files=()
 
+    for f in ${PWD}/*(N-.); do
+        read -r first_line < "$f" 2>/dev/null
+        [[ $f == *.zsh || $first_line == *zsh* ]] && zsh_files+="$f"
+    done
+
+    for f in /usr/local/bin/*(N-.); do
+        read -r first_line < "$f" 2>/dev/null
+        [[ $f == *.zsh || $first_line == *zsh* ]] && zsh_files+="$f"
+    done
+
+    for f in /usr/local/bin/system/*(N-.); do
+        read -r first_line < "$f" 2>/dev/null
+        [[ $f == *.zsh || $first_line == *zsh* ]] && zsh_files+="$f"
+    done
+
+    for f in /usr/local/lib/*(N-.N); do
+        zsh_files+="$f"
+    done
+
+    _arguments \
+        '-H[help]' \
+        '-D[debug]' \
+        '-n[no prompting]' \
+        '-l[print list \[<SEARCHTERM>\]]' \
+        '-f[print functions \[<SEARCHTERM>\]]'
+
+    _wanted zsh_files expl 'Zsh zsh_files' compadd -a zsh_files
+}
+
+_lsfuncs "$@"

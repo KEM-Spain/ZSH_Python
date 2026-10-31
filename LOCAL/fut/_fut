@@ -1,13 +1,14 @@
 #compdef fut
 
 _fut() {
-    local line state
+    local context curcontext="$curcontext" state line
+    typeset -A opt_args
 
     _arguments -C \
-               '1: :->cmds' \
-					'-H[help]' \
-					'-D[debug]' \
-               '*::arg:->args'
+			'1: :->cmds' \
+			'-H[help]' \
+			'-D[debug]' \
+			'*::arg:->args'
     case "$state" in
         cmds)
 				_values 'Commands:' \

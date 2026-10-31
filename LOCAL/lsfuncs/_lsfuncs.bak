@@ -1,0 +1,39 @@
+#compdef lsfuncs
+
+_lsfuncs() {
+    local -a files
+    local f first_line
+
+    files=()
+
+    for f in ${PWD}/*(N-.); do
+        read -r first_line < "$f" 2>/dev/null
+        [[ $f == *.zsh || $first_line == *zsh* ]] && files+="$f"
+    done
+
+    for f in /usr/local/bin/*(N-.); do
+        read -r first_line < "$f" 2>/dev/null
+        [[ $f == *.zsh || $first_line == *zsh* ]] && files+="$f"
+    done
+
+    for f in /usr/local/bin/system/*(N-.); do
+        read -r first_line < "$f" 2>/dev/null
+        [[ $f == *.zsh || $first_line == *zsh* ]] && files+="$f"
+    done
+
+    for f in /usr/local/lib/*(N-.N); do
+        files+="$f"
+    done
+
+    _arguments \
+        '-H[help]' \
+        '-D[debug]' \
+        '-n[no prompting]' \
+        '-a[no ansi (when printing)]' \
+        '-l[print list \[<SEARCHTERM>\]]' \
+        '-f[print functions \[<SEARCHTERM>\]]'
+
+    _wanted files expl 'Zsh files' compadd -a files
+}
+
+_lsfuncs "$@"

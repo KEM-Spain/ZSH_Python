@@ -45,7 +45,7 @@ action_do () {
 			done | less -S -P "Viewing functions within\:$(sed 's/\./\\./' <<<${_LIST[${M}]})" # Less hides dots in prompt - must escape
 		else
 			#[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} Calling msg_box with: ${#FUNCTIONS} lines"
-			msg_box -H2 -P"Show function code (y/n)?" -c -p "File:<w>${_LIST[${M}]}<N>|Found <w>${#FUNCTIONS}<N> $(str_pluralize function ${#FUNCTIONS})|$(msg_list_bullet ${(o)FUNCTIONS})"
+			msg_box -H2 -P"Show function code (y/n)?" -c -p "File:<w>$(realpath ${_LIST[${M}]})<N>|Found <w>${#FUNCTIONS}<N> $(str_pluralize function ${#FUNCTIONS})|$(msg_list_bullet ${(o)FUNCTIONS})"
 			if [[ ${_MSG_KEY} == 'y' ]];then
 				for F in ${FUNCTIONS};do
 					func_print ${_LIST[${M}]} ${F}
@@ -83,9 +83,7 @@ WHITE_FG="\033[37m"
 
 read -r -d '' DESC<<EOF
 Displays functions within script file(s)
-\t<PATH> can be fully qualified
-\tIf <PATH> is only a file name, current dir will be assumed
-\t<SEARCHTERM> - limit to function names containing <SEARCHTERM>
+<SEARCHTERM> - functions matching <SEARCHTERM>
 EOF
 
 parse_opts () {
@@ -123,29 +121,26 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-n${RESET} no prompting"
-	echo -e "${WHITE_FG}-a${RESET} no ansi (pertains to print options only)"
-	echo -e "${WHITE_FG}-l${RESET} print list of files/functions (<SEARCHTERM> will apply)"
-	echo -e "${WHITE_FG}-p${RESET} print functions in files (<SEARCHTERM> will apply)"
+	echo -e "${WHITE_FG}-l${RESET} print list of files/functions [<SEARCHTERM>]"
+	echo -e "${WHITE_FG}-p${RESET} print functions in files [<SEARCHTERM>]"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDanlp"
+OPTSTR=":HDnlp"
 
 OPTIND=0
 
 PRINT_LIST=false
 PRINT_FUNCS=false
 NO_PROMPTS=false
-NO_ANSI=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     a) NO_ANSI=true;;
      n) NO_PROMPTS=true;;
      l) PRINT_LIST=true;;
      p) PRINT_FUNCS=true;;
@@ -163,33 +158,37 @@ FPATH=${FPATH:q}
 FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
-[[ ${#} -ge 1 ]] && ARG_1=${1} || ARG_1=''
-[[ ${#} -ge 2 ]] && ARG_2=${2} || ARG_2=''
+ARG_1='' && ARG_2=''
+[[ ${#} -ge 1 ]] && ARG_1=${1}
+[[ ${#} -ge 2 ]] && ARG_2=${2}
 
 # Verify path/file if passed
+FILE_ARG='' && PATH_ARG='' && FEXE='' && SEARCHTERM=''
 if [[ ${#} -eq 0 ]];then # No args - PWD
 	HDR_MSG="Showing all files in:${WHITE_FG}${PWD}${RESET}"
-elif [[ ${#} -ge 1 ]];then # Either a path, file, or searchterm
-	PATH_ARG=''
-	if [[ -d ${ARG_1} ]];then # Dir?
-		PATH_ARG=${1}
+elif [[ ${#} -ge 1 ]];then # Either a path, file, or either and a searchterm
+	[[ -d ${ARG_1} ]] && PATH_ARG=${ARG_1} # ARG_1 is a path
+	[[ -f ${ARG_1} ]] && FILE_ARG=${ARG_1} # ARG_1 is a file
+	[[ -z	${PATH_ARG} && -z ${FILE_ARG} ]] && FEXE=$(fut findexe -p ${ARG_1}) # Try to populate with findexe
+	[[ -f ${FEXE} ]] && FILE_ARG=${FEXE} && FPATH=${FILE_ARG:h} && FGLOB="-name ${FILE_ARG:t}" && PATHLBL=${FPATH}
+
+	if [[ -n ${PATH_ARG} ]];then # Dir
 		HDR_MSG="Showing all files in path:${WHITE_FG}$(realpath ${PATH_ARG})${RESET}"
 		FPATH=${PATH_ARG:q}
 	fi
 
-	FEXE=''
-	FILE_ARG=''
-	if [[ -z ${PATH_ARG} ]];then # File?
-		[[ -f ${ARG_1} ]] && FILE_ARG=${ARG_1} && FPATH=${FILE_ARG:h} && FGLOB="-name ${FILE_ARG:t}" && PATHLBL=${FPATH}
-		[[ -z	${FILE_ARG} ]] && FEXE=$(fut findexe -p ${ARG_1}) # Possible file but not in PWD
-		[[ -f ${FEXE} ]] && FILE_ARG=${FEXE} && FPATH=${FILE_ARG:h} && FGLOB="-name ${FILE_ARG:t}" && PATHLBL=${FPATH}
-		[[ -n ${FILE_ARG} ]] && HDR_MSG="Showing functions in file:${WHITE_FG}${FILE_ARG:t}${RESET}"
+	if [[ -n ${FILE_ARG} ]];then # File
+		FILE_ARG=${ARG_1} && FPATH=${FILE_ARG:h} && FGLOB="-name ${FILE_ARG:t}" && PATHLBL=${FPATH}
+		HDR_MSG="Showing functions in file:${WHITE_FG}${FILE_ARG:t}${RESET}"
 	fi
 
-	SEARCHTERM=''
-	if [[ -z ${PATH_ARG} && -z ${FILE_ARG} ]];then # Searchterm?
-		SEARCHTERM=${1}
-		HDR_MSG="Showing files in:${WHITE_FG}${PWD}${RESET} with functions matching:${WHITE_FG}${SEARCHTERM}${RESET}"
+	if [[ ${#} -eq 2 && -z ${PATH_ARG} && -z ${FILE_ARG} ]];then # Searchterm?
+		exit_leave $(err_msg_exit "File not found:${ARG_1}")
+	fi
+
+	if [[ ${#} -eq 2 ]];then # Searchterm?
+			SEARCHTERM=${ARG_2}
+			HDR_MSG="Showing files in:${WHITE_FG}${PWD}${RESET} with functions matching:${WHITE_FG}${SEARCHTERM}${RESET}"
 	fi
 fi
 
@@ -266,7 +265,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 	fi
 fi
 
-if [[ ${NO_ANSI} == 'true' ]];then
+if [[ ${PRINT_FUNCS} == 'true' || ${PRINT_LIST} == 'true' ]];then # No ansi 
 	C='' && R=''
 else
 	C=${WHITE_FG} && R=${RESET}
@@ -276,7 +275,7 @@ if [[ ${PRINT_LIST} == 'true' ]];then
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} PRINT_LIST - print list of functions - exit"
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 	for L in ${_LOCAL_LIST};do
-		echo "File:${C}${L}${R}"
+		echo "File:${C}$(realpath ${L})${R}"
 		for M in ${_FUNC_MATCH};do
 			grep -q ${M} ${L}
 			if [[ ${?} -eq 0 ]];then

@@ -18,7 +18,7 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
 # Declarations
-typeset -a _PROD_DIRS=(${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /usr/local/lib)
+typeset -a _PROD_DIRS=(${HOME}/.local/bin ${HOME}/.local/share ${HOME}/.zsh/completions /usr/local/bin /usr/local/lib)
 
 # Constants
 _LIB_DIR=/usr/local/lib
@@ -255,7 +255,7 @@ local_to_prod () {
 	local NEWEST
 
 	tcup 0 0 && echo "${REVERSE}${WHITE_ON_GREY}< < <${RESET}${WHITE_ON_RED_ITALIC} RELEASE ${RESET}${REVERSE}${WHITE_ON_GREY}> > >${RESET}"
-	[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
+	#[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
 
 	if [[ ${g_IS_INITIAL_PRODUCTION} == 'false' ]];then
 		# Existing production copy
@@ -502,7 +502,7 @@ if [[ ${#} -eq 0 ]];then
 		if [[ -e ${DEFAULT_FN} ]];then
 			FILE_ARG=${DEFAULT_FN} # Assign default file
 		else
-			msg_box -p -PK "<r>No file corresponds to the name<N>:<w>${DEFAULT_FN}<N>|Please provide a filename..."
+			msg_box -p -PK "<r>No file corresponds to the default name<N>:<w>${DEFAULT_FN}<N>|Please provide a filename..."
 			exit_leave
 		fi
 	fi
@@ -522,7 +522,7 @@ else
 		if [[ ${DEV_RELEASE} == 'true' ]];then
 			LIST=('1) Normal Production' '2) Library Module' '3) System Utility')
 			tput sc
-			msg_box -p -H1 -P"Select Type" "<r>No production copy exists<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
+			msg_box -p -H1 -P"Select Type" "<r>No production copy exists:<w>${FILE_ARG}<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
 			msg_box_clear
 			tput rc
 			case ${_MSG_KEY} in

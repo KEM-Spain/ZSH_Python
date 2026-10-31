@@ -74,31 +74,33 @@ msg_box () {
 
 	# OPTIONS
 	local -A COORD_ARGS=()
+	local -A LIST_VALS=()
 	local -a MSG=()
+	local BUFFER_FULL=false
 	local CLEAR_MSG=false
 	local CONTINUOUS=false
 	local DELIM_ARG=false
 	local DISPLAY_AREA=0
 	local FOLD_WIDTH=${MAX_LINE_WIDTH}
 	local FRAME_COLOR=''
-	local HDR_LINES=0
 	local HDR_FTR_LINES=0
-	local MSG_H_COORD_ARG=0
+	local HDR_LINES=0
 	local LEN=0
+	local MSG_H_COORD_ARG=0
+	local MSG_W_COORD_ARG=0
 	local MSG_X_COORD_ARG=-1
 	local MSG_Y_COORD_ARG=-1
+	local NUM_LIST=false
 	local PROMPT_ARG=''
 	local PROMPT_USER=false
 	local QUIET=false
 	local RELATIVE=false
 	local RET_VALUES=false
 	local SAFE=true
-	local BUFFER_FULL=false
 	local SO=false
 	local TAG_ARG=''
 	local TEXT_STYLE=c # Default is center - Accepted Values:[(l)eft,(c)enter]
 	local TIMEOUT=0
-	local MSG_W_COORD_ARG=0
 
 	local OPTSTR=":A:H:P:O:CIRT:cf:h:j:pqrs:t:uvw:x:y:Zz"
 	OPTIND=0
@@ -300,6 +302,7 @@ msg_box () {
 	box_coords_set ${TAG} X ${BOX_X_COORD} Y ${BOX_Y_COORD} H ${BOX_HEIGHT} W ${BOX_WIDTH} S ${TEXT_STYLE}
 
 	# Call once for CONTINUOUS messages
+	stty -echo
 	if [[ ${CONTINUOUS} == 'true' ]];then
 		if [[ ${_CONT_DATA[BOX]} == 'false' ]];then
 			msg_unicode_box ${BOX_X_COORD} ${BOX_Y_COORD} ${BOX_WIDTH} ${BOX_HEIGHT} ${FRAME_COLOR}
@@ -383,8 +386,6 @@ msg_box () {
 		SCR_NDX=$(( BOX_X_COORD + ${#MSG_HEADER} ))
 		DTL_NDX=0
 
-		local NUM_LIST=false
-		local -A LIST_VALS=()
 		for (( MSG_NDX=1;MSG_NDX<=${#MSG_BODY};MSG_NDX++));do
 			(( SCR_NDX++ ))
 			(( DTL_NDX++ ))
@@ -393,9 +394,11 @@ msg_box () {
 			tput ech $(( BOX_WIDTH - 2 ))
 			echo -n "${MSG_OUT}"
 
-			if [[ ${MSG_OUT} =~ "[0-9]\)" ]];then
-				NUM_LIST=true
-				LIST_VALS[${DTL_NDX}]="$(str_trim ${MSG_OUT#*) })"
+			if [[ ${RET_VALUES} == 'true' ]];then
+				if [[ ${MSG_OUT} =~ "[0-9]\)" ]];then
+					NUM_LIST=true
+					LIST_VALS[${DTL_NDX}]="$(str_trim ${MSG_OUT#*) })"
+				fi
 			fi
 
 			[[ ${SO} == 'true' ]] && tput smso
@@ -438,7 +441,9 @@ msg_box () {
 
 		if [[ ${PROMPT_USER} == "true" ]];then
 			_MSG_KEY=$(get_keys)
-			[[ ${NUM_LIST} == 'true' && ${RET_VALUES} == 'true' && "${_MSG_KEY}" != "0" ]] && _MSG_KEY=${LIST_VALS[${_MSG_KEY}]}
+			if [[ ${NUM_LIST} == 'true' && ${RET_VALUES} == 'true' && "${_MSG_KEY}" != "0" ]];then
+				[[ -n ${LIST_VALS[${_MSG_KEY}]} ]] && _MSG_KEY=${LIST_VALS[${_MSG_KEY}]}
+			fi
 		fi
 	fi
 
@@ -448,6 +453,7 @@ msg_box () {
 	[[ ${SO} == 'true' ]] && tput rmso
 
 	# Restore display
+	stty echo
 	tput rc
 	tcup ${_MAX_ROWS} ${_MAX_COLS}
 }

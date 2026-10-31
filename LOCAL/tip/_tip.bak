@@ -1,0 +1,43 @@
+#compdef tip
+
+_arguments \
+'-H[help]' \
+'-D[debug (repeats increase level)]' \
+'-I[enable keyword case sensitivity (default:case insensitive)]' \
+'-W[disable keyword word matches (default:whole words only)]' \
+'-k[search for keyword (do not combine options)]' \
+'-l[list available tips]' \
+
+_values \
+'Tips:' \
+'cron' \
+'desktop' \
+'dpkg' \
+'ex' \
+'git' \
+'linux' \
+'mail' \
+'mime' \
+'nfs' \
+'perl' \
+'printf' \
+'pup' \
+'regex' \
+'rsync' \
+'sed' \
+'tput' \
+'vim' \
+'vimcolors' \
+'vim_keymap' \
+'vlc' \
+'zsh' \
+'zsh_completions_article.tip' \
+'zsh_comp_howto.tip' \
+'zsh_comp_widgets.tip' \
+'zsh_comp_guide.tip' \
+'zsh_comp_system.tip' \
+'zsh_comp_official' \
+'zsh_comp_guide' \
+'zshdb' \
+'zsh_params' \
+'zsh_primitives' \

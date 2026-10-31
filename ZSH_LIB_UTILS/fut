@@ -65,7 +65,7 @@ g_UTIL=''
 
 # Functions
 findexe () {
-	local -a PROD_LIST=(${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /usr/local/lib ${HOME}/Code/LOCAL)
+	local -a PROD_LIST=(${HOME}/.zsh/completions ${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /usr/local/lib ${HOME}/Code/LOCAL)
 	local -a WIS=()
 	local -a FLIST=()
 	local -aU LIST=()
@@ -150,7 +150,12 @@ ______EOF
 	#--End GetOpts--
 	 
 	# Execution
-	[[ ${#} -eq 0 ]] && usage "Missing argument:<FILE>" || FN=${1}
+	if [[ ${#} -eq 0 ]];then
+		usage "Missing argument:<FILE>" 
+		return 1
+	else
+		FN=${1}
+	fi
 
 	[[ ${VERBOSE} == 'true' ]] && echo "${CYAN_FG}Searching for:${FN}${RESET}" >&2
 
@@ -170,7 +175,7 @@ ______EOF
 
 	for D in ${PROD_LIST};do
 		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ${D}${RESET}" >&2
-		FLIST+=("${(f)$(find ${D} -type f -name "${FN}" -executable)}")
+		FLIST+=("${(f)$(find ${D} -type f -name "${FN}" -executable >/dev/null 2>1)}")
 	done
 
 	if ! arr_is_populated "${FLIST}";then
@@ -185,7 +190,13 @@ ______EOF
 		fi
 		if [[ ${LOCAL} == 'true' ]];then
 			if [[ ! ${L:h} == ${PWD} ]];then
-				[[ ${LOCAL} == 'true' ]] && echo "${RED_FG}Discarding non local:${L}${RESET}" >&2
+				[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}Discarding non local:${L}${RESET}" >&2
+				continue
+			fi
+		fi
+		if [[ ${PRODUCTION} == 'true' ]];then
+			if [[ ${L:h} == ${PWD} ]];then
+				[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}Discarding local:${L}${RESET}" >&2
 				continue
 			fi
 		fi

@@ -105,7 +105,7 @@ COMP_FILE="_${1}"
 
 echo "${CYAN_FG}Completion file found${RESET}:${WHITE_FG}${COMP_FILE}${RESET}"
 
-colordiff -Bws ${_COMP_DIR}/${COMP_FILE} ./${COMP_FILE} 
+colordiff -Bws ${_COMP_DIR}/${COMP_FILE} ./${COMP_FILE} >/dev/null 2>$1
 [[ ${?} -eq 0 ]] && echo "${CYAN_FG}Completion file is up to date${RESET}" && exit 0
 
 echo -n "Install ${COMP_FILE} to ${_COMP_DIR} (y/n)?" && read -q RESPONSE

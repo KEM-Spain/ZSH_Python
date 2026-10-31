@@ -91,6 +91,7 @@ list_display_page () {
 	local RC_1=0
 	local RC_2=0
 
+	stty -echo
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${HILITE} == 'nohilite' ]] && HILITE=false || HILITE=true 
@@ -129,6 +130,7 @@ list_display_page () {
 	fi
 
 	[[ ${HILITE} == 'true' ]] && list_item high ${_LIST_LINE_ITEM} ${_CURSOR_NDX}  0
+	stty echo
 }
 
 list_do_header () {

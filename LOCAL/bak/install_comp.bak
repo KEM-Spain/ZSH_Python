@@ -116,7 +116,7 @@ sudo cp ${COMP_FILE} ${_COMP_DIR}
 [[ ${?} -ne 0 ]] && echo "${RED_FG}Copy failed${RESET}" exit 1
 
 echo "Changing owner..."
-sudo chown root:root ${_COMP_DIR}/${COMP_FILE}; 
+sudo chown ${USER}:${USER} ${_COMP_DIR}/${COMP_FILE}; 
 [[ ${?} -ne 0 ]] && echo "${RED_FG}chown failed${RESET}" exit 1
 
 echo "Changing permissions..."

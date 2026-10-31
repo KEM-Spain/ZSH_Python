@@ -504,6 +504,7 @@ sel_scroll () {
 	BOT_X=$(( _SEL_LIST_META[X] + _SEL_LIST_META[H] - 1 )) # Last row
 	X_OFF=$(( _SEL_LIST_META[X] - 1 )) # Cursor offset
 
+	stty -echo
 	while true;do
 		# Display decorations
 		if [[ ${O_COORDS[HAS_OUTER]} == 'true' ]];then
@@ -568,7 +569,6 @@ sel_scroll () {
 		sel_cursor_hilite $(( NDX + X_OFF )) ${_SEL_LIST_META[Y]} ${_PAGE[${NDX}]} # Initial item hilite
 
 		# Get user inputs
-		stty -echo
 		while true;do
 			KEY=$(get_keys)
 			_SEL_KEY='?'

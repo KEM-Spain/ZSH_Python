@@ -31,10 +31,11 @@ RED_ON_WHITE="\033[0m\033[0;1;31;107m"
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-_DEPS+=()
+_DEPS+=(SELECT.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 typeset -A _FAV_LIST=()
+typeset -A _FAV_DATA=()
 typeset -A _QUERY_OPTS=()
 typeset -A _ENG_LIST=(1 youtube 2 rumble)
 typeset -A _MENU_LIST=(1 Custom 2 YouTube 3 Rumble)
@@ -43,20 +44,27 @@ typeset -A _YT_STRICT_LIST=(1 Strict 2 'Non Strict')
 typeset -A _YT_RANGE_LIST=(1 all 2 recent 3 min 4 hour 5 day 6 week 7 month 8 year)
 typeset -A _BOX=()
 
+# Safe method to create a numbered list is with a regular array so numbers are guaranteed to match item
+# LIST=('1) Normal Production' '2) Library Module' '3) System Utility')
+
+# Constants
 _YT_DLP_CFG=~/.local/share/yts
 _YTS_FAVORITES=./yts.favorites
-_DKEY=''
 _RY=0
 
-fav_opts () {
-	local FAV="${@}"
-	_QUERY_OPTS[DKEY]=${${(s:|:)FAV}[1]}
-	_QUERY_OPTS[QKEY]=${${(s:|:)FAV}[2]}
-	_QUERY_OPTS[MENU]=${${${(s:|:)FAV}[3]}[1]}
-	_QUERY_OPTS[ENGINE]=${${${(s:|:)FAV}[3]}[2]}
-	_QUERY_OPTS[ENGOPT]=${${${(s:|:)FAV}[3]}[3]}
+# Globals
+g_ACTIVE_FAV_MENU=youtube
+
+open_website () {
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	case ${1} in
+		y) firefox "https://www.youtube.com/feed/subscriptions" >/dev/null 2>&1 &;;
+		r) firefox "https://www.rumble.com/subscriptions" >/dev/null 2>&1 &;;
+		*) exit_leave $(err_msg_exit E "Invalid $(opt_type w):${1} Enter y for YouTube, r for Rumble")
+	esac
 }
- 
+
 fav_load () {
 	local LINE=''
 	local DVAL=''
@@ -68,9 +76,9 @@ fav_load () {
 	[[ ! -f ${_YTS_FAVORITES} ]] && return 1
 
 	while read -r LINE;do
-		DVAL=${${(s:|:)LINE}[1]}
-		QVAL=${${(s:|:)LINE}[2]}
-		OPTS=${${(s:|:)LINE}[3]}
+		QVAL=${${(s:|:)LINE}[1]}
+		DVAL=${${(s:|:)LINE}[2]}
+		OPTS=${${(s:|:)LINE}[3,-1]}
 		_FAV_LIST[${QVAL}]="${(C)DVAL:s/_/ /}|${OPTS}"
 	done < ${_YTS_FAVORITES}
 
@@ -78,12 +86,28 @@ fav_load () {
 }
 
 fav_add () {
+	local FAV_ROW=${1}
+
+	msg_box -p -PC -H1 "Adding new favorite|KEY:${KEY:gs/|/\\|/}" # Escape delims
+	if [[ ${_MSG_KEY:l} == "y" ]];then
+		echo ${FAV_ROW} >> ${_YTS_FAVORITES} # Append new key to file
+		sort -o ${_YTS_FAVORITES}{,} # In-place sort
+		echo "\n${GREEN_FG}Key was added${RESET}"
+	else
+		echo "\n${RED_FG}Key was not added${RESET}"
+	fi
+
+	return 0
+}
+
+fav_build () {
 	local QKEY=${1}
-	local -A FAV_ADD=()
+	local DKEY=''
 	local KEY=''
 	local MENU_KEY=''
 	local MENU_SEL=''
 	local MSG=''
+	local FAV_ROW=''
 	local K
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -103,75 +127,243 @@ fav_add () {
 	MSG="Enter display key for \"${QKEY}\""
 	_BOX=($(box_coords_get MSG_BOX))
 	_RY=$(center -Y -c"${(kv)_BOX}" -w${#MSG})
-	tcup $(( _BOX[X] + _BOX[H] + 1 )) ${_RY};_DKEY=$(inline_vi_edit "${MSG}:")
+	tcup $(( _BOX[X] + _BOX[H] + 1 )) ${_RY};DKEY=$(inline_vi_edit "${MSG}:")
 
-	while true;do
-		msg_box -v -c -H1 -p -PS -jl "<w>Select Favorites List<N>|$(msg_list_number ${(ov)_MENU_LIST})"
-		[[ ${_MSG_KEY} == "0" ]] && break
-		MENU_SEL=${_MSG_KEY:l}
-		[[ -z ${MENU_SEL} ]] && msg_box -t.3 "Invalid option" && continue
-		FAV_ADD[LIST]=${MENU_SEL:l} 
-		FAV_ADD[ENGINE]=${MENU_SEL:l} 
+	_MSG_KEY='' && MENU_SEL=''
 
-		if [[ ${FAV_ADD[LIST]:l} == 'custom' ]];then
-			msg_box -v -c -H1 -p -PS -jl "<w>Select Engine<N>|$(msg_list_number ${(ov)_ENG_LIST})"
-			[[ ${_MSG_KEY} == "0" ]] && break
+	msg_box -v -c -H1 -p -PS -jl "<w>Select Favorites List<N>|$(msg_list_number ${(ov)_MENU_LIST})"
+	MENU_SEL=${_MSG_KEY:l}
+	if [[ -n ${MENU_SEL} ]];then
+		_FAV_DATA[LIST]=${MENU_SEL} 
+		_FAV_DATA[ENGINE]=${MENU_SEL} 
+	fi
+
+	if [[ ${_FAV_DATA[LIST]:l} == 'custom' ]];then
+		msg_box -v -c -H1 -p -PS -jl "<w>Select Engine<N>|$(msg_list_number ${(ov)_ENG_LIST})"
+		if [[ -n ${MENU_SEL} ]];then
 			MENU_SEL=${_MSG_KEY:l}
-			[[ -z ${MENU_SEL} ]] && msg_box -t.3 "Invalid option" && continue
-			FAV_ADD[ENGINE]=${MENU_SEL} 
+			_FAV_DATA[ENGINE]=${MENU_SEL} 
+			[[ ${_FAV_DATA[ENGINE]} = 'youtube' ]]
+			[[ ${_FAV_DATA[ENGINE]} = 'rumble' ]]
+		fi
+	fi
+
+	if [[ ${_FAV_DATA[ENGINE]} == 'youtube' ]];then
+		msg_box -v -c -H1 -p -PS -jl "<w>Select Video Date Range<N>|$(msg_list_number ${(ov)_YT_RANGE_LIST})"
+		if [[ -n ${MENU_SEL} ]];then
+			MENU_SEL=${_MSG_KEY:l}
+			_FAV_DATA[RANGE]=${MENU_SEL} 
 		fi
 
-		if [[ ${FAV_ADD[ENGINE]:l} = 'youtube' ]];then
-			msg_box -v -c -H1 -p -PS -jl "<w>Select Video Date Range<N>|$(msg_list_number ${(ov)_YT_RANGE_LIST})"
-			[[ ${_MSG_KEY} == "0" ]] && break
+		msg_box -v -c -H1 -p -PS -jl "<w>Select Strict option<N>|$(msg_list_number ${(ov)_YT_STRICT_LIST})"
+		if [[ -n ${MENU_SEL} ]];then
 			MENU_SEL=${_MSG_KEY:l}
-			[[ -z ${MENU_SEL} ]] && msg_box -t.3 "Invalid option" && continue
-			FAV_ADD[RANGE]=${MENU_SEL} 
-			msg_box -v -c -H1 -p -PS -jl "<w>Select Strict option<N>|$(msg_list_number ${(ov)_YT_STRICT_LIST})"
-			[[ ${_MSG_KEY} == "0" ]] && break
-			MENU_SEL=${_MSG_KEY:l}
-			[[ -z ${MENU_SEL} ]] && msg_box -t.3 "Invalid option" && continue
-			FAV_ADD[STRICT]=${MENU_SEL} 
-			break
-		elif [[ ${FAV_ADD[ENGINE]:l} = 'rumble' ]];then
-			msg_box -v -c -H1 -p -PS -jl "<w>Select Query Type<N>|$(msg_list_number ${(ov)_RM_QRY_LIST})"
-			[[ ${_MSG_KEY} == "0" ]] && break
-			MENU_SEL=${_MSG_KEY:l}
-			[[ -z ${MENU_SEL} ]] && msg_box -t.3 "Invalid option" && continue
-			FAV_ADD[QUERY]=${MENU_SEL} 
-			break
+			_FAV_DATA[STRICT]=${MENU_SEL} 
 		fi
+	elif [[ ${_FAV_DATA[ENGINE]:l} == 'rumble' ]];then
+		msg_box -v -c -H1 -p -PS -jl "<w>Select Query Type<N>|$(msg_list_number ${(ov)_RM_QRY_LIST})"
+		if [[ -n ${MENU_SEL} ]];then
+			MENU_SEL=${_MSG_KEY:l}
+			_FAV_DATA[QUERY]=${MENU_SEL} 
+		fi
+	fi
+	
+	FAV_ROW=$(set_key_opts "${QKEY:l}|${DKEY:gs/ /_/}")
+
+	echo ${FAV_ROW}
+}
+
+set_fav_data () {
+	local FAV_KEY=${1}
+	local -a PARTS=()
+	local FAV_ROW=''
+	local LIST_TYPE=''
+	local ENGINE_TYPE=''
+
+	_FAV_DATA=()
+
+	FAV_ROW="$(grep -Ei "${FAV_KEY}" ${_YTS_FAVORITES})"
+	[[ -z ${FAV_ROW} ]] && exit_leave "FAV_KEY:${FAV_KEY} not found"
+
+	PARTS=("${(@s:|:)FAV_ROW}")
+
+	_FAV_DATA[QKEY]=${PARTS[1]}
+	_FAV_DATA[DKEY]=${PARTS[2]}
+
+	LIST_TYPE=${PARTS[3]}
+	if [[ ${LIST_TYPE} == 'y' ]]; then
+		_FAV_DATA[LIST]='youtube'
+		_FAV_DATA[ENGINE]='youtube'
+		[[ ${PARTS[4]} == 's' ]] && _FAV_DATA[STRICT]='strict'
+		[[ -n ${PARTS[5]} ]] && _FAV_DATA[RANGE]=${PARTS[5]} || _FAV_DATA[RANGE]='recent'
+	elif [[ ${LIST_TYPE} == 'r' ]]; then
+		_FAV_DATA[LIST]='rumble'
+		_FAV_DATA[ENGINE]='rumble'
+		_FAV_DATA[QUERY]=${PARTS[4]}
+	elif [[ ${LIST_TYPE} == 'c' ]]; then
+		_FAV_DATA[LIST]='custom'
+		ENGINE_TYPE=${PARTS[4]}
+		if [[ ${ENGINE_TYPE} == 'y' ]]; then
+			_FAV_DATA[ENGINE]='youtube'
+			[[ ${PARTS[5]} == 's' ]] && _FAV_DATA[STRICT]='strict'
+			[[ -n ${PARTS[6]} ]] && _FAV_DATA[RANGE]=${PARTS[6]} || _FAV_DATA[RANGE]='recent'
+		elif [[ ${ENGINE_TYPE} == 'r' ]]; then
+			_FAV_DATA[ENGINE]='rumble'
+			_FAV_DATA[QUERY]=${PARTS[5]}
+		fi
+	fi
+}
+
+set_key_opts () {
+	local FAV_KEY=${1}
+
+	if [[ ${_FAV_DATA[LIST]} == 'youtube' ]];then
+		FAV_KEY+="|y"
+		[[ ${_FAV_DATA[STRICT]} == 'strict' ]] && FAV_KEY+='|s' || FAV_KEY+='|n'
+		FAV_KEY+="|${_FAV_DATA[RANGE]}"
+	elif [[ ${_FAV_DATA[LIST]} == 'rumble' ]];then
+		FAV_KEY+="|r"
+		FAV_KEY+="|${_FAV_DATA[QUERY]}"
+	elif [[ ${_FAV_DATA[LIST]} == 'custom' ]];then
+		FAV_KEY+="|c"
+		if [[ ${_FAV_DATA[ENGINE]} == 'youtube' ]];then
+			FAV_KEY+="|y"
+			[[ ${_FAV_DATA[STRICT]} == 'strict' ]] && FAV_KEY+='|s' || FAV_KEY+='|n'
+			FAV_KEY+="|${_FAV_DATA[RANGE]}"
+		elif [[ ${_FAV_DATA[ENGINE]} == 'rumble' ]];then
+			FAV_KEY+="|r"
+			FAV_KEY+="|${_FAV_DATA[QUERY]}"
+		fi
+	fi
+
+	echo "${FAV_KEY}"
+}
+
+fav_get () {
+	local -a C_LIST=()
+	local -a R_LIST=()
+	local -a Y_LIST=()
+	local -a APP_KEYS=(d r y c w)
+	local FTR=''
+	local HDR=''
+	local HDR_TAG=" <I>(Custom List)<N> "
+	local LIST=''
+	local MAP="(<w>r<N>)umble, (<w>y<N>)outube, (<w>c<N>)ustom, (<w>d<N>)elete, (<w>w<N>)eb"
+	local MENU_LBL=''
+	local MENU_TYPE=''
+	local OPTS=''
+	local O_COLOR=''
+	local QKEY=''
+	local TAG=''
+	local UNK_TYPE=''
+	local L
+
+	fav_load
+
+	for L in ${(k)_FAV_LIST};do
+		set_fav_data ${L}
+		QKEY=${_FAV_DATA[QKEY]}
+		case ${_FAV_DATA[LIST]} in
+			custom) C_LIST+="${(C)_FAV_DATA[DKEY]:gs/_/ /}";;
+			rumble) R_LIST+="${(C)_FAV_DATA[DKEY]:gs/_/ /}";;
+			youtube) Y_LIST+="${(C)_FAV_DATA[DKEY]:gs/_/ /}";;
+			*) UNK_TYPE=${_FAV_DATA[LIST]};;
+		esac
 	done
 
-	KEY="${_DKEY:l:gs/ /_/}|${QKEY}"
-	if [[ ${FAV_ADD[LIST]} == 'youtube' ]];then
-		KEY+="|y"
-		[[ ${FAV_ADD[STRICT]} == 'strict' ]] && KEY+='|s' || KEY+='|n'
-		KEY+="|${FAV_ADD[RANGE]}"
-	elif [[ ${FAV_ADD[LIST]} == 'rumble' ]];then
-		KEY+="|r"
-		KEY+="|${FAV_ADD[QUERY]}"
-	elif [[ ${FAV_ADD[LIST]} == 'custom' ]];then
-		KEY+="|c"
-		if [[ ${FAV_ADD[ENGINE]} == 'youtube' ]];then
-			KEY+="|y"
-			[[ ${FAV_ADD[STRICT]} == 'strict' ]] && KEY+='|s' || KEY+='|n'
-			KEY+="|${FAV_ADD[RANGE]}"
-		elif [[ ${FAV_ADD[ENGINE]} == 'rumble' ]];then
-			KEY+="|r"
-			KEY+="|${FAV_ADD[QUERY]}"
-		fi
+	if [[ -n ${UNK_TYPE} ]];then
+		logit ${_YT_DBG_LOG} "Bad menu type:${MENU_TYPE} in ${_YTS_FAVORITES}"
+		return 1
 	fi
 
-	msg_box -p -PC -s'|' -H1 "Adding new favorite#KEY:${KEY}"
-	if [[ ${_MSG_KEY:l} == "y" ]];then
-		echo ${KEY} >> ${_YTS_FAVORITES} # Append new key to file
-		sort -o ${_YTS_FAVORITES}{,} # In-place sort
-	fi
+	while true;do
+		case ${g_ACTIVE_FAV_MENU} in
+			custom) LIST=(${C_LIST})
+							O_COLOR=${GREEN_FG}
+							;;
+			rumble) LIST=(${R_LIST})
+							O_COLOR=${MAGENTA_FG}
+							;;
+			youtube) LIST=(${Y_LIST})
+							O_COLOR=${CYAN_FG}
+							;;
+		esac
+
+		TAG="${_FAV_DATA[LIST]}.${g_ACTIVE_FAV_MENU}.query"
+		HDR="<B><w>${(C)_FAV_DATA[LIST]}${HDR_TAG} <B>Query<N>"
+		FTR="Run <w>${(C)_FAV_DATA[LIST]}<N> query, <w>(<N>s<w>)<N>how keys<N>, or <w>(<N>q<w>)<N>uit<N>"
+
+		sel_set_app_keys ${APP_KEYS}
+		sel_set_list ${LIST}
+
+		msg_line_weight heavy
+		sel_list -R -S -T${TAG} -O${O_COLOR} -H${HDR} -M${MAP} -F${FTR}
+		msg_line_weight light
+
+		if ! (( ${APP_KEYS[(I)${_SEL_VAL}]} ));then
+			set_fav_data ${_SEL_VAL:gs/ /_/}
+			QKEY=${_FAV_DATA[QKEY]}
+		fi
+
+		clear
+
+		if [[ ${_SEL_KEY} == 'w' ]];then
+			msg_box -t2 "Opening YouTube and Rumble websites"
+			open_website y
+			open_website r
+			_SEL_KEY=''
+			return 2
+		fi
+
+		if [[ ${_SEL_KEY} == 'd' ]];then
+			fav_delete ${_SEL_VAL} ${g_ACTIVE_FAV_MENU} # Call key delete
+			[[ ${?} -eq 0 ]] && fav_load && return 1 # Reload favorites & return
+		fi
+
+		case ${_SEL_KEY} in
+			y) g_ACTIVE_FAV_MENU='youtube';;
+			r) g_ACTIVE_FAV_MENU='rumble';;
+			c) g_ACTIVE_FAV_MENU='custom';;
+			*) break;;
+		esac
+	done
 
 	return 0
 }
 
-fav_load
-fav_add "new_fav"
+fav_delete () {
+	local DKEY=${1:gs/ /_/}
+	local MKEY=${2:u}
+	local -a FAV_KEYS=()
+	local F3=''
+	local MK=''
+	local KEY_MATCH=''
+	local K
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	
+	FAV_KEYS=("${(f)$(grep -Ei ${DKEY} ${_YTS_FAVORITES})}") # Locate via display key
+
+	for K in ${FAV_KEYS};do
+		F3="${${(@s/|/)K}[3]}"
+		MK=${F3[1]} # First char
+		[[ ${MK:l} == ${MKEY:l} ]] && KEY_MATCH=${K} # Ensure corresponding menu matches
+	done
+
+	if [[ -n ${KEY_MATCH} ]];then
+		msg_box -c -p -PD -H1 "<B><r>Deleting Menu Key<N>|${KEY_MATCH:gs/|/#/}"
+		if [[ ${_MSG_KEY} == 'y' ]];then
+			cp ${_YTS_FAVORITES} ${_YTS_FAVORITES}.bak
+			sed -i "/${KEY_MATCH}/d" ${_YTS_FAVORITES}
+			return ${?}
+		fi
+	else
+		return 1
+	fi
+}
+
+fav_get
+for K in ${(k)_FAV_DATA};do
+	printf "KEY:%s VAL:%s\n" ${K} ${_FAV_DATA[${K}]}
+done
+exit_leave

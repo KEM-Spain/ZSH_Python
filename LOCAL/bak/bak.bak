@@ -94,7 +94,7 @@ prod_to_local () {
 	if [[ ! -e ${g_LOCAL_VERSION} ]];then # Initial copy from production
 		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} Local version NOT found - Initial copy"
 		echo "This appears to be an initial version..."
-		echo "Source file identified as:${WHITE_FG}${g_PROD_NAME}${RESET}"
+		echo "Source file identified as:${g_PROD_NAME}"
 		do_copy ${g_PROD_VERSION} ${g_LOCAL_VERSION}
 		if [[ ${?} -eq 0 ]];then
 			echo "Creating an initial backup..."
@@ -107,7 +107,7 @@ prod_to_local () {
 	elif [[ ! -e ${g_PROD_VERSION} ]];then # Local backup only
 		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} Production version NOT found - Backup local only"
 		echo "This appears to be the only version..."
-		echo "Source file identified as:${WHITE_FG}${g_LOCAL_NAME}${RESET}"
+		echo "Source file identified as:${g_LOCAL_NAME}${RESET}"
 		echo "Creating an initial backup..."
 		do_copy ${g_LOCAL_VERSION} ${g_BACKUP_VERSION}
 	else
@@ -302,13 +302,13 @@ local_to_prod () {
 set_messages () {
 	if [[ ${g_LOCAL_ONLY} == 'true' ]];then
 		g_PROD_NAME="${RED_FG}${ITALIC}None${RESET}" 
-		g_BACKUP_NAME="${MAGENTA_FG}${g_BACKUP_VERSION:h}/${WHITE_FG}${g_LOCAL_VERSION:t}.${ITALIC}${WHITE_FG}${g_BACKUP_VERSION:e}${RESET}"
+		g_BACKUP_NAME="${WHITE_ON_GREY}${g_BACKUP_VERSION:h}/${WHITE_FG}${g_LOCAL_VERSION:t}.${ITALIC}${WHITE_FG}${g_BACKUP_VERSION:e}${RESET}"
 	else
 		g_PROD_NAME="${CYAN_FG}${ITALIC}${g_PROD_VERSION:h}/${RESET}${WHITE_FG}${g_PROD_VERSION:t}${RESET}" 
-		g_BACKUP_NAME="${MAGENTA_FG}${g_BACKUP_VERSION:h}/${WHITE_FG}${g_PROD_VERSION:t}.${ITALIC}${WHITE_FG}${g_BACKUP_VERSION:e}${RESET}"
+		g_BACKUP_NAME="${WHITE_ON_GREY}${g_BACKUP_VERSION:h}/${WHITE_FG}${g_PROD_VERSION:t}.${ITALIC}${WHITE_FG}${g_BACKUP_VERSION:e}${RESET}"
 	fi
 
-	g_LOCAL_NAME="${MAGENTA_FG}${ITALIC}${g_LOCAL_VERSION:h}/${RESET}${WHITE_FG}${g_LOCAL_VERSION:t}${RESET}"
+	g_LOCAL_NAME="${WHITE_ON_GREY}${ITALIC}${g_LOCAL_VERSION:h}/${RESET}${WHITE_FG}${g_LOCAL_VERSION:t}${RESET}"
 
 	g_EXISTING_BACKUP_FOUND="${RED_FG}Warning${RESET}:an ${_EM}existing${RESET} (non matching) backup:${g_BACKUP_NAME} was found..."
 	g_LOCAL_EXISTS="A ${_EM}local${RESET} version of ${WHITE_FG}${g_LOCAL_NAME}${RESET} exists..."
@@ -494,7 +494,7 @@ if [[ ${#} -eq 0 ]];then
 	if [[ -e ${_PROD_TARGET} ]];then
 		_PROD_EXE="$(< ${_PROD_TARGET})"
 		FILE_ARG="${$(< ${_PROD_TARGET}):t}"
-		echo "Found PROD_TARGET, FILE_ARG:${FILE_ARG}"
+		echo "Production dir:${WHITE_FG}${_PROD_EXE:h}${RESET}, FILE:${WHITE_FG}${_PROD_EXE:t}${RESET}"
 	else
 		DEFAULT_FN=${PWD:t}
 		[[ -e ${DEFAULT_FN}.zsh ]] && DEFAULT_FN=${DEFAULT_FN}.zsh # Add zsh extension if applicable
@@ -502,7 +502,7 @@ if [[ ${#} -eq 0 ]];then
 		if [[ -e ${DEFAULT_FN} ]];then
 			FILE_ARG=${DEFAULT_FN} # Assign default file
 		else
-			msg_box -p -PK "<r>No file corresponds to the name<N>:<w>${DEFAULT_FN}<N>|Please provide a filename"
+			msg_box -p -PK "<r>No file corresponds to the name<N>:<w>${DEFAULT_FN}<N>|Please provide a filename..."
 			exit_leave
 		fi
 	fi
