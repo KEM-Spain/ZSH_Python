@@ -92,6 +92,9 @@ tcup () {
 	[[ ${X} -lt 0 ]] && X=1 && CAUGHT_BAD_X=true
 	[[ ${Y} -lt 0 ]] && Y=1 && CAUGHT_BAD_Y=true
 
+#	[[ ${CAUGHT_BAD_X} == 'true' ]] && echo "${0}: ARGC:${#@} ${RED_FG}CAUGHT BAD X COORD${RESET} Set to 1" >&2
+#	[[ ${CAUGHT_BAD_Y} == 'true' ]] && echo "${0}: ARGC:${#@} ${RED_FG}CAUGHT BAD Y COORD${RESET} Set to 1" >&2
+
 	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 		[[ ${CAUGHT_BAD_X} == 'true' ]] && dbg "${functrace[1]} called ${0}: ARGC:${#@} ${RED_FG}CAUGHT BAD X COORD${RESET} Set to 1"
 		[[ ${CAUGHT_BAD_Y} == 'true' ]] && dbg "${functrace[1]} called ${0}: ARGC:${#@} ${RED_FG}CAUGHT BAD Y COORD${RESET} Set to 1"

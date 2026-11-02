@@ -71,9 +71,10 @@ typeset _RY=0
 
 # Display Constants
 _CONT_WIDTH=86
-_INFO_W=$((_CONT_WIDTH - 7 ))
+INF_W=$((_CONT_WIDTH - 4 ))
+INF_H=5
 _CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
-_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h4) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${_INFO_W}) H 5 W ${_INFO_W}) # Info coords
+_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${INF_W}) H ${INF_H} W ${INF_W}) # Info coords
 _RY=$(get_relative_y "${(kv)_CONT_COORDS}" 1 4) # Relative center of box
 _SPINNER_COORDS=(ROW $(( _CONT_COORDS[X] - 1 )) COL ${_RY}) # Center spinner under continuous box
 

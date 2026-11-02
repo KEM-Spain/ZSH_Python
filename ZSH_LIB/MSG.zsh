@@ -160,22 +160,22 @@ msg_box () {
 	# Append prompt to msgs
 	if [[ -n ${PROMPT_ARG} ]];then
 		case ${PROMPT_ARG} in
-			B) MSG_FOOTER+="|<Z>|<w>Reboot? (y/n)<N>";;
-			C) MSG_FOOTER+="|<Z>|<w>Continue? (y/n)<N>";;
-			D) MSG_FOOTER+="|<Z>|<w>Delete? (y/n)<N>";;
-			E) MSG_FOOTER+="|<Z>|<w>Edit? (y/n)<N>";;
-			G) MSG_FOOTER+="|<Z>|<w>Download? (y/n)<N>";;
-			I) MSG_FOOTER+="|<Z>|<w>Install? (y/n)<N>";;
-			K) MSG_FOOTER+="|<Z>|<w>Press any key...<N>";;
-			M) MSG_FOOTER+="|<Z>|<w>More? (y/n)<N>";;
-			N) MSG_FOOTER+="|<Z>|<w>(y)es,(s)kip,(a)ll?";;
-			O) MSG_FOOTER+="|<Z>|<w>Overwrite? (y/n)<N>";;
-			P) MSG_FOOTER+="|<Z>|<w>Proceed? (y/n)<N>";;
-			S) MSG_FOOTER+="|<Z>|<w>Select Option...<N>";;
-			Q) MSG_FOOTER+="|<Z>|<w>Queue? (y/n)<N>";;
-			V) MSG_FOOTER+="|<Z>|<w>View? (y/n)<N>";;
-			Y) MSG_FOOTER+="|<Z>|<w>Yes/No? (y/n)<N>";;
-			X) MSG_FOOTER+="|<Z>|<w>Kill? (y/n)<N>";;
+			B) MSG_FOOTER+="|<Z>|<w>Reboot <N>(y/n)<w>?<N>";;
+			C) MSG_FOOTER+="|<Z>|<w>Continue <N>(y/n)<w>?<N>";;
+			D) MSG_FOOTER+="|<Z>|<w>Delete <N>(y/n)<w>?<N>";;
+			E) MSG_FOOTER+="|<Z>|<w>Edit <N>(y/n)<w>?<N>";;
+			G) MSG_FOOTER+="|<Z>|<w>Download <N>(y/n)<w>?<N>";;
+			I) MSG_FOOTER+="|<Z>|<w>Install <N>(y/n)<w>?<N>";;
+			K) MSG_FOOTER+="|<Z>|<w>Press any key<N>...";;
+			M) MSG_FOOTER+="|<Z>|<w>More <N>(y/n)<w>?<N>";;
+			N) MSG_FOOTER+="|<Z>|<w>(y)es,(s)kip,(a)ll<N>?";;
+			O) MSG_FOOTER+="|<Z>|<w>Overwrite? <N>(y/n)<w>?<N>";;
+			P) MSG_FOOTER+="|<Z>|<w>Proceed <N>(y/n)<w>?<N>";;
+			S) MSG_FOOTER+="|<Z>|<w>Select Option<N>...";;
+			Q) MSG_FOOTER+="|<Z>|<w>Queue? <N>(y/n)<w>?<N>";;
+			V) MSG_FOOTER+="|<Z>|<w>View <N>(y/n)<w>?<N>";;
+			Y) MSG_FOOTER+="|<Z>|<w>Yes/No <N>(y/n)<w>?<N>";;
+			X) MSG_FOOTER+="|<Z>|<w>Kill <N>(y/n)<w>?<N>";;
 			*) MSG_FOOTER+="|<Z>|<w>${PROMPT_ARG}<N>";;
 		esac
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ADDED PROMPT:${PROMPT_ARG}"
@@ -439,12 +439,22 @@ msg_box () {
 			echo -n "${MSG_OUT}"
 		done
 
-		if [[ ${PROMPT_USER} == "true" ]];then
+		if [[ ${PROMPT_USER} == "true" ]]; then
 			_MSG_KEY=$(get_keys)
-			if [[ ${NUM_LIST} == 'true' && ${RET_VALUES} == 'true' && "${_MSG_KEY}" != "0" ]];then
-				[[ -n ${LIST_VALS[${_MSG_KEY}]} ]] && _MSG_KEY=${LIST_VALS[${_MSG_KEY}]}
+			if [[ ${NUM_LIST} == 'true' && ${RET_VALUES} == 'true' ]]; then
+					if [[ -n ${LIST_VALS[${_MSG_KEY}]} ]]; then
+							_MSG_KEY=${LIST_VALS[${_MSG_KEY}]}
+					else
+							_MSG_KEY="" # Fall back to null on invalid key or empty enter
+					fi
 			fi
 		fi
+#		if [[ ${PROMPT_USER} == "true" ]];then
+#			_MSG_KEY=$(get_keys)
+#			if [[ ${NUM_LIST} == 'true' && ${RET_VALUES} == 'true' && "${_MSG_KEY}" != "0" ]];then
+#				[[ -n ${LIST_VALS[${_MSG_KEY}]} ]] && _MSG_KEY=${LIST_VALS[${_MSG_KEY}]}
+#			fi
+#		fi
 	fi
 
 	_LAST_MSG_TAG=${TAG}

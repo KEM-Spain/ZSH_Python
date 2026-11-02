@@ -271,11 +271,12 @@ center () {
 	local VERT=false
 
 	local COORD_ARGS='' # COORDS array content
-	local _HEIGHT=0  # HEIGHT of object to display
-	local _WIDTH=0  # WIDTH of object to display, width of text to center, or the text itself
-	local _X_OFF=0   # Optional Vertical offset from center
-	local _Y_OFF=0   # Optional Horizontal offset from center
+	local _HEIGHT=0     # HEIGHT of object to display
+	local _WIDTH=0      # WIDTH of object to display, width of text to center, or the text itself
+	local _X_OFF=0      # Optional Vertical offset from center
+	local _Y_OFF=0      # Optional Horizontal offset from center
 	local JOB=''
+	local O
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
@@ -301,12 +302,31 @@ center () {
 	shift $((OPTIND -1))
 	#--End GetOpts--
 	
+	[[ ${#OPTIONS} -eq 0 ]] && echo "${0:t}: ${RED_FG}Missing options${RESET}" >&2
+
+
 	if ! validate_is_number ${_WIDTH};then # If WIDTH is a string of text; use its length
 		_WIDTH=${#_WIDTH}
 	fi
 
 	if ! validate_args ${JOB};then
-		echo "\nArguments for ${JOB} failed validation" >&2
+		echo "\n${0:t}: Arguments for ${JOB} ${RED_FG}failed validation${RESET}" >&2
+		for O in ${OPTIONS};do
+			case ${O} in
+				B) echo "${0:t}: BOX option -B requires: -h <N>-w <N>[-x <N>] [-y <N>]" >&2;;
+				H) echo "${0:t}: HORZ option -H requires: -w <N>" >&2;;
+				R) echo "${0:t}: REL_C option -R requires: -c COORD_ARGS -h <N> -w <N> [-x <N>] [-y <N>]" >&2;;
+				V) echo "${0:t}: VERT option -V requires: -h <N>" >&2;;
+				X) echo "${0:t}: REL_X option -X requires: -c <COORD_ARGS> -h <N>[-x <N>] [-y <N>]" >&2;;
+				Y) echo "${0:t}: REL_Y option -Y requires: -c <COORD_ARGS> -w <N>[-x <N>] [-y <N>]" >&2;;
+				c) echo "${0:t}: COORD_ARGS option -c requires: -c <COORD ARRAY ARGS>: X <N> Y <N> H <N> W <N>" >&2;;
+				h) echo "${0:t}: HEIGHT option -h requires: -h <N>" >&2;;
+				w) echo "${0:t}: WIDTH option -w requires: -w <N>" >&2;;
+				x) echo "${0:t}: X_OFF option -x requires: -x <N>" >&2;;
+				y) echo "${0:t}: Y_OFF option -y requires: -x <N>" >&2;;
+				*) echo "${0:t}: Unknown option:${O}" >&2;;
+			esac
+		done
 		return 1
 	fi
 

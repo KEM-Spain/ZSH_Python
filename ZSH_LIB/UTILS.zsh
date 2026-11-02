@@ -449,15 +449,21 @@ get_keys () {
 }
 
 inline_vi_edit () {
-	# Requires xdotool
 	local PROMPT=${1}
 	local CUR_VALUE=${2}
-	local PERL_SCRIPT
+	local ROW=${3}
+	local COL=${4}
+	local PERL_SCRIPT=''
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	stty echo
 	cursor_on
+
+	if [[ -n "${ROW}" && -n "${COL}" ]]; then
+		tput cup $((ROW)) $((COL)) >&2
+		tput el >&2
+	fi
 
 	read -r -d '' PERL_SCRIPT <<'___EOF'
 	use warnings;
@@ -467,15 +473,19 @@ inline_vi_edit () {
 	my $term = new Term::ReadLine 'inline';
 	$term->parse_and_bind("set editing-mode vi");
 
-	system('xdotool key Home End &');
-	
+	# Home the cursor (move point to 0) once readline initializes and displays the value
+	my $attribs = $term->Attribs;
+	if ($attribs) {
+		$attribs->{startup_hook} = sub { $attribs->{point} = 0; };
+	}
+
 	while ( defined ($_ = $term->readline($ARGV[0],$ARGV[1])) ) {
 		print $_;
 		exit;
 	}
 ___EOF
 
-	perl -e "$PERL_SCRIPT" ${PROMPT} ${CUR_VALUE}
+	perl -e "$PERL_SCRIPT" "${PROMPT}:" "${CUR_VALUE}"
 
 	cursor_off
 	stty -echo

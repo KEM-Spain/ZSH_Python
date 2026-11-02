@@ -1,78 +1,36 @@
-2026-10-30_22:42: Logging started...
-2026-10-30_22:42: log_update: LOG lines BEFORE update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-30_22:42: log_update: LOG lines AFTER update:7 /home/kmiller/.local/share/yts/yts.downloads
-2026-10-30_22:42: query_youtube: Creating listing for QKEY:theduran, query is not strict
-2026-10-30_22:42: query_youtube:
+2026-11-03_00:18: Logging started...
+2026-11-03_00:18: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-03_00:18: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-03_00:18: query_youtube: Creating listing for QKEY:dialogueworks, query is strict
+2026-11-03_00:18: query_youtube:
 _QUERY_OPTS:
  	-> AGE:recent
-	-> DKEY:The Duran
-	-> ENGINE:youtube
-	-> EOPT:
-	-> FKEY:the_duran
-	-> QKEY:theduran
-	-> TYPE:standard
-2026-10-30_22:42: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "theduran"
-2026-10-30_22:42: query_youtube: Filter: Matching titles:7, Rejects:0
-2026-10-30_22:42: query_youtube: Listing for QKEY:theduran contains 7 rows
-2026-10-30_22:43: query_youtube: Creating listing for QKEY:pilot_debrief, query is not strict
-2026-10-30_22:43: query_youtube:
-_QUERY_OPTS:
- 	-> AGE:recent
-	-> DKEY:Pilot Debrief
-	-> ENGINE:youtube
-	-> EOPT:
-	-> FKEY:pilot_debrief
-	-> QKEY:pilot_debrief
-	-> SMSG:
-	-> TYPE:standard
-2026-10-30_22:43: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "pilot_debrief"
-2026-10-30_22:43: query_youtube: Filter: Matching titles:1, Rejects:07h ago|BushcatTom|Disco Pilot Debrief|https://youtube.com/watch?v=PDkEFRTfKpo|8:36
-2026-10-30_22:43: query_youtube: Listing for QKEY:pilot_debrief contains 1 rows
-2026-10-30_22:43: query_youtube: Creating listing for QKEY:katiehalper, query is strict
-2026-10-30_22:43: query_youtube:
-_QUERY_OPTS:
- 	-> AGE:recent
-	-> DKEY:Katie Halper
+	-> DKEY:Dialogue Works
 	-> ENGINE:youtube
 	-> EOPT:s
-	-> FKEY:katie_halper
-	-> QKEY:katiehalper
-	-> SMSG:
+	-> FKEY:dialogue_works
+	-> QKEY:dialogueworks
 	-> TYPE:strict
-2026-10-30_22:43: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "katiehalper"
-2026-10-30_22:43: query_youtube: Filter: Matching titles:0, Rejects:07h ago|BushcatTom|Disco Pilot Debrief|https://youtube.com/watch?v=PDkEFRTfKpo|8:36
-2026-10-30_22:43: query_youtube: Listing for QKEY:katiehalper contains 4 rows
-2026-10-30_22:43: query_youtube: Creating listing for QKEY:kimiversen, query is not strict
-2026-10-30_22:43: query_youtube:
-_QUERY_OPTS:
- 	-> AGE:recent
-	-> DKEY:Kim Iversen
-	-> ENGINE:youtube
-	-> EOPT:
-	-> FKEY:kim_iversen
-	-> QKEY:kimiversen
-	-> SMSG:0.0%
-	-> TYPE:standard
-2026-10-30_22:43: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "kimiversen"
-2026-10-30_22:43: query_youtube: Filter: Matching titles:4, Rejects:07h ago|BushcatTom|Disco Pilot Debrief|https://youtube.com/watch?v=PDkEFRTfKpo|8:36
-2026-10-30_22:43: query_youtube: Listing for QKEY:kimiversen contains 4 rows
-2026-10-30_22:43: Starting download for URL: https://youtube.com/watch?v=vhm8ngYxtxU (Cookies: none)
-2026-10-30_22:43: yt CMDLINE:false
-2026-10-30_22:43: yt URL:https://youtube.com/watch?v=vhm8ngYxtxU
-2026-10-30_22:43: yt Executed from: script COOKIES:null
-2026-10-30_22:43: Logging to /home/kmiller/.local/share/yts/yts_2748.log
-2026-10-30_22:43: action_do: GENERATING HEADER
-2026-10-30_22:43: action_do: DEST:[download] Destination: /tmp|The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].f399.mp4
-2026-10-30_22:43: clean_title: RAW_TITLE:The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU]
-2026-10-30_22:43: clean_title: AUTHOR:Kim Iversen, TITLE:The Brutal Reality Of The Russell Brand Trial
-2026-10-30_22:43: clean_title: COMPLETED TITLE:Kim Iversen - Brutal Reality Of The Russell Brand Trial 
-2026-10-30_22:43: action_do: COMPLETED
-2026-10-30_22:44: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].mp4
-2026-10-30_22:44: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].mp4
-2026-10-30_22:44: clean_title: RAW_TITLE:The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].mp4
-2026-10-30_22:44: clean_title: AUTHOR:Kim Iversen, TITLE:The Brutal Reality Of The Russell Brand Trial
-2026-10-30_22:44: clean_title: COMPLETED TITLE:Kim Iversen - Brutal Reality Of The Russell Brand Trial 
-2026-10-30_22:44: set_final_fn: Overwriting file:The_BRUTAL_Reality_of_the_Russell_Brand_Trial-[vhm8ngYxtxU].mp4
-2026-10-30_22:44: set_final_fn: Clean filename:Kim Iversen - Brutal Reality Of The Russell Brand Trial.mp4
-2026-10-30_22:44: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
-2026-10-30_22:44: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_2748.log was cleared for:kimiversen from:action_do
+2026-11-03_00:18: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "dialogueworks"
+2026-11-03_00:18: query_youtube: Filter: Matching titles:0, Rejects:0
+2026-11-03_00:18: query_youtube: Listing for QKEY:dialogueworks contains 19 rows
+2026-11-03_00:18: Starting download for URL: https://youtube.com/watch?v=vlYPkaWjrqw (Cookies: none)
+2026-11-03_00:18: yt CMDLINE:false
+2026-11-03_00:18: yt URL:https://youtube.com/watch?v=vlYPkaWjrqw
+2026-11-03_00:18: yt Executed from: script COOKIES:null
+2026-11-03_00:18: Logging to /home/kmiller/.local/share/yts/yts_20048.log
+2026-11-03_00:19: action_do: GENERATING HEADER
+2026-11-03_00:19: action_do: DEST:[download] Destination: /tmp|Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].f399.mp4
+2026-11-03_00:19: clean_title: RAW_TITLE:Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw]
+2026-11-03_00:19: clean_title: AUTHOR:Dialogue Works, TITLE:Matt Bracken - Breaking - Trump Says Iran Keeps Talking Warns Action Is Coming
+2026-11-03_00:19: clean_title: COMPLETED TITLE:Dialogue Works - Matt Bracken - Breaking - Trump Says Iran Keeps 
+2026-11-03_00:21: action_do: COMPLETED
+2026-11-03_00:21: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].mp4
+2026-11-03_00:21: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].mp4
+2026-11-03_00:21: clean_title: RAW_TITLE:Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].mp4
+2026-11-03_00:21: clean_title: AUTHOR:Dialogue Works, TITLE:Matt Bracken - Breaking - Trump Says Iran Keeps Talking Warns Action Is Coming
+2026-11-03_00:21: clean_title: COMPLETED TITLE:Dialogue Works - Matt Bracken - Breaking - Trump Says Iran Keeps 
+2026-11-03_00:21: set_final_fn: Overwriting file:Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].mp4
+2026-11-03_00:21: set_final_fn: Clean filename:Dialogue Works - Matt Bracken - Breaking - Trump Says Iran Keeps.mp4
+2026-11-03_00:21: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-11-03_00:21: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_20048.log was cleared for:dialogueworks from:action_do
