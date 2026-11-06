@@ -1,0 +1,10 @@
+#!/usr/bin/zsh
+[[ ${#} -eq 0 ]] && echo "Missing argument: <VIDEO>" && exit
+echo Reformatting video:"${1}"
+echo "\nThis will reformat the video to be compatible with the TV\nwhich can then be played with \"Force Direct Play\"\nto avoid cpu loading. This is a slow process..."
+
+echo -n "\nDo you want to continue? (y/n)?"
+read -q RESPONSE
+[[ ${RESPONSE} != 'y' ]] && echo "\nOperation Cancelled" && exit
+echo "\nReformtting..."
+#ffmpeg -i "${1}" -c:v libx264 -preset ultrafast -crf 23 -c:a copy "reformatted_${1:r}.mkv"

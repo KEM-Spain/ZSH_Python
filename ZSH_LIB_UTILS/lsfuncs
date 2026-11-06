@@ -276,10 +276,10 @@ if [[ ${PRINT_LIST} == 'true' ]];then
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 	for L in ${_LOCAL_LIST};do
 		echo "File:${C}$(realpath ${L})${R}"
-		for M in ${_FUNC_MATCH};do
+		for M in ${(o)_FUNC_MATCH};do
 			grep -q ${M} ${L}
 			if [[ ${?} -eq 0 ]];then
-				echo "	Function:${C}${M}${R}"
+				echo "${M// *}"
 			fi
 		done
 	done

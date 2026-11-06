@@ -470,10 +470,11 @@ inline_vi_edit () {
 	use strict;
 	use Term::ReadLine;
 
+	$| = 1; # <-- FIX: Enable autoflush to prevent stream buffer collisions with TUI boxes
+
 	my $term = new Term::ReadLine 'inline';
 	$term->parse_and_bind("set editing-mode vi");
 
-	# Home the cursor (move point to 0) once readline initializes and displays the value
 	my $attribs = $term->Attribs;
 	if ($attribs) {
 		$attribs->{startup_hook} = sub { $attribs->{point} = 0; };

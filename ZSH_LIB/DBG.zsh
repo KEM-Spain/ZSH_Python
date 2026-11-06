@@ -10,7 +10,7 @@ dbg_arglist () {
 	local NDX=0
 	local TEXT=''
 
-	[[ ${#} -eq 0 ]] && echo "${functrace[1]}:${YELLOW_FG}no args passed${RESET}" && return
+	[[ ${#} -eq 0 ]] && echo "${functrace[1]}:${YELLOW_FG}no args${RESET}" && return
 
 	TEXT=${@}
 	echo "${BOLD}${ITALIC}${WHITE_FG}${functrace[1]}${RESET} [${WHITE_FG}ARGUMENTS${RESET}:${WHITE_FG}${#}${RESET}]"

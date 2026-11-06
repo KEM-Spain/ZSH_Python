@@ -1,36 +1,37 @@
-2026-11-03_00:18: Logging started...
-2026-11-03_00:18: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-03_00:18: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-03_00:18: query_youtube: Creating listing for QKEY:dialogueworks, query is strict
-2026-11-03_00:18: query_youtube:
+2026-11-06_23:45: Logging started...
+2026-11-06_23:45: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-06_23:45: log_update: Skipping expired inode:26869818
+2026-11-06_23:45: log_update: Skipping expired inode:26869807
+2026-11-06_23:45: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-06_23:45: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
+2026-11-06_23:45: query_youtube:
 _QUERY_OPTS:
- 	-> AGE:recent
-	-> DKEY:Dialogue Works
+ 	-> DKEY:Alex Christoforou
 	-> ENGINE:youtube
-	-> EOPT:s
-	-> FKEY:dialogue_works
-	-> QKEY:dialogueworks
-	-> TYPE:strict
-2026-11-03_00:18: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a recent "dialogueworks"
-2026-11-03_00:18: query_youtube: Filter: Matching titles:0, Rejects:0
-2026-11-03_00:18: query_youtube: Listing for QKEY:dialogueworks contains 19 rows
-2026-11-03_00:18: Starting download for URL: https://youtube.com/watch?v=vlYPkaWjrqw (Cookies: none)
-2026-11-03_00:18: yt CMDLINE:false
-2026-11-03_00:18: yt URL:https://youtube.com/watch?v=vlYPkaWjrqw
-2026-11-03_00:18: yt Executed from: script COOKIES:null
-2026-11-03_00:18: Logging to /home/kmiller/.local/share/yts/yts_20048.log
-2026-11-03_00:19: action_do: GENERATING HEADER
-2026-11-03_00:19: action_do: DEST:[download] Destination: /tmp|Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].f399.mp4
-2026-11-03_00:19: clean_title: RAW_TITLE:Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw]
-2026-11-03_00:19: clean_title: AUTHOR:Dialogue Works, TITLE:Matt Bracken - Breaking - Trump Says Iran Keeps Talking Warns Action Is Coming
-2026-11-03_00:19: clean_title: COMPLETED TITLE:Dialogue Works - Matt Bracken - Breaking - Trump Says Iran Keeps 
-2026-11-03_00:21: action_do: COMPLETED
-2026-11-03_00:21: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].mp4
-2026-11-03_00:21: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].mp4
-2026-11-03_00:21: clean_title: RAW_TITLE:Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].mp4
-2026-11-03_00:21: clean_title: AUTHOR:Dialogue Works, TITLE:Matt Bracken - Breaking - Trump Says Iran Keeps Talking Warns Action Is Coming
-2026-11-03_00:21: clean_title: COMPLETED TITLE:Dialogue Works - Matt Bracken - Breaking - Trump Says Iran Keeps 
-2026-11-03_00:21: set_final_fn: Overwriting file:Matt_Bracken_-_BREAKING_-_Trump_Says_Iran_Keeps_Talking_Warns_Action_Is_Coming-[vlYPkaWjrqw].mp4
-2026-11-03_00:21: set_final_fn: Clean filename:Dialogue Works - Matt Bracken - Breaking - Trump Says Iran Keeps.mp4
-2026-11-03_00:21: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
-2026-11-03_00:21: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_20048.log was cleared for:dialogueworks from:action_do
+	-> LIST:youtube
+	-> QKEY:alexchristoforou
+	-> RANGE:all
+	-> STRICT:strict
+2026-11-06_23:45: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a all "alexchristoforou"
+2026-11-06_23:45: query_youtube: Filter: Matching titles:0, Rejects:0
+2026-11-06_23:45: query_youtube: Listing for QKEY:alexchristoforou contains 18 rows
+2026-11-06_23:45: Starting download for URL: https://youtube.com/watch?v=QJwMxczvoM0 (Cookies: none)
+2026-11-06_23:45: yt CMDLINE:false
+2026-11-06_23:45: yt URL:https://youtube.com/watch?v=QJwMxczvoM0
+2026-11-06_23:45: yt Executed from: script COOKIES:null
+2026-11-06_23:45: Logging to /home/kmiller/.local/share/yts/yts_15993.log
+2026-11-06_23:45: action_do: GENERATING HEADER
+2026-11-06_23:45: action_do: DEST:[download] Destination: /tmp|BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
+2026-11-06_23:45: clean_title: RAW_TITLE:BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0]
+2026-11-06_23:45: clean_title: AUTHOR:Alex Christoforou, TITLE:Big Beautiful Us-Russia Deal Rubio Exit Zelensky - Us Owes 16B To Ukraine
+2026-11-06_23:45: clean_title: COMPLETED TITLE:Alex Christoforou - Big Beautiful Us-Russia Deal Rubio Exit Zelensky - 
+2026-11-06_23:50: action_do: COMPLETED
+2026-11-06_23:50: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
+2026-11-06_23:50: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
+2026-11-06_23:50: clean_title: RAW_TITLE:BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
+2026-11-06_23:50: clean_title: AUTHOR:Alex Christoforou, TITLE:Big Beautiful Us-Russia Deal Rubio Exit Zelensky - Us Owes 16B To Ukraine
+2026-11-06_23:50: clean_title: COMPLETED TITLE:Alex Christoforou - Big Beautiful Us-Russia Deal Rubio Exit Zelensky - 
+2026-11-06_23:50: set_final_fn: Overwriting file:BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
+2026-11-06_23:50: set_final_fn: Clean filename:Alex Christoforou - Big Beautiful Us-Russia Deal Rubio Exit Zelensky -.mp4
+2026-11-06_23:50: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-11-06_23:50: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_15993.log was cleared for:alexchristoforou from:action_do

@@ -1,10 +1,19 @@
--P /home/kmiller/Downloads/Torrents/Library/Web
---concurrent-fragments 4
+--buffer-size 16K
+--concurrent-fragments 8
+--downloader aria2c
+--downloader-args "aria2c:-x 16 -s 16 -k 1M --file-allocation=none --summary-interval=0 --max-tries=5"
 --fixup force
---format b[ext=mp4]
+--force-ipv4
+--fragment-retries 10
 --ignore-errors
+--impersonate firefox
+--js-runtimes node
+--newline
+--paths /home/kmiller/Downloads/Torrents/Library/Web
+--paths temp:/tmp
+--remote-components ejs:github
+--remux-video mp4
 --restrict-filenames
---retries infinite
+--retries 20
+--socket-timeout 15
 --trim-filenames 100
---js-runtimes deno:/home/kmiller/.deno/bin
---remote-components ejs:npm

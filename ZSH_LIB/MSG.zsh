@@ -74,7 +74,6 @@ msg_box () {
 
 	# OPTIONS
 	local -A COORD_ARGS=()
-	local -A LIST_VALS=()
 	local -a MSG=()
 	local BUFFER_FULL=false
 	local CLEAR_MSG=false
@@ -95,7 +94,6 @@ msg_box () {
 	local PROMPT_USER=false
 	local QUIET=false
 	local RELATIVE=false
-	local RET_VALUES=false
 	local SAFE=true
 	local SO=false
 	local TAG_ARG=''
@@ -128,7 +126,6 @@ msg_box () {
 			s) DELIM_ARG="${OPTARG}";; # Use this delimiter to parse message sections
 			t) TIMEOUT="${OPTARG}";; # Display message for this time limit
 			u) SAFE=false;; # Ensure no coordinates violate available screen dimensions
-			v) RET_VALUES=true;; # Return values from msg_list_number
 			w) MSG_W_COORD_ARG=${OPTARG};; # Specify a message box width other than the default
 			x) MSG_X_COORD_ARG=${OPTARG};; # Specify a message display row other than the default
 			y) MSG_Y_COORD_ARG=${OPTARG};; # Specify a message display col other than the default
@@ -394,13 +391,6 @@ msg_box () {
 			tput ech $(( BOX_WIDTH - 2 ))
 			echo -n "${MSG_OUT}"
 
-			if [[ ${RET_VALUES} == 'true' ]];then
-				if [[ ${MSG_OUT} =~ "[0-9]\)" ]];then
-					NUM_LIST=true
-					LIST_VALS[${DTL_NDX}]="$(str_trim ${MSG_OUT#*) })"
-				fi
-			fi
-
 			[[ ${SO} == 'true' ]] && tput smso
 
 			if [[ ${MSG_PAGING} == 'true' ]];then
@@ -441,20 +431,7 @@ msg_box () {
 
 		if [[ ${PROMPT_USER} == "true" ]]; then
 			_MSG_KEY=$(get_keys)
-			if [[ ${NUM_LIST} == 'true' && ${RET_VALUES} == 'true' ]]; then
-					if [[ -n ${LIST_VALS[${_MSG_KEY}]} ]]; then
-							_MSG_KEY=${LIST_VALS[${_MSG_KEY}]}
-					else
-							_MSG_KEY="" # Fall back to null on invalid key or empty enter
-					fi
-			fi
 		fi
-#		if [[ ${PROMPT_USER} == "true" ]];then
-#			_MSG_KEY=$(get_keys)
-#			if [[ ${NUM_LIST} == 'true' && ${RET_VALUES} == 'true' && "${_MSG_KEY}" != "0" ]];then
-#				[[ -n ${LIST_VALS[${_MSG_KEY}]} ]] && _MSG_KEY=${LIST_VALS[${_MSG_KEY}]}
-#			fi
-#		fi
 	fi
 
 	_LAST_MSG_TAG=${TAG}
@@ -492,21 +469,21 @@ msg_box_align () {
 		MSG_OUT=" "
 	elif [[ ${MSG} =~ '<SEP>' ]];then
 		MSG_OUT=${MSG:gs/<SEP>/$(str_unicode_line ${BOX_SPAN})/}
-	elif [[ ${MSG} =~ '<L>' ]];then
+	elif [[ ${MSG} =~ '<L>' ]];then # Bullet
 		MSG=${MSG/*<L>/\\u2022 }
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
 		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
-	elif [[ ${MSG} =~ '<X>' ]];then
+	elif [[ ${MSG} =~ '<X>' ]];then # Number
 		MSG=${MSG##*<X>}
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
 		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
-	elif [[ ${MSG} =~ '<D>' ]];then
+	elif [[ ${MSG} =~ '<D>' ]];then # Data
 		MSG=${MSG##*<D>}
 		LBL=${${(s/:/)MSG}[1]}
 		LBL=${LBL:gs/#/ /}
@@ -516,13 +493,13 @@ msg_box_align () {
 		PAD_L=' '
 		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
-	elif [[ ${BOX_STYLE:l} == 'l' ]];then
+	elif [[ ${BOX_STYLE:l} == 'l' ]];then # Left
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
 		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET )) )
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
-	elif [[ ${BOX_STYLE:l} == 'c' ]];then
+	elif [[ ${BOX_STYLE:l} == 'c' ]];then # Center
 		TEXT=$(msg_nomarkup ${MSG})
 		TEXT=$(str_trim ${TEXT})
 		PADDING=$(str_center_pad ${BOX_WIDTH} ${TEXT})
@@ -663,7 +640,6 @@ msg_list_number () {
 	for L in ${MSG};do
 		(( NDX++))
 		echo -n "<X>${NDX}) ${L}"
-		MSG_LIST_VALUES[${NDX}]=${L}
 		[[ ${NDX} -lt ${#MSG} ]] && echo ${_DELIM}
 	done
 }
@@ -674,7 +650,7 @@ msg_list_data () {
 	local LINE=''
 	local MARK=0
 	local MAX=0
-	NDX=0
+	local NDX=0
 	local PAD=0
 	local VAL
 	local L 
