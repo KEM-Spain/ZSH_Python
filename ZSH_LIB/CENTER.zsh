@@ -4,6 +4,12 @@ _DEPS+=(MSG.zsh TPUT.zsh VALIDATE.zsh UTILS.zsh)
 # LIB Vars
 _MOD="[${0:t}]"
 
+# Internal Error Reporting Helper
+_report_error () {
+	local err_msg="${1}"
+	print -u2 "\n$${_MOD} Error in ${functrace[2]:-${functrace[1]}} (${funcfiletrace[2]:-${funcfiletrace[1]}}): ${RED_FG}${err_msg}${RESET}"
+}
+
 # LIB Functions
 get_relative_center () {
 	local -A RGN_COORDS=(${(z)1}) # Coords of region to place object
@@ -78,7 +84,7 @@ get_relative_x () {
 
 	[[ ${X_OFF} -ne 0 ]] && X=$(( X + X_OFF ))
 
-	echo $((X))
+	echo ${X}
 }
 
 get_relative_y () {
@@ -110,7 +116,7 @@ get_relative_y () {
 
 	[[ ${Y_OFF} -ne 0 ]] && Y=$(( Y + Y_OFF ))
 
-	echo $((Y))
+	echo ${Y}
 }
 
 get_box_center () {
@@ -133,7 +139,7 @@ get_box_center () {
 }
 
 get_vert_center () {
-	local HEIGHT=${1:=$(tput lines)}
+	local HEIGHT=${1}
 	local RGN=$(tput lines)
 	local -F3 HEIGHT_CENTER=$(( HEIGHT / 2 ))
 	local -F3 RGN_CENTER=$(( RGN / 2 ))
@@ -142,7 +148,7 @@ get_vert_center () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	REM=$(( _HEIGHT_CENTER % 2 ))
+	REM=$(( HEIGHT_CENTER % 2 ))
 	[[ ${REM} -ge .5 ]] && (( HEIGHT_CENTER++ ))
 
 	REM=$(( RGN_CENTER % 2 ))
@@ -158,7 +164,7 @@ get_vert_center () {
 }
 
 get_horz_center () {
-	local WIDTH=${1:=$(tput cols)}
+	local WIDTH=${1}
 	local RGN=$(tput cols)
 	local -F3 WIDTH_CENTER=$(( WIDTH / 2 ))
 	local -F3 RGN_CENTER=$(( RGN / 2 ))
@@ -183,36 +189,49 @@ get_horz_center () {
 }
 
 validate_args () {
-	local JOB=${1}
+	local JOB="${1}"
+	local HEIGHT="${2}"
+	local WIDTH="${3}"
+	local X_OFF="${4}"
+	local Y_OFF="${5}"
+	local COORD_ARGS="${6}"
 
 	case ${JOB} in
-		BOX)	[[ ! ${OPTIONS[(i)h]} -le ${#OPTIONS} ]] && { echo "\n${JOB}: _HEIGHT option is missing" >&2 && return 1 }
-					[[ ! ${OPTIONS[(i)w]} -le ${#OPTIONS} ]] && { echo "\n${JOB}: _WIDTH option is missing" >&2 && return 1 }
-					[[ ${_HEIGHT} -lt 1 ]] && { echo "\n${JOB}: _HEIGHT must be > 0" >&2 && return 1 }
-					[[ ${_WIDTH} -lt 1 ]] && { echo "\n${JOB}: _WIDTH must be > 0" >&2 && return 1 }
-					validate_opts w h x y
+		BOX)	[[ -z "${HEIGHT}" ]] && { _report_error "${JOB}: HEIGHT parameter is missing" >&2 && return 1 }
+					[[ -z "${WIDTH}" ]] && { _report_error "${JOB}: WIDTH parameter is missing" >&2 && return 1 }
+					[[ "${HEIGHT}" -lt 1 ]] && { _report_error "${JOB}: HEIGHT must be > 0" >&2 && return 1 }
+					[[ "${WIDTH}" -lt 1 ]] && { _report_error "${JOB}: WIDTH must be > 0" >&2 && return 1 }
+					validate_opts "w h x y" "${HEIGHT}" "${WIDTH}" "${X_OFF}" "${Y_OFF}" "${COORD_ARGS}"
 					return ${?}
 					;;
-		VERT) [[ ${OPTIONS[(i)h]} -le ${#OPTIONS} ]] && { validate_opts h && return ${?} };;
-		HORZ) [[ ${OPTIONS[(i)w]} -le ${#OPTIONS} ]] && { validate_opts w && return ${?} };;
-		REL_C)	[[ -z ${COORD_ARGS} ]] && { echo "${JOB}: COORD_ARGS are not populated" >&2 && return 1 }
-						[[ ! ${OPTIONS[(i)h]} -le ${#OPTIONS} ]] && { echo "\n${JOB}: _HEIGHT option is missing" >&2 && return 1 }
-						[[ ! ${OPTIONS[(i)w]} -le ${#OPTIONS} ]] && { echo "\n${JOB}: _WIDTH option is missing" >&2 && return 1 }
-						[[ ${_HEIGHT} -lt 1 ]] && { echo "\n${JOB}: _HEIGHT must be > 0" >&2 && return 1 }
-						[[ ${_WIDTH} -lt 1 ]] && { echo "\n${JOB}: _WIDTH must be > 0" >&2 && return 1 }
-						validate_opts c h w x y
+		VERT) [[ -z "${HEIGHT}" ]] && { _report_error "${JOB}: HEIGHT parameter is missing" >&2 && return 1 }
+					[[ "${HEIGHT}" -lt 1 ]] && { _report_error "${JOB}: HEIGHT must be > 0" >&2 && return 1 }
+					validate_opts "h" "${HEIGHT}" "${WIDTH}" "${X_OFF}" "${Y_OFF}" "${COORD_ARGS}"
+					return ${?}
+					;;
+		HORZ) [[ -z "${WIDTH}" ]] && { _report_error "${JOB}: WIDTH parameter is missing" >&2 && return 1 }
+					[[ "${WIDTH}" -lt 1 ]] && { _report_error "${JOB}: WIDTH must be > 0" >&2 && return 1 }
+					validate_opts "w" "${HEIGHT}" "${WIDTH}" "${X_OFF}" "${Y_OFF}" "${COORD_ARGS}"
+					return ${?}
+					;;
+		REL_C)	[[ -z ${COORD_ARGS} ]] && { _report_error "${JOB}: COORD_ARGS are not populated" >&2 && return 1 }
+						[[ -z "${HEIGHT}" ]] && { _report_error "${JOB}: HEIGHT parameter is missing" >&2 && return 1 }
+						[[ -z "${WIDTH}" ]] && { _report_error "${JOB}: WIDTH parameter is missing" >&2 && return 1 }
+						[[ "${HEIGHT}" -lt 1 ]] && { _report_error "${JOB}: HEIGHT must be > 0" >&2 && return 1 }
+						[[ "${WIDTH}" -lt 1 ]] && { _report_error "${JOB}: WIDTH must be > 0" >&2 && return 1 }
+						validate_opts "c h w x y" "${HEIGHT}" "${WIDTH}" "${X_OFF}" "${Y_OFF}" "${COORD_ARGS}"
 						return ${?}
 						;;
-		REL_X)	[[ -z ${COORD_ARGS} ]] && { echo "\n${JOB}: COORD_ARGS are not populated" >&2 && return 1 }
-						[[ ! ${OPTIONS[(i)h]} -le ${#OPTIONS} ]] && { echo "\n${JOB}: _HEIGHT option is missing" >&2 && return 1 }
-						[[ ${_HEIGHT} -lt 1 ]] && { echo "\n${JOB}: _HEIGHT must be > 0" >&2 && return 1 }
-						validate_opts c h x
+		REL_X)	[[ -z ${COORD_ARGS} ]] && { _report_error "${JOB}: COORD_ARGS are not populated" >&2 && return 1 }
+						[[ -z "${HEIGHT}" ]] && { _report_error "${JOB}: HEIGHT parameter is missing" >&2 && return 1 }
+						[[ "${HEIGHT}" -lt 1 ]] && { _report_error "${JOB}: HEIGHT must be > 0" >&2 && return 1 }
+						validate_opts "c h x" "${HEIGHT}" "${WIDTH}" "${X_OFF}" "${Y_OFF}" "${COORD_ARGS}"
 						return ${?}
 						;;
-		REL_Y) [[ -z ${COORD_ARGS} ]] && { echo "\n${JOB}: COORD_ARGS are not populated" >&2 && return 1 }
-						[[ ! ${OPTIONS[(i)w]} -le ${#OPTIONS} ]] && { echo "\n${JOB}: _WIDTH option is missing" >&2 && return 1 }
-						[[ ${_WIDTH} -lt 1 ]] && { echo "\n${JOB}: _WIDTH must be > 0" >&2 && return 1 }
-						validate_opts c w y
+		REL_Y) [[ -z ${COORD_ARGS} ]] && { _report_error "${JOB}: COORD_ARGS are not populated" >&2 && return 1 }
+						[[ -z "${WIDTH}" ]] && { _report_error "${JOB}: WIDTH parameter is missing" >&2 && return 1 }
+						[[ "${WIDTH}" -lt 1 ]] && { _report_error "${JOB}: WIDTH must be > 0" >&2 && return 1 }
+						validate_opts "c w y" "${HEIGHT}" "${WIDTH}" "${X_OFF}" "${Y_OFF}" "${COORD_ARGS}"
 						return ${?}
 						;;
 	esac
@@ -220,7 +239,12 @@ validate_args () {
 }
 
 validate_opts () {
-	local OPTS=(${@})
+	local OPTS=(${(z)1})
+	local HEIGHT="${2}"
+	local WIDTH="${3}"
+	local X_OFF="${4}"
+	local Y_OFF="${5}"
+	local COORD_ARGS="${6}"
 	local O
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -228,27 +252,27 @@ validate_opts () {
 	for O in ${OPTS};do
 		case ${O} in
 			c) if [[ $(( ${#${(z)COORD_ARGS}} % 2 )) -ne 0 ]];then
-					echo "${_MOD} ${functrace[1]} COORD_ARGS:${COORD_ARGS} are unbalanced" >&2 && return 1
+					_report_error "${functrace[1]} COORD_ARGS:${COORD_ARGS} are unbalanced" >&2 && return 1
 				fi;;
-			h) if ! validate_is_number ${_HEIGHT};then
-					echo "${_MOD} ${functrace[1]} HEIGHT is not numeric" >&2 && return 1
-				elif [[ ${_HEIGHT} -ge $(tput lines) ]];then
-					echo "${_MOD} ${functrace[1]} HEIGHT exceeds maximum $(tput lines)" >&2 && return 1
-				elif [[ ${_HEIGHT} -lt 1 ]];then
-					echo "${_MOD} ${functrace[1]} HEIGHT must be a positive integer > 0" >&2 && return 1
+			h) if ! validate_is_number "${HEIGHT}";then
+					_report_error "${functrace[1]} HEIGHT is not numeric" >&2 && return 1
+				elif [[ "${HEIGHT}" -gt $(tput lines) ]];then
+					_report_error "${functrace[1]} HEIGHT exceeds maximum $(tput lines)" >&2 && return 1
+				elif [[ "${HEIGHT}" -lt 1 ]];then
+					_report_error "${functrace[1]} HEIGHT must be a positive integer > 0" >&2 && return 1
 				fi;;
-			w) if ! validate_is_number ${_WIDTH};then
-					echo "${_MOD} ${functrace[1]} WIDTH is not numeric" >&2 && return 1
-				elif [[ ${_WIDTH} -ge $(tput cols) ]];then
-					echo "${_MOD} ${functrace[1]} WIDTH exceeds maximum $(tput cols)" >&2 && return 1
-				elif [[ ${_WIDTH} -lt 1 ]];then
-					echo "${_MOD} ${functrace[1]} WIDTH must be a positive integer > 0" >&2 && return 1
+			w) if ! validate_is_number "${WIDTH}";then
+					_report_error "${functrace[1]} WIDTH is not numeric" >&2 && return 1
+				elif [[ "${WIDTH}" -gt $(tput cols) ]];then
+					_report_error "${functrace[1]} WIDTH exceeds maximum $(tput cols)" >&2 && return 1
+				elif [[ "${WIDTH}" -lt 1 ]];then
+					_report_error "${functrace[1]} WIDTH must be a positive integer > 0" >&2 && return 1
 				fi;;
-			x) if ! validate_is_number ${_X_OFF};then
-					echo "${_MOD} ${functrace[1]} X_OFF is not numeric" >&2 && return 1
+			x) if ! validate_is_number "${X_OFF}";then
+					_report_error "${functrace[1]} X_OFF is not numeric" >&2 && return 1
 				fi;;
-			y) if ! validate_is_number ${_Y_OFF};then
-					echo "${_MOD} ${functrace[1]} Y_OFF is not numeric" >&2 && return 1
+			y) if ! validate_is_number "${Y_OFF}";then
+					_report_error "${functrace[1]} Y_OFF is not numeric" >&2 && return 1
 				fi;;
 		esac
 	done
@@ -263,12 +287,6 @@ center () {
 	local OPTION
 	local OPTSTR=":DBHRVXYc:h:w:s:x:y:"
 	local OPTIND=0
-	local BOX=false
-	local HORZ=false
-	local REL=false
-	local REL_X=false
-	local REL_Y=false
-	local VERT=false
 
 	local COORD_ARGS='' # COORDS array content
 	local _HEIGHT=0     # HEIGHT of object to display
@@ -302,41 +320,55 @@ center () {
 	shift $((OPTIND -1))
 	#--End GetOpts--
 	
-	[[ ${#OPTIONS} -eq 0 ]] && echo "${0:t}: ${RED_FG}Missing options${RESET}" >&2
+	# Hybrid Positional Fallback: If no JOB was specified via flags, check positional arguments
+	if [[ -z "${JOB}" ]]; then
+		if [[ ${#} -ge 2 ]]; then
+			JOB='BOX'
+			_HEIGHT="${1}"
+			_WIDTH="${2}"
+			[[ -n "${3}" ]] && _X_OFF="${3}"
+			[[ -n "${4}" ]] && _Y_OFF="${4}"
+			OPTIONS+=(h w)
+		elif [[ ${#} -eq 1 ]]; then
+			JOB='VERT'
+			_HEIGHT="${1}"
+			OPTIONS+=(h)
+		fi
+	fi
 
+	[[ ${#OPTIONS} -eq 0 ]] && print -u2 "\n${RED_FG}${_MOD} Error in ${functrace[1]} (${funcfiletrace[1]}): Missing options${RESET}" >&2
 
 	if ! validate_is_number ${_WIDTH};then # If WIDTH is a string of text; use its length
 		_WIDTH=${#_WIDTH}
 	fi
 
-	if ! validate_args ${JOB};then
-		echo "\n${0:t}: Arguments for ${JOB} ${RED_FG}failed validation${RESET}" >&2
+	if ! validate_args "${JOB}" "${_HEIGHT}" "${_WIDTH}" "${_X_OFF}" "${_Y_OFF}" "${COORD_ARGS}";then
+		print -u2 "\n${RED_FG}${_MOD} Error in ${functrace[1]} (${funcfiletrace[1]}): Arguments for ${JOB} failed validation${RESET}" >&2
 		for O in ${OPTIONS};do
 			case ${O} in
-				B) echo "${0:t}: BOX option -B requires: -h <N>-w <N>[-x <N>] [-y <N>]" >&2;;
-				H) echo "${0:t}: HORZ option -H requires: -w <N>" >&2;;
-				R) echo "${0:t}: REL_C option -R requires: -c COORD_ARGS -h <N> -w <N> [-x <N>] [-y <N>]" >&2;;
-				V) echo "${0:t}: VERT option -V requires: -h <N>" >&2;;
-				X) echo "${0:t}: REL_X option -X requires: -c <COORD_ARGS> -h <N>[-x <N>] [-y <N>]" >&2;;
-				Y) echo "${0:t}: REL_Y option -Y requires: -c <COORD_ARGS> -w <N>[-x <N>] [-y <N>]" >&2;;
-				c) echo "${0:t}: COORD_ARGS option -c requires: -c <COORD ARRAY ARGS>: X <N> Y <N> H <N> W <N>" >&2;;
-				h) echo "${0:t}: HEIGHT option -h requires: -h <N>" >&2;;
-				w) echo "${0:t}: WIDTH option -w requires: -w <N>" >&2;;
-				x) echo "${0:t}: X_OFF option -x requires: -x <N>" >&2;;
-				y) echo "${0:t}: Y_OFF option -y requires: -x <N>" >&2;;
-				*) echo "${0:t}: Unknown option:${O}" >&2;;
+				B) print -u2 "${0:t}: BOX option -B requires: -h <N> -w <N> [-x <N>] [-y <N>]";;
+				H) print -u2 "${0:t}: HORZ option -H requires: -w <N>";;
+				R) print -u2 "${0:t}: REL_C option -R requires: -c COORD_ARGS -h <N> -w <N> [-x <N>] [-y <N>]";;
+				V) print -u2 "${0:t}: VERT option -V requires: -h <N>";;
+				X) print -u2 "${0:t}: REL_X option -X requires: -c <COORD_ARGS> -h <N> [-x <N>] [-y <N>]";;
+				Y) print -u2 "${0:t}: REL_Y option -Y requires: -c <COORD_ARGS> -w <N> [-x <N>] [-y <N>]";;
+				c) print -u2 "${0:t}: COORD_ARGS option -c requires: -c <COORD ARRAY ARGS>: X <N> Y <N> H <N> W <N>";;
+				h) print -u2 "${0:t}: HEIGHT option -h requires: -h <N>";;
+				w) print -u2 "${0:t}: WIDTH option -w requires: -w <N>";;
+				x) print -u2 "${0:t}: X_OFF option -x requires: -x <N>";;
+				y) print -u2 "${0:t}: Y_OFF option -y requires: -y <N>";;
+				*) print -u2 "${0:t}: Unknown option:${O}";;
 			esac
 		done
 		return 1
 	fi
 
 	case ${JOB} in
-		BOX) get_box_center ${_HEIGHT} ${_WIDTH} ${_X_OFF} ${_Y_OFF};;
-		VERT) get_vert_center ${_HEIGHT};;
-		HORZ) get_horz_center ${_WIDTH};;
-		REL_C) get_relative_center ${COORD_ARGS} ${_HEIGHT} ${_WIDTH} ${_X_OFF} ${_Y_OFF};;
-		REL_X) get_relative_x ${COORD_ARGS} ${_HEIGHT} ${_X_OFF} ${_Y_OFF};;
-		REL_Y) get_relative_y ${COORD_ARGS} ${_WIDTH} ${_X_OFF} ${_Y_OFF};;
+		BOX) get_box_center "${_HEIGHT}" "${_WIDTH}" "${_X_OFF}" "${_Y_OFF}";;
+		VERT) get_vert_center "${_HEIGHT}";;
+		HORZ) get_horz_center "${_WIDTH}";;
+		REL_C) get_relative_center "${COORD_ARGS}" "${_HEIGHT}" "${_WIDTH}" "${_X_OFF}" "${_Y_OFF}";;
+		REL_X) get_relative_x "${COORD_ARGS}" "${_HEIGHT}" "${_X_OFF}" "${_Y_OFF}";;
+		REL_Y) get_relative_y "${COORD_ARGS}" "${_WIDTH}" "${_X_OFF}" "${_Y_OFF}";;
 	esac
 }
-

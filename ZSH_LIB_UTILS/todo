@@ -1,25 +1,80 @@
 #!/usr/bin/zsh
 
-#Inline ansi
-BOLD="\033[1m"
-ITALIC="\033[3m"
-RESET="\033[m"
-REVERSE="\033[7m"
-STRIKE="\033[9m"
-UNDER="\033[4m"
+# ANSI Formatting Constants
+typeset BOLD="\033[1m"
+typeset ITALIC="\033[3m"
+typeset RESET="\033[m"
+typeset REVERSE="\033[7m"
+typeset STRIKE="\033[9m"
+typeset UNDER="\033[4m"
 
-BLACK_BG="\033[40m"
+typeset BLACK_BG="\033[40m"
 
-BLUE_FG="\033[34m"
-CYAN_FG="\033[36m"
-GREEN_FG="\033[32m"
-MAGENTA_FG="\033[35m"
-RED_FG="\033[31m"
-WHITE_FG="\033[37m"
-YELLOW_FG="\033[33m"
+typeset BLUE_FG="\033[34m"
+typeset CYAN_FG="\033[36m"
+typeset GREEN_FG="\033[32m"
+typeset MAGENTA_FG="\033[35m"
+typeset RED_FG="\033[31m"
+typeset WHITE_FG="\033[37m"
+typeset YELLOW_FG="\033[33m"
 
-WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+typeset WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+# Safe non-printable delimiters
+typeset REC_DELIM=$'\x1e'   # Record field separator
+typeset ITEM_DELIM=$'\x1f'  # Internal TODO item separator
+
+# Script Declarations & Initializations
+typeset -A _SOURCES=(
+    [${PWD}]=PWD
+    [/usr/local/bin]=PROD
+    [/usr/local/bin/system]=PROD
+    [/usr/local/lib]=PROD
+    [${HOME}/Code/LOCAL]=DEV
+)
+typeset -A _SRC_CLR=(
+    [PROD]=${GREEN_FG}
+    [DEV]=${RED_FG}
+    [PWD]=${WHITE_ON_GREY}
+)
+typeset -a _ACTIVE_LABELS=()
+typeset -A _ACTIVE_FILTERS=()
+typeset -a _SORTED_ENTRIES=()
+typeset -a _TODOS=()
+typeset -a _MATCHES=()
+typeset -a _CLEANED=()
+typeset -a _FIELDS=()
+typeset -a _TODO_FILES=()
+
+# Dynamic option-to-label mapping associative array
+typeset -A OPT_LABELS=(
+    [l]=PWD
+    [p]=PROD
+    [d]=DEV
+)
+
+typeset DESC=''
+typeset DIR_PATH=''
+typeset ENTRY=''
+typeset FILE_NAME=''
+typeset FILTER_ACTIVE=0 # Active filter flags based on user input
+typeset FN=''
+typeset FP=''
+typeset JOINED_PAYOAD=''
+typeset LABEL=''
+typeset L_LABEL=''
+typeset OUTPUT=''
+typeset PAYLOAD=''
+typeset REPORT_SCOPE=''
+typeset SC=''
+typeset SOURCE_DIR=''
+typeset TODO_ITEM=''
+typeset TRIMMED=''
+typeset TRIMMED_T=''
+typeset M F
+
+typeset _LIB_DIR=''
+typeset _THIS="${0:t}"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -27,26 +82,12 @@ source ${_LIB_DIR}/LIB_INIT.zsh
 _DEPS+=(STR.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
-# Declarations
-typeset -A _SRC_CLR
-typeset -A _SOURCES
-typeset -aU _TODO_LIST
-typeset -a _TODO_TEXT
-
-# Constants
-_THIS=${0:t}
-_SOURCES[${PWD}]=PWD
-_SOURCES[/usr/local/bin]=PROD
-_SOURCES[/usr/local/bin/system]=PROD
-_SOURCES[/usr/local/lib]=PROD
-_SOURCES[${HOME}/Code/LOCAL]=DEV
-_SRC_CLR[PROD]=${GREEN_FG}
-_SRC_CLR[DEV]=${RED_FG}
-_SRC_CLR[PWD]=${WHITE_ON_GREY}
-
 read -r -d '' DESC<<EOF
 Show list of TODO labels embedded in scripts
-\tUse option -d to include development files
+\tUse option -l to include PWD directories
+\tUse option -p to include PROD directories
+\tUse option -d to include DEV directories
+\t(If no options are specified, all defined sources are included)
 EOF
 
 # Functions
@@ -56,50 +97,120 @@ usage () {
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 	tabs 5
-	echo "Usage: ${_SCRIPT}"
+	echo "Usage: ${_SCRIPT} [-l] [-p] [-d] [-H]"
 	echo "${WHITE_FG}\nDesc${RESET}:${DESC}"
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-# Execution
-[[ ${1} == '-H' ]] && usage
-[[ ${1} == '-d' ]] && SHOW_DEV=true || SHOW_DEV=false
+# Parse Command Line Options dynamically
+while getopts ":lpdaH" OPT; do
+  case ${OPT} in
+    l|p|d)
+      _ACTIVE_FILTERS[${OPT_LABELS[${OPT}]}]=1
+      FILTER_ACTIVE=1
+      ;;
+    H) usage ;;
+    \?) usage "Invalid option: -${OPTARG}" ;;
+  esac
+done
+shift $((OPTIND -1))
 
 clear
-echo "[${WHITE_FG}${0}${RESET}] Searching for TODO items...\n"
-#[[ ${SHOW_DEV} == 'false' ]] && echo "Development not scanned - use option [-d]\n"
+echo "[${WHITE_FG}${_THIS}${RESET}] Searching for TODO items...\n"
 
-for S in ${(k)_SOURCES};do
-	_TODO_LIST+=("${(f)$(find ${S} -maxdepth 2 -type f)}")
+# Scan sources, filter, find files, and pack with the known LABEL immediately
+for SOURCE_DIR in ${(k)_SOURCES}; do
+    LABEL="${_SOURCES[${SOURCE_DIR}]}"
+    
+    if (( FILTER_ACTIVE == 1 )); then
+        [[ -z "${_ACTIVE_FILTERS[${LABEL}]}" ]] && continue
+    fi
+
+    # Retrieve file list for this source directory
+    _TODO_FILES=("${(f)$(find ${SOURCE_DIR} -maxdepth 2 ! -name '*.bak' -and ! -name '*.orig' 2>/dev/null)}")
+
+    for F in ${_TODO_FILES}; do
+      [[ -f ${F} ]] || continue
+      
+      # Explicitly skip the running script itself by checking absolute realpath equality
+      [[ "${F:A}" -ef "${0:A}" ]] && continue
+
+      # Strict pattern: matches comment lines starting with optional whitespace, hash (#), 
+      # optional comment symbols, followed by 'todo:' case-insensitively.
+      OUTPUT="$(grep -nEi '^[[:space:]]*#[[:space:]#]*todo:' "${F}" 2>/dev/null)"
+
+      if [[ -n ${OUTPUT} ]]; then
+        _MATCHES=("${(@f)OUTPUT}")
+        _CLEANED=()
+
+        for M in ${_MATCHES}; do
+          TRIMMED="${M## #}"
+          TRIMMED="${TRIMMED%% #}"
+          _CLEANED+=( "${TRIMMED}" )
+        done
+
+        DIR_PATH="${F:h}"
+        FILE_NAME="${F:t}"
+        
+        # Join multiple TODO lines safely using ITEM_DELIM via IFS expansion
+        {
+          local IFS="$ITEM_DELIM"
+          JOINED_PAYOAD="${_CLEANED[*]}"
+        }
+
+        # Pack into sorting array separated by REC_DELIM:
+        # LABEL \x1e DIRECTORY \x1e FILE_NAME \x1e PAYLOAD
+        _SORTED_ENTRIES+=( "${LABEL}${REC_DELIM}${DIR_PATH}${REC_DELIM}${FILE_NAME}${REC_DELIM}${JOINED_PAYOAD}" )
+      fi
+    done
 done
 
-HIT=false
-for F in ${_TODO_LIST};do
-	[[ ! $(file ${F}) =~ 'zsh' ]] && continue
-	[[ ${F:e} == 'bak' ]] && continue
-	[[ ${F:e} == 'orig' ]] && continue
-	LINE=$(grep -P "#\s+?TODO" ${F})
-	[[ ${?} -ne 0 ]] && continue
-	grep -q "grep" <<<${LINE} # Skip 'todo' itself
-	[[ ${?} -eq 0 ]] && continue
-	for S in ${(Ok)_SOURCES};do # Longest path first
-		if [[ ${F:h} =~ ${S} ]];then
-			[[ ${SHOW_DEV} == 'false' && ${_SOURCES[${MATCH}]} == 'DEV' ]] && break 2
-			echo "${_SRC_CLR[${_SOURCES[${MATCH}]}]}${_SOURCES[${MATCH}]}${RESET}" && break
-		fi
-	done
-	echo "File:${WHITE_FG}${F}${RESET}"
-	_TODO_TEXT=("${(f)$(grep -nP '#\s+?TODO' ${F})}")
-	for T in ${_TODO_TEXT};do
-		TXT=$(str_trim ${T})
-		TXT=$(echo ${RESET}${TXT} | str_trim | sed "s/TODO/$(echo ${WHITE_FG}${ITALIC})TODO$(echo ${RESET})$(echo ${MAGENTA_FG})/g")
-		echo "${TXT}${RESET}"
-	done
-	HIT=true
-	echo
-done
+# Build the scope label for the header
+if (( FILTER_ACTIVE == 0 )); then
+  REPORT_SCOPE="ALL"
+else
+  for L in ${(k)_ACTIVE_FILTERS}; do
+    _ACTIVE_LABELS+=( "${L}" )
+  done
+  REPORT_SCOPE="${(j:, :)_ACTIVE_LABELS}"
+fi
 
-[[ ${HIT} == 'false' ]] && echo "No TODO tags found"
+[[ -z ${_SORTED_ENTRIES} ]] && exit_leave "${_SCRIPT_TAG} No TODO items found"
+
+# Generate the clean report with scoped header
+print "=== TODO REPORT [Scope: ${REPORT_SCOPE}] ==="
+
+# Sort alphabetically by label using Zsh
+for LINE in ${(o)_SORTED_ENTRIES}; do
+  # Split the line using local IFS and Zsh word splitting (${=...})
+  {
+    local IFS="$REC_DELIM"
+    _FIELDS=(${=LINE})
+  }
+  
+  L_LABEL="${_FIELDS[1]}"
+  FP="${_FIELDS[2]}"
+  FN="${_FIELDS[3]}"
+  PAYLOAD="${_FIELDS[4]}"
+  
+  # Grab the correct color for this label directly
+  SC="${_SRC_CLR[${L_LABEL}]}"
+
+  print -- "${SC} ${FP}/${FN}${RESET}"
+
+  # Unpack individual TODO items safely using local IFS word splitting
+  {
+    local IFS="$ITEM_DELIM"
+    _TODOS=(${=PAYLOAD})
+  }
+  
+  for TODO_ITEM in ${_TODOS}; do
+    TRIMMED_T="${TODO_ITEM## #}"
+    TRIMMED_T="${TODO_ITEM## #}" # cleanup formatting
+    print -- "   └── ${TRIMMED_T}"
+  done
+  print -- ""
+done
 
 exit_leave

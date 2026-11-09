@@ -1,4 +1,5 @@
 #!/usr/bin/zsh
+
 # Inline ansi
 BOLD="\033[1m"
 ITALIC="\033[3m"
@@ -6,9 +7,8 @@ RESET="\033[m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
 UNDER="\033[4m"
-
+BLINK="\033[5m"
 BLACK_BG="\033[40m"
-
 BLUE_FG="\033[34m"
 CYAN_FG="\033[36m"
 GREEN_FG="\033[32m"
@@ -16,51 +16,40 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+CYAN_ON_GREY="\033[0m\033[0;1;36;100m"
+GREEN_ON_GREY="\033[0m\033[0;1;32;100m"
+MAGENTA_ON_GREY="\033[0m\033[0;1;35;100m"
+RED_ON_GREY="\033[0m\033[0;1;31;100m"
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+YELLOW_ON_GREY="\033[0m\033[0;1;33;100m"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
+_DEPS+=(MSG.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
 typeset -A _BLACKLIST=(usage 1 parse_opts 1 opt_type 1 opt_exists 1 dbg 1 dbg_set_level 1)
-typeset -A _FOUND
-typeset -A _LIB_FUNC_MASTER
-typeset -A _SEEN
-typeset -a _APP_FUNC_LIST
-typeset -a _FLIST
-typeset -a _LIB_FUNC_LIST
-typeset -aU _APP_FUNC_CALLS
-typeset -aU _APP_LIB_CALLS
-typeset -aU _LIB_FUNCS_CALLED_BY_SCRIPTS
-typeset -aU _LIB_FUNCS_CALLED_WITHIN_LIB
+typeset -A _FOUND=()
+typeset -A _LIB_FUNC_MASTER=()
+typeset -A _SEEN=()
+typeset -a _APP_FUNC_LIST=()
+typeset -a _FLIST=()
+typeset -a _LIB_FUNC_LIST=()
+typeset -aU _APP_FUNC_CALLS=()
+typeset -aU _APP_LIB_CALLS=()
+typeset -aU _LIB_FUNCS_CALLED_BY_SCRIPTS=()
+typeset -aU _LIB_FUNCS_CALLED_FROM_LIB=()
 typeset -i _VERBOSE_LVL=0
 
 # Constants
-typeset -a _LIBS=(
-ANSI.zsh
-ARRAY.zsh
-CENTER.zsh
-DATE.zsh
-DBG.zsh
-DURABLE.zsh
-ERROR.zsh
-EXIT.zsh
-LIB_DEPS.zsh
-LIB_INIT.zsh
-LIST.zsh
-MSG.zsh
-PATH.zsh
-SELECT.zsh
-STR.zsh
-TPUT.zsh
-UTILS.zsh
-VALIDATE.zsh
-WIN.zsh
-)
-
 _SCRIPT_PATH=/usr/local/bin
+_LIB_PATH=/usr/local/lib
 _APP_FUNC_BODIES=/tmp/app_func_bodies.out
 _LIB_FUNC_BODIES=/tmp/lib_func_bodies.out
 _APP_BODY=/tmp/app_body.out
@@ -76,13 +65,24 @@ f_pl () {
 
 get_lib_funcs () {
 	local -a FUNCS
-	local F L K
 	local LIB
 	local FUNC
+	local NDX=0
+	local F L K
+	local -a LIBS=()
+
+	tput cup 0 0 && tput el; echo "${GREEN_FG}Collecting library functions...${RESET}"
+
+	for F in ${_LIB_PATH}/*zsh;do
+		LIBS+=${F}
+	done
 
 	# All library functions
-	for L in ${_LIBS};do
-		FUNCS=("${(f)$(grep -H -P --color=never '() {\s*?$' ${_LIB_DIR}/${L} | sed -E 's/\s*[(][)] \{.*//' | sort)}")
+	NDX=0
+	for L in ${LIBS};do
+		((NDX++))
+		tput cup 2 0 && tput el; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#LIBS} $(( NDX * 100. / ${#LIBS} ))
+		FUNCS=("${(f)$(grep -H -P --color=never '() {\s*?$' ${L} | sed -E 's/\s*[(][)] \{.*//' | sort)}")
 		if arr_is_populated "${FUNCS}";then
 			for F in ${FUNCS};do
 				LIB=$(cut -d':' -f1 <<<${F})
@@ -228,8 +228,8 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}\n"
 	) >&2
 
-	echo "$(err_msg_exit W ${PENDING_MSGS})"
-	exit_leave
+	[[ -n ${PENDING_MSGS} ]] && PENDING_MSGS=$(err_msg_exit "${PENDING_MSGS}")
+	exit_leave ${PENDING_MSGS}
 }
 
 typeset -a OPTIONS
@@ -254,6 +254,9 @@ shift $(( OPTIND - 1 ))
 #--End GetOpts--
  
 # Execution
+clear
+echo ${CSR_OFF}
+
 if [[ ${g_MODE} == 'lib_utilization' ]];then
 	[[ ${#} -ne 0 ]] && usage "Too many arguments. Option:-L requires no argument"
 else
@@ -381,41 +384,54 @@ if [[ ${g_MODE} == 'app_utilization' ]];then
 	summarize ${ORIG_FN} ${#_APP_FUNC_LIST} ${NO_CALL}
 
 else # Lib utilization
-
-	echo "${GREEN_FG}Scanning libraries for internal calls...${RESET}"
+	# TODO: grep criteria is too loose - getting garbage
+	[[ -e /tmp/detail ]] && /bin/rm -f /tmp/detail
+	tput cup 0 0 && tput el; echo "${GREEN_FG}Scanning libraries for internal calls...${RESET}"
 
 	# Test for calls of lib functions within lib itself
+	NDX=0
 	for K in ${(k)_LIB_FUNC_MASTER};do
+		((NDX++))
+		tput cup 2 0 && tput el; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_LIB_FUNC_MASTER} $(( NDX * 100. / ${#_LIB_FUNC_MASTER} ))
 		LINE=$(grep --color=never -m1 -w ${K} ${_LIB_FUNC_BODIES})
 		[[ ${?} -ne 0 ]] && continue
 		FUNC=$(grep --color=never -o ${K} <<<${LINE})
-		_LIB_FUNCS_CALLED_WITHIN_LIB+=${FUNC}
+		_LIB_FUNCS_CALLED_FROM_LIB+=${FUNC}
 	done
 
 	MSG=true
-	for F in ${(o)_LIB_FUNCS_CALLED_WITHIN_LIB};do
+	NDX=0
+	for F in ${(o)_LIB_FUNCS_CALLED_FROM_LIB};do
+		((NDX++))
+		tput cup 2 0 && tput el; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_LIB_FUNCS_CALLED_FROM_LIB} $(( NDX * 100. / ${#_LIB_FUNCS_CALLED_FROM_LIB} ))
 		_FOUND[${F}]=1
 		 if [[ ${_VERBOSE_LVL} -ge 1 || ${_DEBUG} -gt 0 ]];then
-			 [[ ${_VERBOSE_LVL} -ge 1 && ${MSG} == 'true' ]] && echo "${BOLD}${MAGENTA_FG}Library functions that are called internally${RESET}"
+			 [[ ${_VERBOSE_LVL} -ge 1 && ${MSG} == 'true' ]] && echo "${BOLD}${MAGENTA_FG}Library functions that are called internally${RESET}" >>/tmp/detail
 			MSG=false
-			[[ -z ${_SEEN[${F}]} ]] && echo "Function ${CYAN_FG}${F}${RESET} called ${ITALIC}within${RESET} library" >&2
+			[[ -z ${_SEEN[${F}]} ]] && echo "Function ${CYAN_FG}${F}${RESET} called ${ITALIC}within${RESET} library" >> /tmp/detail
 			_SEEN[${F}]=1
 		 fi
 	done
 
 	SCRIPT_LIST=("${(f)$(find ${_SCRIPT_PATH} -maxdepth 1 -type f)}")
 
+	NDX=0
 	for F in ${SCRIPT_LIST};do
+		((NDX++))
+		tput cup 2 0 && tput el; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_LIB_FUNCS_CALLED_FROM_LIB} $(( NDX * 100. / ${#_LIB_FUNCS_CALLED_FROM_LIB} ))
 		grep -q "LIB_INIT" ${F} # Identify scripts that utilize libraries
 		[[ ${?} -eq 0 ]] && _FLIST+=${F}
 	done
 
 	SCRIPTLIST=("${(f)$(grep -Pl '\(\)\s*\{\s*?$' ${_FLIST})}")
 
-	echo "${GREEN_FG}Scanning scripts for calls to library...${RESET}"
+	tput cup 0 0; echo "${GREEN_FG}Scanning scripts for calls to library...${RESET}"
 
 	# Test for calls to lib functions
+	NDX=0
 	for S in ${SCRIPTLIST};do
+		((NDX++))
+		tput cup 2 0 && tput el; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#SCRIPTLIST} $(( NDX * 100. / ${#SCRIPTLIST} ))
 		for K in ${(k)_LIB_FUNC_MASTER};do
 			grep -q ${K} ${S}
 			RC=${?}
@@ -426,32 +442,39 @@ else # Lib utilization
 	done
 
 	MSG=true
+	NDX=0
 	for L in ${(o)_LIB_FUNCS_CALLED_BY_SCRIPTS};do
+		((NDX++))
+		tput cup 2 0 && tput el; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_LIB_FUNCS_CALLED_BY_SCRIPTS} $(( NDX * 100. / ${#_LIB_FUNCS_CALLED_BY_SCRIPTS} ))
 		FUNC=$(cut -d: -f1 <<<${L})
 		SCRIPT=$(cut -d: -f2 <<<${L})
-		[[ ${_VERBOSE_LVL} -ge 1 && ${MSG} == 'true' ]] && echo "${BOLD}${MAGENTA_FG}Library functions that are called from scripts${RESET}"
+		[[ ${_VERBOSE_LVL} -ge 1 && ${MSG} == 'true' ]] && echo "${BOLD}${MAGENTA_FG}Library functions that are called from scripts${RESET}" >>/tmp/detail
 		MSG=false
 		_FOUND[${FUNC}]=1
-		 if [[ ${_VERBOSE_LVL} -eq 1 || ${_DEBUG} -gt 0 ]];then
-			[[ -z ${_SEEN[${FUNC}]} ]] && echo "Function ${CYAN_FG}${FUNC}${RESET} was called from a script" >&2
+		 if [[ ${_VERBOSE_LVL} -ge 1 || ${_DEBUG} -gt 0 ]];then
+			[[ -z ${_SEEN[${FUNC}]} ]] && echo "Function ${CYAN_FG}${FUNC}${RESET} was called from a script" >> /tmp/detail
 			_SEEN[${FUNC}]=1
-		 elif [[ ${_VERBOSE_LVL} -eq 2 ]];then
+		 elif [[ ${_VERBOSE_LVL} -ge 2 ]];then
 			echo "Function ${CYAN_FG}${FUNC}${RESET} called from:${WHITE_FG}${SCRIPT}${RESET}" >&2
 		 fi
 	done
 
-	echo "${GREEN_FG}Scanning for uncalled library functions...${RESET}"
+	tput cup 0 0 && tput el; echo "${GREEN_FG}Scanning for uncalled library functions...${RESET}"
 
 	NO_CALL=0
+	NDX=0
 	for F in ${(k)_LIB_FUNC_MASTER};do
+		((NDX++))
+		tput cup 2 0 && tput el; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#_LIB_FUNC_MASTER} $(( NDX * 100. / ${#_LIB_FUNC_MASTER} ))
 		if [[ ${_FOUND[${F}]} -eq 0 ]];then
 			((NO_CALL++))
-			[[ ${_VERBOSE_LVL} -ge 1 && ${NO_CALL} -eq 1 ]] && echo "${BOLD}${MAGENTA_FG}Library functions that were never called${RESET}"
-			[[ ${_VERBOSE_LVL} -ge 1 ]] && echo "Function ${CYAN_FG}${F}${RESET} was ${RED_FG}not${RESET} called"
+			[[ ${_VERBOSE_LVL} -ge 1 && ${NO_CALL} -eq 1 ]] && echo "${BOLD}${MAGENTA_FG}Library functions that were never called${RESET}" >>/tmp/detail
+			[[ ${_VERBOSE_LVL} -ge 1 ]] && echo "Function ${CYAN_FG}${F}${RESET} was ${RED_FG}not${RESET} called" >> /tmp/detail
 		fi
 	done
 
 	summarize "LIBS" ${#_LIB_FUNC_MASTER} ${NO_CALL}
+	[[ ${_VERBOSE_LVL} -ge 1 ]] && /bin/cat /tmp/detail
 fi
  
 # Cleanup
@@ -459,5 +482,7 @@ fi
 [[ -e ${_APP_FUNC_BODIES} ]] && rm -f ${_APP_FUNC_BODIES}
 [[ -e ${_APP_BODY} ]] && rm -f ${_APP_BODY}
 [[ -e ${TMP_FN} ]] && rm -f ${TMP_FN}
+
+echo ${CSR_ON}
 
 exit_leave

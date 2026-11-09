@@ -57,7 +57,7 @@ typeset -A _QUERY_OPTS=()
 typeset -A _QUICK_DOWNLOAD=()
 typeset -A _REJECTS=()
 typeset -A _RUMBLE_QUERY_MAP=(1 user 2 live 3 channel 4 general)
-typeset -A _RUMBLE_QTYPES=(l live u user c channel g general)
+typeset -A _RUMBLE_QT_OPTS=(l live u user c channel g general)
 typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
@@ -69,7 +69,6 @@ typeset -a _FAV_KEYS=()
 typeset -a _FAV_ROW=()
 typeset -a _QUERY_REJECTS=()
 typeset -a _RUMBLE_PAGE=()
-typeset -a _RUMBLE_QTYPE_MAP=(l c u)
 typeset -a _STERMS=()
 typeset -a _STRIP_WORDS=()
 typeset -a _TRANSLATED=(blancolirio glenndiesen)
@@ -142,11 +141,13 @@ g_ACTIVE_FAV_MENU=youtube
 action_do () {
 	local -a ZSEL_REPLY=()
 	local AUTHOR=''
+	local COOKIE_FLAG=''
 	local DEST=''
 	local DEST_LINE=''
 	local DL_CNT=0
 	local DL_DIR=''
 	local DUP_LINE=''
+	local ERROR=''
 	local ETA=''
 	local FRAME_PAD=8
 	local HDR1_TXT=''
@@ -166,6 +167,7 @@ action_do () {
 	local MSG=''
 	local NDX=0
 	local PRE_HDR_ERR=''
+	local RETRIED_COOKIES=false
 	local RETRIES=0
 	local TEXT=''
 	local TITLE=''
@@ -190,8 +192,9 @@ action_do () {
 			TITLE=$(get_field title ${M})
 			URL=$(get_field url ${M})
 			RETRIES=0
-			local RETRIED_COOKIES=false
-			local COOKIE_FLAG=''
+			g_PRESERVE_LOG=false
+			RETRIED_COOKIES=false
+			COOKIE_FLAG=''
 
 			logit ${_YT_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
 
@@ -225,8 +228,8 @@ action_do () {
 					break
 				fi
 
-				if grep -q -Ei -m1 '403' ${g_YTS_SESSION_LOG} 2>/dev/null;then
-					logit ${_YT_DBG_LOG} "${0}: No download - 403 error"
+				ERROR=$(grep -Ei -m1 '403|404|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
+				if [[ ${?} -eq 0 ]];then
 					if [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' && ${RETRIED_COOKIES} == 'false' ]];then
 						RETRIED_COOKIES=true
 						COOKIE_FLAG='-c'
@@ -236,9 +239,21 @@ action_do () {
 						job_start "${URL}" "${COOKIE_FLAG}"
 						continue
 					else
-						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
-						_FAILED[${M}]=true
-						break
+						g_PRESERVE_LOG=true
+						case ${ERROR} in
+							403) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
+									_FAILED[${M}]=true
+									break
+									;;
+							404) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 404 error...<N>"
+									_FAILED[${M}]=true
+									break
+									;;
+								*) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
+									_FAILED[${M}]=true
+									break
+									;;
+						esac
 					fi
 				fi
 
@@ -271,8 +286,6 @@ action_do () {
 			if [[ ${HDR1_TXT} =~ "\.[^.]+\.[^.]+$" ]];then # Double extension
 				HDR1_TXT=${HDR1_TXT:r}
 			fi
-
-			HDR1_TXT=${HDR1_TXT:r}
 
 			HDR1_TXT="<B><I><h>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 			HDR2_TXT="<B><I><h>Destination<N>: $(str_trim ${_DOWNLOAD_DIR})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}${INFO_TAG}"
@@ -347,10 +360,6 @@ action_do () {
 									esac
 									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
 									;;
-								*)
-									tcup $(( _CONT_COORDS[X] + _CONT_COORDS[H] )) $(( _CONT_COORDS[Y] + 2 )); printf "%s" ${MSG}
-									sleep .1
-									;;
 							esac
 						elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 							case ${LOG_LINE:l} in
@@ -372,10 +381,6 @@ action_do () {
 										*) LINE_COLOR='<B><r>';;
 									esac
 									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
-									;;
-								*)
-									tcup 20 45; printf "${WHITE_ON_GREY}%s${RESET}" ${MSG}
-									sleep .1
 									;;
 							esac
 						fi
@@ -1060,8 +1065,6 @@ job_kill () {
 	local PID
 	local P
 
-	g_PRESERVE_LOG=false
-
 	PIDS=("${(f)$(pgrep -n "yt-dlp")}")
 	if [[ ${?} -eq 0 ]];then
 		for P in ${PIDS};do
@@ -1369,11 +1372,11 @@ _parse_rumble () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	# Run query and filter known problem chars
 	{
+	# Run query and filter known problem chars
 	CMD="wget ${_WGET_OPTS} -q -O - "${(qqq)QRY}" | pup '[type="application/json"]' | grep -vw script | jq | sed -e 's/,$//' -e 's/|/#/g'"
 	LIST=("${(f)$(eval ${CMD})}")
-	} 
+	} 2>/dev/null
 
 	if ! arr_is_populated "${LIST}";then
 		logit ${_YT_DBG_LOG} "Command failed: ${CMD} ${LIST}"
@@ -1509,7 +1512,6 @@ post_process () {
 	logit ${_YT_DBG_LOG} "${0}: Last file downloaded:${FN}"
 
 	set_final_fn ${FN}
-	g_PRESERVE_LOG=false
 }
 
 query_rumble () {
@@ -1550,7 +1552,7 @@ query_rumble () {
 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
 		logit ${_YT_DBG_LOG} "${0}: Search returned no rows - QKEY:${_QUERY_OPTS[QKEY]}"
-		msg_box -p -PK "Query Returned No Rows"
+		msg_box -c -p -PK "Query Returned No Rows"
 		return 1
 	else
 		logit ${_YT_DBG_LOG} "${0}: Listing for QKEY:${_QUERY_OPTS[QKEY]} contains ${#_LOCAL_LIST} rows"
@@ -1830,11 +1832,13 @@ EOF
 opt_type () {
 	local OPT=${1}
 	case ${OPT} in
-		a) echo "<AGE_FILTER>";;
-		s) echo "<SEARCHTERM>";;
-		T) echo "<QTYPE>";;
-		w) echo "<SITE_CODE>";;
+		a) echo "<RANGE>";;
+		s) echo "<STRICT>";;
 		u) echo "<URL>";;
+		w) echo "<SITE_CODE>";;
+		S) echo "<SEARCHTERM>";;
+		T) echo "<QUERY TYPE>";;
+		V) echo "<VERSION>";;
 	esac
 }
 
@@ -1863,7 +1867,7 @@ usage () {
 	[[ ${_SMCUP} == 'true' ]] && do_rmcup
 
 	(
-	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${OPTS} [$(opt_type s)]\n"
+	echo -e "\n${WHITE_FG}Usage${RESET}: ${_SCRIPT} ${OPTS} [$(opt_type S)]\n"
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-R${RESET} ${MAGENTA_FG}Rumble${RESET} query [${WHITE_FG}default ${MAGENTA_FG}YouTube${RESET}]"
@@ -1882,12 +1886,13 @@ OPTSTR=":HDRT:Va:sw:"
 OPTIND=0
 
 HELP_OPT=false
-ENGINE_OPT=youtube
-QTYPE_OPT=g
-RANGE_OPT='recent'
-SEARCHTERM=''
-STRICT_OPT='n'
 VERSION_OPT=false
+SEARCHTERM=''
+
+ENGINE_OPT=youtube
+QTYPE_OPT=''
+RANGE_OPT=''
+STRICT_OPT=''
 WEB_OPT=''
 
 while getopts ${OPTSTR} OPTION;do
@@ -1909,6 +1914,7 @@ shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution
+# TODO: explore using youtube-search with API key
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -n ${WEB_OPT} ]] && open_website ${WEB_OPT} && exit_leave
 
@@ -1969,41 +1975,53 @@ if [[ ${HELP_OPT} == 'true' ]];then
 	fi
 fi
 
-# Parse options
-if [[ ${ENGINE} == 'rumble' ]];then
+# Catch invalid engine options
+if [[ ${ENGINE_OPT} == 'rumble' ]];then
 	if [[ ${VERSION_OPT} == 'true'  ]];then
-		exit_leave $(err_msg_exit E "Option:-V is a YouTube only option")
+		usage "Option:$(opt_type V) is a YouTube only option"
 	elif [[ -n ${RANGE_OPT} ]];then
-		exit_leave $(err_msg_exit E "Option:-a is a YouTube only option")
-	elif [[ ${STRICT_OPT} == 'strict' ]];then
-		exit_leave $(err_msg_exit E "Option:-s is a YouTube only option")
+		usage "Option:$(opt_type a) is a YouTube only option"
+	elif [[ -n ${STRICT_OPT} ]];then
+		usage "Option:$(opt_type s) is a YouTube only option"
 	fi
-
+elif [[ ${ENGINE_OPT} == 'youtube' ]];then
 	if [[ -n ${QTYPE_OPT} ]];then
-		if [[ ${_RUMBLE_QTYPE_MAP[(i)${QTYPE}]} -gt ${#_RUMBLE_QTYPE_MAP} ]];then
-			exit_leave $(err_msg_exit "Invalid $(opt_type T): ${QTYPE}")
-		else
-			_QUERY_OPTS[QUERY]=${_RUMBLE_QTYPE_MAP[(i)${QTYPE}]}
-		fi
+		usage "Option:$(opt_type T) is a Rumble only option"
 	fi
 fi
 
-if [[ ${ENGINE} == 'youtube' ]];then
-	if [[ ! ${RANGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]];then
-		usage "Invalid $(opt_type a):${RANGE_OPT}"
+# Parse options
+if [[ ${ENGINE_OPT} == 'rumble' ]];then
+	if [[ -n ${QTYPE_OPT} ]];then
+		if [[ ${_RUMBLE_QT_OPTS[(i)${QTYPE_OPT}]} -gt ${#_RUMBLE_QT_OPTS} ]];then
+			exit_leave $(err_msg_exit "Invalid $(opt_type T): ${QTYPE_OPT}")
+		fi
 	else
-		_QUERY_OPTS[AGE]=${RANGE_OPT}
+		QTYPE_OPT=c # Default to channel
+	fi
+elif [[ ${ENGINE_OPT} == 'youtube' ]];then
+	if [[ ${VERSION_OPT} == 'true'  ]];then
+		echo -n "yt-search version:${WHITE_FG}"
+		do_rmcup
+		node ${_JS_SCRIPT} --version
+		echo ${RESET}
+		exit_leave
+	fi
+
+	if [[ -n ${RANGE_OPT} ]];then
+		if [[ ! ${RANGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]];then
+			usage "Invalid $(opt_type a):${RANGE_OPT}"
+		else
+			_QUERY_OPTS[RANGE]=${RANGE_OPT}
+		fi
+	else
+		RANGE_OPT=a # Default to all
 	fi
 
 	if [[ ${STRICT_OPT} == 'strict' ]];then
 		SEARCHTERM="-s ${SEARCHTERM}"
-	fi
-
-	if [[ ${VERSION_OPT} == 'true'  ]];then
-		echo -n "yt-search version:${WHITE_FG}"
-		node ${_JS_SCRIPT} --version
-		echo ${RESET}
-		exit_leave
+	else
+		STRICT_OPT=n # Default to non strict
 	fi
 fi
 
@@ -2017,10 +2035,8 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		clear
 		if fav_select;then
 			[[ ${?} -eq 2 ]] && { clear && continue }
-			MSG="Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
-			_OB=($(sel_get_interior_coords))
-			msg_box -x10 -y${_OB[Y]} -w${_OB[W]} ${MSG}
-			if query_${_QUERY_OPTS[ENGINE]};then # Call the extractor
+			msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+			if query_${_QUERY_OPTS[ENGINE]};then # Run query
 				download_select ${_QUERY_OPTS[QKEY]}
 			fi
 		fi
@@ -2032,11 +2048,11 @@ else # Args passed
 	_QUERY_OPTS[ENGINE]=${ENGINE_OPT}
 	_QUERY_OPTS[RANGE]=${RANGE_OPT}
 	_QUERY_OPTS[STRICT]=${STRICT_OPT}
-	_QUERY_OPTS[QUERY]=${_RUMBLE_QTYPES[${QTYPE_OPT}]}
+	_QUERY_OPTS[QUERY]=${_RUMBLE_QT_OPTS[${QTYPE_OPT}]}
 
 	logit ${_YT_DBG_LOG} "_QUERY_OPTS: $(for K in ${(ok)_QUERY_OPTS};do printf '%s:%s ' ${K} ${_QUERY_OPTS[${K}]};done)"
-	query_${_QUERY_OPTS[ENGINE]} # Call query
-	if [[ ${?} -eq 0 ]];then # Choose from menu
+	msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+	if query_${_QUERY_OPTS[ENGINE]};then # Run query_
 		download_select ${_QUERY_OPTS[QKEY]}
 	else
 		exit_leave $(err_msg_exit "Query failed for:${_QUERY_OPTS[QKEY]}")

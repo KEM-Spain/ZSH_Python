@@ -1,0 +1,215 @@
+#!/usr/bin/zsh
+# ==============================================================================
+# script_inspector.zsh - Accurate Unused Variable Detector + Line Location
+# ==============================================================================
+
+typeset -g g_TARGET_FILE=""
+
+function initialize_inspector() {
+    typeset l_ARG="${1}"
+
+    if [[ -z ${l_ARG} || ! -f ${l_ARG} ]];then
+        echo "Usage: ${0:t} <script_file>" >&2
+        exit 1
+    fi
+    g_TARGET_FILE="${l_ARG}"
+}
+
+function run_perl_harvester() {
+    perl -s - "${g_TARGET_FILE}" << 'EOF'
+use strict;
+use warnings;
+
+my $file = $ARGV[0];
+open my $fh, '<', $file or die "Cannot open $file: $!";
+
+my @lines = <$fh>;
+close $fh;
+
+my %raw_candidates;
+my %var_scopes;
+
+my $current_scope = 'module';
+my $brace_depth = 0;
+
+my %invalid_func_names = map { $_ => 1 } qw(
+    if then else elif fi case esac while until for do done in
+    local typeset declare readonly export unset read return shift exit
+    eval exec source trap break continue zmodload
+);
+
+my %ignored_variables = map { $_ => 1 } qw(
+    OPTIND EOF
+);
+
+# --- STAGE 1: PARSE SCOPES & HARVEST CANDIDATES ---
+for my $line (@lines) {
+    if ($line =~ /^\s*(?:function\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*(?:\(\s*\))?\s*\{?/) {
+        my $fname = $1;
+        if (!exists $invalid_func_names{$fname}) {
+            $current_scope = "function:$fname";
+        }
+    }
+
+    while ($line =~ /({|})/g) {
+        my $b = $1;
+        if ($b eq '{') {
+            $brace_depth++;
+        } elsif ($b eq '}') {
+            $brace_depth--;
+            if ($brace_depth <= 0) {
+                $brace_depth = 0;
+                $current_scope = 'module';
+            }
+        }
+    }
+
+    my $is_candidate = 0;
+
+    if ($line =~ /^\s*(?:typeset|local|declare)\s+-[a-zA-Z]*[aA][a-zA-Z]*\s+([A-Za-z_][A-Za-z0-9_]*)/ ||
+        $line =~ /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*\[[^\]]+\]\s*=/) {
+        $is_candidate = 1;
+    }
+    elsif ($line =~ /^\s*for\s+([A-Za-z_][A-Za-z0-9_]*)\s+(?:in|\()/) {
+        $is_candidate = 1;
+    }
+    elsif ($line =~ /^\s*read\s+/) {
+        my $clean_line = $line;
+        $clean_line =~ s/^\s*read\s+//;
+        $clean_line =~ s/-[a-zA-Z0-9]+\s+/ /g;
+        while ($clean_line =~ /\b([A-Za-z_][A-Za-z0-9_]*)\b/g) {
+            my $var = $1;
+            next if $var eq 'r' || $var eq 'u';
+            $raw_candidates{$var} = 1;
+            $var_scopes{$var} = $current_scope unless exists $var_scopes{$var};
+        }
+        next;
+    }
+    elsif ($line =~ /\(\((.*?)\)\)/) {
+        my $expr = $1;
+        while ($expr =~ /\b([A-Za-z_][A-Za-z0-9_]*)\b/g) {
+            my $var = $1;
+            next if $var =~ /^\d+$/;
+            $raw_candidates{$var} = 1;
+            $var_scopes{$var} = $current_scope unless exists $var_scopes{$var};
+        }
+        next;
+    }
+    elsif ($line =~ /^\s*(?:typeset|local|declare)?\s*([A-Za-z_][A-Za-z0-9_]*)\s*=/) {
+        $is_candidate = 1;
+    }
+
+    if ($is_candidate) {
+        if ($line =~ /^\s*(?:typeset|local|declare)?\s*(?:-[a-zA-Z]+\s+)*([A-Za-z_][A-Za-z0-9_]*)(?:\[[^\]]+\])?\s*=/) {
+            my $var = $1;
+            if ($var !~ /^(?:typeset|local|declare)$/) {
+                $raw_candidates{$var} = 1;
+                $var_scopes{$var} = $current_scope unless exists $var_scopes{$var};
+            }
+        } elsif ($line =~ /^\s*for\s+([A-Za-z_][A-Za-z0-9_]*)\s+/) {
+            my $var = $1;
+            $raw_candidates{$var} = 1;
+            $var_scopes{$var} = $current_scope unless exists $var_scopes{$var};
+        }
+    }
+}
+
+# --- STAGE 2: SANITY CHECK FILTER ---
+my %final_scopes;
+
+for my $var (keys %raw_candidates) {
+    next unless $var =~ /^(?:_[A-Za-z0-9_]+|[A-Z][A-Z0-9_]*)$/;
+    next if exists $ignored_variables{$var};
+
+    # Automatic Pattern Filter for boilerplate color & style template variables
+    next if $var =~ /(?:_FG|_BG|_ON_[A-Z]+)$/;
+    next if $var =~ /^(?:BLACK|BLUE|GREEN|YELLOW|MAGENTA|CYAN|WHITE|RED)_(?:FG|BG)/;
+    next if $var =~ /^(?:BOLD|UNDER|BLINK|REVERSE|STRIKE|CSR_ON|CSR_OFF)$/;
+
+    my $has_assignment = 0;
+    for my $line (@lines) {
+        if ($line =~ /^\s*(?:typeset|local|declare\s+.*?)?\b\Q$var\E\s*(?:\[[^\]]+\])?\s*=/ ||
+            $line =~ /^\s*for\s+\Q$var\E\s+(?:in|\()/ ||
+            $line =~ /\b\Q$var\E\s*(?:\+\+|--|\+=|-=)/ ||
+            $line =~ /^\s*read\s+.*?\b\Q$var\E\b/) {
+            $has_assignment = 1;
+            last;
+        }
+    }
+
+    if ($has_assignment) {
+        $final_scopes{$var} = $var_scopes{$var} || 'module';
+    }
+}
+
+# --- STAGE 3: USAGE ANALYSIS (FLAG & MODIFIER AWARE) ---
+my @flat_unused;
+
+for my $var (keys %final_scopes) {
+    my $used = 0;
+    for my $line (@lines) {
+        next if $line =~ /^\s*#/;
+        if ($line =~ /\$\Q$var\E\b/ || 
+            $line =~ /\$\{\s*=?\s*(?:\([^)]+\)\s*)?\Q$var\E\b/ || 
+            $line =~ /\b\Q$var\E\s*\[/ || 
+            $line =~ /\(\(\s*.*?\b\Q$var\E\b/) {
+            $used = 1;
+            last;
+        }
+    }
+
+    if (!$used) {
+        push @flat_unused, $var;
+    }
+}
+
+sub custom_sort {
+    return sort {
+        my $a_under = $a =~ /^_.*/;
+        my $b_under = $b =~ /^_.*/;
+        if ($a_under != $b_under) {
+            return $b_under <=> $a_under;
+        }
+        return $a cmp $b;
+    } @_;
+}
+
+my @sorted_unused = custom_sort(@flat_unused);
+my $filename = $file;
+$filename =~ s{^.*/}{};
+
+print "========================================\n";
+print " UNUSED VARIABLES REPORT: $filename\n";
+print "========================================\n";
+
+if (@sorted_unused) {
+    for my $v (@sorted_unused) {
+        print "  - $v\n";
+    }
+
+    print "\n========================================\n";
+    print " LINE LOCATIONS (grep -n)\n";
+    print "========================================\n";
+
+    for my $v (@sorted_unused) {
+        my $lnum = 0;
+        for my $line (@lines) {
+            $lnum++;
+            if ($line =~ /\b\Q$v\E\b/) {
+                chomp($line);
+                print sprintf("%-25s line %-4d: %s\n", $v, $lnum, $line);
+            }
+        }
+    }
+} else {
+    print "  (None - No unused variables detected!)\n";
+}
+EOF
+}
+
+function main() {
+    initialize_inspector "${1}"
+    run_perl_harvester
+}
+
+main "${@}"

@@ -1,37 +1,24 @@
-2026-11-06_23:45: Logging started...
-2026-11-06_23:45: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-06_23:45: log_update: Skipping expired inode:26869818
-2026-11-06_23:45: log_update: Skipping expired inode:26869807
-2026-11-06_23:45: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-06_23:45: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
-2026-11-06_23:45: query_youtube:
+2026-11-09_10:40: Logging started...
+2026-11-09_10:40: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-09_10:40: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-09_10:41: query_youtube: Creating listing for QKEY:timdillon, query is not strict
+2026-11-09_10:41: query_youtube:
 _QUERY_OPTS:
- 	-> DKEY:Alex Christoforou
+ 	-> DKEY:Tim Dillon
 	-> ENGINE:youtube
 	-> LIST:youtube
-	-> QKEY:alexchristoforou
-	-> RANGE:all
-	-> STRICT:strict
-2026-11-06_23:45: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js -s -a all "alexchristoforou"
-2026-11-06_23:45: query_youtube: Filter: Matching titles:0, Rejects:0
-2026-11-06_23:45: query_youtube: Listing for QKEY:alexchristoforou contains 18 rows
-2026-11-06_23:45: Starting download for URL: https://youtube.com/watch?v=QJwMxczvoM0 (Cookies: none)
-2026-11-06_23:45: yt CMDLINE:false
-2026-11-06_23:45: yt URL:https://youtube.com/watch?v=QJwMxczvoM0
-2026-11-06_23:45: yt Executed from: script COOKIES:null
-2026-11-06_23:45: Logging to /home/kmiller/.local/share/yts/yts_15993.log
-2026-11-06_23:45: action_do: GENERATING HEADER
-2026-11-06_23:45: action_do: DEST:[download] Destination: /tmp|BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
-2026-11-06_23:45: clean_title: RAW_TITLE:BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0]
-2026-11-06_23:45: clean_title: AUTHOR:Alex Christoforou, TITLE:Big Beautiful Us-Russia Deal Rubio Exit Zelensky - Us Owes 16B To Ukraine
-2026-11-06_23:45: clean_title: COMPLETED TITLE:Alex Christoforou - Big Beautiful Us-Russia Deal Rubio Exit Zelensky - 
-2026-11-06_23:50: action_do: COMPLETED
-2026-11-06_23:50: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
-2026-11-06_23:50: set_final_fn: FN  IN:/home/kmiller/Downloads/Torrents/Library/Web/BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
-2026-11-06_23:50: clean_title: RAW_TITLE:BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
-2026-11-06_23:50: clean_title: AUTHOR:Alex Christoforou, TITLE:Big Beautiful Us-Russia Deal Rubio Exit Zelensky - Us Owes 16B To Ukraine
-2026-11-06_23:50: clean_title: COMPLETED TITLE:Alex Christoforou - Big Beautiful Us-Russia Deal Rubio Exit Zelensky - 
-2026-11-06_23:50: set_final_fn: Overwriting file:BIG_BEAUTIFUL_US-Russia_Deal_Rubio_Exit_Zelensky_-_US_Owes_16B_to_Ukraine-[QJwMxczvoM0].mp4
-2026-11-06_23:50: set_final_fn: Clean filename:Alex Christoforou - Big Beautiful Us-Russia Deal Rubio Exit Zelensky -.mp4
-2026-11-06_23:50: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
-2026-11-06_23:50: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_15993.log was cleared for:alexchristoforou from:action_do
+	-> QKEY:timdillon
+	-> RANGE:recent
+2026-11-09_10:41: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "timdillon"
+2026-11-09_10:41: query_youtube: Filter: Matching titles:1, Rejects:19h ago|Purge Viral ?|Tim Dillon RIPS Trump Apart Over the MIDTERM DISASTER ?|https://youtube.com/watch?v=r_McyCrT6jo|27:15 2d ago|HaHa Comedy |Tim Dillon Rants on Boomers|https://youtube.com/watch?v=C-7M5qkV4wA|1:04:13 10h ago|Daily Dillon|SHOCKING: The Dark Truth About White Marble With Paul Virzi - Tim Dillon|https://youtube.com/watch?v=bWlyDz0tH6I|2:05:23
+2026-11-09_10:41: query_youtube: Listing for QKEY:timdillon contains 1 rows
+2026-11-09_10:41: Starting download for URL: https://youtube.com/watch?v=Jy0vAQBGg44 (Cookies: none)
+2026-11-09_10:41: yt CMDLINE:false
+2026-11-09_10:41: yt URL:https://youtube.com/watch?v=Jy0vAQBGg44
+2026-11-09_10:41: yt Executed from: script COOKIES:null
+2026-11-09_10:41: Logging to /home/kmiller/.local/share/yts/yts_23434.log
+2026-11-09_10:41: action_do: GENERATING HEADER
+2026-11-09_10:41: action_do: DEST:[download] Destination: /tmp|Midterm_Reaction_The_Tim_Dillon_Show_520-[Jy0vAQBGg44].mp4
+2026-11-09_10:41: clean_title: RAW_TITLE:Midterm_Reaction_The_Tim_Dillon_Show_520-[Jy0vAQBGg44].mp4
+2026-11-09_10:41: clean_title: AUTHOR:Tim Dillon, TITLE:Midterm Reaction The Tim Dillon Show 520
+2026-11-09_10:41: clean_title: COMPLETED TITLE:Tim Dillon - Midterm Reaction The Tim Dillon 520 

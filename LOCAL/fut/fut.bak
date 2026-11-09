@@ -73,7 +73,10 @@ findexe () {
 	local LOCAL=''
 	local VERBOSE=''
 	local PRODUCTION=''
+	local DELETE_CACHE=''
 	local L R D
+	local CACHE_DIR="${HOME}/.local/share/findexe"
+	local CACHE_FILE="${CACHE_DIR}/cache"
 
 	read -r -d '' DESC<<______EOF
 Find executable files
@@ -83,6 +86,8 @@ ______EOF
 	RESET="\033[m"
 	RED_FG="\033[31m"
 	WHITE_FG="\033[37m"
+	CYAN_FG="\033[36m"
+	GREEN_FG="\033[32m"
 
 	parse_opts () {
 		local OPTS=${@}
@@ -102,7 +107,6 @@ ______EOF
 	opt_type () {
 		local OPT=${1}
 		case ${OPT} in
-			d) echo "<DIR>";;
 			f) echo "<FILE>";;
 			t) echo "<FILE_TYPE>";;
 		esac
@@ -119,6 +123,7 @@ ______EOF
 		echo -e "\n${WHITE_FG}Usage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
+		echo -e "${WHITE_FG}-d${RESET} delete cache entry for search term"
 		echo -e "${WHITE_FG}-l${RESET} local files have priority"
 		echo -e "${WHITE_FG}-p${RESET} production file"
 		echo -e "${WHITE_FG}-v${RESET} verbose output"
@@ -128,17 +133,19 @@ ______EOF
 		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
-	OPTSTR=":HDlvp"
+	OPTSTR=":HDlvpd"
 	OPTIND=0
 
 	LOCAL=false
 	VERBOSE=false
 	PRODUCTION=false
+	DELETE_CACHE=false
 
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 		  H) usage;;
 		  D) dbg_set_level;;
+		  d) DELETE_CACHE=true;;
 		  l) LOCAL=true;;
 		  p) PRODUCTION=true;;
 		  v) VERBOSE=true;;
@@ -150,28 +157,74 @@ ______EOF
 	#--End GetOpts--
 	 
 	# Execution
-	[[ ${#} -eq 0 ]] && usage "Missing argument:<FILE>" || FN=${1}
+	FN=${1}
+	[[ -z ${FN} ]] && return
+
+	[[ ! -d "${CACHE_DIR}" ]] && mkdir -p "${CACHE_DIR}"
+
+	# Handle cache deletion if -d is passed
+	if [[ ${DELETE_CACHE} == 'true' ]]; then
+		if [[ -f "${CACHE_FILE}" ]]; then
+			awk -v target="${FN}" '
+				BEGIN {skip=0}
+				$0 == "===" target "===" {skip=1; next}
+				/^===.*===$/ {if (skip) skip=0}
+				!skip {print}
+			' "${CACHE_FILE}" > "${CACHE_FILE}.tmp" && mv "${CACHE_FILE}.tmp" "${CACHE_FILE}"
+			[[ ${VERBOSE} == 'true' ]] && echo "${GREEN_FG}Deleted cache entry for: ${FN}${RESET}" >&2
+		fi
+		return 0
+	fi
 
 	[[ ${VERBOSE} == 'true' ]] && echo "${CYAN_FG}Searching for:${FN}${RESET}" >&2
 
-	if [[ ${PRODUCTION} == 'false' ]];then	
-		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}whereis${RESET}: ${FN}" >&2
-		WIS=(${(z)"${(f)$(whereis -b -f ${FN})}"})
-		if [[ -z ${WIS} ]];then
-			[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}No whereis hits${RESET}" >&2
-		else
-			for L in ${WIS};do
-				[[ ${L} =~ "${FN}:" ]] && continue # Skip whereis header
-				FLIST+=${L}
-				[[ ${VERBOSE} == 'true' ]] && echo "${GREEN_FG}Found:${L}${RESET}" >&2
-			done
-		fi
+	# Try loading from the single cache file if it exists
+	if [[ -f "${CACHE_FILE}" ]]; then
+		FLIST=("${(f)$(awk -v target="${FN}" '
+			$0 == "===" target "===" {flag=1; next}
+			/^===.*===$/ {flag=0}
+			flag && $0 != "" {print}
+		' "${CACHE_FILE}" 2>/dev/null)}")
 	fi
 
-	for D in ${PROD_LIST};do
-		[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ${D}${RESET}" >&2
-		FLIST+=("${(f)$(find ${D} -type f -name "${FN}" -executable)}")
-	done
+	# If not found in cache, run searches and append to the single cache file
+	if ! arr_is_populated "${FLIST}"; then
+		if [[ ${PRODUCTION} == 'false' ]];then	
+			[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}whereis${RESET}: ${FN}" >&2
+			WIS=(${(z)"${(f)$(whereis -b -f ${FN})}"})
+			if [[ -z ${WIS} ]];then
+				[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}No whereis hits${RESET}" >&2
+			else
+				for L in ${WIS};do
+					[[ ${L} =~ "${FN}:" ]] && continue # Skip whereis header
+					FLIST+=${L}
+					[[ ${VERBOSE} == 'true' ]] && echo "${GREEN_FG}Found:${L}${RESET}" >&2
+				done
+			fi
+		fi
+
+		for D in ${PROD_LIST};do
+			[[ ${VERBOSE} == 'true' ]] && echo "${WHITE_FG}Searching for executables in ${D}${RESET}" >&2
+			FLIST+=("${(f)$(find ${D} -type f -name "${FN}" -executable 2>&1)}")
+		done
+
+		if arr_is_populated "${FLIST}"; then
+			FLIST=(${FLIST:#})
+			# Remove any stale entry for this term, then append the new one
+			if [[ -f "${CACHE_FILE}" ]]; then
+				awk -v target="${FN}" '
+					BEGIN {skip=0}
+					$0 == "===" target "===" {skip=1; next}
+					/^===.*===$/ {if (skip) skip=0}
+					!skip {print}
+				' "${CACHE_FILE}" > "${CACHE_FILE}.tmp" && mv "${CACHE_FILE}.tmp" "${CACHE_FILE}"
+			fi
+			print "===${FN}===" >> "${CACHE_FILE}"
+			print -l "${FLIST[@]}" >> "${CACHE_FILE}"
+		fi
+	else
+		[[ ${VERBOSE} == 'true' ]] && echo "${CYAN_FG}Loaded from cache: ${CACHE_FILE}${RESET}" >&2
+	fi
 
 	if ! arr_is_populated "${FLIST}";then
 		set_exit_value 1
@@ -185,13 +238,13 @@ ______EOF
 		fi
 		if [[ ${LOCAL} == 'true' ]];then
 			if [[ ! ${L:h} == ${PWD} ]];then
-				[[ ${LOCAL} == 'true' ]] && echo "${RED_FG}Discarding non local:${L}${RESET}" >&2
+				[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}Discarding non local:${L}${RESET}" >&2
 				continue
 			fi
 		fi
 		if [[ ${PRODUCTION} == 'true' ]];then
 			if [[ ${L:h} == ${PWD} ]];then
-				[[ ${PRODUCTION} == 'true' ]] && echo "${RED_FG}Discarding local:${L}${RESET}" >&2
+				[[ ${VERBOSE} == 'true' ]] && echo "${RED_FG}Discarding local:${L}${RESET}" >&2
 				continue
 			fi
 		fi
@@ -210,7 +263,6 @@ ______EOF
 		done
 	fi
 }
-
 surface () {
 		local -a DIRS
 		local D F
@@ -1534,6 +1586,7 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
+
 # Execution
 [[ ${#} -ne 0 ]] && UTIL=${1}
 

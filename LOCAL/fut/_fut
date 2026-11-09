@@ -102,7 +102,8 @@ _do_inode_get() {
 _do_findexe() {
     _arguments -s \
 			'-H[help]' \
-			'-d[increase depth of scan (repeats increase level)]' \
+			'-D[debug (repeats increase level)]' \
+			'-d[delete cached entry for <SEARCHTERM>]' \
 			'-l[local files have priority]' \
 			'-p[production file]' \
 			'-v[verbose]' \

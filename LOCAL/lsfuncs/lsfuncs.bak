@@ -83,9 +83,7 @@ WHITE_FG="\033[37m"
 
 read -r -d '' DESC<<EOF
 Displays functions within script file(s)
-\t<PATH> can be fully qualified
-\tIf <PATH> is only a file name, current dir will be assumed
-\t<SEARCHTERM> - limit to function names containing <SEARCHTERM>
+<SEARCHTERM> - functions matching <SEARCHTERM>
 EOF
 
 parse_opts () {
@@ -123,29 +121,26 @@ usage () {
 	echo -e "${WHITE_FG}-H${RESET} help"
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-n${RESET} no prompting"
-	echo -e "${WHITE_FG}-a${RESET} no ansi (pertains to print options only)"
-	echo -e "${WHITE_FG}-l${RESET} print list of files/functions (<SEARCHTERM> will apply)"
-	echo -e "${WHITE_FG}-p${RESET} print functions in files (<SEARCHTERM> will apply)"
+	echo -e "${WHITE_FG}-l${RESET} print list of files/functions [<SEARCHTERM>]"
+	echo -e "${WHITE_FG}-p${RESET} print functions in files [<SEARCHTERM>]"
 	echo -e "\n${WHITE_FG}Desc${RESET}:${DESC}"
 	) >&2
 
 	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
-OPTSTR=":HDanlp"
+OPTSTR=":HDnlp"
 
 OPTIND=0
 
 PRINT_LIST=false
 PRINT_FUNCS=false
 NO_PROMPTS=false
-NO_ANSI=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
      H) usage;;
      D) dbg_set_level;;
-     a) NO_ANSI=true;;
      n) NO_PROMPTS=true;;
      l) PRINT_LIST=true;;
      p) PRINT_FUNCS=true;;
@@ -266,7 +261,7 @@ if ! arr_is_populated "${_LOCAL_LIST}";then
 	fi
 fi
 
-if [[ ${NO_ANSI} == 'true' ]];then
+if [[ ${PRINT_FUNCS} == 'true' || ${PRINT_LIST} == 'true' ]];then # No ansi 
 	C='' && R=''
 else
 	C=${WHITE_FG} && R=${RESET}

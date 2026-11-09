@@ -140,8 +140,9 @@ usage () {
 [[ ${1} == '-H' ]] && usage
 
 # Execution
+# TODO: Inspect modification to always compare ~/Code/LOCAL to ${PROD}
 [[ ${#} -gt 1 ]] && echo "${RED_FG}Too many args${RESET}" && usage
-[[ ${#} -eq 0 ]] && ARG=${PWD:t}
+[[ ${#} -eq 0 ]] && ARG=${PWD:t} || ARG=${1}
 logit ${_LOG} "${_SCRIPT}: PWD:${PWD} ARGS:${ARG}"
 
 #[[ -z ${1} ]] && cd ${_CODEBASE}

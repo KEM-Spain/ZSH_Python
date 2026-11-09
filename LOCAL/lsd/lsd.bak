@@ -197,7 +197,7 @@ if [[ ${#} -ne 0 ]];then
 		FNAME="-name ${(qqq)SEARCHTERM}"
 	else
 		FNAME=${FGLOB}
-		FPATH=${FPATH:h}
+		FPATH=${FPATH}
 	fi
 fi
 
