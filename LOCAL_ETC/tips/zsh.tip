@@ -5,6 +5,95 @@ ${E_BOLD}${E_WHITE_FG}${(C)${0/tip_/}:t:r} Tips${E_RESET}
 ${E_CYAN_FG}Search headers: MISC STRINGS ARRAYS PARAM TYPESET READ REDIRECTION BUILTIN VI FLAGS_MODIFIERS PARSING${E_RESET}
 
 ${E_WHITE_FG}MISC${E_RESET}
+${E_WHITE_FG}Zsh Globbing${E_RESET}
+
+In Zsh, recursive globbing breaks down into 4 primary syntax variations depending on 
+whether you want to follow symlinks or limit depth. Beyond syntax, behavior can be tuned 
+using Glob Qualifiers and Globbing Flags.
+
+1. The 4 Recursive Globbing Variations
+
+Pattern Description: **/*
+Standard recursive descent. 
+Searches subdirectories recursively at any depth. 
+Does not follow directory symbolic links.
+
+Pattern Description: ***/*
+Symlink-following recursive descent. 
+Searches subdirectories recursively and traverses symlinked directories.
+
+Pattern Description: **/*(F:1:)
+Depth-limited recursive descent. 
+Using the F (or maxdepth) qualifier limits depth (e.g., (F:2:) goes at most 2 levels down).
+
+Pattern Description: ** / ***
+Short-form recursive descent. 
+With setopt GLOB_STAR_SHORT active, usr/**.c acts as an exact alias for usr/**/*.c.
+
+2. File Filtering Variations (Glob Qualifiers)
+
+Qualifiers appended in parentheses (...) at the end of a recursive 
+pattern control what gets selected during the descent: 
+
+    • Directories only: /**/*(/)
+    • Plain files only: /**/*(.) 
+    • Symlinks only: /**/*(@)
+    • Executables only: /**/*(*)
+    • Empty files/directories: /**/*(L0) or /**/*(F)
+    • Hidden files (dots included): /**/*(D)
+
+3. Execution Flags (Globbing Flags)
+
+Prepending inline flags (#...) alters matching logic inside the glob:
+    • Case-insensitive matching: /**/(#i)*.txt matches .TXT, .txt, .Txt.
+    • Extended globbing features: /**/(#b)*(foo)* enables backreferences for pattern matches.
+
+When the (#b) globbing flag is included in a pattern, it turns on backreferences. 
+Any subsequent parenthesized subexpressions (...) act as capture groups. 
+Once a match succeeds, Zsh populates a set of special variables that you can access immediately in your script:
+    • \$match: An array containing the strings captured by each parenthesized group (\$match[1], \$match[2], etc.).
+    • \$mbegin / \$mend: Arrays containing the starting and ending character indices of each captured match.
+
+How They Are Utilized
+Backreferences are utilized in two primary contexts: Conditional Matching and String/Parameter Expansion.
+
+1. In Parameter Expansion (Pattern Replacement)
+You can use (#b) inside parameter expansions to dynamically capture parts of a string 
+and reuse them in the replacement expression via \$match[...].
+
+filename="document_v2.tar.gz"
+print \${filename/(#b)(*)\.tar\.gz/Converted to: \$match[1].zip} # Capture everything before the extension using (#b)
+
+2. In Conditional Expressions ([[ ... ]]) # Output: Converted to: document_v2.zip
+When testing strings or file paths against a pattern inside a conditional block, 
+(#b) captures groups that you can inspect right after the check passes.
+
+path="/usr/local/bin/app_v1.2.sh"
+
+# Match path structure: prefix, filename base, version
+if [[ "\$path" == (#b)(*/)(*)_v([0-9.]*).sh ]]; then
+    print "Directory:   \$match[1]"
+    print "Base Name:   \$match[2]"
+    print "Version:     \$match[3]"
+fi
+    • \$match[1] holds "/usr/local/bin/"
+    • \$match[2] holds "app"
+    • \$match[3] holds "1.2"
+
+3. In Filename Generation / Loops
+
+While less common inside a raw for X in ... loop line because the glob expands 
+to file paths rather than capturing sub-elements directly, you can combine 
+globbing with parameter substitution or inline matching logic to manipulate 
+file paths on the fly. For instance, renaming files by parsing segments out of 
+their names:
+
+setopt extended_glob
+for file in /**/(#b)(*)-draft.txt; do
+    # \$match[1] holds the file path/name without "-draft.txt"
+    mv "\$file" "\${match[1]}-final.txt"
+done
+
 ${E_WHITE_FG}ANSI-C Quoting${E_RESET}
 This syntax is primarily used to assign strings containing special, non-printable, 
 or formatted characters to variables:
@@ -284,7 +373,7 @@ shell, and command substitution \$(...) captures output.
    escaping. 
 
 
-${E_BOLD} ${E_WHITE_FG}Miscellaneous Tips${E_RESET}
+${E_BOLD}${E_WHITE_FG}Miscellaneous Tips${E_RESET}
 
 Sort a file in-place using output options
 
@@ -761,58 +850,6 @@ those elements with the k parameter expansion flag:
 for value ("\${(@u)hash}")
   print -r "elements with '\$value' as value: \${(@k)hash[(Re)\$value]}"
 
-${E_WHITE_FG}perl approach${E_RESET}
-zsh (contrary to ksh93) doesn't support arrays of arrays, but its variables can contain 
-the NUL byte, so you could use that to separate elements if the elements don't otherwise 
-contain NUL bytes, or use the \${(q)var} / \${(Q)\${(z)var}} to encode/decode a list using quoting.
-
-typeset -A seen
-for k v ("\${(@kv)hash}")
-  seen[\$v]+=" \${(q)k}"
-
-for k v ("\${(@kv)seen}")
-  print -r "elements with '\$k' as value: \${(Q@)\${(z)v}}"
-
-${E_WHITE_FG}ksh93${E_RESET}
-ksh93 was the first shell to introduce associative arrays in 1993. The syntax for assigning 
-values as a whole means it's very difficult to do it programmatically contrary to zsh, but 
-at least it's somewhat justified in ksh93 in that ksh93 supports complex nested data structures.
-
-In particular, here ksh93 supports arrays as values for hash elements, so you can do:
-
-typeset -A seen
-for k in "\${!hash[@]}"; do
-  seen[\${hash[\$k]}]+=("\$k")
-done
-
-for k in "\${!seen[@]}"; do
-  print -r "elements with '\$k' as value \${x[\$k][@]}"
-done
-
-${E_WHITE_FG}bash${E_RESET}
-bash added support for associative arrays decades later, copied the ksh93 syntax, but not the other 
-advanced data structures, and doesn't have any of the advanced parameter expansion operators of zsh.
-(note that bash associative arrays don't support empty keys). 
-
-In bash, you could use the quoted list approach mentioned in the zsh using printf %q or with newer 
-versions \${var@Q}.
-
-typeset -A seen
-for k in "\${!hash[@]}"; do
-  printf -v quoted_k %q "\$k"
-  seen[\${hash[\$k]}]+=" \$quoted_k"
-done
-
-for k in "\${!seen[@]}"; do
-  eval "elements=(\${seen[\$k]})"
-  echo -E "elements with '\$k' as value: \${elements[@]}"
-done
-
-Since bash associative arrays don't support the empty value as a key, it won't 
-work if some of \$hash's values are empty. You could choose to replace the empty string with some place 
-holder like <EMPTY> or prefix the key with some character that you'd later strip for display.
-
-
 ${E_WHITE_FG}Some common array flags${E_RESET}
 \${(k)ARRAY} = keys (assoc array)
 \${(v)ARRAY} = values (assoc array)
@@ -887,8 +924,8 @@ ${E_MAGENTA_FG}Or remove the part after '* - '${E_RESET}
 
 tip_zsh_EOF_1
 
-local VAR=/one/two/three/xxx.txt
 echo "Live Code..."
+local VAR=/one/two/three/xxx.txt
 echo "${E_GREEN_FG}\${VAR:t} -> ${E_WHITE_FG}${VAR:t}${E_RESET}"
 echo "${E_GREEN_FG}\${VAR:h} -> ${E_WHITE_FG}${VAR:h}${E_RESET}"
 echo "${E_GREEN_FG}\${VAR:e} -> ${E_WHITE_FG}${VAR:e}${E_RESET}"

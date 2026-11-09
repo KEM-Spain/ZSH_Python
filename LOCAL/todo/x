@@ -1,0 +1,35 @@
+msg_box_clear () {
+	local TAG=${1}
+	local X_COORD_ARG=''
+	local Y_COORD_ARG=''
+	local H_COORD_ARG=''
+	local W_COORD_ARG=''
+	local X
+
+	if [[ ${#} -eq 0 ]];then
+		local -A BOX_COORDS=($(box_coords_get ${_LAST_MSG_TAG}))
+		[[ -z ${BOX_COORDS} ]] && return 1
+	elif [[ ${#} -eq 1 ]];then
+		local -A BOX_COORDS=($(box_coords_get ${TAG}))
+		[[ -z ${BOX_COORDS} ]] && return 1
+	elif [[ ${#} -eq 4 ]];then
+		local -A BOX_COORDS=()
+		X_COORD_ARG=${1}
+		Y_COORD_ARG=${2}
+		H_COORD_ARG=${3}
+		W_COORD_ARG=${4}
+
+		[[ ${X_COORD_ARG} != 'X' ]] && BOX_COORDS[X]=${X_COORD_ARG}
+		[[ ${Y_COORD_ARG} != 'Y' ]] && BOX_COORDS[Y]=${Y_COORD_ARG}
+		[[ ${H_COORD_ARG} != 'H' ]] && BOX_COORDS[H]=${H_COORD_ARG}
+		[[ ${W_COORD_ARG} != 'W' ]] && BOX_COORDS[W]=${W_COORD_ARG}
+	fi
+
+	for (( X=${BOX_COORDS[X]}; X <= ( ${BOX_COORDS[X]} + ${BOX_COORDS[H]} - 1 ); X++));do
+		tcup ${X} ${BOX_COORDS[Y]}
+		tput ech ${BOX_COORDS[W]}
+	done
+
+	[[ ${_REPAINT} == 'true' && -n ${TAG} ]] && box_coords_repaint ${TAG}
+	return 0
+}

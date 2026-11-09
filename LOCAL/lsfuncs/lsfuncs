@@ -16,10 +16,6 @@ source ${_LIB_DIR}/LIB_INIT.zsh
 _DEPS+=(LIST.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
-# Constants
-FUNC_REGEX='^\S*\s() {$\|^function\s*\S*\s{$'
-GREP_BLACKLIST='usage\|parse_opts\|opt_type'
-
 # Declarations
 typeset -aU _LOCAL_LIST
 typeset -a _BLACKLIST=(usage\|parse_opts\|opt_type)

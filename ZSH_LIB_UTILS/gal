@@ -194,7 +194,6 @@ NO_WAIT=false
 MATCH_MODE=both
 OUTPUT_CMD_ONLY=false
 CASE=false
-OPT_Y=?
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in

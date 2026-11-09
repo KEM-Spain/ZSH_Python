@@ -81,7 +81,7 @@ sel_clear_region () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	RGN_COORDS=($(box_coords_get REGION))
+	RGN_COORDS=(${(z)$(box_coords_get REGION)})
 
 	if [[ -z ${RGN_COORDS} ]];then
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RGN_COORDS is null - returning"
@@ -174,7 +174,7 @@ sel_disp_page () {
 }
 
 sel_get_interior_coords () {
-	local -A OB=($(box_coords_get "OUTER_BOX"))
+	local -A OB=(${(z)$(box_coords_get "OUTER_BOX")})
 	echo "Y $(( OB[Y] + 2 )) W $(( OB[W] - 4 ))" # Return interior coords and optimum width
 }
 
@@ -476,9 +476,9 @@ sel_load_page () {
 
 sel_scroll () {
 	local PAGE=${1}
-	local -A D_COORDS=($(box_coords_get DECOR))
-	local -A I_COORDS=($(box_coords_get INNER_BOX))
-	local -A O_COORDS=($(box_coords_get OUTER_BOX))
+	local -A D_COORDS=(${(z)$(box_coords_get DECOR)})
+	local -A I_COORDS=(${(z)$(box_coords_get INNER_BOX)})
+	local -A O_COORDS=(${(z)$(box_coords_get OUTER_BOX)})
 	local BOT_X=0
 	local KEY=''
 	local BOX_TAG=?
@@ -667,7 +667,7 @@ sel_set_ebox () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Set coords for exit msg display
-	I_COORDS=($(box_coords_get INNER_BOX))
+	I_COORDS=(${(z)$(box_coords_get INNER_BOX)})
 	X_ARG=$(( I_COORDS[X] + 1 ))
 	Y_ARG=$(( I_COORDS[Y] - 2 ))
 

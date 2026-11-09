@@ -37,7 +37,6 @@ _APP_DIR=${PWD}
 action_do () {
 	local M
 	local COMMIT=''
-	local SZ=0
 	local -a FLIST=()
 	local V_PATH=''
 	local FN_OUT=''
@@ -48,7 +47,6 @@ action_do () {
 
 	for M in ${_MARKED};do
 		COMMIT=$(get_field 1 ${M})
-		SZ=$(get_field 4 ${M})
 
 		tcup 0 0
 		tput ed
@@ -260,7 +258,6 @@ if ! arr_is_populated "${RAW_LIST}";then
 	exit_leave "${0}: ${RED_FG}no commits found for${RESET}:${WHITE_FG}${FN_ARG}${RESET}"
 fi
 
-MD=${PWD}
 SIZE=0
 
 pushd ${_GIT_REPO_DIR} # -- PUSHD ---

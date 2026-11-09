@@ -11,6 +11,7 @@ typeset -A _PAGES=()
 typeset -A _PAGE_DATA=()
 typeset -A _SORT_DATA=()
 typeset -A _SORT_NDX=()
+typeset -A _SORT_TABLE=()
 typeset -a _LIST=() # Holds the values to be managed by the menu
 typeset -a _LIST_ACTION_MSGS=() # Holds text for contextual prompts
 typeset -a _LIST_HEADER=() # Holds header lines

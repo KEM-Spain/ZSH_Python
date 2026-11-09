@@ -6,7 +6,6 @@ ITALIC="\033[3m"
 UNDER="\033[4m"
 REVERSE="\033[7m"
 STRIKE="\033[9m"
-OVERUND="\033[53m\033[4m"
 
 BLACK_FG="\033[30m"
 RED_FG="\033[31m"
@@ -19,7 +18,6 @@ WHITE_FG="\033[37m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
-
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}

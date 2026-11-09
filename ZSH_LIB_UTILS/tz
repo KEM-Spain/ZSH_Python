@@ -38,7 +38,6 @@ LOCAL_DATE=$(date +"%D")
 LOCAL_ZONE=$(date +"%Z")
 UTC_TIME=$(date -u +"%T")
 UTC_DATE=$(date -u +"%D")
-UTC_HOUR=$(date -u +"%H")
 UTC_DIFF=$(date +"%z")
 
 # Functions

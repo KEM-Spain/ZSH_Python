@@ -35,7 +35,6 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Constants
 [[ -e /usr/bin/flatpak ]] && _FLATPAK_INSTALLED=true || _FLATPAK_INSTALLED=false
 [[ -e /usr/bin/snap ]] && _SNAP_INSTALLED=true || _SNAP_INSTALLED=false
-_HDR_BAR=$'\u2501' # Header character
 _LAST_APT_UPD=~/.last_apt_upd
 _SOURCES=/etc/apt/sources.list.d
 

@@ -117,7 +117,7 @@ done
 shift $((OPTIND -1))
 
 clear
-echo "[${WHITE_FG}${_THIS}${RESET}] Searching for TODO items...\n"
+msg_box "<w>${_THIS} <c>Searching for TODO items<N>|Scanning files..."
 
 # Scan sources, filter, find files, and pack with the known LABEL immediately
 for SOURCE_DIR in ${(k)_SOURCES}; do
@@ -132,6 +132,9 @@ for SOURCE_DIR in ${(k)_SOURCES}; do
 
     for F in ${_TODO_FILES}; do
       [[ -f ${F} ]] || continue
+      if [[ $(file ${F}) != *zsh* ]];then
+        continue
+      fi
       
       # Explicitly skip the running script itself by checking absolute realpath equality
       [[ "${F:A}" -ef "${0:A}" ]] && continue
@@ -165,6 +168,7 @@ for SOURCE_DIR in ${(k)_SOURCES}; do
       fi
     done
 done
+msg_box_clear
 
 # Build the scope label for the header
 if (( FILTER_ACTIVE == 0 )); then

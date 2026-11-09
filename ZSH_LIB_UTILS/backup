@@ -219,7 +219,6 @@ OPTSTR=":HDFdisv"
 FORCE=false
 INFO=false
 DRYRUN=''
-VERBOSE=''
 
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do

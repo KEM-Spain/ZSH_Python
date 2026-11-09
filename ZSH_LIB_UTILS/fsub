@@ -33,12 +33,10 @@ typeset -A _IN_LIST
 typeset -A _OUT_LIST
 typeset -A _CHAIN_LIST
 typeset -a _PIPELINE
-typeset -a _KEYWORDS
 
 # Constants
 _CFG_DIR=~/.local/share/${_SCRIPT}
 _LOG=${_CFG_DIR}/${0:t}.log
-_KEYWORDS=(bluray)
 _TERM=xterm
 
 # Globals

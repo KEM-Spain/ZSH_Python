@@ -12,11 +12,9 @@ typeset -a _APP_DIRS
 typeset -a _LOOP_LIST
 typeset -a _RAWLIST
 typeset -aU _LOCAL_LIST
-typeset -a _GNOME_EXT
 
 # Constants
 _HOME=${HOME}
-_GNOME_EXT=(/usr/share/gnome-shell/extensions ${_HOME}/.local/share/gnome-shell/extensions)
 _CFGDIRS=(
 ${_HOME} \
 /etc \

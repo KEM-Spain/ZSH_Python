@@ -10,6 +10,7 @@ _BOX_LINE_WEIGHT=''
 _MSG_KEY=n
 _PROC_MSG=false
 _MSG_BOX_TAG=MSG_BOX
+_MSG_BOX_DISPLAY_AREA=''
 _PROC_BOX_TAG=PROC_BOX
 _CONT_BOX_TAG=CONT_BOX
 _DELIM='|'
@@ -524,15 +525,13 @@ msg_box_clear () {
 	local W_COORD_ARG=''
 	local X
 
-	if [[ ${#} -eq 1 ]];then
-		TAG=${1}
-		[[ -z ${TAG} ]] && return 1
-		BOX_COORDS=($(box_coords_get ${TAG}))
+	if [[ ${#} -eq 0 ]];then
+		BOX_COORDS=(${(z)$(box_coords_get ${_LAST_MSG_TAG})}) # Must split the data to populate the array
+		[[ -z ${BOX_COORDS} ]] && return 1
+	elif [[ ${#} -eq 1 ]];then
+		BOX_COORDS=(${(z)$(box_coords_get ${TAG})}) # Must split the data to populate the array
 		[[ -z ${BOX_COORDS} ]] && return 1
 	elif [[ ${#} -eq 4 ]];then
-		BOX_COORDS=($(box_coords_get ${_LAST_MSG_TAG}))
-		[[ -z ${BOX_COORDS} ]] && return 1
-
 		X_COORD_ARG=${1}
 		Y_COORD_ARG=${2}
 		H_COORD_ARG=${3}
@@ -542,9 +541,6 @@ msg_box_clear () {
 		[[ ${Y_COORD_ARG} != 'Y' ]] && BOX_COORDS[Y]=${Y_COORD_ARG}
 		[[ ${H_COORD_ARG} != 'H' ]] && BOX_COORDS[H]=${H_COORD_ARG}
 		[[ ${W_COORD_ARG} != 'W' ]] && BOX_COORDS[W]=${W_COORD_ARG}
-	else
-		BOX_COORDS=($(box_coords_get ${_LAST_MSG_TAG}))
-		[[ -z ${BOX_COORDS} ]] && return 1
 	fi
 
 	for (( X=${BOX_COORDS[X]}; X <= ( ${BOX_COORDS[X]} + ${BOX_COORDS[H]} - 1 ); X++));do
@@ -552,7 +548,7 @@ msg_box_clear () {
 		tput ech ${BOX_COORDS[W]}
 	done
 
-	[[ ${_REPAINT} == 'true' ]] && box_coords_repaint ${TAG}
+	[[ ${_REPAINT} == 'true' && -n ${TAG} ]] && box_coords_repaint ${TAG}
 	return 0
 }
 

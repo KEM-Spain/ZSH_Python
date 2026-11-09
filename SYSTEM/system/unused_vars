@@ -1,6 +1,6 @@
 #!/usr/bin/zsh
 # ==============================================================================
-# script_inspector.zsh - Accurate Unused Variable Detector + Line Location
+# unused_vars - Accurate Unused Variable Detector + Line Location
 # ==============================================================================
 
 typeset -g g_TARGET_FILE=""
@@ -19,6 +19,7 @@ function run_perl_harvester() {
     perl -s - "${g_TARGET_FILE}" << 'EOF'
 use strict;
 use warnings;
+use File::Find;
 
 my $file = $ARGV[0];
 open my $fh, '<', $file or die "Cannot open $file: $!";
@@ -39,7 +40,7 @@ my %invalid_func_names = map { $_ => 1 } qw(
 );
 
 my %ignored_variables = map { $_ => 1 } qw(
-    OPTIND EOF
+    OPTIND EOF __EOF
 );
 
 # --- STAGE 1: PARSE SCOPES & HARVEST CANDIDATES ---
@@ -76,10 +77,12 @@ for my $line (@lines) {
     elsif ($line =~ /^\s*read\s+/) {
         my $clean_line = $line;
         $clean_line =~ s/^\s*read\s+//;
-        $clean_line =~ s/-[a-zA-Z0-9]+\s+/ /g;
+        $clean_line =~ s/-(?:[A-Za-z])(?:\s+\S+|\s*['"][^'"]*['"])?/ /g;
+        $clean_line =~ s/<<<-?.*$//;
+        $clean_line =~ s/[<>].*$//;
         while ($clean_line =~ /\b([A-Za-z_][A-Za-z0-9_]*)\b/g) {
             my $var = $1;
-            next if $var eq 'r' || $var eq 'u';
+            next if $var eq 'r' || $var eq 'u' || $var =~ /^\d+$/;
             $raw_candidates{$var} = 1;
             $var_scopes{$var} = $current_scope unless exists $var_scopes{$var};
         }
@@ -114,18 +117,25 @@ for my $line (@lines) {
     }
 }
 
-# --- STAGE 2: SANITY CHECK FILTER ---
+# --- STAGE 2: SANITY CHECK & ANSI ESCAPE VALUE FILTER ---
 my %final_scopes;
 
 for my $var (keys %raw_candidates) {
     next unless $var =~ /^(?:_[A-Za-z0-9_]+|[A-Z][A-Z0-9_]*)$/;
     next if exists $ignored_variables{$var};
+    next if $var =~ /^__/;
 
-    # Automatic Pattern Filter for boilerplate color & style template variables
-    next if $var =~ /^E_/;
-    next if $var =~ /(?:_FG|_BG|_ON_[A-Z]+)$/;
-    next if $var =~ /^(?:BLACK|BLUE|GREEN|YELLOW|MAGENTA|CYAN|WHITE|RED)_(?:FG|BG)/;
-    next if $var =~ /^(?:BOLD|UNDER|BLINK|REVERSE|STRIKE|CSR_ON|CSR_OFF)$/;
+    my $is_color_or_escape = 0;
+    for my $line (@lines) {
+        if ($line =~ /^\s*(?:typeset|local|declare\s+.*?)?\b\Q$var\E\s*(?:\[[^\]]+\])?\s*=\s*(['"]?)(.*)\1/) {
+            my $val = $2;
+            if ($val =~ /(?:\\033|\\e|\x1b)/) {
+                $is_color_or_escape = 1;
+                last;
+            }
+        }
+    }
+    next if $is_color_or_escape;
 
     my $has_assignment = 0;
     for my $line (@lines) {
@@ -143,7 +153,7 @@ for my $var (keys %raw_candidates) {
     }
 }
 
-# --- STAGE 3: USAGE ANALYSIS (FLAG & MODIFIER AWARE) ---
+# --- STAGE 3: USAGE ANALYSIS ---
 my @flat_unused;
 
 for my $var (keys %final_scopes) {
@@ -152,8 +162,12 @@ for my $var (keys %final_scopes) {
         next if $line =~ /^\s*#/;
         if ($line =~ /\$\Q$var\E\b/ || 
             $line =~ /\$\{\s*=?\s*(?:\([^)]+\)\s*)?\Q$var\E\b/ || 
+            $line =~ /\$\{\s*#\s*\Q$var\E\b/ || 
             $line =~ /\b\Q$var\E\s*\[/ || 
-            $line =~ /\(\(\s*.*?\b\Q$var\E\b/) {
+            $line =~ /\(\(\s*.*?\b\Q$var\E\b/ ||
+            $line =~ /\bprintf\b.*?\b\Q$var\E\b/ ||
+            $line =~ /<<<-?\s*['"]?\Q$var\E['"]?\b/ ||
+            ($line =~ /\b\Q$var\E\b/ && $line !~ /^\s*(?:typeset|local|declare)?\s*(?:-[a-zA-Z]+\s+)*\Q$var\E\s*(?:\[[^\]]+\])?\s*=/)) {
             $used = 1;
             last;
         }
@@ -162,6 +176,51 @@ for my $var (keys %final_scopes) {
     if (!$used) {
         push @flat_unused, $var;
     }
+}
+
+# --- STAGE 4: LIBRARY MODULE VARIABLE CHECK (_LIB_DIR) ---
+my $lib_dir = $ENV{_LIB_DIR} || '';
+if (!$lib_dir) {
+    for my $line (@lines) {
+        if ($line =~ /^\s*(?:typeset\s+.*?_LIB_DIR|_LIB_DIR)\s*=\s*(['"]?)(.*?)\1/) {
+            $lib_dir = $2;
+            $lib_dir =~ s/\$HOME/$ENV{HOME}/g;
+            last;
+        }
+    }
+}
+$lib_dir = '/usr/local/lib' unless ($lib_dir && -d $lib_dir);
+
+my @lib_files;
+if ($lib_dir && -d $lib_dir) {
+    find(sub {
+        push @lib_files, $File::Find::name if /\.zsh$/ && -f;
+    }, $lib_dir);
+}
+
+if (@lib_files) {
+    my %lib_declared_vars;
+    for my $lib_file (@lib_files) {
+        open my $lf, '<', $lib_file or next;
+        while (my $l = <$lf>) {
+            if ($l =~ /^\s*(?:typeset|local|declare|readonly|export)\s+(?:-[a-zA-Z]+\s+)*([A-Za-z_][A-Za-z0-9_]*)/ ||
+                $l =~ /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=/) {
+                $lib_declared_vars{$1} = 1;
+            }
+        }
+        close $lf;
+    }
+
+    my @filtered_unused;
+    for my $var (@flat_unused) {
+        if ($var =~ /^_.*/) {
+            if ($lib_declared_vars{$var}) {
+                next;
+            }
+        }
+        push @filtered_unused, $var;
+    }
+    @flat_unused = @filtered_unused;
 }
 
 sub custom_sort {
@@ -179,17 +238,15 @@ my @sorted_unused = custom_sort(@flat_unused);
 my $filename = $file;
 $filename =~ s{^.*/}{};
 
-print "========================================\n";
-print " UNUSED VARIABLES REPORT: $filename\n";
-print "========================================\n";
+print "============== Begin Scan ==============\n";
+print " UNUSED VARIABLES REPORT for File:$filename\n";
 
 if (@sorted_unused) {
     for my $v (@sorted_unused) {
         print "  - $v\n";
     }
 
-    print "\n========================================\n";
-    print " LINE LOCATIONS (grep -n)\n";
+    print " \nLINE LOCATIONS (grep -n)\n";
     print "========================================\n";
 
     for my $v (@sorted_unused) {
@@ -205,6 +262,7 @@ if (@sorted_unused) {
 } else {
     print "  (None - No unused variables detected!)\n";
 }
+print "=============== End Scan ===============\n";
 EOF
 }
 

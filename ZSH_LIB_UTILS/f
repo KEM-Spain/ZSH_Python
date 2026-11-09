@@ -100,7 +100,6 @@ usage () {
 typeset -a OPTIONS
 
 LISTING=false
-LEADING=false
 TYPE_ARG=''
 OPTIND=0
 REGEX_ARG=''
@@ -133,8 +132,6 @@ REGEX_ARG=''
 if [[ ${#} -ne 0 ]];then
 	REGEX_ARG=${1}
 	REGEX=".*${REGEX_ARG}.*"
-	C_REGEX=".*${(C)REGEX_ARG}.*"
-	L_REGEX=".*${REGEX_ARG:l}.*"
 	REGEX="-regextype 'posix-extended' -iregex ${(qqq)REGEX}"
 fi
 

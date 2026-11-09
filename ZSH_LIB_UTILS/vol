@@ -18,22 +18,6 @@ _DEPS+=()
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Functions
-function get_level {
-	local LIST
-	local LEVEL=0
-	local STATE=off
-	local L
-
-	LIST=("${(f)$(amixer -D pulse)}")
-	
-	for L in ${LIST};do
-		[[ ! ${L:l} =~ "front.*playback" ]] && continue
-		LEVEL="${(z)${(@s/[/)L}[2]:s/%]//}"
-		STATE="${${(@s/[/)L}[3]:s/]//}"
-	done
-	echo "${LEVEL}:${STATE}"
-}
-
 function get_mode {
 	local MIX=("${(@f)$(amixer -D pulse)}")
 	local SCAN=false
@@ -133,8 +117,6 @@ while getopts ${OPTSTR} OPTION;do
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
-
-CURR_LEVEL=$(get_level)
 
 # Execution
 if [[ ${ACTION} != "?" ]];then

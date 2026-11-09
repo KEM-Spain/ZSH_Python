@@ -127,7 +127,6 @@ usage () {
 	echo -e "${WHITE_FG}-n${RESET} find music notation"
 	echo -e "${WHITE_FG}-p${RESET} find printed music"
 	echo -e "${WHITE_FG}-r${RESET} find recorded music"
-	echo -e "${WHITE_FG}-x${RESET} exact match"
 	echo -e "${WHITE_FG}\nDesc${RESET}:${DESC}"
 	) >&2
 
@@ -135,12 +134,11 @@ usage () {
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDnprx"
+OPTSTR=":HDnpr"
 OPTIND=0
 FIND_PRINTED=false
 FIND_RECORDED=false
 FIND_NOTATION=false
-EXACT_MATCH=false
 
 while getopts ${OPTSTR} OPTION;do
 	case $OPTION in
@@ -149,7 +147,6 @@ while getopts ${OPTSTR} OPTION;do
      n) FIND_NOTATION=true;;
      p) FIND_PRINTED=true;;
      r) FIND_RECORDED=true;;
-     x) EXACT_MATCH=true;;
      :) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
     \?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
 	esac

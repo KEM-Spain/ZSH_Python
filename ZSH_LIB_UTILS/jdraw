@@ -19,7 +19,6 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Constants
 _SCRIPT=${0:t}
 JAR=/usr/local/etc/jdraw_v1.1.5.jar
-LOG=/tmp/${_SCRIPT}.log
 
 #--Begin GetOpts--
 local -a OPTIONS

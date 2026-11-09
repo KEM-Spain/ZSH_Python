@@ -24,9 +24,7 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 typeset -Z2 CNT
 
 # Constants
-TODAY=$(date +'%Y-%m-%d')
 LOG=~/.${0:t}.log
-MOTD=/etc/update-motd.d
 REBOOT=/run/reboot-required
 
 qry_reboot () {
@@ -84,7 +82,6 @@ usage () {
 OPTSTR=":HDy"
 
 PRE_APPROVED=false
-INLINE=false
 
 OPTIND=0
 while getopts ${OPTSTR} OPTION;do
@@ -127,7 +124,6 @@ if [[ ${PRE_APPROVED} == false ]];then
 	CNT=0
 	SECTION=?
 	I_HEADER_OUT=false
-	C_HEADER_OUT=false
 	R_HEADER_OUT=false
 	GETPKGLIST=false
 	DOUPGRADE=false

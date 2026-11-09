@@ -15,7 +15,6 @@ _DEPS+=(LIST.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
-_MAX_DISPLAY_LEN=40
 _TYPE_LABELS=(u "URL" k "Key" v "Value")
 _MAX_FIELD=40 # Max field width
 
@@ -123,7 +122,7 @@ edit_box () {
 	local ROW=0
 	local PROMPT="${E_RESET}${E_BOLD}Enter value${E_RESET}:"
 
-	M_COORDS=($(box_coords_get MSG_BOX))
+	M_COORDS=(${(z)$(box_coords_get MSG_BOX)})
 
 	{
 	# Clear space around input

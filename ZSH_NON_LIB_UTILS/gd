@@ -1,7 +1,6 @@
 #!/usr/bin/zsh
 _USER_NAME=${USER}
 _gd_MOUNTPOINT="${HOME}/GoogleDrive"
-_gd_VOLUME=~/PRS1;
 
 _gd_dismount () {
 	echo "Unmounting Google Drive volume..."

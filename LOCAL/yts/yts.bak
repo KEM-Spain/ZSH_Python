@@ -97,24 +97,20 @@ INF_H=5
 INF_W=$((_CONT_WIDTH - 4 ))
 _INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -y2 -c"${(kv)_CONT_COORDS}" -w${INF_W}) H ${INF_H} W ${INF_W}) # Info coords
 
-_MAX_AUTHOR=27
 _MAX_FLEN=120
 _MAX_MSG_LEN=$(( _CONT_COORDS[W] - 2 ))
 _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
 _RY=$(get_relative_y "${(kv)_CONT_COORDS}" 1 4) # Relative center of box
-_SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _SPINNER_COORDS=(ROW $(( _CONT_COORDS[X] - 1 )) COL ${_RY}) # Center spinner under continuous box
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive" "deep focus podcast")
-_TRANS_ERR_LIMIT=6
 _WGET_OPTS='--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/125.0.0.0 Safari/537.36" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header="Accept-Charset: UTF-8,*;q=0.5" --header="Accept-Language: en-US,en;q=0.5" --header="Referer: https://rumble.com/"'
 
 _YT_DLP_CFG=~/.local/share/yts
 _JS_SCRIPT=${_YT_DLP_CFG}/yts.js
 _YTS_DOWNLOAD_LOG=${_YT_DLP_CFG}/yts.downloads
 _YTS_FAVORITES=${_YT_DLP_CFG}/yts.favorites
-_YTS_FAV_NEW=${_YT_DLP_CFG}/yts.favorites.new
 _YTS_UPD_MARKER=${_YT_DLP_CFG}/yts-upd.lastrun
 _YT_DBG_LOG=${_YT_DLP_CFG}/yt.dbg.log
 _YT_URL_LOG=${_YT_DLP_CFG}/yt.url.log
@@ -139,38 +135,39 @@ g_ACTIVE_FAV_MENU=youtube
 
 # Functions
 action_do () {
-	local -a ZSEL_REPLY=()
-	local AUTHOR=''
-	local DEST=''
-	local DEST_LINE=''
-	local DL_CNT=0
-	local DL_DIR=''
-	local DUP_LINE=''
-	local ETA=''
-	local FRAME_PAD=8
-	local HDR1_TXT=''
-	local HDR2_TXT=''
-	local HDRS_OUT=false
-	local HDR_LEN=0
-	local HRZ_CTR=0
-	local INFO_TAG=''
-	local INT_KEY=''
-	local LAST_LOG_LINE=''
-	local LAST_MSG=''
-	local LAST_TRANS_MSG=''
-	local LINE_COLOR=''
-	local LOG_LINE=''
-	local LOG_REPEATS=0
-	local MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
-	local MSG=''
-	local NDX=0
-	local PRE_HDR_ERR=''
-	local RETRIES=0
-	local TEXT=''
-	local TITLE=''
-	local TRANS_ERR_CNT=0
-	local TRANS_ERR_MSG=0
-	local URL=''
+		local -a ZSEL_REPLY=()
+		local AUTHOR=''
+		local COOKIE_FLAG=''
+		local DEST=''
+		local DEST_LINE=''
+		local DL_CNT=0
+		local DL_DIR=''
+		local DUP_LINE=''
+		local ERROR=''
+		local ETA=''
+		local FRAME_PAD=8
+		local HDR1_TXT=''
+		local HDR2_TXT=''
+		local HDRS_OUT=false
+		local HDR_LEN=0
+		local HRZ_CTR=0
+		local INFO_TAG=''
+		local INT_KEY=''
+		local LAST_LOG_LINE=''
+		local LAST_MSG=''
+		local LAST_TRANS_MSG=''
+		local LINE_COLOR=''
+		local LOG_LINE=''
+		local LOG_REPEATS=0
+		local MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
+		local MSG=''
+		local NDX=0
+		local PRE_HDR_ERR=''
+		local RETRIED_COOKIES=false
+		local RETRIES=0
+		local TEXT=''
+		local TITLE=''
+		local URL=''
 	local M X Y W
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -189,8 +186,9 @@ action_do () {
 			TITLE=$(get_field title ${M})
 			URL=$(get_field url ${M})
 			RETRIES=0
-			local RETRIED_COOKIES=false
-			local COOKIE_FLAG=''
+			g_PRESERVE_LOG=false
+			RETRIED_COOKIES=false
+			COOKIE_FLAG=''
 
 			logit ${_YT_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
 
@@ -213,7 +211,6 @@ action_do () {
 					MSG="Cancelling download..."
 					msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 					_CANCELLED[${M}]=true
-					TRANS_ERR_CNT=0
 					break
 				fi
 
@@ -224,8 +221,8 @@ action_do () {
 					break
 				fi
 
-				if grep -q -Ei -m1 '403' ${g_YTS_SESSION_LOG} 2>/dev/null;then
-					logit ${_YT_DBG_LOG} "${0}: No download - 403 error"
+				ERROR=$(grep -Ei -m1 '403|404|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
+				if [[ ${?} -eq 0 ]];then
 					if [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' && ${RETRIED_COOKIES} == 'false' ]];then
 						RETRIED_COOKIES=true
 						COOKIE_FLAG='-c'
@@ -235,9 +232,21 @@ action_do () {
 						job_start "${URL}" "${COOKIE_FLAG}"
 						continue
 					else
-						msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
-						_FAILED[${M}]=true
-						break
+						g_PRESERVE_LOG=true
+						case ${ERROR} in
+							403) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
+									_FAILED[${M}]=true
+									break
+									;;
+							404) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 404 error...<N>"
+									_FAILED[${M}]=true
+									break
+									;;
+								*) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
+									_FAILED[${M}]=true
+									break
+									;;
+						esac
 					fi
 				fi
 
@@ -312,7 +321,6 @@ action_do () {
 					MSG="Cancelling download..."
 					msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 					_CANCELLED[${M}]=true
-					TRANS_ERR_CNT=0
 					break
 				fi
 
@@ -347,7 +355,7 @@ action_do () {
 							esac
 						elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 							case ${LOG_LINE:l} in
-								*moving*)
+								*moving*|*fixing*)
 									spinner stop
 									logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 									_DOWNLOADS[${M}]='true'
@@ -455,7 +463,6 @@ clean_title () {
 
 download_select () {
 	local SEARCHTERM=${1}
-	local SEARCHTYPE=''
 	local TITLE
 	local FLST
 	local STR
@@ -463,13 +470,7 @@ download_select () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	SEARCHTYPE=Videos
-
 	_SORT_TABLE=(1 1 2 2 3 3) # Age, author, title
-
-	if [[ ${_QUERY_OPTS[ENGINE]:l} == 'youtube' ]];then
-		[[ ${_QUERY_OPTS[STRICT]:l} == 'strict' ]] && SEARCHTYPE="Strict (${_QUERY_OPTS[SMSG]} rejected)"
-	fi
 
 	# Set headings
 	list_set_header_init
@@ -1049,8 +1050,6 @@ job_kill () {
 	local PID
 	local P
 
-	g_PRESERVE_LOG=false
-
 	PIDS=("${(f)$(pgrep -n "yt-dlp")}")
 	if [[ ${?} -eq 0 ]];then
 		for P in ${PIDS};do
@@ -1498,7 +1497,6 @@ post_process () {
 	logit ${_YT_DBG_LOG} "${0}: Last file downloaded:${FN}"
 
 	set_final_fn ${FN}
-	g_PRESERVE_LOG=false
 }
 
 query_rumble () {
@@ -1566,6 +1564,7 @@ query_youtube () {
 	local TRY=0
 	local F L
 
+	# TODO: The author should be taken from the title; not from _QUERY_OPTS
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	ping -w1 www.youtube.com >/dev/null 2>&1
@@ -1589,6 +1588,7 @@ query_youtube () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} ${CYAN_FG}GENERAL SEARCH${RESET}"
 
+	QUERY_LIST=()
 	while true;do
 		(( TRY++ ))
 		QUERY_LIST=("${(f)$(eval ${g_PROXY_CMD} 2>/dev/null)}")
@@ -1598,6 +1598,7 @@ query_youtube () {
 	done
 
 	NDX=0
+	_QUERY_REJECTS=()
 	for L in ${QUERY_LIST};do
 		((NDX++))
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Query line:${L}"
@@ -1769,13 +1770,12 @@ spinner () {
     local ACTION=${1:-tick}
     local ROW=${2:-${_SPINNER_COORDS[ROW]}}
     local COL=${3:-${_SPINNER_COORDS[COL]}}
-		local -a CHARS=()
 
     [[ ${_SPINNER_COORDS[ROW]} -ne ${ROW} ]] && _SPINNER_COORDS[ROW]=${ROW}
     [[ ${_SPINNER_COORDS[COL]} -ne ${COL} ]] && _SPINNER_COORDS[COL]=${COL}
 
     (( $+_SPIN_NDX )) || typeset -g _SPIN_NDX=1
-		local -a CHARS=('▰▱▱▱' '▱▰▱▱' '▱▱▰▱' '▱▱▱▰' '▱▱▰▱' '▱▰▱▱')
+		local -a chars=('▰▱▱▱' '▱▰▱▱' '▱▱▰▱' '▱▱▱▰' '▱▱▰▱' '▱▰▱▱')
 
     case ${ACTION} in
         start)
@@ -1785,8 +1785,8 @@ spinner () {
             tcup ${ROW} ${COL} && printf "    " # Clear spinner
             ;;
         tick|*)
-            tcup ${ROW} ${COL} && printf "${GREEN_FG}%s${RESET}" "${CHARS[_SPIN_NDX]}"
-            (( _SPIN_NDX = ( _SPIN_NDX % ${#CHARS[@]} ) + 1 ))
+            tcup ${ROW} ${COL} && printf "${GREEN_FG}%s${RESET}" "${chars[_SPIN_NDX]}"
+            (( _SPIN_NDX = ( _SPIN_NDX % ${#chars[@]} ) + 1 ))
             ;;
     esac
 }
@@ -1816,6 +1816,8 @@ read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
 \tChoose from a list of matching videos. 
 EOF
+
+local -a OPTIONS
 
 opt_type () {
 	local OPT=${1}

@@ -26,7 +26,6 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Constants
 _HIST_FILE=~/.zsh_history
 _HIST_NEW="/tmp/${_HIST_FILE:t}.new"
-_LAST_ACTION=/tmp/hist_action
 _OBJ_TYPE="command"
 
 # Declarations
@@ -36,10 +35,7 @@ typeset -a _HIST_LIST=()
 _ALL=false
 _HIST_MAX=46
 _SEARCHTERM=''
-_DELETE=false
-_HIST_KEY=''
 _SCRIPT=${0:t}
-_ACTION_MSG=''
 
 # Functions
 action_do () {

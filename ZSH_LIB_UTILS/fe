@@ -28,9 +28,6 @@ typeset -a _LOCAL_LIST
 typeset -A _COL_WIDTHS
 typeset -a _BLACKLIST=(-v "\.so\|\.pcm")
 
-# Constants
-CUR_USER=$(whoami)
-
 # Globals
 _DEPTH=1
 
@@ -190,7 +187,6 @@ HIDDEN_CNT=0
 FUZZY_CNT=0
 EXACT_CNT=0
 OWNER_CNT=0
-DO_HDR=true
 
 NDX=0
 for F in ${(o)_RAWLIST};do

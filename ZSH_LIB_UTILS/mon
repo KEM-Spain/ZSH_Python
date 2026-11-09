@@ -157,7 +157,6 @@ OPTSTR=":HDbeits"
 BOTH_ON=false
 EXT_ONLY=false
 INT_ONLY=false
-MON_INFO=false
 TOGGLE_EXT_ONLY=false
 STATUS_REQUEST=false
 
@@ -200,7 +199,6 @@ elif [[ ${INT_ONLY} == 'true' ]];then
 	set_mon_state ${MON_ABBV[ext]} off
 	set_mon_state ${MON_ABBV[int]} on
 elif [[ ${TOGGLE_EXT_ONLY} == 'true' ]];then
-	EXT_STATE=$(get_mon_state ${MON_ABBV[ext]})
 	INT_STATE=$(get_mon_state ${MON_ABBV[int]})
 	if [[ ${INT_STATE} == 'off' ]];then # Ext only to both
 		set_mon_state ${MON_ABBV[ext]} on 

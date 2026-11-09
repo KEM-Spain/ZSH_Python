@@ -70,8 +70,6 @@ zsh_comp_guide "${_EXT_DIR}/ZshUserGuideCompletion.pdf"
 zsh_cheatsheet "${_EXT_DIR}/zsh-cheatsheet.md"
 )
 
-_SCRIPT_FQFN=${0}
-
 # Functions
 find_keyword () {
 	local TIPNAME=${1}

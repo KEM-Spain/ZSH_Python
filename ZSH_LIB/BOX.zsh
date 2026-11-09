@@ -28,6 +28,9 @@ box_coords_dump () {
 box_coords_get () {
 	local TAG=${1}
 
+	# NOTE: Returns a single string. The receiver must split the data with a (z) flag. 
+	# Example: ARRAY=($(z)$(box_coords_get ${TAG})})
+
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -z ${_BOX_COORDS[${TAG}]} ]] && return 1
@@ -39,8 +42,8 @@ box_coords_overlap () {
 	local TAG_1=${1}
 	local TAG_2=${2}
 
-	local -A BOX_1_COORDS=($(box_coords_get ${TAG_1}))
-	local -A BOX_2_COORDS=($(box_coords_get ${TAG_2}))
+	local -A BOX_1_COORDS=(${(z)$(box_coords_get ${TAG_1})})
+	local -A BOX_2_COORDS=(${(z)$(box_coords_get ${TAG_2})})
 
 	local X1_MIN=${BOX_1_COORDS[X]}
 	local X1_MAX=$(( BOX_1_COORDS[X] + BOX_1_COORDS[H] - 1 )) # Add the height
@@ -70,7 +73,7 @@ box_coords_relative () {
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	BASE_COORDS=($(box_coords_get ${BASE_TAG}))
+	BASE_COORDS=(${(z)$(box_coords_get ${BASE_TAG})})
 	[[ -z ${BASE_COORDS} ]] && return 1
 
 	if [[ -n ${OFFSETS[X]} ]];then
@@ -91,7 +94,7 @@ box_coords_relative () {
 
 box_coords_repaint () {
 	local TAG=${1}
-	local -A COORDS=($(box_coords_get ${TAG}))
+	local -A COORDS=(${(z)$(box_coords_get ${TAG})})
 	local LIST_ROW=0
 	local LNDX=0
 	local ROW_LIMIT=0
@@ -107,7 +110,7 @@ box_coords_repaint () {
 		/bin/rm -f ${LAST_COORDS}
 		if [[ -n ${TAG} ]];then
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Got LAST_COORDS TAG:${TAG}"
-			COORDS=($(box_coords_get ${TAG}))
+			COORDS=(${(z)$(box_coords_get ${TAG})})
 		fi
 	fi
 
@@ -139,7 +142,7 @@ box_coords_upd () {
 	local -a ARGS=(${@})
 	local TAG=${ARGS[1]}
 	local -A UPD=(${ARGS[2,-1]})
-	local -A ORIG=($(box_coords_get ${TAG}))
+	local -A ORIG=(${(z)$(box_coords_get ${TAG})})
 	local K V
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"

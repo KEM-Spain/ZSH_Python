@@ -14,6 +14,11 @@ MAGENTA_FG="\033[35m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
+E_CYAN_FG=$(echo -n "\033[36m")
+E_GREEN_FG=$(echo -n "\033[32m")
+E_RESET=$(echo -n "\033[m")
+E_BOLD=$(echo -n "\033[1m")
+E_ITALIC=$(echo -n "\033[3m")
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -22,7 +27,7 @@ _DEPS+=(MSG.zsh DURABLE.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
-_COL_MAX=138
+_COL_MAX=160
 
 # Declarations
 typeset -a LIST
@@ -41,6 +46,8 @@ EOF
 RESET="\033[m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
+
+local -a OPTIONS
 
 parse_opts () {
 	local OPTS=${@}
@@ -146,10 +153,11 @@ while getopts ${OPTSTR} OPTION;do
 		:) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
 		\?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
-SEARCHTERM=${@} 
+SEARCHTERM="${@}"
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
@@ -196,8 +204,8 @@ if [[ -n ${FILE_OUT} ]];then
 	if arr_is_populated "${RAWLIST}";then
 		msg_box "Saving output to file:${FILE_OUT}"
 		for L in ${RAWLIST};do
-			FN=$(cut -d: -f1 <<<${L})
-			LN=$(cut -d: -f2- <<<${L} | str_trim)
+			FN=${${(s/:/)L}[1]}
+			LN=${${(s/:/)L}[2,-1]}
 			[[ ${#LN} -gt ${_COL_MAX} ]] && { LN=${LN[1,${_COL_MAX}]} && (( _TRUNC_CNT++ )) }
 			echo "${FN}: ${LN}" >>${FILE_OUT}
 		done
@@ -218,13 +226,12 @@ for L in ${(uo)RAWLIST};do
 		clear
 		tput cup 0 0; tput el; printf "\rProcessing line ${WHITE_FG}%d${RESET} of ${WHITE_FG}%d${RESET} lines ${WHITE_FG}%%${BOLD}${GREEN_FG}%.2f${RESET}" ${NDX} ${#RAWLIST} $(( NDX * 100. / ${#RAWLIST} ))
 	fi
-	FN=$(str_no_ansi ${L})
-	FN=$(cut -d: -f1 <<<${FN})
+	FN=${${(s/:/)$(str_no_ansi ${L})}[1]}
 	[[ ${GR_OPT_BAK} == 'false' && ${FN:e} == 'bak' ]] && continue
 	FTYPE=$(file -L ${FN})
 	[[ ${_DEBUG} -gt 0 && (! ${FTYPE} =~ 'text') ]] && dbg "${0}:${LINENO} File:${FN} rejected - not text:${FTYPE}" 
 	[[ ! ${FTYPE} =~ 'text' ]] && continue
-	LN=$(cut -d: -f2- <<<${L})
+	LN=${${(s/:/)L}[2,-1]}
 	LN=${LN[1,${_COL_MAX}]} # Limit line length
 	LN=$(tr -d '\012\015' <<<${LN})
 	LN=$(tr -s '[:space:]' <<<${LN})
@@ -249,8 +256,8 @@ echo "\n" >&2
 [[ ${LONGEST_FN} -lt 5 ]] && LONGEST_FN=4
 
 if ! arr_is_populated "${LIST}";then
-	echo "${WHITE_FG}Grep command${RESET}:${CMD_MSG}" | tr -s '[:space:]'
 	do_rmcup
+	echo "${WHITE_FG}Grep command${RESET}:${CMD_MSG}" | tr -s '[:space:]'
 	[[ -n ${FTYPE} ]] && FTYPE_MSG=" (of type:${WHITE_FG}${FTYPE}${RESET}) " || FTYPE_MSG=' '
 	exit_leave $(err_msg_exit W "No files${FTYPE_MSG}found containing:${SEARCHTERM}")
 fi
@@ -258,7 +265,7 @@ fi
 if [[ ${FILELIST} == 'true' ]];then
 	UNIQ=("${(f)$(
 		for L in ${(uo)LIST};do # Unique/sorted
-			FN=$(cut -d'|' -f1 <<<${L})
+			FN=${${(s/|/)L}[1]}
 			echo ${FN}
 		done
 	)}")
@@ -282,19 +289,18 @@ if [[ ${FILELIST} == 'true' ]];then
 else
 	{
 	tput cup 1 0; echo "${WHITE_FG}CMD${RESET}:${CMD_MSG}" | tr -s '[:space:]'
-	[[ ${RECURSE} == 'true' ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
-	[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG=" ${RESET}(${ITALIC}${CYAN_FG}case insensitive${RESET})" || CASE_MSG=" ${RESET}(${ITALIC}${BOLD}${CYAN_FG}case sensitive${RESET})"
+	[[ -n ${GR_OPT_RECURSE} ]] && RECURSE_MSG=" (recursive)" || RECURSE_MSG=''
+	[[ ${GR_OPT_CASE} =~ '--ignore-' ]] && CASE_MSG="${E_RESET}(${E_ITALIC}${E_CYAN_FG}case insensitive${E_RESET})" || CASE_MSG="${E_RESET}(${E_ITALIC}${E_BOLD}${E_CYAN_FG}case sensitive${E_RESET})"
 	echo "Path:${WHITE_FG}${PATH_ARG}${RECURSE_MSG}${RESET}, Files:${WHITE_FG}${FTYPE_MSG}${RESET}, Search:${WHITE_FG}${SEARCHTERM}${CYAN_FG}${CASE_MSG}${RESET}, Result:${WHITE_FG}${#RAWLIST}${RESET} lines\n\n"
 	if [[ -n ${LINENUM_OPT} ]];then
 		[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 7 ))
-		REM=$(( (_COL_MAX - LONGEST_FN) - 8))
-		printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text"
+		REM=$(( (_COL_MAX - LONGEST_FN) - 8)) printf "${WHITE_FG}%-*s %5s %-*s${RESET}\n" ${LONGEST_FN} "File" "Line" ${LONGEST_LN} "Text Matching:${E_GREEN_FG}${(qqq)SEARCHTERM}${E_RESET} ${CASE_MSG}"
 		echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- )))  ${MAGENTA_FG}$(str_unicode_line 4)${RESET} ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN - 4 )))${RESET}"
 		echo
 	else
 		[[ ${LONGEST_LN} -gt $(( _COL_MAX - LONGEST_FN )) ]] && LONGEST_LN=$(( (_COL_MAX - LONGEST_FN) - 4 ))
 		REM=$(( (_COL_MAX - LONGEST_FN) - 4))
-		printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text"
+		printf "${WHITE_FG}%-*s %-*s${RESET}\n" ${LONGEST_FN} "File" ${LONGEST_LN} "Text Matching:${E_GREEN_FG}${(qqq)SEARCHTERM}${E_RESET} ${CASE_MSG}"
 		echo -n "${MAGENTA_FG}$(str_unicode_line $(( LONGEST_FN-- ))) ${MAGENTA_FG}$(str_unicode_line $(( LONGEST_LN-- )))${RESET}"
 		echo
 	fi
@@ -303,11 +309,11 @@ else
 	for L in ${LIST};do
 		((NDX++))
 		[[ $(( NDX % 2 )) -ne 0 ]] && BAR=${BLACK_BG} || BAR=''
-		FN=$(cut -d'|' -f1 <<<${L})
-		LN=$(cut -d'|' -f2- <<<${L})
+		FN=${${(s/|/)L}[1]}
+		LN=${${(s/|/)L}[2,-1]}
 		if [[ -n ${LINENUM_OPT} ]];then
-			LNUM=$(cut -d: -f1 <<<${LN})
-			LN=$(cut -d: -f2- <<<${LN})
+			LNUM=${${(s/:/)LN}[1]}
+			LN=${${(s/:/)LN}[2,-1]}
 			LN=$(tr -d '\012\015' <<<${LN})
 			LN=$(tr -s '[:space:]' <<<${LN})
 			LN=$(sed 's/[\t\n]/ /' <<<${LN})

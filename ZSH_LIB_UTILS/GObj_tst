@@ -59,7 +59,6 @@ typeset -a _OBJS
 # Constants
 _OBJ_DIR=/home/kmiller/Code/LANG/Python/GTK3_Object_Examples
 _OBJS=("${(f)$(find ${_OBJ_DIR} -type f -name '*py')}")
-_SCRIPT_FQFN=${0}
 
 # Functions
 find_keyword () {

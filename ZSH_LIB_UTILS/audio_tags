@@ -33,7 +33,6 @@ _MUSIC_DIR="/media/kmiller/EXT_2/Music"
 
 # Vars
 _GOT_DATA=false
-_MODIFIED=false
 
 # Functions
 dep_exists () {
@@ -110,7 +109,7 @@ tags_display () {
 
 			msg_box -q -c -p -x${BOX_X} -y${BOX_Y} -w 60 ${LABELS}
 
-			_EDIT_COORDS=($(box_coords_get MSG_BOX))
+			_EDIT_COORDS=(${(z)$(box_coords_get MSG_BOX)})
 
 			[[ ${_MSG_KEY} == 'q' ]] && exit_request
 			if [[ ${_MSG_KEY} == 'e' ]];then
@@ -120,7 +119,7 @@ tags_display () {
 					LBL=${${(s/|/)LABELS}[${NDX}]}
 					LBL=${${(s/:/)LBL}[1]:s/<D> //}
 					VAL=${${(s/:/)F}[2]}
-					_EDIT_COORDS=($(box_coords_get MSG_BOX))
+					_EDIT_COORDS=(${(z)$(box_coords_get MSG_BOX)})
 					X=$(( _EDIT_COORDS[X] + NDX )) && Y=$(( _EDIT_COORDS[Y] + 3 ))
 					NEW_VAL=$(edit_field "${LBL:gs/#/ /}" "${VAL} " ${X} ${Y}) # Quirky; adding a space after val seems to help coords stick
 					FIELDS[${NDX}]="${LBL}:$(sed 's/ *$//' <<<${NEW_VAL})"

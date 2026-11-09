@@ -141,7 +141,8 @@ usage () {
 
 # Execution
 [[ ${#} -gt 1 ]] && echo "${RED_FG}Too many args${RESET}" && usage
-[[ ${#} -eq 0 ]] && ARG=${PWD:t} || ARG=${1}
+[[ ${#} -eq 0 ]] && ARG=${LOCAL} || ARG=${1}
+
 logit ${_LOG} "${_SCRIPT}: PWD:${PWD} ARGS:${ARG}"
 
 #[[ -z ${1} ]] && cd ${_CODEBASE}

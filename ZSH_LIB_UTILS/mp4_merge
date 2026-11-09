@@ -45,7 +45,6 @@ typeset -a _ARCHIVED=()
 _CFG_DIR=${HOME}/.local/share/${_SCRIPT}
 _DEFAULT_PATH=~/Downloads/Torrents/Library/Web
 _FILTER=(ACODEC aac VCODEC libx264)
-_FS_DISK=/dev/nvme0n1p2
 _LOG_FILE=${_CFG_DIR}/${_SCRIPT}.log
 _ERR_FILE=${_CFG_DIR}/${_SCRIPT}.errors
 _CMD_FILE=${_CFG_DIR}/${_SCRIPT}.cmd

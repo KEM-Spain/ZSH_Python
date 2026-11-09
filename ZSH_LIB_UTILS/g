@@ -47,6 +47,8 @@ RESET="\033[m"
 RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 
+local -a OPTIONS
+
 parse_opts () {
 	local OPTS=${@}
 	local -a OPTSTR
@@ -151,10 +153,11 @@ while getopts ${OPTSTR} OPTION;do
 		:) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Option error${RESET}: -${OPTARG} requires an argument"; usage;;
 		\?) print -u2 "${_SCRIPT_TAG} ${BOLD}${RED_FG}Unknown option${RESET} - ${OPTARG}"; usage;;
 	esac
+	[[ ${OPTION} != 'D' ]] && OPTIONS+=${OPTION}
 done
 shift $(( OPTIND - 1 ))
 #--End GetOpts--
-SEARCHTERM=${@} 
+SEARCHTERM="${@}"
 
 # Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup

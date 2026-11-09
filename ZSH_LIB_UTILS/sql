@@ -17,7 +17,6 @@ _DEPS+=(SELECT.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-LIB=/usr/local/lib
 typeset -A _SESSION_DATA=()
 typeset -a _DB_LIST
 typeset -a _TB_LIST
