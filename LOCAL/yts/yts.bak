@@ -44,6 +44,7 @@ typeset -A _DOWNLOADS=()
 typeset -A _ENG_LIST=(1 youtube 2 rumble)
 typeset -A _FAILED=()
 typeset -A _FAV_LIST=()
+typeset -A _FAV_VALUE=()
 typeset -A _FIELD_CONFIG=()
 typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
@@ -55,7 +56,6 @@ typeset -A _OB=()
 typeset -A _PARTIALS=()
 typeset -A _QUERY_OPTS=()
 typeset -A _QUICK_DOWNLOAD=()
-typeset -A _REJECTS=()
 typeset -A _RUMBLE_QUERY_MAP=(1 user 2 live 3 channel 4 general)
 typeset -A _RUMBLE_QT_OPTS=(l live u user c channel g general)
 typeset -A _RUMBLE_ROWS=()
@@ -67,7 +67,6 @@ typeset -A _YT_RANGE_LIST=(1 all 2 recent 3 min 4 hour 5 day 6 week 7 month 8 ye
 typeset -A _YT_STRICT_LIST=(1 strict 2 non-strict)
 typeset -a _FAV_KEYS=()
 typeset -a _FAV_ROW=()
-typeset -a _QUERY_REJECTS=()
 typeset -a _RUMBLE_PAGE=()
 typeset -a _STERMS=()
 typeset -a _STRIP_WORDS=()
@@ -77,14 +76,14 @@ typeset -aU _LOCAL_LIST=()
 # Constants
 _ACTION=download
 _CONT_WIDTH=86
-_CONT_COORDS=(X 10 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
+_CONT_COORDS=(X 9 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 
 _FIELD_CONFIG[dkey]="2|text|Enter DISPLAY key|_QUERY_OPTS[DKEY]|1|"
 _FIELD_CONFIG[engine]="4|menu|Select Engine|_QUERY_OPTS[ENGINE]|_ENG_LIST|LIST|custom"
 _FIELD_CONFIG[list]="3|menu|Select List|_QUERY_OPTS[LIST]|_MENU_LIST|"
 _FIELD_CONFIG[qkey]="1|text|Enter QUERY key|_QUERY_OPTS[QKEY]|0|"
-_FIELD_CONFIG[query]="7|menu|Select Query Type|_QUERY_OPTS[QUERY]|_RUMBLE_QUERY_MAP|ENGINE|rumble"
+_FIELD_CONFIG[query]="7|menu|Select Query Type|_QUERY_OPTS[QTYPE]|_RUMBLE_QUERY_MAP|ENGINE|rumble"
 _FIELD_CONFIG[range]="5|menu|Select Video Date Range|_QUERY_OPTS[RANGE]|_YT_RANGE_LIST|ENGINE|youtube"
 _FIELD_CONFIG[strict]="6|menu|Select Strict option|_QUERY_OPTS[STRICT]|_YT_STRICT_LIST|ENGINE|youtube"
 
@@ -97,20 +96,24 @@ INF_H=5
 INF_W=$((_CONT_WIDTH - 4 ))
 _INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -y2 -c"${(kv)_CONT_COORDS}" -w${INF_W}) H ${INF_H} W ${INF_W}) # Info coords
 
+_MAX_AUTHOR=27
 _MAX_FLEN=120
 _MAX_MSG_LEN=$(( _CONT_COORDS[W] - 2 ))
 _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _OBJECT="video"
 _RY=$(get_relative_y "${(kv)_CONT_COORDS}" 1 4) # Relative center of box
+_SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _SPINNER_COORDS=(ROW $(( _CONT_COORDS[X] - 1 )) COL ${_RY}) # Center spinner under continuous box
 _STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive" "deep focus podcast")
+_TRANS_ERR_LIMIT=6
 _WGET_OPTS='--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/125.0.0.0 Safari/537.36" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header="Accept-Charset: UTF-8,*;q=0.5" --header="Accept-Language: en-US,en;q=0.5" --header="Referer: https://rumble.com/"'
 
 _YT_DLP_CFG=~/.local/share/yts
 _JS_SCRIPT=${_YT_DLP_CFG}/yts.js
 _YTS_DOWNLOAD_LOG=${_YT_DLP_CFG}/yts.downloads
 _YTS_FAVORITES=${_YT_DLP_CFG}/yts.favorites
+_YTS_FAV_NEW=${_YT_DLP_CFG}/yts.favorites.new
 _YTS_UPD_MARKER=${_YT_DLP_CFG}/yts-upd.lastrun
 _YT_DBG_LOG=${_YT_DLP_CFG}/yt.dbg.log
 _YT_URL_LOG=${_YT_DLP_CFG}/yt.url.log
@@ -135,45 +138,45 @@ g_ACTIVE_FAV_MENU=youtube
 
 # Functions
 action_do () {
-		local -a ZSEL_REPLY=()
-		local AUTHOR=''
-		local COOKIE_FLAG=''
-		local DEST=''
-		local DEST_LINE=''
-		local DL_CNT=0
-		local DL_DIR=''
-		local DUP_LINE=''
-		local ERROR=''
-		local ETA=''
-		local FRAME_PAD=8
-		local HDR1_TXT=''
-		local HDR2_TXT=''
-		local HDRS_OUT=false
-		local HDR_LEN=0
-		local HRZ_CTR=0
-		local INFO_TAG=''
-		local INT_KEY=''
-		local LAST_LOG_LINE=''
-		local LAST_MSG=''
-		local LAST_TRANS_MSG=''
-		local LINE_COLOR=''
-		local LOG_LINE=''
-		local LOG_REPEATS=0
-		local MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
-		local MSG=''
-		local NDX=0
-		local PRE_HDR_ERR=''
-		local RETRIED_COOKIES=false
-		local RETRIES=0
-		local TEXT=''
-		local TITLE=''
-		local URL=''
+	local -a ZSEL_REPLY=()
+	local AUTHOR=''
+	local COOKIE_FLAG=''
+	local DEST_AUTHOR=''
+	local DEST_TITLE=''
+	local DL_CNT=0
+	local DL_DIR=''
+	local DUP_LINE=''
+	local ERROR=''
+	local ETA=''
+	local FRAME_PAD=8
+	local HDR1_TXT=''
+	local HDR2_TXT=''
+	local HDR_LEN=0
+	local HRZ_CTR=0
+	local INFO_TAG=''
+	local INT_KEY=''
+	local LAST_LOG_LINE=''
+	local LAST_MSG=''
+	local LAST_TRANS_MSG=''
+	local LINE_COLOR=''
+	local LOG_LINE=''
+	local LOG_REPEATS=0
+	local MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
+	local MSG=''
+	local NDX=0
+	local FUTURE_BROADCAST_ERR=''
+	local RETRIED_COOKIES=false
+	local RETRIES=0
+	local TEXT=''
+	local TITLE=''
+	local TRANS_ERR_CNT=0
+	local TRANS_ERR_MSG=0
+	local URL=''
 	local M X Y W
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	# Suppress terminal echo for the entire download action batch
-	stty -echo # Prevent any keypresses from echoing on the term
+	stty -echo # Prevent any keypresses from echoing to the term for the entire download action batch
 	{
 		for M in ${_MARKED};do
 			((DL_CNT++))
@@ -200,86 +203,12 @@ action_do () {
 
 			msg_box -t${_MSG_DELAY[LONG]} -O${CYAN_FG} -H1 -P"<w><I>Use key:<c>(<w>k<c>)<w> to <B><r>cancel<N><w> download<N>" -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} "<g>Download Requested...<N>"
 
-			msg_box -z -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Initializing download...<N>"
-
-			HDRS_OUT=false
-			while true;do
-				read -s -t0.1 -k1 INT_KEY 2>/dev/null
-				if [[ ${INT_KEY} == 'k' ]];then
-					job_cancel
-					logit ${_YT_DBG_LOG} "${0}: JOB CANCELLED during initialization"
-					MSG="Cancelling download..."
-					msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
-					_CANCELLED[${M}]=true
-					break
-				fi
-
-				if grep -q -Ei -m1 'already been' ${g_YTS_SESSION_LOG} 2>/dev/null;then
-					logit ${_YT_DBG_LOG} "${0}: No download - video already exists"
-					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>File was already downloaded...<N>"
-					_CANCELLED[${M}]=true
-					break
-				fi
-
-				ERROR=$(grep -Ei -m1 '403|404|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
-				if [[ ${?} -eq 0 ]];then
-					if [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' && ${RETRIED_COOKIES} == 'false' ]];then
-						RETRIED_COOKIES=true
-						COOKIE_FLAG='-c'
-						logit ${_YT_DBG_LOG} "${0}: Rumble 403 encountered - retrying with cookies (-c)"
-						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying with cookies...<N>"
-						job_cancel
-						job_start "${URL}" "${COOKIE_FLAG}"
-						continue
-					else
-						g_PRESERVE_LOG=true
-						case ${ERROR} in
-							403) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
-									_FAILED[${M}]=true
-									break
-									;;
-							404) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 404 error...<N>"
-									_FAILED[${M}]=true
-									break
-									;;
-								*) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
-									_FAILED[${M}]=true
-									break
-									;;
-						esac
-					fi
-				fi
-
-				PRE_HDR_ERR=$(grep -Ei -m1 'will begin' ${g_YTS_SESSION_LOG} 2>/dev/null)
-				if [[ ${?} -eq 0 ]];then
-					logit ${_YT_DBG_LOG} "${0}: No download - future broadcast"
-					[[ ! ${PRE_HDR_ERR:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${PRE_HDR_ERR})
-					MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
-					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
-					_FUTURE[${M}]=true
-					break
-				fi
-
-				DEST_LINE=$(grep -Ei -m1 'Destination:' ${g_YTS_SESSION_LOG} 2>/dev/null)
-				if [[ ${?} -eq 0 ]];then
-					HDRS_OUT=true
-					break
-				fi
-
-				sleep .5
-			done
-
-			[[ ${HDRS_OUT} == 'false' ]] && continue # Job was aborted or completed early
+			# Populate destination header info directly from the query results list
+			DEST_AUTHOR=${${(s:|:)_LIST[${M}]}[2]}
+			DEST_TITLE=${${(s:|:)_LIST[${M}]}[3]}
 
 			logit ${_YT_DBG_LOG} "${0}: GENERATING HEADER"
-			DEST=("${(f)$(sed -e "s#/tmp/#/tmp|#g" -e 's/ \[.*//g' <<<${DEST_LINE})}") # Delimit path and fn
-			logit ${_YT_DBG_LOG} "${0}: DEST:${DEST}"
-
-			HDR1_TXT="${${(@s/|/)${DEST}}[2]}"
-			if [[ ${HDR1_TXT} =~ "\.[^.]+\.[^.]+$" ]];then # Double extension
-				HDR1_TXT=${HDR1_TXT:r}
-			fi
-
+			HDR1_TXT="${DEST_AUTHOR} - ${DEST_TITLE}"
 			HDR1_TXT="<B><I><h>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_HDR})<N>"
 			HDR2_TXT="<B><I><h>Destination<N>: $(str_trim ${_DOWNLOAD_DIR})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}${INFO_TAG}"
 
@@ -321,7 +250,61 @@ action_do () {
 					MSG="Cancelling download..."
 					msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
 					_CANCELLED[${M}]=true
+					TRANS_ERR_CNT=0
 					break
+				fi
+
+				# Early error, duplication, and anomaly detection checks integrated into single loop
+				if grep -q -Ei -m1 'already been' ${g_YTS_SESSION_LOG} 2>/dev/null;then
+					spinner stop
+					logit ${_YT_DBG_LOG} "${0}: No download - video already exists"
+					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>File was already downloaded...<N>"
+					_CANCELLED[${M}]=true
+					break
+				fi
+
+				FUTURE_BROADCAST_ERR=$(grep -Ei -m1 'will begin' ${g_YTS_SESSION_LOG} 2>/dev/null)
+				if [[ ${?} -eq 0 ]];then
+					spinner stop
+					logit ${_YT_DBG_LOG} "${0}: No download - future broadcast"
+					[[ ! ${FUTURE_BROADCAST_ERR:l} =~ 'minute*|hour*|day*' ]] && g_WHEN='soon' || g_WHEN=$(perl -pe 's/^(.*) in (\d+\s+\w+)(.*)$/\2/g' <<<${FUTURE_BROADCAST_ERR})
+					MSG="<w>${TITLE[1,65]}<N>|<r><B>Not yet available<N> - Airing time:<w>${g_WHEN}<N>"
+					msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>${MSG}<N>"
+					_FUTURE[${M}]=true
+					break
+				fi
+
+				ERROR=$(grep -Ei -m1 '403|404|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
+				if [[ ${?} -eq 0 ]];then
+					if [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' && ${RETRIED_COOKIES} == 'false' ]];then
+						RETRIED_COOKIES=true
+						COOKIE_FLAG='-c'
+						logit ${_YT_DBG_LOG} "${0}: Rumble 403 encountered - retrying with cookies (-c)"
+						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying with cookies...<N>"
+						job_cancel
+						job_start "${URL}" "${COOKIE_FLAG}"
+						continue
+					else
+						spinner stop
+						g_PRESERVE_LOG=true
+						case ${ERROR} in
+							403) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
+									 logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
+									_FAILED[${M}]=true
+									break
+									;;
+							404) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 404 error...<N>"
+									 logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
+									_FAILED[${M}]=true
+									break
+									;;
+								*) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
+									 logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
+									_FAILED[${M}]=true
+									break
+									;;
+						esac
+					fi
 				fi
 
 				# Check log pipe activity (FD 3)
@@ -333,12 +316,12 @@ action_do () {
 
 						if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
 							case ${LOG_LINE:l} in
-								*merging*|*moving*)
+								*merging*|*moving*|*fixing*)
 									spinner stop
 									logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 									_DOWNLOADS[${M}]=true
 									log_add ${M}
-									post_process
+									post_process ${DEST_AUTHOR}
 									MSG="$(str_rpad "Download is complete" ${_MAX_MSG_LEN})"
 									msg_box -C -jl "<B><g>${MSG}<N>"
 									break
@@ -360,7 +343,7 @@ action_do () {
 									logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 									_DOWNLOADS[${M}]='true'
 									log_add ${M}
-									post_process
+									post_process ${DEST_AUTHOR}
 									MSG="$(str_rpad "Download is complete" ${_MAX_MSG_LEN})"
 									msg_box -C -jl "<B><g>${MSG}<N>"
 									break
@@ -434,7 +417,6 @@ clean_title () {
 	local RAW_TITLE=${1}
 	local MAX_HDR=${2:=${_MAX_TITLE}}
 	local -a PARTS=()
-	local AUTHOR=''
 	local HYPHEN_CNT=0
 	local STR=''
 	local TITLE=''
@@ -444,15 +426,12 @@ clean_title () {
 
 	logit ${_YT_DBG_LOG} "${0}: RAW_TITLE:${RAW_TITLE}"
 
-	AUTHOR=${_QUERY_OPTS[DKEY]}
-	TITLE=${RAW_TITLE//${AUTHOR}/} # Strip author from title if present
-	TITLE=$(title_scrubber ${TITLE})
-	logit ${_YT_DBG_LOG} "${0}: AUTHOR:${AUTHOR}, TITLE:${TITLE}"
+	TITLE=$(title_scrubber ${RAW_TITLE})
+	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}"
 	
 	TITLE=$(keyword_strip <<<${TITLE})
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Stripped keywords:${STR}"
 
-	TITLE="${AUTHOR} - ${TITLE}" # Assemble TITLE
 	TITLE=$(str_word_clip ${TITLE} ${MAX_HDR}) # Limit length at word boundary
 
 	logit ${_YT_DBG_LOG} "${0}: COMPLETED TITLE:${TITLE}"
@@ -463,6 +442,7 @@ clean_title () {
 
 download_select () {
 	local SEARCHTERM=${1}
+	local SEARCHTYPE=''
 	local TITLE
 	local FLST
 	local STR
@@ -471,10 +451,16 @@ download_select () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	_SORT_TABLE=(1 1 2 2 3 3) # Age, author, title
+	if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
+		[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && SEARCHTYPE="Strict"
+		SEARCHTYPE="${SEARCHTYPE}[${_QUERY_OPTS[RANGE]}]"
+	else
+		SEARCHTYPE=${_QUERY_OPTS[QTYPE]}
+	fi
 
 	# Set headings
 	list_set_header_init
-	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${(C)_QUERY_OPTS[ENGINE]} ${(C)SEARCHTERM} "${(C)_QUERY_OPTS[QUERY]}[${_QUERY_OPTS[RANGE]}]" $(list_get_selected_count)'
+	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${(C)_QUERY_OPTS[ENGINE]} ${(C)SEARCHTERM} "${SEARCHTYPE}" $(list_get_selected_count)'
 	list_set_header 'printf " "'
 	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[age]} "Age" ${_FIELD_LEN[author]} "Author" ${_FIELD_LEN[title]} "Title"'
 	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[age]} "$(str_unicode_line ${_FIELD_LEN[age]})" ${_FIELD_LEN[author]} "$(str_unicode_line ${_FIELD_LEN[author]})" ${_FIELD_LEN[title]} "$(str_unicode_line ${_FIELD_LEN[title]})"'
@@ -691,7 +677,7 @@ fav_manage () {
 			engine) _QUERY_OPTS[ENGINE]=${_FAV_VALUE} ;;
 			range)  _QUERY_OPTS[RANGE]=${_FAV_VALUE} ;;
 			strict) _QUERY_OPTS[STRICT]=${_FAV_VALUE} ;;
-			query)  _QUERY_OPTS[QUERY]=${_FAV_VALUE} ;;
+			query)  _QUERY_OPTS[QTYPE]=${_FAV_VALUE} ;;
 		esac
 	done
 
@@ -770,7 +756,7 @@ fav_parse_opts () {
 	elif [[ ${LIST_TYPE} == 'r' ]];then
 		_QUERY_OPTS[LIST]='rumble'
 		_QUERY_OPTS[ENGINE]='rumble'
-		_QUERY_OPTS[QUERY]=${PARTS[4]}
+		_QUERY_OPTS[QTYPE]=${PARTS[4]}
 	elif [[ ${LIST_TYPE} == 'c' ]];then
 		_QUERY_OPTS[LIST]='custom'
 		ENGINE_TYPE=${PARTS[4]}
@@ -780,7 +766,7 @@ fav_parse_opts () {
 			[[ -n ${PARTS[6]} ]] && _QUERY_OPTS[RANGE]=${PARTS[6]} || _QUERY_OPTS[RANGE]='recent'
 		elif [[ ${ENGINE_TYPE} == 'r' ]];then
 			_QUERY_OPTS[ENGINE]='rumble'
-			_QUERY_OPTS[QUERY]=${PARTS[5]}
+			_QUERY_OPTS[QTYPE]=${PARTS[5]}
 		fi
 	fi
 }
@@ -907,7 +893,7 @@ fav_set_row () {
 		FAV_KEY+="|${_QUERY_OPTS[RANGE]}"
 	elif [[ ${_QUERY_OPTS[LIST]} == 'rumble' ]];then
 		FAV_KEY+="|r"
-		FAV_KEY+="|${_QUERY_OPTS[QUERY]}"
+		FAV_KEY+="|${_QUERY_OPTS[QTYPE]}"
 	elif [[ ${_QUERY_OPTS[LIST]} == 'custom' ]];then
 		FAV_KEY+="|c"
 		if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
@@ -916,7 +902,7 @@ fav_set_row () {
 			FAV_KEY+="|${_QUERY_OPTS[RANGE]}"
 		elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 			FAV_KEY+="|r"
-			FAV_KEY+="|${_QUERY_OPTS[QUERY]}"
+			FAV_KEY+="|${_QUERY_OPTS[QTYPE]}"
 		fi
 	fi
 
@@ -993,14 +979,14 @@ get_field () {
 		[[ ${STR:l} =~ 'live' ]] && STR=$(sed -E 's/(.*ago)( live)(.*)/\1)/I' <<<${STR})
 	fi
 
-	if [[ ${FIELD} == 'author' ]];then
-		if [[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]];then # Query key contains a space
-			STR=$(str_trim <<<${STR})
-			[[ -z ${STR} ]] && STR=${(C)_QUERY_OPTS[DKEY]} # Ensure not blank
-		else
-			STR=${_QUERY_OPTS[DKEY]}
-		fi
-	fi
+#	if [[ ${FIELD} == 'author' ]];then
+#		if [[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]];then # Query key contains a space
+#			STR=$(str_trim <<<${STR})
+#			[[ -z ${STR} ]] && STR=${(C)_QUERY_OPTS[DKEY]} # Ensure not blank
+#		else
+#			STR=${_QUERY_OPTS[DKEY]}
+#		fi
+#	fi
 
 	if [[ ${FIELD} == 'title' ]];then
 		STR=$(str_word_clip ${STR} ${_FIELD_LEN[${FIELD}]})
@@ -1461,6 +1447,7 @@ _parse_rumble_duration () {
 }
 
 post_process () {
+	local AUTHOR=${1}
 	local -a LIST=()
 	local -a PIDS=()
 	local -a TEMP_FILES=()
@@ -1496,7 +1483,7 @@ post_process () {
 	FN="${${(@s/|/)LF}[1]}"
 	logit ${_YT_DBG_LOG} "${0}: Last file downloaded:${FN}"
 
-	set_final_fn ${FN}
+	set_final_fn ${AUTHOR} ${FN}
 }
 
 query_rumble () {
@@ -1512,7 +1499,7 @@ query_rumble () {
 	_RUMBLE_ROWS=() # Clear
 
 	# Queries
-	case ${_QUERY_OPTS[QUERY]} in
+	case ${_QUERY_OPTS[QTYPE]} in
 		live)			QRY="https://rumble.com/c/${_QUERY_OPTS[QKEY]}/livestreams"
 							msg_box -c "<w>Requesting <c><I>livestream channel<N> <w>search<N>..."
 							;;
@@ -1527,7 +1514,7 @@ query_rumble () {
 							;;
 	esac
 
-	logit ${_YT_DBG_LOG} "${0}: QUERY:${_QUERY_OPTS[QUERY]}"
+	logit ${_YT_DBG_LOG} "${0}: QUERY:${_QUERY_OPTS[QTYPE]}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "${0}:${LINENO} QKEY:${_QUERY_OPTS[QKEY]}, g_PROXY_CMD:${g_PROXY_CMD}"
@@ -1547,13 +1534,13 @@ query_rumble () {
 
 query_youtube () {
 	local -A YOUTUBE_MAP=("age" 1 "author" 2 "title" 3 "url" 4 "time" 5)
+	local -a FILTER_LIST=()
 	local -a QUERY_LIST=()
 	local -a WORK_LIST=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
 	local DATA=false
 	local DKEY=''
 	local HIT=false
-	local HITS=0
 	local LINE=''
 	local NDX=0
 	local PROXY_CMD=''
@@ -1564,7 +1551,6 @@ query_youtube () {
 	local TRY=0
 	local F L
 
-	# TODO: The author should be taken from the title; not from _QUERY_OPTS
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	ping -w1 www.youtube.com >/dev/null 2>&1
@@ -1592,14 +1578,16 @@ query_youtube () {
 	while true;do
 		(( TRY++ ))
 		QUERY_LIST=("${(f)$(eval ${g_PROXY_CMD} 2>/dev/null)}")
-		[[ -n ${LIST} && ${#LIST} -gt 1 ]] && break
+		[[ -n ${QUERY_LIST} && ${#QUERY_LIST} -gt 1 ]] && break
 		[[ ${TRY} -gt ${RETRIES} ]] && break
 		sleep .5
 	done
 
+	# TODO: decide how/when to eliminate videos that don't have authors that match the query key
+	
 	NDX=0
-	_QUERY_REJECTS=()
-	for L in ${QUERY_LIST};do
+	FILTER_LIST=()
+	for L in ${QUERY_LIST};do # Initial collection
 		((NDX++))
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Query line:${L}"
 
@@ -1607,71 +1595,38 @@ query_youtube () {
 		[[ ${L:l} =~ 'strict filter' ]] && continue
 		[[ ${L:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
 		[[ ${L:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
-		[[ ${L:l} =~ 'strict reject' ]] && { _REJECTS[${NDX}]=true && continue } || _REJECTS[${NDX}]=false
+		if [[ ${L:l} =~ 'strict reject' ]];then
+			logit ${_YT_DBG_LOG} "${0}: Video:${TITLE} rejected - strict filter"
+			continue
+		fi
 
 		STR=$(str_to_ascii <<<${L}) # Scrub non ascii
 		STR=${STR:s/Streamed //} # Strip age of excess text
-		HIT=true
 
-		# Author verification
-    if [[ ${_QUERY_OPTS[STRICT]} != 'strict' ]];then # Limit non strict queries to matching author
-      AUTHOR="${${(s:|:)STR}[2]}" # 2nd field - lower case
-      [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Filter:${AUTHOR}"
-      HIT=false
-      local CLEAN_AUTHOR="${(L)AUTHOR// /}"
-      local CLEAN_QKEY="${(L)_QUERY_OPTS[QKEY]// /}"
-      local CLEAN_DKEY="${(L)_QUERY_OPTS[DKEY]// /}"
-      [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: CLEAN_AUTHOR:${CLEAN_AUTHOR}, CLEAN_QKEY:${CLEAN_QKEY}, CLEAN_DKEY:${CLEAN_DKEY}"
-
-      # Use unquoted pattern matching or standard substring/regex check
-      if [[ ${CLEAN_AUTHOR} == *${CLEAN_QKEY}* || ${CLEAN_AUTHOR} == *${CLEAN_DKEY}* ]];then
-        [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: AUTHOR ${GREEN_FG}match${RESET}"
-        ((HITS++))
-        HIT=true
-      else
-        [[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: AUTHOR ${RED_FG}no match${RESET}"
-      fi
-    fi
-		 
-		[[ ${HIT} == 'true' ]] && _LOCAL_LIST+=${STR} || _QUERY_REJECTS+=${STR}
+		FILTER_LIST+=${STR}
 	done
-
-	logit ${_YT_DBG_LOG} "${0}: Filter: Matching titles:${HITS}, Rejects:${_QUERY_REJECTS:=0}"
-
-	if [[ ${#_QUERY_REJECTS} -ne 0 && -n ${CLEAN_AUTHOR} && -n ${CLEAN_QKEY} && -n ${CLEAN_DKEY} ]];then
-		msg_box -x3 -t2 "<w>Filtered ${#_QUERY_REJECTS} $(str_pluralize result ${#_QUERY_REJECTS})|<w>${AUTHOR}/<c>${_QUERY_OPTS[QKEY]}/<m>${_QUERY_OPTS[DKEY]}<N>"
-	fi
-
-	[[ ${_QUERY_OPTS[STRICT]:l} == 'strict' ]] && _QUERY_OPTS[SMSG]="$(total_rejects ${#_QUERY_REJECTS})" || _QUERY_OPTS[SMSG]=''
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} _LOCAL_LIST count: ${#_LOCAL_LIST}"
 
-	if ! arr_is_populated "${_LOCAL_LIST}";then
-		# Search failed
-		if [[ ${#_QUERY_REJECTS} -ne 0 ]];then
-			_LOCAL_LIST=(${_QUERY_REJECTS}) # Empty list - show rejects
-		else
-			[[ ${_QUERY_OPTS[STRICT]:l} == 'strict' ]] && STR="|<I>Strict filter is active<N>" || STR=''
-			msg_box -t2 "<r>Query returned no rows<N>${STR}"
-			logit ${_YT_DBG_LOG} "${0}: Search engine returned no rows - QKEY:${_QUERY_OPTS[QKEY]}, STRICT:${_QUERY_OPTS[STRICT]}"
-			return 1
-		fi
-	fi
-
-	for F in ${_LOCAL_LIST};do
+	WORK_LIST=()
+	for F in ${FILTER_LIST};do # Filter collection
 		TITLE="${${(@s/|/)F}[${YOUTUBE_MAP[title]}]}"
 		URL="${${(@s/|/)F}[${YOUTUBE_MAP[url]}]}"
 		AGE="${${(@s/|/)F}[${YOUTUBE_MAP[age]}]}"
 		TIME="${${(@s/|/)F}[${YOUTUBE_MAP[time]}]}"
 		AGETIME="(${AGE} ${TIME})"
-		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR})
+		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR}); AUTHOR=${AUTHOR:gs/\///}
 
-		[[ ! ${AGE} =~ [0-9] ]] && continue # Skip any videos not having valid age
+		if [[ ! ${AGE} =~ [0-9] ]];then
+			logit ${_YT_DBG_LOG} "${0}: Video:${TITLE} skipped - invalid age"
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}:${LINENO} Video:${TITLE} skipped - invalid age"
+			continue # Skip any videos not having valid age
+		fi
 
 		# Title translations
 		if $(arr_in_array _TRANSLATED ${_QUERY_OPTS[QKEY]});then # Language problem workaraound - spanish titles
 			if is_spanish ${TITLE:l};then
-				msg_box "<w>Translating...<N>"
+				msg_box -x24 "<w>Translating...<N>"
 				TITLE=$(echo ${TITLE} | trans -brief -no-pager -no-ansi -no-theme es:en 2>/dev/null)
 				logit ${_YT_DBG_LOG} "${0}: Translated TITLE:${TITLE}"
 			fi
@@ -1680,7 +1635,12 @@ query_youtube () {
 		WORK_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done
 
-	_LOCAL_LIST=(${WORK_LIST})
+	_LOCAL_LIST=(${WORK_LIST}) # Final collection
+
+	if ! arr_is_populated "${_LOCAL_LIST}";then
+		logit ${_YT_DBG_LOG} "${0}: Listing is empty - aborted"
+		return 1 # Search failed
+	fi
 
 	logit ${_YT_DBG_LOG} "${0}: Listing for QKEY:${_QUERY_OPTS[QKEY]} contains ${#_LOCAL_LIST} rows"
 
@@ -1688,14 +1648,15 @@ query_youtube () {
 }
 
 set_final_fn () {
-	local FN=${1}
+	local AUTHOR=${1}
+	local FN=${2}
 	local NEW_FN=''
 
-	logit ${_YT_DBG_LOG} "${0}: FN  IN:${FN}"
+	logit ${_YT_DBG_LOG} "${0}: FN IN:${FN}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	NEW_FN=$(clean_title ${FN:t}) # Strip problematic chars
+	NEW_FN=$(clean_title "${AUTHOR} - ${FN:t}") # Strip problematic chars
 	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
 	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FLEN}) # Limit length at word boundary
 	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Restore path and extension
@@ -1791,33 +1752,11 @@ spinner () {
     esac
 }
 
-total_rejects () {
-	local TL_VIDS=${1}
-	local TL_RJ=0
-	local -F1 RJ_PCT=0
-	local K
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	for K in ${(k)_REJECTS};do
-		[[ ${_REJECTS[${K}]} == 'true' ]] && ((TL_RJ++))
-	done
-
-	TL_VIDS=${TL_VIDS}.00
-	TL_RJ=${TL_RJ}.00
-
-	[[ ${TL_RJ} -ne 0 ]] && RJ_PCT=$(( (TL_RJ/TL_VIDS) * 100 ))
-
-	echo "${RJ_PCT}%"
-}
-
 #--Begin GetOpts--
 read -r -d '' DESC<<EOF
 Query either Youtube or Rumble for videos.
 \tChoose from a list of matching videos. 
 EOF
-
-local -a OPTIONS
 
 opt_type () {
 	local OPT=${1}
@@ -2025,7 +1964,10 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		clear
 		if fav_select;then
 			[[ ${?} -eq 2 ]] && { clear && continue }
-			msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+			MSG=''
+			[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && MSG="Strict "
+			[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+=" General" || MSG+=' Channel'
+			msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|Query Type:<w>${MSG}<N>"
 			if query_${_QUERY_OPTS[ENGINE]};then # Run query
 				download_select ${_QUERY_OPTS[QKEY]}
 			fi
@@ -2038,10 +1980,13 @@ else # Args passed
 	_QUERY_OPTS[ENGINE]=${ENGINE_OPT}
 	_QUERY_OPTS[RANGE]=${RANGE_OPT}
 	_QUERY_OPTS[STRICT]=${STRICT_OPT}
-	_QUERY_OPTS[QUERY]=${_RUMBLE_QT_OPTS[${QTYPE_OPT}]}
+	_QUERY_OPTS[QTYPE]=${_RUMBLE_QT_OPTS[${QTYPE_OPT}]}
 
 	logit ${_YT_DBG_LOG} "_QUERY_OPTS: $(for K in ${(ok)_QUERY_OPTS};do printf '%s:%s ' ${K} ${_QUERY_OPTS[${K}]};done)"
-	msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>..."
+	MSG=''
+	[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && MSG="Strict "
+	[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+="General" || MSG+='Channel'
+	msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|Query Type:<w>${MSG}<N>"
 	if query_${_QUERY_OPTS[ENGINE]};then # Run query_
 		download_select ${_QUERY_OPTS[QKEY]}
 	else

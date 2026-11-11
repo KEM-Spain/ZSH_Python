@@ -1,5 +1,11 @@
 #!/usr/bin/zsh
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(STR.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # ANSI Formatting Constants
 typeset BOLD="\033[1m"
 typeset ITALIC="\033[3m"
@@ -68,10 +74,9 @@ typeset PAYLOAD=''
 typeset REPORT_SCOPE=''
 typeset SC=''
 typeset SOURCE_DIR=''
-typeset TODO_ITEM=''
 typeset TRIMMED=''
 typeset TRIMMED_T=''
-typeset M F
+typeset M F T
 
 typeset _LIB_DIR=''
 typeset _THIS="${0:t}"
@@ -209,9 +214,8 @@ for LINE in ${(o)_SORTED_ENTRIES}; do
     _TODOS=(${=PAYLOAD})
   }
   
-  for TODO_ITEM in ${_TODOS}; do
-    TRIMMED_T="${TODO_ITEM## #}"
-    TRIMMED_T="${TODO_ITEM## #}" # cleanup formatting
+  for T in ${_TODOS}; do
+    TRIMMED_T=$(sed -E 's/:\s+/:/' <<< ${T})
     print -- "   └── ${TRIMMED_T}"
   done
   print -- ""

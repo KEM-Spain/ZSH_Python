@@ -306,7 +306,7 @@ else
 	fi
 
 	NDX=0
-	for L in ${LIST};do
+	for L in ${(on)LIST};do
 		((NDX++))
 		[[ $(( NDX % 2 )) -ne 0 ]] && BAR=${BLACK_BG} || BAR=''
 		FN=${${(s/|/)L}[1]}

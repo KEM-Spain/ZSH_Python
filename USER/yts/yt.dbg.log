@@ -1,3 +1,32 @@
-2026-11-09_23:59: Logging started...
-2026-11-09_23:59: log_update: LOG lines BEFORE update:3 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-09_23:59: log_update: LOG lines AFTER update:3 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-11_13:43: Logging started...
+2026-11-11_13:43: log_update: LOG lines BEFORE update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-11_13:43: log_update: LOG lines AFTER update:8 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-11_13:44: query_youtube: Creating listing for QKEY:kimiversen, query is not strict
+2026-11-11_13:44: query_youtube:
+_QUERY_OPTS:
+ 	-> DKEY:Kim Iversen
+	-> ENGINE:youtube
+	-> LIST:youtube
+	-> QKEY:kimiversen
+	-> RANGE:recent
+2026-11-11_13:44: query_youtube: g_PROXY_CMD:node /home/kmiller/.local/share/yts/yts.js  -a recent "kimiversen"
+2026-11-11_13:44: query_youtube: Listing for QKEY:kimiversen contains 6 rows
+2026-11-11_13:44: Starting download for URL: https://youtube.com/watch?v=EK_4q8y2cIs (Cookies: none)
+2026-11-11_13:44: yt CMDLINE:false
+2026-11-11_13:44: yt URL:https://youtube.com/watch?v=EK_4q8y2cIs
+2026-11-11_13:44: yt Executed from: script COOKIES:null
+2026-11-11_13:44: Logging to /home/kmiller/.local/share/yts/yts_4690.log
+2026-11-11_13:44: action_do: GENERATING HEADER
+2026-11-11_13:44: clean_title: RAW_TITLE:Kim Iversen - Trump Admits Deportations Were Too Tough
+2026-11-11_13:44: clean_title: TITLE:Kim Iversen - Trump Admits Deportations Were Too Tough
+2026-11-11_13:44: clean_title: COMPLETED TITLE:Kim Iversen - Trump Admits Deportations Were Too Tough 
+2026-11-11_13:45: action_do: COMPLETED
+2026-11-11_13:45: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Trump_Admits_Deportations_Were_Too_Tough-[EK_4q8y2cIs].mp4
+2026-11-11_13:45: set_final_fn: FN IN:/home/kmiller/Downloads/Torrents/Library/Web/Trump_Admits_Deportations_Were_Too_Tough-[EK_4q8y2cIs].mp4
+2026-11-11_13:45: clean_title: RAW_TITLE:Kim Iversen - Trump_Admits_Deportations_Were_Too_Tough-[EK_4q8y2cIs].mp4
+2026-11-11_13:45: clean_title: TITLE:Kim Iversen - Trump Admits Deportations Were Too Tough
+2026-11-11_13:45: clean_title: COMPLETED TITLE:Kim Iversen - Trump Admits Deportations Were Too Tough 
+2026-11-11_13:45: set_final_fn: Overwriting file:Trump_Admits_Deportations_Were_Too_Tough-[EK_4q8y2cIs].mp4
+2026-11-11_13:45: set_final_fn: Clean filename:Kim Iversen - Trump Admits Deportations Were Too Tough.mp4
+2026-11-11_13:45: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-11-11_13:45: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_4690.log was cleared for:kimiversen from:action_do

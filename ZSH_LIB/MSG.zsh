@@ -620,7 +620,7 @@ msg_list_bullet () {
 	local NDX=0
 	local L
 
-	for L in ${MSG};do
+	for L in ${(f)MSG};do
 		(( NDX++))
 		echo -n "<L>${L}"
 		[[ ${NDX} -lt ${#MSG} ]] && echo ${_DELIM}
