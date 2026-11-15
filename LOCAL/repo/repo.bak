@@ -20,13 +20,12 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+
 # Imports
-[[ -z ${ZSH_LIB} ]] && _LIB=/usr/local/lib || _LIB=${ZSH_LIB}
-source ${_LIB}/LIB_INIT.zsh # Must be first
-source ${_LIB}/UTILS.zsh
-source ${_LIB}/STR.zsh
-source ${_LIB}/ARRAY.zsh
-source ${_LIB}/LIB_DEPS.zsh # Must be last
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(STR.zsh ARRAY.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
 _REPO=~/Code/REPO
@@ -89,10 +88,10 @@ copy_dev_files () {
 
 	echo "${GREEN_FG}DEVELOPMENT FILES${RESET}" >&2
 
+	DEV_DIRS=("${(f)$(find ${_SRC_CODE} -maxdepth 1 -type d ! -path ${_SRC_CODE})}")
 	BIN_LIST=("${(f)$(find /usr/local/bin -type f ! -path /usr/local/bin)}")
-	DEV_DIRS=("${(f)$(find ${_SRC_CODE} -maxdepth 1 -type d)}")
 
-	for D in ${DEV_DIRS};do
+	for D in ${(o)DEV_DIRS};do
 		DEV_LIST[${D:t}]=1
 	done
 
@@ -313,8 +312,8 @@ fi
 UTILS=("${(f)$(file $(find ${_SRC_USR_LOCAL_BIN} -maxdepth 1 -type f))}")
 
 for L in ${UTILS};do
-	FN=$(cut -d: -f1 <<<${L})
-	SIG=$(cut -d: -f2- <<<${L})
+	FN="${${(@s/:/)L}[1]}"
+	SIG="${${(@s/:/)L}[2,-1]}"
 	[[ ${SIG} =~ 'zsh' ]] && _ZSH_UTILS+=${FN} || _NON_ZSH_UTILS+=${FN}
 done
 

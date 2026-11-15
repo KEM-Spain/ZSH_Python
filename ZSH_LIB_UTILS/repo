@@ -399,7 +399,7 @@ if [[ ${RESPONSE} == 'y' ]];then
 	pushd ${_REPO}
 	sudo chown -R kmiller:kmiller *
 	sudo chown -R kmiller:kmiller .*
-	do_commit 2>&1 | grep -v 'CRLF will be replaced'
+	${_REPO_UTILS}/do_commit 2>&1 | grep -v 'CRLF will be replaced'
 	popd
 	touch ${_TSTAMP}
 	#echo -n "\n${WHITE_ON_GREY}Press any key...${RESET}"
