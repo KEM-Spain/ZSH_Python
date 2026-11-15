@@ -17,6 +17,7 @@ _DELIM='|'
 _LAST_MSG_TAG=''
 _REPAINT=false
 _HDR_SECTION=false
+_FTR_SECTION=false
 
 # LIB Functions
 msg_box () {
@@ -419,6 +420,7 @@ msg_box () {
 		done
 
 		# Footer
+		_FTR_SECTION=true
 		[[ ${MSG_PAGING} == 'true' ]] && SCR_NDX=${PAGING_BOT}
 
 		for (( MSG_NDX=1;MSG_NDX<=${#MSG_FOOTER};MSG_NDX++));do
@@ -458,13 +460,13 @@ msg_box_align () {
 	local PAD_L=''
 	local PAD_R=''
 	local MSG_OUT=''
-	local OFFSET=3
+	local OFFSET=4
 	local PADDING=''
 	local TEXT=''
 	local LBL=''
 	local VAL=''
 
-	[[ ${_HDR_SECTION} == 'true' ]] && BOX_STYLE=c
+	[[ ${_HDR_SECTION} == 'true' || ${_FTR_SECTION} == 'true' ]] && BOX_STYLE=c
 
 	if [[ ${MSG} =~ '<Z>' ]];then
 		MSG_OUT=" "
@@ -616,27 +618,46 @@ msg_line_weight () {
 }
 
 msg_list_bullet () {
-	local -a MSG=(${@})
-	local NDX=0
-	local L
+	local -a MSG=()
+	local -i NDX=0
+	local L=""
 
-	for L in ${(f)MSG};do
-		(( NDX++))
+	MSG=(${@})
+
+	for L in ${MSG[@]};do
+		((NDX++))
 		echo -n "<L>${L}"
 		[[ ${NDX} -lt ${#MSG} ]] && echo ${_DELIM}
 	done
 }
 
 msg_list_number () {
-	local -a MSG=(${@})
-	local NDX=0
-	local -A MSG_LIST_VALUES=()
-	local L
+	local -a MSG=()
+	local -i NDX=0
+	local L=""
 
-	for L in ${MSG};do
-		(( NDX++))
+	MSG=(${@})
+
+	for L in ${MSG[@]};do
+		((NDX++))
 		echo -n "<X>${NDX}) ${L}"
 		[[ ${NDX} -lt ${#MSG} ]] && echo ${_DELIM}
+	done
+}
+
+msg_list_assoc () {
+	local -A MSG=()
+	local LONGEST=0
+	local L 
+
+	MSG=(${@}) # Expects a balanced assoc data load
+
+  for L in ${(k)MSG};do
+		[[ ${#L} -gt ${LONGEST} ]] && LONGEST=${#L}
+	done
+
+  for L in ${(k)MSG};do
+    printf "%*s: %s|" ${LONGEST} ${L} ${MSG[${L}]}
 	done
 }
 

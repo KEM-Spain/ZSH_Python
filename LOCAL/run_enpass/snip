@@ -1,0 +1,37 @@
+pass_login_to_enpass () {
+	sleep .5
+	_WIN_INFO=$(win_max -i -q crash) 
+
+	if [[ -n ${_WIN_INFO} ]];then
+		_WDW_ID=$(cut -d'|' -f2 <<<${_WIN_INFO})
+		_WDW_TITLE=$(cut -d'|' -f3 <<<${_WIN_INFO})
+		logit ${_LOG} "Detected Enpass Crash Window"
+		logit ${_LOG} "Sending Escape Key"
+		if [[ -n ${_WDW_ID} ]];then
+			xdotool windowfocus ${_WDW_ID}
+			xdotool key --window ${_WDW_ID} Escape
+		fi
+	fi
+
+	logit ${_LOG} "Passing credentials to Enpass..."
+	send-notification ${_DELAY} "Sending credentials to Enpass..."
+
+	_WIN_INFO=$(win_max -i enpass) 
+
+	if [[ -n ${_WIN_INFO} ]];then
+		_WDW_ID=$(cut -d'|' -f2 <<<${_WIN_INFO})
+		sleep 0.3
+		if [[ -n ${_WDW_ID} ]];then
+			# Focus window and paste via clipboard to completely bypass bounce keys
+			xdotool windowfocus --sync ${_WDW_ID}
+			sleep 0.1
+			printf '%s' "${_ENP_PW}" | xclip -selection clipboard
+			xdotool key --clearmodifiers ctrl+v
+			sleep 0.1
+			xdotool key Return
+			# Clear clipboard immediately for security
+			printf '' | xclip -selection clipboard
+		fi
+		[[ -n ${_TERM_ID} ]] && xdotool windowfocus ${_TERM_ID}
+	fi
+}

@@ -82,17 +82,18 @@ pass_login_to_enpass () {
 
 	if [[ -n ${_WIN_INFO} ]];then
 		_WDW_ID=$(cut -d'|' -f2 <<<${_WIN_INFO})
-		/usr/local/bin/system/kbd-toggle off
-		/usr/local/bin/system/kbd-flush
-		sleep .2
+		sleep 0.3
 		if [[ -n ${_WDW_ID} ]];then
-			xdotool windowfocus ${_WDW_ID}
-			xdotool type --window ${_WDW_ID} ${_ENP_PW}
-			sleep .2
-			xdotool key --window ${_WDW_ID} Return
+			# Focus window and paste via clipboard to completely bypass bounce keys
+			xdotool windowfocus --sync ${_WDW_ID}
+			sleep 0.1
+			printf '%s' "${_ENP_PW}" | xclip -selection clipboard
+			xdotool key --clearmodifiers ctrl+v
+			sleep 0.1
+			xdotool key Return
+			# Clear clipboard immediately for security
+			printf '' | xclip -selection clipboard
 		fi
-		/usr/local/bin/system/kbd-toggle on
-		/usr/local/bin/system/kbd-flush
 		[[ -n ${_TERM_ID} ]] && xdotool windowfocus ${_TERM_ID}
 	fi
 }

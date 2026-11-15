@@ -22,7 +22,6 @@ autoload -Uz add-zsh-hook
 autoload -Uz run-help
 autoload -Uz edit-command-line #load widget
 
-
 #Options
 setopt hist_find_no_dups	#don't recall dups
 setopt SHARE_HISTORY #share history between login shells

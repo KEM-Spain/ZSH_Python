@@ -255,7 +255,7 @@ local_to_prod () {
 	local NEWEST
 
 	tcup 0 0 && echo "${REVERSE}${WHITE_ON_GREY}< < <${RESET}${WHITE_ON_RED_ITALIC} RELEASE ${RESET}${REVERSE}${WHITE_ON_GREY}> > >${RESET}"
-	[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
+	#[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
 
 	if [[ ${g_IS_INITIAL_PRODUCTION} == 'false' ]];then
 		# Existing production copy
@@ -404,7 +404,10 @@ Manage script sources during the development cycle
 \t\tthe version in the <PWD> as <DEVELOPMENT> and
 \t\tthe version in <PRODUCTION> (default: ${g_PRODUCTION_DIR}) as <PRODUCTION> 
 \n\t'bak <FILE>' default action is to first create a local backup of the existing 
-\t<PRODUCTION> version and then copy <DEVELOPMENT> to <PRODUCTION>
+\t<DEVELOPMENT> version and then copy <PRODUCTION> to <DEVELOPMENT>
+
+Note: If the production file is in a non standard location, create a file
+in the development dir: .prod_target containing the production dir for that file
 EOF
 
 parse_opts () {

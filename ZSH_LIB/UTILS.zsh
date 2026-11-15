@@ -949,27 +949,27 @@ title_scrubber () {
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: STR after cleaning:${STR}"
 
 # TODO: Uppercase word limits are not working
-#	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
-#	for U in ${UCASE_WORDS};do
-#		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
-#	done
-#	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: UCASE_WORDS:${UCASE_WORDS}"
-#
-#	# Acronym preservation and UCASE limiting (using word boundaries that don't swallow apostrophes)
-#	for W in ${(z)STR};do
-#		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
-#		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-#		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
-#			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
-#			SEEN[${W}]=1
-#		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Limit UCASE
-#			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-#				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null)
-#				SEEN[${W}]=1
-#			fi
-#		fi
-#	done
-#	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Acronyms STR:${STR}"
+	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
+	for U in ${UCASE_WORDS};do
+		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
+	done
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: UCASE_WORDS:${UCASE_WORDS}"
+
+	# Acronym preservation and UCASE limiting (using word boundaries that don't swallow apostrophes)
+	for W in ${(z)STR};do
+		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
+		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
+		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
+			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
+			SEEN[${W}]=1
+		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Limit UCASE
+			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
+				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null)
+				SEEN[${W}]=1
+			fi
+		fi
+	done
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Acronyms STR:${STR}"
 
 	[[ -n ${STR} ]] && TITLE=${STR}
 

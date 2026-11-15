@@ -61,6 +61,7 @@ start_enpass () {
 }
 
 pass_login_to_enpass () {
+	sleep .5
 	_WIN_INFO=$(win_max -i -q crash) 
 
 	if [[ -n ${_WIN_INFO} ]];then
@@ -87,7 +88,6 @@ pass_login_to_enpass () {
 		if [[ -n ${_WDW_ID} ]];then
 			xdotool windowfocus ${_WDW_ID}
 			xdotool type --window ${_WDW_ID} ${_ENP_PW}
-			sleep .2
 			xdotool key --window ${_WDW_ID} Return
 		fi
 		/usr/local/bin/system/kbd-toggle on

@@ -41,7 +41,6 @@ zmodload zsh/datetime
 typeset -A _CANCELLED=()
 typeset -A _CONT_COORDS=()
 typeset -A _DOWNLOADS=()
-typeset -A _ENG_LIST=(1 youtube 2 rumble)
 typeset -A _FAILED=()
 typeset -A _FAV_LIST=()
 typeset -A _FAV_VALUE=()
@@ -49,22 +48,18 @@ typeset -A _FIELD_CONFIG=()
 typeset -A _FIELD_LEN=()
 typeset -A _FUTURE=()
 typeset -A _INFO_COORDS=()
-typeset -A _MENU_LIST=(1 custom 2 youtube 3 rumble)
 typeset -A _MENU_TYPES=(1 Custom 2 Rumble 3 YouTube)
 typeset -A _MSG_DELAY=(SHORT .5 MED 2 LONG 4)
 typeset -A _OB=()
 typeset -A _PARTIALS=()
 typeset -A _QUERY_OPTS=()
 typeset -A _QUICK_DOWNLOAD=()
-typeset -A _RUMBLE_QUERY_MAP=(1 user 2 live 3 channel 4 general)
-typeset -A _RUMBLE_QT_OPTS=(l live u user c channel g general)
+typeset -A _RM_QT_OPTS=(l live u user c channel g general)
 typeset -A _RUMBLE_ROWS=()
 typeset -A _SEEN=()
 typeset -A _SORT_TABLE=()
 typeset -A _SPINNER_COORDS=()
 typeset -A _STATUS_MSGS=()
-typeset -A _YT_RANGE_LIST=(1 all 2 recent 3 min 4 hour 5 day 6 week 7 month 8 year)
-typeset -A _YT_STRICT_LIST=(1 strict 2 non-strict)
 typeset -a _FAV_KEYS=()
 typeset -a _FAV_ROW=()
 typeset -a _RUMBLE_PAGE=()
@@ -73,19 +68,28 @@ typeset -a _STRIP_WORDS=()
 typeset -a _TRANSLATED=(blancolirio glenndiesen)
 typeset -aU _LOCAL_LIST=()
 
+# Fav Selection Lists
+typeset -A _ENG_LIST=(1 youtube 2 rumble)
+typeset -A _MENU_LIST=(1 custom 2 youtube 3 rumble)
+typeset -A _RM_QUERY_LIST=(1 user 2 live 3 channel 4 general)
+typeset -A _YT_FILTER_LIST=(1 filter 2 no-filter)
+typeset -A _YT_RANGE_LIST=(1 all 2 recent 3 min 4 hour 5 day 6 week 7 month 8 year)
+typeset -A _YT_STRICT_LIST=(1 strict 2 no-strict)
+
 # Constants
 _ACTION=download
 _CONT_WIDTH=86
 _CONT_COORDS=(X 9 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 
-_FIELD_CONFIG[dkey]="2|text|Enter DISPLAY key|_QUERY_OPTS[DKEY]|1|"
-_FIELD_CONFIG[engine]="4|menu|Select Engine|_QUERY_OPTS[ENGINE]|_ENG_LIST|LIST|custom"
-_FIELD_CONFIG[list]="3|menu|Select List|_QUERY_OPTS[LIST]|_MENU_LIST|"
 _FIELD_CONFIG[qkey]="1|text|Enter QUERY key|_QUERY_OPTS[QKEY]|0|"
-_FIELD_CONFIG[query]="7|menu|Select Query Type|_QUERY_OPTS[QTYPE]|_RUMBLE_QUERY_MAP|ENGINE|rumble"
+_FIELD_CONFIG[dkey]="2|text|Enter DISPLAY key|_QUERY_OPTS[DKEY]|1|"
+_FIELD_CONFIG[list]="3|menu|Select List|_QUERY_OPTS[LIST]|_MENU_LIST|"
+_FIELD_CONFIG[engine]="4|menu|Select Engine|_QUERY_OPTS[ENGINE]|_ENG_LIST|LIST|custom"
 _FIELD_CONFIG[range]="5|menu|Select Video Date Range|_QUERY_OPTS[RANGE]|_YT_RANGE_LIST|ENGINE|youtube"
 _FIELD_CONFIG[strict]="6|menu|Select Strict option|_QUERY_OPTS[STRICT]|_YT_STRICT_LIST|ENGINE|youtube"
+_FIELD_CONFIG[query]="7|menu|Select Query Type|_QUERY_OPTS[QTYPE]|_RM_QUERY_LIST|ENGINE|rumble"
+_FIELD_CONFIG[filter]="8|menu|Select Filter option|_QUERY_OPTS[STRICT]|_YT_FILTER_LIST|ENGINE|youtube"
 
 _FIELD_LEN[age]=30
 _FIELD_LEN[agetime]=40
@@ -95,12 +99,12 @@ _FIELD_LEN[title]=80
 INF_H=5
 INF_W=$((_CONT_WIDTH - 4 ))
 _INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -y2 -c"${(kv)_CONT_COORDS}" -w${INF_W}) H ${INF_H} W ${INF_W}) # Info coords
-
 _MAX_AUTHOR=27
 _MAX_FLEN=120
 _MAX_MSG_LEN=$(( _CONT_COORDS[W] - 2 ))
 _MAX_TITLE=74
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
+_MSG_AREA_CLEARED=false
 _OBJECT="video"
 _RY=$(get_relative_y "${(kv)_CONT_COORDS}" 1 4) # Relative center of box
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
@@ -110,16 +114,14 @@ _TRANS_ERR_LIMIT=6
 _WGET_OPTS='--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/125.0.0.0 Safari/537.36" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header="Accept-Charset: UTF-8,*;q=0.5" --header="Accept-Language: en-US,en;q=0.5" --header="Referer: https://rumble.com/"'
 
 _YT_DLP_CFG=~/.local/share/yts
-_JS_SCRIPT=${_YT_DLP_CFG}/yts.js
+#_QUERY_SCRIPT="node ${_YT_DLP_CFG}/yts.js"
+_QUERY_SCRIPT=${_YT_DLP_CFG}/yts.py
 _YTS_DOWNLOAD_LOG=${_YT_DLP_CFG}/yts.downloads
 _YTS_FAVORITES=${_YT_DLP_CFG}/yts.favorites
 _YTS_FAV_NEW=${_YT_DLP_CFG}/yts.favorites.new
 _YTS_UPD_MARKER=${_YT_DLP_CFG}/yts-upd.lastrun
 _YT_DBG_LOG=${_YT_DLP_CFG}/yt.dbg.log
 _YT_URL_LOG=${_YT_DLP_CFG}/yt.url.log
-
-# Module Vars
-_RY=0
 
 # Globals
 g_CMDLINE_ARGS=false
@@ -160,6 +162,7 @@ action_do () {
 	local LAST_TRANS_MSG=''
 	local LINE_COLOR=''
 	local LOG_LINE=''
+	local NEXT_LINE=''
 	local LOG_REPEATS=0
 	local MAX_HDR=$(( _CONT_COORDS[W] - 15 ))
 	local MSG=''
@@ -232,9 +235,6 @@ action_do () {
 			W=${_CONT_COORDS[W]}
 
 			tcup ${X} ${Y};tput ech ${W} # Clear line over cont box
-			X=$(( _CONT_COORDS[X] + _CONT_COORDS[H] ))
-			tcup ${X} ${Y};tput ech ${W} # Clear line below cont box
-			tcup $((++X)) ${Y};tput ech ${W} # Clear additional line 
 
 			spinner start
 
@@ -274,42 +274,44 @@ action_do () {
 					break
 				fi
 
-				ERROR=$(grep -Ei -m1 '403|404|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
+				ERROR=$(grep -Ei -m1 '*http*403*|*http*404*|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
 				if [[ ${?} -eq 0 ]];then
-					if [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' && ${RETRIED_COOKIES} == 'false' ]];then
-						RETRIED_COOKIES=true
-						COOKIE_FLAG='-c'
-						logit ${_YT_DBG_LOG} "${0}: Rumble 403 encountered - retrying with cookies (-c)"
-						msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying with cookies...<N>"
-						job_cancel
-						job_start "${URL}" "${COOKIE_FLAG}"
-						continue
-					else
-						spinner stop
-						g_PRESERVE_LOG=true
-						case ${ERROR} in
-							403) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
-									 logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
+					spinner stop && g_PRESERVE_LOG=true
+					case ${ERROR} in
+						*403*)	if [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' && ${RETRIED_COOKIES} == 'false' ]];then
+											RETRIED_COOKIES=true
+											COOKIE_FLAG='-c'
+											logit ${_YT_DBG_LOG} "${0}: Rumble 403 encountered - retrying with cookies (-c)"
+											msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying with cookies...<N>"
+											job_cancel
+											job_start "${URL}" "${COOKIE_FLAG}"
+											continue
+										else
+											msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
+											logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
+											_FAILED[${M}]=true
+											break
+										fi
+										;;
+						*404*)	msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 404 error...<N>"
+										logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
+										_FAILED[${M}]=true
+										break
+										;;
+							*)	msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
+									logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
 									_FAILED[${M}]=true
 									break
 									;;
-							404) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 404 error...<N>"
-									 logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
-									_FAILED[${M}]=true
-									break
-									;;
-								*) msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
-									 logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
-									_FAILED[${M}]=true
-									break
-									;;
-						esac
-					fi
+					esac
 				fi
 
-				# Check log pipe activity (FD 3)
+				# Check log pipe activity (FD 3) with backlog draining
 				if (( ${ZSEL_REPLY[(I)3]} ));then
 					if read -u3 -r LOG_LINE;then
+						while read -u3 -t 0 -r NEXT_LINE; do
+							LOG_LINE="${NEXT_LINE}"
+						done
 
 						MSG=$(str_word_clip ${LOG_LINE} ${_MAX_MSG_LEN})
 						MSG="$(str_rpad ${MSG} ${_MAX_MSG_LEN})"
@@ -335,6 +337,12 @@ action_do () {
 									esac
 									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
 									;;
+								*)	if [[ ${LOG_LINE:l} != *download* ]];then
+											cont_clear_msg_area
+											tcup $(( _INFO_COORDS[X] + _INFO_COORDS[H] + 2 )) ${_INFO_COORDS[Y]}
+											printf "%s" ${LOG_LINE[_MAX_MSG_LEN]}
+										fi
+										;;
 							esac
 						elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 							case ${LOG_LINE:l} in
@@ -357,6 +365,12 @@ action_do () {
 									esac
 									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
 									;;
+								*)	if [[ ${LOG_LINE:l} != *download* ]];then
+											cont_clear_msg_area
+											tcup $(( _INFO_COORDS[X] + _INFO_COORDS[H] + 2 )) ${_INFO_COORDS[Y]}
+											printf "%s" ${LOG_LINE[_MAX_MSG_LEN]}
+										fi
+										;;
 							esac
 						fi
 					fi
@@ -396,6 +410,18 @@ action_warn () {
 		done
 	else
 		msg_box_clear
+	fi
+}
+
+cont_clear_msg_area () {
+	local Y=${_CONT_COORDS[Y]}
+	local W=${_CONT_COORDS[W]}
+	local X=$(( _CONT_COORDS[X] + _CONT_COORDS[H] ))
+
+	if [[ ${_MSG_AREA_CLEARED} == 'false' ]];then
+		tcup ${X} ${Y};tput ech ${W} # Clear line below cont box
+		tcup $((++X)) ${Y};tput ech ${W} # Clear additional line 
+		_MSG_AREA_CLEARED=true
 	fi
 }
 
@@ -508,7 +534,7 @@ fav_add () {
 	msg_box -p -PC -H1 "Adding new favorite|KEY:${FAV_ROW:gs/|/\\|/}" # Escape delims
 	if [[ ${_MSG_KEY:l} == "y" ]];then
 		echo ${FAV_ROW} >> ${_YTS_FAVORITES} # Append new key to file
-		sort -o ${_YTS_FAVORITES}{,} # In-place sort
+		sort -o -t'|' -k3,3 -k1,1 ${_YTS_FAVORITES}{,} # In-place sort
 		echo "\n${GREEN_FG}Key was added${RESET}"
 	else
 		echo "\n${RED_FG}Key was not added${RESET}"
@@ -548,48 +574,6 @@ fav_delete () {
 	fi
 }
 
-fav_fields () {
-	local FIELD=${1}
-	local VALUE="${2:-}"
-
-	# Fetch configuration string directly from global lookup array
-	local CONFIG=${_FIELD_CONFIG[${FIELD}]}
-	local -a CFG_ROW=("${(@s:|:)CONFIG}")
-	local ORDER="${CFG_ROW[1]}"
-	local F_TYPE="${CFG_ROW[2]}"
-	local F_TITLE="${CFG_ROW[3]}"
-	local F_TARGET="${CFG_ROW[4]}"
-	local F_EXTRA="${CFG_ROW[5]}"
-	local PRE_KEY="${CFG_ROW[6]}"
-	local PRE_VAL="${CFG_ROW[7]}"
-	local MENU_SEL=''
-	local REAL_VAL=''
-	local INPUT_VAL=''
-	local CURRENT_VAL=''
-	local REQUIRED_VAL=''
-	local RC=0
-
-	# Fixed Gating Check: Reads directly from _QUERY_OPTS associative array
-	if [[ -n ${PRE_KEY} ]];then
-		CURRENT_VAL="${_QUERY_OPTS[${PRE_KEY}]}"
-		REQUIRED_VAL="${PRE_VAL}"
-		if [[ ${CURRENT_VAL} != ${REQUIRED_VAL} ]];then
-			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}: Gating check failed for ${FIELD}. Required ${PRE_KEY}=${REQUIRED_VAL}, got '${CURRENT_VAL}'"
-			return 1
-		fi
-	fi
-
-	case ${F_TYPE} in
-		text) _fav_text_prompt "${F_TITLE}" "${VALUE}" ${_INLINE_BOX[X]} ${_INLINE_BOX[Y]}
-					RC=${?}
-					;;
-		menu) _fav_menu_prompt "<w>${F_TITLE}<N>" "${F_EXTRA}"
-					RC=${?}
-					;;
-	esac
-	return ${RC}
-}
-
 fav_load () {
 	local LINE=''
 	local DVAL=''
@@ -617,16 +601,18 @@ fav_manage () {
 	local -a MSG_LIST=()
 	local -A _INLINE_BOX=(X 10 Y 65)
 	local FIELD=''
+	local ADD_CANCELLED=false
+	local EDIT_CANCELLED=false
 	local RC=0
 	local F I K
 
 	if [[ ${MODE} == 'edit' ]]; then
-		for F in ${(k)_QUERY_OPTS};do
-			OPT_LIST+="<c>${F}<N>:<w>${_QUERY_OPTS[${F}]}<N>"
-		done
-		MSG_LIST=$(msg_list_bullet ${OPT_LIST})
-		msg_box -p -PC -H1 "<c>Editing favorite<N>|Edit <w>${_QUERY_OPTS[DKEY]}<N>|<Z>${MSG_LIST}"
+		msg_box -p -PC -H1 "<c>Editing favorite<N>|DKEY:<w>${_QUERY_OPTS[DKEY]}<N>|ENGINE:<w>${_QUERY_OPTS[ENGINE]}<N>"
 		[[ ${_MSG_KEY:l} != 'y' ]] && return 1
+		msg_box_clear
+		tcup 0 0;echo "Editing favorite DKEY:${_QUERY_OPTS[DKEY]} ENGINE:${_QUERY_OPTS[ENGINE]}"
+	else
+		tcup 8 50;echo "Adding favorite"
 	fi
 
 	# Dynamically sort keys based on the embedded order index
@@ -640,14 +626,29 @@ fav_manage () {
 		FIELD="${FIELD_ORDER[I]}"
 
 		if [[ ${MODE} == 'edit' ]]; then
-			fav_fields "${FIELD}" "${_QUERY_OPTS[${(U)FIELD}]}"
+			fav_fields ${MODE} "${FIELD}" "${_QUERY_OPTS[${(U)FIELD}]}"
+			RC=${?}
 		else
-			fav_fields "${FIELD}"
+			fav_fields ${MODE} "${FIELD}"
+			RC=${?}
 		fi
 
-		RC=${?}
-		if [[ ${RC} -ne 0 ]]; then
-			break # Immediately stop processing remaining fields on quit/cancel
+		# TODO: this is hokey. RC=0 should just fall through and add to _FAV_KEYS but it works for now.
+		if [[ ${RC} -eq 1 ]]; then
+			case ${MODE} in
+				add) msg_box -t2 "<r>Add Cancelled<N>"; ADD_CANCELLED=true;;
+				edit) msg_box -t2 "<r>Edit Cancelled<N>"; EDIT_CANCELLED=true;;
+			esac
+			break    # User pressed 'q' or aborted; stop processing
+		elif [[ ${RC} -eq 2 ]]; then
+			# Value was retained in edit mode. Ensure key fields are preserved in _FAV_KEYS
+			if [[ ${MODE} == 'edit' ]]; then
+				case ${FIELD} in
+					qkey) _FAV_KEYS+=("$(str_trim "${_QUERY_OPTS[QKEY]}")") ;;
+					dkey) _FAV_KEYS+=("$(str_trim "${_QUERY_OPTS[DKEY]}")") ;;
+				esac
+			fi
+			continue # Proceed to next field
 		fi
 
 		case ${FIELD} in
@@ -655,7 +656,8 @@ fav_manage () {
 				if [[ ${MODE} == 'add' ]]; then
 					grep -Fiq "${_FAV_VALUE}|" ${_YTS_FAVORITES}
 					if [[ ${?} -eq 0 ]]; then
-						msg_box -p -PK "Query key must be unique"
+						msg_box -p -PK "Query key:<w>${_FAV_VALUE}<N> exists. Key must be unique"
+						msg_box_clear
 						(( I-- ))
 						continue
 					fi
@@ -668,7 +670,7 @@ fav_manage () {
 				_QUERY_OPTS[LIST]=${_FAV_VALUE}
 				if [[ ${_FAV_VALUE} == 'youtube' ]];then
 					_QUERY_OPTS[ENGINE]='youtube'
-				elif [[ ${_FAV_VALUE} == 'rumble' ]];then
+				elif [[ ${_QUERY_OPTS[VAL]} == 'rumble' || ${_FAV_VALUE} == 'rumble' ]];then
 					_QUERY_OPTS[ENGINE]='rumble'
 				elif [[ ${_FAV_VALUE} == 'custom' ]];then
 					_QUERY_OPTS[ENGINE]=''
@@ -677,37 +679,86 @@ fav_manage () {
 			engine) _QUERY_OPTS[ENGINE]=${_FAV_VALUE} ;;
 			range)  _QUERY_OPTS[RANGE]=${_FAV_VALUE} ;;
 			strict) _QUERY_OPTS[STRICT]=${_FAV_VALUE} ;;
+			filter) _QUERY_OPTS[FILTER]=${_FAV_VALUE} ;;
 			query)  _QUERY_OPTS[QTYPE]=${_FAV_VALUE} ;;
 		esac
 	done
 
-	if [[ ${RC} -ne 0 ]]; then
-		case ${MODE} in
-			add) msg_box -t2 "<r>Add cancelled<N>";;
-			edit) msg_box -t2 "<r>Edit cancelled<N>";;
-		esac
-		return 1
-	else
-		_FAV_ROW=($(fav_set_row "${_FAV_KEYS[1]:l:gs/ /_/}|${_FAV_KEYS[2]:gs/ /_/}"))
-		case ${MODE} in
-			add) fav_add "${_FAV_ROW}";;
-			edit) fav_update "${_FAV_ROW}";;
-		esac
-		return 0
+	_FAV_ROW=($(fav_set_row "${_FAV_KEYS[1]:l:gs/ /_/}|${_FAV_KEYS[2]:gs/ /_/}"))
+	case ${MODE} in
+		add) [[ ${ADD_CANCELLED} == 'false' ]] && {fav_add "${_FAV_ROW}"; return 0} || return 1;;
+		edit) [[ ${EDIT_CANCELLED} == 'false' ]] && {fav_update "${_FAV_ROW}"; return 0} || return 1;;
+	esac
+}
+
+fav_fields () {
+	local MODE=${1}
+	local FIELD=${2}
+	local VALUE="${3:-}"
+
+	# Fetch configuration string directly from global lookup array
+	local CONFIG=${_FIELD_CONFIG[${FIELD}]}
+	local -a CFG_ROW=("${(@s:|:)CONFIG}")
+	local ORDER="${CFG_ROW[1]}"
+	local F_TYPE="${CFG_ROW[2]}"
+	local F_TITLE="${CFG_ROW[3]}"
+	local F_TARGET="${CFG_ROW[4]}"
+	local F_EXTRA="${CFG_ROW[5]}"
+	local PRE_KEY="${CFG_ROW[6]}"
+	local PRE_VAL="${CFG_ROW[7]}"
+	local MENU_SEL=''
+	local REAL_VAL=''
+	local INPUT_VAL=''
+	local CURRENT_VAL=''
+	local REQUIRED_VAL=''
+	local RC=0
+
+	# Fixed Gating Check: Reads directly from _QUERY_OPTS associative array
+	if [[ -n ${PRE_KEY} ]];then
+		CURRENT_VAL="${_QUERY_OPTS[${PRE_KEY}]}"
+		REQUIRED_VAL="${PRE_VAL}"
+		if [[ ${CURRENT_VAL} != ${REQUIRED_VAL} ]];then
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}: Gating check failed for ${FIELD}. Required ${PRE_KEY}=${REQUIRED_VAL}, got '${CURRENT_VAL}'"
+			return 2 # Return 2 to signal a skip rather than a cancellation error
+		fi
 	fi
+
+	case ${F_TYPE} in
+		text) _fav_text_prompt ${MODE} "${F_TITLE}" "${VALUE}" ${_INLINE_BOX[X]} ${_INLINE_BOX[Y]}
+					RC=${?}
+					;;
+		menu) _fav_menu_prompt ${MODE} "<w>${F_TITLE}<N>" "${F_EXTRA}" "${VALUE}"
+					RC=${?}
+					;;
+	esac
+	return ${RC}
 }
 
 _fav_menu_prompt () {
-	local TITLE="${1}"
-	local TARGET_REF="${2}"
+	local MODE="${1}"
+	local TITLE="${2}"
+	local TARGET_REF="${3}"
+	local VALUE="${4}"
 	local -a RAW_PAIRS=("${(@Pkv)TARGET_REF}") # Unpack keys and values from array
 	local -A TARGET_MAP=("${RAW_PAIRS[@]}")
 	local -a FORMATTED_ITEMS=()
 	local K
 
 	# Numerically sort keys using (ok) to guarantee rendering order
+	local MATCH=''
 	for K in ${(ok)TARGET_MAP};do
-		FORMATTED_ITEMS+=("${K}) ${(C)TARGET_MAP[${K}]}")
+		[[ ${TARGET_REF} == "_ENG_LIST" ]] && MATCH=${_QUERY_OPTS[ENGINE]}
+		[[ ${TARGET_REF} == "_MENU_LIST" ]] && MATCH=${_QUERY_OPTS[LIST]}
+		[[ ${TARGET_REF} == "_YT_STRICT_LIST" ]] && MATCH=${_QUERY_OPTS[STRICT]}
+		[[ ${TARGET_REF} == "_YT_FILTER_LIST" ]] && MATCH=${_QUERY_OPTS[FILTER]}
+		[[ ${TARGET_REF} == "_YT_RANGE_LIST" ]] && MATCH=${_QUERY_OPTS[RANGE]}
+		[[ ${TARGET_REF} == "_RM_QUERY_LIST" ]] && MATCH=${_QUERY_OPTS[QUERY]}
+
+		if [[ ${MATCH} == ${TARGET_MAP[${K}]} ]];then
+			FORMATTED_ITEMS+=("${K}) <g>${TARGET_MAP[${K}]}<N>") # Highlight current value in list
+		else
+			FORMATTED_ITEMS+=("${K}) ${TARGET_MAP[${K}]}")
+		fi
 	done
 
 	while true;do
@@ -721,9 +772,14 @@ _fav_menu_prompt () {
 			_FAV_VALUE="${TARGET_MAP[${_MSG_KEY:l}]}" # Assign return value
 			break
 		else
-			msg_box -p -PK "No value was selected"
-			msg_box_clear
-			continue # Loop back to re-display the menu instead of returning 1
+			if [[ ${MODE} == 'add' ]];then
+				msg_box -p -PK "No value was selected"
+				msg_box_clear
+				continue # Loop back to re-display the menu instead of returning 1
+			else
+				_FAV_VALUE="${VALUE}" # Edit retains current value
+				break
+			fi
 		fi
 	done
 	return 0
@@ -753,6 +809,7 @@ fav_parse_opts () {
 		_QUERY_OPTS[ENGINE]='youtube'
 		[[ ${PARTS[4]} == 's' ]] && _QUERY_OPTS[STRICT]='strict'
 		[[ -n ${PARTS[5]} ]] && _QUERY_OPTS[RANGE]=${PARTS[5]} || _QUERY_OPTS[RANGE]='recent'
+		[[ ${PARTS[6]} == 'f' ]] && _QUERY_OPTS[FILTER]='filter' || _QUERY_OPTS[FILTER]='no-filter'
 	elif [[ ${LIST_TYPE} == 'r' ]];then
 		_QUERY_OPTS[LIST]='rumble'
 		_QUERY_OPTS[ENGINE]='rumble'
@@ -764,6 +821,7 @@ fav_parse_opts () {
 			_QUERY_OPTS[ENGINE]='youtube'
 			[[ ${PARTS[5]} == 's' ]] && _QUERY_OPTS[STRICT]='strict'
 			[[ -n ${PARTS[6]} ]] && _QUERY_OPTS[RANGE]=${PARTS[6]} || _QUERY_OPTS[RANGE]='recent'
+			[[ ${PARTS[7]} == 'f' ]] && _QUERY_OPTS[FILTER]='filter' || _QUERY_OPTS[FILTER]='no-filter'
 		elif [[ ${ENGINE_TYPE} == 'r' ]];then
 			_QUERY_OPTS[ENGINE]='rumble'
 			_QUERY_OPTS[QTYPE]=${PARTS[5]}
@@ -890,7 +948,8 @@ fav_set_row () {
 	if [[ ${_QUERY_OPTS[LIST]} == 'youtube' ]];then
 		FAV_KEY+="|y"
 		[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && FAV_KEY+='|s' || FAV_KEY+='|n'
-		FAV_KEY+="|${_QUERY_OPTS[RANGE]}"
+		[[ -n ${_QUERY_OPTS[RANGE]} ]] && FAV_KEY+="|${_QUERY_OPTS[RANGE]}" || FAV_KEY+='|recent'
+		[[ ${_QUERY_OPTS[FILTER]} == 'filter' ]] && FAV_KEY+='|f' || FAV_KEY+='|n'
 	elif [[ ${_QUERY_OPTS[LIST]} == 'rumble' ]];then
 		FAV_KEY+="|r"
 		FAV_KEY+="|${_QUERY_OPTS[QTYPE]}"
@@ -899,7 +958,8 @@ fav_set_row () {
 		if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
 			FAV_KEY+="|y"
 			[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && FAV_KEY+='|s' || FAV_KEY+='|n'
-			FAV_KEY+="|${_QUERY_OPTS[RANGE]}"
+			[[ -n ${_QUERY_OPTS[RANGE]} ]] && FAV_KEY+="|${_QUERY_OPTS[RANGE]}" || FAV_KEY+='|recent'
+			[[ ${_QUERY_OPTS[FILTER]} == 'filter' ]] && FAV_KEY+='|f' || FAV_KEY+='|n'
 		elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 			FAV_KEY+="|r"
 			FAV_KEY+="|${_QUERY_OPTS[QTYPE]}"
@@ -910,26 +970,34 @@ fav_set_row () {
 }
 
 _fav_text_prompt () {
-	local TITLE="${1}"
-	local VAL="${2}"
-	local X_COORD="${3}"
-	local Y_COORD="${4}"
+	local MODE="${1}"
+	local TITLE="${2}"
+	local CURRENT_VALUE="${3}"
+	local X_COORD="${4}"
+	local Y_COORD="${5}"
 	local INPUT_VAL=""
 
 	while true;do
-		INPUT_VAL=$(inline_vi_edit "${TITLE}" "${VAL}" ${X_COORD} ${Y_COORD}) # Collect user input
-		if [[ -z "${INPUT_VAL}" ]];then # No input
+		INPUT_VAL=$(inline_vi_edit "${TITLE}" "${CURRENT_VALUE}" ${X_COORD} ${Y_COORD}) # Collect user input
+		
+		# If user pressed Enter and kept/returned the exact current value (or empty) during edit mode:
+		if [[ ${MODE} == 'edit' && ( -z "${INPUT_VAL}" || "${INPUT_VAL}" == "${CURRENT_VALUE}" ) ]]; then
+			_FAV_VALUE="${CURRENT_VALUE}"
+			return 2 # Retain and skip (Code 2 = skip/retain)
+		fi
+
+		if [[ -z "${INPUT_VAL}" ]];then
 			msg_box -p -PK "${TITLE} must be populated|Enter a value or (q)uit"
 			msg_box_clear
 			if [[ ${_MSG_KEY:l} == 'q' ]];then # Abort
-				return 1
+				return 1 # Code 1 = Cancelled
 			fi
 		else
-			_FAV_VALUE="${INPUT_VAL}" # Assign return value
+			_FAV_VALUE="${INPUT_VAL}" # Assign new return value
 			break
 		fi
 	done
-	return 0
+	return 0 # Code 0 = Success (proceed to assignment)
 }
 
 fav_update () {
@@ -945,7 +1013,7 @@ fav_update () {
 	if [[ ${_MSG_KEY:l} == "y" ]];then
 		fav_delete ${_QUERY_OPTS[QKEY]} true
 		echo ${FAV_ROW} >> ${_YTS_FAVORITES} # Update key in file
-		sort -o ${_YTS_FAVORITES}{,} # In-place sort
+		sort -o -t'|' -k3,3 -k1,1 ${_YTS_FAVORITES}{,} # In-place sort
 		echo "\n${GREEN_FG}Key was updated${RESET}"
 	else
 		echo "\n${RED_FG}Key was not updated${RESET}"
@@ -1000,9 +1068,9 @@ get_field () {
 }
 
 is_spanish () {
-  local INPUT="${1}"
-  # Matches Spanish diacritics (á, é, í, ó, ú, ü, ñ, ¿, ¡) or top frequent Spanish words
-  [[ "${INPUT}" =~ '[áéíóúüñ¿¡]' ]] || [[ "${INPUT}" =~ '\b(el|la|los|las|un|una|y|que|en|de|por|para|es|como)\b' ]] && return 0 || return 1
+	local INPUT="${1}"
+	# Matches Spanish diacritics (á, é, í, ó, ú, ü, ñ, ¿, ¡) or top frequent Spanish words
+	[[ "${INPUT}" =~ '[áéíóúüñ¿¡]' ]] || [[ "${INPUT}" =~ '\b(el|la|los|las|un|una|y|que|en|de|por|para|es|como)\b' ]] && return 0 || return 1
 }
 
 item_decorate () {
@@ -1365,21 +1433,21 @@ _parse_rumble () {
 	[[ ${?} -eq 0 ]] && TNDX=3 || TNDX=2 # Either sets of 3 titles or sets of 2
 
 	for L in "${LIST[@]}";do
-    LINE=${L:Q}
-    TEXT="${LINE#*:}" # Discard everything before and including the first colon
-    case ${LINE} in
-      *relative_url:*) continue;;
-      *url:*) [[ ${TEXT} =~ "\.html" ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
-      *title:*)
-        (( TCNT++ ))
-        T3=$(( TCNT % TNDX ))
-        # Double quote both the input parameter and the command substitution result
-        [[ ${T3} -eq 0 ]] && QDATA+="$(fix_mojibake "${TEXT[2,-1]}")"
-        ;;
-      *duration:*) DURATION=$(_parse_rumble_duration ${TEXT});QDATA+=${DURATION};;
-      *upload_date:*) D="${${(@s/T/)TEXT}[1]}";U=$(date -d "${D}" +%s);QDATA+=$(_parse_rumble_age ${U});;
-    esac
-  done
+		LINE=${L:Q}
+		TEXT="${LINE#*:}" # Discard everything before and including the first colon
+		case ${LINE} in
+			*relative_url:*) continue;;
+			*url:*) [[ ${TEXT} =~ "\.html" ]] && QDATA+=${TEXT[2,-1]};; # Skip leading space
+			*title:*)
+				(( TCNT++ ))
+				T3=$(( TCNT % TNDX ))
+				# Double quote both the input parameter and the command substitution result
+				[[ ${T3} -eq 0 ]] && QDATA+="$(fix_mojibake "${TEXT[2,-1]}")"
+				;;
+			*duration:*) DURATION=$(_parse_rumble_duration ${TEXT});QDATA+=${DURATION};;
+			*upload_date:*) D="${${(@s/T/)TEXT}[1]}";U=$(date -d "${D}" +%s);QDATA+=$(_parse_rumble_age ${U});;
+		esac
+	done
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "__DATA__\n$(for K in ${LIST};do echo ${K};done)\n__DATA__"
 
@@ -1538,6 +1606,8 @@ query_youtube () {
 	local -a QUERY_LIST=()
 	local -a WORK_LIST=()
 	local AGE AUTHOR TITLE URL TIME AGETIME
+	local CLEAN_AUTHOR=''
+	local CLEAN_DKEY=''
 	local DATA=false
 	local DKEY=''
 	local HIT=false
@@ -1565,7 +1635,7 @@ query_youtube () {
 	logit ${_YT_DBG_LOG} "${0}: Creating listing for QKEY:${_QUERY_OPTS[QKEY]}, query ${STR}"
 	logit ${_YT_DBG_LOG} "${0}:\n_QUERY_OPTS:\n $(for K in ${(ok)_QUERY_OPTS};do printf '\t-> %s:%s\n' ${K} ${_QUERY_OPTS[${K}]};done)"
 
-	g_PROXY_CMD="node ${_JS_SCRIPT} ${STRICT_ARG} -a ${_QUERY_OPTS[RANGE]} ${(qqq)_QUERY_OPTS[QKEY]}" # Quote key
+	g_PROXY_CMD="${_QUERY_SCRIPT} ${STRICT_ARG} -a ${_QUERY_OPTS[RANGE]} ${(qqq)_QUERY_OPTS[QKEY]}" # Quote key
 	logit ${_YT_DBG_LOG} "${0}: g_PROXY_CMD:${g_PROXY_CMD}"
 
 	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
@@ -1583,19 +1653,18 @@ query_youtube () {
 		sleep .5
 	done
 
-	# TODO: decide how/when to eliminate videos that don't have authors that match the query key
-	
 	NDX=0
 	FILTER_LIST=()
 	for L in ${QUERY_LIST};do # Initial collection
 		((NDX++))
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Query line:${L}"
 
-		[[ ${L:l} =~ 'matched' ]] && DATA=true && continue
-		[[ ${L:l} =~ 'strict filter' ]] && continue
-		[[ ${L:l} =~ 'usage' && ${DATA} != 'true' ]] && exit_leave
-		[[ ${L:l} =~ 'error' && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${PROXY_CMD} returned an error")
-		if [[ ${L:l} =~ 'strict reject' ]];then
+		[[ ${L:l} =~ "\bmatched\b" ]] && DATA=true && continue
+		[[ ${L:l} =~ "\bmatch on\b" ]] && DATA=true && continue
+		[[ ${L:l} =~ "\bstrict filter\b" ]] && continue
+		[[ ${L:l} =~ "\busage\b" && ${DATA} != 'true' ]] && exit_leave
+		[[ ${L:l} =~ "\berror\b" && ${DATA} != 'true' ]] && exit_leave $(err_msg_exit E "${g_PROXY_CMD} returned an error")
+		if [[ ${L:l} =~ "\bstrict reject\b" ]];then
 			logit ${_YT_DBG_LOG} "${0}: Video:${TITLE} rejected - strict filter"
 			continue
 		fi
@@ -1615,7 +1684,17 @@ query_youtube () {
 		AGE="${${(@s/|/)F}[${YOUTUBE_MAP[age]}]}"
 		TIME="${${(@s/|/)F}[${YOUTUBE_MAP[time]}]}"
 		AGETIME="(${AGE} ${TIME})"
-		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR}); AUTHOR=${AUTHOR:gs/\///}
+		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR}); AUTHOR=${AUTHOR:gs/\///}; AUTHOR=$(str_trim ${AUTHOR})
+
+		if [[ ${_QUERY_OPTS[FILTER]} == 'filter' ]];then
+			CLEAN_AUTHOR=$(print -r -- "${${(*)AUTHOR//[ _-]/}:l}")
+			CLEAN_DKEY=${(L)_QUERY_OPTS[DKEY]// /}
+			if [[ ${CLEAN_AUTHOR} != ${CLEAN_DKEY} ]];then
+				msg_box -x 16 "Filtering..."
+				logit ${_YT_DBG_LOG} "${0}: Video:${TITLE[1,30]} - filtered AUTHOR:${CLEAN_AUTHOR} != ${CLEAN_DKEY}"
+				continue
+			fi
+		fi
 
 		if [[ ! ${AGE} =~ [0-9] ]];then
 			logit ${_YT_DBG_LOG} "${0}: Video:${TITLE} skipped - invalid age"
@@ -1638,6 +1717,7 @@ query_youtube () {
 	_LOCAL_LIST=(${WORK_LIST}) # Final collection
 
 	if ! arr_is_populated "${_LOCAL_LIST}";then
+		msg_box -p -PK "Query failed to find any videos for:${_QUERY_OPTS[DKEY]}"
 		logit ${_YT_DBG_LOG} "${0}: Listing is empty - aborted"
 		return 1 # Search failed
 	fi
@@ -1728,28 +1808,28 @@ set_rumble_row () {
 }
 
 spinner () {
-    local ACTION=${1:-tick}
-    local ROW=${2:-${_SPINNER_COORDS[ROW]}}
-    local COL=${3:-${_SPINNER_COORDS[COL]}}
+	local ACTION=${1:-tick}
+	local ROW=${2:-${_SPINNER_COORDS[ROW]}}
+	local COL=${3:-${_SPINNER_COORDS[COL]}}
 
-    [[ ${_SPINNER_COORDS[ROW]} -ne ${ROW} ]] && _SPINNER_COORDS[ROW]=${ROW}
-    [[ ${_SPINNER_COORDS[COL]} -ne ${COL} ]] && _SPINNER_COORDS[COL]=${COL}
+	[[ ${_SPINNER_COORDS[ROW]} -ne ${ROW} ]] && _SPINNER_COORDS[ROW]=${ROW}
+	[[ ${_SPINNER_COORDS[COL]} -ne ${COL} ]] && _SPINNER_COORDS[COL]=${COL}
 
-    (( $+_SPIN_NDX )) || typeset -g _SPIN_NDX=1
-		local -a chars=('▰▱▱▱' '▱▰▱▱' '▱▱▰▱' '▱▱▱▰' '▱▱▰▱' '▱▰▱▱')
+	(( $+_SPIN_NDX )) || typeset -g _SPIN_NDX=1
+	local -a chars=('▰▱▱▱' '▱▰▱▱' '▱▱▰▱' '▱▱▱▰' '▱▱▰▱' '▱▰▱▱')
 
-    case ${ACTION} in
-        start)
-            _SPIN_NDX=1
-            ;;
-        stop)
-            tcup ${ROW} ${COL} && printf "    " # Clear spinner
-            ;;
-        tick|*)
-            tcup ${ROW} ${COL} && printf "${GREEN_FG}%s${RESET}" "${chars[_SPIN_NDX]}"
-            (( _SPIN_NDX = ( _SPIN_NDX % ${#chars[@]} ) + 1 ))
-            ;;
-    esac
+	case ${ACTION} in
+			start)
+					_SPIN_NDX=1
+					;;
+			stop)
+					tcup ${ROW} ${COL} && printf "    " # Clear spinner
+					;;
+			tick|*)
+					tcup ${ROW} ${COL} && printf "${GREEN_FG}%s${RESET}" "${chars[_SPIN_NDX]}"
+					(( _SPIN_NDX = ( _SPIN_NDX % ${#chars[@]} ) + 1 ))
+					;;
+	esac
 }
 
 #--Begin GetOpts--
@@ -1767,7 +1847,6 @@ opt_type () {
 		w) echo "<SITE_CODE>";;
 		S) echo "<SEARCHTERM>";;
 		T) echo "<QUERY TYPE>";;
-		V) echo "<VERSION>";;
 	esac
 }
 
@@ -1801,7 +1880,6 @@ usage () {
 	echo -e "${WHITE_FG}-D${RESET} debug"
 	echo -e "${WHITE_FG}-R${RESET} ${MAGENTA_FG}Rumble${RESET} query [${WHITE_FG}default ${MAGENTA_FG}YouTube${RESET}]"
 	echo -e "${WHITE_FG}-T${RESET} $(opt_type T) Rumble query type (l)ive, (c)hannel, (u)ser (g)eneral [${WHITE_FG}default${RESET}]  (${MAGENTA_FG}Rumble${RESET} only)"
-	echo -e "${WHITE_FG}-V${RESET} yt-search version (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-a${RESET} $(opt_type a) [all,recent,min,hour,day,week,month,year] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-s${RESET} enable strict filter [author must match query string] (${MAGENTA_FG}YouTube${RESET} only)"
 	echo -e "${WHITE_FG}-w${RESET} $(opt_type w) browse website (y)outube (r)umble"
@@ -1815,7 +1893,6 @@ OPTSTR=":HDRT:Va:sw:"
 OPTIND=0
 
 HELP_OPT=false
-VERSION_OPT=false
 SEARCHTERM=''
 
 ENGINE_OPT=youtube
@@ -1830,7 +1907,6 @@ while getopts ${OPTSTR} OPTION;do
      D) dbg_set_level;;
      R) ENGINE_OPT=rumble;;
      T) QTYPE_OPT=${OPTARG:l};;
-     V) VERSION_OPT=true;;
      a) RANGE_OPT=${OPTARG:l};;
      s) STRICT_OPT='strict';;
      w) WEB_OPT=${OPTARG};;
@@ -1843,7 +1919,7 @@ shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution
-# TODO: explore using youtube-search with API key
+# TODO: Explore using youtube-search with API key
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -n ${WEB_OPT} ]] && open_website ${WEB_OPT} && exit_leave
 
@@ -1892,10 +1968,10 @@ SEARCHTERM=${(Q)SEARCHTERM:l}
 if [[ ${HELP_OPT} == 'true' ]];then
 	if [[ ${ENGINE_OPT} == 'youtube' ]];then
 		do_rmcup
-		g_PROXY_CMD="node ${_JS_SCRIPT} ${SEARCHTERM}"
+		g_PROXY_CMD="${_QUERY_SCRIPT} ${SEARCHTERM}"
 		echo "${MAGENTA_FG}$(str_unicode_line 70)${RESET}"
-		echo "YouTube backend:${WHITE_ON_GREY}${_JS_SCRIPT}${RESET}\n"
-		eval "node ${_JS_SCRIPT} -h" >&2
+		echo "YouTube backend:${WHITE_ON_GREY}${_QUERY_SCRIPT}${RESET}\n"
+		eval "${_QUERY_SCRIPT} -h" >&2
 		echo "\n${MAGENTA_FG}$(str_unicode_line 70)${RESET}"
 		echo -n "YouTube frontend:${WHITE_ON_GREY}${_SCRIPT}${RESET}\n"
 		usage
@@ -1906,11 +1982,7 @@ fi
 
 # Catch invalid engine options
 if [[ ${ENGINE_OPT} == 'rumble' ]];then
-	if [[ ${VERSION_OPT} == 'true'  ]];then
-		usage "Option:$(opt_type V) is a YouTube only option"
-	elif [[ -n ${RANGE_OPT} ]];then
-		usage "Option:$(opt_type a) is a YouTube only option"
-	elif [[ -n ${STRICT_OPT} ]];then
+	if [[ -n ${STRICT_OPT} ]];then
 		usage "Option:$(opt_type s) is a YouTube only option"
 	fi
 elif [[ ${ENGINE_OPT} == 'youtube' ]];then
@@ -1922,21 +1994,13 @@ fi
 # Parse options
 if [[ ${ENGINE_OPT} == 'rumble' ]];then
 	if [[ -n ${QTYPE_OPT} ]];then
-		if [[ ${_RUMBLE_QT_OPTS[(i)${QTYPE_OPT}]} -gt ${#_RUMBLE_QT_OPTS} ]];then
+		if [[ ${_RM_QT_OPTS[(i)${QTYPE_OPT}]} -gt ${#_RM_QT_OPTS} ]];then
 			exit_leave $(err_msg_exit "Invalid $(opt_type T): ${QTYPE_OPT}")
 		fi
 	else
 		QTYPE_OPT=c # Default to channel
 	fi
 elif [[ ${ENGINE_OPT} == 'youtube' ]];then
-	if [[ ${VERSION_OPT} == 'true'  ]];then
-		echo -n "yt-search version:${WHITE_FG}"
-		do_rmcup
-		node ${_JS_SCRIPT} --version
-		echo ${RESET}
-		exit_leave
-	fi
-
 	if [[ -n ${RANGE_OPT} ]];then
 		if [[ ! ${RANGE_OPT} =~ "^(all|recent|min|hour|day|week|month|year)$" ]];then
 			usage "Invalid $(opt_type a):${RANGE_OPT}"
@@ -1965,9 +2029,10 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		if fav_select;then
 			[[ ${?} -eq 2 ]] && { clear && continue }
 			MSG=''
-			[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && MSG="Strict "
-			[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+=" General" || MSG+=' Channel'
-			msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|Query Type:<w>${MSG}<N>"
+			[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && MSG="Strict"
+			[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+=" General"
+			[[ -n ${MSG} ]] && MSG="Query Type:<w>${MSG}<N>"
+			msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|${MSG}"
 			if query_${_QUERY_OPTS[ENGINE]};then # Run query
 				download_select ${_QUERY_OPTS[QKEY]}
 			fi
@@ -1980,13 +2045,14 @@ else # Args passed
 	_QUERY_OPTS[ENGINE]=${ENGINE_OPT}
 	_QUERY_OPTS[RANGE]=${RANGE_OPT}
 	_QUERY_OPTS[STRICT]=${STRICT_OPT}
-	_QUERY_OPTS[QTYPE]=${_RUMBLE_QT_OPTS[${QTYPE_OPT}]}
+	_QUERY_OPTS[QTYPE]=${_RM_QT_OPTS[${QTYPE_OPT}]}
 
 	logit ${_YT_DBG_LOG} "_QUERY_OPTS: $(for K in ${(ok)_QUERY_OPTS};do printf '%s:%s ' ${K} ${_QUERY_OPTS[${K}]};done)"
 	MSG=''
-	[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && MSG="Strict "
-	[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+="General" || MSG+='Channel'
-	msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|Query Type:<w>${MSG}<N>"
+	[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && MSG="Strict"
+	[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+="General"
+	[[ -n ${MSG} ]] && MSG="Query Type:<w>${MSG}<N>"
+	msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|${MSG}"
 	if query_${_QUERY_OPTS[ENGINE]};then # Run query_
 		download_select ${_QUERY_OPTS[QKEY]}
 	else

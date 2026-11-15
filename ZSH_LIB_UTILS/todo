@@ -43,13 +43,14 @@ typeset -A _SRC_CLR=(
     [DEV]=${RED_FG}
     [PWD]=${WHITE_ON_GREY}
 )
-typeset -a _ACTIVE_LABELS=()
 typeset -A _ACTIVE_FILTERS=()
-typeset -a _SORTED_ENTRIES=()
-typeset -a _TODOS=()
-typeset -a _MATCHES=()
+typeset -A _LABELS=(pwd Current prod Production dev Development)
+typeset -a _ACTIVE_LABELS=()
 typeset -a _CLEANED=()
 typeset -a _FIELDS=()
+typeset -a _MATCHES=()
+typeset -a _SORTED_ENTRIES=()
+typeset -a _TODOS=()
 typeset -a _TODO_FILES=()
 
 # Dynamic option-to-label mapping associative array
@@ -79,7 +80,6 @@ typeset TRIMMED_T=''
 typeset M F T
 
 typeset _LIB_DIR=''
-typeset _THIS="${0:t}"
 
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
@@ -89,9 +89,9 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 
 read -r -d '' DESC<<EOF
 Show list of TODO labels embedded in scripts
-\tUse option -l to include PWD directories
-\tUse option -p to include PROD directories
-\tUse option -d to include DEV directories
+\tUse option -l to show Current directory
+\tUse option -p to show Production directories
+\tUse option -d to show Development directories
 \t(If no options are specified, all defined sources are included)
 EOF
 
@@ -109,7 +109,7 @@ usage () {
 }
 
 # Parse Command Line Options dynamically
-while getopts ":lpdaH" OPT; do
+while getopts ":lpdaH" OPT;do
   case ${OPT} in
     l|p|d)
       _ACTIVE_FILTERS[${OPT_LABELS[${OPT}]}]=1
@@ -122,10 +122,10 @@ done
 shift $((OPTIND -1))
 
 clear
-msg_box "<w>${_THIS} <c>Searching for TODO items<N>|Scanning files..."
+echo "Searching for TODO items\nScanning files..."
 
 # Scan sources, filter, find files, and pack with the known LABEL immediately
-for SOURCE_DIR in ${(k)_SOURCES}; do
+for SOURCE_DIR in ${(k)_SOURCES};do
     LABEL="${_SOURCES[${SOURCE_DIR}]}"
     
     if (( FILTER_ACTIVE == 1 )); then
@@ -135,7 +135,7 @@ for SOURCE_DIR in ${(k)_SOURCES}; do
     # Retrieve file list for this source directory
     _TODO_FILES=("${(f)$(find ${SOURCE_DIR} -maxdepth 2 ! -name '*.bak' -and ! -name '*.orig' 2>/dev/null)}")
 
-    for F in ${_TODO_FILES}; do
+    for F in ${_TODO_FILES};do
       [[ -f ${F} ]] || continue
       if [[ $(file ${F}) != *zsh* ]];then
         continue
@@ -145,14 +145,14 @@ for SOURCE_DIR in ${(k)_SOURCES}; do
       [[ "${F:A}" -ef "${0:A}" ]] && continue
 
       # Strict pattern: matches comment lines starting with optional whitespace, hash (#), 
-      # optional comment symbols, followed by 'todo:' case-insensitively.
+      # optional comment symbols, followed by 'todo:' case-insensitive
       OUTPUT="$(grep -nEi '^[[:space:]]*#[[:space:]#]*todo:' "${F}" 2>/dev/null)"
 
       if [[ -n ${OUTPUT} ]]; then
         _MATCHES=("${(@f)OUTPUT}")
         _CLEANED=()
 
-        for M in ${_MATCHES}; do
+        for M in ${_MATCHES};do
           TRIMMED="${M## #}"
           TRIMMED="${TRIMMED%% #}"
           _CLEANED+=( "${TRIMMED}" )
@@ -163,7 +163,7 @@ for SOURCE_DIR in ${(k)_SOURCES}; do
         
         # Join multiple TODO lines safely using ITEM_DELIM via IFS expansion
         {
-          local IFS="$ITEM_DELIM"
+          local IFS="${ITEM_DELIM}"
           JOINED_PAYOAD="${_CLEANED[*]}"
         }
 
@@ -173,13 +173,12 @@ for SOURCE_DIR in ${(k)_SOURCES}; do
       fi
     done
 done
-msg_box_clear
 
 # Build the scope label for the header
 if (( FILTER_ACTIVE == 0 )); then
   REPORT_SCOPE="ALL"
 else
-  for L in ${(k)_ACTIVE_FILTERS}; do
+  for L in ${(k)_ACTIVE_FILTERS};do
     _ACTIVE_LABELS+=( "${L}" )
   done
   REPORT_SCOPE="${(j:, :)_ACTIVE_LABELS}"
@@ -188,13 +187,14 @@ fi
 [[ -z ${_SORTED_ENTRIES} ]] && exit_leave "${_SCRIPT_TAG} No TODO items found"
 
 # Generate the clean report with scoped header
-print "=== TODO REPORT [Scope: ${REPORT_SCOPE}] ==="
+print "=== TODO REPORT [Scope: ${REPORT_SCOPE}] ===\n"
 
-# Sort alphabetically by label using Zsh
-for LINE in ${(o)_SORTED_ENTRIES}; do
+# Sort alphabetically by label
+HDR_OUT=false
+for LINE in ${(o)_SORTED_ENTRIES};do
   # Split the line using local IFS and Zsh word splitting (${=...})
   {
-    local IFS="$REC_DELIM"
+    local IFS="${REC_DELIM}"
     _FIELDS=(${=LINE})
   }
   
@@ -206,16 +206,23 @@ for LINE in ${(o)_SORTED_ENTRIES}; do
   # Grab the correct color for this label directly
   SC="${_SRC_CLR[${L_LABEL}]}"
 
+  [[ ${L_LABEL} != "${LAST_LBL}" ]] && HDR_OUT=false
+  if [[ ${HDR_OUT} == 'false' ]];then
+    print -- "${_LABELS[${L_LABEL:l}]} Directory"
+    HDR_OUT=true
+    LAST_LBL=${L_LABEL}
+  fi
+
   print -- "${SC} ${FP}/${FN}${RESET}"
 
   # Unpack individual TODO items safely using local IFS word splitting
   {
-    local IFS="$ITEM_DELIM"
+    local IFS="${ITEM_DELIM}"
     _TODOS=(${=PAYLOAD})
   }
   
-  for T in ${_TODOS}; do
-    TRIMMED_T=$(sed -E 's/:\s+/:/' <<< ${T})
+  for T in ${_TODOS};do
+    TRIMMED_T=$(sed -E 's/:\s+/: /' <<< ${T})
     print -- "   └── ${TRIMMED_T}"
   done
   print -- ""

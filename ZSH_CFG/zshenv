@@ -1,19 +1,19 @@
 # Extend PATH
-PATHS=(
-${HOME} \
-${HOME}/.cargo/bin
-${HOME}/.zsh \
+typeset -a PATHS=(
+/usr/local/bin \
+/usr/local/sbin \
 ${HOME}/.local/bin \
+${HOME} \
+${HOME}/.cargo/bin \
+${HOME}/.zsh \
 ${HOME}/.deno/bin \
 ${HOME}/Code/LOCAL/spanish_db \
 ${GOROOT}/bin \
 /etc/zsh/system_wide/functions \
 /etc/zsh \
-/usr/local/bin \
 /usr/local/bin/_perl.local \
 /usr/local/bin/system \
 /usr/local/src \
-/usr/local/bin/system \
 /usr/local/bin/system/launchers \
 /usr/local/bin/system/vid_watch \
 /snap/bin \
@@ -26,9 +26,13 @@ ${GOROOT}/bin \
 
 local MYPATH
 for P in ${PATHS};do
-	MYPATH+=${P}:
+  # Optional: only append if the directory actually exists on disk
+  if [[ -d ${P} ]];then
+    MYPATH+=${P}:
+  fi
 done
-export PATH=${MYPATH}
+export PATH=${MYPATH%:}
+
 export ORIG_PATH=${PATH}
 export CAM_DEFAULT=off
 export EDITOR=vim

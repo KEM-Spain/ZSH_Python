@@ -404,7 +404,10 @@ Manage script sources during the development cycle
 \t\tthe version in the <PWD> as <DEVELOPMENT> and
 \t\tthe version in <PRODUCTION> (default: ${g_PRODUCTION_DIR}) as <PRODUCTION> 
 \n\t'bak <FILE>' default action is to first create a local backup of the existing 
-\t<PRODUCTION> version and then copy <DEVELOPMENT> to <PRODUCTION>
+\t<DEVELOPMENT> version and then copy <PRODUCTION> to <DEVELOPMENT>
+
+Note: If the production file is in a non standard location, create a file
+in the development dir: .prod_target containing the production dir for that file
 EOF
 
 parse_opts () {
@@ -489,8 +492,9 @@ clear
 tabs 2
 #[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
+# TODO: Modify to treat _PROD_TARGET as a fallback for any unresolved individual file release; not just a default release location
+ 
 if [[ ${#} -eq 0 ]];then
-	# TODO: Modify PROD_TARGET construct to handle multiple targets keyed by FILE_ARG
 	if [[ -e ${_PROD_TARGET} ]];then
 		_PROD_EXE="$(< ${_PROD_TARGET})"
 		FILE_ARG="${$(< ${_PROD_TARGET}):t}"

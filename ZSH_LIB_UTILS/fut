@@ -65,7 +65,7 @@ g_UTIL=''
 
 # Functions
 findexe () {
-	local -a PROD_LIST=(${HOME}/.zsh/completions ${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /usr/local/lib ${HOME}/Code/LOCAL)
+	local -a PROD_LIST=(${HOME}/.zsh/completions ${HOME}/.local/bin ${HOME}/.local/share /opt /usr/local/bin /usr/local/lib ${HOME}/Code/LOCAL)
 	local -a WIS=()
 	local -a FLIST=()
 	local -aU LIST=()
