@@ -1,5 +1,4 @@
 #!/usr/bin/zsh
-# Vim: syntax off
 BOLD="\033[1m"
 ITALIC="\033[3m"
 RESET="\033[m"
@@ -19,16 +18,16 @@ WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
 # Declarations
 typeset -a _PROD_LOCATIONS=(${HOME}/.local/bin ${HOME}/.local/share ${HOME}/.zsh/completions /usr/local/bin /usr/local/lib)
-typeset -a _PROD_DIRS=()
+typeset -a _MARKER_DATA=()
 
 # Constants
 _LIB_DIR=/usr/local/lib
 _BIN_DIR=/usr/local/bin
 _EM=${BOLD}${ITALIC}
-_PROD_TARGET=${PWD}/.prod_target
-_PROD_EXE=''
+_PROD_MARKER=${PWD}/.prod_marker
 
 # Globals
+g_HAS_MARKER=false
 g_BACKUP_NAME=?
 g_BACKUP_VERSION=?
 g_BACKUP_VERSION_MSG=?
@@ -65,21 +64,29 @@ get_prod_dir () {
 	local F D
 	local FX DX
 
-	[[ -n ${_PROD_EXE} ]] && { echo ${_PROD_EXE:h} && return }
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} ARG:${FN}"
 
 	EXELIST=("${(f)$(fut findexe -p ${FN:t})}")
+	if [[ ${?} -ne 0 ]];then
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} findexe failed"
+		echo "NOT_FOUND"
+		return 1
+	fi
 
 	for F in ${EXELIST};do
 		FX=$(tr '/' '_' <<<${F})
 		for D in ${_PROD_LOCATIONS};do
 			DX=$(tr '/' '_' <<<${D})
 			if grep -q ${DX} <<<${FX};then
+				[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} FOUND DIR:${F:h}"
 				echo ${F:h}
-				return
+				return 0
 			fi
 		done
 	done
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} DIR:NOT_FOUND"
 	echo "NOT_FOUND"
+	return 1
 }
 
 is_lib () {
@@ -256,7 +263,6 @@ local_to_prod () {
 	local NEWEST
 
 	tcup 0 0 && echo "${REVERSE}${WHITE_ON_GREY}< < <${RESET}${WHITE_ON_RED_ITALIC} RELEASE ${RESET}${REVERSE}${WHITE_ON_GREY}> > >${RESET}"
-	#[[ -e "_${FILE_ARG}" ]] && install_comp ${FILE_ARG}
 
 	if [[ ${g_IS_INITIAL_PRODUCTION} == 'false' ]];then
 		# Existing production copy
@@ -288,12 +294,12 @@ local_to_prod () {
 		fi
 	else
 		# No existing production copy
-		echo "Creating an initial production copy:${g_PRODUCTION_DIR}/${FILE_ARG}"
-		get_response "Create ${_EM}production${RESET} version: ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET} with\n\tthe ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
+		echo "Creating an initial production copy:${g_PROD_VERSION}"
+		get_response "Create ${_EM}production${RESET} version: ${WHITE_FG}${g_PROD_VERSION}${RESET} with\n\tthe ${_EM}local${RESET} version ${WHITE_FG}${g_LOCAL_NAME}${RESET}"
 		if [[ ${?} -eq 0 ]];then
 			prod_to_backup no_prompt
-			cp ${g_LOCAL_VERSION} ${g_PRODUCTION_DIR}/${FILE_ARG}
-			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied\n\tto ${WHITE_FG}${g_PRODUCTION_DIR}/${FILE_ARG}${RESET}"
+			cp ${g_LOCAL_VERSION} ${g_PROD_VERSION}
+			echo "${WHITE_FG}${g_LOCAL_NAME}${RESET} was copied\n\tto ${WHITE_FG}${g_PROD_VERSION}${RESET}"
 		else
 			exit_leave "${RED_FG}Operation cancelled${RESET}"
 		fi
@@ -394,10 +400,61 @@ show_diff () {
 	esac
 }
 
-load_prod_dirs () {
+get_prod_marker () {
+	local LINE
+
 	while read LINE;do
-		_PROD_DIRS+=${LINE}
-	done < ${_PROD_TARGET}
+		echo ${LINE}
+	done < ${_PROD_MARKER}
+}
+
+get_default_fn () {
+	local THIS_DIR=${$(realpath .):t}
+	local DEFAULT=''
+	local F
+
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} THIS_DIR:${THIS_DIR}"
+
+	for F in ./*;do
+		[[ ${F:t} == ${THIS_DIR} ]] && DEFAULT=${THIS_DIR}
+		[[ ${F:t} == ${THIS_DIR}.zsh ]] && DEFAULT=${THIS_DIR}.zsh
+		[[ ${F:t} == ${THIS_DIR}.py ]] && DEFAULT=${THIS_DIR}.py
+		[[ ${F:t} == ${THIS_DIR}.js ]] && DEFAULT=${THIS_DIR}.js
+	done
+
+	if [[ -n ${DEFAULT} ]];then
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} SET DEFAULT:${DEFAULT}"
+		echo ${DEFAULT}
+		return 0
+	else
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} DEFAULT:NOT_FOUND"
+		echo "NOT_FOUND"
+		return 1
+	fi
+}
+
+get_marker_prod () {
+	local FN=${1}
+	local -a MARKER_DATA=()
+	local F
+
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} ARG:${FN}"
+
+	if [[ -e ${_PROD_MARKER} ]];then
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} MARKER FOUND:${_PROD_MARKER}"
+		MARKER_DATA=($(get_prod_marker))
+		for F in ${MARKER_DATA};do
+			if [[ ${FN} == ${F:t} ]];then
+				g_HAS_MARKER=true
+				[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} SET PROD DIR:${F:h}"
+				echo ${F:h}
+				return 0
+			fi
+		done
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} DIR:NOT_FOUND"
+		echo "NOT_FOUND"
+	fi
+	return 1
 }
 
 #--Begin GetOpts--
@@ -460,6 +517,7 @@ usage () {
 	echo -e "${WHITE_FG}-B${RESET} diff <DEVELOPMENT> <> <BACKUP>"
 	echo -e "${WHITE_FG}-P${RESET} diff <DEVELOPMENT> <> <PRODUCTION>"
 	echo -e "${WHITE_FG}-b${RESET} copy <DEVELOPMENT> -> <BACKUP>"
+	echo -e "${WHITE_FG}-i${RESET} show the target directories"
 	echo -e "${WHITE_FG}-r${RESET} release <DEVELOPMENT> -> <PRODUCTION>"
 	echo -e "${WHITE_FG}-s${RESET} save <PRODUCTION> -> <BACKUP>"
 	echo -e "${WHITE_FG}\nDESC${RESET}:${DESC}"
@@ -469,11 +527,12 @@ usage () {
 }
 
 typeset -a OPTIONS
-OPTSTR=":HDBPbrs"
+OPTSTR=":HDBPbirs"
 BACKUP_LOCAL=false
 SYNC_PROD_BAK=false
 SHOW_B_DIFF=false
 SHOW_C_DIFF=false
+SHOW_DIRS=false
 DEV_RELEASE=false
 OPTIND=0
 
@@ -484,6 +543,7 @@ while getopts ${OPTSTR} OPTION;do
      B) SHOW_B_DIFF=true;;
      P) SHOW_C_DIFF=true;;
      b) BACKUP_LOCAL=true;;
+     i) SHOW_DIRS=true;;
      r) DEV_RELEASE=true;;
      s) SYNC_PROD_BAK=true;;
      :) print -u2 "${WHITE_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
@@ -499,51 +559,31 @@ clear
 tabs 2
 
 if [[ ${#} -eq 0 ]];then
-	if [[ -e ${_PROD_TARGET} ]];then
-		_PROD_EXE="$(< ${_PROD_TARGET})"
-		FILE_ARG="${$(< ${_PROD_TARGET}):t}"
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: No file supplied.  Attempting to establish a default based on directory name"
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Found _PROD_TARGET:${_PROD_TARGET}, _PROD_EXE:${_PROD_EXE}, FILE_ARG:${FILE_ARG}"
-		echo "Production dir:${WHITE_FG}${_PROD_EXE:h}${RESET}, FILE:${WHITE_FG}${_PROD_EXE:t}${RESET}"
-	else
-		DEFAULT_FN=${PWD:t}
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Setting a DEFAULT_FN:${DEFAULT_FN}"
-		[[ -e ${DEFAULT_FN}.zsh ]] && DEFAULT_FN=${DEFAULT_FN}.zsh # Add zsh extension if applicable
-		[[ -e ${DEFAULT_FN}.py ]] && DEFAULT_FN=${DEFAULT_FN}.py # Add py extension if applicable
-		[[ -e ${DEFAULT_FN}.js ]] && DEFAULT_FN=${DEFAULT_FN}.js # Add js extension if applicable
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Setting a DEFAULT_FN:${DEFAULT_FN}"
-
-		if [[ -e ${DEFAULT_FN} ]];then
-			FILE_ARG=${DEFAULT_FN} # Assign default file
-			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Found:${DEFAULT_FN}"
-		else
-			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Unable to find:${DEFAULT_FN}"
-			msg_box -p -PK "<r>No file corresponds to the default name<N>:<w>${DEFAULT_FN}<N>|Please provide a filename..."
-			exit_leave
-		fi
+	FN=$(get_default_fn)
+	if [[ ${?} -ne 0 ]];then
+		exit_leave "Unable to establish a default based on directory name. A filename argument is required!"
 	fi
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Set FN by default:${FN}"
 else
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Got FILE_ARG:${FILE_ARG}"
-	FILE_ARG=${1}
+	FN=${1}
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Got FN:${FN}"
+	[[ ! -e ${FN} ]] && exit_leave "File not found:${FN}"
 fi
 
-# Ensure file exists
-[[ ! -e ./${FILE_ARG} && ${#OPTIONS} -ne 0 ]] && exit_leave $(err_msg_exit "No such file:${FILE_ARG} exists in the current directory")
-
 if [[ ${BACKUP_LOCAL} == 'true' ]];then
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Backing up:${FILE_ARG}"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Backing up:${FN}"
 	g_LOCAL_ONLY=true # No production dir necessary
-	FN=${FILE_ARG}
 else
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Finding production directory:${FILE_ARG}"
-	g_PRODUCTION_DIR=$(get_prod_dir ${FILE_ARG}) # Need a production dir
-	if [[ ${g_PRODUCTION_DIR} == "NOT_FOUND" ]];then
-		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Unable to find production directory:${FILE_ARG}"
-		if [[ ${DEV_RELEASE} == 'true' ]];then
-			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Listing destination types"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Finding production directory:${FN}"
+	g_PRODUCTION_DIR=$(get_prod_dir ${FN}) # Need a production dir
+	if [[ ${?} -ne 0 ]];then
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: get_prod_dir failed.  Trying get_marker_prod..."
+		g_PRODUCTION_DIR=$(get_marker_prod ${FN}) # Need a production dir
+		if [[ ${?} -ne 0 ]];then
+			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: get_marker_prod failed.  Asking user..."
 			LIST=('1) Normal Production' '2) Library Module' '3) System Utility' '4) Completion file')
 			tput sc
-			msg_box -p -H1 -P"Select Type" "<r>No production copy exists:<w>${FILE_ARG}<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
+			msg_box -p -H1 -P"Select Type" "<r>No production copy found:<w>${FN}<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
 			msg_box_clear
 			tput rc
 			case ${_MSG_KEY} in
@@ -554,26 +594,7 @@ else
 				*) echo; exit_leave "${RED_FG}Operation cancelled${RESET}";;
 			esac
 			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Chosen destination:${g_PRODUCTION_DIR}"
-		else
-			exit_leave $(err_msg_exit "No production version of file:${FILE_ARG}${RESET} was found")
 		fi
-	fi
-
-	FN=$(fut findexe -p ${FILE_ARG})
-	[[ ${_DEBUG} -ge 0 ]] && dbg "${0:t}:${LINENO} fut findexe returned: ${FN} for FILE_ARG:${FILE_ARG}"
-
-	if [[ -f ${FN} && -x ${FN} ]];then # A regular file - executable
-		FN_PATH=${FN:h}
-	else
-		FN_PATH=${g_PRODUCTION_DIR}
-	fi
-
-	if [[ ${FN_PATH} == ${g_PRODUCTION_DIR} ]];then
-		FN=${g_PRODUCTION_DIR}/${FILE_ARG}
-	elif [[ ${FN_PATH} == ${PWD} ]];then
-		g_LOCAL_ONLY=true
-	else
-		exit_leave $(err_msg_exit "fut findexe returned:${FN_PATH} There are other copies of this file in an unexpected location")
 	fi
 fi
 
@@ -581,11 +602,17 @@ fi
 g_LOCAL_VERSION=${PWD}/${FN:t}
 g_BACKUP_VERSION=${PWD}/${FN:t}.bak
 g_ORIGINAL_VERSION=${PWD}/${FN:t}.orig
-
-[[ ${g_LOCAL_ONLY} == 'false' ]] && g_PROD_VERSION=${FN} || g_PROD_VERSION=None
+g_PROD_VERSION=${g_PRODUCTION_DIR}/${FN}
 [[ ! -e ${g_PROD_VERSION} ]] && g_IS_INITIAL_PRODUCTION=true || g_IS_INITIAL_PRODUCTION=false
 
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}:${LINENO} g_LOCAL_ONLY ${g_LOCAL_ONLY} g_PROD_VERSION=${g_PROD_VERSION} g_LOCAL_VERSION=${g_LOCAL_VERSION} g_BACKUP_VERSION=${g_BACKUP_VERSION}"
+if [[ ${SHOW_DIRS} == 'true' ]];then
+	echo "         g_PROD_VERSION:${WHITE_FG}${g_PROD_VERSION}${RESET}"
+	echo "        g_LOCAL_VERSION:${WHITE_FG}${g_LOCAL_VERSION}${RESET}"
+	echo "       g_BACKUP_VERSION:${WHITE_FG}${g_BACKUP_VERSION}${RESET}"
+	echo "     g_ORIGINAL_VERSION:${WHITE_FG}${g_ORIGINAL_VERSION}${RESET}"
+	echo "g_IS_INITIAL_PRODUCTION:${WHITE_FG}${g_IS_INITIAL_PRODUCTION}${RESET}"
+	exit_leave
+fi
 
 set_messages
 

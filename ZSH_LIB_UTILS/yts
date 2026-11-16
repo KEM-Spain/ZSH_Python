@@ -456,7 +456,6 @@ clean_title () {
 	logit ${_YT_DBG_LOG} "${0}: RAW_TITLE:${RAW_TITLE}"
 
 	TITLE=$(title_scrubber ${RAW_TITLE})
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Scrubbed TITLE:${TITLE}"
 	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}"
 	
 	TITLE=$(keyword_strip <<<${TITLE})
@@ -788,7 +787,7 @@ fav_parse_opts () {
 	local LIST_TYPE=''
 	local ENGINE_TYPE=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	PARTS=("${(@s:|:)FAV_ROW}")
 
@@ -798,7 +797,7 @@ fav_parse_opts () {
 	_QUERY_OPTS[DKEY]=${PARTS[2]}
 	_QUERY_OPTS[DKEY]=${(C)_QUERY_OPTS[DKEY]:gs/_/ /}
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: FAV_ROW fields:${#PARTS}, QKEY:${_QUERY_OPTS[QKEY]}, DKEY:${_QUERY_OPTS[DKEY]}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: FAV_ROW fields:${#PARTS}, QKEY:${_QUERY_OPTS[QKEY]}, DKEY:${_QUERY_OPTS[DKEY]}"
 
 	LIST_TYPE=${PARTS[3]}
 	if [[ ${LIST_TYPE} == 'y' ]];then
@@ -1036,7 +1035,7 @@ get_field () {
 	local STR=''
 	local TSTR=''
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${FIELD} in
 		age) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[age]}]}";;
@@ -1047,7 +1046,7 @@ get_field () {
 		url) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[url]}]}";;
 	esac
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Parsed FIELD:${FIELD} STR:${STR}"
 
 	if [[ ${FIELD} == 'agetime' ]];then
 		[[ ${STR:l} =~ 'views' ]] && STR=$(sed -E 's/^(.*views )(.*ago)(.*)/(\2)/' <<<${STR})
@@ -1255,7 +1254,7 @@ log_find () {
 	local LOG_TM=''
 	local R=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Page callback - scan list to find downloaded items
 	 
@@ -1269,10 +1268,10 @@ log_find () {
 		LIST_AU=$(get_field author ${R}) # Author from list
 		LIST_TM=$(sed -E 's/^.*ago\s+(.*)\)/\1/' <<<$(get_field agetime ${R}) | tr -d '[()]' | sed 's/undefined//') # Video length from list
 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "LIST_NDX:${R} LIST_TITLE:${LIST_TITLE} LIST_AU:${LIST_AU} LIST_TM:${LIST_TM}"
+		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "LIST_NDX:${R} LIST_TITLE:${LIST_TITLE} LIST_AU:${LIST_AU} LIST_TM:${LIST_TM}"
 
 		if [[ -n ${LIST_TITLE[1,50]} ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Attempting TITLE match on:${LIST_TITLE[1,50]}"
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Attempting TITLE match on:${LIST_TITLE[1,50]}"
 			LOG_TITLE=$(grep -F -n -m1 -i -- ${LIST_TITLE[1,50]} ${_YTS_DOWNLOAD_LOG}) # grep -F option needed to ignore any special chars
 			if [[ ${?} -eq 0 ]];then
 				LINE_NUM="${${(@s/:/)LOG_TITLE}[1]}" # Fetch line number
@@ -1280,7 +1279,7 @@ log_find () {
 				LOG_AU=$(grep -i -o -m1 "${LIST_AU}$" <<<${LOG_LINE}) # Match author in log line
 				LOG_TM=$(grep -o ${LIST_TM} <<<${LOG_LINE}) # Match time in log line
 
-				if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+				if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 					dbg "Matched:TITLE:${LOG_TITLE}"
 					dbg "Log line:${LOG_LINE}"
 					dbg "Author:${LIST_AU} Time:${LIST_TM}"
@@ -1290,19 +1289,19 @@ log_find () {
 					LOG_FN="${${(@s/|/)LOG_LINE}[3]}"
 					_DOWNLOADS[${R}]=true
 
-					if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+					if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 						dbg "Confirmed match: Marking NDX:${R} as downloaded for file:${LOG_FN}"
 						dbg "LOG_AU:${LOG_AU}"
 						dbg "LOG_TM:${LOG_TM}"
 					fi
 				else
-					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Failed to confirm download: LOG_TM:${LOG_TM} LOG_AU:${LOG_AU}"
+					[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Failed to confirm download: LOG_TM:${LOG_TM} LOG_AU:${LOG_AU}"
 				fi
 			else
-				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "grep failed title match"
+				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "grep failed title match"
 			fi
 		else
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Skipped title search - blank title"
+			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "Skipped title search - blank title"
 			logit ${_YT_DBG_LOG} "${0}: Skipped title search - blank title"
 		fi
 	done
@@ -1317,7 +1316,7 @@ log_to_file () {
 	local LIST_TM=''
 	local R=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Page callback - pre-process list to populate download status
 	 
@@ -1347,7 +1346,7 @@ log_update () {
 	local NEW_LOG=${_YT_DLP_CFG}/log.new
 	local L
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	{
 		[[ -e ${_YT_DLP_CFG}/log.new ]] && /bin/rm -f ${NEW_LOG}
@@ -1429,7 +1428,7 @@ _parse_rumble () {
 		return 1
 	fi
 
-	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
 		dbg "CREATED: yts.dbg"
 		for L in ${LIST};do
 			echo ${L}
@@ -1456,7 +1455,7 @@ _parse_rumble () {
 		esac
 	done
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "__DATA__\n$(for K in ${LIST};do echo ${K};done)\n__DATA__"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "__DATA__\n$(for K in ${LIST};do echo ${K};done)\n__DATA__"
 
 	SET=0
 	for L in ${QDATA};do
@@ -1764,7 +1763,7 @@ set_final_fn () {
 set_item_color () {
 	local ITEM=${1}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${ITEM:l} in
 		downloaded*) echo ${BOLD}${GREEN_FG};;
@@ -1943,6 +1942,7 @@ PATHLBL=$(path_get_label 40)
 # Check for updates
 g_LAST_CODE_UPD=$(last_code_update ${_YTS_UPD_MARKER})
 if [[ (! -f ${_YTS_UPD_MARKER}) || (-f ${_YTS_UPD_MARKER} && (! ${g_LAST_CODE_UPD:l} =~ 'today')) ]];then
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0:t}: Checking for updates..."
 	clear
 	msg_box "Checking for yt-dlp updates..."
 	{
@@ -1969,6 +1969,7 @@ done
 
 SEARCHTERM=$(str_trim ${_STERMS})
 SEARCHTERM=${(Q)SEARCHTERM:l}
+[[ ${_DEBUG} -ge ${_LOW_DBG} && -n ${SEARCHTERM} ]] && dbg "${0:t}: SEARCHTERM:${SEARCHTERM}"
 
 # Process help request
 if [[ ${HELP_OPT} == 'true' ]];then
@@ -1986,6 +1987,7 @@ if [[ ${HELP_OPT} == 'true' ]];then
 	fi
 fi
 
+[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0:t}: Validating engine options"
 # Catch invalid engine options
 if [[ ${ENGINE_OPT} == 'rumble' ]];then
 	if [[ -n ${STRICT_OPT} ]];then
@@ -1997,6 +1999,7 @@ elif [[ ${ENGINE_OPT} == 'youtube' ]];then
 	fi
 fi
 
+[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0:t}: Parsing engine options"
 # Parse options
 if [[ ${ENGINE_OPT} == 'rumble' ]];then
 	if [[ -n ${QTYPE_OPT} ]];then
@@ -2025,6 +2028,7 @@ elif [[ ${ENGINE_OPT} == 'youtube' ]];then
 fi
 
 if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0:t}: No args - Calling select menu"
 	if ! fav_load;then # Load favorites
 		exit_leave "Unable to load favorites"
 	fi
@@ -2046,6 +2050,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		fi
 	done
 else # Args passed
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0:t}: Got args - setting query options"
 	g_CMDLINE_ARGS=true
 	_QUERY_OPTS[QKEY]=${SEARCHTERM}
 	_QUERY_OPTS[DKEY]=${SEARCHTERM}
@@ -2060,6 +2065,7 @@ else # Args passed
 	[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+="General"
 	[[ -n ${MSG} ]] && MSG="Query Type:<w>${MSG}<N>"
 	msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|${MSG}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0:t}: Running query..."
 	if query_${_QUERY_OPTS[ENGINE]};then # Run query_
 		download_select ${_QUERY_OPTS[QKEY]}
 	else

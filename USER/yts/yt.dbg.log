@@ -1,3 +1,47 @@
-2026-11-16_19:37: Logging started...
-2026-11-16_19:37: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-16_19:37: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-16_22:24: Logging started...
+2026-11-16_22:24: log_update: LOG lines BEFORE update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-16_22:24: log_update: LOG lines AFTER update:1 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-16_22:24: query_youtube: Creating listing for QKEY:tuckercarlson, query is not strict
+2026-11-16_22:24: query_youtube:
+_QUERY_OPTS:
+ 	-> DKEY:Tucker Carlson
+	-> ENGINE:youtube
+	-> FILTER:filter
+	-> LIST:youtube
+	-> QKEY:tuckercarlson
+	-> RANGE:all
+	-> STRICT:no-strict
+2026-11-16_22:24: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py  -a all "tuckercarlson"
+2026-11-16_22:24: query_youtube: Video:This Is the Worst Possible Tim - filtered AUTHOR:tuckercarlsonnetwork != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:Officer Tatum "We Solved It, T - filtered AUTHOR:dailygoldstein != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:This Isn't a Conspiracy, It's  - filtered AUTHOR:tuckercarlsonnetwork != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:This Will Shock You... - filtered AUTHOR:tuckercarlsonnetwork != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:Trump Thought No One Would Not - filtered AUTHOR:tuckercarlsonnetwork != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:Tucker Carlson Turns On Trump  - filtered AUTHOR:comedycentraluk != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:Ben Shapiro's Mask Was Finally - filtered AUTHOR:tuckercarlsonnetwork != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:Tucker: "Shut up and Eat Your  - filtered AUTHOR:tuckercarlsonnetwork != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:"It's Hell" - Tucker Exposes D - filtered AUTHOR:tuckercarlsonnetwork != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:Shawn Ryan: Trump's Betrayal,  - filtered AUTHOR:tuckercarlsonandshawnryan != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:Tucker Carlson was right.. The - filtered AUTHOR:podcastcollection(fan) != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:The Man Who Predicted the Oil  - filtered AUTHOR:tuckercarlsonnetwork != tuckercarlson
+2026-11-16_22:24: query_youtube: Video:What Tucker Finally Realized A - filtered AUTHOR:tuckercarlsonnetworkandtheresilient != tuckercarlson
+2026-11-16_22:24: query_youtube: Listing for QKEY:tuckercarlson contains 7 rows
+2026-11-16_22:24: Starting download for URL: https://www.youtube.com/watch?v=b3t5IDkOA6c (Cookies: none)
+2026-11-16_22:24: yt CMDLINE:false
+2026-11-16_22:24: yt URL:https://www.youtube.com/watch?v=b3t5IDkOA6c
+2026-11-16_22:24: yt Executed from: script COOKIES:null
+2026-11-16_22:24: Logging to /home/kmiller/.local/share/yts/yts_16316.log
+2026-11-16_22:24: action_do: GENERATING HEADER
+2026-11-16_22:24: clean_title: RAW_TITLE:Tucker Carlson - Trump's Reaction to the Midterms, the Democrats' Strategy, and What Happens Next in Iran
+2026-11-16_22:24: clean_title: TITLE:Tucker Carlson - Trump's Reaction To The Midterms, The Democrats' Strategy, And What Happens Next IN Iran
+2026-11-16_22:24: clean_title: COMPLETED TITLE:Tucker Carlson - Trump's Reaction To The Midterms, The Democrats' 
+2026-11-16_22:25: action_do: COMPLETED
+2026-11-16_22:26: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Trump_s_Reaction_to_the_Midterms_the_Democrats_Strategy_and_What_Happens_Next_in_Iran-[b3t5IDkOA6c].mp4
+2026-11-16_22:26: set_final_fn: FN IN:/home/kmiller/Downloads/Torrents/Library/Web/Trump_s_Reaction_to_the_Midterms_the_Democrats_Strategy_and_What_Happens_Next_in_Iran-[b3t5IDkOA6c].mp4
+2026-11-16_22:26: clean_title: RAW_TITLE:Tucker Carlson - Trump_s_Reaction_to_the_Midterms_the_Democrats_Strategy_and_What_Happens_Next_in_Iran-[b3t5IDkOA6c].mp4
+2026-11-16_22:26: clean_title: TITLE:Tucker Carlson - Trump's Reaction To The Midterms The Democrats Strategy And What Happens Next In Iran
+2026-11-16_22:26: clean_title: COMPLETED TITLE:Tucker Carlson - Trump's Reaction To The Midterms The Democrats 
+2026-11-16_22:26: set_final_fn: Overwriting file:Trump_s_Reaction_to_the_Midterms_the_Democrats_Strategy_and_What_Happens_Next_in_Iran-[b3t5IDkOA6c].mp4
+2026-11-16_22:26: set_final_fn: Clean filename:Tucker Carlson - Trump's Reaction To The Midterms The Democrats.mp4
+2026-11-16_22:26: set_final_fn: Directory:/home/kmiller/Downloads/Torrents/Library/Web
+2026-11-16_22:26: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_16316.log was cleared for:tuckercarlson from:action_do

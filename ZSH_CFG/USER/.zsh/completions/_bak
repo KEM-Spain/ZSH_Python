@@ -1,12 +1,16 @@
 #compdef bak
 
-_files -W ${PWD} bak
+_bak() {
+    _arguments -s \
+        '-H[help]' \
+        '-D[debug]' \
+        '-B[diff <DEVELOPMENT> <> <BACKUP>]' \
+        '-P[diff <DEVELOPMENT> <> <PRODUCTION>]' \
+        '-b[copy <DEVELOPMENT>]' \
+        '-i[show the target directories]' \
+        '-r[release <DEVELOPMENT>]' \
+        '-s[save <PRODUCTION>]' \
 
-_arguments \
-'-H[help]' \
-'-D[debug]' \
-'-B[diff <DEVELOPMENT> <> <BACKUP>]' \
-'-P[diff <DEVELOPMENT> <> <PRODUCTION>]' \
-'-b[copy <DEVELOPMENT> -> <BACKUP>]' \
-'-r[release <DEVELOPMENT> -> <PRODUCTION>]' \
-'-s[save <PRODUCTION> -> <BACKUP>]'
+        _files -W ${PWD} ${0}
+}
+

@@ -254,7 +254,6 @@ action_do () {
 					break
 				fi
 
-				# Early error, duplication, and anomaly detection checks integrated into single loop
 				if grep -q -Ei -m1 'already been' ${g_YTS_SESSION_LOG} 2>/dev/null;then
 					spinner stop
 					logit ${_YT_DBG_LOG} "${0}: No download - video already exists"
@@ -274,7 +273,7 @@ action_do () {
 					break
 				fi
 
-				ERROR=$(grep -Ei -m1 '*http*403*|*http*404*|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
+				ERROR=$(grep -Ei -m1 '*http*403*|*http*404*|boringssl|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
 				if [[ ${?} -eq 0 ]];then
 					spinner stop && g_PRESERVE_LOG=true
 					case ${ERROR} in
@@ -282,7 +281,7 @@ action_do () {
 											RETRIED_COOKIES=true
 											COOKIE_FLAG='-c'
 											logit ${_YT_DBG_LOG} "${0}: Rumble 403 encountered - retrying with cookies (-c)"
-											msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying with cookies...<N>"
+											msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Retrying with cookies...<N>"
 											job_cancel
 											job_start "${URL}" "${COOKIE_FLAG}"
 											continue
@@ -298,11 +297,15 @@ action_do () {
 										_FAILED[${M}]=true
 										break
 										;;
-							*)	msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
-									logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
-									_FAILED[${M}]=true
-									break
-									;;
+						*boringssl*)	msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 404 error...<N>"
+													logit ${_YT_DBG_LOG} "${0}: RETRY:${ERROR}"
+													continue
+													;;
+						*)	msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
+								logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
+								_FAILED[${M}]=true
+								break
+								;;
 					esac
 				fi
 
@@ -453,6 +456,7 @@ clean_title () {
 	logit ${_YT_DBG_LOG} "${0}: RAW_TITLE:${RAW_TITLE}"
 
 	TITLE=$(title_scrubber ${RAW_TITLE})
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Scrubbed TITLE:${TITLE}"
 	logit ${_YT_DBG_LOG} "${0}: TITLE:${TITLE}"
 	
 	TITLE=$(keyword_strip <<<${TITLE})
