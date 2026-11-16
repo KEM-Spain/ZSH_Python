@@ -568,21 +568,21 @@ info () {
 		echo -e "\n${WHITE_FG}\nUsage${RESET}:${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET}\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
-		echo -e "${WHITE_FG}-v${RESET} verbose detail level - repeats increase detail"
+		echo -e "${WHITE_FG}-d${RESET} detail level - repeats increase detail"
 		echo -e "${WHITE_FG}\nDesc${RESET}:Display system information"
 		) >&2
 
 		exit_leave $(err_msg_exit ${PENDING_MSGS})
 	}
 
-	OPTSTR=":HDv"
+	OPTSTR=":HDd"
 
 	OPTIND=0
 	while getopts ${OPTSTR} OPTION;do
 		case $OPTION in
 			H) usage;;
 			D) dbg_set_level;;
-			v) verbosity_set;;
+			d) verbosity_set;;
 			:) print -u2 "${RED_FG}${_SCRIPT}${RESET}: option: -${OPTARG} requires an argument"; usage;;
 			\?) print -u2 "${RED_FG}${_SCRIPT}${RESET}: unknown option -${OPTARG}"; usage;;
 		esac

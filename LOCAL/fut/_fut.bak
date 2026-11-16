@@ -5,45 +5,71 @@ _fut() {
     typeset -A opt_args
 
     _arguments -C \
-			'1: :->cmds' \
-			'-H[help]' \
-			'-D[debug]' \
-			'*::arg:->args'
+		'1: :->cmds' \
+		'-H[help]' \
+		'-D[debug]' \
+		'*::arg:->args'
     case "$state" in
         cmds)
-				_values 'Commands:' \
-				'comments[Hide/show file comments]' \
-				'findexe[Find executable file]' \
-				'extensions[Mass change file extension]' \
-				'generate[Generate multiple file types]' \
-				'inode_del[Delete file by inode]' \
-				'inode_get[Get inode for file]' \
-				'links[Dereference links]' \
-				'lscolors[DIR_COLOR assignments]' \
-				'modified[Show files created/modified today]' \
-				'surface[Extract file from subdirectory]' \
-				;;
+		_values 'Commands:' \
+		'findexe[Find executable files]' \
+		'surface[Move files from a sub directory up to a target directory (default is PWD)]' \
+		'comments[Hide or show file comments]' \
+		'extensions[Modify file extensions in the current directory]' \
+		'generate[Generate file/dir/link names]' \
+		'links[Dereference symbolic links]' \
+		'lscolors[View color assignments for listings]' \
+		'modified[Show file(s) updated or created today]' \
+		'inode_del[Delete file by inode]' \
+		'inode_get[Get inode for file]' \
+		'inode_fn[Get filename for inode]' \
+		;;
         args)
             case $line[1] in
-                comments) _do_comments;;
                 findexe) _do_findexe;;
+                surface) _do_surface;;
+                comments) _do_comments;;
                 extensions) _do_extensions;;
                 generate) _do_generate;;
+                links) _do_links;;
+                lscolors) _do_lscolors;;
+                modified) _do_modified;;
                 inode_del) _do_inode_del;;
                 inode_get) _do_inode_get;;
-                links) _do_links;;
-                links) _do_lscolors;;
-                modified) _do_modified;;
-                surface) _do_surface;;
+                inode_fn) _do_inode_fn;;
             esac
             ;;
     esac
 }
 
+_do_findexe() {
+    _arguments -s \
+			'-H[help]' \
+			'-D[debug]' \
+			'-d[delete cache entry for <SEARCHTERM>]' \
+			'-l[local files have priority]' \
+			'-p[production file]' \
+			'-v[verbose output]' \
+
+}
+
+_do_surface() {
+    _arguments -s \
+			'-H[help]' \
+			'-D[debug]' \
+			'-i[interactive prompts]' \
+			'-t[dir to hold surfaced files]' \
+			'-d[do not remove empty dirs]' \
+			'-j[do not remove junk files from torrent directories]' \
+			'-s[simulate actions only]' \
+
+}
+
 _do_comments() {
     _arguments -s \
 			'-H[help]' \
-			'-h[hide file comments (default)]' \
+			'-D[debug repeats increase level]' \
+			'-h[hide file comments default]' \
 			'-s[show file comments]' \
 
 	_files -W ${PWD} ${0}
@@ -52,77 +78,70 @@ _do_comments() {
 _do_extensions() {
     _arguments -s \
 			'-H[help]' \
-			'-c[copy instead of move]' 
+			'-D[debug repeats increase level]' \
+			'-c[copy instead move is default]' \
+
+	_files -W ${PWD} ${0}
 }
 
 _do_generate() {
     _arguments -s \
-			'-H[help]'  \
-			'-f[create files (default)]' \
+			'-H[help]' \
+			'-D[debug repeats increase level]' \
+			'-e[add extension]' \
+			'-f[create files default]' \
 			'-d[create dirs]' \
 			'-h[create hidden files]' \
 			'-l[create symbolic links]' \
+
+	_files -W ${PWD} ${0}
 }
 
 _do_links() {
     _arguments -s \
 			'-H[help]' \
-			'-d[increase depth of scan (repeats increase level)]'\
-			'-f[pipe delimited output]'\
-			'-i[ignore broken links]'\
+			'-D[debug repeats increase level]' \
+			'-d[increase depth of scan repeats increase level]' \
+			'-f[pipe delimited output]' \
+			'-i[ignore broken links]' \
+
+	_files -W ${PWD} ${0}
 }
 
 _do_lscolors() {
     _arguments -s \
-			'-H[help]' \
+			'-D[)n]' \
+
 }
 
 _do_modified() {
     _arguments -s \
 			'-H[help]' \
-			'-d[increase depth of scan (repeats increase level)]' \
-			'-c[increase CTIME (repeatable)]' \
+			'-D[debug repeats increase level]' \
+			'-c[increase CTIME repeatable]' \
+			'-d[increase depth of scan repeatable]' \
+			'-n[suppress headers]' \
 
+	_files -W ${PWD} ${0}
 }
 
 _do_inode_del() {
     _arguments -s \
-			'-H[help]' \
+			'-H[)n]' \
 
 	_files -W ${PWD} ${0}
 }
 
 _do_inode_get() {
     _arguments -s \
-			'-H[help]' \
+			'-H[)n]' \
 
 	_files -W ${PWD} ${0}
 }
 
-_do_findexe() {
+_do_inode_fn() {
     _arguments -s \
-			'-H[help]' \
-			'-D[debug (repeats increase level)]' \
-			'-d[delete cached entry for <FILE>]' \
-			'-l[local files have priority]' \
-			'-p[production file]' \
-			'-v[verbose]' \
+			'-H[)n]' \
 
-	_files -W ${PWD} ${0}
 }
-
-
-_do_surface() {
-    _arguments -s \
-			'-H[help]' \
-			'-d[increase depth of scan (repeats increase level)]' \
-			'-i[interactive prompts]' \
-			'-t[dir to hold surfaced files]' \
-			'-d[do not remove empty dirs]' \
-			'-j[do not remove junk files from torrent directories]' \
-			'-s[simulate actions only]' \
-
-	_files -W ${PWD} ${0}
-}
-
 

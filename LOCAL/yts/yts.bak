@@ -633,7 +633,6 @@ fav_manage () {
 			RC=${?}
 		fi
 
-		# TODO: this is hokey. RC=0 should just fall through and add to _FAV_KEYS but it works for now.
 		if [[ ${RC} -eq 1 ]]; then
 			case ${MODE} in
 				add) msg_box -t2 "<r>Add Cancelled<N>"; ADD_CANCELLED=true;;
@@ -641,16 +640,10 @@ fav_manage () {
 			esac
 			break    # User pressed 'q' or aborted; stop processing
 		elif [[ ${RC} -eq 2 ]]; then
-			# Value was retained in edit mode. Ensure key fields are preserved in _FAV_KEYS
-			if [[ ${MODE} == 'edit' ]]; then
-				case ${FIELD} in
-					qkey) _FAV_KEYS+=("$(str_trim "${_QUERY_OPTS[QKEY]}")") ;;
-					dkey) _FAV_KEYS+=("$(str_trim "${_QUERY_OPTS[DKEY]}")") ;;
-				esac
-			fi
-			continue # Proceed to next field
+			continue # Prerequisite gating check not met; skip field
 		fi
 
+		# RC=0 falls through naturally to record _FAV_VALUE whether it's new or retained!
 		case ${FIELD} in
 			qkey)
 				if [[ ${MODE} == 'add' ]]; then
@@ -684,7 +677,7 @@ fav_manage () {
 		esac
 	done
 
-	_FAV_ROW=($(fav_set_row "${_FAV_KEYS[1]:l:gs/ /_/}|${_FAV_KEYS[2]:gs/ /_/}"))
+	_FAV_ROW=($(fav_set_key "${_FAV_KEYS[1]:l:gs/ /_/}|${_FAV_KEYS[2]:gs/ /_/}"))
 	case ${MODE} in
 		add) [[ ${ADD_CANCELLED} == 'false' ]] && {fav_add "${_FAV_ROW}"; return 0} || return 1;;
 		edit) [[ ${EDIT_CANCELLED} == 'false' ]] && {fav_update "${_FAV_ROW}"; return 0} || return 1;;
@@ -807,9 +800,9 @@ fav_parse_opts () {
 	if [[ ${LIST_TYPE} == 'y' ]];then
 		_QUERY_OPTS[LIST]='youtube'
 		_QUERY_OPTS[ENGINE]='youtube'
-		[[ ${PARTS[4]} == 's' ]] && _QUERY_OPTS[STRICT]='strict'
+		[[ ${PARTS[4]} == 's' ]] && _QUERY_OPTS[STRICT]='strict' || _QUERY_OPTS[STRICT]='no-strict'
+		[[ ${PARTS[4]} == 'f' ]] && _QUERY_OPTS[FILTER]='filter' || _QUERY_OPTS[FILTER]='no-filter'
 		[[ -n ${PARTS[5]} ]] && _QUERY_OPTS[RANGE]=${PARTS[5]} || _QUERY_OPTS[RANGE]='recent'
-		[[ ${PARTS[6]} == 'f' ]] && _QUERY_OPTS[FILTER]='filter' || _QUERY_OPTS[FILTER]='no-filter'
 	elif [[ ${LIST_TYPE} == 'r' ]];then
 		_QUERY_OPTS[LIST]='rumble'
 		_QUERY_OPTS[ENGINE]='rumble'
@@ -819,9 +812,9 @@ fav_parse_opts () {
 		ENGINE_TYPE=${PARTS[4]}
 		if [[ ${ENGINE_TYPE} == 'y' ]];then
 			_QUERY_OPTS[ENGINE]='youtube'
-			[[ ${PARTS[5]} == 's' ]] && _QUERY_OPTS[STRICT]='strict'
+			[[ ${PARTS[5]} == 's' ]] && _QUERY_OPTS[STRICT]='strict' || _QUERY_OPTS[STRICT]='no-strict'
+			[[ ${PARTS[5]} == 'f' ]] && _QUERY_OPTS[FILTER]='filter' || _QUERY_OPTS[FILTER]='no-filter'
 			[[ -n ${PARTS[6]} ]] && _QUERY_OPTS[RANGE]=${PARTS[6]} || _QUERY_OPTS[RANGE]='recent'
-			[[ ${PARTS[7]} == 'f' ]] && _QUERY_OPTS[FILTER]='filter' || _QUERY_OPTS[FILTER]='no-filter'
 		elif [[ ${ENGINE_TYPE} == 'r' ]];then
 			_QUERY_OPTS[ENGINE]='rumble'
 			_QUERY_OPTS[QTYPE]=${PARTS[5]}
@@ -942,14 +935,19 @@ fav_select () {
 	return 0
 }
 
-fav_set_row () {
+fav_set_key () {
 	local FAV_KEY="${1}"
 
 	if [[ ${_QUERY_OPTS[LIST]} == 'youtube' ]];then
 		FAV_KEY+="|y"
-		[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && FAV_KEY+='|s' || FAV_KEY+='|n'
+		if [[ ${_QUERY_OPTS[STRICT]} == 'strict' ]];then
+			FAV_KEY+='|s'
+		elif [[ ${_QUERY_OPTS[FILTER]} == 'filter' ]];then
+			FAV_KEY+='|f'
+		else
+			FAV_KEY+='|n'
+		fi
 		[[ -n ${_QUERY_OPTS[RANGE]} ]] && FAV_KEY+="|${_QUERY_OPTS[RANGE]}" || FAV_KEY+='|recent'
-		[[ ${_QUERY_OPTS[FILTER]} == 'filter' ]] && FAV_KEY+='|f' || FAV_KEY+='|n'
 	elif [[ ${_QUERY_OPTS[LIST]} == 'rumble' ]];then
 		FAV_KEY+="|r"
 		FAV_KEY+="|${_QUERY_OPTS[QTYPE]}"
@@ -957,9 +955,14 @@ fav_set_row () {
 		FAV_KEY+="|c"
 		if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
 			FAV_KEY+="|y"
-			[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && FAV_KEY+='|s' || FAV_KEY+='|n'
+			if [[ ${_QUERY_OPTS[STRICT]} == 'strict' ]];then
+				FAV_KEY+='|s'
+			elif [[ ${_QUERY_OPTS[FILTER]} == 'filter' ]];then
+				FAV_KEY+='|f'
+			else
+				FAV_KEY+='|n'
+			fi
 			[[ -n ${_QUERY_OPTS[RANGE]} ]] && FAV_KEY+="|${_QUERY_OPTS[RANGE]}" || FAV_KEY+='|recent'
-			[[ ${_QUERY_OPTS[FILTER]} == 'filter' ]] && FAV_KEY+='|f' || FAV_KEY+='|n'
 		elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 			FAV_KEY+="|r"
 			FAV_KEY+="|${_QUERY_OPTS[QTYPE]}"
@@ -983,7 +986,7 @@ _fav_text_prompt () {
 		# If user pressed Enter and kept/returned the exact current value (or empty) during edit mode:
 		if [[ ${MODE} == 'edit' && ( -z "${INPUT_VAL}" || "${INPUT_VAL}" == "${CURRENT_VALUE}" ) ]]; then
 			_FAV_VALUE="${CURRENT_VALUE}"
-			return 2 # Retain and skip (Code 2 = skip/retain)
+			return 0 # Treat retention as a standard success (0), matching menu prompt behavior!
 		fi
 
 		if [[ -z "${INPUT_VAL}" ]];then
@@ -997,7 +1000,7 @@ _fav_text_prompt () {
 			break
 		fi
 	done
-	return 0 # Code 0 = Success (proceed to assignment)
+	return 0 # Code 0 = Success
 }
 
 fav_update () {
@@ -1919,7 +1922,6 @@ shift $(( OPTIND  - 1 ))
 #--End GetOpts--
 
 # Execution
-# TODO: Explore using youtube-search with API key
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ -n ${WEB_OPT} ]] && open_website ${WEB_OPT} && exit_leave
 
@@ -2030,6 +2032,7 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			[[ ${?} -eq 2 ]] && { clear && continue }
 			MSG=''
 			[[ ${_QUERY_OPTS[STRICT]} == 'strict' ]] && MSG="Strict"
+			[[ ${_QUERY_OPTS[FILTER]} == 'filter' ]] && MSG="Filtered"
 			[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+=" General"
 			[[ -n ${MSG} ]] && MSG="Query Type:<w>${MSG}<N>"
 			msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|${MSG}"

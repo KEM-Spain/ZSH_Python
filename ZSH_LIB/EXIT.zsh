@@ -23,7 +23,7 @@ exit_leave () {
 
 	_EXIT_MSGS=(${@})
 
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+	if [[ ${_DEBUG} -gt 0 ]];then
 		dbg "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}"
 		dbg "${RED_FG}${0}${RESET}: #_MSGS:${#_MSGS}"
 		dbg "${RED_FG}${0}${RESET}: RET_9:${RET_9}"
@@ -55,7 +55,7 @@ exit_pre_exit () {
 	_PRE_EXIT_RAN=true
 
 	if [[ -n ${_EXIT_CALLBACKS} ]];then
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "${RED_FG}${0}${RESET}: EXECUTING CALLBACKS:${_EXIT_CALLBACKS}"
 		for C in ${_EXIT_CALLBACKS};do
 			${C}
 		done
@@ -66,21 +66,21 @@ exit_pre_exit () {
 		scrub_tmp
 	fi
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "${RED_FG}${0}${RESET}: CALLER:${functrace[1]}, #_EXIT_MSGS:${#_EXIT_MSGS}"
 
 	if [[ ${XDG_SESSION_TYPE:l} == 'x11' ]];then
 		xset r on # Reset key repeat
 		eval "xset ${_XSET_DEFAULT_RATE}" # Reset key rate
-		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset key rate:${_XSET_DEFAULT_RATE}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "${0}: reset key rate:${_XSET_DEFAULT_RATE}"
 	fi
 
 	kbd_activate
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: activated keyboard"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "${0}: activated keyboard"
 
 	[[ ${$(tabs -d | grep --color=never -o "tabs 8")} != 'tabs 8' ]] && tabs 8
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: reset tabstops"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "${0}: reset tabstops"
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && echo "${0}: _EXIT_VALUE:${_EXIT_VALUE}"
 }
 
 exit_request () {
@@ -130,7 +130,9 @@ exit_sigexit () {
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Traps arrive here
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && echo "\n${RED_FG}${0}${RESET}: Exited via interrupt: ${SIG} (${SIGNAME}) ${SIGNAMES[${SIG}]}" # Announce the interrupt
+	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+		echo "\n${RED_FG}${0}${RESET}: Exited via interrupt: ${SIG} (${SIGNAME}) ${SIGNAMES[${SIG}]}" # Announce the interrupt
+	fi
 	exit_pre_exit # Pre-exit housekeeping
 
 	exit ${SIG} # Leave the app
@@ -147,7 +149,7 @@ set_exit_callback () {
 
 	_EXIT_CALLBACKS+=${1}
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "\n${RED_FG}${0}${RESET}: REGISTERED CALLBACK:${1}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "\n${RED_FG}${0}${RESET}: REGISTERED CALLBACK:${1}"
 }
 
 set_exit_value () {
@@ -199,6 +201,7 @@ scrub_tmp () {
 		done 2>/dev/null
 	)}")
 
+	echo
 	for F in ${FLIST};do
 		if arr_in_array "_EXIT_ACTIVE_PIDS" ${${(s/./)F:t}[1]};then
 			continue

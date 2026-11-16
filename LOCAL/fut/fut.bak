@@ -19,8 +19,6 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
-# TODO: -H help is not correct - test and repair
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
@@ -65,7 +63,7 @@ g_UTIL=''
 
 # Functions
 findexe () {
-	local -a PROD_LIST=(${HOME}/.zsh/completions ${HOME}/.local/bin ${HOME}/.local/share /usr/local/bin /usr/local/lib ${HOME}/Code/LOCAL)
+	local -a PROD_LIST=(${HOME}/.zsh/completions ${HOME}/.local/bin ${HOME}/.local/share /opt /usr/local/bin /usr/local/lib ${HOME}/Code/LOCAL)
 	local -a WIS=()
 	local -a FLIST=()
 	local -aU LIST=()
@@ -123,7 +121,7 @@ ______EOF
 		echo -e "\n${WHITE_FG}Usage${RESET}: ${_WRAPPER} ${_SCRIPT} ${WHITE_FG}[${RESET}${OPTS}${WHITE_FG}]${RESET} $(opt_type f)\n"
 		echo -e "${WHITE_FG}-H${RESET} help"
 		echo -e "${WHITE_FG}-D${RESET} debug"
-		echo -e "${WHITE_FG}-d${RESET} delete cache entry for search term"
+		echo -e "${WHITE_FG}-d${RESET} delete cache entry for <SEARCHTERM>"
 		echo -e "${WHITE_FG}-l${RESET} local files have priority"
 		echo -e "${WHITE_FG}-p${RESET} production file"
 		echo -e "${WHITE_FG}-v${RESET} verbose output"
@@ -162,16 +160,23 @@ ______EOF
 
 	[[ ! -d "${CACHE_DIR}" ]] && mkdir -p "${CACHE_DIR}"
 
-	# Handle cache deletion if -d is passed
+	# Handle cache deletion if -d is passed[cite: 7]
 	if [[ ${DELETE_CACHE} == 'true' ]]; then
 		if [[ -f "${CACHE_FILE}" ]]; then
 			awk -v target="${FN}" '
-				BEGIN {skip=0}
-				$0 == "===" target "===" {skip=1; next}
+				BEGIN {skip=0; found=0}
+				$0 == "===" target "===" {skip=1; found=1; next}
 				/^===.*===$/ {if (skip) skip=0}
 				!skip {print}
+				END { exit !found }
 			' "${CACHE_FILE}" > "${CACHE_FILE}.tmp" && mv "${CACHE_FILE}.tmp" "${CACHE_FILE}"
-			[[ ${VERBOSE} == 'true' ]] && echo "${GREEN_FG}Deleted cache entry for: ${FN}${RESET}" >&2
+
+			if [[ ${?} -eq 0 ]];then
+				echo "Deleted cache entry for:${WHITE_FG}${FN}${RESET}" >&2
+			else
+				echo "Nothing cached for:${WHITE_FG}${FN}${RESET}" >&2
+				rm -f "${CACHE_FILE}.tmp"
+			fi
 		fi
 		return 0
 	fi

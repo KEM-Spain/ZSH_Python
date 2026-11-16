@@ -1,0 +1,16 @@
+#compdef yts
+
+_yts() {
+    _arguments -s \
+        '-H[help]' \
+        '-D[debug]' \
+        '-R[Rumble query (default YouTube)]' \
+        '-T[Rumble query type live, channel, user general (default)  Rumble only]' \
+        '-a[(all,recent,min,hour,day,week,month,year) YouTube only]' \
+        '-s[enable strict filter (author must match query string) YouTube only]' \
+        '-w[browse website youtube rumble]' \
+        '-V[option -V]' \
+
+        _files -W ${PWD} ${0}
+}
+

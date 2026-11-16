@@ -18,7 +18,8 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
 # Declarations
-typeset -a _PROD_DIRS=(${HOME}/.local/bin ${HOME}/.local/share ${HOME}/.zsh/completions /usr/local/bin /usr/local/lib)
+typeset -a _PROD_LOCATIONS=(${HOME}/.local/bin ${HOME}/.local/share ${HOME}/.zsh/completions /usr/local/bin /usr/local/lib)
+typeset -a _PROD_DIRS=()
 
 # Constants
 _LIB_DIR=/usr/local/lib
@@ -70,7 +71,7 @@ get_prod_dir () {
 
 	for F in ${EXELIST};do
 		FX=$(tr '/' '_' <<<${F})
-		for D in ${_PROD_DIRS};do
+		for D in ${_PROD_LOCATIONS};do
 			DX=$(tr '/' '_' <<<${D})
 			if grep -q ${DX} <<<${FX};then
 				echo ${F:h}
@@ -393,6 +394,12 @@ show_diff () {
 	esac
 }
 
+load_prod_dirs () {
+	while read LINE;do
+		_PROD_DIRS+=${LINE}
+	done < ${_PROD_TARGET}
+}
+
 #--Begin GetOpts--
 RESET="\033[m"
 RED_FG="\033[31m"
@@ -406,8 +413,8 @@ Manage script sources during the development cycle
 \n\t'bak <FILE>' default action is to first create a local backup of the existing 
 \t<DEVELOPMENT> version and then copy <PRODUCTION> to <DEVELOPMENT>
 
-Note: If the production file is in a non standard location, create a file
-in the development dir: .prod_target containing the production dir for that file
+Note: If the production file is in a non standard location, create a file in 
+the development directory: .prod_target containing the fully qualified file name
 EOF
 
 parse_opts () {
@@ -490,26 +497,33 @@ shift $(( OPTIND - 1 ))
 # Execution
 clear
 tabs 2
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${#} -eq 0 ]];then
-	# TODO: Modify PROD_TARGET construct to handle multiple targets keyed by FILE_ARG
 	if [[ -e ${_PROD_TARGET} ]];then
 		_PROD_EXE="$(< ${_PROD_TARGET})"
 		FILE_ARG="${$(< ${_PROD_TARGET}):t}"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: No file supplied.  Attempting to establish a default based on directory name"
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Found _PROD_TARGET:${_PROD_TARGET}, _PROD_EXE:${_PROD_EXE}, FILE_ARG:${FILE_ARG}"
 		echo "Production dir:${WHITE_FG}${_PROD_EXE:h}${RESET}, FILE:${WHITE_FG}${_PROD_EXE:t}${RESET}"
 	else
 		DEFAULT_FN=${PWD:t}
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Setting a DEFAULT_FN:${DEFAULT_FN}"
 		[[ -e ${DEFAULT_FN}.zsh ]] && DEFAULT_FN=${DEFAULT_FN}.zsh # Add zsh extension if applicable
+		[[ -e ${DEFAULT_FN}.py ]] && DEFAULT_FN=${DEFAULT_FN}.py # Add py extension if applicable
+		[[ -e ${DEFAULT_FN}.js ]] && DEFAULT_FN=${DEFAULT_FN}.js # Add js extension if applicable
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Setting a DEFAULT_FN:${DEFAULT_FN}"
 
 		if [[ -e ${DEFAULT_FN} ]];then
 			FILE_ARG=${DEFAULT_FN} # Assign default file
+			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Found:${DEFAULT_FN}"
 		else
+			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Unable to find:${DEFAULT_FN}"
 			msg_box -p -PK "<r>No file corresponds to the default name<N>:<w>${DEFAULT_FN}<N>|Please provide a filename..."
 			exit_leave
 		fi
 	fi
 else
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Got FILE_ARG:${FILE_ARG}"
 	FILE_ARG=${1}
 fi
 
@@ -517,13 +531,17 @@ fi
 [[ ! -e ./${FILE_ARG} && ${#OPTIONS} -ne 0 ]] && exit_leave $(err_msg_exit "No such file:${FILE_ARG} exists in the current directory")
 
 if [[ ${BACKUP_LOCAL} == 'true' ]];then
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Backing up:${FILE_ARG}"
 	g_LOCAL_ONLY=true # No production dir necessary
 	FN=${FILE_ARG}
 else
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Finding production directory:${FILE_ARG}"
 	g_PRODUCTION_DIR=$(get_prod_dir ${FILE_ARG}) # Need a production dir
 	if [[ ${g_PRODUCTION_DIR} == "NOT_FOUND" ]];then
+		[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Unable to find production directory:${FILE_ARG}"
 		if [[ ${DEV_RELEASE} == 'true' ]];then
-			LIST=('1) Normal Production' '2) Library Module' '3) System Utility')
+			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Listing destination types"
+			LIST=('1) Normal Production' '2) Library Module' '3) System Utility' '4) Completion file')
 			tput sc
 			msg_box -p -H1 -P"Select Type" "<r>No production copy exists:<w>${FILE_ARG}<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
 			msg_box_clear
@@ -532,15 +550,17 @@ else
 				1) g_PRODUCTION_DIR=${_BIN_DIR};;
 				2) g_PRODUCTION_DIR=${_LIB_DIR};;
 				3) g_PRODUCTION_DIR=${_BIN_DIR}/system;;
+				4) g_PRODUCTION_DIR=${HOME}/.zsh/completions;;
 				*) echo; exit_leave "${RED_FG}Operation cancelled${RESET}";;
 			esac
+			[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}: Chosen destination:${g_PRODUCTION_DIR}"
 		else
 			exit_leave $(err_msg_exit "No production version of file:${FILE_ARG}${RESET} was found")
 		fi
 	fi
 
 	FN=$(fut findexe -p ${FILE_ARG})
-	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} fut findexe returned: ${FN} for FILE_ARG:${FILE_ARG}"
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0:t}:${LINENO} fut findexe returned: ${FN} for FILE_ARG:${FILE_ARG}"
 
 	if [[ -f ${FN} && -x ${FN} ]];then # A regular file - executable
 		FN_PATH=${FN:h}
@@ -565,24 +585,24 @@ g_ORIGINAL_VERSION=${PWD}/${FN:t}.orig
 [[ ${g_LOCAL_ONLY} == 'false' ]] && g_PROD_VERSION=${FN} || g_PROD_VERSION=None
 [[ ! -e ${g_PROD_VERSION} ]] && g_IS_INITIAL_PRODUCTION=true || g_IS_INITIAL_PRODUCTION=false
 
-[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_LOCAL_ONLY ${g_LOCAL_ONLY} g_PROD_VERSION=${g_PROD_VERSION} g_LOCAL_VERSION=${g_LOCAL_VERSION} g_BACKUP_VERSION=${g_BACKUP_VERSION}"
+[[ ${_DEBUG} -gt 0 ]] && dbg "${0:t}:${LINENO} g_LOCAL_ONLY ${g_LOCAL_ONLY} g_PROD_VERSION=${g_PROD_VERSION} g_LOCAL_VERSION=${g_LOCAL_VERSION} g_BACKUP_VERSION=${g_BACKUP_VERSION}"
 
 set_messages
 
 if [[ ${BACKUP_LOCAL} == 'true' ]];then # Backup development
-	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} BACKUP_LOCAL:true"
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0:t}:${LINENO} BACKUP_LOCAL:true"
 	make_backup
 elif [[ ${SHOW_B_DIFF} == 'true' ]];then # Compare development to local backup
-	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} SHOW_B_DIFF:true"
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0:t}:${LINENO} SHOW_B_DIFF:true"
 	show_diff local_dev_2_local_bak
 elif [[ ${SHOW_C_DIFF} == 'true' ]];then # Compare production to development
-	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} SHOW_C_DIFF:true"
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0:t}:${LINENO} SHOW_C_DIFF:true"
 	show_diff prod_2_local_dev
 elif [[ ${DEV_RELEASE} == 'true' ]];then # Copy development to production
-	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} DEV_RELEASE:true g_IS_INITIAL_PRODUCTION:${g_IS_INITIAL_PRODUCTION}"
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0:t}:${LINENO} DEV_RELEASE:true g_IS_INITIAL_PRODUCTION:${g_IS_INITIAL_PRODUCTION}"
 	local_to_prod
 elif [[ ${SYNC_PROD_BAK} == 'true' ]];then # Copy production to local backup
-	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} SYNC_PROD_BAK:true"
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0:t}:${LINENO} SYNC_PROD_BAK:true"
 	prod_to_backup
 else
 	[[ ! -e ${FN} ]] && exit_leave $(err_msg_exit "File:${FN} not found")

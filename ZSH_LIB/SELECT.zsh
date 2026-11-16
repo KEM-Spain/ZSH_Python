@@ -108,7 +108,7 @@ sel_clear_region () {
 
 	msg_unicode_box $(( X_ARG - 1 )) $(( Y_ARG - 1 )) $(( W_ARG + 2 )) $(( H_ARG + 3 ))
 
-	if [[ ${_DEBUG} -ge ${_LOW_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
 		for (( R=0; R <= H_ARG; R++ ));do
 			dbg "CLEARING: ROW:$(( X_ARG + R )) COL:${H_ARG} WIDTH:${W_ARG}"
 			tcup $(( X_ARG + R )) ${Y_ARG} && tput ech ${W_ARG} # Clear line
@@ -187,7 +187,7 @@ sel_get_position () {
 		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
 		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
 		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}: _TAG_DATA:${(kv)_TAG_DATA}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}: _TAG_DATA:${(kv)_TAG_DATA}"
 	fi
 }
 
@@ -530,7 +530,7 @@ sel_scroll () {
 		sel_get_position
 		if [[ ${_TAG_DATA[RESTORE]} == 'true'  ]];then
 			BOX_TAG=${_SELECT_TAG_FILE} # Maintain cursor position if _SAVE_MENU_POS is set
-			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  BOX_TAG:${BOX_TAG}"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  BOX_TAG:${BOX_TAG}"
 		fi
 
 		NDX=1 # Initialize index
@@ -728,7 +728,7 @@ sel_set_position () {
 	local PAGE=${1}
 	local NDX=${2}
 
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _SELECT_TAG_FILE:${_SELECT_TAG_FILE} PAGE:${PAGE}: NDX:${NDX}"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _SELECT_TAG_FILE:${_SELECT_TAG_FILE} PAGE:${PAGE}: NDX:${NDX}"
 
 	[[ -n ${_SELECT_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_SELECT_TAG_FILE} # Save list position
 	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "_SELECT_TAG_FILE NOT found"

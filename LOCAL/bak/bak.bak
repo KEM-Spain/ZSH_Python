@@ -18,7 +18,8 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 WHITE_ON_RED_ITALIC="\033[0m\033[0;3;37;101m"
 
 # Declarations
-typeset -a _PROD_DIRS=(${HOME}/.local/bin ${HOME}/.local/share ${HOME}/.zsh/completions /usr/local/bin /usr/local/lib)
+typeset -a _PROD_LOCATIONS=(${HOME}/.local/bin ${HOME}/.local/share ${HOME}/.zsh/completions /usr/local/bin /usr/local/lib)
+typeset -a _PROD_DIRS=()
 
 # Constants
 _LIB_DIR=/usr/local/lib
@@ -70,7 +71,7 @@ get_prod_dir () {
 
 	for F in ${EXELIST};do
 		FX=$(tr '/' '_' <<<${F})
-		for D in ${_PROD_DIRS};do
+		for D in ${_PROD_LOCATIONS};do
 			DX=$(tr '/' '_' <<<${D})
 			if grep -q ${DX} <<<${FX};then
 				echo ${F:h}
@@ -393,6 +394,12 @@ show_diff () {
 	esac
 }
 
+load_prod_dirs () {
+	while read LINE;do
+		_PROD_DIRS+=${LINE}
+	done < ${_PROD_TARGET}
+}
+
 #--Begin GetOpts--
 RESET="\033[m"
 RED_FG="\033[31m"
@@ -405,6 +412,9 @@ Manage script sources during the development cycle
 \t\tthe version in <PRODUCTION> (default: ${g_PRODUCTION_DIR}) as <PRODUCTION> 
 \n\t'bak <FILE>' default action is to first create a local backup of the existing 
 \t<DEVELOPMENT> version and then copy <PRODUCTION> to <DEVELOPMENT>
+
+Note: If the production file is in a non standard location, create a file in 
+the development directory: .prod_target containing the fully qualified file name
 EOF
 
 parse_opts () {
@@ -487,10 +497,8 @@ shift $(( OPTIND - 1 ))
 # Execution
 clear
 tabs 2
-#[[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 if [[ ${#} -eq 0 ]];then
-	# TODO: Modify PROD_TARGET construct to handle multiple targets keyed by FILE_ARG
 	if [[ -e ${_PROD_TARGET} ]];then
 		_PROD_EXE="$(< ${_PROD_TARGET})"
 		FILE_ARG="${$(< ${_PROD_TARGET}):t}"
@@ -498,6 +506,8 @@ if [[ ${#} -eq 0 ]];then
 	else
 		DEFAULT_FN=${PWD:t}
 		[[ -e ${DEFAULT_FN}.zsh ]] && DEFAULT_FN=${DEFAULT_FN}.zsh # Add zsh extension if applicable
+		[[ -e ${DEFAULT_FN}.py ]] && DEFAULT_FN=${DEFAULT_FN}.py # Add py extension if applicable
+		[[ -e ${DEFAULT_FN}.js ]] && DEFAULT_FN=${DEFAULT_FN}.js # Add js extension if applicable
 
 		if [[ -e ${DEFAULT_FN} ]];then
 			FILE_ARG=${DEFAULT_FN} # Assign default file
@@ -520,7 +530,7 @@ else
 	g_PRODUCTION_DIR=$(get_prod_dir ${FILE_ARG}) # Need a production dir
 	if [[ ${g_PRODUCTION_DIR} == "NOT_FOUND" ]];then
 		if [[ ${DEV_RELEASE} == 'true' ]];then
-			LIST=('1) Normal Production' '2) Library Module' '3) System Utility')
+			LIST=('1) Normal Production' '2) Library Module' '3) System Utility' '4) Completion file')
 			tput sc
 			msg_box -p -H1 -P"Select Type" "<r>No production copy exists:<w>${FILE_ARG}<N>| |<w>What type of module is this?<N>| |$(msg_list_bullet ${LIST})"
 			msg_box_clear
@@ -529,6 +539,7 @@ else
 				1) g_PRODUCTION_DIR=${_BIN_DIR};;
 				2) g_PRODUCTION_DIR=${_LIB_DIR};;
 				3) g_PRODUCTION_DIR=${_BIN_DIR}/system;;
+				4) g_PRODUCTION_DIR=${HOME}/.zsh/completions;;
 				*) echo; exit_leave "${RED_FG}Operation cancelled${RESET}";;
 			esac
 		else

@@ -55,7 +55,7 @@ do_rmcup () {
 
 	if [[ ${_SMCUP} == 'true' ]];then
 		tput -T ${_TERM} rmcup >&2
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Executed rmcup"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Executed rmcup"
 		_SMCUP=false
 	fi
 }
@@ -76,7 +76,7 @@ do_smcup () {
 
 	if [[ ${_SMCUP} == 'false' ]];then
 		tput -T ${_TERM} smcup >&2
-		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Executed smcup"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "Executed smcup"
 		_SMCUP=true
 	fi
 }

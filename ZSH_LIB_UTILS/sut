@@ -713,7 +713,6 @@ last_install () {
 
 	read -r -d '' DESC<<___EOF
 Display details of last dpkg install 
-\tUse option (-r) to show recent activity instead
 ___EOF
 
 	parse_opts () {

@@ -1,34 +1,3 @@
-2026-11-15_11:33: Logging started...
-2026-11-15_11:33: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-15_11:33: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-15_11:33: query_youtube: Creating listing for QKEY:neil-oliver, query is not strict
-2026-11-15_11:33: query_youtube:
-_QUERY_OPTS:
- 	-> DKEY:Neil Oliver
-	-> ENGINE:youtube
-	-> FILTER:filter
-	-> LIST:youtube
-	-> QKEY:neil-oliver
-	-> RANGE:recent
-	-> STRICT:no-strict
-2026-11-15_11:33: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py  -a recent "neil-oliver"
-2026-11-15_11:33: query_youtube: Video:'Tomorrow will be WORSE than t - filtered AUTHOR:gbnews != neiloliver
-2026-11-15_11:33: query_youtube: Listing for QKEY:neil-oliver contains 3 rows
-2026-11-15_11:33: query_youtube: Creating listing for QKEY:badfaith, query is not strict
-2026-11-15_11:33: query_youtube:
-_QUERY_OPTS:
- 	-> DKEY:Bad Faith
-	-> ENGINE:youtube
-	-> FILTER:filter
-	-> LIST:custom
-	-> QKEY:badfaith
-	-> RANGE:all
-	-> STRICT:no-strict
-2026-11-15_11:33: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py  -a all "badfaith"
-2026-11-15_11:33: query_youtube: Video:Converge - "Bad Faith" (Offici - filtered AUTHOR:epitaphrecordsandconverge != badfaith
-2026-11-15_11:33: query_youtube: Video:8 Graves - Bad Faith - filtered AUTHOR:8graves != badfaith
-2026-11-15_11:33: query_youtube: Video:SARTRE ON: Bad Faith - filtered AUTHOR:schooloflife != badfaith
-2026-11-15_11:33: query_youtube: Video:Sartre's theory of bad faith - filtered AUTHOR:overthinkpodcast != badfaith
-2026-11-15_11:33: query_youtube: Video:FORSAKEN - Bad Faith // Cover  - filtered AUTHOR:vincentmoretto != badfaith
-2026-11-15_11:33: query_youtube: Video:Bad Faith 2026: Christian Nati - filtered AUTHOR:badfaithdocumentary != badfaith
-2026-11-15_11:33: query_youtube: Listing for QKEY:badfaith contains 14 rows
+2026-11-16_19:37: Logging started...
+2026-11-16_19:37: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-16_19:37: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads

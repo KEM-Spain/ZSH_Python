@@ -1,0 +1,63 @@
+#!/usr/bin/zsh
+
+# Inline ansi
+RESET="\033[m"
+CYAN_FG="\033[36m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+
+typeset -A INODE_LIST=()
+typeset -a KEYS=()
+integer KEY=0
+typeset FILE=""
+typeset INODE=""
+integer LONGEST=0
+
+load_inodes() {
+  local I=""
+  local F=""
+
+  while read I F;do
+    [[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F}
+    INODE_LIST[${F}]="${I}"
+    KEYS+=( "${F}" )
+  done < <(ls -i)
+}
+
+
+display_menu() {
+  integer I=1
+  local F
+  local DASHED=$(( LONGEST + 12 ))
+
+  print "\nFile Listing by inode"
+  print -r -- "${(pl:${DASHED}::-:)}"
+  for F in "${KEYS[@]}";do
+    printf "${CYAN_FG}%d${RESET}) %*s %s\n" ${I} ${LONGEST} ${F} "${INODE_LIST[${F}]}"
+    (( I++ ))
+  done
+  print -r -- "${(pl:${DASHED}::-:)}"
+}
+
+main() {
+  local RESPONSE=""
+
+  load_inodes ${1}
+  display_menu
+
+  echo -n "Enter the file to delete:"
+  read RESPONSE
+  KEY="${RESPONSE:-0}"
+
+  if [[ ${KEY} -gt 0 && ${KEY} -le ${#KEYS[@]} ]];then
+    FILE="${KEYS[${KEY}]}"
+    INODE="${INODE_LIST[${FILE}]}"
+    print "Removing inode:${WHITE_FG}${INODE}${RESET}"
+    find . -inum "${INODE}" -delete
+    [[ ${?} -eq 0 ]] && print "File was removed" || print "Unable to remove file"
+  else
+    print "${RED_FG}Operation cancelled${RESET}"
+  fi
+}
+
+main
