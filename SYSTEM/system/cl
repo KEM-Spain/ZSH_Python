@@ -70,6 +70,16 @@ get_prod () {
 	done
 }
 
+set_default_fn () {
+	local THIS_DIR=${$(realpath .):t}
+	local F
+
+	for F in ${PWD}/*;do
+		[[ ${F:t} == ${THIS_DIR} ]] && echo ${F:t} && return 0
+	done
+	return 1
+}
+
 logit () {
 	local LOG=''
 	local MSG=''
@@ -97,16 +107,18 @@ code_status () {
 	local F
 
 	_LOCAL_FILES=()
+
 	{
 		LONGEST=0
 		for F in ${PWD}/*;do
 			[[ ${F:e} == 'bak' ]] && continue
-			if [[ $(file ${F}) =~ 'zsh script' || ${F:e} == 'zsh' || ${F:e} == 'js' || ${F:e} == 'py' || ${F:t} =~ "^_" ]];then
+			if [[ $(file ${F}) =~ 'zsh' || ${F:e} == 'zsh' || ${F:e} == 'js' || ${F:e} == 'py' || ${F:t} =~ "^_" ]];then
 				_LOCAL_FILES+=${F}
 				[[ ${#F} -gt ${LONGEST} ]] && LONGEST=${#F:t}
 			fi
 		done
 	} >/dev/null 2>&1
+	 
 	(( LONGEST+=5 ))
 
 	PROD=''
@@ -147,11 +159,14 @@ usage () {
 
 # Execution
 [[ ${#} -gt 1 ]] && echo "${RED_FG}Too many args${RESET}" && usage
-[[ ${#} -eq 0 ]] && ARG=${LOCAL} || ARG=${1}
+if [[ ${#} -eq 0 ]];then
+	ARG=$(set_default_fn)
+	[[ ${?} -ne 0 ]] && cd ${_LOCAL} && return
+else
+	ARG=${1}
+fi
 
 logit ${_LOG} "${_SCRIPT}: PWD:${PWD} ARGS:${ARG}"
-
-#[[ -z ${1} ]] && cd ${_CODEBASE}
 
 if [[ -d ${_LOCAL}/${ARG} ]];then
 	cd ${_LOCAL}/${ARG} 
@@ -173,7 +188,6 @@ elif [[ -d ${_PYPROJ}/${(U)ARG} ]];then
 	[[ -d venv ]] && cd venv
 else
 	echo "No development directory found:${WHITE_FG}${ARG}${RESET}"
-	return
 fi
 
 code_status

@@ -1,5 +1,4 @@
 # Default Options
-# TODO: Identify 'no arg' functions and eliminate calls to dbg_arglist
 setopt warncreateglobal # Monitor locals
 setopt rematchpcre # Use perl regex
 
