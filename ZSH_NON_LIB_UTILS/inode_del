@@ -28,15 +28,15 @@ load_inodes() {
 display_menu() {
   integer I=1
   local F
-  local DASHED=$(( LONGEST + 12 ))
+  local LEN=$(( LONGEST + 12 ))
 
   print "\nFile Listing by inode"
-  print -r -- "${(pl:${DASHED}::-:)}"
+  print -r -- "${(pl:${LEN}::-:)}"
   for F in "${KEYS[@]}";do
-    printf "${CYAN_FG}%d${RESET}) %*s %s\n" ${I} ${LONGEST} ${F} "${INODE_LIST[${F}]}"
+    printf "${CYAN_FG}%3d${RESET}) %*s %s\n" ${I} ${LONGEST} ${F} "${INODE_LIST[${F}]}"
     (( I++ ))
   done
-  print -r -- "${(pl:${DASHED}::-:)}"
+  print -r -- "${(pl:${LEN}::-:)}"
 }
 
 main() {

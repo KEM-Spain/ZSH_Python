@@ -861,17 +861,18 @@ shift $(( OPTIND - 1 ))
 [[ -e ${_LOG} ]] && /bin/rm -f ${_LOG}
 [[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} g_NO_PROMPTING:${g_NO_PROMPTING}"
 
-MEDIA_ARG=$(str_trim <<<${MEDIA_ARG})
 if [[ ${MEDIA} == "true" ]];then
+	[[ -z ${MEDIA_ARG} ]] && exit_leave $(err_msg_exit "Missing argument:<MEDIA_FILE>")
+
+	MEDIA_ARG=$(str_trim <<<${MEDIA_ARG})
 	logit ${_LOG} "MEDIA_ARG:${MEDIA_ARG}"
 
-	MEDIA_ARG_TYPE=''
-	[[ -f ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="file"
-	[[ -d ${MEDIA_ARG} ]] && MEDIA_ARG_TYPE="path"
-	[[ -z ${MEDIA_ARG} ]] && exit_leave $(err_msg_exit "Media argument:${MEDIA_ARG} is neither file nor path")
+	if [[ -f ${MEDIA_ARG} ]];then
+		[[ ! ${$(file ${MEDIA_ARG}):l} =~ 'media' ]] && exit_leave "${MEDIA_ARG} is not a media file"
+		MEDIA_ARG=$(realpath ${MEDIA_ARG}) # FQFN
+	fi
 
-	MEDIA_ARG=$(realpath ${MEDIA_ARG}) # FQFN
-	logit ${_LOG} "MEDIA_ARG_TYPE:${MEDIA_ARG_TYPE}, realpath:${MEDIA_ARG}"
+	logit ${_LOG} "MEDIA_ARG:${MEDIA_ARG}"
 fi
 
 # Handle input method
@@ -885,7 +886,6 @@ if [[ ${g_SERVICE_MODE} == 'false' ]];then # SERVICE_MODE ignores piped inputs
 	fi
 fi
 
-# TODO: Issue "File not found" if a filename is expected
 # Record arg types
 if [[ ${#} -ne 0 ]];then
 	for ((A=1; A <= ${#@}; A++));do

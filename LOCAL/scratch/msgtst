@@ -1,0 +1,42 @@
+#!/usr/bin/zsh
+# Inline ansi
+BOLD="\033[1m"
+ITALIC="\033[3m"
+RESET="\033[m"
+REVERSE="\033[7m"
+STRIKE="\033[9m"
+UNDER="\033[4m"
+BLINK="\033[5m"
+BLACK_BG="\033[40m"
+BLUE_FG="\033[34m"
+CYAN_FG="\033[36m"
+GREEN_FG="\033[32m"
+MAGENTA_FG="\033[35m"
+RED_FG="\033[31m"
+WHITE_FG="\033[37m"
+YELLOW_FG="\033[33m"
+CSR_OFF="\033[?25l"
+CSR_ON="\033[?25h"
+
+CYAN_ON_GREY="\033[0m\033[0;1;36;100m"
+GREEN_ON_GREY="\033[0m\033[0;1;32;100m"
+MAGENTA_ON_GREY="\033[0m\033[0;1;35;100m"
+RED_ON_GREY="\033[0m\033[0;1;31;100m"
+WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
+YELLOW_ON_GREY="\033[0m\033[0;1;33;100m"
+GREEN_ON_WHITE="\033[0m\033[0;1;31;100m"
+RED_ON_WHITE="\033[0m\033[0;1;31;107m"
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=()
+source ${_LIB_DIR}/LIB_DEPS.zsh
+source ./MSG.zsh
+
+typeset -a MSG_TEXT_1=(apple banana orange pineapple plum kumquat cherry strawberry)
+typeset -A MSG_TEXT_2=(1-one aaa 2-two bbb 3-three ccc 4-four ddd 5-five eee 6-six fff 7-seven ggg 8-eight hhh 9-nine iii 10-ten jjj)
+
+clear
+msg_box -p -alinear ${MSG_TEXT_1}
+msg_box -w1 -c -p -jl -aassoc ${(kv)MSG_TEXT_2}

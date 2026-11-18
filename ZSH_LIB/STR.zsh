@@ -236,18 +236,10 @@ str_proper () {
 
 str_rep_char () {
 	local CHAR=${1}
-	local LENGTH=${2}
-	local LINE
-	local X
+	local LEN=${2}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	LINE=''
-	for ((X=0;X < ${LENGTH};X++));do
-		LINE=${LINE}''${CHAR}
-	done
-
-	echo ${LINE}
+  local CMD="print -r -- \${(pl:${LEN}::${CHAR}:)}"
+	eval ${CMD}
 }
 
 str_no_ansi () {

@@ -447,7 +447,7 @@ fi
 [[ ${DEL_ARCH_OPT} == 'true' ]] && archive_del ${DEL_ARCH_OPT}
 
 if [[ ${#ARGS} -gt 1 ]];then # Assume list of files
-	echo "Got a list of files..."
+	echo "Received list of files..."
 	for A in ${ARGS};do
 		[[ ! -e ${A} ]] && usage "File:${A} not found" # Assumes FQFN; TODO: should prefix w/_CFG_DIR?
 		[[ ${A} == ${OUT_FILE_OPT} ]] && exit_leave $(err_msg_exit "Output filename must differ from any input file:${OUT_FILE_OPT}")

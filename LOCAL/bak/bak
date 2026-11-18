@@ -416,10 +416,10 @@ get_default_fn () {
 	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} THIS_DIR:${THIS_DIR}"
 
 	for F in ./*;do
-		[[ ${F:t} == ${THIS_DIR} ]] && DEFAULT=${THIS_DIR}
-		[[ ${F:t} == ${THIS_DIR}.zsh ]] && DEFAULT=${THIS_DIR}.zsh
-		[[ ${F:t} == ${THIS_DIR}.py ]] && DEFAULT=${THIS_DIR}.py
-		[[ ${F:t} == ${THIS_DIR}.js ]] && DEFAULT=${THIS_DIR}.js
+		[[ ${F:t} == ${THIS_DIR} ]] && DEFAULT=${THIS_DIR} && break
+		[[ ${F:t} == ${THIS_DIR}.zsh ]] && DEFAULT=${THIS_DIR}.zsh && break
+		[[ ${F:t} == ${THIS_DIR}.py ]] && DEFAULT=${THIS_DIR}.py && break
+		[[ ${F:t} == ${THIS_DIR}.js ]] && DEFAULT=${THIS_DIR}.js && break
 	done
 
 	if [[ -n ${DEFAULT} ]];then

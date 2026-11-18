@@ -64,19 +64,27 @@ get_prod_dir () {
 	local F D
 	local FX DX
 
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} ARG:${FN}"
+
 	EXELIST=("${(f)$(fut findexe -p ${FN:t})}")
-	[[ ${?} -ne 0 ]] && echo "NOT_FOUND" && return 1
+	if [[ ${?} -ne 0 ]];then
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} findexe failed"
+		echo "NOT_FOUND"
+		return 1
+	fi
 
 	for F in ${EXELIST};do
 		FX=$(tr '/' '_' <<<${F})
 		for D in ${_PROD_LOCATIONS};do
 			DX=$(tr '/' '_' <<<${D})
 			if grep -q ${DX} <<<${FX};then
+				[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} FOUND DIR:${F:h}"
 				echo ${F:h}
 				return 0
 			fi
 		done
 	done
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} DIR:NOT_FOUND"
 	echo "NOT_FOUND"
 	return 1
 }
@@ -405,6 +413,8 @@ get_default_fn () {
 	local DEFAULT=''
 	local F
 
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} THIS_DIR:${THIS_DIR}"
+
 	for F in ./*;do
 		[[ ${F:t} == ${THIS_DIR} ]] && DEFAULT=${THIS_DIR}
 		[[ ${F:t} == ${THIS_DIR}.zsh ]] && DEFAULT=${THIS_DIR}.zsh
@@ -413,9 +423,11 @@ get_default_fn () {
 	done
 
 	if [[ -n ${DEFAULT} ]];then
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} SET DEFAULT:${DEFAULT}"
 		echo ${DEFAULT}
 		return 0
 	else
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} DEFAULT:NOT_FOUND"
 		echo "NOT_FOUND"
 		return 1
 	fi
@@ -426,15 +438,20 @@ get_marker_prod () {
 	local -a MARKER_DATA=()
 	local F
 
+	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} ARG:${FN}"
+
 	if [[ -e ${_PROD_MARKER} ]];then
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} MARKER FOUND:${_PROD_MARKER}"
 		MARKER_DATA=($(get_prod_marker))
 		for F in ${MARKER_DATA};do
 			if [[ ${FN} == ${F:t} ]];then
 				g_HAS_MARKER=true
+				[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} SET PROD DIR:${F:h}"
 				echo ${F:h}
 				return 0
 			fi
 		done
+		[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} DIR:NOT_FOUND"
 		echo "NOT_FOUND"
 	fi
 	return 1

@@ -20,6 +20,12 @@ YELLOW_FG="\033[33m"
 
 WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=(MSG.zsh VALIDATE.zsh PATH.zsh)
+source ${_LIB_DIR}/LIB_DEPS.zsh
+
 # Declarations
 typeset -A _ARG_LIST
 typeset -a _SPACE_DOT
@@ -27,20 +33,10 @@ typeset -A _IN_LIST
 typeset -A _OUT_LIST
 typeset -A _CHAIN_LIST
 typeset -a _PIPELINE
-typeset -a _KEYWORDS
-
-# Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
-source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/MSG.zsh
-source ${_LIB_DIR}/VALIDATE.zsh
-source ${_LIB_DIR}/PATH.zsh
-source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Constants
 _CFG_DIR=~/.local/share/${_SCRIPT}
 _LOG=${_CFG_DIR}/${0:t}.log
-_KEYWORDS=(bluray)
 _TERM=xterm
 
 # Globals
@@ -56,12 +52,14 @@ g_VERBOSE=false
 # Functions
 get_fn_noext () {
 	local FN=${1}
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${FN:e} =~ '[[:alpha:]]+' ]] && echo ${FN:t:r} || echo ${FN:t}
 }
 
 get_fn_ext () {
 	local FN=${1}
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${FN:e} =~ '[[:alpha:]]+' ]] && echo ".${FN:e}" || echo ""
 }
@@ -77,6 +75,8 @@ inode_ndx () {
 	local INODE=''
 	local TYPE='f'
 	local F L
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for F in  ${ARGS};do
 		if [[ -f ${F} ]];then
@@ -115,8 +115,8 @@ inode_ndx () {
 	fi
 
 	for L in ${LIST};do
-		INODE=$(cut -d '|' -f1 <<<${L})
-		FN=$(cut -d '|' -f2 <<<${L})
+		INODE=${${(s/|/)L}[1]}
+		FN=${${(s/|/)L}[2]}
 		[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: INODE:${INODE} FN:${FN}"
 		_IN_LIST[${INODE}]=${FN}
 	done
@@ -125,6 +125,8 @@ inode_ndx () {
 clean_show_fn () {
 	local TITLE=${1}
 	local CLEANED=''
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -z ${TITLE} ]] && echo "${0}: ${RED_FG}Missing argument${RESET}:<TITLE>" >&2 && return 1
 
@@ -158,6 +160,8 @@ do_finalize () {
 	local RESPONSE=''
 	local RESULT=''
 	local K
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${_PIPED} == "true" ]];then
 		if [[ -n ${_OUT_LIST} ]];then
@@ -198,8 +202,8 @@ do_finalize () {
 		fi
 
 		RESULT=$(str_diff.pl "${_IN_LIST[${K}]:t}" "${_OUT_LIST[${K}]:t}")
-		BEFORE=$(cut -f1 -d'|' <<<${RESULT})
-		AFTER=$(cut -f2 -d'|' <<<${RESULT} | sed -e 's/[{]//g' -e 's/[}]//g')
+		BEFORE=${${(s/|/)RESULT}[1]}
+		AFTER=${${(s/|/)RESULT}[2]//[{}]/} # Scrubbing the '{}' braces before assignment
 		if [[ ${INTERACTIVE} == 'true' ]];then
 			printf "${CYAN_FG}%*s${RESET} -> ${WHITE_FG}%-*s${RESET}\n" ${LONGEST} "${BEFORE}" ${LONGEST} "${AFTER}"
 			echo -n "${WHITE_FG}Approve ${RESET}(${WHITE_FG}y/n${RESET}):";read -sq RESPONSE
@@ -304,6 +308,8 @@ do_add_leading_digits () {
 	local HIT=false
 	local C
 
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	[[ -z ${_OUT_LIST} ]] && _CHAIN_LIST=(${(kv)_IN_LIST}) || _CHAIN_LIST=(${(kv)_OUT_LIST})
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
 
@@ -375,7 +381,8 @@ do_media () {
 	local CLEANED=''
 	local OLD NEW
 	
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
 	logit ${_LOG} "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${0}: Got: INODE:${INODE}, TITLE:${TITLE}"
 
@@ -571,21 +578,25 @@ do_subs () {
 }
 
 do_truncate () {
-	local CANDIDATE
-	local TRUNCATED
-	local CPATH
-	local CFN
-	local CEXT
+	local CANDIDATE=''
+	local TRUNCATED=''
+	local CPATH=''
+	local CFN=''
+	local CEXT=''
 	local HIT=false
 	local C
 
 	[[ -z ${_OUT_LIST} ]] && _CHAIN_LIST=(${(kv)_IN_LIST}) || _CHAIN_LIST=(${(kv)_OUT_LIST})
-	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
+	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}"
 
 	for C in ${(k)_CHAIN_LIST};do
 		CANDIDATE=$(get_fn_noext ${_CHAIN_LIST[${C}]}) # W/o path & extension
 		if [[ ${TRUNC_FN_LEN} -gt 0 ]];then
-			[[ ${#CANDIDATE} -le ${TRUNC_FN_LEN} ]] && unset "_IN_LIST[${C}]" && continue # Remove non matches from original
+			if [[ ${#CANDIDATE} -le ${TRUNC_FN_LEN} ]];then
+				[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} ${RED_FG}REJECTED${RESET} - candidate length is only:${WHITE_FG}${#CANDIDATE}${RESET}"
+				unset "_IN_LIST[${C}]" 
+				continue # Remove non matches from original
+			fi
 			HIT=true
 			CPATH=${_CHAIN_LIST[${C}]:h}
 			[[ -n ${_CHAIN_LIST[${C}]:e} ]] && CEXT=".${_CHAIN_LIST[${C}]:e}" || CEXT=''
@@ -642,6 +653,8 @@ do_prepend () {
 	local CPATH
 	local CEXT
 	local C
+
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ -z ${_OUT_LIST} ]] && _CHAIN_LIST=(${(kv)_IN_LIST}) || _CHAIN_LIST=(${(kv)_OUT_LIST})
 	[[ ${_DEBUG} -gt 0 ]] && dbg "${0}:${LINENO} _CHAIN_LIST:${WHITE_FG}${(kv)_CHAIN_LIST}${RESET}]"
@@ -735,7 +748,6 @@ opt_type () {
 		t) echo "<INT>";;
 	esac
 }
-
 
 read -r -d '' DESC<<EOF
 Modify file names. Remove or change arbitrary text in file names.
@@ -1029,7 +1041,7 @@ fi
 if [[ ${PREPEND} == "true" ]];then
 	logit ${_LOG} "Prepend was called with:${PREPEND_TAG}"
 	[[ ${g_VERBOSE} == 'true' ]] && echo "${CYAN_FG}Prepending file names" >&2
-	do_prepend ${PREPEND_TAG}
+	do_prepend ${(C)PREPEND_TAG}
 	[[ ${?} -ne 0 ]] && echo "No matches for prepend" >&2
 fi
 

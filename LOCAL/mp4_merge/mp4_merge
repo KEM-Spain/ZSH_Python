@@ -45,7 +45,6 @@ typeset -a _ARCHIVED=()
 _CFG_DIR=${HOME}/.local/share/${_SCRIPT}
 _DEFAULT_PATH=~/Downloads/Torrents/Library/Web
 _FILTER=(ACODEC aac VCODEC libx264)
-_FS_DISK=/dev/nvme0n1p2
 _LOG_FILE=${_CFG_DIR}/${_SCRIPT}.log
 _ERR_FILE=${_CFG_DIR}/${_SCRIPT}.errors
 _CMD_FILE=${_CFG_DIR}/${_SCRIPT}.cmd
@@ -448,7 +447,7 @@ fi
 [[ ${DEL_ARCH_OPT} == 'true' ]] && archive_del ${DEL_ARCH_OPT}
 
 if [[ ${#ARGS} -gt 1 ]];then # Assume list of files
-	echo "Got a list of files..."
+	echo "Received list of files..."
 	for A in ${ARGS};do
 		[[ ! -e ${A} ]] && usage "File:${A} not found" # Assumes FQFN; TODO: should prefix w/_CFG_DIR?
 		[[ ${A} == ${OUT_FILE_OPT} ]] && exit_leave $(err_msg_exit "Output filename must differ from any input file:${OUT_FILE_OPT}")
@@ -487,7 +486,7 @@ fi
 OUT_FILE_OPT=${_FLIST[1]:h}/${OUT_FILE_OPT:r:gs/ /_/}.mp4
 
 NDX=0
-for F in ${_FLIST};do # Set inputs
+for F in ${(on)_FLIST};do # Set inputs
 	[[ -e ${F:t} ]] && FN=${F:t} || FN=${F} # Include path if needed
 	_INPUTS[${NDX}]="${FN}"
 	((NDX++))
@@ -558,7 +557,7 @@ else
 		echo "file $(realpath ${F:q})" >> ${_CFG_DIR}/merge_files
 	done
 
-	CMD="ffmpeg -y -loglevel 8 -progress ${_LOG_FILE} -f concat -safe 0 -i ${_CFG_DIR}/merge_files -c copy ${OUT_FILE_OPT}"
+	CMD="ffmpeg -y -loglevel 8 -progress ${_LOG_FILE} -f concat -safe 0 -i ${_CFG_DIR}/merge_files -c copy -movflags +faststart -avoid_negative_ts make_zero ${OUT_FILE_OPT}"
 
 	echo "${CMD}" > ${_CMD_FILE}
 	eval "${CMD}" 2>${_ERR_FILE} &

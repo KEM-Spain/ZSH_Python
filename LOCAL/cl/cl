@@ -71,7 +71,7 @@ get_prod () {
 }
 
 set_default_fn () {
-	local THIS_DIR=${$(realpath .):t}
+	local THIS_DIR=${PWD:t}
 	local F
 
 	for F in ${PWD}/*;do
@@ -160,6 +160,7 @@ usage () {
 # Execution
 [[ ${#} -gt 1 ]] && echo "${RED_FG}Too many args${RESET}" && usage
 if [[ ${#} -eq 0 ]];then
+	[[ ${PWD:t} == 'LIBS' ]] && code_status && return # Exception for LIBS
 	ARG=$(set_default_fn)
 	[[ ${?} -ne 0 ]] && cd ${_LOCAL} && return
 else

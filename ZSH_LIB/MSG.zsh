@@ -77,6 +77,7 @@ msg_box () {
 	# OPTIONS
 	local -A COORD_ARGS=()
 	local -a MSG=()
+	local _ARG_TYPE='text'
 	local BUFFER_FULL=false
 	local CLEAR_MSG=false
 	local CONTINUOUS=false
@@ -102,7 +103,7 @@ msg_box () {
 	local TEXT_STYLE=c # Default is center - Accepted Values:[(l)eft,(c)enter]
 	local TIMEOUT=0
 
-	local OPTSTR=":A:H:P:O:CIRT:cf:h:j:pqrs:t:uvw:x:y:Zz"
+	local OPTSTR=":A:H:P:O:CIRT:a:cf:h:j:pqrs:t:uvw:x:y:Zz"
 	OPTIND=0
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
@@ -118,6 +119,7 @@ msg_box () {
 			R) RELATIVE=true;; # Use this tag to retrieve an alternative placement coord
 			T) TAG_ARG=${OPTARG};; # TAG name to use when saving message coordinates
 			Z) _REPAINT=true;; # Repaint screen from buffer
+			a) _ARG_TYPE=${OPTARG};; # Message text is linear array or assoc array
 			c) CLEAR_MSG=true;; # Clear the previous message before displaying the current message
 			f) FOLD_WIDTH=${OPTARG};; # Fold the message text using this line width
 			h) MSG_H_COORD_ARG=${OPTARG};; # Specify a message box height other than the default
@@ -151,6 +153,12 @@ msg_box () {
 	# Process MSG arguments
 	MSG=(${@}) # MSG text
 	[[ -z ${MSG} ]] && return # If no MSG
+
+	if [[ -n ${_ARG_TYPE} ]];then
+		[[ ! ${_ARG_TYPE} =~ 'text|linear|assoc' ]] && echo "\nInvalid option: -a <ARG_TYPE>:${_ARG_TYPE}" >&2
+		[[ ${_ARG_TYPE} == 'assoc' ]] && MSG=$(msg_list_assoc ${MSG})
+		[[ ${_ARG_TYPE} == 'linear' ]] && MSG=$(msg_list_linear ${MSG})
+	fi
 
 	# Long messages display feedback while parsing
 	MSG_LEN=${#${(z)@}}
@@ -189,7 +197,7 @@ msg_box () {
 	fi
 
 	# Flash progress msg if requested
-	[[ ${_PROC_MSG} == 'true' ]] && msg_proc
+	[[ ${_PROC_MSG} == 'true' ]] && msg_processing
 
 	MSGS=("${(f)$(msg_box_parse ${MAX_LINE_WIDTH} ${MSG})}")
 	[[ -n ${MSG_FOOTER} ]] && MSG_FOOTER=("${(f)$(msg_box_parse ${MAX_LINE_WIDTH} ${MSG_FOOTER})}")
@@ -258,8 +266,6 @@ msg_box () {
 	elif [[ -n ${MSG_HEADER} ]];then
 		MSG_HEADER=(${MSG_HEADER} ${MSG_SEP})
 	fi
-
-	(( MSG_COLS += 2 )) # Add gutter
 
 	if [[ ${SAFE} == 'true' ]];then
 		[[ ${MSG_X_COORD} -lt ${MIN_X_COORD} ]] && MSG_X_COORD=${MIN_X_COORD}
@@ -460,7 +466,7 @@ msg_box_align () {
 	local PAD_L=''
 	local PAD_R=''
 	local MSG_OUT=''
-	local OFFSET=4
+	local OFFSET=2
 	local PADDING=''
 	local TEXT=''
 	local LBL=''
@@ -475,14 +481,12 @@ msg_box_align () {
 	elif [[ ${MSG} =~ '<L>' ]];then # Bullet
 		MSG=${MSG/*<L>/\\u2022 }
 		TEXT=$(msg_nomarkup ${MSG})
-		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
 		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${MSG} =~ '<X>' ]];then # Number
 		MSG=${MSG##*<X>}
 		TEXT=$(msg_nomarkup ${MSG})
-		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
 		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
@@ -498,20 +502,15 @@ msg_box_align () {
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${BOX_STYLE:l} == 'l' ]];then # Left
 		TEXT=$(msg_nomarkup ${MSG})
-		TEXT=$(str_trim ${TEXT})
 		PAD_L=' '
 		PAD_R=$(str_rep_char ' ' $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - OFFSET )) )
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
 	elif [[ ${BOX_STYLE:l} == 'c' ]];then # Center
 		TEXT=$(msg_nomarkup ${MSG})
-		TEXT=$(str_trim ${TEXT})
 		PADDING=$(str_center_pad ${BOX_WIDTH} ${TEXT})
 		PAD_L=$(str_lpad "" ${PADDING})
 		PAD_R=$(str_rpad "" $(( BOX_WIDTH - (${#PAD_L} + ${#TEXT}) - ( OFFSET + 1 ) )))
 		MSG_OUT="${PAD_L}${MSG}${PAD_R}"
-	else
-		TEXT=$(msg_nomarkup ${MSG})
-		MSG_OUT=$(str_trim ${TEXT})
 	fi
 
 	MSG_OUT=$(msg_markup ${MSG_OUT})
@@ -632,11 +631,9 @@ msg_list_bullet () {
 }
 
 msg_list_number () {
-	local -a MSG=()
+	local -a MSG=(${@})
 	local -i NDX=0
 	local L=""
-
-	MSG=(${@})
 
 	for L in ${MSG[@]};do
 		((NDX++))
@@ -646,19 +643,30 @@ msg_list_number () {
 }
 
 msg_list_assoc () {
-	local -A MSG=()
+	local -A MSG=(${(z)@}) # Expects a balanced assoc data load
 	local LONGEST=0
+	local K 
+
+
+  for K in ${(k)MSG};do
+		[[ ${#K} -gt ${LONGEST} ]] && LONGEST=${#K}
+	done
+
+  for K in ${(onk)MSG};do
+    printf "%*s: %s|" ${LONGEST} ${K} ${MSG[${K}]}
+	done
+}
+
+msg_list_linear () {
+	local -a MSG=()
 	local L 
 
-	MSG=(${@}) # Expects a balanced assoc data load
+	MSG=(${(z)@}) # Expects linear array data
 
-  for L in ${(k)MSG};do
-		[[ ${#L} -gt ${LONGEST} ]] && LONGEST=${#L}
+  for L in ${MSG};do
+    printf "%s|" ${L} 
 	done
 
-  for L in ${(k)MSG};do
-    printf "%*s: %s|" ${LONGEST} ${L} ${MSG[${L}]}
-	done
 }
 
 msg_list_data () {
@@ -766,7 +774,7 @@ msg_paging_page () {
 	echo ${PAGE}
 }
 
-msg_proc () {
+msg_processing () {
 	local BOX_W=20
 	local BOX_H=3
 	local H_POS=$(center -H -w${BOX_W})
