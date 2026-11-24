@@ -1,34 +1,16 @@
-2026-11-24_12:41: Logging started...
-2026-11-24_12:41: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-24_12:41: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-24_12:41: query_youtube: Creating listing for QKEY:tuckercarlson, query is not strict
-2026-11-24_12:41: query_youtube:
+2026-11-24_19:35: Logging started...
+2026-11-24_19:35: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-24_19:35: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-24_19:36: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
+2026-11-24_19:36: query_youtube:
 _QUERY_OPTS:
- 	-> DKEY:Tucker Carlson
+ 	-> DKEY:Alex Christoforou
 	-> ENGINE:youtube
-	-> FILTER:filter
+	-> FILTER:no-filter
 	-> LIST:youtube
-	-> QKEY:tuckercarlson
-	-> RANGE:all
-	-> STRICT:no-strict
-2026-11-24_12:41: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py  -a all "tuckercarlson"
-2026-11-24_12:41: clean_title: Title out:Finance Expert Warns Of Cyberattacks & Grid Failure: Buy Gold And Bury It Before AI 
-2026-11-24_12:41: clean_title: Title out:There IS A Deeper Story Here 
-2026-11-24_12:41: query_youtube: Video:Cenk Interviews Tucker Carlson - filtered AUTHOR:youngturks != tuckercarlson
-2026-11-24_12:41: clean_title: Title out:Viewer Discretion: Everything You Need To Know About Russell Brand Case 
-2026-11-24_12:41: clean_title: Title out:Tucker Reacts To Russell Brand's Statement From Prison 
-2026-11-24_12:41: clean_title: Title out:You Don't Have To Be A Conspiracy Theorist To See It's Connected 
-2026-11-24_12:41: clean_title: Title out:Tucker And Megyn Kelly Speak Out On Russell Brand's Trial And Netflix's Smear Campaign 
-2026-11-24_12:41: clean_title: Title out:Global Security Breach: FAA Groundings, Nvidia Scandal, Cyberattacks, And Start Of The 
-2026-11-24_12:41: clean_title: Title out:Joe Kent On Government's 90-Day Warning And What To Expect 
-2026-11-24_12:41: query_youtube: Video:Ep 19: Tucker Carlson : The Br - filtered AUTHOR:brandonstraka != tuckercarlson
-2026-11-24_12:41: clean_title: Title out:Jeffrey Epstein's Brother: 'Now We Have Proof That He Didn't Kill Himself' 
-2026-11-24_12:41: query_youtube: Video:Tucker Tears Jared Kushner APA - filtered AUTHOR:youngturks != tuckercarlson
-2026-11-24_12:41: clean_title: Title out:AI Whistleblower: Openai Scandal, AI Cults, Neuralink & Our Last Chance To Stop Tech 
-2026-11-24_12:41: clean_title: Title out:Dark Truth About Human Sacrifice, Demons, And Satanic Rituals Thriving IN Trump's 
-2026-11-24_12:41: clean_title: Title out:Forgotten Lessons Of Human History And The Dark Forces Robbing You Of Your God-Given 
-2026-11-24_12:41: clean_title: Title out:Shawn Ryan: Trump's Betrayal, Iran, Government Spying, Encounters With Demons, And 
-2026-11-24_12:41: clean_title: Title out:Netanyahu's Chilling Warning Caught On Camera 
-2026-11-24_12:41: clean_title: Title out:Murder That Exposed The Godless System Replacing Christianity & Why You're Not Allowed 
-2026-11-24_12:41: query_youtube: Video:Tucker Carlson Can't Believe T - filtered AUTHOR:elijahzielke != tuckercarlson
-2026-11-24_12:41: clean_title: Title out:We Are Tightrope Walking Over Abyss 
+	-> QKEY:alexchristoforou
+	-> RANGE:recent
+	-> STRICT:strict
+2026-11-24_19:36: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py -s -a recent "alexchristoforou"
+2026-11-24_19:36: clean_title: Title out:Russian Merkury Sinks; Escalation IN NATO Lake; Trump Dares Iran 
+2026-11-24_19:36: clean_title: Title out:Testing Kaliningrad Red Line; Baltic Sea Blockade Begins? Denmark Rapper Plot 

@@ -22,6 +22,7 @@ _CAT_SORT=r
 _CURRENT_PAGE=0
 _HAS_CAT=false
 _HILITE_X=0
+_REFRESH=false
 _SAVE_MENU_POS=false
 _SELECT_TAG_FILE="/tmp/${_MY_PID}.${_SCRIPT}_sel.state"
 _SEL_KEY=''
@@ -175,6 +176,7 @@ sel_list () {
 	local RGN_X_COORD=0
 	local RGN_Y_COORD=0
   local LSH_X=0
+	local F1 F2 L
 
 	local -A OPTIONS=()
 	local OPTION=''
@@ -189,7 +191,6 @@ sel_list () {
 	local HAS_FTR=false
 	local HAS_HDR=false
 	local HAS_MAP=false
-	local VISIBLE_OUTER=false
 	local IF_COLOR=${RESET}
 	local LIST_MAP=''
 	local LONG_ELEM=0
@@ -199,10 +200,9 @@ sel_list () {
 	local OF_COLOR=${RESET}
 	local OF_DEC_W=0
 	local STR=''
+	local VISIBLE_OUTER=false
 	local X_COORD_ARG=0
 	local Y_COORD_ARG=0
-	local _HAS_CAT=false
-	local _REFRESH=false
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
@@ -265,19 +265,41 @@ sel_list () {
 		# 9.   footer below
 		# 10. region perimeter
 		
+		# List header
+		LIST_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
+
+		# List dimensions
+		[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
+		_PAGE_TOPS=($(sel_set_pages ${#_LIST} ${LIST_H})) # Create table of page top indexes
+
+		LIST_W=$(arr_long_elem_len ${_LIST})
+		[[ ${_HAS_CAT} == 'true' ]] && (( LIST_W += 5 )) || (( LIST_W += 2 )) 
+
 		# DEC_W = widest decoration
 		[[ ${HAS_HDR} == 'true' ]] && DEC_W="${#$(msg_nomarkup ${FRAME_HDR})}"
 		[[ ${HAS_FTR} == 'true' && "${#$(msg_nomarkup ${FRAME_FTR})}" -gt ${DEC_W} ]] && DEC_W="${#$(msg_nomarkup ${FRAME_FTR})}"
 		[[ ${HAS_MAP} == 'true' && "${#$(msg_nomarkup ${LIST_MAP})}" -gt ${DEC_W} ]] && DEC_W="${#$(msg_nomarkup ${LIST_MAP})}"
+		[[ ${LIST_W} -gt ${DEC_W} ]] && DEC_W=${LIST_W}
 
-		# List dimensions
-		[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
-		LIST_W=$(arr_long_elem_len ${_LIST})
-		[[ ${_HAS_CAT} == 'true' ]] && (( LIST_W += 6 )) # Category increases list width
-
-		# List metrics and header
-		_PAGE_TOPS=($(sel_set_pages ${#_LIST} ${LIST_H})) # Create table of page top indexes
-		LIST_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
+		# Set field widths for lists having categories
+		if [[ ${_HAS_CAT} == 'true' ]];then
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CATEGORIES DETECTED"
+			for L in ${_LIST};do
+				F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${L})
+				F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${L})
+				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+				[[ ${#F1} -gt ${_CAT_COLS[1]} ]] && _CAT_COLS[1]=${#F1}
+				[[ ${#F2} -gt ${_CAT_COLS[2]} ]] && _CAT_COLS[2]=${#F2}
+			done
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SET category field widths: F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+			case ${_CAT_SORT} in
+				r) _LIST=(${(O)_LIST});; # Descending categories
+				a) _LIST=(${(o)_LIST});; # Ascending categories
+				n) _LIST=(${_LIST});; # No sorting of categories
+			esac
+		else
+			_CAT_COLS=()
+		fi
 
 		RGN_W=$(( BASE_COLS + DEC_W ))
 		RGN_H=$(( BASE_ROWS + LIST_H ))
@@ -290,9 +312,9 @@ sel_list () {
 
 		# Set outer
 		OF_X=$(( RGN_X_COORD + 1 )) # Down past header
-		OF_W=$(( DEC_W + 4 )) # Widest decoration plus gutter
+		OF_W=$(( DEC_W + 6 )) # Widest decoration plus gutter
 		[[ ${OF_W} -lt ${_EXIT_BOX} ]] && OF_W=$(( _EXIT_BOX + 2 ))  # Minimum width is sufficient to enclose exit box prompt
-		OF_Y=$(center -Y -c"$(box_coords_get "REGION")" -w${OF_W} -y1) # Left side
+		OF_Y=$(center -Y -c"$(box_coords_get "REGION")" -w${OF_W}) # Left side
 		OF_H=$(( RGN_H - 2 )) # Up past map
 		OF_BOT=$(( OF_X + OF_H - 1 ))
 
@@ -301,8 +323,8 @@ sel_list () {
 
 		# Set inner
 		IF_X=$(( RGN_X_COORD + 3 )) # Inner top
-		IF_W=$(( LIST_W + 2 )) # List plus gutter
-		IF_Y=$(center -Y -c"$(box_coords_get "OUTER_FRAME")" -w${IF_W} -y1) # Left side
+		IF_W=${LIST_W}
+		IF_Y=$(center -Y -c"$(box_coords_get "OUTER_FRAME")" -w${IF_W}) # Left side
 		IF_H=$(( LIST_H + 2 ))
 		IF_BOT=$(( IF_X + IF_H - 1 ))
 
@@ -313,7 +335,7 @@ sel_list () {
 		LSH_X=$(( IF_X - 1 ))
 		LSH_Y=$(center -Y -c"$(box_coords_get "OUTER_FRAME")" -w"${#$(msg_nomarkup ${LIST_HDR})}")
 		[[ ${HAS_HDR} == 'true' ]] && HDR_X=${RGN_X_COORD} || HDR_X=0
-		[[ ${HAS_HDR} == 'true' ]] && HDR_Y=$(center -Y -c"$(box_coords_get "REGION")" -w"${#$(msg_nomarkup ${FRAME_HDR})}" -y2) || HDR_Y=0
+		[[ ${HAS_HDR} == 'true' ]] && HDR_Y=$(center -Y -c"$(box_coords_get "REGION")" -w"${#$(msg_nomarkup ${FRAME_HDR})}") || HDR_Y=0
 		[[ ${HAS_MAP} == 'true' ]] && MAP_X=$(( OF_BOT - 1 )) || MAP_X=0
 		[[ ${HAS_MAP} == 'true' ]] && MAP_Y=$(center -Y -c"$(box_coords_get "OUTER_FRAME")" -w"${#$(msg_nomarkup ${LIST_MAP})}") || MAP_Y=0
 		[[ ${HAS_FTR} == 'true' ]] && FTR_X=$(( OF_BOT + 1 )) || FTR_X=0
