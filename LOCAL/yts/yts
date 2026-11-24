@@ -98,7 +98,7 @@ _FIELD_CONFIG[filter]="8|menu|Select Filter option|_QUERY_OPTS[STRICT]|_YT_FILTE
 
 INF_H=5
 INF_W=$((_CONT_WIDTH - 4 ))
-_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${INF_W} -y1) H ${INF_H} W ${INF_W}) # Info coords
+_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H}) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${INF_W}) H ${INF_H} W ${INF_W}) # Info coords
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _MSG_AREA_CLEARED=false
 _OBJECT="video"
@@ -309,7 +309,6 @@ action_do () {
 						MSG=$(str_word_clip ${LOG_LINE} ${_MAX_MSG_LEN})
 						MSG="$(str_rpad ${MSG} ${_MAX_MSG_LEN})"
 
-						# TODO: the display is garbled at the end. Should clear line and print.  Box edge is torn.
 						if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
 							case ${LOG_LINE:l} in
 								*merging*|*moving*|*fixing*)
@@ -1213,10 +1212,10 @@ log_clear () {
 
 	if [[ ${g_PRESERVE_LOG} == 'false' && ${_DEBUG} -eq 0 ]];then
 		/bin/rm -f ${g_YTS_SESSION_LOG}
-		msg_box -t2 "<w>Log was removed<N>"
+		msg_box -Z -t2 "<w>Log was removed<N>"
 		logit ${_YT_DBG_LOG} "${0}: Temp log file:${g_YTS_SESSION_LOG} was cleared for:${_QUERY_OPTS[QKEY]} from:${FROM}"
 	else
-		msg_box -t2 "<w>Log was preserved<N>"
+		msg_box -Z -t2 "<w>Log was preserved<N>"
 		logit ${_YT_DBG_LOG} "${0}: ${g_YTS_SESSION_LOG} was retained for:${_QUERY_OPTS[QKEY]}"
 	fi
 }

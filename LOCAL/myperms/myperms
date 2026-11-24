@@ -14,82 +14,65 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-# TODO: Select box needs work on sizes and alignment
-
 # Imports
 [[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-_DEPS+=(LIST.zsh SELECT.zsh CENTER.zsh)
+_DEPS+=(LIST.zsh SELECT.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
 
 # Declarations
-typeset -A _EPERMS=()
-typeset -A _FILES=()
-typeset -A _FTYPES=()
-typeset -A _GPERMS=()
-typeset -A _GROUPS=()
-typeset -A _OPERMS=()
-typeset -A _OWNERS=()
-typeset -A _PERMS=()
-typeset -A _WPERMS=()
+typeset -A _EPERMS
+typeset -A _FILES
+typeset -A _FTYPES
+typeset -A _GPERMS
+typeset -A _GROUPS
+typeset -A _OPERMS
+typeset -A _OWNERS
+typeset -A _PERMS
+typeset -A _WPERMS
 typeset -A _PERM_LABELS=(s Special o Owner g Group w World)
 typeset -A _SORT_TABLE=()
-typeset -a _MARKED=()
-typeset -a _RAWLIST=()
-typeset -a _LOCAL_LIST=()
+typeset -a _MARKED
+typeset -a _RAWLIST
+typeset -a _LOCAL_LIST
 typeset -i _FNDX=0
-typeset -A _TOP_WDW_COORDS=()
-typeset -A _SUB_WDW_COORDS=(X 8 Y 30)
-
-_TOP_WDW_WIDTH=40
-_TOP_WDW_COORDS=(X 8 Y $(center -H -w${_TOP_WDW_WIDTH}) H 10 W ${_TOP_WDW_WIDTH}) # Top box coords
-_RY=$(center -Y -c"${(kv)_TOP_WDW_COORDS}" -w${_TOP_WDW_WIDTH}) # Relative center of box
-_SUB_WDW_WIDTH=40
-_SUB_WDW_COORDS=(X $((_TOP_WDW_COORDS[X] + 2 )) Y ${_RY} H 10 W ${_SUB_WDW_WIDTH})
 
 # Functions
 action_do () {
-	local -A PERM_DECODE=(no-access n execute x write w write-execute wx read r read-execute re read-write rw read-write-execute rwx)
 	local -A POP_DECODE=('set permissions' sp 'change owner' co 'change group' cg 'change owner and group' cog)
 	local -A PTYPE_DECODE=(special s owner o group g world w all a umask u)
-	local -A SPECIAL_DECODE=(
-	'no special permissions' none 
-	'only user can delete or rename (sticky)' sticky 
-	'run as group' setgid 'run as group (sticky)' stkgid 
-	'run as user' setuid 'run as user (sticky)' stkuid 
-	'run as user and group' setugd 
-	'run as user and group (sticky)' stkugi
-)
+	local -A PERM_DECODE=(no-access n execute x write w write-execute wx read r read-execute re read-write rw read-write-execute rwx)
+	local -A SPECIAL_DECODE=('no special permissions' none 'only user can delete or rename (sticky)' sticky 'run as group' setgid 'run as group (sticky)' stkgid 'run as user' setuid 'run as user (sticky)' stkuid 'run as user and group' setugd 'run as user and group (sticky)' stkugi)
 	local -a COMBO_PERMS=(rwxr-xr-x rwxrwxr-x rwxrwxrwx rw-rw-rw- rw-r--r-- rw-------)
+	local -a USER_LIST=(${(f)"$(</etc/passwd)"%%:*})
 	local -a GROUP_LIST=(${(f)"$(</etc/group)"%%:*})
 	local -a USER_GROUP_LIST=()
-	local -a USER_LIST=(${(f)"$(</etc/passwd)"%%:*})
-	local CHGRP=''
-	local CHOWN=''
-	local NDX=0
-	local PERM_CODE=''
-	local POP=''
-	local PTYPE=''
-	local STITLE=''
+	local G M U
+	local NDX
+	local PTYPE
+	local PERM_CODE
+	local POP
+	local STITLE
+	local CHOWN CHGRP
 	local UMASK_PERMS=false
 	local match mbegin mend
 	local RC1 RC2
-	local G M U
+	local TOP_WIN_X=8 # Cascade
+	local TOP_WIN_Y=30 # Cascade
 
 	for U in ${USER_LIST};do
 		[[ ${GROUP_LIST[(i)${U}]} -le ${#GROUP_LIST} ]] && USER_GROUP_LIST+=${U}
 	done
 
 	sel_set_list ${(C)${(k)POP_DECODE}}
-	#sel_list -c -O${RED_FG} -x${_TOP_WDW_COORDS[X]} -y${_TOP_WDW_COORDS[Y]} -H"<w>Select Operation<N>"
-	sel_list -c -x${_TOP_WDW_COORDS[X]} -y${_TOP_WDW_COORDS[Y]} -H"<w>Select Operation<N>"
+	sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Select Operation<N>"
 	[[ ${?} -ne 0 ]] && clear_list && return 0
 
 	POP=${POP_DECODE[${_SEL_VAL:l}]}
 
 	if [[ ${POP} == 'sp' ]];then
 		sel_set_list ${(C)${(ok)PTYPE_DECODE}}
-		sel_list -c -O${RED_FG} -x${_SUB_WDW_COORDS[X]} -y${_SUB_WDW_COORDS[Y]} -H"<w>Set permissions<N>"
+		sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Set permissions<N>"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		PTYPE=${PTYPE_DECODE[${_SEL_VAL:l}]}
@@ -105,7 +88,7 @@ action_do () {
 		esac
 
 		if [[ ${UMASK_PERMS} == 'false' ]];then 
-			sel_list -c -O${RED_FG} -x${_SUB_WDW_COORDS[X]} -y${_SUB_WDW_COORDS[Y]} -H"${STITLE}"
+			sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
 			[[ ${?} -ne 0 ]] && clear_list && return 0
 
 			[[ ${PTYPE} == "a" ]] && PERM_CODE=${_SEL_VAL:l}
@@ -118,7 +101,7 @@ action_do () {
 			cog) sel_set_list ${(o)USER_GROUP_LIST};STITLE="<w>Select Owner & Group<N>";;
 			cg) sel_set_list ${(o)GROUP_LIST};STITLE="<w>Select Group<N>";;
 		esac
-		sel_list -c -O${RED_FG} -x${_SUB_WDW_COORDS[X]} -y${_SUB_WDW_COORDS[X]} -H"${STITLE}"
+		sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		case ${POP} in

@@ -85,7 +85,7 @@ _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 _MAX_CONT_HDR=70 # Continuous box headers
 _MAX_MSG_LEN=$(( _CONT_COORDS[W] - 2 )) # Continuous box msgs
 _MAX_FILE_LEN=120 # Output filenames
-_MAX_FILE_TITLE=94 # List display
+_MAX_LIST_TITLE=90 # List display
 
 _FIELD_CONFIG[qkey]="1|text|Enter QUERY key|_QUERY_OPTS[QKEY]|0|"
 _FIELD_CONFIG[dkey]="2|text|Enter DISPLAY key|_QUERY_OPTS[DKEY]|1|"
@@ -98,7 +98,7 @@ _FIELD_CONFIG[filter]="8|menu|Select Filter option|_QUERY_OPTS[STRICT]|_YT_FILTE
 
 INF_H=5
 INF_W=$((_CONT_WIDTH - 4 ))
-_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -y2 -c"${(kv)_CONT_COORDS}" -w${INF_W}) H ${INF_H} W ${INF_W}) # Info coords
+_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${INF_W} -y1) H ${INF_H} W ${INF_W}) # Info coords
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _MSG_AREA_CLEARED=false
 _OBJECT="video"
@@ -309,7 +309,6 @@ action_do () {
 						MSG=$(str_word_clip ${LOG_LINE} ${_MAX_MSG_LEN})
 						MSG="$(str_rpad ${MSG} ${_MAX_MSG_LEN})"
 
-						# TODO: the display is garbled at the end. Should clear line and print.  Box edge is torn.
 						if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
 							case ${LOG_LINE:l} in
 								*merging*|*moving*|*fixing*)
@@ -435,7 +434,7 @@ cfg_init () {
 
 clean_title () {
 	local RAW_TITLE=${1}
-	local MAX_TITLE=${2:=${_MAX_FILE_TITLE}}
+	local MAX_TITLE=${2:=${_MAX_LIST_TITLE}}
 	local -a PARTS=()
 	local HYPHEN_CNT=0
 	local STR=''
@@ -476,20 +475,20 @@ download_select () {
 		SEARCHTYPE=${_QUERY_OPTS[QTYPE]}
 	fi
 
-	_FIELD_LEN[author]=$(( _FIELD_LEN[author] + 2 )) # Add gutter
-	_FIELD_LEN[age]=$(( _FIELD_LEN[age] + 2 )) # Add gutter
+	_FIELD_LEN[AUTHOR]=$(( _FIELD_LEN[AUTHOR] + 2 )) # Add gutter
+	_FIELD_LEN[AGE]=$(( _FIELD_LEN[AGE] + 2 )) # Add gutter
 
 	# Set headings
 	list_set_header_init
 	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${_QUERY_OPTS[ENGINE]} ${SEARCHTERM} "${SEARCHTYPE}" $(list_get_selected_count)'
 	list_set_header 'printf " "'
-	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[age]} "Age" ${_FIELD_LEN[author]} "Author" ${_FIELD_LEN[title]} "Title"'
-	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[age]} "$(str_unicode_line ${_FIELD_LEN[age]})" ${_FIELD_LEN[author]} "$(str_unicode_line ${_FIELD_LEN[author]})" ${_FIELD_LEN[title]} "$(str_unicode_line ${_FIELD_LEN[title]})"'
+	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[AGE]} "Age" ${_FIELD_LEN[AUTHOR]} "Author" ${_FIELD_LEN[TITLE]} "Title"'
+	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[AGE]} "$(str_unicode_line ${_FIELD_LEN[AGE]})" ${_FIELD_LEN[AUTHOR]} "$(str_unicode_line ${_FIELD_LEN[AUTHOR]})" ${_FIELD_LEN[TITLE]} "$(str_unicode_line ${_FIELD_LEN[TITLE]})"'
 
 	# Set line item
 	list_set_line_item ' 
 	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})"
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[AGE]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[AUTHOR]}s %-${_FIELD_LEN[TITLE]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})"
 	'
 	list_set_select_action ${_ACTION}
 	list_set_action_msgs video download
@@ -1029,7 +1028,7 @@ get_field () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	case ${FIELD} in
+	case ${FIELD:l} in
 		age) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[age]}]}";;
 		agetime) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[agetime]}]}";;
 		author) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[author]}]}";;
@@ -1429,8 +1428,7 @@ _parse_rumble () {
 			*title:*)
 				(( TCNT++ ))
 				T3=$(( TCNT % TNDX ))
-				# Double quote both the input parameter and the command substitution result
-				[[ ${T3} -eq 0 ]] && QDATA+="$(fix_mojibake "${TEXT[2,-1]}")"
+				[[ ${T3} -eq 0 ]] && QDATA+="$(fix_mojibake "${TEXT[2,-1]}")" # Double quote both input and return value
 				;;
 			*duration:*) DURATION=$(_parse_rumble_duration ${TEXT});QDATA+=${DURATION};;
 			*upload_date:*) D="${${(@s/T/)TEXT}[1]}";U=$(date -d "${D}" +%s);QDATA+=$(_parse_rumble_age ${U});;
@@ -1460,11 +1458,12 @@ _parse_rumble () {
 		(( NDX++ ))
 		assign_vars 4 ${_RUMBLE_ROWS[${K}]} # URL TITLE DURATION AGE
 		TITLE=${V1}
+		TITLE=${TITLE[1,${_MAX_LIST_TITLE}]}
 		AGETIME="(${V4} ${V3})"
 		_LOCAL_LIST[${NDX}]="${V4}|${AUTHOR}|${V2}|${TITLE}|${V3}|${AGETIME}"
-		[[ ${#AGETIME} -gt ${_FIELD_LEN[age]} ]] && _FIELD_LEN[age]=${#AGETIME}
-		[[ ${#AUTHOR} -gt ${_FIELD_LEN[author]} ]] && _FIELD_LEN[author]=${#AUTHOR}
-		[[ ${#TITLE} -gt ${_FIELD_LEN[title]} ]] && _FIELD_LEN[title]=${#TITLE}
+		[[ ${#AGETIME} -gt ${_FIELD_LEN[AGE]} ]] && _FIELD_LEN[AGE]=${#AGETIME}
+		[[ ${#AUTHOR} -gt ${_FIELD_LEN[AUTHOR]} ]] && _FIELD_LEN[AUTHOR]=${#AUTHOR}
+		[[ ${#TITLE} -gt ${_FIELD_LEN[TITLE]} ]] && _FIELD_LEN[TITLE]=${#TITLE}
 	done
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: _LOCAL_LIST rows:${#_LOCAL_LIST}"
@@ -1707,9 +1706,9 @@ query_youtube () {
 
 		TITLE=$(clean_title ${TITLE})
 
-		[[ ${#AGETIME} -gt ${_FIELD_LEN[age]} ]] && _FIELD_LEN[age]=${#AGETIME}
-		[[ ${#AUTHOR} -gt ${_FIELD_LEN[author]} ]] && _FIELD_LEN[author]=${#AUTHOR}
-		[[ ${#TITLE} -gt ${_FIELD_LEN[title]} ]] && _FIELD_LEN[title]=${#TITLE}
+		[[ ${#AGETIME} -gt ${_FIELD_LEN[AGE]} ]] && _FIELD_LEN[AGE]=${#AGETIME}
+		[[ ${#AUTHOR} -gt ${_FIELD_LEN[AUTHOR]} ]] && _FIELD_LEN[AUTHOR]=${#AUTHOR}
+		[[ ${#TITLE} -gt ${_FIELD_LEN[TITLE]} ]] && _FIELD_LEN[TITLE]=${#TITLE}
 
 		_LOCAL_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done

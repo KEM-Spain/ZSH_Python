@@ -247,7 +247,6 @@ sel_list () {
 			_SELECT_TAG_FILE="/tmp/${_MY_PID}.${_TAG}.state"
 		fi
 
-		#TODO: set all the coordinates for the region, outer, and inner boxes - the old code was scrubbed - not working
 		# 1: based on passed X,Y for top left list placement, calculate the remaining available height
 		# 2: set the length and width of the list (or max list height, list width) based on availability to establish the height,width of the inner box
 		# 3: if there is an outer box, get height, width based on inner box
