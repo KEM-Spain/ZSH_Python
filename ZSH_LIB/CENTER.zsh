@@ -7,116 +7,98 @@ _MOD="[${0:t}]"
 # Internal Error Reporting Helper
 _report_error () {
 	local err_msg="${1}"
-	print -u2 "\n$${_MOD} Error in ${functrace[2]:-${functrace[1]}} (${funcfiletrace[2]:-${funcfiletrace[1]}}): ${RED_FG}${err_msg}${RESET}"
+	print -u2 "\n${_MOD} Error in ${functrace[2]:-${functrace[1]}} (${funcfiletrace[2]:-${funcfiletrace[1]}}): ${RED_FG}${err_msg}${RESET}"
 }
 
 # LIB Functions
 get_relative_center () {
-	local -A RGN_COORDS=(${(z)1}) # Coords of region to place object
-	local HEIGHT="${2}" # Height of object
-	local WIDTH="${3}" # Width of object
-	local X_OFF="${4:=0}" # X offset
-	local Y_OFF="${5:=0}" # Y offset
-	local RX=${RGN_COORDS[X]}
-	local RY=${RGN_COORDS[Y]}
-	local RH=${RGN_COORDS[H]}
-	local RW=${RGN_COORDS[W]}
-	local -F3 RGN_CTR=0 # Region center
-	local -F3 OBJ_CTR=0 # Object center
-	local -F3 REM=0 # Remainder
-	local -i X=0
-	local -i Y=0
+  local -A RGN_COORDS=()
+  local -i HEIGHT=0
+  local -i WIDTH=0
+  local -i X_OFF=0
+  local -i Y_OFF=0
+  local -i RX=0
+  local -i RY=0
+  local -i RH=0
+  local -i RW=0
+  local -F3 EXACT_X=0
+  local -F3 EXACT_Y=0
+  local -i X=0
+  local -i Y=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+  RGN_COORDS=(${(z)1})
+  HEIGHT="${2}"
+  WIDTH="${3}"
+  X_OFF="${4:-0}"
+  Y_OFF="${5:-0}"
+  RX=${RGN_COORDS[X]}
+  RY=${RGN_COORDS[Y]}
+  RH=${RGN_COORDS[H]}
+  RW=${RGN_COORDS[W]}
 
-	RGN_CTR=$(( (RH / 2) + RX ))
-	REM=$(( RGN_CTR % 2 ))
-	[[ ${REM} -ge .5 ]] && (( RGN_CTR++ ))
+  [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	OBJ_CTR=$(( (HEIGHT / 2) ))
-	REM=$(( OBJ_CTR % 2 ))
-	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
+  EXACT_X=$(( ${RX} + ((${RH} - ${HEIGHT}) / 2.0) + ${X_OFF} ))
+  X=$(( ${EXACT_X} >= 0 ? ${EXACT_X} + 0.5 : ${EXACT_X} - 0.5 ))
 
-	X=$(( RGN_CTR - OBJ_CTR - 1 ))
+  EXACT_Y=$(( ${RY} + ((${RW} - ${WIDTH}) / 2.0) + ${Y_OFF} ))
+  Y=$(( ${EXACT_Y} >= 0 ? ${EXACT_Y} + 0.5 : ${EXACT_Y} - 0.5 ))
 
-	RGN_CTR=$(( (RW / 2) + RY ))
-	REM=$(( RGN_CTR % 2 ))
-	[[ ${REM} -ge .5 ]] && (( RGN_CTR++ ))
-
-	OBJ_CTR=$(( (WIDTH / 2) ))
-	REM=$(( OBJ_CTR % 2 ))
-	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
-
-	Y=$(( RGN_CTR - OBJ_CTR - 1 ))
-
-	[[ ${X_OFF} -ne 0 ]] && X=$(( X + X_OFF ))
-	[[ ${Y_OFF} -ne 0 ]] && Y=$(( Y + Y_OFF ))
-
-	echo "X ${X} Y ${Y} H ${HEIGHT} W ${WIDTH}"
+  echo "X ${X} Y ${Y} H ${HEIGHT} W ${WIDTH}"
 }
 
 get_relative_x () {
-	local -A RGN_COORDS=(${(z)1}) # Coords of region to place object
-	local HEIGHT="${2}" # Height of object
-	local X_OFF="${3:=0}" # X offset
-	local Y_OFF="${4:=0}" # Y offset
-	local RX=${RGN_COORDS[X]}
-	local RY=${RGN_COORDS[Y]}
-	local RH=${RGN_COORDS[H]}
-	local RW=${RGN_COORDS[W]}
-	local -F3 RGN_CTR=0 # Region center
-	local -F3 OBJ_CTR=0 # Object center
-	local -F3 REM=0 # Remainder
-	local -i X=0
-	local -i Y=0
+  local -A RGN_COORDS=()
+  local HEIGHT=""
+  local -i X_OFF=0
+  local -i RX=0
+  local -i RY=0
+  local -i RH=0
+  local -i RW=0
+  local -F3 EXACT_X=0
+  local -i X=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+  RGN_COORDS=(${(z)1})
+  HEIGHT="${2}"
+  X_OFF="${3:-0}"
+  RX=${RGN_COORDS[X]}
+  RY=${RGN_COORDS[Y]}
+  RH=${RGN_COORDS[H]}
+  RW=${RGN_COORDS[W]}
 
-	RGN_CTR=$(( (RH / 2) + RX ))
-	REM=$(( RGN_CTR % 2 ))
-	[[ ${REM} -ge .5 ]] && (( RGN_CTR++ ))
+  [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	OBJ_CTR=$(( (HEIGHT / 2) ))
-	REM=$(( OBJ_CTR % 2 ))
-	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
+  EXACT_X=$(( ${RX} + ((${RH} - ${HEIGHT}) / 2.0) + ${X_OFF} ))
+  X=$(( ${EXACT_X} >= 0 ? ${EXACT_X} + 0.5 : ${EXACT_X} - 0.5 ))
 
-	X=$(( RGN_CTR - OBJ_CTR - 1 ))
-
-	[[ ${X_OFF} -ne 0 ]] && X=$(( X + X_OFF ))
-
-	echo ${X}
+  echo ${X}
 }
 
 get_relative_y () {
-	local -A RGN_COORDS=(${(z)1}) # Coords of region to place object
-	local WIDTH="${2}" # Width of object
-	local X_OFF="${3:=0}" # X offset
-	local Y_OFF="${4:=0}" # Y offset
-	local RX=${RGN_COORDS[X]}
-	local RY=${RGN_COORDS[Y]}
-	local RH=${RGN_COORDS[H]}
-	local RW=${RGN_COORDS[W]}
-	local -F3 RGN_CTR=0 # Region center
-	local -F3 OBJ_CTR=0 # Object center
-	local -F3 REM=0 # Remainder
-	local -i X=0
-	local -i Y=0
+  local -A RGN_COORDS=()
+  local WIDTH=""
+  local -i Y_OFF=0
+  local -i RX=0
+  local -i RY=0
+  local -i RH=0
+  local -i RW=0
+  local -F3 EXACT_Y=0
+  local -i Y=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+  RGN_COORDS=(${(z)1})
+  WIDTH="${2}"
+  Y_OFF="${3:-0}"
+  RX=${RGN_COORDS[X]}
+  RY=${RGN_COORDS[Y]}
+  RH=${RGN_COORDS[H]}
+  RW=${RGN_COORDS[W]}
 
-	RGN_CTR=$(( (RW / 2) + RY ))
-	REM=$(( RGN_CTR % 2 ))
-	[[ ${REM} -ge .5 ]] && (( RGN_CTR++ ))
+  [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	OBJ_CTR=$(( (WIDTH / 2) ))
-	REM=$(( OBJ_CTR % 2 ))
-	[[ ${REM} -ge .5 ]] && (( OBJ_CTR++ ))
+  EXACT_Y=$(( ${RY} + ((${RW} - ${WIDTH}) / 2.0) + ${Y_OFF} ))
+  Y=$(( ${EXACT_Y} >= 0 ? ${EXACT_Y} + 0.5 : ${EXACT_Y} - 0.5 ))
 
-	Y=$(( RGN_CTR - OBJ_CTR - 1 ))
-
-	[[ ${Y_OFF} -ne 0 ]] && Y=$(( Y + Y_OFF ))
-
-	echo ${Y}
+  echo ${Y}
 }
 
 get_box_center () {
@@ -139,53 +121,41 @@ get_box_center () {
 }
 
 get_vert_center () {
-	local HEIGHT=${1}
-	local RGN=$(tput lines)
-	local -F3 HEIGHT_CENTER=$(( HEIGHT / 2 ))
-	local -F3 RGN_CENTER=$(( RGN / 2 ))
-	local -F3 REM=0
-	local -i X=0
+  local -i HEIGHT=0
+  local -i X_OFF=0
+  local -i RGN=0
+  local -F3 EXACT_X=0
+  local -i X=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+  HEIGHT="${1}"
+  X_OFF="${2:-0}"
+  RGN=$(tput lines)
 
-	REM=$(( HEIGHT_CENTER % 2 ))
-	[[ ${REM} -ge .5 ]] && (( HEIGHT_CENTER++ ))
+  [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	REM=$(( RGN_CENTER % 2 ))
-	[[ ${REM} -ge .5 ]] && (( RGN_CENTER++ ))
+  EXACT_X=$(( ((${RGN} - ${HEIGHT}) / 2.0) + ${X_OFF} ))
+  X=$(( ${EXACT_X} >= 0 ? ${EXACT_X} + 0.5 : ${EXACT_X} - 0.5 ))
 
-	if [[ ${RGN_CENTER} -eq ${HEIGHT_CENTER} ]];then
-		X=${HEIGHT_CENTER}
-	else
-		X=$(( RGN_CENTER - HEIGHT_CENTER - 1 ))
-	fi
-
-	echo ${X}
+  echo ${X}
 }
 
 get_horz_center () {
-	local WIDTH=${1}
-	local RGN=$(tput cols)
-	local -F3 WIDTH_CENTER=$(( WIDTH / 2 ))
-	local -F3 RGN_CENTER=$(( RGN / 2 ))
-	local -F3 REM=0
-	local -i Y=0
+  local -i WIDTH=0
+  local -i Y_OFF=0
+  local -i RGN=0
+  local -F3 EXACT_Y=0
+  local -i Y=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+  WIDTH="${1}"
+  Y_OFF="${2:-0}"
+  RGN=$(tput cols)
 
-	REM=$(( WIDTH_CENTER % 2 ))
-	[[ ${REM} -ge .5 ]] && (( WIDTH_CENTER++ ))
+  [[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	REM=$(( RGN_CENTER % 2 ))
-	[[ ${REM} -ge .5 ]] && (( RGN_CENTER++ ))
+  EXACT_Y=$(( ((${RGN} - ${WIDTH}) / 2.0) + ${Y_OFF} ))
+  Y=$(( ${EXACT_Y} >= 0 ? ${EXACT_Y} + 0.5 : ${EXACT_Y} - 0.5 ))
 
-	if [[ ${RGN_CENTER} -eq ${WIDTH_CENTER} ]];then
-		Y=${WIDTH_CENTER}
-	else
-		Y=$(( RGN_CENTER - WIDTH_CENTER - 1 ))
-	fi
-
-	echo ${Y}
+  echo ${Y}
 }
 
 validate_args () {
@@ -253,6 +223,8 @@ validate_opts () {
 		case ${O} in
 			c) if [[ $(( ${#${(z)COORD_ARGS}} % 2 )) -ne 0 ]];then
 					_report_error "${functrace[1]} COORD_ARGS:${COORD_ARGS} are unbalanced" >&2 && return 1
+				else
+					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: COORDS are balanced"
 				fi;;
 			h) if ! validate_is_number "${HEIGHT}";then
 					_report_error "${functrace[1]} HEIGHT is not numeric" >&2 && return 1
@@ -260,6 +232,8 @@ validate_opts () {
 					_report_error "${functrace[1]} HEIGHT exceeds maximum $(tput lines)" >&2 && return 1
 				elif [[ "${HEIGHT}" -lt 1 ]];then
 					_report_error "${functrace[1]} HEIGHT must be a positive integer > 0" >&2 && return 1
+				else
+					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: HEIGHT:${HEIGHT}"
 				fi;;
 			w) if ! validate_is_number "${WIDTH}";then
 					_report_error "${functrace[1]} WIDTH is not numeric" >&2 && return 1
@@ -267,12 +241,18 @@ validate_opts () {
 					_report_error "${functrace[1]} WIDTH exceeds maximum $(tput cols)" >&2 && return 1
 				elif [[ "${WIDTH}" -lt 1 ]];then
 					_report_error "${functrace[1]} WIDTH must be a positive integer > 0" >&2 && return 1
+				else
+					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: WIDTH:${WIDTH}"
 				fi;;
 			x) if ! validate_is_number "${X_OFF}";then
 					_report_error "${functrace[1]} X_OFF is not numeric" >&2 && return 1
+				else
+					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: X OFFSET:${X_OFF}"
 				fi;;
 			y) if ! validate_is_number "${Y_OFF}";then
 					_report_error "${functrace[1]} Y_OFF is not numeric" >&2 && return 1
+				else
+					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Y OFFSET:${Y_OFF}"
 				fi;;
 		esac
 	done
@@ -350,8 +330,8 @@ center () {
 				H) print -u2 "${0:t}: HORZ option -H requires: -w <N>";;
 				R) print -u2 "${0:t}: REL_C option -R requires: -c COORD_ARGS -h <N> -w <N> [-x <N>] [-y <N>]";;
 				V) print -u2 "${0:t}: VERT option -V requires: -h <N>";;
-				X) print -u2 "${0:t}: REL_X option -X requires: -c <COORD_ARGS> -h <N> [-x <N>] [-y <N>]";;
-				Y) print -u2 "${0:t}: REL_Y option -Y requires: -c <COORD_ARGS> -w <N> [-x <N>] [-y <N>]";;
+				X) print -u2 "${0:t}: REL_X option -X requires: -c <COORD_ARGS> -h <N> [-x <N>]";;
+				Y) print -u2 "${0:t}: REL_Y option -Y requires: -c <COORD_ARGS> -w <N> [-y <N>]";;
 				c) print -u2 "${0:t}: COORD_ARGS option -c requires: -c <COORD ARRAY ARGS>: X <N> Y <N> H <N> W <N>";;
 				h) print -u2 "${0:t}: HEIGHT option -h requires: -h <N>";;
 				w) print -u2 "${0:t}: WIDTH option -w requires: -w <N>";;
@@ -368,7 +348,7 @@ center () {
 		VERT) get_vert_center "${_HEIGHT}";;
 		HORZ) get_horz_center "${_WIDTH}";;
 		REL_C) get_relative_center "${COORD_ARGS}" "${_HEIGHT}" "${_WIDTH}" "${_X_OFF}" "${_Y_OFF}";;
-		REL_X) get_relative_x "${COORD_ARGS}" "${_HEIGHT}" "${_X_OFF}" "${_Y_OFF}";;
-		REL_Y) get_relative_y "${COORD_ARGS}" "${_WIDTH}" "${_X_OFF}" "${_Y_OFF}";;
+		REL_X) get_relative_x "${COORD_ARGS}" "${_HEIGHT}" "${_X_OFF}";;
+		REL_Y) get_relative_y "${COORD_ARGS}" "${_WIDTH}" "${_Y_OFF}";;
 	esac
 }

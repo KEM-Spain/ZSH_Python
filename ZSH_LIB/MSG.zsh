@@ -348,7 +348,7 @@ msg_box () {
 			_CONT_DATA[SCR]=${_CONT_DATA[TOP]}
 			for M in ${_CONT_BUFFER};do
 				tcup ${_CONT_DATA[SCR]} ${_CONT_DATA[Y]}
-				echo -n ${M}
+				echo -n ${FAINT}${M}${RESET}
 				(( _CONT_DATA[SCR]++))
 			done
 		fi

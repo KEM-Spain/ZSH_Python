@@ -1,97 +1,34 @@
-2026-11-18_23:12: Logging started...
-2026-11-18_23:12: log_update: LOG lines BEFORE update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-18_23:12: log_update: LOG lines AFTER update:4 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-18_23:12: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
-2026-11-18_23:12: query_youtube:
+2026-11-24_12:41: Logging started...
+2026-11-24_12:41: log_update: LOG lines BEFORE update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-24_12:41: log_update: LOG lines AFTER update:2 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-24_12:41: query_youtube: Creating listing for QKEY:tuckercarlson, query is not strict
+2026-11-24_12:41: query_youtube:
 _QUERY_OPTS:
- 	-> DKEY:Alex Christoforou
+ 	-> DKEY:Tucker Carlson
 	-> ENGINE:youtube
-	-> FILTER:no-filter
+	-> FILTER:filter
 	-> LIST:youtube
-	-> QKEY:alexchristoforou
-	-> RANGE:recent
-	-> STRICT:strict
-2026-11-18_23:12: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py -s -a recent "alexchristoforou"
-2026-11-18_23:12: clean_title: Raw TITLE:Crimea Bridge Hit, Kiev Bridges Hit; Kushner, EU & NATO Set Terms for Russia
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Crimea Bridge Hit, Kiev Bridges Hit; Kushner, EU & NATO Set Terms For Russia
-2026-11-18_23:12: clean_title: Completed TITLE:Crimea Bridge Hit, Kiev Bridges Hit; Kushner, EU & NATO Set Terms For Russia 
-2026-11-18_23:12: clean_title: Raw TITLE:Colby Admits Russia Advancing; Putin Slams Eurozone; Rubio Explains Outages
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Colby Admits Russia Advancing; Putin SLAMS Eurozone; Rubio Explains Outages
-2026-11-18_23:12: clean_title: Completed TITLE:Colby Admits Russia Advancing; Putin SLAMS Eurozone; Rubio Explains Outages 
-2026-11-18_23:12: clean_title: Raw TITLE:Saudi Retreat in Yemen; Kerch Bridge Hit; French Troops in Ukraine
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Saudi Retreat IN Yemen; Kerch Bridge Hit; French Troops IN Ukraine
-2026-11-18_23:12: clean_title: Completed TITLE:Saudi Retreat IN Yemen; Kerch Bridge Hit; French Troops IN Ukraine 
-2026-11-18_23:12: clean_title: Raw TITLE:BIG BEAUTIFUL US-Russia Deal; Rubio Exit? Zelensky: US Owes $16B to Ukraine
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Big Beautiful US-Russia Deal; Rubio Exit? Zelensky: US Owes $16B To Ukraine
-2026-11-18_23:12: clean_title: Completed TITLE:Big Beautiful US-Russia Deal; Rubio Exit? Zelensky: US Owes $16B To Ukraine 
-2026-11-18_23:12: query_youtube: Creating listing for QKEY:blancolirio, query is strict
-2026-11-18_23:12: query_youtube:
-_QUERY_OPTS:
- 	-> DKEY:Blan Colirio
-	-> ENGINE:youtube
-	-> FILTER:no-filter
-	-> LIST:youtube
-	-> QKEY:blancolirio
+	-> QKEY:tuckercarlson
 	-> RANGE:all
-	-> STRICT:strict
-2026-11-18_23:12: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py -s -a all "blancolirio"
-2026-11-18_23:12: query_youtube: Translated TITLE:UPDATE on FAA modernization! Nov 16 from 2026
-2026-11-18_23:12: clean_title: Raw TITLE:UPDATE on FAA modernization! Nov 16 from 2026
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Update On FAA Modernization! Nov 16 From 2026
-2026-11-18_23:12: clean_title: Completed TITLE:Update On FAA Modernization! Nov 16 From 2026 
-2026-11-18_23:12: query_youtube: Translated TITLE:FAA Ground Stop! Friday the 13th edition
-2026-11-18_23:12: clean_title: Raw TITLE:FAA Ground Stop! Friday the 13th edition
-2026-11-18_23:12: clean_title: Scrubbed TITLE:FAA Ground Stop! Friday The 13th Edition
-2026-11-18_23:12: clean_title: Completed TITLE:FAA Ground Stop! Friday The 13th Edition 
-2026-11-18_23:12: query_youtube: Translated TITLE:Collision in Carlisle, PA, August 19, 2026
-2026-11-18_23:12: clean_title: Raw TITLE:Collision in Carlisle, PA, August 19, 2026
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Collision IN Carlisle, Pa, August 19, 2026
-2026-11-18_23:12: clean_title: Completed TITLE:Collision IN Carlisle, Pa, August 19, 2026 
-2026-11-18_23:12: query_youtube: Translated TITLE:N722BD Lear 60 Loss of control in flight Nov 1 from 2026
-2026-11-18_23:12: clean_title: Raw TITLE:N722BD Lear 60 Loss of control in flight Nov 1 from 2026
-2026-11-18_23:12: clean_title: Scrubbed TITLE:N722Bd Lear 60 Loss Of Control IN Flight Nov 1 From 2026
-2026-11-18_23:12: clean_title: Completed TITLE:N722Bd Lear 60 Loss Of Control IN Flight Nov 1 From 2026 
-2026-11-18_23:12: clean_title: Raw TITLE:Oroville Before the Rains 10 Nov 2026
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Oroville Before The Rains 10 Nov 2026
-2026-11-18_23:12: clean_title: Completed TITLE:Oroville Before The Rains 10 Nov 2026 
-2026-11-18_23:12: query_youtube: Translated TITLE:Seawind N6007 NTSB Preliminary Report October 22 Reno NV
-2026-11-18_23:12: clean_title: Raw TITLE:Seawind N6007 NTSB Preliminary Report October 22 Reno NV
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Seawind N6007 NTSB Preliminary Report October 22 Reno NV
-2026-11-18_23:12: clean_title: Completed TITLE:Seawind N6007 NTSB Preliminary Report October 22 Reno NV 
-2026-11-18_23:12: query_youtube: Translated TITLE:N931TT Fatal encounter with ice October 13, 2026
-2026-11-18_23:12: clean_title: Raw TITLE:N931TT Fatal encounter with ice October 13, 2026
-2026-11-18_23:12: clean_title: Scrubbed TITLE:N931Tt Fatal Encounter With ICE October 13, 2026
-2026-11-18_23:12: clean_title: Completed TITLE:N931Tt Fatal Encounter With ICE October 13, 2026 
-2026-11-18_23:12: query_youtube: Translated TITLE:High speed aerodynamics analysis
-2026-11-18_23:12: clean_title: Raw TITLE:High speed aerodynamics analysis
-2026-11-18_23:12: clean_title: Scrubbed TITLE:High Speed Aerodynamics Analysis
-2026-11-18_23:12: clean_title: Completed TITLE:High Speed Aerodynamics Analysis 
-2026-11-18_23:12: query_youtube: Translated TITLE:Fatal forced landing at Tarragon, NTSB Prelim, February 19, 2026
-2026-11-18_23:12: clean_title: Raw TITLE:Fatal forced landing at Tarragon, NTSB Prelim, February 19, 2026
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Fatal Forced Landing At Tarragon, NTSB Prelim, February 19, 2026
-2026-11-18_23:12: clean_title: Completed TITLE:Fatal Forced Landing At Tarragon, NTSB Prelim, February 19, 2026 
-2026-11-18_23:12: clean_title: Raw TITLE:TNFlygirl Crash 7 Dec 2023 N5891J
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Tnflygirl Crash 7 Dec 2023 N5891J
-2026-11-18_23:12: clean_title: Completed TITLE:Tnflygirl Crash 7 Dec 2023 N5891J 
-2026-11-18_23:12: clean_title: Raw TITLE:P47 Fly Over OSH 26
-2026-11-18_23:12: clean_title: Scrubbed TITLE:P47 Fly Over Osh 26
-2026-11-18_23:12: clean_title: Completed TITLE:P47 Fly Over Osh 26 
-2026-11-18_23:12: query_youtube: Translated TITLE:$400 crepes! Flying with "Harvey" in the 1959 Cessna 310C
-2026-11-18_23:12: clean_title: Raw TITLE:$400 crepes! Flying with "Harvey" in the 1959 Cessna 310C
-2026-11-18_23:12: clean_title: Scrubbed TITLE:$400 Crepes! Flying With 'Harvey' IN The 1959 Cessna 310C
-2026-11-18_23:12: clean_title: Completed TITLE:$400 Crepes! Flying With 'Harvey' IN The 1959 Cessna 310C 
-2026-11-18_23:12: clean_title: Raw TITLE:Blast From the Past! Reno Air Races 1987 Pitts S-1C
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Blast From The Past! Reno Air Races 1987 Pitts S-1C
-2026-11-18_23:12: clean_title: Completed TITLE:Blast From The Past! Reno Air Races 1987 Pitts S-1C 
-2026-11-18_23:12: clean_title: Raw TITLE:Azerbaijan Airlines Preliminary Report- Shot Down
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Azerbaijan Airlines Preliminary Report- Shot Down
-2026-11-18_23:12: clean_title: Completed TITLE:Azerbaijan Airlines Preliminary Report- Shot Down 
-2026-11-18_23:12: clean_title: Raw TITLE:Trevor Jacobs GROUNDED! - hopefully PERMANENTLY!!!
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Trevor Jacobs Grounded! - Hopefully Permanently!!!
-2026-11-18_23:12: clean_title: Completed TITLE:Trevor Jacobs Grounded! - Hopefully Permanently!!! 
-2026-11-18_23:12: clean_title: Raw TITLE:Oroville UPDATE! Full Pool 3 Years in A Row! FAAST Rep Update
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Oroville Update! Full Pool 3 Years IN A Row! Faast Rep Update
-2026-11-18_23:12: clean_title: Completed TITLE:Oroville Update! Full Pool 3 Years IN A Row! Faast Rep Update 
-2026-11-18_23:12: clean_title: Raw TITLE:MU-2B 'Solitaire' Crash Copake NY 12 April 2025
-2026-11-18_23:12: clean_title: Scrubbed TITLE:Mu-2B 'Solitaire' Crash Copake NY 12 April 2025
-2026-11-18_23:12: clean_title: Completed TITLE:Mu-2B 'Solitaire' Crash Copake NY 12 April 2025 
+	-> STRICT:no-strict
+2026-11-24_12:41: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py  -a all "tuckercarlson"
+2026-11-24_12:41: clean_title: Title out:Finance Expert Warns Of Cyberattacks & Grid Failure: Buy Gold And Bury It Before AI 
+2026-11-24_12:41: clean_title: Title out:There IS A Deeper Story Here 
+2026-11-24_12:41: query_youtube: Video:Cenk Interviews Tucker Carlson - filtered AUTHOR:youngturks != tuckercarlson
+2026-11-24_12:41: clean_title: Title out:Viewer Discretion: Everything You Need To Know About Russell Brand Case 
+2026-11-24_12:41: clean_title: Title out:Tucker Reacts To Russell Brand's Statement From Prison 
+2026-11-24_12:41: clean_title: Title out:You Don't Have To Be A Conspiracy Theorist To See It's Connected 
+2026-11-24_12:41: clean_title: Title out:Tucker And Megyn Kelly Speak Out On Russell Brand's Trial And Netflix's Smear Campaign 
+2026-11-24_12:41: clean_title: Title out:Global Security Breach: FAA Groundings, Nvidia Scandal, Cyberattacks, And Start Of The 
+2026-11-24_12:41: clean_title: Title out:Joe Kent On Government's 90-Day Warning And What To Expect 
+2026-11-24_12:41: query_youtube: Video:Ep 19: Tucker Carlson : The Br - filtered AUTHOR:brandonstraka != tuckercarlson
+2026-11-24_12:41: clean_title: Title out:Jeffrey Epstein's Brother: 'Now We Have Proof That He Didn't Kill Himself' 
+2026-11-24_12:41: query_youtube: Video:Tucker Tears Jared Kushner APA - filtered AUTHOR:youngturks != tuckercarlson
+2026-11-24_12:41: clean_title: Title out:AI Whistleblower: Openai Scandal, AI Cults, Neuralink & Our Last Chance To Stop Tech 
+2026-11-24_12:41: clean_title: Title out:Dark Truth About Human Sacrifice, Demons, And Satanic Rituals Thriving IN Trump's 
+2026-11-24_12:41: clean_title: Title out:Forgotten Lessons Of Human History And The Dark Forces Robbing You Of Your God-Given 
+2026-11-24_12:41: clean_title: Title out:Shawn Ryan: Trump's Betrayal, Iran, Government Spying, Encounters With Demons, And 
+2026-11-24_12:41: clean_title: Title out:Netanyahu's Chilling Warning Caught On Camera 
+2026-11-24_12:41: clean_title: Title out:Murder That Exposed The Godless System Replacing Christianity & Why You're Not Allowed 
+2026-11-24_12:41: query_youtube: Video:Tucker Carlson Can't Believe T - filtered AUTHOR:elijahzielke != tuckercarlson
+2026-11-24_12:41: clean_title: Title out:We Are Tightrope Walking Over Abyss 

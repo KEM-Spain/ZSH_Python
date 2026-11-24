@@ -192,11 +192,6 @@ sel_get_position () {
 }
 
 sel_list () {
-	local BOX_BOT=0
-	local BOX_H=0
-	local BOX_W=0
-	local BOX_X=0
-	local BOX_Y=0
 	local DIFF=0
 	local F1=''
 	local F2=''
@@ -204,21 +199,24 @@ sel_list () {
 	local FTR_Y=0
 	local HDR_X=0
 	local HDR_Y=0
+	local IB_BOT=0
+	local IB_H=0
+	local IB_W=0
+	local IB_X=0
+	local IB_Y=0
 	local LIST_H=0
+	local LIST_HDR=''
 	local LIST_W=0
 	local LIST_X=0
 	local LIST_Y=0
 	local MAP_X=0
 	local MAP_Y=0
-	local MH=0
-	local NOMRKUP_FH=''
-	local NOMRKUP_FF=''
-	local NOMRKUP_LM=''
-	local NOMRKUP_LH=''
-	local PGH_X=0
-	local PGH_Y=0
-	local PH=0
 	local MAX=0
+	local MH=0
+	local NOMRKUP_FF=''
+	local NOMRKUP_FH=''
+	local NOMRKUP_LH=''
+	local NOMRKUP_LM=''
 	local OB_H=0
 	local OB_W=0
 	local OB_X=0
@@ -226,7 +224,9 @@ sel_list () {
 	local OB_Y=0
 	local OB_Y_OFFSET=4
 	local PAGING=false
-	local LIST_HDR=''
+	local PGH_X=0
+	local PGH_Y=0
+	local PH=0
 	local L
 
 	local OPTION=''
@@ -307,12 +307,13 @@ sel_list () {
 		[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LIST_W:${LIST_W} LIST_H:${LIST_H}"
 
-		BOX_H=$(( LIST_H + 2 )) # Box height based on list count
-		[[ ${_HAS_CAT} == 'true' ]] && BOX_W=$(( LIST_W + 6 )) || BOX_W=$(( LIST_W + 2 )) # Categories get extra padding
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: INNER BOX SET: BOX_W:${BOX_W} BOX_H:${BOX_H}"
+		IB_H=$(( LIST_H + 2 )) # Box height based on list count
+		[[ ${_HAS_CAT} == 'true' ]] && IB_W=$(( LIST_W + 6 )) || IB_W=$(( LIST_W + 2 )) # Categories get extra padding
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: INNER BOX SET: IB_W:${IB_W} IB_H:${IB_H}"
 
-		[[ ${X_COORD_ARG} -eq 0 ]] && BOX_X=$(center -V -h${BOX_H}) || BOX_X=${X_COORD_ARG}
-		[[ ${Y_COORD_ARG} -eq 0 ]] && BOX_Y=$(center -H -w${BOX_W}) || BOX_Y=${Y_COORD_ARG}
+		# TODO: inner list box frame not centered within outer frame - needs relative center to outer frame
+		[[ ${X_COORD_ARG} -eq 0 ]] && IB_X=$(center -V -h${IB_H}) || IB_X=${X_COORD_ARG}
+		[[ ${Y_COORD_ARG} -eq 0 ]] && IB_Y=$(center -H -w${IB_W}) || IB_Y=${Y_COORD_ARG}
 
 		# Set field widths for lists having categories
 		if [[ ${_HAS_CAT} == 'true' ]];then
@@ -354,16 +355,16 @@ sel_list () {
 		fi
 
 		# Widest decoration - inner box, header, footer, map, paging, or exit msg
-		MAX=$(max ${BOX_W} ${#NOMRKUP_FH} ${#NOMRKUP_FF} ${MH} ${PH} ${_EXIT_BOX}) # Add padding for MAP
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAX:${MAX} BOX_W:${BOX_W} FRAME_HDR:${#NOMRKUP_FH} FRAME_FTR:${#NOMRKUP_FF} LIST_MAP:${MH} LIST_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
+		MAX=$(max ${IB_W} ${#NOMRKUP_FH} ${#NOMRKUP_FF} ${MH} ${PH} ${_EXIT_BOX}) # Add padding for MAP
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAX:${MAX} IB_W:${IB_W} FRAME_HDR:${#NOMRKUP_FH} FRAME_FTR:${#NOMRKUP_FF} LIST_MAP:${MH} LIST_HDR:${PH} _EXIT_BOX:${_EXIT_BOX}" 
 
 		# Handle outer box coords
 		if [[ ${HAS_OUTER} == 'true' ]];then
 			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Setting OUTER BOX coords"
-			OB_X=$(( BOX_X - OB_X_OFFSET ))
-			OB_Y=$(( BOX_Y - OB_Y_OFFSET ))
-			OB_W=$(( BOX_W + OB_Y_OFFSET * 2 ))
-			OB_H=$(( BOX_H + OB_X_OFFSET * 2 ))
+			OB_X=$(( IB_X - OB_X_OFFSET ))
+			OB_Y=$(( IB_Y - OB_Y_OFFSET ))
+			OB_W=$(( IB_W + OB_Y_OFFSET * 2 ))
+			OB_H=$(( IB_H + OB_X_OFFSET * 2 ))
 
 			if [[ ${MAX} -gt ${OB_W} ]];then
 				DIFF=$(( (MAX - OB_W) / 2 ))
@@ -381,50 +382,50 @@ sel_list () {
 		# Store OUTER_BOX coords
 		box_coords_set OUTER_BOX HAS_OUTER ${HAS_OUTER} X ${OB_X} Y ${OB_Y} W ${OB_W} H ${OB_H} COLOR ${OB_COLOR}
 
-		BOX_BOT=$(( BOX_X + BOX_H )) # Store coordinate
+		IB_BOT=$(( IB_X + IB_H )) # Store coordinate
 
 		# Set coords for list decorations
 		if [[ ${HAS_OUTER} == 'true' ]];then
-			HDR_X=$(( BOX_X - 3 ))
-			HDR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NOMRKUP_FH})
-			MAP_X=${BOX_BOT}
-			MAP_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NOMRKUP_LM})
-			FTR_X=$(( BOX_BOT + 2 ))
-			FTR_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NOMRKUP_FF})
-			PGH_X=$(( BOX_X - 1 ))
-			PGH_Y=$(sel_box_ctr_txt $(( BOX_Y - OB_Y )) $(( BOX_W + OB_Y * 2 )) ${NOMRKUP_LH})
+			HDR_X=$(( IB_X - 3 ))
+			HDR_Y=$(sel_box_ctr_txt $(( IB_Y - OB_Y )) $(( IB_W + OB_Y * 2 )) ${NOMRKUP_FH})
+			MAP_X=${IB_BOT}
+			MAP_Y=$(sel_box_ctr_txt $(( IB_Y - OB_Y )) $(( IB_W + OB_Y * 2 )) ${NOMRKUP_LM})
+			FTR_X=$(( IB_BOT + 2 ))
+			FTR_Y=$(sel_box_ctr_txt $(( IB_Y - OB_Y )) $(( IB_W + OB_Y * 2 )) ${NOMRKUP_FF})
+			PGH_X=$(( IB_X - 1 ))
+			PGH_Y=$(sel_box_ctr_txt $(( IB_Y - OB_Y )) $(( IB_W + OB_Y * 2 )) ${NOMRKUP_LH})
 		else
-			HDR_X=$(( BOX_X - 1 ))
-			HDR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NOMRKUP_FH})
-			[[ -n ${LIST_HDR} ]] && MAP_X=$(( BOX_BOT + 1 )) || MAP_X=${BOX_BOT} # Move map down if blocked
-			MAP_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NOMRKUP_LM})
-			[[ -n ${LIST_MAP} || -n ${LIST_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${BOX_BOT} # Move footer down if blocked
-			FTR_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NOMRKUP_FF})
-			PGH_X=${BOX_BOT}
-			PGH_Y=$(sel_box_ctr_txt ${BOX_Y} ${BOX_W} ${NOMRKUP_LH})
+			HDR_X=$(( IB_X - 1 ))
+			HDR_Y=$(sel_box_ctr_txt ${IB_Y} ${IB_W} ${NOMRKUP_FH})
+			[[ -n ${LIST_HDR} ]] && MAP_X=$(( IB_BOT + 1 )) || MAP_X=${IB_BOT} # Move map down if blocked
+			MAP_Y=$(sel_box_ctr_txt ${IB_Y} ${IB_W} ${NOMRKUP_LM})
+			[[ -n ${LIST_MAP} || -n ${LIST_HDR} ]] && FTR_X=$(( MAP_X + 1 )) || FTR_X=${IB_BOT} # Move footer down if blocked
+			FTR_Y=$(sel_box_ctr_txt ${IB_Y} ${IB_W} ${NOMRKUP_FF})
+			PGH_X=${IB_BOT}
+			PGH_Y=$(sel_box_ctr_txt ${IB_Y} ${IB_W} ${NOMRKUP_LH})
 		fi
 
 		# Store DECOR coords
 		box_coords_set DECOR HAS_HDR ${HAS_HDR} HDR_X ${HDR_X} HDR_Y ${HDR_Y} HAS_MAP ${HAS_MAP} MAP_X ${MAP_X} MAP_Y ${MAP_Y} HAS_FTR ${HAS_FTR} FTR_X ${FTR_X} FTR_Y ${FTR_Y}
 
 		# Set coords for region clearing
-		local R_H=$(max $(( FTR_X - BOX_X )) $(( MAP_X - BOX_X )) $(( PGH_X - BOX_X )) ${BOX_H}) 
-		local R_Y=$(min ${HDR_Y} ${MAP_Y} ${FTR_Y} ${PGH_Y} ${BOX_Y})
-		local R_W=$(max ${#FRAME_HDR} ${#LIST_MAP} ${#FRAME_FTR} ${#LIST_HDR} ${BOX_W})
+		local R_H=$(max $(( FTR_X - IB_X )) $(( MAP_X - IB_X )) $(( PGH_X - IB_X )) ${IB_H}) 
+		local R_Y=$(min ${HDR_Y} ${MAP_Y} ${FTR_Y} ${PGH_Y} ${IB_Y})
+		local R_W=$(max ${#FRAME_HDR} ${#LIST_MAP} ${#FRAME_FTR} ${#LIST_HDR} ${IB_W})
 
 		# Store REGION clearing coords
 		box_coords_set REGION X ${HDR_X} Y ${R_Y} W ${R_W} H ${R_H} OB_W ${OB_W} OB_Y ${OB_Y} # For display region clearing if needed
 
 		# Store INNER_BOX coords
-		box_coords_set INNER_BOX X ${BOX_X} Y ${BOX_Y} W ${BOX_W} H ${BOX_H} COLOR ${IB_COLOR} OB_W ${OB_W} OB_Y ${OB_Y}
+		box_coords_set INNER_BOX X ${IB_X} Y ${IB_Y} W ${IB_W} H ${IB_H} COLOR ${IB_COLOR} OB_W ${OB_W} OB_Y ${OB_Y}
 
 		# List coords w/ box offset
-		LIST_X=$(( BOX_X + 1 ))
-		LIST_Y=$(( BOX_Y + 1 ))
+		LIST_X=$(( IB_X + 1 ))
+		LIST_Y=$(( IB_Y + 1 ))
 
 		# Save list meta data
-		_SEL_LIST_META[BOX_W]=${BOX_W}
-		_SEL_LIST_META[BOX_Y]=${BOX_Y}
+		_SEL_LIST_META[IB_W]=${IB_W}
+		_SEL_LIST_META[IB_Y]=${IB_Y}
 		_SEL_LIST_META[CLEAR_REGION]=${CLEAR_REGION}
 		_SEL_LIST_META[FTR]=${FRAME_FTR}
 		_SEL_LIST_META[HDR]=${FRAME_HDR}
@@ -558,7 +559,7 @@ sel_scroll () {
 		else
 			LIST_HDR="Showing <w>${#_LIST}<N> ${(C)$(str_pluralize item ${#_LIST})}"
 			NOMRKUP_LH=$(msg_nomarkup ${LIST_HDR})
-			PGH_Y=$(sel_box_ctr_txt ${_SEL_LIST_META[BOX_Y]} ${_SEL_LIST_META[BOX_W]} ${NOMRKUP_LH})
+			PGH_Y=$(sel_box_ctr_txt ${_SEL_LIST_META[IB_Y]} ${_SEL_LIST_META[IB_W]} ${NOMRKUP_LH})
 			tcup ${_SEL_LIST_META[PGH_X]} ${PGH_Y};echo -n $(msg_markup ${LIST_HDR}) 
 		fi
 

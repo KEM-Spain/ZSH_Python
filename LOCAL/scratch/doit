@@ -1,8 +1,0 @@
-#!/usr/bin/zsh
-#
-typeset -A MSG_TEXT_2=(one aaa two bbb three ccc four ddd five eee six fff seven ggg eight hhh nine iii ten jjj)
-
-for K in ${(k)MSG_TEXT_2};do
-	printf "%5s: %s\n"  ${K} ${MSG_TEXT_2[${K}]}
-done
-

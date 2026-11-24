@@ -553,11 +553,19 @@ ${E_WHITE_FG}=======${E_RESET}
 ${E_WHITE_FG}LENGTH${E_RESET}
 Test string using ANSI quoting: [[ \${RESPONSE} == $'\n' ]] ...
 
-Get the length of a string with #. This is similar to string length in fish.
+Get the length of a string variable with #.
 
 str="abcdefghijklmnopqrstuvwxyz"
 echo \${#str}
 26
+
+If you receive a string from a function and want the length
+without storing the return value into a variable first, you
+must enclose the entire reference in quotes
+
+FRAME_HDR="Small List"
+LENGTH="${#$(msg_nomarkup ${FRAME_HDR})}" # SYNTAX ODDITY
+LENGTH = 10
 
 ${E_WHITE_FG}PAD/TRIM${E_RESET}
 Left pad a string with the l expansion flag. Right pad a string with the r expansion flag. This is similar to string pad in fish.
@@ -4327,8 +4335,7 @@ Flag        Action                                Example                       
 ----------  ------------------------------------  -------------------------------  -------------------
 (s:delim:)  Split string into array by delimiter  str="a,b,c"; \${(s:,:)str[2]}     b
 (j:delim:)  Join array elements into single str   arr=(a b c); \${(j:-:)arr}        a-b-c
-(f)         Split by line (short for (s:
-:))     lines=\${(f)"\$(cat file.txt)"}    Array of lines
+(f)         Split by line (short for (s: :))      lines=\${(f)"\$(cat file.txt)"}    Array of lines
 (z)         Split into shell words (syntax)       cmd="ls -la /tmp"; \${(z)cmd}     ('ls' '-la' '/tmp')
 (u)         Unique: Deduplicate array values      arr=(a b a c); \${(u)arr}         a b c
 

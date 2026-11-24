@@ -14,66 +14,82 @@ RED_FG="\033[31m"
 WHITE_FG="\033[37m"
 YELLOW_FG="\033[33m"
 
-# Declarations
-typeset -A _EPERMS
-typeset -A _FILES
-typeset -A _FTYPES
-typeset -A _GPERMS
-typeset -A _GROUPS
-typeset -A _OPERMS
-typeset -A _OWNERS
-typeset -A _PERMS
-typeset -A _WPERMS
-typeset -A _PERM_LABELS=(s Special o Owner g Group w World)
-typeset -A _SORT_TABLE=()
-typeset -a _MARKED
-typeset -a _RAWLIST
-typeset -a _LOCAL_LIST
-typeset -i _FNDX=0
+# TODO: Select box needs work on sizes and alignment
 
 # Imports
-_LIB_DIR=${ZSH_LIB_DIR:=/usr/local/lib}
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
 source ${_LIB_DIR}/LIB_INIT.zsh
-source ${_LIB_DIR}/LIST.zsh
-source ${_LIB_DIR}/SELECT.zsh
+_DEPS+=(LIST.zsh SELECT.zsh CENTER.zsh)
 source ${_LIB_DIR}/LIB_DEPS.zsh
+
+# Declarations
+typeset -A _EPERMS=()
+typeset -A _FILES=()
+typeset -A _FTYPES=()
+typeset -A _GPERMS=()
+typeset -A _GROUPS=()
+typeset -A _OPERMS=()
+typeset -A _OWNERS=()
+typeset -A _PERMS=()
+typeset -A _WPERMS=()
+typeset -A _PERM_LABELS=(s Special o Owner g Group w World)
+typeset -A _SORT_TABLE=()
+typeset -a _MARKED=()
+typeset -a _RAWLIST=()
+typeset -a _LOCAL_LIST=()
+typeset -i _FNDX=0
+typeset -A _TOP_WDW_COORDS=()
+typeset -A _SUB_WDW_COORDS=(X 8 Y 30)
+
+_TOP_WDW_WIDTH=40
+_TOP_WDW_COORDS=(X 8 Y $(center -H -w${_TOP_WDW_WIDTH}) H 10 W ${_TOP_WDW_WIDTH}) # Top box coords
+_RY=$(center -Y -c"${(kv)_TOP_WDW_COORDS}" -w${_TOP_WDW_WIDTH}) # Relative center of box
+_SUB_WDW_WIDTH=40
+_SUB_WDW_COORDS=(X $((_TOP_WDW_COORDS[X] + 2 )) Y ${_RY} H 10 W ${_SUB_WDW_WIDTH})
 
 # Functions
 action_do () {
+	local -A PERM_DECODE=(no-access n execute x write w write-execute wx read r read-execute re read-write rw read-write-execute rwx)
 	local -A POP_DECODE=('set permissions' sp 'change owner' co 'change group' cg 'change owner and group' cog)
 	local -A PTYPE_DECODE=(special s owner o group g world w all a umask u)
-	local -A PERM_DECODE=(no-access n execute x write w write-execute wx read r read-execute re read-write rw read-write-execute rwx)
-	local -A SPECIAL_DECODE=('no special permissions' none 'only user can delete or rename (sticky)' sticky 'run as group' setgid 'run as group (sticky)' stkgid 'run as user' setuid 'run as user (sticky)' stkuid 'run as user and group' setugd 'run as user and group (sticky)' stkugi)
+	local -A SPECIAL_DECODE=(
+	'no special permissions' none 
+	'only user can delete or rename (sticky)' sticky 
+	'run as group' setgid 'run as group (sticky)' stkgid 
+	'run as user' setuid 'run as user (sticky)' stkuid 
+	'run as user and group' setugd 
+	'run as user and group (sticky)' stkugi
+)
 	local -a COMBO_PERMS=(rwxr-xr-x rwxrwxr-x rwxrwxrwx rw-rw-rw- rw-r--r-- rw-------)
-	local -a USER_LIST=($(cut -d: -f1 </etc/passwd))
-	local -a GROUP_LIST=($(cut -d: -f1 </etc/group))
-	local -a USER_GROUP_LIST
-	local G M U
-	local NDX
-	local PTYPE
-	local PERM_CODE
-	local POP
-	local STITLE
-	local CHOWN CHGRP
+	local -a GROUP_LIST=(${(f)"$(</etc/group)"%%:*})
+	local -a USER_GROUP_LIST=()
+	local -a USER_LIST=(${(f)"$(</etc/passwd)"%%:*})
+	local CHGRP=''
+	local CHOWN=''
+	local NDX=0
+	local PERM_CODE=''
+	local POP=''
+	local PTYPE=''
+	local STITLE=''
 	local UMASK_PERMS=false
 	local match mbegin mend
 	local RC1 RC2
-	local TOP_WIN_X=8 # Cascade
-	local TOP_WIN_Y=30 # Cascade
+	local G M U
 
 	for U in ${USER_LIST};do
 		[[ ${GROUP_LIST[(i)${U}]} -le ${#GROUP_LIST} ]] && USER_GROUP_LIST+=${U}
 	done
 
 	sel_set_list ${(C)${(k)POP_DECODE}}
-	sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Select Operation<N>"
+	#sel_list -c -O${RED_FG} -x${_TOP_WDW_COORDS[X]} -y${_TOP_WDW_COORDS[Y]} -H"<w>Select Operation<N>"
+	sel_list -c -x${_TOP_WDW_COORDS[X]} -y${_TOP_WDW_COORDS[Y]} -H"<w>Select Operation<N>"
 	[[ ${?} -ne 0 ]] && clear_list && return 0
 
 	POP=${POP_DECODE[${_SEL_VAL:l}]}
 
 	if [[ ${POP} == 'sp' ]];then
 		sel_set_list ${(C)${(ok)PTYPE_DECODE}}
-		sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Set permissions<N>"
+		sel_list -c -O${RED_FG} -x${_SUB_WDW_COORDS[X]} -y${_SUB_WDW_COORDS[Y]} -H"<w>Set permissions<N>"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		PTYPE=${PTYPE_DECODE[${_SEL_VAL:l}]}
@@ -89,7 +105,7 @@ action_do () {
 		esac
 
 		if [[ ${UMASK_PERMS} == 'false' ]];then 
-			sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
+			sel_list -c -O${RED_FG} -x${_SUB_WDW_COORDS[X]} -y${_SUB_WDW_COORDS[Y]} -H"${STITLE}"
 			[[ ${?} -ne 0 ]] && clear_list && return 0
 
 			[[ ${PTYPE} == "a" ]] && PERM_CODE=${_SEL_VAL:l}
@@ -102,7 +118,7 @@ action_do () {
 			cog) sel_set_list ${(o)USER_GROUP_LIST};STITLE="<w>Select Owner & Group<N>";;
 			cg) sel_set_list ${(o)GROUP_LIST};STITLE="<w>Select Group<N>";;
 		esac
-		sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
+		sel_list -c -O${RED_FG} -x${_SUB_WDW_COORDS[X]} -y${_SUB_WDW_COORDS[X]} -H"${STITLE}"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		case ${POP} in
@@ -241,28 +257,6 @@ item_decorate () {
   esac
 }
 
-coord_center () {
-	local AREA=${1}
-	local OBJ=${2}
-	local CTR
-	local REM
-	local AC
-	local OC
-	local C
-
-	CTR=$(( AREA / 2 ))
-	REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && AC=$(( CTR + 1 )) || AC=${CTR}
-
-	CTR=$(( OBJ / 2 ))
-	REM=$(( CTR % 2 ))
-	[[ ${REM} -ne 0 ]] && OC=$(( CTR + 1 )) || OC=${CTR}
-
-	C=$(( AC - OC ))
-
-	echo ${C}
-}
-
 parse_perms () {
 	local PERMS=${1}
 	local POS=${2}
@@ -306,10 +300,10 @@ parse_stat () {
 	[[ ${RC} -ne 0 ]] && msg_box -p -PK "stat returned an error (${RC})"
 
 	for L in ${STAT};do
-		_FILES[${NDX}]=$(cut -d'|' -f1 <<<${L:t})
-		_OWNERS[${NDX}]=$(cut -d'|' -f2 <<<${L})
-		_GROUPS[${NDX}]=$(cut -d'|' -f3 <<<${L})
-		PERM=$(cut -d'|' -f4 <<<${L})
+		_FILES[${NDX}]="${${(@s/|/)L:t}[1]}"
+		_OWNERS[${NDX}]="${${(@s/|/)L}[2]}"
+		_GROUPS[${NDX}]="${${(@s/|/)L}[3]}"
+		PERM="${${(@s/|/)L}[4]}"
 		[[ ${#PERM} -eq 3 ]] && PERM="0${PERM}"
 		_PERMS[${NDX}]=${PERM}
 	done
@@ -335,7 +329,7 @@ parse_opts () {
 	local O
 
 	for O in {1..${#OPTS}};do
-		[[ ${OPTS[${O}]} =~ '[a-z]' ]] && LETTER_OPT=${OPTS[${O}]}
+		[[ ${OPTS[${O}]} =~ '[A-Za-z]' ]] && LETTER_OPT=${OPTS[${O}]}
 		[[ ${O} -eq 1 && ${OPTS[${O}]} == ":" ]] && continue
 		[[ ${O} -gt 1 && ${OPTS[${O}]} == ":" ]] && OPTSTR+=$(opt_type ${LETTER_OPT}) && continue
 		OPTSTR+="-${OPTS[${O}]}"
@@ -366,7 +360,7 @@ usage () {
 	echo -e "\n${WHITE_FG}Desc${RESET}:This script..."
 	) >&2
 
-	exit_leave ${PENDING_MSGS}
+	exit_leave $(err_msg_exit ${PENDING_MSGS})
 }
 
 OPTSTR=":HD"
@@ -387,9 +381,9 @@ shift $(( OPTIND - 1 ))
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH="${${(@s/|/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 _RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} ! -path ${FPATH}" 2>/dev/null )}")

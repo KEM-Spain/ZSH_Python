@@ -219,10 +219,15 @@ cmd_get_raw () {
 }
 
 fix_mojibake() {
-  local TEXT="$*"
-  [[ -z "${TEXT}" ]] && return 0
+  local TEXT=""
+  local _PY_CODE=""
 
-  python3 -c "
+  TEXT="$*"
+  if [[ -z "${TEXT}" ]];then
+    return 0
+  fi
+
+  _PY_CODE=$(python3 - "${TEXT}" <<'EOF'
 import sys, re, html
 
 text = sys.argv[1]
@@ -230,43 +235,50 @@ text = sys.argv[1]
 # 1. Decode HTML entities
 text = html.unescape(text)
 
-# 2. Direct byte-map for known mojibake artifacts
+# 2. Attempt latin1 -> utf-8 recovery first for pure mojibake sequences
+for _ in range(2):
+    try:
+        decoded = text.encode("latin1").decode("utf-8")
+        if decoded != text:
+            text = decoded
+        else:
+            break
+    except Exception:
+        break
+
+# 3. Direct replacements for mixed/partial mojibake artifacts
 replacements = {
-    'â€œ': '\x27',
-    'â€': '\x27',
-    'â€™': '\x27',
-    'â€˜': '\x27',
-    'â€“': '–',
-    'â€”': '—',
-    'â„¢': '',
-    'Â£': '£',
-    'Â€': '€',
-    'Â': ''
+    "â€œ": "\x27",
+    "â€\x9d": "\x27",
+    "â€™": "\x27",
+    "â€˜": "\x27",
+    "â€“": "–",
+    "â€”": "—",
+    "â—": "—",
+    "â„¢": "",
+    "Â£": "£",
+    "Â€": "€",
+    "Â": "",
 }
 for k, v in replacements.items():
     text = text.replace(k, v)
 
-# 3. Safe byte decoding recovery
-for _ in range(2):
-    try:
-        b = text.encode('latin1')
-        decoded = b.decode('utf-8')
-        if decoded != text:
-            text = decoded
-    except Exception:
-        break
+# Strip stray 'â' directly before a dash or hyphen
+text = re.sub(r"â(?=[—–\-])", "", text)
 
-# 4. Convert alternative quote characters to standard single quotes safely
-text = text.replace('“', \"'\").replace('”', \"'\").replace('\"', \"'\")
+# 4. Normalize curly/double quotes to single quotes
+text = text.replace("“", "\x27").replace("”", "\x27").replace('"', "\x27")
 
-# 5. Clean up extra spaces while preserving legitimate apostrophes and punctuation
-text = re.sub(r'(?i)\b[tT][mM]\b', '', text)
-text = re.sub(r'[™®©]', '', text)
-text = re.sub(r'\s{2,}', ' ', text)
-text = re.sub(r'[\ufffd\uFFFD]', '', text)
+# 5. Clean up trademarks, replacement chars, and extra spaces
+text = re.sub(r"(?i)\b[tT][mM]\b", "", text)
+text = re.sub(r"[™®©\ufffd]", "", text)
+text = re.sub(r"\s{2,}", " ", text)
 
-print(text.strip(), end='')
-" "${TEXT}"
+print(text.strip(), end="")
+EOF
+)
+
+  printf '%s' "${_PY_CODE}"
 }
 
 format_pct () {

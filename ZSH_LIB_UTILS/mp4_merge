@@ -541,7 +541,7 @@ if is_mixed_video;then
 	CMD="ffmpeg -y ${I_STR} -loglevel 8 -progress ${_LOG_FILE} -filter_complex \"${P1_STR}${P2_STR}concat=n=${#_INPUTS}:${TAG}\" ${MAP}"
 
 	echo "${CMD}" | sed -e 's/\-i \"/\n\-i \"/g' -e 's/\-loglevel/\n\-loglevel/' -e 's/\-filter/\n\-filter/' -e 's/;/;\n/g' > ${_CMD_FILE}
-	eval "${CMD}" 2>${_ERR_FILE} &
+	eval "${CMD}" >/dev/null 2>${_ERR_FILE} &
 
 	while true;do # Wait for log generation to begin
 		[[ -e ${_LOG_FILE} ]] && break
@@ -560,7 +560,7 @@ else
 	CMD="ffmpeg -y -loglevel 8 -progress ${_LOG_FILE} -f concat -safe 0 -i ${_CFG_DIR}/merge_files -c copy -movflags +faststart -avoid_negative_ts make_zero ${OUT_FILE_OPT}"
 
 	echo "${CMD}" > ${_CMD_FILE}
-	eval "${CMD}" 2>${_ERR_FILE} &
+	eval "${CMD}" >/dev/null 2>${_ERR_FILE} &
 
 	show_progress noframes
 fi

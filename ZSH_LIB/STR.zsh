@@ -300,15 +300,19 @@ str_to_hex () {
 }
 
 str_trim () {
-	local TEXT=${@}
+	setopt local_options extended_glob
+	local _TEXT=""
+	local _TRIMMED=""
 
-	setopt localoptions extended_glob
+	_TEXT="${1}"
+	if [[ -z "${_TEXT}" && ! -t 0 ]];then
+		IFS= read -r _TEXT
+	fi
 
-	[[ ! -t 0 ]] && read -r TEXT # Input is piped
-	
-	TEXT="${TEXT##[[:space:]]#}" # Strip leading whitespace
-	TEXT="${TEXT%%[[:space:]]#}" # Strip trailing whitespace
-	print -r -- "${TEXT}"
+	_TRIMMED="${_TEXT/#[[:space:]]##/}"
+	_TRIMMED="${_TRIMMED/%[[:space:]]##/}"
+
+	print -r -- "${_TRIMMED}"
 }
 
 str_unicode_line () {
@@ -353,7 +357,7 @@ str_word_clip () {
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: LIMIT:${LIMIT} LEN:${#STR_OUT} STR_OUT:${STR_OUT}"
   done
 
-  echo ${STR_OUT}
+	echo "${=STR_OUT}"
 }
 
 str_nolf () {

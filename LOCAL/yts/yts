@@ -64,7 +64,7 @@ typeset -a _FAV_KEYS=()
 typeset -a _FAV_ROW=()
 typeset -a _RUMBLE_PAGE=()
 typeset -a _STERMS=()
-typeset -a _STRIP_WORDS=()
+typeset -a UNWANTED=()
 typeset -a _TRANSLATE=(blancolirio glenndiesen)
 typeset -aU _LOCAL_LIST=()
 
@@ -82,10 +82,10 @@ _CONT_WIDTH=86
 _CONT_COORDS=(X 9 Y $(center -H -w${_CONT_WIDTH}) H 10 W ${_CONT_WIDTH}) # Continuous box coords
 _DOWNLOAD_DIR=~/Downloads/Torrents/Library/Web
 
-_MAX_CONT_HDR=74 # Continuous box headers
+_MAX_CONT_HDR=70 # Continuous box headers
 _MAX_MSG_LEN=$(( _CONT_COORDS[W] - 2 )) # Continuous box msgs
 _MAX_FILE_LEN=120 # Output filenames
-_MAX_FILE_TITLE=94 # List display
+_MAX_LIST_TITLE=90 # List display
 
 _FIELD_CONFIG[qkey]="1|text|Enter QUERY key|_QUERY_OPTS[QKEY]|0|"
 _FIELD_CONFIG[dkey]="2|text|Enter DISPLAY key|_QUERY_OPTS[DKEY]|1|"
@@ -98,14 +98,14 @@ _FIELD_CONFIG[filter]="8|menu|Select Filter option|_QUERY_OPTS[STRICT]|_YT_FILTE
 
 INF_H=5
 INF_W=$((_CONT_WIDTH - 4 ))
-_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -y2 -c"${(kv)_CONT_COORDS}" -w${INF_W}) H ${INF_H} W ${INF_W}) # Info coords
+_INFO_COORDS=(X $(center -X -c"${(kv)_CONT_COORDS}" -h${INF_H} -x1) Y $(center -Y -c"${(kv)_CONT_COORDS}" -w${INF_W} -y1) H ${INF_H} W ${INF_W}) # Info coords
 _MSG_BOX_DISPLAY_AREA=60 # Limit continuous box clearing on Y axis to preserve alert space
 _MSG_AREA_CLEARED=false
 _OBJECT="video"
-_RY=$(get_relative_y "${(kv)_CONT_COORDS}" 1 4) # Relative center of box
+_RY=$(center -Y -c"${(kv)_CONT_COORDS}" -w4) # Relative center of box
 _SORT_DEFAULT=(youtube 1:a rumble 1:a)
 _SPINNER_COORDS=(ROW $(( _CONT_COORDS[X] - 1 )) COL ${_RY}) # Center spinner under continuous box
-_STRIP_WORDS=("judge napolitano" "official" "^the " " show" "youtube" "channel" "deep dive" "deep focus podcast")
+UNWANTED=("\/" "\bthe\b" "judge napolitano \-" "official" "\bshow\b" "youtube" "\bchannel\b" "deep dive" "deep focus" "podcast")
 _TRANS_ERR_LIMIT=6
 _WGET_OPTS='--user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/125.0.0.0 Safari/537.36" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header="Accept-Charset: UTF-8,*;q=0.5" --header="Accept-Language: en-US,en;q=0.5" --header="Referer: https://rumble.com/"'
 
@@ -150,7 +150,6 @@ action_do () {
 	local HDR1_TXT=''
 	local HDR2_TXT=''
 	local HDR_LEN=0
-	local HRZ_CTR=0
 	local INFO_TAG=''
 	local INT_KEY=''
 	local LAST_LOG_LINE=''
@@ -192,7 +191,7 @@ action_do () {
 			RETRIED_COOKIES=false
 			COOKIE_FLAG=''
 
-			logit ${_YT_URL_LOG} "${AUTHOR}:${TITLE}:${URL}"
+			logit ${_YT_URL_LOG} "Downloading:${AUTHOR}, ${TITLE}, ${URL}"
 
 			unsetopt localtraps # Initialize CTRL-C trap
 			trap job_kill INT
@@ -210,12 +209,6 @@ action_do () {
 			HDR1_TXT="${DEST_AUTHOR} - ${DEST_TITLE}"
 			HDR1_TXT="<B><I><h>Downloading<N>: <f><w>$(clean_title ${HDR1_TXT} ${_MAX_CONT_HDR})<N>"
 			HDR2_TXT="<B><I><h>Destination<N>: $(str_trim ${_DOWNLOAD_DIR})<N> - <w>${DL_CNT} <N>of <w>${#_MARKED}${INFO_TAG}"
-
-			HDR_LEN=$(( ${#$(msg_nomarkup ${HDR2_TXT})} ))
-			HDR_LEN=$(( HDR_LEN + FRAME_PAD ))
-			HRZ_CTR=$(center -H -w${HDR_LEN})
-
-			[[ ${HDR_LEN} -gt ${_CONT_COORDS[W]} ]] && _CONT_COORDS[W]=${HDR_LEN} && _CONT_COORDS[Y]=${HRZ_CTR}
 
 			msg_box -C -O${CYAN_FG} -I -H3 -jl -x${_CONT_COORDS[X]} -y${_CONT_COORDS[Y]} -h${_CONT_COORDS[H]} -w${_CONT_COORDS[W]} ${HDR1_TXT}
 			msg_box -C -jl ${HDR2_TXT}
@@ -269,7 +262,7 @@ action_do () {
 					break
 				fi
 
-				ERROR=$(grep -Ei -m1 '*http*403*|*http*404*|boringssl|error' ${g_YTS_SESSION_LOG} 2>/dev/null)
+				ERROR=$(grep -Ei -m1 '*http*error*|boringssl' ${g_YTS_SESSION_LOG} 2>/dev/null)
 				if [[ ${?} -eq 0 ]];then
 					case ${ERROR} in
 						*boringssl*)	msg_box -z -t${_MSG_DELAY[MED]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got trans error. Retrying...<N>"
@@ -286,6 +279,7 @@ action_do () {
 											continue
 										else
 											msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 403 error...<N>"
+											job_cancel
 											logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
 											_FAILED[${M}]=true
 											break
@@ -293,16 +287,15 @@ action_do () {
 										;;
 						*404*)	msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 404 error...<N>"
 										spinner stop && g_PRESERVE_LOG=true
+										job_cancel
 										logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
 										_FAILED[${M}]=true
 										break
 										;;
-						*)	msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got download errors...<N>"
-								spinner stop && g_PRESERVE_LOG=true
-								logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
-								_FAILED[${M}]=true
-								break
-								;;
+						*503*)	msg_box -z -t${_MSG_DELAY[LONG]} -A"${(kv)_INFO_COORDS}" "|<Z>|<w>Got 503 error...<N>"
+										logit ${_YT_DBG_LOG} "${0}: ERROR:${ERROR}"
+										continue
+										;;
 					esac
 				fi
 
@@ -316,16 +309,16 @@ action_do () {
 						MSG=$(str_word_clip ${LOG_LINE} ${_MAX_MSG_LEN})
 						MSG="$(str_rpad ${MSG} ${_MAX_MSG_LEN})"
 
+						# TODO: the display is garbled at the end. Should clear line and print.  Box edge is torn.
 						if [[ ${_QUERY_OPTS[ENGINE]} == 'youtube' ]];then
 							case ${LOG_LINE:l} in
 								*merging*|*moving*|*fixing*)
-									spinner stop
-									logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 									_DOWNLOADS[${M}]=true
-									log_add ${M}
+									spinner stop
+									logit ${_YT_DBG_LOG} "${0}:Download complete"
+									msg_box -C -jl "<B><g>Download is complete<N>"
 									post_process ${DEST_AUTHOR}
-									MSG="$(str_rpad "Download is complete" ${_MAX_MSG_LEN})"
-									msg_box -C -jl "<B><g>${MSG}<N>"
+									log_add ${M}
 									break
 									;;
 								*eta*|*cn:*|*mib*|*kib*)
@@ -337,23 +330,23 @@ action_do () {
 									esac
 									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
 									;;
-								*)	if [[ -n ${LOG_LINE} && ${LOG_LINE:l} != *download* ]];then
-											cont_clear_msg_area
-											tcup $(( _INFO_COORDS[X] + _INFO_COORDS[H] + 2 )) ${_INFO_COORDS[Y]}
-											printf "%s" ${LOG_LINE[_MAX_MSG_LEN]}
+								*)	if [[ -n ${LOG_LINE} && ${LOG_LINE:l} ]];then
+											#cont_clear_msg_area
+											#tcup $(( _INFO_COORDS[X] + _INFO_COORDS[H] + 2 )) ${_INFO_COORDS[Y]}
+											#printf "%s" ${LOG_LINE[_MAX_MSG_LEN]}
+											logit ${_YT_DBG_LOG} "${0}:${LOG_LINE}"
 										fi
 										;;
 							esac
 						elif [[ ${_QUERY_OPTS[ENGINE]} == 'rumble' ]];then
 							case ${LOG_LINE:l} in
 								*moving*|*fixing*)
-									spinner stop
-									logit ${_YT_DBG_LOG} "${0}: COMPLETED"
 									_DOWNLOADS[${M}]='true'
-									log_add ${M}
+									spinner stop
+									logit ${_YT_DBG_LOG} "${0}:Download complete"
+									msg_box -C -jl "<B><g>Download is complete<N>"
 									post_process ${DEST_AUTHOR}
-									MSG="$(str_rpad "Download is complete" ${_MAX_MSG_LEN})"
-									msg_box -C -jl "<B><g>${MSG}<N>"
+									log_add ${M}
 									break
 									;;
 								*size*|*eta*|*mib*|*kib*)
@@ -365,10 +358,11 @@ action_do () {
 									esac
 									msg_box -C -jl "${LINE_COLOR}${MSG}<N>"
 									;;
-								*)	if [[ -n ${LOG_LINE} && ${LOG_LINE:l} != *download* ]];then
-											cont_clear_msg_area
-											tcup $(( _INFO_COORDS[X] + _INFO_COORDS[H] + 2 )) ${_INFO_COORDS[Y]}
-											printf "%s" ${LOG_LINE[_MAX_MSG_LEN]}
+								*)	if [[ -n ${LOG_LINE} && ${LOG_LINE:l} ]];then
+											#cont_clear_msg_area
+											#tcup $(( _INFO_COORDS[X] + _INFO_COORDS[H] + 2 )) ${_INFO_COORDS[Y]}
+											#printf "%s" ${LOG_LINE[_MAX_MSG_LEN]}
+											logit ${_YT_DBG_LOG} "${0}:${LOG_LINE}"
 										fi
 										;;
 							esac
@@ -441,7 +435,7 @@ cfg_init () {
 
 clean_title () {
 	local RAW_TITLE=${1}
-	local MAX_TITLE=${2:=${_MAX_FILE_TITLE}}
+	local MAX_TITLE=${2:=${_MAX_LIST_TITLE}}
 	local -a PARTS=()
 	local HYPHEN_CNT=0
 	local STR=''
@@ -450,18 +444,16 @@ clean_title () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: RAW_TITLE:${RAW_TITLE}"
 
-	logit ${_YT_DBG_LOG} "${0}: Raw TITLE:${RAW_TITLE}"
-
 	TITLE=$(title_scrubber ${RAW_TITLE})
-	logit ${_YT_DBG_LOG} "${0}: Scrubbed TITLE:${TITLE}"
-	
-	TITLE=$(keyword_strip <<<${TITLE})
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Stripped keywords:${STR}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Scrubbed title:${TITLE}"
+
+	TITLE=$(strip_unwanted <<<${TITLE})
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Stripped unwanted chars:${TITLE}"
 
 	TITLE=$(str_word_clip ${TITLE} ${MAX_TITLE}) # Limit length at word boundary
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Clipped title:${TITLE}"
 
-	logit ${_YT_DBG_LOG} "${0}: Completed TITLE:${TITLE}"
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: TITLE:${TITLE}"
+	logit ${_YT_DBG_LOG} "${0}: Title out:${TITLE}"
 
 	echo ${TITLE}
 }
@@ -484,20 +476,20 @@ download_select () {
 		SEARCHTYPE=${_QUERY_OPTS[QTYPE]}
 	fi
 
-	_FIELD_LEN[author]=$(( _FIELD_LEN[author] + 2 )) # Add gutter
-	_FIELD_LEN[age]=$(( _FIELD_LEN[age] + 2 )) # Add gutter
+	_FIELD_LEN[AUTHOR]=$(( _FIELD_LEN[AUTHOR] + 2 )) # Add gutter
+	_FIELD_LEN[AGE]=$(( _FIELD_LEN[AGE] + 2 )) # Add gutter
 
 	# Set headings
 	list_set_header_init
 	list_set_header 'printf "Found:${WHITE_FG}%-d${RESET} $(str_pluralize video ${#_LIST})\tPlatform:${WHITE_FG}%s${RESET}\tQuery Key:${WHITE_FG}%s${RESET}\tQuery Type:${WHITE_FG}%s${RESET}\tSelected:${WHITE_FG}%s${RESET}\t${_PG}" ${#_LIST} ${_QUERY_OPTS[ENGINE]} ${SEARCHTERM} "${SEARCHTYPE}" $(list_get_selected_count)'
 	list_set_header 'printf " "'
-	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[age]} "Age" ${_FIELD_LEN[author]} "Author" ${_FIELD_LEN[title]} "Title"'
-	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[age]} "$(str_unicode_line ${_FIELD_LEN[age]})" ${_FIELD_LEN[author]} "$(str_unicode_line ${_FIELD_LEN[author]})" ${_FIELD_LEN[title]} "$(str_unicode_line ${_FIELD_LEN[title]})"'
+	list_set_header 'printf "%*s %-*s %-*s %-*s" 5 "" ${_FIELD_LEN[AGE]} "Age" ${_FIELD_LEN[AUTHOR]} "Author" ${_FIELD_LEN[TITLE]} "Title"'
+	list_set_header 'printf "%*s ${SCOL1_CLR}%-*s${RESET} ${SCOL2_CLR}%*s${RESET} ${SCOL3_CLR}%*s${RESET}" 5 "" ${_FIELD_LEN[AGE]} "$(str_unicode_line ${_FIELD_LEN[AGE]})" ${_FIELD_LEN[AUTHOR]} "$(str_unicode_line ${_FIELD_LEN[AUTHOR]})" ${_FIELD_LEN[TITLE]} "$(str_unicode_line ${_FIELD_LEN[TITLE]})"'
 
 	# Set line item
 	list_set_line_item ' 
 	local ITEM_COLOR=$(set_item_color $(item_decorate ${_LIST_NDX}));
-	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[age]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[author]}s %-${_FIELD_LEN[title]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})"
+	printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}${ITEM_COLOR}%-${_FIELD_LEN[AGE]}s${RESET}${SHADE}${BAR} %-${_FIELD_LEN[AUTHOR]}s %-${_FIELD_LEN[TITLE]}s${RESET}\n" ${_LIST_NDX} "$(item_decorate ${_LIST_NDX})"  "$(get_field author ${_LIST_NDX})"  "$(get_field title ${_LIST_NDX})"
 	'
 	list_set_select_action ${_ACTION}
 	list_set_action_msgs video download
@@ -1037,7 +1029,7 @@ get_field () {
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	case ${FIELD} in
+	case ${FIELD:l} in
 		age) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[age]}]}";;
 		agetime) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[agetime]}]}";;
 		author) STR="${${(@s/|/)${_LIST[${NDX}]}}[${FIELD_MAP[author]}]}";;
@@ -1137,18 +1129,24 @@ job_start () {
 	g_YTS_SESSION_LOG=${YTS_LOG}
 }
 
-keyword_strip () {
+two_word_limit () {
+  local -a WORDS
+
+  WORDS=(${=1})
+  echo "${WORDS[1,2]}"
+}
+
+strip_unwanted () {
 	local LINE=''
 	local W
 
 	read LINE
 
-	for W in ${_STRIP_WORDS};do # Scrub keywords
+	for W in ${UNWANTED};do # Scrub unwanted chars
 		LINE=$(sed "s/${W}//I" <<<${LINE})
-		LINE=$(str_trim <<<${LINE})
 	done
+	LINE="${=LINE}"
 
-	LINE=$(sed -E "s/(^-|-$)//" <<<${LINE})
 	echo ${LINE}
 }
 
@@ -1431,8 +1429,7 @@ _parse_rumble () {
 			*title:*)
 				(( TCNT++ ))
 				T3=$(( TCNT % TNDX ))
-				# Double quote both the input parameter and the command substitution result
-				[[ ${T3} -eq 0 ]] && QDATA+="$(fix_mojibake "${TEXT[2,-1]}")"
+				[[ ${T3} -eq 0 ]] && QDATA+="$(fix_mojibake "${TEXT[2,-1]}")" # Double quote both input and return value
 				;;
 			*duration:*) DURATION=$(_parse_rumble_duration ${TEXT});QDATA+=${DURATION};;
 			*upload_date:*) D="${${(@s/T/)TEXT}[1]}";U=$(date -d "${D}" +%s);QDATA+=$(_parse_rumble_age ${U});;
@@ -1462,11 +1459,12 @@ _parse_rumble () {
 		(( NDX++ ))
 		assign_vars 4 ${_RUMBLE_ROWS[${K}]} # URL TITLE DURATION AGE
 		TITLE=${V1}
+		TITLE=${TITLE[1,${_MAX_LIST_TITLE}]}
 		AGETIME="(${V4} ${V3})"
 		_LOCAL_LIST[${NDX}]="${V4}|${AUTHOR}|${V2}|${TITLE}|${V3}|${AGETIME}"
-		[[ ${#AGETIME} -gt ${_FIELD_LEN[age]} ]] && _FIELD_LEN[age]=${#AGETIME}
-		[[ ${#AUTHOR} -gt ${_FIELD_LEN[author]} ]] && _FIELD_LEN[author]=${#AUTHOR}
-		[[ ${#TITLE} -gt ${_FIELD_LEN[title]} ]] && _FIELD_LEN[title]=${#TITLE}
+		[[ ${#AGETIME} -gt ${_FIELD_LEN[AGE]} ]] && _FIELD_LEN[AGE]=${#AGETIME}
+		[[ ${#AUTHOR} -gt ${_FIELD_LEN[AUTHOR]} ]] && _FIELD_LEN[AUTHOR]=${#AUTHOR}
+		[[ ${#TITLE} -gt ${_FIELD_LEN[TITLE]} ]] && _FIELD_LEN[TITLE]=${#TITLE}
 	done
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: _LOCAL_LIST rows:${#_LOCAL_LIST}"
@@ -1678,7 +1676,9 @@ query_youtube () {
 		AGE="${${(@s/|/)F}[${YOUTUBE_MAP[age]}]}"
 		TIME="${${(@s/|/)F}[${YOUTUBE_MAP[time]}]}"
 		AGETIME="(${AGE} ${TIME})"
-		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}"; AUTHOR=$(keyword_strip <<<${AUTHOR}); AUTHOR=${AUTHOR:gs/\///}; AUTHOR=$(str_trim ${AUTHOR})
+		AUTHOR="${${(@s/|/)F}[${YOUTUBE_MAP[author]}]}";
+		AUTHOR=$(strip_unwanted <<<${AUTHOR}); 
+		AUTHOR="$(two_word_limit ${AUTHOR})"
 
 		if [[ ${_QUERY_OPTS[FILTER]} == 'filter' ]];then
 			CLEAN_AUTHOR=$(print -r -- "${${(*)AUTHOR//[ _-]/}:l}")
@@ -1707,9 +1707,9 @@ query_youtube () {
 
 		TITLE=$(clean_title ${TITLE})
 
-		[[ ${#AGETIME} -gt ${_FIELD_LEN[age]} ]] && _FIELD_LEN[age]=${#AGETIME}
-		[[ ${#AUTHOR} -gt ${_FIELD_LEN[author]} ]] && _FIELD_LEN[author]=${#AUTHOR}
-		[[ ${#TITLE} -gt ${_FIELD_LEN[title]} ]] && _FIELD_LEN[title]=${#TITLE}
+		[[ ${#AGETIME} -gt ${_FIELD_LEN[AGE]} ]] && _FIELD_LEN[AGE]=${#AGETIME}
+		[[ ${#AUTHOR} -gt ${_FIELD_LEN[AUTHOR]} ]] && _FIELD_LEN[AUTHOR]=${#AUTHOR}
+		[[ ${#TITLE} -gt ${_FIELD_LEN[TITLE]} ]] && _FIELD_LEN[TITLE]=${#TITLE}
 
 		_LOCAL_LIST+="${AGE}|${AUTHOR}|${TITLE}|${URL}|${TIME}|${AGETIME}"
 	done
@@ -1730,24 +1730,23 @@ set_final_fn () {
 	local FN=${2}
 	local NEW_FN=''
 
-	logit ${_YT_DBG_LOG} "${0}: FN IN:${FN}"
-
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	logit ${_YT_DBG_LOG} "${0}: File arg:${FN}"
 
 	NEW_FN=$(clean_title "${AUTHOR} - ${FN:t}") # Strip problematic chars
 	NEW_FN=$(perl -pe 's/\.$//g' <<<${NEW_FN}) # Kill any trailing dots
 	NEW_FN=$(str_word_clip ${NEW_FN} ${_MAX_FILE_LEN}) # Limit length at word boundary
-	NEW_FN="$(str_trim ${FN:h}/${NEW_FN}).${FN:e}" # Restore path and extension
+	NEW_FN=$(str_trim ${FN:h}/${NEW_FN}) # trim
+	NEW_FN="${NEW_FN}.${FN:e}" # Restore path and extension
+
+	logit ${_YT_DBG_LOG} "${0}: Cleaned file:${NEW_FN}"
 
 	if [[ ${FN} != ${NEW_FN} ]];then
 		[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Saving changes:${FN:t} -> ${NEW_FN:t}"
-		logit ${_YT_DBG_LOG} "${0}: Overwriting file:${FN:t}"
-		logit ${_YT_DBG_LOG} "${0}: Clean filename:${NEW_FN:t}"
 		mv -f "${FN}" "${NEW_FN}"
 		[[ ${?} -ne 0 ]] && logit ${_YT_DBG_LOG} "${0}: Move failed ${FN} to ${NEW_FN}"
 	fi
-
-	logit ${_YT_DBG_LOG} "${0}: Directory:${NEW_FN:h}"
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: Cleaned:${FN:t}"
 }
@@ -2031,8 +2030,8 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 		if fav_select;then
 			[[ ${?} -eq 2 ]] && { clear && continue }
 			MSG=''
-			[[ ${_QUERY_OPTS[STRICT]} == '\bstrict\b' ]] && MSG="Strict" || MSG="Non-strict"
-			[[ ${_QUERY_OPTS[FILTER]} == '\bfilter\b' ]] && MSG="Filtered" || MSG="Unfiltered"
+			[[ ${_QUERY_OPTS[STRICT]} == "strict" ]] && MSG="Strict" || MSG="Non-strict"
+			[[ ${_QUERY_OPTS[FILTER]} == "filter" ]] && MSG="Filtered" || MSG="Unfiltered"
 			[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+=" General"
 			[[ -n ${MSG} ]] && MSG="Query Type:<w>${MSG}<N>"
 			msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|${MSG}"

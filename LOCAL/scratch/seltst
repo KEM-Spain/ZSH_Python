@@ -22,8 +22,9 @@ WHITE_ON_GREY="\033[0m\033[0;1;37;100m"
 # Imports
 _LIB_DIR=/usr/local/lib
 source ${_LIB_DIR}/LIB_INIT.zsh # Must be first
-_DEPS+=(SELECT.zsh)
+_DEPS+=()
 source ${_LIB_DIR}/LIB_DEPS.zsh # Must be last
+source ./SELECT.zsh
 
 typeset -a LIST
 typeset -A _UTILS_DESC=(
@@ -39,10 +40,9 @@ cursor_off
 
 while true;do
 	clear
-
 	LIST=()
-	LIST+="AAAAAAAAA"
-	LIST+="BBBBBBBBB"
+	LIST+="AAAAAAAAAA"
+	LIST+="BBBBBBBBBA"
 	sel_set_list ${LIST}
 	sel_list -R -T"SMALL" -O${RED_FG} -c -x5 -y18 -H"<r>Small List<N>" -M"Ensure outer box doesn't exceed display"
 
@@ -58,7 +58,7 @@ while true;do
 	LIST+="nine"
 	LIST+="ten"
 	sel_set_list ${LIST}
-	sel_list -R -c -T"NUM" -x8 -y35 -H"<r>Unsorted Numbers<N>" -M"Some really long string of stuff that needs to be cleared"
+	sel_list -R -c -T"NUM" -x8 -y50 -H"<r>Unsorted Numbers<N>" -M"Some really long string of stuff that needs to be cleared"
 
 	LIST=()
 	LIST+="apple"

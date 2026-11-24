@@ -135,7 +135,7 @@ cmd_filter () {
 
 		if [[ ${VALID} == 'false' ]];then
 			[[ ${VERBOSE_OPT} == 'true' ]] && echo -n " Calling which..." >&2
-			which -s ${CMD_TGT} >/dev/null
+			which -s -- ${CMD_TGT} >/dev/null
 			if [[ ${?} -eq 0 ]];then
 				VALID='true'
 				((WCH++))

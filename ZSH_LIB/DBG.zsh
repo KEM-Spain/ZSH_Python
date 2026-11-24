@@ -17,13 +17,13 @@ dbg_arglist () {
 	if [[ ${#TEXT} -lt 100 ]];then
 		for A in "${@}";do
 			((NDX++))
-			echo -n " Arg:${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
+			echo -n " Arg ${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
 		done
 		echo ''
 	else
 		for A in "${@}";do
 			((NDX++))
-			echo "Arg:${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
+			echo "Arg ${GREEN_FG}${NDX}${RESET}:${WHITE_FG}${A}${RESET}"
 		done
 	fi
 }
