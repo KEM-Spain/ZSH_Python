@@ -1,57 +1,118 @@
-2026-11-24_22:56: Logging started...
-2026-11-24_22:56: log_update: LOG lines BEFORE update:11 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-24_22:56: log_update: LOG lines AFTER update:11 /home/kmiller/.local/share/yts/yts.downloads
-2026-11-24_22:56: query_youtube: Creating listing for QKEY:syrianaanalysis, query is strict
-2026-11-24_22:56: query_youtube:
+2026-11-25_18:47: Logging started...
+2026-11-25_18:47: log_update: LOG lines BEFORE update:9 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-25_18:47: log_update: LOG lines AFTER update:9 /home/kmiller/.local/share/yts/yts.downloads
+2026-11-25_18:47: query_youtube: Creating listing for QKEY:alexchristoforou, query is strict
+2026-11-25_18:47: query_youtube:
 _QUERY_OPTS:
- 	-> DKEY:Syriana Analysis
+ 	-> DKEY:Alex Christoforou
 	-> ENGINE:youtube
 	-> FILTER:no-filter
 	-> LIST:youtube
-	-> QKEY:syrianaanalysis
-	-> RANGE:all
+	-> QKEY:alexchristoforou
+	-> RANGE:recent
 	-> STRICT:strict
-2026-11-24_22:56: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py -s -a all "syrianaanalysis"
-2026-11-24_22:56: clean_title: Title out:What IS Purpose Of Life? Lessons Learned The Hard Way : Kevork Almassian 
-2026-11-24_22:56: clean_title: Title out:Yemen's Next Move: Can Saudi Arabia Avoid A Battle For Aden? : Mohamed Khaled 
-2026-11-24_22:56: clean_title: Title out:Syria's Christian Exodus: A Warning From History 
-2026-11-24_22:56: clean_title: Title out:Breaking - US Ready To Strike Iran Within 96 Hours Of Trump's Order 
-2026-11-24_22:56: clean_title: Title out:Why Ukraine And Iran Wars Are Merging Into One : Matt Bracken 
-2026-11-24_22:56: clean_title: Title out:Cold War 2.0 #74 : America's Great Implosion: Israel Factor : Tarik Cyril Amar 
-2026-11-24_22:56: clean_title: Title out:Iran After Khamenei: Question Nobody Can Answer : Radical Thinker 
-2026-11-24_22:56: clean_title: Title out:Are Elites Building A New Religion? Zionism, UFOS & AI : Matthew Ehret 
-2026-11-24_22:56: clean_title: Title out:Trump-Putin-Xi Summit: IS Europe Being Sidelined? : Tarik Cyril Amar -- Cold War 2.0 
-2026-11-24_22:56: clean_title: Title out:Would Replacing Netanyahu Change Israel's Wars? : Sulaiman Ahmed 
-2026-11-24_22:56: clean_title: Title out:Cold War 2.0 #87: Europe Rearms As Xi Talks Peace With Trump : Tarik Cyril Amar & Mats 
-2026-11-24_22:56: clean_title: Title out:Nato's Shadow Bank: How West Plans To Finance The Next Great War : Mats Nilsson 
-2026-11-24_22:56: clean_title: Title out:War That Changed ME Forever : Kevork Almassian 
-2026-11-24_22:56: clean_title: Title out:Smotrich CALLS For 'Greater Israel' As U.S. Steps Back From Middle East 
-2026-11-24_22:56: clean_title: Title out:IS Trump's Iran Failure Secret To Saving America? 
-2026-11-24_22:56: clean_title: Title out:Israel Warns Of Syria's New Army--Is Turkey Real Red Line? 
-2026-11-24_22:56: clean_title: Title out:Ukraine Just Crossed Iran's Red Line--Will Tehran Retaliate? 
-2026-11-24_22:56: clean_title: Title out:Midterm Shock: Did Trump's Iran War Do It? : Patrick Henningsen 
-2026-11-24_22:56: clean_title: Title out:Riyadh IN Shock: Yemen Exposes Saudi Air Defenses 
-2026-11-24_22:56: clean_title: Title out:Cold War 2.0 #81: Exodus Israel Can't Ignore : Tarik Cyril Amar 
-2026-11-24_22:57: query_rumble:
+2026-11-25_18:47: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py -s -a recent "alexchristoforou"
+2026-11-25_18:47: clean_title: Title out:Jensen Nvidia Return; Peskov Asks Baltics For Help; Rutte Rejects 1997 Rollback 
+2026-11-25_18:47: clean_title: Title out:Testing Kaliningrad Red Line; Baltic Sea Blockade Begins? Denmark Rapper Plot 
+2026-11-25_18:47: clean_title: Title out:Saudi Retreat IN Yemen; Kerch Bridge Hit; French Troops IN Ukraine 
+2026-11-25_18:47: query_youtube: Creating listing for QKEY:judgingfreedom, query is not strict
+2026-11-25_18:47: query_youtube:
 _QUERY_OPTS:
- 	-> DKEY:New Order
-	-> ENGINE:rumble
-	-> LIST:rumble
-	-> QKEY:newordertv
-	-> QTYPE:channel
-2026-11-24_22:57: query_rumble: QUERY:channel
-2026-11-24_22:57: query_rumble: Listing for QKEY:newordertv contains 24 rows
-2026-11-24_22:57: Starting download for URL: https://rumble.com/v7io8sk-prof.-steve-keen-famines-and-economic-crisis-coming-in-2027-as- (Cookies: none)
-2026-11-24_22:57: yt CMDLINE:false
-2026-11-24_22:57: yt URL:https://rumble.com/v7io8sk-prof.-steve-keen-famines-and-economic-crisis-coming-in-2027-as-
-2026-11-24_22:57: yt Executed from: script COOKIES:null
-2026-11-24_22:57: Logging to /home/kmiller/.local/share/yts/yts_17077.log
-2026-11-24_22:57: action_do: GENERATING HEADER
-2026-11-24_22:57: clean_title: Title out:New Order - Prof. Steve Keen: Famines & Economic Crisis Coming IN 
-2026-11-24_22:57: action_do:[download] Destination: /tmp/Prof._Steve_Keen_-_FAMINES_ECONOMIC_CRISIS_Coming_in_2027_as_a_Result_of_the_War_on_Iran-[v7ghvv2].mp4
-2026-11-24_23:00: action_do:Download complete
-2026-11-24_23:00: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Prof._Steve_Keen_-_FAMINES_ECONOMIC_CRISIS_Coming_in_2027_as_a_Result_of_the_War_on_Iran-[v7ghvv2].mp4
-2026-11-24_23:00: set_final_fn: File arg:/home/kmiller/Downloads/Torrents/Library/Web/Prof._Steve_Keen_-_FAMINES_ECONOMIC_CRISIS_Coming_in_2027_as_a_Result_of_the_War_on_Iran-[v7ghvv2].mp4
-2026-11-24_23:00: clean_title: Title out:New Order - Prof. Steve Keen - Famines Economic Crisis Coming IN 2027 As A Result Of 
-2026-11-24_23:00: set_final_fn: Cleaned file:/home/kmiller/Downloads/Torrents/Library/Web/New Order - Prof. Steve Keen - Famines Economic Crisis Coming IN 2027 As A Result Of.mp4
-2026-11-24_23:00: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_17077.log was cleared for:newordertv from:action_do
+ 	-> DKEY:Judging Freedom
+	-> ENGINE:youtube
+	-> FILTER:filter
+	-> LIST:youtube
+	-> QKEY:judgingfreedom
+	-> RANGE:all
+	-> STRICT:no-strict
+2026-11-25_18:47: query_youtube: g_PROXY_CMD:/home/kmiller/.local/share/yts/yts.py  -a all "judgingfreedom"
+2026-11-25_18:47: clean_title: Title out:How US Lost The Iran War : W Scott Ritter 
+2026-11-25_18:47: clean_title: Title out:Matt Hoh : 50,000 Troops Sit And Wait 
+2026-11-25_18:47: clean_title: Title out:Dr. Trita Parsi : Will Israel Decide When US Troops Come Home? 
+2026-11-25_18:47: clean_title: Title out:Intel Roundtable - 20-Nov : W Larry Johnson & Jim Webb - Weekly Wrap 
+2026-11-25_18:47: clean_title: Title out:Gilbert Doctorow : When Will Putin Decisively Retaliate? 
+2026-11-25_18:47: clean_title: Title out:Special Interview : Ltcol Bill Astore : Uniparty Still IN Control 
+2026-11-25_18:47: clean_title: Title out:Prof. John Mearsheimer : Why China Hawks Hate 
+2026-11-25_18:47: clean_title: Title out:Ian Proud (Fmr. Diplomat To Russia) : British Hysteria On Russia 
+2026-11-25_18:47: clean_title: Title out:Ltcol Karen Kwiatkowski : What Iran War IS About 
+2026-11-25_18:47: clean_title: Title out:Aaron Mate : Nato's Brazen Attacks On Russia 
+2026-11-25_18:47: clean_title: Title out:Why Media IS Hiding The Truth About Trump And China 
+2026-11-25_18:47: clean_title: Title out:Amb. Chas Freeman : How China Will React To Huang's Reinstatement 
+2026-11-25_18:47: clean_title: Title out:Prof. Glenn Diesen : IS A Wider War Beginning IN Europe? 
+2026-11-25_18:47: clean_title: Title out:Max Blumenthal : Can Kushner And Witkoff Be Taken Seriously? 
+2026-11-25_18:47: clean_title: Title out:Prof. John Mearsheimer : Can War Be Won Without Popular Support? 
+2026-11-25_18:47: clean_title: Title out:Phil Giraldi : What IS Kushner Up To? 
+2026-11-25_18:47: clean_title: Title out:Ltcol. Karen Kwiatkowski : Why Government Stinks! 
+2026-11-25_18:47: clean_title: Title out:Prof. Jefrey Sachs : When Netanyahu IS Ousted 
+2026-11-25_18:47: clean_title: Title out:Intel Roundtable : Weekly Wrap : 9-Oct 
+2026-11-25_18:48: Starting download for URL: https://www.youtube.com/watch?v=-9f253wbnxI (Cookies: none)
+2026-11-25_18:48: yt CMDLINE:false
+2026-11-25_18:48: yt URL:https://www.youtube.com/watch?v=-9f253wbnxI
+2026-11-25_18:48: yt Executed from: script COOKIES:null
+2026-11-25_18:48: Logging to /home/kmiller/.local/share/yts/yts_27636.log
+2026-11-25_18:48: action_do: GENERATING HEADER
+2026-11-25_18:48: clean_title: Title out:Judging Freedom - Gilbert Doctorow : When Will Putin Decisively 
+2026-11-25_18:48: action_do:[youtube] -9f253wbnxI: Downloading m3u8 information
+2026-11-25_18:48: action_do:[info] Testing format 96
+2026-11-25_18:48: action_do:[info] -9f253wbnxI: Downloading 1 format(s): 96
+2026-11-25_18:48: action_do:[hlsnative] Downloading m3u8 manifest
+2026-11-25_18:48: action_do:Download complete
+2026-11-25_18:48: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Gilbert_Doctorow_-_When_Will_Putin_Decisively_Retaliate-[-9f253wbnxI].mp4
+2026-11-25_18:48: set_final_fn: File arg:/home/kmiller/Downloads/Torrents/Library/Web/Gilbert_Doctorow_-_When_Will_Putin_Decisively_Retaliate-[-9f253wbnxI].mp4
+2026-11-25_18:48: clean_title: Title out:Judging Freedom - Gilbert Doctorow - When Will Putin Decisively Retaliate 
+2026-11-25_18:48: set_final_fn: Cleaned file:/home/kmiller/Downloads/Torrents/Library/Web/Judging Freedom - Gilbert Doctorow - When Will Putin Decisively Retaliate.mp4
+2026-11-25_18:48: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_27636.log was cleared for:judgingfreedom from:action_do
+2026-11-25_18:48: Starting download for URL: https://www.youtube.com/watch?v=lx1NnDNQXxk (Cookies: none)
+2026-11-25_18:48: yt CMDLINE:false
+2026-11-25_18:48: yt URL:https://www.youtube.com/watch?v=lx1NnDNQXxk
+2026-11-25_18:48: yt Executed from: script COOKIES:null
+2026-11-25_18:48: Logging to /home/kmiller/.local/share/yts/yts_12139.log
+2026-11-25_18:48: action_do: GENERATING HEADER
+2026-11-25_18:48: clean_title: Title out:Judging Freedom - Ltcol Karen Kwiatkowski : What Iran War IS About 
+2026-11-25_18:48: action_do:[youtube] lx1NnDNQXxk: Downloading m3u8 information
+2026-11-25_18:48: action_do:[info] Testing format 96-21
+2026-11-25_18:48: action_do:[info] lx1NnDNQXxk: Downloading 1 format(s): 96-21
+2026-11-25_18:48: action_do:[hlsnative] Downloading m3u8 manifest
+2026-11-25_18:48: action_do:[download] Destination: /tmp/LtCOL_Karen_Kwiatkowski_-_What_the_Iran_War_is_About-[lx1NnDNQXxk].mp4
+2026-11-25_18:49: action_do:Download complete
+2026-11-25_18:49: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/LtCOL_Karen_Kwiatkowski_-_What_the_Iran_War_is_About-[lx1NnDNQXxk].mp4
+2026-11-25_18:49: set_final_fn: File arg:/home/kmiller/Downloads/Torrents/Library/Web/LtCOL_Karen_Kwiatkowski_-_What_the_Iran_War_is_About-[lx1NnDNQXxk].mp4
+2026-11-25_18:49: clean_title: Title out:Judging Freedom - Ltcol Karen Kwiatkowski - What Iran War IS About 
+2026-11-25_18:49: set_final_fn: Cleaned file:/home/kmiller/Downloads/Torrents/Library/Web/Judging Freedom - Ltcol Karen Kwiatkowski - What Iran War IS About.mp4
+2026-11-25_18:49: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_12139.log was cleared for:judgingfreedom from:action_do
+2026-11-25_18:49: Starting download for URL: https://www.youtube.com/watch?v=yOpHgpJ5_qM (Cookies: none)
+2026-11-25_18:49: yt CMDLINE:false
+2026-11-25_18:49: yt URL:https://www.youtube.com/watch?v=yOpHgpJ5_qM
+2026-11-25_18:49: yt Executed from: script COOKIES:null
+2026-11-25_18:49: Logging to /home/kmiller/.local/share/yts/yts_11952.log
+2026-11-25_18:49: action_do: GENERATING HEADER
+2026-11-25_18:49: clean_title: Title out:Judging Freedom - Dr. Trita Parsi : Will Israel Decide When US 
+2026-11-25_18:49: action_do:[youtube] yOpHgpJ5_qM: Downloading m3u8 information
+2026-11-25_18:49: action_do:[info] Testing format 96
+2026-11-25_18:49: action_do:[info] yOpHgpJ5_qM: Downloading 1 format(s): 96
+2026-11-25_18:49: action_do:[hlsnative] Downloading m3u8 manifest
+2026-11-25_18:49: action_do:[download] Destination: /tmp/Dr._Trita_Parsi_-_Will_Israel_Decide_When_US_Troops_Come_Home-[yOpHgpJ5_qM].mp4
+2026-11-25_18:50: action_do:Download complete
+2026-11-25_18:50: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/Dr._Trita_Parsi_-_Will_Israel_Decide_When_US_Troops_Come_Home-[yOpHgpJ5_qM].mp4
+2026-11-25_18:50: set_final_fn: File arg:/home/kmiller/Downloads/Torrents/Library/Web/Dr._Trita_Parsi_-_Will_Israel_Decide_When_US_Troops_Come_Home-[yOpHgpJ5_qM].mp4
+2026-11-25_18:50: clean_title: Title out:Judging Freedom - Dr. Trita Parsi - Will Israel Decide When US Troops Come Home 
+2026-11-25_18:50: set_final_fn: Cleaned file:/home/kmiller/Downloads/Torrents/Library/Web/Judging Freedom - Dr. Trita Parsi - Will Israel Decide When US Troops Come Home.mp4
+2026-11-25_18:50: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_11952.log was cleared for:judgingfreedom from:action_do
+2026-11-25_18:50: Starting download for URL: https://www.youtube.com/watch?v=L6Bg6E7ZlcU (Cookies: none)
+2026-11-25_18:50: yt CMDLINE:false
+2026-11-25_18:50: yt URL:https://www.youtube.com/watch?v=L6Bg6E7ZlcU
+2026-11-25_18:50: yt Executed from: script COOKIES:null
+2026-11-25_18:50: Logging to /home/kmiller/.local/share/yts/yts_8090.log
+2026-11-25_18:50: action_do: GENERATING HEADER
+2026-11-25_18:50: clean_title: Title out:Judging Freedom - How US Lost Iran War : W Scott Ritter 
+2026-11-25_18:50: action_do:[youtube] L6Bg6E7ZlcU: Downloading m3u8 information
+2026-11-25_18:50: action_do:[info] Testing format 96
+2026-11-25_18:50: action_do:[info] L6Bg6E7ZlcU: Downloading 1 format(s): 96
+2026-11-25_18:50: action_do:[hlsnative] Downloading m3u8 manifest
+2026-11-25_18:50: action_do:[download] Destination: /tmp/How_the_US_Lost_the_Iran_War_w_Scott_Ritter-[L6Bg6E7ZlcU].mp4
+2026-11-25_18:50: action_do:Download complete
+2026-11-25_18:51: post_process: Last file downloaded:/home/kmiller/Downloads/Torrents/Library/Web/How_the_US_Lost_the_Iran_War_w_Scott_Ritter-[L6Bg6E7ZlcU].mp4
+2026-11-25_18:51: set_final_fn: File arg:/home/kmiller/Downloads/Torrents/Library/Web/How_the_US_Lost_the_Iran_War_w_Scott_Ritter-[L6Bg6E7ZlcU].mp4
+2026-11-25_18:51: clean_title: Title out:Judging Freedom - How US Lost The Iran War W Scott Ritter 
+2026-11-25_18:51: set_final_fn: Cleaned file:/home/kmiller/Downloads/Torrents/Library/Web/Judging Freedom - How US Lost The Iran War W Scott Ritter.mp4
+2026-11-25_18:51: log_clear: Temp log file:/home/kmiller/.local/share/yts/yts_8090.log was cleared for:judgingfreedom from:action_do

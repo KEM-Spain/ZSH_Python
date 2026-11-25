@@ -44,8 +44,8 @@ action_do () {
 	local -A PERM_DECODE=(no-access n execute x write w write-execute wx read r read-execute re read-write rw read-write-execute rwx)
 	local -A SPECIAL_DECODE=('no special permissions' none 'only user can delete or rename (sticky)' sticky 'run as group' setgid 'run as group (sticky)' stkgid 'run as user' setuid 'run as user (sticky)' stkuid 'run as user and group' setugd 'run as user and group (sticky)' stkugi)
 	local -a COMBO_PERMS=(rwxr-xr-x rwxrwxr-x rwxrwxrwx rw-rw-rw- rw-r--r-- rw-------)
-	local -a USER_LIST=(${(f)"$(</etc/passwd)"%%:*})
-	local -a GROUP_LIST=(${(f)"$(</etc/group)"%%:*})
+	local -a USER_LIST=(${${(f)"$(</etc/passwd)"}%%:*})
+	local -a GROUP_LIST=(${${(f)"$(</etc/group)"}%%:*})
 	local -a USER_GROUP_LIST=()
 	local G M U
 	local NDX
@@ -63,19 +63,25 @@ action_do () {
 	for U in ${USER_LIST};do
 		[[ ${GROUP_LIST[(i)${U}]} -le ${#GROUP_LIST} ]] && USER_GROUP_LIST+=${U}
 	done
-
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} USER_LIST:${#USER_LIST}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} GROUP_LIST:${#GROUP_LIST}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} USER_GROUP_LIST:${#USER_GROUP_LIST}"
+		
 	sel_set_list ${(C)${(k)POP_DECODE}}
-	sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Select Operation<N>"
+	sel_list -R -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Select Operation<N>"
 	[[ ${?} -ne 0 ]] && clear_list && return 0
 
 	POP=${POP_DECODE[${_SEL_VAL:l}]}
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} ${LINENO} POP:${POP}"
 
 	if [[ ${POP} == 'sp' ]];then
 		sel_set_list ${(C)${(ok)PTYPE_DECODE}}
-		sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Set permissions<N>"
+		sel_list -R -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"<w>Set permissions<N>"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} ${LINENO} #_LIST:${#_LIST}"
 
 		PTYPE=${PTYPE_DECODE[${_SEL_VAL:l}]}
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} ${LINENO} PTYPE:${PTYPE}"
 
 		STITLE="Select permission for "
 		case ${PTYPE} in
@@ -86,14 +92,16 @@ action_do () {
 			w) sel_set_list ${(C)${(ok)PERM_DECODE}};STITLE+="World";;
 			u) UMASK_PERMS=true;;
 		esac
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} ${LINENO} UMASK_PERMS:${UMASK_PERMS} #_LIST:${#_LIST}"
 
 		if [[ ${UMASK_PERMS} == 'false' ]];then 
-			sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
+			sel_list -R -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
 			[[ ${?} -ne 0 ]] && clear_list && return 0
 
 			[[ ${PTYPE} == "a" ]] && PERM_CODE=${_SEL_VAL:l}
 			[[ ${PTYPE} =~ "(o|g|w)" ]] && PERM_CODE=${PERM_DECODE[${_SEL_VAL:l}]}
 			[[ ${PTYPE} == "s" ]] && PERM_CODE=${SPECIAL_DECODE[${_SEL_VAL:l}]}
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} ${LINENO} PERM_CODE:${PERM_CODE}"
 		fi
 	else
 		case ${POP} in
@@ -101,15 +109,16 @@ action_do () {
 			cog) sel_set_list ${(o)USER_GROUP_LIST};STITLE="<w>Select Owner & Group<N>";;
 			cg) sel_set_list ${(o)GROUP_LIST};STITLE="<w>Select Group<N>";;
 		esac
-		sel_list -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} ${LINENO} #_LIST:${#_LIST}"
+		sel_list -R -c -O${RED_FG} -x${TOP_WIN_X} -y${TOP_WIN_Y} -H"${STITLE}"
 		[[ ${?} -ne 0 ]] && clear_list && return 0
 
 		case ${POP} in
 			co) CHOWN=${_SEL_VAL};;
-	  	  cog) CHOWN=${_SEL_VAL} && CHGRP=${_SEL_VAL};;
+			cog) CHOWN=${_SEL_VAL} && CHGRP=${_SEL_VAL};;
 			cg) CHGRP=${_SEL_VAL};;
 		esac
-
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} ${LINENO} CHOWN:${CHOWN} CHGRP:${CHGRP}"
 	fi
 
 	if [[ ${#_MARKED} -gt 1 ]];then
@@ -138,6 +147,8 @@ action_do () {
 action_warn () {
 	local POP=${1}
 	
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} $(dbg_arglist "${@}")"
+
 	case ${POP} in
 		co) msg_box -p -PP "This will change the owner on $(str_pluralize file ${#_MARKED} true)";;
 		cg) msg_box -p -PP "This will change the group on $(str_pluralize file ${#_MARKED} true)";;
@@ -172,11 +183,10 @@ set_perms () {
 	local F_UMASK="0$(( 666 - $(umask) ))"
 	local D_UMASK="0$(( 777 - $(umask) ))"
 
-	# Msg_box -p "PTYPE:${PTYPE} PERM_CODE:${PERM_CODE} FN:${FN}"
-	 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} $(dbg_arglist "${@}")"
 	[[ ${FTYPE} == 'l' ]] && return 0 # Ignore links
 
-	[[ ${_DEBUG} -ge 0 ]] && dbg "${0}:${LINENO} NDX:${1} PTYPE:${2} PERM_CODE:${3} FN:${FN} PERMS:${_PERMS} BIT_1=${BIT_1} BIT_2=${BIT_2} BIT_3=${BIT_3} BIT_4=${BIT_4} F_UMASK:${F_UMASK} D_UMASK:${D_UMASK}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} \nNDX:${1} \nPTYPE:${2} \nPERM_CODE:${3} \nFN:${FN} \nPERMS:${_PERMS} \nBIT_1=${BIT_1} \nBIT_2=${BIT_2} \nBIT_3=${BIT_3} \nBIT_4=${BIT_4} \nF_UMASK:${F_UMASK} \nD_UMASK:${D_UMASK}"
 
 	[[ ${PTYPE} == 'u' && ${_FTYPES[${NDX}]} == 'f' ]] && sudo chmod ${F_UMASK} ${FN} && return 0
 	[[ ${PTYPE} == 'u' && ${_FTYPES[${NDX}]} == 'd' ]] && sudo chmod ${D_UMASK} ${FN} && return 0
@@ -234,6 +244,8 @@ set_perms () {
 item_decorate () {
   local NDX=$1
 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} $(dbg_arglist "${@}")"
+
   case ${_LIST_SELECTED[${NDX}]} in
 			 2) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
 			 *) tput el;echo -n ${_LOCAL_LIST[${NDX}]};;
@@ -244,6 +256,8 @@ parse_perms () {
 	local PERMS=${1}
 	local POS=${2}
 	local LABEL
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} $(dbg_arglist "${@}")"
 
 	if [[ ${POS} -eq 1 ]];then
 		case ${PERMS[${POS}]} in 
@@ -279,6 +293,8 @@ parse_stat () {
 	local L
 	local PERM
 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} $(dbg_arglist "${@}")"
+
 	STAT=("${(f)$(stat -c"%n|%U|%G|%a" ${FN} 2>/dev/null;RC=$?)}")
 	[[ ${RC} -ne 0 ]] && msg_box -p -PK "stat returned an error (${RC})"
 
@@ -294,10 +310,16 @@ parse_stat () {
 	[[ -d ${FN} ]] && _FTYPES[${NDX}]=d
 	[[ -f ${FN} ]] && _FTYPES[${NDX}]=f
 	[[ -L ${FN} ]] && _FTYPES[${NDX}]=l
+
 	_EPERMS[${NDX}]=$(parse_perms ${_PERMS[${NDX}]} 1)
 	_OPERMS[${NDX}]=$(parse_perms ${_PERMS[${NDX}]} 2)
 	_GPERMS[${NDX}]=$(parse_perms ${_PERMS[${NDX}]} 3)
 	_WPERMS[${NDX}]=$(parse_perms ${_PERMS[${NDX}]} 4)
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "{0}: _EPERMS:${_EPERMS}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "{0}: _OPERMS:${_OPERMS}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "{0}: _GPERMS:${_GPERMS}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "{0}: _WPERMS:${_WPERMS}"
 }
 
 #--Begin GetOpts--
@@ -371,9 +393,9 @@ PATHLBL=$(path_get_label 40)
 
 _RAWLIST=("${(f)$(eval "find ${FPATH} -maxdepth 1 ${FGLOB} ! -path ${FPATH}" 2>/dev/null )}")
 if [[ ${?} -ne 0 ]];then
-	dbg "${0}:${LINENO} ${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH} 2>/dev/null" 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} ${RED_FG}COMMAND FAILED${RESET}: find ${FPATH} -maxdepth 1 ${FGLOB} -type d ! -path ${FPATH} 2>/dev/null" 
 else
-	dbg "${0}:${LINENO} ${GREEN_FG}LIST COUNT${RESET}:${#_LOCAL_LIST}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}_RAWLIST COUNT${RESET}:${#_RAWLIST}"
 fi
 
 [[ ${#_RAWLIST} -gt 20 ]] && msg_box "Working..."
@@ -384,6 +406,7 @@ for L in ${(o)_RAWLIST};do
 	_LOCAL_LIST+=${_FNDX}
 done
 [[ ${LONGEST} -gt 50 ]] && LONGEST=50
+[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:${LINENO} ${GREEN_FG}_LOCAL_LIST COUNT${RESET}:${#_LOCAL_LIST}"
 
 LBL_WIDTH=8
 

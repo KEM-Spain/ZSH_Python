@@ -58,6 +58,7 @@ _LOW_DBG=1
 _MID_DBG=2
 _HIGH_DBG=3
 _MAX_DBG=4
+
 typeset -A _DEBUG_LEVELS=(
 ${_LOW_DBG} LOW
 ${_MID_DBG} MID
@@ -68,7 +69,7 @@ ${_MAX_DBG} MAX
 # LIB var inits
 _CURSOR_STATE=on
 _DEBUG=0
-[[ ${_DEBUG_INIT} == 'false' ]] && _DEBUG_INIT=true || _DEBUG_INIT=false
+_DEBUG_INIT=true
 _EXIT_MSGS=''
 _EXIT_SCRUB=true
 _SMCUP=false

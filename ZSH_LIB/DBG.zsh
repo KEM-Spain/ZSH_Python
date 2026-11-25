@@ -115,8 +115,6 @@ dbg_parse () {
 dbg_record () {
 	local LINE
 
-	#_DEBUG_LINES+="-- msgs --"
-
 	while read LINE;do
 		_DEBUG_LINES+=${LINE}
 	done
@@ -132,7 +130,6 @@ dbg_to_file () {
 	local -a ARGS=(${@})
 	local A
 
-	#[[ -n ${ARGS} ]] && echo "-- msgs --" >>${_DEBUG_FILE}
 	for A in ${ARGS};do
 		echo ${A} >>${_DEBUG_FILE}
 	done

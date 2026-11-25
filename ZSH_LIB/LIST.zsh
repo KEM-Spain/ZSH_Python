@@ -640,8 +640,7 @@ list_search_set_targets () {
 		return 1
 	fi
 
-	[[ ${_DEBUG} -ge ${_MID} ]] && dbg "${0}: FOUND ${#_TARGETS} TARGETS - TARGET LIST:"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "\n$(for R in ${_TARGETS};do echo ${WHITE_FG}${R}${RESET};done)"
+	[[ ${_DEBUG} -ge ${_MID} ]] && dbg "${0}: FOUND ${#_TARGETS} TARGETS - TARGET LIST:\n$(for R in ${_TARGETS};do echo ${WHITE_FG}${R}${RESET};done)"
 
 	msg_box -c -t1 "Found: ${#_TARGETS} $(str_pluralize match ${#_TARGETS})"
 

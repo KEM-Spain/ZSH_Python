@@ -146,6 +146,8 @@ class SearchWin(Gtk.Window):
         self.search_term = search_term
         self.torrent_list = None
         self.model_class = None
+        self._syncing_history = False
+        self.log = logging.getLogger("ts_logger")
 
         self.set_border_width(15)
         self.set_position(Gtk.WindowPosition.CENTER_ALWAYS)
@@ -175,19 +177,21 @@ class SearchWin(Gtk.Window):
         engine_box.pack_start(engine_label, False, False, 0)
         engine_box.pack_start(self.engine_combo, True, True, 0)
 
-        self.entry = Gtk.Entry()
-        self.entry.set_placeholder_text("Enter search phrase...")
-        self.entry.connect("activate", self.on_search)
-
         self.hist_file = self.init_history_file()
         self.hist_model = Gtk.ListStore(str)
-        self.load_history()
 
-        completion = Gtk.EntryCompletion()
-        completion.set_model(self.hist_model)
-        completion.set_text_column(0)
-        completion.set_inline_completion(True)
-        self.entry.set_completion(completion)
+        self.hist_combo = Gtk.ComboBoxText.new_with_entry()
+        self.hist_combo.set_model(self.hist_model)
+        self.hist_combo.set_entry_text_column(0)
+        self.hist_combo.connect("changed", self.on_history_combo_changed)
+        self.hist_combo.connect("key-press-event", self.on_key_press)
+
+        self.entry = self.hist_combo.get_child()
+        self.entry.set_placeholder_text("Enter search phrase...")
+        self.entry.connect("activate", self.on_search)
+        self.entry.connect("key-press-event", self.on_key_press)
+
+        self.load_history()
 
         self.spinner = Gtk.Spinner()
 
@@ -206,12 +210,13 @@ class SearchWin(Gtk.Window):
         bbox.pack_start(btn_quit, True, True, 0)
 
         vbox.pack_start(engine_box, False, False, 0)
-        vbox.pack_start(self.entry, False, False, 0)
+        vbox.pack_start(self.hist_combo, False, False, 0)
         vbox.pack_start(self.spinner, False, False, 0)
         vbox.pack_start(bbox, False, False, 0)
 
         self.add(vbox)
         self.connect("delete-event", lambda w, e: app_exit())
+        self.connect("key-press-event", self.on_key_press)
 
         self.show_all()
         self.entry.grab_focus()
@@ -219,6 +224,44 @@ class SearchWin(Gtk.Window):
             self.entry.set_text(self.search_term)
             self.do_query(self.search_term)
         Gtk.main()
+
+    def _is_popup_shown(self):
+        return bool(self.hist_combo.get_property("popup-shown"))
+
+    def _clear_entry_now(self):
+        self._syncing_history = True
+        try:
+            self.hist_combo.set_active(-1)
+            self.entry.set_text("")
+        finally:
+            self._syncing_history = False
+        self.entry.grab_focus()
+        self.entry.set_position(0)
+        return False
+
+    def on_key_press(self, widget, event):
+        if event.keyval == Gdk.KEY_Escape:
+            if self._is_popup_shown():
+                self.hist_combo.popdown()
+            self._clear_entry_now()
+            GLib.idle_add(self._clear_entry_now)
+            return True
+        return False
+
+    def on_history_combo_changed(self, combo):
+        if self._syncing_history:
+            return
+        active_text = combo.get_active_text()
+        if active_text is not None:
+            self.entry.set_text(active_text)
+            self.entry.select_region(-1, -1)
+            self.entry.set_position(-1)
+            GLib.idle_add(self._focus_entry_for_edit)
+
+    def _focus_entry_for_edit(self):
+        self.entry.grab_focus()
+        self.entry.set_position(-1)
+        return False
 
     def init_history_file(self):
         hist_path = os.path.expanduser('~/.ts')
@@ -230,13 +273,18 @@ class SearchWin(Gtk.Window):
         return hist_file
 
     def load_history(self):
-        self.hist_model.clear()
-        if os.path.exists(self.hist_file):
-            with open(self.hist_file, "r") as fh:
-                for line in fh:
-                    val = line.strip()
-                    if val:
-                        self.hist_model.append([val])
+        self._syncing_history = True
+        try:
+            self.hist_model.clear()
+            if os.path.exists(self.hist_file):
+                with open(self.hist_file, "r") as fh:
+                    for line in fh:
+                        val = line.strip()
+                        if val:
+                            self.hist_model.append([val])
+            self.hist_combo.set_active(-1)
+        finally:
+            self._syncing_history = False
 
     def save_history_item(self, term):
         term = term.strip()
@@ -247,11 +295,16 @@ class SearchWin(Gtk.Window):
             existing.remove(term)
         existing.insert(0, term)
 
-        self.hist_model.clear()
-        with open(self.hist_file, "w") as fh:
-            for item in existing:
-                self.hist_model.append([item])
-                fh.write(item + "\n")
+        self._syncing_history = True
+        try:
+            self.hist_model.clear()
+            with open(self.hist_file, "w") as fh:
+                for item in existing:
+                    self.hist_model.append([item])
+                    fh.write(item + "\n")
+            self.hist_combo.set_active(-1)
+        finally:
+            self._syncing_history = False
 
     def on_engine_changed(self, combo):
         self.engine_key = combo.get_active_id()
@@ -264,7 +317,12 @@ class SearchWin(Gtk.Window):
         self.set_title(f"Torrent Search - {ENGINES[self.engine_key][0]}")
 
     def on_clear_history(self, button):
-        self.hist_model.clear()
+        self._syncing_history = True
+        try:
+            self.hist_model.clear()
+            self.hist_combo.set_active(-1)
+        finally:
+            self._syncing_history = False
         if os.path.exists(self.hist_file):
             os.remove(self.hist_file)
         self.init_history_file()
@@ -280,7 +338,7 @@ class SearchWin(Gtk.Window):
     def do_query(self, term):
         self.search_term = term
         self.spinner.start()
-        self.entry.set_sensitive(False)
+        self.hist_combo.set_sensitive(False)
 
         def query_thread():
             try:
@@ -294,7 +352,7 @@ class SearchWin(Gtk.Window):
 
     def thread_complete(self, return_val, torrent_list):
         self.spinner.stop()
-        self.entry.set_sensitive(True)
+        self.hist_combo.set_sensitive(True)
         if return_val == 1 or not torrent_list:
             self.entry.set_text("")
             self.entry.set_placeholder_text("Search was unsuccessful...")
@@ -481,6 +539,7 @@ class EztvModel:
         log.debug(f"[EZTV] Parsed {len(torrent_list)} torrent items successfully.")
         return (0, torrent_list) if torrent_list else (1, None)
 
+
 class LimeModel:
     myUrl = ENGINES["lime"][1]
 
@@ -528,6 +587,7 @@ class LimeModel:
         torrent_list = [(ascii_only(titles[i]), ages[i], seeds[i], leeches[i], sizes[i], links[i]) for i in range(min_len)]
         log.debug(f"[Lime] Parsed {len(torrent_list)} torrent items successfully.")
         return 0, torrent_list
+
 
 class PBModel:
     myUrl = ENGINES["pb"][1]

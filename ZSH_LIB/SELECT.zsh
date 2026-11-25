@@ -40,15 +40,15 @@ sel_clear_region () {
 	local DIFF=0
 	local R=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	RGN_COORDS=(${(z)$(box_coords_get REGION)})
 
 	if [[ -z ${RGN_COORDS} ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RGN_COORDS is null - returning"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RGN_COORDS is null - returning"
 		return -1
 	else
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RGN_COORDS: ${(kv)RGN_COORDS}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RGN_COORDS: ${(kv)RGN_COORDS}"
 	fi
 
 	X_ARG=${RGN_COORDS[X]}
@@ -57,11 +57,11 @@ sel_clear_region () {
 	H_ARG=${RGN_COORDS[H]}
 
 	local STR=$(str_rep_char " " ${W_ARG}) # Set REGION marker for debug
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: REGION COORDS: X_ARG:${X_ARG} Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: REGION COORDS: X_ARG:${X_ARG} Y_ARG:${Y_ARG} W_ARG:${W_ARG} H_ARG:${H_ARG}"
 
 	[[ ${FRAME} == 'true' ]] && msg_unicode_box $(( X_ARG - 1 )) $(( Y_ARG - 1 )) $(( W_ARG + 2 )) $(( H_ARG + 3 ))
 
-	if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
+	if [[ ${_DEBUG} -ge ${_MID_DBG} ]];then
 		for (( R=0; R <= H_ARG; R++ ));do
 			dbg "CLEARING: ROW:$(( X_ARG + R )) COL:${H_ARG} WIDTH:${W_ARG}"
 			tcup $(( X_ARG + R )) ${Y_ARG} && tput ech ${W_ARG} # Clear line
@@ -77,18 +77,18 @@ sel_clear_region () {
 sel_cursor_hilite () {
 	local X=${1}
 	local Y=${2}
-	local TEXT=${3}
-	local F1 F2
+	local -a TEXT=(${3})
+	local F1=""
+	local F2=""
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	tcup ${X} ${Y}
 
 	do_smso
 	if [[ ${_HAS_CAT} == 'true' ]];then
-		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
-		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+		IFS="${_CAT_DELIM}" read -r F1 F2 <<< "${TEXT}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		printf "${WHITE_FG}%-*s${RESET} ${_HILITE}%-*s${RESET}\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
 	else
 		echo ${TEXT}
@@ -101,17 +101,18 @@ sel_cursor_hilite () {
 sel_cursor_norm () {
 	local X=${1}
 	local Y=${2}
-	local TEXT=${3}
-	local F1 F2
+	local -a TEXT=(${3})
+	local F1=""
+	local F2=""
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	tcup ${X} ${Y}
+
 	do_rmso
 	if [[ ${_HAS_CAT} == 'true' ]];then
-		F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${TEXT})
-		F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${TEXT})
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+		IFS="${_CAT_DELIM}" read -r F1 F2 <<< "${TEXT}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 		printf "${WHITE_FG}%-*s${RESET} %-*s\n" ${_CAT_COLS[1]} ${F1} ${_CAT_COLS[2]} ${F2}
 	else
 		echo ${TEXT}
@@ -140,7 +141,7 @@ sel_get_position () {
 		[[ -n ${PAGE} ]] && _TAG_DATA[PAGE]=${PAGE} || _TAG_DATA[PAGE]=''
 		[[ -n ${NDX} ]] && _TAG_DATA[NDX]=${NDX} || _TAG_DATA[NDX]=''
 		[[ -n ${_TAG_DATA[PAGE]} && -n ${_TAG_DATA[NDX]} ]] && _TAG_DATA[RESTORE]=true || _TAG_DATA[RESTORE]=false
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}: _TAG_DATA:${(kv)_TAG_DATA}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}: _TAG_DATA:${(kv)_TAG_DATA}"
 	fi
 }
 
@@ -176,7 +177,9 @@ sel_list () {
 	local RGN_X_COORD=0
 	local RGN_Y_COORD=0
   local LSH_X=0
-	local F1 F2 L
+	local F1=""
+	local F2=""
+	local L
 
 	local -A OPTIONS=()
 	local OPTION=''
@@ -204,7 +207,9 @@ sel_list () {
 	local X_COORD_ARG=0
 	local Y_COORD_ARG=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	_HAS_CAT=false # Reset to default on each call to sel_list
+
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	while getopts ${OPTSTR} OPTION;do
 		case ${OPTION} in
@@ -230,67 +235,70 @@ sel_list () {
 	done
 	shift $(( OPTIND - 1 ))
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: echo "\\n${WHITE_FG}OPTIONS${RESET}\\n" $(for O in ${(k)OPTIONS};do echo "Option:-${O} ${OPTIONS[${O}]}";done)"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: echo "\\n${WHITE_FG}OPTIONS${RESET}\\n" $(for O in ${(k)OPTIONS};do echo "Option:-${O} ${OPTIONS[${O}]}";done)"
 
 	_TAG=$(str_no_ansi "${_TAG}") # Clean tag
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _REFRESH:${_REFRESH}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _REFRESH:${_REFRESH}"
 
-	if [[ -z ${_SEL_LIST_META} || ${_REFRESH} == 'true' ]];then
+	if [[ -z ${_SEL_LIST_META} || ${_REFRESH} == 'true' ]];then # IMPORTANT: _LIST changes must set REFRESH to be seen
 		_REFRESH=false # Reset
-
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST ITEMS:${#_LIST}"
-
 		[[ ${#_LIST} -gt 100 ]] && msg_box -x1 -y1 -c "<w>Building select list...<N>"
 
 		if [[ -n ${_TAG}  ]];then
 			_SELECT_TAG_FILE="/tmp/${_MY_PID}.${_TAG}.state"
 		fi
 
-		# 1: based on passed X,Y for top left list placement, calculate the remaining available height
-		# 2: set the length and width of the list (or max list height, list width) based on availability to establish the height,width of the inner box
-		# 3: if there is an outer box, get height, width based on inner box
-		# 4: based on these coords, establish the height, width of the region to contain the list and optional outer box
-		# 5: based on widths and heights, center region within display, outer within region, and inner with outer
+		# 1: based on passed X,Y for top left list placement
+		# 2: the length and width of the list establish the height,width of the inner box
+		# 3: outer box height based on inner box, width bassed on list and decorations
 		# 6. Variants & decoraations - there is a vertical stack order from top to bottom: 
-		# 1.  region perimeter (frame header)
+		# 1.  region perimeter (optional frame header)
 		# 2.    outer frame
 		# 3.     list header
 		# 4.      list frame
 		# 5.      list
 		# 6.      list frame
-		# 7.     map line
+		# 7.     (optional map line)
 		# 8.    outer frame
-		# 9.   footer below
+		# 9.   (optional footer below)
 		# 10. region perimeter
 		
 		# List header
 		LIST_HDR="Page <w>${_PAGE_TOPS[MAX]}<N> of <w>${_PAGE_TOPS[MAX]}<N> ${_DMD} (<w>N<N>)ext (<w>P<N>)rev" # Create paging template
 
 		# List dimensions
-		[[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]] && LIST_H=${_PAGE_MAX_ROWS} || LIST_H=${#_LIST}
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: Setting LIST height -> _LIST ITEMS:${#_LIST}"
+		if [[ ${#_LIST} -gt ${_PAGE_MAX_ROWS} ]];then
+			LIST_H=${_PAGE_MAX_ROWS}
+			[[ ${HAS_MAP} == 'false' ]] && HAS_MAP=true && LIST_MAP="Press N or P to Navigate list"
+		else
+			LIST_H=${#_LIST}
+		fi
 		_PAGE_TOPS=($(sel_set_pages ${#_LIST} ${LIST_H})) # Create table of page top indexes
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: #_LIST:${_#LIST} LIST_H:${LIST_H}"
 
 		LIST_W=$(arr_long_elem_len ${_LIST})
 		[[ ${_HAS_CAT} == 'true' ]] && (( LIST_W += 5 )) || (( LIST_W += 2 )) 
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: LIST_W:${LIST_W}"
 
-		# DEC_W = widest decoration
+		# Find widest decoration
 		[[ ${HAS_HDR} == 'true' ]] && DEC_W="${#$(msg_nomarkup ${FRAME_HDR})}"
 		[[ ${HAS_FTR} == 'true' && "${#$(msg_nomarkup ${FRAME_FTR})}" -gt ${DEC_W} ]] && DEC_W="${#$(msg_nomarkup ${FRAME_FTR})}"
 		[[ ${HAS_MAP} == 'true' && "${#$(msg_nomarkup ${LIST_MAP})}" -gt ${DEC_W} ]] && DEC_W="${#$(msg_nomarkup ${LIST_MAP})}"
 		[[ ${LIST_W} -gt ${DEC_W} ]] && DEC_W=${LIST_W}
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: DEC_W:${DEC_W}"
 
 		# Set field widths for lists having categories
 		if [[ ${_HAS_CAT} == 'true' ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: CATEGORIES DETECTED"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: CATEGORIES DETECTED"
 			for L in ${_LIST};do
-				F1=$(cut -d"${_CAT_DELIM}" -f1 <<<${L})
-				F2=$(cut -d"${_CAT_DELIM}" -f2 <<<${L})
-				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+				IFS="${_CAT_DELIM}" read -r F1 F2 <<< "${L}"
+				[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: PARSED TEXT:${TEXT} TO F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 				[[ ${#F1} -gt ${_CAT_COLS[1]} ]] && _CAT_COLS[1]=${#F1}
 				[[ ${#F2} -gt ${_CAT_COLS[2]} ]] && _CAT_COLS[2]=${#F2}
 			done
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: SET category field widths: F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: SET category field widths: F1:${F1} F2:${F2} DELIM:${_CAT_DELIM}"
 			case ${_CAT_SORT} in
 				r) _LIST=(${(O)_LIST});; # Descending categories
 				a) _LIST=(${(o)_LIST});; # Ascending categories
@@ -300,14 +308,18 @@ sel_list () {
 			_CAT_COLS=()
 		fi
 
+		# Set region 
 		RGN_W=$(( BASE_COLS + DEC_W ))
 		RGN_H=$(( BASE_ROWS + LIST_H ))
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RGN_W:${RGN_W} RGN_H:${RGN_H}"
 
 		[[ ${X_COORD_ARG} -ge 1 ]] && RGN_X_COORD=${X_COORD_ARG} || RGN_X_COORD=$(center -V -h${RGN_H}) # Widget placement
 		[[ ${Y_COORD_ARG} -ge 1 ]] && RGN_Y_COORD=${Y_COORD_ARG} || RGN_Y_COORD=$(center -H -w${RGN_W}) # Widget placement
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RGN_X_COORD:${RGN_X_COORD} RGN_Y_COORD:${RGN_Y_COORD}"
 
 		# Store REGION coords
 		box_coords_set REGION X ${RGN_X_COORD} Y ${RGN_Y_COORD} W ${RGN_W} H ${RGN_H}
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: REGION X ${RGN_X_COORD} Y ${RGN_Y_COORD} W ${RGN_W} H ${RGN_H}"
 
 		# Set outer
 		OF_X=$(( RGN_X_COORD + 1 )) # Down past header
@@ -319,6 +331,7 @@ sel_list () {
 
 		# Store OUTER coords
 		box_coords_set OUTER_FRAME X ${OF_X} Y ${OF_Y} W ${OF_W} H ${OF_H} VISIBLE ${VISIBLE_OUTER} C ${OF_COLOR} 
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: OUTER_FRAME X ${OF_X} Y ${OF_Y} W ${OF_W} H ${OF_H} VISIBLE ${VISIBLE_OUTER} C ${OF_COLOR}"
 
 		# Set inner
 		IF_X=$(( RGN_X_COORD + 3 )) # Inner top
@@ -329,6 +342,7 @@ sel_list () {
 
 		# Store INNER coords
 		box_coords_set INNER_FRAME X ${IF_X} Y ${IF_Y} W ${IF_W} H ${IF_H} C ${IF_COLOR}
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: INNER_FRAME X ${IF_X} Y ${IF_Y} W ${IF_W} H ${IF_H} C ${IF_COLOR}"
 
 		# Set coords for list decorations
 		LSH_X=$(( IF_X - 1 ))
@@ -342,6 +356,7 @@ sel_list () {
 
 		# Store DECOR coords
 		box_coords_set DECOR HAS_HDR ${HAS_HDR} HDR_X ${HDR_X} HDR_Y ${HDR_Y} HAS_MAP ${HAS_MAP} MAP_X ${MAP_X} MAP_Y ${MAP_Y} HAS_FTR ${HAS_FTR} FTR_X ${FTR_X} FTR_Y ${FTR_Y}
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: DECOR HAS_HDR ${HAS_HDR} HDR_X ${HDR_X} HDR_Y ${HDR_Y} HAS_MAP ${HAS_MAP} MAP_X ${MAP_X} MAP_Y ${MAP_Y} HAS_FTR ${HAS_FTR} FTR_X ${FTR_X} FTR_Y ${FTR_Y}"
 
 		# Save list meta data
 		_SEL_LIST_META[IF_W]=${IF_W}
@@ -357,13 +372,12 @@ sel_list () {
 		_SEL_LIST_META[X]=$(( IF_X + 1 ))
 		_SEL_LIST_META[Y]=$(( IF_Y + 1 ))
 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _SEL_LIST_META:${#_SEL_LIST_META}"
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: \n${WHITE_ON_GREY}_SEL_LIST_META${RESET}\n$(for L in ${(k)_SEL_LIST_META};do echo "${L} -> ${_SEL_LIST_META[${L}]}";done)\n---\n"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:\n${WHITE_ON_GREY}_SEL_LIST_META${RESET}\n$(for L in ${(k)_SEL_LIST_META};do echo "${L} -> ${_SEL_LIST_META[${L}]}";done)\n---\n"
 	fi
 
 	msg_box_clear
 
-	sel_scroll 1 # Display list and handle user inputs
+	sel_scroll # Display list and handle user inputs
 }
 
 sel_load_page () {
@@ -371,7 +385,7 @@ sel_load_page () {
 	local NDX=0
 	local TOP_ROW=1
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	# Evaluate/validate PAGE arg
 	if [[ -n ${_PAGE_TOPS[${PAGE}]} ]];then
@@ -381,7 +395,7 @@ sel_load_page () {
 		PAGE=1
 	fi
 	 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TOP_ROW:${TOP_ROW}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: TOP_ROW:${TOP_ROW}"
 
 	_PAGE=()
 	for (( NDX=1; NDX <= _SEL_LIST_META[H]; NDX++ ));do
@@ -389,14 +403,14 @@ sel_load_page () {
 		_PAGE+=${_LIST[$(( NDX + TOP_ROW - 1 ))]}
 		[[ ${NDX} -eq ${#_LIST} ]] && break
 	done
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ADDED NDX ROWS"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _LIST ROWS:${#_LIST} _PAGE ROWS:${#_PAGE} PAGE:${PAGE}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ADDED NDX ROWS"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _LIST ROWS:${#_LIST} _PAGE ROWS:${#_PAGE} PAGE:${PAGE}"
 
 	_CURRENT_PAGE=${PAGE} # Set the currently displayed page
 }
 
 sel_scroll () {
-	local PAGE=${1}
+	local PAGE=1
 	local -A D_COORDS=(${(z)$(box_coords_get DECOR)})
 	local -A I_COORDS=(${(z)$(box_coords_get INNER_FRAME)})
 	local -A O_COORDS=(${(z)$(box_coords_get OUTER_FRAME)})
@@ -414,7 +428,7 @@ sel_scroll () {
 	local TAG_PAGE=0
 	local X_OFF=0
 	
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	cursor_off
 
@@ -428,11 +442,11 @@ sel_scroll () {
 	while true;do
 		# Display decorations
 		if [[ ${O_COORDS[VISIBLE]} == 'true' ]];then # Display OUTER frame?
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: OUTER COORDS: O_COORDS[X]:${O_COORDS[X]} O_COORDS[Y]:${O_COORDS[Y]} O_COORDS[W]:${O_COORDS[W]} O_COORDS[H]:${O_COORDS[H]}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: OUTER COORDS: O_COORDS[X]:${O_COORDS[X]} O_COORDS[Y]:${O_COORDS[Y]} O_COORDS[W]:${O_COORDS[W]} O_COORDS[H]:${O_COORDS[H]}"
 			msg_unicode_box ${O_COORDS[X]} ${O_COORDS[Y]} ${O_COORDS[W]} ${O_COORDS[H]} ${O_COORDS[C]} # Outer box
 		fi
 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: INNER COORDS: I_COORDS[X]:${I_COORDS[X]} I_COORDS[Y]:${I_COORDS[Y]} I_COORDS[W]:${I_COORDS[W]} I_COORDS[H]:${I_COORDS[H]}"
+		[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: INNER COORDS: I_COORDS[X]:${I_COORDS[X]} I_COORDS[Y]:${I_COORDS[Y]} I_COORDS[W]:${I_COORDS[W]} I_COORDS[H]:${I_COORDS[H]}"
 		msg_unicode_box ${I_COORDS[X]} ${I_COORDS[Y]} ${I_COORDS[W]} ${I_COORDS[H]} ${I_COORDS[C]} # Inner box
 
 		# Display list decorations
@@ -452,7 +466,7 @@ sel_scroll () {
 		sel_get_position
 		if [[ ${_TAG_DATA[RESTORE]} == 'true'  ]];then
 			BOX_TAG=${_SELECT_TAG_FILE} # Maintain cursor position if _SAVE_MENU_POS is set
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  BOX_TAG:${BOX_TAG}"
+			[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: RESTORING MENU POS: _SELECT_TAG_FILE:${_SELECT_TAG_FILE}  BOX_TAG:${BOX_TAG}"
 		fi
 
 		NDX=1 # Initialize index
@@ -461,10 +475,10 @@ sel_scroll () {
 				if [[ ${_SAVE_MENU_POS} == 'true' ]];then
 					NDX=${_TAG_DATA[NDX]} # Restore list position regardless
 					PAGE=${_TAG_DATA[PAGE]} # Restore list position regardless
-					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:RESTORED POSITION: ${_TAG_DATA[NDX]}"
+					[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:RESTORED POSITION: ${_TAG_DATA[NDX]}"
 				else
 					[[ ${BOX_TAG} != ${_SELECT_TAG_FILE} ]] && NDX=${_TAG_DATA[NDX]} && PAGE=${_TAG_DATA[PAGE]} # Restore list position only if list changed
-					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}:MENU CHANGED - RESTORED POSITION: ${_TAG_DATA[NDX]}"
+					[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}:MENU CHANGED - RESTORED POSITION: ${_TAG_DATA[NDX]}"
 				fi
 				_TAG_DATA[RESTORE]=false
 			fi
@@ -496,10 +510,10 @@ sel_scroll () {
 
 			# Reserved application key breaks from navigation
 			if [[ ${_APP_KEYS[(i)${KEY}]} -le ${#_APP_KEYS} ]];then # App key was pressed
-				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}KEYPRESS IS APP KEY${RESET}: KEY:${KEY} _APP_KEYS:${_APP_KEYS}"
+				[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}KEYPRESS IS APP KEY${RESET}: KEY:${KEY} _APP_KEYS:${_APP_KEYS}"
 
 				_SEL_KEY=${KEY} 
-				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}_SEL_KEY:${_SEL_KEY} _SEL_VAL:${_SEL_VAL}"
+				[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: ${WHITE_FG}_SEL_KEY:${_SEL_KEY} _SEL_VAL:${_SEL_VAL}"
 
 				sel_set_position ${PAGE} ${NDX}
 				break 2 # Quit navigation
@@ -572,7 +586,7 @@ sel_scroll () {
 }
 
 sel_set_app_keys () {
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	_APP_KEYS=(${@})
 }
@@ -581,7 +595,7 @@ sel_set_ebox () {
 	local -A COORDS=(${(z)$(box_coords_get OUTER_FRAME)})
 	local Y=0
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	Y=$(center -Y -c"${(kv)COORDS}" -w${_EXIT_BOX}) # Left side
 
@@ -592,7 +606,7 @@ sel_set_list () {
 	_LIST=(${@})
 	_LIST=(${(o)_LIST})
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 }
 
 sel_set_pages () {
@@ -605,21 +619,21 @@ sel_set_pages () {
 	local REM=0
 	local P
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	PAGE=$(( LIST_MAX / LIST_HEIGHT ))
 	REM=$(( LIST_MAX % LIST_HEIGHT ))
 	[[ ${REM} -ne 0 ]] && (( PAGE++ ))
 
 	MAX_PAGE=${PAGE} # Page boundary
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: MAX_PAGE:${MAX_PAGE} PAGE:${PAGE}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: MAX_PAGE:${MAX_PAGE} PAGE:${PAGE}"
 
 	for (( P=1; P<=PAGE; P++ ));do
 		[[ ${P} -eq 1 ]] && PG_TOP=1 || PG_TOP=$(( PAGE_TOPS[$(( P-1 ))] + LIST_HEIGHT ))
 		PAGE_TOPS[${P}]=${PG_TOP}
 	done
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _PAGE_TOPS:${(kv)PAGE_TOPS}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _PAGE_TOPS:${(kv)PAGE_TOPS}"
 
 	PAGE_TOPS[MAX]=${MAX_PAGE}
 
@@ -630,7 +644,7 @@ sel_set_position () {
 	local PAGE=${1}
 	local NDX=${2}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: _SELECT_TAG_FILE:${_SELECT_TAG_FILE} PAGE:${PAGE}: NDX:${NDX}"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "${0}: _SELECT_TAG_FILE:${_SELECT_TAG_FILE} PAGE:${PAGE}: NDX:${NDX}"
 
 	[[ -n ${_SELECT_TAG_FILE} ]] && echo "${PAGE}|${NDX}" >${_SELECT_TAG_FILE} # Save list position
 	[[ -e ${_SELECT_TAG_FILE} ]] && dbg "${_SELECT_TAG_FILE} was created" || dbg "_SELECT_TAG_FILE NOT found"
