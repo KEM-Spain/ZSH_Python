@@ -1,0 +1,25 @@
+#!/usr/bin/zsh
+
+# Imports
+[[ -z ${ZSH_LIB_DIR} ]] && _LIB_DIR=/usr/local/lib || _LIB_DIR=${ZSH_LIB_DIR}
+source ${_LIB_DIR}/LIB_INIT.zsh
+_DEPS+=()
+source ${_LIB_DIR}/LIB_DEPS.zsh
+source ./PATH.zsh
+
+local RAWPATH=""
+local FPATH=""
+local FGLOB=""
+local PATHLBL=""
+local -a PARTS=()
+
+RAWPATH="$(path_get_raw)"
+PARTS=("${(@s/|/)RAWPATH}")
+FPATH="${PARTS[1]}"
+FGLOB="${PARTS[2]}"
+PATHLBL="$(path_get_label 40)"
+
+print -r -- "RAWPATH:${RAWPATH}"
+print -r -- "FPATH:${FPATH}"
+print -r -- "FGLOB:${FGLOB}"
+print -r -- "PATHLBL:${PATHLBL}"

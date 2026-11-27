@@ -559,7 +559,7 @@ list_search_parse_key () {
 list_search_new () {
 	local PAGE=${1}
 	local HDR=''
-	local HDR_LEN=0
+	local H_LEN=0
 	local HEIGHT=8
 	local H_CTR=0
 	local PROMPT=''
@@ -575,23 +575,24 @@ list_search_new () {
 	_TARGET_PAGE=''
 
 	HDR="<m>$(str_unicode_line 12) List Search (Next:<w>><m>, Prev:<w><<m>) $(str_unicode_line 12)<N>"
-	HDR_LEN=$(msg_nomarkup ${HDR});HDR_LEN=${#HDR}
 
-	V_CTR=$(center -V) # Vertical center
-	H_CTR=$(center -H -w${HDR_LEN}) # Horiz center
+	H_LEN="${#$(msg_nomarkup ${HDR})}"
+
+	V_CTR=$(center -V -h4)
+	H_CTR=$(center -H -w${H_LEN})
 
 	for (( ROW=1; ROW<=HEIGHT + 1; ROW++ ));do # Clear a space to place the UI
-		tcup $(( V_CTR + ROW - 3 )) $(( H_CTR -3 ))
-		tput ech $(( ${#HDR} + 3 ))
+		tcup $(( V_CTR - 3 )) $(( H_CTR - 3 ))
+		tput ech $(( ${H_LEN} + 3 ))
 	done
 
 	msg_box -x$(( V_CTR - 1 )) -y${H_CTR} -h${HEIGHT} "${HDR}" # Display header
 
 	tcup $(( V_CTR + 4 )) $(( H_CTR + 2 )) # Position editor
-	PROMPT="${E_RESET}${E_BOLD}Find${E_RESET}:"
+	PROMPT="${E_RESET}${E_BOLD}Find${E_RESET}"
 	SEARCHTERM=$(inline_vi_edit ${PROMPT} "") # Call line editor
 
-	msg_box_clear X Y ${HEIGHT} W  # Clear box containing inline edit 
+	msg_box_clear # Clear box containing inline edit 
 
 	if [[ -z ${SEARCHTERM} ]];then # User entered nothing
 		return 1
@@ -602,7 +603,7 @@ list_search_new () {
 	if ! list_search_set_targets ${SEARCHTERM};then
 		for (( ROW=0; ROW<=${HEIGHT}; ROW++ ));do # Clear a space to place the MSG
 			tcup $(( V_CTR + ROW )) ${H_CTR}
-			tput ech ${#HDR}
+			tput ech ${H_LEN}
 		done
 
 		msg_box -x${V_CTR} -y$(( H_CTR + 10 )) -p -PK "<m>List Search<N>| |\"<w>${SEARCHTERM}<N>\" - <r>NOT<N> found" 

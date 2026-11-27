@@ -35,7 +35,6 @@ source ${_LIB_DIR}/LIB_DEPS.zsh
 # Constants
 [[ -e /usr/bin/flatpak ]] && _FLATPAK_INSTALLED=true || _FLATPAK_INSTALLED=false
 [[ -e /usr/bin/snap ]] && _SNAP_INSTALLED=true || _SNAP_INSTALLED=false
-_HDR_BAR=$'\u2501' # Header character
 _LAST_APT_UPD=~/.last_apt_upd
 _SOURCES=/etc/apt/sources.list.d
 
@@ -605,6 +604,7 @@ list_set_action_msgs 'install-uninstall app / view app info:'  app
 list_user_prompt_style msg_box
 list_set_no_top_offset # Place the first detail line immediately after heading
 list_set_barlines true
+# TODO: search crashes
 list_set_searchable true
 
 while true;do

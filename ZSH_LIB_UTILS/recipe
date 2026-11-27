@@ -50,7 +50,7 @@ action_do () {
 
 	for M in ${_MARKED};do
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_STALE_ROW}
+		list_set_selected ${M} ${_USED_ROW}
 	done
 }
 
@@ -75,7 +75,11 @@ do_clear () {
 
 item_decorate () {
 	local NDX=${1}
-	echo "${_LIST[${NDX}]:t} (${CYAN_FG}${${_LIST[${NDX}]:h}:t}${RESET})"
+
+	case ${_LIST_SELECTED[${NDX}]} in
+		${_USED_ROW}) echo -n "${_LIST[${NDX}]:t} ${E_ITALIC}${E_RED_FG}viewed${E_RESET}";;
+		*)	tput el;echo -n ${_LIST[${NDX}]:t};;
+	esac
 }
 
 #--Begin GetOpts--

@@ -97,7 +97,7 @@ action_do () {
 	local RC=''
 	local M K
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for M in ${_MARKED};do
 		FN=${(k)_FILE_NDX[(r)${M}]}
@@ -112,9 +112,9 @@ action_do () {
 		if [[ ${FILE_APP[${K}]} != "${LAST_APP}" ]];then
 			LAST_APP=${FILE_APP[${K}]}
 			FLIST=()
-			FLIST+=${(qqq)K}
+			FLIST+=${K:q}
 		else
-			FLIST+=${(qqq)K}
+			FLIST+=${K:q}
 		fi
 		RUN_LIST[${LAST_APP}]=${FLIST} # Collect cmd & args
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Built RUN_LIST:${RUN_LIST[${LAST_APP}]}, FLIST:${FLIST}"
@@ -124,7 +124,7 @@ action_do () {
 		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Executing RUN_LIST:${RUN_LIST}"
 		/bin/rm -f ${_ERR_LOG}
 		if is_foreground_only ${K};then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Is foreground only"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: App is foreground only"
 			logit ${_APP_LOG} "${0}: Executing foreground job: APP:${K} ARGS:${RUN_LIST[${K}]}"
 			eval "${K} ${RUN_LIST[${K}]} 2>${_ERR_LOG}" # Foreground
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Foreground CMD:${K} ${RUN_LIST[${K}]} returned ${?}"
@@ -132,7 +132,7 @@ action_do () {
 			RC=$(wc -w <<<${MSG})
 			[[ ${RC} -ne 0 ]] && msg_box -p "<B><I>${0}: ${APP} returned an error<N>| |<r>$(<${_ERR_LOG})<N>| |<w>Press any key...<N>"
 		else
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Not foreground only"
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: App is not foreground only"
 			logit ${_APP_LOG} "${0}: Executing background job: APP:${K} ARGS:${RUN_LIST[${K}]}"
 			eval "${K} ${RUN_LIST[${K}]} 2>${_ERR_LOG} &" # Background
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Background CMD:${K} ${RUN_LIST[${K}]} returned ${?}"
@@ -154,7 +154,7 @@ action_warn () {
 	local CNT=$(list_get_selected_count ${_MARKED})
 	local M
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	
 	msg_box -p "<I>Please respond<N>|==============| |${CNT} $(str_pluralize item $CNT) queued for opening.| |<B>Open? (y/n)<N>"
 	if [[ ${_MSG_KEY} == 'n' ]];then
@@ -169,7 +169,7 @@ get_app () {
 	local EXT=${FN:e:l}
 	local APP=$(map_ext ${EXT})
 	
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${APP} == '?' ]];then
 		if [[ -n ${FN} && $(file ${FN}) =~ "text" ]];then
@@ -177,7 +177,7 @@ get_app () {
 		fi
 	fi
 
-	logit ${_APP_LOG} "${0}: ${FN} assigned to $(cut -d' ' -f1 <<<${APP})"
+	logit ${_APP_LOG} "${0}: ${FN} assigned to ${${(@s/ /)APP}[1]}"
 
 	echo ${APP}
 }
@@ -187,7 +187,7 @@ get_win () {
 	local EXT=${FN:e:l}
 	local APP_WIN=$(map_ext ${EXT})
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 	
 	if [[ ${APP_WIN} == '?' ]];then
 		if [[ -n ${FN} && $(file ${FN}) =~ "text" ]];then
@@ -195,7 +195,7 @@ get_win () {
 		fi
 	fi
 
-	logit ${_APP_LOG} "${0}: ${FN} assigned to $(cut -d' ' -f1 <<<${APP_WIN})"
+	logit ${_APP_LOG} "${0}: ${FN} assigned to ${${(@s/ /)APP_WIN}[1]}"
 
 	echo ${APP_WIN}
 }
@@ -204,9 +204,9 @@ is_foreground_only () {
 	local APP=${1}
 	local A
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
-	APP=$(cut -d' ' -f1 <<<${APP}) # Isolate APP name
+	APP=${APP:t} # Isolate APP name
 
 	for A in ${_FOREGROUND_ONLY};do
 		if [[ ${APP} =~ ${A} ]];then
@@ -222,7 +222,7 @@ item_decorate () {
 	local NDX=$1
 	local FN=${_LOCAL_LIST[${NDX}]}
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${_LIST_SELECTED[${NDX}]} in
 		${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
@@ -235,7 +235,7 @@ map_ext () {
 	local EXT=${1}
 	local APP=''
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${EXT} in
 		avi) APP=${_APP_EXE[MPV]};;
@@ -276,7 +276,7 @@ mark_unsupported () {
 	local NDX=$1
 	local SUPPORTED
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	SUPPORTED=$(get_app ${_LOCAL_LIST[${NDX}]})
 	if [[ ${SUPPORTED} == '?' ]];then
@@ -288,7 +288,7 @@ mark_unsupported () {
 lcase_mp4 () {
 	local FN=${1}
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	mv -f ${FN} ${FN:r}.mp4
 	logit ${_APP_LOG} "${0}: Lower cased extension ${FN}"
@@ -300,7 +300,7 @@ same_extension () {
 	local LAST_EXT=?
 	local M
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	for M in ${_MARKED};do
 		[[ ! -f ${_LOCAL_LIST[${M}]} ]] && continue
@@ -321,9 +321,7 @@ single_file_launch () {
 	local APP=$(get_app ${FN})
 	local APP_WIN=$(get_win ${FN})
 
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: ARGC:${#@}"
-
-	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: FN:${FN}, APP:${APP}, APP_WIN:${APP_WIN}"
+	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	[[ ${APP} == '?' ]] && exit_leave $(err_msg_exit "No application to handle file:${FN} of type: [$(file -b ${FN})]")
 
@@ -431,9 +429,9 @@ MUSIC_DIRS=false
 [[ -e ${_MD_MUSE} ]] && MUSIC_DIRS=true
 
 RAWPATH=$(path_get_raw)
-FPATH=$(cut -d'|' -f1 <<<${RAWPATH})
+FPATH="${${(@s/|/)RAWPATH}[1]}"
 FPATH=${FPATH:q}
-FGLOB=$(cut -d'|' -f2 <<<${RAWPATH})
+FGLOB="${${(@s/|/)RAWPATH}[2]}"
 PATHLBL=$(path_get_label 40)
 
 # Command line args

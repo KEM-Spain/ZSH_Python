@@ -18,13 +18,33 @@ YELLOW_FG="\033[33m"
 CSR_OFF="\033[?25l"
 CSR_ON="\033[?25h"
 
-typeset -A N2T=(0 zero 1 one 2 two 3 three 4 four 5 five 6 six 7 seven 8 eight 9 nine)
+typeset -A N2D=(0 zero 1 one 2 two 3 three 4 four 5 five 6 six 7 seven 8 eight 9 nine)
+typeset -A N2T=(1 eleven 2 twelve 3 thirteen 4 fourteen 5 fifteen 6 sixteen 7 seventeen 8 eighteen 9 nineteen)
+typeset -A N210=(1 ten 2 twenty 3 thirty 4 forty 5 fifty 6 sixty 7 seventy 8 eighty 9 ninety)
 
-while read LINE;do
-	for (( X=1; X<=${#LINE};X++ ));do
-		WORD="${N2T[${LINE[${X}]}]}"
-		[[ -z ${WORD} ]] && WORD=${LINE[${X}]}
-		echo -n "${WORD} "
-	done
-	echo
+NUM=${1}
+
+[[ ! -t 0 ]] && read NUM
+
+LEN=0
+for (( X=1; X<=${#NUM};X++ ));do
+	[[ ${NUM[${X}]} == ',' ]] && continue
+	(( LEN++ ))
+	WORD="${N2D[${NUM[${X}]}]}"
+	[[ -z ${WORD} ]] && WORD=${NUM[${X}]}
+	echo -n "${WORD} "
 done
+echo
+
+case ${LEN} in
+	1) echo "digit";;
+	2) echo "tens";;
+	3) echo "hundreds";;
+	4) echo "thousands";;
+	5) echo "tens of thousands";;
+	6) echo "hundreds of thousands";;
+	7) echo "millions";;
+	8) echo "tens of millions";;
+	9) echo "hundreds of millions";;
+	10) echo "billions";;
+esac

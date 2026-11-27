@@ -59,13 +59,18 @@ action_warn () {
 	local M 
 	local FN
 	
-	msg_box -p -PC "You have selected ${CNT} files for processing"
+	msg_box -p -PC "You have selected ${CNT} $(str_pluralize file ${CNT}) for processing"
 
 	if [[ ${_MSG_KEY} == 'n' ]];then
 		for M in ${_MARKED};do
 			list_clear_selected ${M}
 		done
 	fi
+}
+
+do_clear () {
+	do_rmcup
+	clear
 }
 
 item_decorate () {
@@ -146,6 +151,8 @@ shift $((OPTIND -1))
 #Execution
 [[ ${_DEBUG} -eq 0 ]] && do_smcup
 [[ ${#} -ne 0 ]] && SEARCHTERM=${1} || SEARCHTERM=''
+
+set_exit_callback do_clear
 
 PATHLBL=$(path_get_label 40) 
 

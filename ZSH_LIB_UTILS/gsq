@@ -120,7 +120,7 @@ edit_box () {
 	local -A M_COORDS
 	local HDR="<m>$(str_unicode_line 3)<N> New Value for:<w> ${KEY} <m>$(str_unicode_line 3) (vi editor) $(str_unicode_line 3)<N>"
 	local ROW=0
-	local PROMPT="${E_RESET}${E_BOLD}Enter value${E_RESET}:"
+	local PROMPT="${E_RESET}${E_BOLD}Enter value${E_RESET}"
 
 	M_COORDS=(${(z)$(box_coords_get MSG_BOX)})
 

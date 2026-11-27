@@ -145,7 +145,7 @@ action_do () {
 	for M in ${_MARKED};do
 		[[ ${M} -eq 0 ]] && continue
 		_MARKED[${M}]=0
-		list_set_selected ${M} ${_STALE_ROW}
+		list_set_selected ${M} ${_USED_ROW}
 	done
 }
 
@@ -225,7 +225,7 @@ item_decorate () {
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	case ${_LIST_SELECTED[${NDX}]} in
-		${_STALE_ROW}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
+		${_USED_ROW}) echo -n "${FN} ${E_ITALIC}${E_RED_FG}viewed${E_RESET}";;
 		${_UNSUPPORTED}) echo -n "${E_STRIKE}${E_RED_FG}${FN}${E_RESET} ${E_ITALIC}unsupported${E_RESET}";;
 		*)	tput el;echo -n ${FN};;
 	esac

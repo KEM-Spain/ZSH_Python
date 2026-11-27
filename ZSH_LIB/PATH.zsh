@@ -1,453 +1,367 @@
-# LIB Declarations
-typeset -A _ARGS # Holds command line arguments for raw path parsing
-
 # LIB Vars
-_RAW_CMD_LINE=false # For testing
+typeset _RAW_CMD_LINE=""
 
 # LIB Functions
-path_abbv () {
-	local MAX_LEN=false
-	local OPTIND=0
-	local OPTION
-	local LINE
-	local OPTSTR="l:"
-	local LEN_LIMIT
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	while getopts ${OPTSTR} OPTION;do
-		case $OPTION in
-		  l) MAX_LEN=${OPTARG};;
-		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
-		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
-		esac
-	done
-	shift $(( OPTIND - 1 ))
-
-	[[ ${MAX_LEN} != 'false' ]] && LEN_LIMIT=${MAX_LEN} || LEN_LIMIT=60
-
-	if [[ ! -t 0 ]];then
-		read -r LINE
-	else
-		LINE=${1}
-	fi
-
-	[[ ${#LINE} -le ${LEN_LIMIT} ]] && printf ${LINE} && return
-
-	echo ${LINE} | perl -wane'
-		foreach $w (@F) {
-			$w =~ s#/$(?=^/.*)##g;             # Kill if trailing slash if preceded by any chars
-			$w =~ s#([^/])([^/]*(?=.*/))#$1#g; # For every word btwn slashes kill all after first char
-			$w =~ s/%//g;                      # Kill any percent signs (not sure why)
-			push (@line,$w);                   # Build line
-		}
-		printf("%-s\n", "@line");
-	;' 
-}
-
-path_expand_token () {
-	local ARG=${@}
-	local ARG_TST
-	local PATH_TST
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	if [[ ${ARG} =~ "^[\.\~]" ]];then # Something to expand
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Expanding tilde or dot"
-		ARG_TST=${ARG}
-
-		[[ ${ARG_TST} =~ '\*$' ]] && ARG_TST=${ARG_TST:h} # Remove glob
-
-		ARG_TST=$(eval "echo ${ARG_TST}")
-		PATH_TST=$(realpath ${ARG_TST})
-
-		if [[ -f ${PATH_TST} ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Expansion:${PATH_TST:h}"
-			echo ${PATH_TST:h} 
-		else
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Expansion:${PATH_TST}"
-			echo ${PATH_TST} # If it points to a file return only the head
-		fi
-	else
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Nothing to expand"
-		echo ${ARG}
-		return 1
-	fi
-	return 0
-}
-
-path_find_prep () {
-	local FLIST
-	local NDX=0
-	local K
-	local HIT=false
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	FLIST='\( '
-	for K in ${(k)_ARGS};do
-		((NDX++))
-		if [[ ${K} =~ 'list' ]];then
-			HIT=true
-			[[ ${NDX} -eq 1 ]] && FLIST+="-inum ${_ARGS[${K}]} " || FLIST+=" -o -inum ${_ARGS[${K}]}"
-		fi
-	done
-	FLIST+=' \)'
-
-	if [[ ${HIT} == 'false' ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning false"
-		return 1
-	else
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: returning true with:${FLIST}"
-		echo ${FLIST}
-		return 0
-	fi
-}
-
-path_get_inode () {
-	local FN=${@}
-	local INODE
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	INODE=${${(s/ /)$(eval ls -i ${FN})}[1]}
-
-	if [[ -n ${INODE} ]];then 
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning true with:$(str_nolf <<<${INODE})"
-		echo ${INODE}
-		return 0
-	else
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning false"
-		return 1
-	fi
-}
-
-path_get_label () {
-	local MAX_LEN=${1}
-	local LABEL
-	local TAIL
-	local RAW_PATH
-	local PATH_HEAD
-	local PATH_EXPANDED
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	RAW_PATH=$(path_get_tokens)
-
-	[[ ! -d ${RAW_PATH:h} ]] && return 1
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: calling path_expand_token with: ${RAW_PATH}"
-	PATH_EXPANDED=$(path_expand_token ${RAW_PATH:h})
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: path_expand_token returned: ${PATH_EXPANDED}"
-
-	[[ -n ${MAX_LEN} ]] && MAX_LEN="-l ${MAX_LEN}" || MAX_LEN=''
-
-	LABEL=$(echo ${PATH_EXPANDED} | path_abbv ${MAX_LEN})
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Abbreviated ${PATH_EXPANDED} added to label"
-
-	if [[ ${RAW_PATH:t} =~ "^[\.\~]$" ]];then
-		TAIL=''
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAIL is symbolic path - omitted from label"
-	elif is_glob ${RAW_PATH:t};then
-		TAIL="/${RAW_PATH:t}"
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAIL is glob - added to label"
-	fi
-
-	LABEL=${LABEL}${TAIL}
-
-	echo -n ${LABEL}
-}
-
-path_get_raw () {
-	local RAW_CMD_LINE
-	local -a TOKENIZED
-	local -a PATH_TOKENS
-	local -a RAW_CMD_LINE
-	local -a TOKENS
-	local WORDS
-	local A I
-	local PATH_HEAD=?
-	local PATH_TAIL=?
-	local RAW_PATH
-	local FNDX
-	local T
-	local PATH_EXPANDED
+_path_read_cmdline () {
+	local CMD=""
+	local PIPE_PATTERN=""
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	if [[ ${_DURABLE[TESTMODE]} == 'true' ]];then
-		RAW_CMD_LINE=${_RAW_CMD_LINE}
+		CMD="${_RAW_CMD_LINE}"
 	else
-		fc -R
-		RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
+		CMD="$(fc -lnr -1 2>/dev/null)"
+		CMD="${CMD#"${CMD%%[![:space:]]*}"}"
 	fi
 
-	[[ ${RAW_CMD_LINE} =~ '\|\s+${_SCRIPT}' ]] && echo "Input is piped" && return 1
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
-
-	RAW_CMD_LINE=($(echo ${RAW_CMD_LINE} | perl -p -e 's/[^\s]+//')) # Strip leading word (script name)
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Stripped command name: RAW_CMD_LINE:${RAW_CMD_LINE}"
-
-	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Stripped options: RAW_CMD_LINE:${RAW_CMD_LINE}"
-
-	[[ -z ${RAW_PATH} ]] && PATH_HEAD=. # Empty path resolves to PWD
-
-	if [[ ${PATH_HEAD} == '?' ]];then
-		if is_glob ${RAW_PATH};then
-			TOKENIZED=("${(f)$(eval "find ${RAW_PATH} 2>&1")}") # Expand glob - a clean file list will resolve PATH_HEAD
-
-			for T in ${TOKENIZED};do
-				[[ ! -f ${T} ]] && break
-				PATH_HEAD=${T:h}
-			done
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: RAW_PATH:${RAW_PATH} PATH_HEAD:${PATH_HEAD}"
-		fi
-	fi
-
-	if [[ ${PATH_HEAD} == '?' ]];then
-		TOKENIZED=("${(f)$(path_parse_cmd ${RAW_PATH})}") # Parse tokens incl names w/ spaces)
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Tokenized: TOKENIZED:${TOKENIZED}"
-
-		# Eliminate all bare words from command line
-		WORDS=0
-		for T in ${TOKENIZED};do
-			if is_bare_word "${T}";then
-				((WORDS++))
-				continue
-			else
-				TOKENS+=${T}
-			fi
-		done
-
-		if [[ ${_DEBUG} -ge ${_HIGH_DBG} ]];then
-			dbg "${0}: ${WHITE_FG}RAW_CMD_LINE${RESET}:${RAW_CMD_LINE}"
-			dbg "${0}: ${WHITE_FG}${WORDS}${RESET} plain words eliminated from command line"
-			dbg "${0}: ${WHITE_FG}${#TOKENS}${RESET} remaining tokens"
-		fi
-
-		RAW_PATH=${TOKENS:=.} # Default to PWD
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${RED_FG}RAW_PATH STRIPPED${RESET}:[${WHITE_FG}${RAW_PATH}${RESET}]"
-
-		PATH_EXPANDED=$(path_expand_token ${RAW_PATH})
-
-		PATH_HEAD=${PATH_EXPANDED}
-	fi
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${GREEN_FG}PATH_HEAD${RESET}:${WHITE_FG}${PATH_HEAD}${RESET} is set"
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} && -n ${RAW_PATH:t} ]] && dbg "${0}: ${MAGENTA_FG}Parsing TAIL${RESET}:${RAW_PATH:t}"
-
-	case ${RAW_PATH:t} in
-	   '*') PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is ASTERISK:${RAW_PATH:t}${RESET}";;
-		 "") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is NULL:${RAW_PATH:t}${RESET}";;
-		"~") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is TILDE:${RAW_PATH:t}${RESET}";;
-		".") PATH_TAIL="-name '*'";[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is DOT:${RAW_PATH:t}${RESET}";;
-		  *)	if is_dir ${RAW_PATH};then
-					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}PATH is DIR:${RAW_PATH}${RESET}"
-					PATH_TAIL="-name '*'"
-				elif is_file ${PATH_HEAD}/${RAW_PATH:t};then
-					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}HEAD/TAIL is FILE:${PATH_HEAD}/${RAW_PATH:t}${RESET}"
-					I=$(path_get_inode "${PATH_HEAD}/${RAW_PATH:t}")
-					[[ ${?} -eq 0 ]] && PATH_TAIL="-inum ${I}" || PATH_TAIL='?' # Fallback to prevent empty inode being passed
-				elif is_dir ${PATH_HEAD}/${RAW_PATH:t};then
-					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}HEAD/TAIL is DIR:${PATH_HEAD}/${RAW_PATH:t}${RESET}"
-					PATH_TAIL="-name '${RAW_PATH:t}'"
-				elif is_glob ${RAW_PATH:t};then
-					[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WHITE_FG}TAIL is GLOB:${RAW_PATH:t}${RESET}"
-					PATH_TAIL="-name '${RAW_PATH:t}'"
-				else
-					PATH_TAIL=?
-				fi;;
-	esac
-
-	if [[ ${PATH_TAIL} = '?' ]];then # Resolve PATH_TAIL
-		for T in ${TOKENIZED};do
-			if is_file "${T}" || is_dir "${T}";then
-				I=$(path_get_inode ${T})
-				[[ ${?} -ne 0 ]] && dbg "${RED_FG}BAD INODE CALL${RESET}" && FNDX=0 && break  # Bad inode call
-				((FNDX++))
-				_ARGS[list${FNDX}]=${I} # Gather all items on command line
-			else
-				[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "TOKEN is neither file nor dir"
-			fi
-		done
-
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: FNDX:${FNDX}"
-
-		if [[ ${FNDX} -ne 0 ]];then
-			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Resolving PATH_HEAD and PATH_TAIL"
-			PATH_HEAD=$(realpath $(eval echo ${RAW_PATH:h}))
-			PATH_TAIL=$(path_find_prep) # Prepare for find command
-		fi
-	fi
-
-	if [[ ${PATH_TAIL} == '?' && ${FNDX} -eq 0 ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "No TOKENS were valid paths or files (invalid path or file name)" >&2
-		echo "${PATH_HEAD}|Invalid Path:${RAW_PATH}" # Return result
+	PIPE_PATTERN='\|[[:space:]]*'"${_SCRIPT}"
+	if [[ -n "${_SCRIPT}" && "${CMD}" =~ "${PIPE_PATTERN}" ]];then
+		print -u2 "Input is piped"
 		return 1
 	fi
 
-	if [[ ${PATH_HEAD} = '?' || ${PATH_TAIL} = '?' ]];then
-		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${RED_FG}Unable to parse command line${RESET}"
-		return 1
+	if [[ "${CMD}" == *[[:space:]]* ]];then
+		CMD="${CMD#*[[:space:]]}"
+		CMD="${CMD#"${CMD%%[![:space:]]*}"}"
+	else
+		CMD=""
 	fi
 
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}PATH_HEAD:${PATH_HEAD} PATH_TAIL:${PATH_TAIL}${RESET}" 
-
-	PATH_HEAD=$(realpath ${PATH_HEAD})
-
-	echo -n "${PATH_HEAD}|${PATH_TAIL}" # Return result
+	print -r -- "${CMD}"
 	return 0
 }
 
-path_get_raw_cmdline () {
-	local RAW_CMD_LINE=''
-
-	fc -R
-	RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
-
-	echo ${RAW_CMD_LINE}
-}
-
-path_get_raw_args () {
-	local RAW_CMD_LINE
-	local -a TOKENIZED
-	local -a TOKENS
-	local A
-	local RAW_PATH
-
-	fc -R
-	RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
-	[[ ${RAW_CMD_LINE} =~ '\|' ]] && echo "Input is piped" && return 0
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
-
-	RAW_CMD_LINE=($(echo ${RAW_CMD_LINE} | perl -p -e 's/[^\s]+//')) # Strip leading word (script name)
-
-	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_PATH:${RAW_PATH} (removed script name & options)${RESET}" 
-
-	echo -n ${RAW_PATH}
-}
-
-path_get_tokens () {
-	local RAW_CMD_LINE
-	local -a TOKENIZED
-	local -a TOKENS
-	local A
-	local RAW_PATH
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	fc -R
-	RAW_CMD_LINE=("${(f)$(fc -lnr | head -1)}") # Parse raw cmdline
-	[[ ${RAW_CMD_LINE} =~ '\|' ]] && echo "Input is piped" && return 0
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_CMD_LINE:${RAW_CMD_LINE}${RESET}" 
-
-	RAW_CMD_LINE=($(echo ${RAW_CMD_LINE} | perl -p -e 's/[^\s]+//')) # Strip leading word (script name)
-
-	RAW_PATH=$(path_strip_options ${RAW_CMD_LINE}) # Strip options
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_PATH:${RAW_PATH} (removed script name & options)${RESET}" 
-
-	TOKENIZED=("${(f)$(path_parse_cmd ${RAW_PATH})}") # Read whole lines (non-traditional file/dir names - spaces)
-
-	for A in ${TOKENIZED};do
-		if is_bare_word "${A}";then
-			continue
-		else
-			TOKENS+=${A}
-		fi
-	done
-	RAW_PATH=(${TOKENS:=.}) # Default empty path to '.'
-
-	echo -n ${RAW_PATH}
-}
-
-path_has_wildcard () {
-	local RARGS=$(path_get_raw_args)
-
-	[[ ${RARGS} =~ '\x2A' ]] && return 0 || return 1
-}
-
-path_parse_cmd () {
-	local RAWCMD=${@}
-	local -a TEXT
-	local LINE
-	local L
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	while read -r LINE;do
-		TEXT+=${LINE}
-	done < <(path_split_cmd ${RAWCMD})
-
-	for L in ${TEXT};do
-		echo ${L}
-	done
-}
-
-path_split_cmd () {
-	local RAWCMD=${@:Q}
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-	 
-	[[ -f ${RAWCMD} ]] && echo ${RAWCMD} || perl -pe 's/(?<![\\])[ ]/\n/g' <<<${RAWCMD}
-}
-
-path_strip_options () {
-	local CMD=${1}
-	local -a OPTS=()
-	local O
-	local RC=0
-
-	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
-
-	OPTS=("${(f)$(grep -Po '\-+[A-Za-z0-9]+' <<<${CMD})}")
-	RC=${?}
-
-	for O in ${OPTS};do
-		CMD=$(sed "s/${O}//" <<<${CMD})
-	done
-
-	echo ${CMD}
-	return ${RC}
-}
-
 path_abbv () {
-	local MAX_LEN=false
-	local OPTIND=0
-	local OPTION
-	local LINE
+	local MAX_LEN=""
+	local OPTION=""
+	local LINE=""
 	local OPTSTR="l:"
-	local LEN_LIMIT
+	local -i OPTIND=0
+	local -i LEN_LIMIT=60
 
 	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
 
 	while getopts ${OPTSTR} OPTION;do
-		case $OPTION in
-		  l) MAX_LEN=${OPTARG};;
-		  :) print -u2 "${SCRIPT}: option: -${OPTARG} requires an argument"; usage;;
-		 \?) print -u2 "${SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage;;
+		case ${OPTION} in
+		  l) MAX_LEN="${OPTARG}";;
+		  :) print -u2 "${_SCRIPT}: option: -${OPTARG} requires an argument"; usage; return 1;;
+		 \?) print -u2 "${_SCRIPT}: ${BOLD}${RED_FG}Unknown option${RESET} -${OPTARG}"; usage; return 1;;
 		esac
 	done
 	shift $(( OPTIND - 1 ))
 
-	[[ ${MAX_LEN} != 'false' ]] && LEN_LIMIT=${MAX_LEN} || LEN_LIMIT=60
+	[[ -n "${MAX_LEN}" && "${MAX_LEN}" != 'false' ]] && LEN_LIMIT=${MAX_LEN}
 
-	if [[ ! -t 0 ]];then
-		read -r LINE
-	else
-		LINE=${1}
+	LINE="${1}"
+
+	if [[ -z "${LINE}" ]];then
+		printf '%s' ""
+		return 0
 	fi
 
-	[[ ${#LINE} -le ${LEN_LIMIT} ]] && printf ${LINE} && return
+	if [[ ${#LINE} -le ${LEN_LIMIT} ]];then
+		printf '%s' "${LINE}"
+		return 0
+	fi
 
-	echo ${LINE} | perl -wane'
+	print -r -- "${LINE}" | perl -wane'
 		foreach $w (@F) {
-			$w =~ s#/$(?=^/.*)##g;             # Kill if trailing slash if preceded by any chars
-			$w =~ s#([^/])([^/]*(?=.*/))#$1#g; # For every word btwn slashes kill all after first char
-			$w =~ s/%//g;                      # Kill any percent signs (not sure why)
-			push (@line,$w);                   # Build line
+			$w =~ s#/$(?=^/.*)##g;
+			$w =~ s#([^/])([^/]*(?=.*/))#$1#g;
+			$w =~ s/%//g;
+			push (@line,$w);
 		}
 		printf("%-s\n", "@line");
-	;' 
+	;'
+}
+
+path_expand_token () {
+	local ARG="${1}"
+	local ARG_TST=""
+	local PATH_TST=""
+	local -i RC=0
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	if [[ -z "${ARG}" ]];then
+		print -r -- "${ARG}"
+		return 1
+	fi
+
+	if [[ "${ARG}" =~ '^[\.~]' ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Expanding tilde or dot"
+		ARG_TST="${ARG}"
+
+		[[ "${ARG_TST}" =~ '\*$' ]] && ARG_TST="${ARG_TST:h}"
+
+		if [[ "${ARG_TST}" == '~' ]];then
+			ARG_TST="${HOME}"
+		elif [[ "${ARG_TST}" == '~/'* ]];then
+			ARG_TST="${HOME}/${ARG_TST#~/}"
+		fi
+
+		PATH_TST="$(command realpath -- "${ARG_TST}" 2>/dev/null)"
+		RC=${?}
+		[[ ${RC} -ne 0 || -z "${PATH_TST}" ]] && PATH_TST="${ARG_TST}"
+
+		if [[ -f "${PATH_TST}" ]];then
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Expansion:${PATH_TST:h}"
+			print -r -- "${PATH_TST:h}"
+		else
+			[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Expansion:${PATH_TST}"
+			print -r -- "${PATH_TST}"
+		fi
+		return 0
+	fi
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Nothing to expand"
+	print -r -- "${ARG}"
+	return 1
+}
+
+path_get_inode () {
+	local FN="${1}"
+	local INODE=""
+	local -i RC=0
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	[[ -z "${FN}" ]] && return 1
+
+	INODE="$(command stat -c '%i' -- "${FN}" 2>/dev/null)"
+	RC=${?}
+
+	if [[ ${RC} -eq 0 && -n "${INODE}" ]];then
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning true with:${INODE}"
+		print -r -- "${INODE}"
+		return 0
+	fi
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: returning false"
+	return 1
+}
+
+path_get_label () {
+	local MAX_LEN="${1}"
+	local LABEL=""
+	local TAIL=""
+	local RAW_PATH=""
+	local PATH_EXPANDED=""
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	RAW_PATH="$(path_get_tokens)"
+
+	[[ ! -d "${RAW_PATH:h}" ]] && return 1
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: calling path_expand_token with: ${RAW_PATH}"
+	PATH_EXPANDED="$(path_expand_token "${RAW_PATH:h}")"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: path_expand_token returned: ${PATH_EXPANDED}"
+
+	if [[ -n "${MAX_LEN}" ]];then
+		LABEL="$(path_abbv -l "${MAX_LEN}" "${PATH_EXPANDED}")"
+	else
+		LABEL="$(path_abbv "${PATH_EXPANDED}")"
+	fi
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: Abbreviated ${PATH_EXPANDED} added to label"
+
+	if [[ "${RAW_PATH:t}" =~ '^[\.~]$' ]];then
+		TAIL=""
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAIL is symbolic path - omitted from label"
+	elif is_glob "${RAW_PATH:t}";then
+		TAIL="/${RAW_PATH:t}"
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: TAIL is glob - added to label"
+	fi
+
+	LABEL="${LABEL}${TAIL}"
+
+	printf '%s' "${LABEL}"
+}
+
+path_get_raw () {
+	local RAW_CMD_LINE=""
+	local RAW_PATH=""
+	local PATH_HEAD="."
+	local PATH_TAIL="-name '*'"
+	local T=""
+	local I=""
+	local -i WORDS=0
+	local -i RC=0
+	local -a TOKENIZED=()
+	local -a TOKENS=()
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	RAW_CMD_LINE="$(_path_read_cmdline)"
+	RC=${?}
+	[[ ${RC} -ne 0 ]] && return ${RC}
+
+	RAW_PATH="$(path_strip_options "${RAW_CMD_LINE}")"
+
+	if [[ -z "${RAW_PATH}" ]];then
+		RAW_PATH="."
+		PATH_HEAD="."
+	else
+		TOKENIZED=("${(f)$(path_parse_cmd "${RAW_PATH}")}")
+		for T in "${TOKENIZED[@]}";do
+			[[ -z "${T}" ]] && continue
+			if is_bare_word "${T}";then
+				((WORDS++))
+				continue
+			fi
+			TOKENS+=("${T}")
+		done
+
+		RAW_PATH="${TOKENS[1]:-.}"
+		PATH_HEAD="$(path_expand_token "${RAW_PATH}")"
+		[[ -z "${PATH_HEAD}" ]] && PATH_HEAD="."
+		[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${WORDS} bare words stripped; RAW_PATH=[${RAW_PATH}] PATH_HEAD=[${PATH_HEAD}]"
+	fi
+
+	case "${RAW_PATH:t}" in
+		'*'|""|"~"|".")
+			PATH_TAIL="-name '*'"
+			;;
+		*)
+			if is_dir "${RAW_PATH}";then
+				PATH_TAIL="-name '*'"
+			elif is_file "${PATH_HEAD}/${RAW_PATH:t}";then
+				I="$(path_get_inode "${PATH_HEAD}/${RAW_PATH:t}")"
+				RC=${?}
+				[[ ${RC} -eq 0 && -n "${I}" ]] && PATH_TAIL="-inum ${I}" || PATH_TAIL="-name '*'"
+			elif is_dir "${PATH_HEAD}/${RAW_PATH:t}" || is_glob "${RAW_PATH:t}";then
+				PATH_TAIL="-name '${RAW_PATH:t}'"
+			else
+				PATH_TAIL="-name '*'"
+			fi
+			;;
+	esac
+
+	PATH_HEAD="$(command realpath -- "${PATH_HEAD}" 2>/dev/null || print -r -- "${PATH_HEAD}")"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}PATH_HEAD:${PATH_HEAD} PATH_TAIL:${PATH_TAIL}${RESET}"
+
+	printf '%s' "${PATH_HEAD}|${PATH_TAIL}"
+	return 0
+}
+
+path_get_raw_cmdline () {
+	local RAW_CMD_LINE=""
+	local -i RC=0
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	if [[ ${_DURABLE[TESTMODE]} == 'true' ]];then
+		RAW_CMD_LINE="${_RAW_CMD_LINE}"
+	else
+		RAW_CMD_LINE="$(fc -lnr -1 2>/dev/null)"
+		RAW_CMD_LINE="${RAW_CMD_LINE#"${RAW_CMD_LINE%%[![:space:]]*}"}"
+	fi
+
+	print -r -- "${RAW_CMD_LINE}"
+	return ${RC}
+}
+
+path_get_raw_args () {
+	local RAW_CMD_LINE=""
+	local RAW_PATH=""
+	local -i RC=0
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	RAW_CMD_LINE="$(_path_read_cmdline)"
+	RC=${?}
+	[[ ${RC} -ne 0 ]] && return ${RC}
+
+	RAW_PATH="$(path_strip_options "${RAW_CMD_LINE}")"
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${0}: ${CYAN_FG}RAW_PATH:${RAW_PATH} (removed script name & options)${RESET}"
+
+	printf '%s' "${RAW_PATH}"
+	return 0
+}
+
+path_get_tokens () {
+	local RAW_CMD_LINE=""
+	local RAW_PATH=""
+	local A=""
+	local -i RC=0
+	local -a TOKENIZED=()
+	local -a TOKENS=()
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	RAW_CMD_LINE="$(_path_read_cmdline)"
+	RC=${?}
+	[[ ${RC} -ne 0 ]] && return ${RC}
+
+	RAW_PATH="$(path_strip_options "${RAW_CMD_LINE}")"
+	TOKENIZED=("${(f)$(path_parse_cmd "${RAW_PATH}")}")
+
+	for A in "${TOKENIZED[@]}";do
+		[[ -z "${A}" ]] && continue
+		if is_bare_word "${A}";then
+			continue
+		fi
+		TOKENS+=("${A}")
+	done
+
+	RAW_PATH="${TOKENS[1]:-.}"
+	printf '%s' "${RAW_PATH}"
+	return 0
+}
+
+path_has_wildcard () {
+	local RARGS=""
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	RARGS="$(path_get_raw_args)"
+	[[ "${RARGS}" == *'*'* ]] && return 0 || return 1
+}
+
+path_parse_cmd () {
+	local RAWCMD="${*}"
+	local LINE=""
+	local -a TEXT=()
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	while IFS= read -r LINE;do
+		TEXT+=("${LINE}")
+	done < <(path_split_cmd "${RAWCMD}")
+
+	for LINE in "${TEXT[@]}";do
+		print -r -- "${LINE}"
+	done
+}
+
+path_split_cmd () {
+	local RAWCMD="${*}"
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	if [[ -f "${RAWCMD}" ]];then
+		print -r -- "${RAWCMD}"
+	else
+		perl -pe 's/(?<![\\])[ ]/\n/g' <<< "${RAWCMD}"
+	fi
+}
+
+path_strip_options () {
+	local CMD="${1}"
+	local O=""
+	local -i RC=0
+	local -a OPTS=()
+
+	[[ ${_DEBUG} -ge ${_HIGH_DBG} ]] && dbg "${_SCRIPT:t}->${0}:" "$(dbg_arglist "${@}")"
+
+	OPTS=("${(f)$(grep -Po -- '\-+[A-Za-z0-9]+' <<< "${CMD}")}")
+	RC=${?}
+
+	for O in "${OPTS[@]}";do
+		CMD="${CMD//"${O}"/}"
+	done
+
+	print -r -- "${CMD}"
+	[[ ${RC} -eq 0 || ${RC} -eq 1 ]] && return 0 || return ${RC}
 }

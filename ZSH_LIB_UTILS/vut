@@ -102,7 +102,7 @@ info () {
 			[[ ${L:l} =~ 'subtitle:' ]] && SUB=internal
 			[[ ${L:l} =~ 'duration:' ]] && DUR="${(s/ /)${(z)${(@s/ /)L}}[2]/,/}"
 			[[ ${L:l} =~ 'video:[[:space:]]*([^[:space:],]+).*[[:space:]]([0-9]{3,}x[0-9]{3,})' ]] && VID=${match[1]} && RES=${match[2]}
-			[[ ${L:l} =~ 'audio:[[:space:]]*([^[:space:]]+)' ]] && AUD=$match[1]
+			[[ ${L:l} =~ 'audio:[[:space:]]*([^[:space:]]+)' ]] && AUD=${${match[1]}:gs/,//}
 		done
 
 		SDUR=${DUR}

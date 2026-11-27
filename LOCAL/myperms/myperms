@@ -173,15 +173,15 @@ set_perms () {
 	local PTYPE=${2}
 	local PERM_CODE=${3}
 	local FTYPE=${4}
-	local FN=${_FILES[${NDX}]}
 	local PERMS=${_PERMS[${NDX}]}
-	local OCT_B
-	local BIT_1=${_PERMS[1]}
-	local BIT_2=${_PERMS[2]}
-	local BIT_3=${_PERMS[3]}
-	local BIT_4=${_PERMS[4]}
+	local BIT_1=${PERMS[1]}
+	local BIT_2=${PERMS[2]}
+	local BIT_3=${PERMS[3]}
+	local BIT_4=${PERMS[4]}
+	local FN=${_FILES[${NDX}]}
 	local F_UMASK="0$(( 666 - $(umask) ))"
 	local D_UMASK="0$(( 777 - $(umask) ))"
+	local OCT_B=''
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} $(dbg_arglist "${@}")"
 	[[ ${FTYPE} == 'l' ]] && return 0 # Ignore links
@@ -241,17 +241,6 @@ set_perms () {
 	[[ ${?} -ne 0 ]] && return 1
 }
 
-item_decorate () {
-  local NDX=$1
-
-	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} $(dbg_arglist "${@}")"
-
-  case ${_LIST_SELECTED[${NDX}]} in
-			 2) echo -n "${E_STRIKE}${E_RED_FG}${_LOCAL_LIST[${NDX}]}${E_RESET} ${E_ITALIC}viewed${E_RESET}";;
-			 *) tput el;echo -n ${_LOCAL_LIST[${NDX}]};;
-  esac
-}
-
 parse_perms () {
 	local PERMS=${1}
 	local POS=${2}
@@ -290,13 +279,16 @@ parse_stat () {
 	local NDX=${1}
 	local FN=${2}
 	local -a STAT
-	local L
 	local PERM
+	local L
 
 	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} $(dbg_arglist "${@}")"
 
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} NDX:${NDX} FN:${FN}"
+
 	STAT=("${(f)$(stat -c"%n|%U|%G|%a" ${FN} 2>/dev/null;RC=$?)}")
 	[[ ${RC} -ne 0 ]] && msg_box -p -PK "stat returned an error (${RC})"
+	[[ ${_DEBUG} -ge ${_MID_DBG} ]] && dbg "Function:${0} Caller:${functrace[1]} STAT:${STAT}"
 
 	for L in ${STAT};do
 		_FILES[${NDX}]="${${(@s/|/)L:t}[1]}"
@@ -344,6 +336,7 @@ parse_opts () {
 
 opt_type () {
 	local OPT=${1}
+
 	case ${OPT} in
 		d) echo "<DIR>";;
 		f) echo "<FILE>";;
@@ -425,9 +418,9 @@ printf "${BOLD}${WHITE_FG}%4s${RESET}${_MARKER} ${SHADE}${BAR}$(ls_color ${_FILE
 '
 
 list_set_prompt_msg '
-printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}, <${WHITE_FG}s${RESET}>ort columns"
+printf "Press ${WHITE_FG}Home End PgUp PgDn, <${GREEN_FG}Enter${RESET}>${RESET} or <${WHITE_FG}q${RESET}>uit${RESET}"
 '
-list_set_select_action "reset permissions"
+list_set_select_action "change permissions"
 list_set_barlines false
 list_set_searchable false
 list_set_sortable true

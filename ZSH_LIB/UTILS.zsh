@@ -218,16 +218,17 @@ cmd_get_raw () {
 	echo ${CMD_LINE}
 }
 
+
 fix_mojibake() {
-  local TEXT=""
-  local _PY_CODE=""
+	local TEXT=""
+	local _PY_CODE=""
 
-  TEXT="$*"
-  if [[ -z "${TEXT}" ]];then
-    return 0
-  fi
+	TEXT="$*"
+	if [[ -z "${TEXT}" ]];then
+		return 0
+	fi
 
-  _PY_CODE=$(python3 - "${TEXT}" <<'EOF'
+	_PY_CODE=$(python3 - "${TEXT}" <<'EOF'
 import sys, re, html
 
 text = sys.argv[1]
@@ -237,31 +238,31 @@ text = html.unescape(text)
 
 # 2. Attempt latin1 -> utf-8 recovery first for pure mojibake sequences
 for _ in range(2):
-    try:
-        decoded = text.encode("latin1").decode("utf-8")
-        if decoded != text:
-            text = decoded
-        else:
-            break
-    except Exception:
-        break
+	try:
+		decoded = text.encode("latin1").decode("utf-8")
+		if decoded != text:
+			text = decoded
+		else:
+			break
+	except Exception:
+		break
 
 # 3. Direct replacements for mixed/partial mojibake artifacts
 replacements = {
-    "â€œ": "\x27",
-    "â€\x9d": "\x27",
-    "â€™": "\x27",
-    "â€˜": "\x27",
-    "â€“": "–",
-    "â€”": "—",
-    "â—": "—",
-    "â„¢": "",
-    "Â£": "£",
-    "Â€": "€",
-    "Â": "",
+	"â€œ": "\x27",
+	"â€\x9d": "\x27",
+	"â€™": "\x27",
+	"â€˜": "\x27",
+	"â€“": "–",
+	"â€”": "—",
+	"â—": "—",
+	"â„¢": "",
+	"Â£": "£",
+	"Â€": "€",
+	"Â": "",
 }
 for k, v in replacements.items():
-    text = text.replace(k, v)
+	text = text.replace(k, v)
 
 # Strip stray 'â' directly before a dash or hyphen
 text = re.sub(r"â(?=[—–\-])", "", text)
@@ -278,7 +279,7 @@ print(text.strip(), end="")
 EOF
 )
 
-  printf '%s' "${_PY_CODE}"
+	printf '%s' "${_PY_CODE}"
 }
 
 format_pct () {
@@ -940,50 +941,70 @@ title_info () { # Shared with fsub and vid_to_lib
 }
 
 title_scrubber () {
-	local TITLE=${@}
-	local -A SEEN=()
+	local TITLE="${@}"
+	local STR=""
+	local CLEAN_WORD=""
+	local PLURAL=""
+	local UPPER_CLEAN=""
+	local UPPER_PLURAL=""
+	local W=""
+	local U=""
+	local -a TOKENS=()
 	local -a UCASE_WORDS=()
-	local STR="${TITLE}"
-	local UCASE_LIMIT=3
-	local PLURAL=''
-	local W U
+	local -A SEEN=()
+	local -i UCASE_LIMIT=3
 
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${functrace[1]} called ${0}:${LINENO}: TITLE:${TITLE}"
 
-	STR="$(fix_mojibake "${STR}")"
+	STR="$(fix_mojibake "${TITLE}")"
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: fix_mojibake STR:${STR}"
 
-	STR=$(perl -pe 's/n_t(?=[\W_])/n'\''t/gi; s/(?<=[a-zA-Z])_(?=(?:[st]|re|m|ve|ll|d)(?:[\W_]|$))/'\''/gi; s/_/ /g' <<< "${STR}") # Apostrophes
-	STR=$(perl -pe 's/\-?\[.*//' <<< "${STR}")
-	STR=$(perl -pe 's/\.{2,}$//g' <<< "${STR}")
-	STR=$(str_proper <<< "${STR}")
-	STR=$(str_trim <<< "${STR}")
-	STR=$(perl -pe 's/\b(\d+)(st|nd|rd|th)\b/$1\L$2/gi' <<< "${STR}")
+	STR=$(perl -Mutf8 -CSD -pe 's/n_t(?=[\W_])/n'\''t/gi; s/(?<=[a-zA-Z])_(?=(?:[st]|re|m|ve|ll|d)(?:[\W_]|$))/'\''/gi; s/_/ /g' <<< "${STR}")
+	STR=$(perl -Mutf8 -CSD -pe 's/\-?\[.*//' <<< "${STR}")
+	STR=$(perl -Mutf8 -CSD -pe 's/\.{2,}$//g' <<< "${STR}")
+	STR=$(perl -Mutf8 -CSD -pe 's/^\s+|\s+$//g; s/\s{2,}/ /g; s/(^|[\s\x22\x28\x5b\x7b\x{201c}\x{201e}])([\x27\x{2018}\x{2019}]?)([[:alpha:]])/$1$2\U$3/g' <<< "${STR}")
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: STR after cleaning:${STR}"
 
 	UCASE_WORDS=("${(f)$(grep -E -o -- '\b([[:upper:]]|[0-9])+\b' <<<${STR})}")
 	for U in ${UCASE_WORDS};do
-		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}") # Dump numbers
+		[[ ${U%%[!0-9]*} ]] && UCASE_WORDS=("${(@)UCASE_WORDS:#${U}}")
 	done
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: UCASE_WORDS:${UCASE_WORDS}"
 
-	# Acronym preservation and UCASE limiting (using word boundaries that don't swallow apostrophes)
-	for W in ${(z)STR};do
-		PLURAL=$(echo "${W}" | perl -pe 's/s$//' 2>/dev/null) # Plural
-		[[ ${SEEN[${W}]} -eq 1 ]] && continue # Skip seen
-		if [[ ${_ACRONYMS[(i)${W:u}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${PLURAL:u}]} -le ${#_ACRONYMS} ]];then
-			STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null) # Preserve acronyms
+	TOKENS=("${(f)$(perl -Mutf8 -CSD -ne 'while (/([[:alnum:]]+(?:['\''’][[:alnum:]]+)*)/g) { print "$1\n"; }' <<< "${STR}")}")
+
+	for W in ${TOKENS};do
+		CLEAN_WORD="${W}"
+		UPPER_CLEAN="${CLEAN_WORD:u}"
+		PLURAL="${UPPER_CLEAN%S}"
+		if [[ ${UPPER_CLEAN} == *S && -n ${PLURAL} ]];then
+			UPPER_PLURAL="${PLURAL}"
+		else
+			UPPER_PLURAL="${UPPER_CLEAN}"
+		fi
+
+		[[ ${SEEN[${UPPER_CLEAN}]} -eq 1 ]] && continue
+
+		if [[ ${_ACRONYMS[(i)${UPPER_CLEAN}]} -le ${#_ACRONYMS} || ${_ACRONYMS[(i)${UPPER_PLURAL}]} -le ${#_ACRONYMS} ]];then
+			STR=$(SCRUB_W="${CLEAN_WORD}" SCRUB_U="${UPPER_CLEAN}" perl -Mutf8 -CSD -pe 'my $w = $ENV{SCRUB_W}; s/(?<![[:alnum:]])\Q$w\E(?![[:alnum:]])/$ENV{SCRUB_U}/gi' <<< "${STR}" 2>/dev/null)
 			[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Found ACRONYM:${STR}"
-			SEEN[${W}]=1
-		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then # Limit UCASE
-			if [[ ${UCASE_WORDS[(i)${W:u}]} -le ${#UCASE_WORDS} ]];then
-				STR=$(sed "s/\b${W}\b/${W:u}/Ig" <<<${STR} 2>/dev/null)
+			SEEN[${UPPER_CLEAN}]=1
+		elif [[ -n ${UCASE_WORDS} && ${#UCASE_WORDS} -le ${UCASE_LIMIT} ]];then
+			if [[ ${UCASE_WORDS[(i)${UPPER_CLEAN}]} -le ${#UCASE_WORDS} ]];then
+				STR=$(SCRUB_W="${CLEAN_WORD}" SCRUB_U="${UPPER_CLEAN}" perl -Mutf8 -CSD -pe 'my $w = $ENV{SCRUB_W}; s/(?<![[:alnum:]])\Q$w\E(?![[:alnum:]])/$ENV{SCRUB_U}/gi' <<< "${STR}" 2>/dev/null)
 				[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Found UPPER:${STR}"
-				SEEN[${W}]=1
+				SEEN[${UPPER_CLEAN}]=1
 			fi
 		fi
 	done
-	[[ -n ${STR} ]] && TITLE=${STR}
+
+	# Final side-effect patch before returning: keep apostrophe contractions lowercase and trim extra spaces
+	if [[ -n ${STR} ]];then
+		STR=$(perl -Mutf8 -CSD -pe 's/([\x27\x{2019}])(t|s|re|m|ve|ll|d)(?![[:alnum:]])/$1\L$2/gi; s/^\s+|\s+$//g; s/\s{2,}/ /g' <<< "${STR}")
+		TITLE=${STR}
+	fi
+
 	[[ ${_DEBUG} -ge ${_LOW_DBG} ]] && dbg "${0}: Set TITLE:${TITLE}"
 	echo ${TITLE}
 }
+

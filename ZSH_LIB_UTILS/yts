@@ -1705,6 +1705,7 @@ query_youtube () {
 		fi
 
 		TITLE=$(clean_title ${TITLE})
+		TITLE=${TITLE[1,${_MAX_LIST_TITLE}]}
 
 		[[ ${#AGETIME} -gt ${_FIELD_LEN[AGE]} ]] && _FIELD_LEN[AGE]=${#AGETIME}
 		[[ ${#AUTHOR} -gt ${_FIELD_LEN[AUTHOR]} ]] && _FIELD_LEN[AUTHOR]=${#AUTHOR}
@@ -2030,7 +2031,9 @@ if [[ ${#} -eq 0 ]];then # NO args passed - select from menu
 			[[ ${?} -eq 2 ]] && { clear && continue }
 			MSG=''
 			[[ ${_QUERY_OPTS[STRICT]} == "strict" ]] && MSG="Strict" || MSG="Non-strict"
-			[[ ${_QUERY_OPTS[FILTER]} == "filter" ]] && MSG="Filtered" || MSG="Unfiltered"
+			if [[ -z ${MSG} ]];then
+				[[ ${_QUERY_OPTS[FILTER]} == "filter" ]] && MSG="Filtered" || MSG="Unfiltered"
+			fi
 			[[ ${_QUERY_OPTS[QKEY]} =~ ' ' ]] && MSG+=" General"
 			[[ -n ${MSG} ]] && MSG="Query Type:<w>${MSG}<N>"
 			msg_box "Querying <w>${_QUERY_OPTS[ENGINE]}<N> for <B><I><c>${_QUERY_OPTS[DKEY]}<N>|${MSG}"
